@@ -1,9 +1,9 @@
+
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from "@/hooks/use-toast";
 import UrlInput from './UrlInput';
-import AdvancedOptions from './AdvancedOptions';
 import QuickActions from './QuickActions';
 
 const UrlForm: React.FC = () => {
@@ -43,6 +43,14 @@ const UrlForm: React.FC = () => {
   const checkWebsiteAccessibility = async (websiteUrl: string): Promise<boolean> => {
     await new Promise(resolve => setTimeout(resolve, 800));
     return Math.random() > 0.1;
+  };
+
+  // Handle advanced options changes
+  const handleAdvancedOptionsChange = (key: string, value: any) => {
+    setAdvancedOptions(prev => ({
+      ...prev,
+      [key]: value
+    }));
   };
 
   // Handle form submission
@@ -116,14 +124,6 @@ const UrlForm: React.FC = () => {
         navigate(`/audit?url=${encodeURIComponent(formattedUrl)}`);
       }
     }, 600);
-  };
-
-  // Handle advanced options changes
-  const handleAdvancedOptionsChange = (key: string, value: any) => {
-    setAdvancedOptions(prev => ({
-      ...prev,
-      [key]: value
-    }));
   };
 
   return (
