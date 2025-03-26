@@ -7,7 +7,7 @@ import CostDetailsTable, { OptimizationItem } from './CostDetailsTable';
 import OptimizationActions from './OptimizationActions';
 import OptimizationHeading from './OptimizationHeading';
 import OptimizationSummary from './OptimizationSummary';
-import OptimizationProcess from './OptimizationProcess';
+import OptimizationProcessContainer from './process/OptimizationProcessContainer';
 import OptimizationResults from './OptimizationResults';
 
 interface OptimizationCostProps {
@@ -88,7 +88,7 @@ const OptimizationCost: React.FC<OptimizationCostProps> = ({
       <CostDetailsTable optimizationItems={optimizationItems} />
       
       {isOptimizing && (
-        <OptimizationProcess 
+        <OptimizationProcessContainer 
           url={url}
           setOptimizationResult={setOptimizationResult}
           setLocalIsOptimized={setLocalIsOptimized}
