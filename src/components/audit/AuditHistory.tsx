@@ -128,9 +128,10 @@ const AuditHistory: React.FC<AuditHistoryProps> = ({ historyItems, onSelectAudit
                     activeDot={{ 
                       r: 6, 
                       onClick: (dotData) => {
-                        // The dotData parameter already contains the chart data for this point
-                        if (dotData && dotData.id) {
-                          handleDotClick(dotData);
+                        // First cast the event to any to get access to the payload data
+                        const dataPoint = (dotData as any)?.payload;
+                        if (dataPoint && dataPoint.id) {
+                          handleDotClick(dataPoint);
                         }
                       }
                     }} 
