@@ -3,11 +3,17 @@ import React from 'react';
 import { Mail } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 
-const EmailShareButton: React.FC = () => {
+interface EmailShareButtonProps {
+  url: string;
+  subject: string;
+  body: string;
+}
+
+const EmailShareButton: React.FC<EmailShareButtonProps> = ({ url, subject, body }) => {
   const handleEmailShare = () => {
-    const subject = encodeURIComponent("Результаты SEO аудита");
-    const body = encodeURIComponent(`Посмотрите результаты SEO аудита: ${window.location.href}`);
-    window.open(`mailto:?subject=${subject}&body=${body}`);
+    const encodedSubject = encodeURIComponent(subject);
+    const encodedBody = encodeURIComponent(body + "\n\n" + url);
+    window.open(`mailto:?subject=${encodedSubject}&body=${encodedBody}`);
   };
   
   return (

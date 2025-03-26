@@ -4,11 +4,15 @@ import { Copy } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 
-const CopyLinkButton: React.FC = () => {
+interface CopyLinkButtonProps {
+  url: string;
+}
+
+const CopyLinkButton: React.FC<CopyLinkButtonProps> = ({ url }) => {
   const { toast } = useToast();
   
   const handleCopyLink = () => {
-    navigator.clipboard.writeText(window.location.href);
+    navigator.clipboard.writeText(url);
     toast({
       title: "Ссылка скопирована",
       description: "Ссылка на результаты аудита скопирована в буфер обмена",
