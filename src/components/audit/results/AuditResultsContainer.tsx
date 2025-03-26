@@ -55,9 +55,9 @@ const AuditResultsContainer: React.FC<AuditResultsContainerProps> = ({ url }) =>
       }
       
       const [auditResult, recommendationsResult, historyResult] = await Promise.all([
-        fetchAuditData(url),
+        fetchAuditData(),  // Removed url parameter
         fetchRecommendations(),
-        fetchAuditHistory(url)
+        fetchAuditHistory() // Removed url parameter
       ]);
       
       setAuditData(auditResult);
