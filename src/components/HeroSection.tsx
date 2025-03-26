@@ -1,8 +1,7 @@
-
 import React from 'react';
 import { motion } from 'framer-motion';
 import { ArrowRight, Search, FileText, Globe, Wrench, Sparkles, LineChart, Check } from 'lucide-react';
-import UrlForm from './UrlForm';
+import UrlForm from './url-form';
 
 const HeroSection: React.FC = () => {
   // Анимация для появления элементов

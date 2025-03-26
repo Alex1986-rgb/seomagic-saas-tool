@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import Layout from '@/components/Layout';
 import SeoAuditResults from '@/components/SeoAuditResults';
-import UrlForm from '@/components/UrlForm';
+import UrlForm from '@/components/url-form';
 import { useToast } from "@/hooks/use-toast";
 import { motion } from 'framer-motion';
 import { Rocket, Target, AlertTriangle } from 'lucide-react';
