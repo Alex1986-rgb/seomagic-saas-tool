@@ -35,8 +35,8 @@ const UrlInput: React.FC<UrlInputProps> = ({
 
   return (
     <motion.div 
-      className={`neo-glass p-2 md:p-3 flex flex-col md:flex-row items-center gap-3 rounded-xl overflow-hidden transition-all duration-300 ${isFocused ? 'ring-2 ring-primary/50 shadow-lg' : ''} ${isValid === true && url ? 'ring-1 ring-green-500/50' : ''} ${isValid === false && url ? 'ring-1 ring-red-500/50' : ''}`}
-      whileHover={{ y: -2, boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.1)" }}
+      className={`glass-panel p-2 md:p-3 flex flex-col md:flex-row items-center gap-3 overflow-hidden transition-all duration-300 ${isFocused ? 'ring-2 ring-primary/50 shadow-lg shadow-primary/10' : ''} ${isValid === true && url ? 'ring-1 ring-green-500/50' : ''} ${isValid === false && url ? 'ring-1 ring-red-500/50' : ''}`}
+      whileHover={{ y: -2, boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.15)" }}
       transition={{ duration: 0.2 }}
     >
       <div className="flex items-center w-full px-2 gap-2 group">
@@ -90,7 +90,8 @@ const UrlInput: React.FC<UrlInputProps> = ({
       <Button
         type="submit"
         disabled={isLoading}
-        className="bg-primary hover:bg-primary/90 text-white font-medium px-6 py-3 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 w-full md:w-auto relative overflow-hidden group"
+        variant="glassmorphic"
+        className="w-full md:w-auto relative overflow-hidden group"
       >
         <span className="absolute inset-0 w-0 bg-white/20 transition-all duration-500 ease-out group-hover:w-full"></span>
         {isLoading ? (

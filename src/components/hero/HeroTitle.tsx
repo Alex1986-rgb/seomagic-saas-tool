@@ -42,7 +42,7 @@ const HeroTitle: React.FC<HeroTitleProps> = ({ itemVariants }) => {
           Оптимизируйте ваш сайт с 
           <span className="heading-gradient block md:inline"> профессиональным SEO</span>
           <motion.div 
-            className="absolute -bottom-2 left-0 right-0 h-1 bg-primary/60 rounded-full"
+            className="absolute -bottom-2 left-0 right-0 h-1 bg-gradient-to-r from-primary/40 via-primary to-primary/40 rounded-full"
             initial={{ width: 0 }}
             animate={{ width: "100%" }}
             transition={{ delay: 0.8, duration: 0.8 }}
@@ -54,7 +54,7 @@ const HeroTitle: React.FC<HeroTitleProps> = ({ itemVariants }) => {
         className="text-lg md:text-xl text-muted-foreground max-w-2xl"
         variants={itemVariants}
       >
-        SeoMarket <span className="font-bold">бесплатно</span> анализирует ваш сайт, генерирует мгновенные отчеты и предоставляет подробные рекомендации для улучшения позиций в поисковой выдаче.
+        SeoMarket <span className="font-bold text-primary">бесплатно</span> анализирует ваш сайт, генерирует мгновенные отчеты и предоставляет подробные рекомендации для улучшения позиций в поисковой выдаче.
       </motion.p>
     </>
   );

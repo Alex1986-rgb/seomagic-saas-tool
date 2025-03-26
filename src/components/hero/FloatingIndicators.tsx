@@ -18,7 +18,7 @@ const FloatingIndicators: React.FC = () => {
           repeatType: "reverse"
         }}
       >
-        <div className="flex items-center gap-2 bg-primary/10 px-2 py-1 rounded-full">
+        <div className="flex items-center gap-2 glass-panel px-2 py-1 rounded-full">
           <Check size={12} className="text-primary" />
           <span className="text-xs">PageSpeed 98/100</span>
         </div>
@@ -37,9 +37,29 @@ const FloatingIndicators: React.FC = () => {
           delay: 1
         }}
       >
-        <div className="flex items-center gap-2 bg-primary/10 px-2 py-1 rounded-full">
+        <div className="flex items-center gap-2 glass-panel px-2 py-1 rounded-full">
           <Check size={12} className="text-primary" />
           <span className="text-xs">SEO Score +45%</span>
+        </div>
+      </motion.div>
+      
+      {/* Добавим еще один плавающий индикатор */}
+      <motion.div 
+        className="absolute top-40 right-40 opacity-30"
+        animate={{ 
+          y: [0, -8, 0],
+          opacity: [0.3, 0.5, 0.3]
+        }}
+        transition={{
+          duration: 3.5,
+          repeat: Infinity,
+          repeatType: "reverse",
+          delay: 1.5
+        }}
+      >
+        <div className="flex items-center gap-2 glass-panel px-2 py-1 rounded-full">
+          <Check size={12} className="text-primary" />
+          <span className="text-xs">Конверсия +22%</span>
         </div>
       </motion.div>
     </div>

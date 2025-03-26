@@ -4,7 +4,7 @@
 @layer components {
   /* Card styles */
   .neo-card {
-    @apply bg-card/70 backdrop-blur-sm border border-border rounded-xl shadow-lg;
+    @apply bg-card/70 backdrop-blur-sm border border-border rounded-xl shadow-lg shadow-primary/5;
   }
   
   .neo-glass {
@@ -17,7 +17,7 @@
 
   /* Button styles for different sections */
   .btn-hero {
-    @apply bg-primary hover:bg-primary/90 text-primary-foreground py-3 px-6 rounded-lg shadow-lg;
+    @apply bg-primary hover:bg-primary/90 text-primary-foreground py-3 px-6 rounded-lg shadow-lg shadow-primary/25;
   }
   
   .btn-accent {
@@ -35,15 +35,15 @@
 
   /* Status indicators */
   .status-good {
-    @apply text-green-500 bg-green-500/10 border-green-500/20;
+    @apply text-[#22c55e] bg-[#22c55e]/10 border-[#22c55e]/20;
   }
   
   .status-warning {
-    @apply text-amber-500 bg-amber-500/10 border-amber-500/20;
+    @apply text-[#f59e0b] bg-[#f59e0b]/10 border-[#f59e0b]/20;
   }
   
   .status-error {
-    @apply text-red-500 bg-red-500/10 border-red-500/20;
+    @apply text-[#ef4444] bg-[#ef4444]/10 border-[#ef4444]/20;
   }
 
   /* Badge styles */
@@ -88,5 +88,30 @@
   /* Animation helpers */
   .animate-pulse-slow {
     animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+
+  /* New modern UI classes */
+  .glass-panel {
+    @apply bg-card/60 backdrop-blur-md border border-primary/10 rounded-xl shadow-lg shadow-primary/5;
+  }
+
+  .glass-button {
+    @apply bg-primary/90 hover:bg-primary text-primary-foreground backdrop-blur-sm border border-primary/20 rounded-lg transition-all duration-300 shadow-md hover:shadow-lg hover:shadow-primary/20;
+  }
+
+  .gradient-border {
+    @apply relative rounded-xl border-transparent p-[1px] bg-gradient-to-r from-primary/40 via-primary to-primary/40;
+  }
+
+  .gradient-border > * {
+    @apply rounded-[calc(0.75rem-1px)] bg-card;
+  }
+
+  .highlight-text {
+    @apply relative inline-block;
+  }
+
+  .highlight-text::after {
+    @apply content-[''] absolute -bottom-1 left-0 w-full h-[2px] bg-primary/60 rounded-full;
   }
 }
