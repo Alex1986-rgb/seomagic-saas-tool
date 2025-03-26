@@ -3,13 +3,15 @@ import React, { useState, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { 
   Play, Pause, Volume2, VolumeX, Maximize, 
-  Video as VideoIcon, Star, ArrowRight
+  Video as VideoIcon, Star, ArrowRight, Download
 } from 'lucide-react';
 import { Button } from './ui/button';
+import { toast } from 'sonner';
 
 const VideoDemo: React.FC = () => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(true);
+  const [progress, setProgress] = useState(0);
   const videoRef = useRef<HTMLVideoElement>(null);
 
   const togglePlay = () => {
@@ -17,7 +19,10 @@ const VideoDemo: React.FC = () => {
       if (isPlaying) {
         videoRef.current.pause();
       } else {
-        videoRef.current.play();
+        videoRef.current.play().catch(error => {
+          console.error("Error playing video:", error);
+          toast.error("Не удалось воспроизвести видео");
+        });
       }
       setIsPlaying(!isPlaying);
     }
@@ -35,9 +40,29 @@ const VideoDemo: React.FC = () => {
       if (document.fullscreenElement) {
         document.exitFullscreen();
       } else {
-        videoRef.current.requestFullscreen();
+        videoRef.current.requestFullscreen().catch(error => {
+          console.error("Error entering fullscreen:", error);
+          toast.error("Не удалось открыть полноэкранный режим");
+        });
       }
     }
+  };
+
+  const handleTimeUpdate = () => {
+    if (videoRef.current) {
+      const currentProgress = (videoRef.current.currentTime / videoRef.current.duration) * 100;
+      setProgress(currentProgress);
+    }
+  };
+
+  const handleDownload = () => {
+    const link = document.createElement('a');
+    link.href = '/video/seo-demo.mp4';
+    link.download = 'seo-demo.mp4';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    toast.success("Скачивание видео началось");
   };
 
   return (
@@ -75,10 +100,10 @@ const VideoDemo: React.FC = () => {
           transition={{ duration: 0.6 }}
           className="relative max-w-4xl mx-auto rounded-xl overflow-hidden shadow-2xl"
         >
-          <div className="aspect-video relative overflow-hidden border border-border/50 bg-black rounded-xl">
+          <div className="aspect-video relative overflow-hidden border border-border/50 bg-black rounded-xl video-container">
             {/* Video Overlay when paused */}
             {!isPlaying && (
-              <div className="absolute inset-0 bg-black/40 flex items-center justify-center z-10">
+              <div className="absolute inset-0 bg-black/40 flex items-center justify-center z-10 video-overlay opacity-100">
                 <Button 
                   onClick={togglePlay}
                   className="w-16 h-16 rounded-full bg-primary hover:bg-primary/90 text-white"
@@ -96,14 +121,23 @@ const VideoDemo: React.FC = () => {
               poster="/img/video-poster.jpg"
               muted={isMuted}
               playsInline
+              onTimeUpdate={handleTimeUpdate}
               onEnded={() => setIsPlaying(false)}
             >
               <source src="/video/seo-demo.mp4" type="video/mp4" />
               Ваш браузер не поддерживает видео
             </video>
 
+            {/* Video Progress Bar */}
+            <div className="absolute bottom-14 left-0 w-full h-1 bg-gray-700 z-20">
+              <div 
+                className="h-full bg-primary"
+                style={{ width: `${progress}%` }}
+              ></div>
+            </div>
+
             {/* Video Controls */}
-            <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 to-transparent flex items-center justify-between z-20">
+            <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 to-transparent flex items-center justify-between z-20 video-controls">
               <Button
                 onClick={togglePlay}
                 variant="ghost" 
@@ -121,6 +155,15 @@ const VideoDemo: React.FC = () => {
                   className="text-white hover:bg-white/20"
                 >
                   {isMuted ? <VolumeX className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />}
+                </Button>
+                
+                <Button
+                  onClick={handleDownload}
+                  variant="ghost" 
+                  size="icon"
+                  className="text-white hover:bg-white/20"
+                >
+                  <Download className="w-5 h-5" />
                 </Button>
                 
                 <Button
