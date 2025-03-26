@@ -1,9 +1,10 @@
 
-import React, { useState } from 'react';
-import { motion } from 'framer-motion';
+import React, { useState, useRef, useEffect } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
 import { Share2, Facebook, Twitter, Linkedin, Mail, Link, Check, X } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
+import { useOnClickOutside } from "@/hooks/use-click-outside";
 
 interface SocialShareButtonsProps {
   url: string;
@@ -14,7 +15,32 @@ interface SocialShareButtonsProps {
 const SocialShareButtons: React.FC<SocialShareButtonsProps> = ({ url, title, summary = '' }) => {
   const [linkCopied, setLinkCopied] = useState(false);
   const [showShareOptions, setShowShareOptions] = useState(false);
+  const shareMenuRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
+
+  // Close the share menu when clicking outside
+  useOnClickOutside(shareMenuRef, () => {
+    if (showShareOptions) {
+      setShowShareOptions(false);
+    }
+  });
+
+  // Close the share menu when ESC key is pressed
+  useEffect(() => {
+    const handleEsc = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setShowShareOptions(false);
+      }
+    };
+    
+    if (showShareOptions) {
+      window.addEventListener('keydown', handleEsc);
+    }
+    
+    return () => {
+      window.removeEventListener('keydown', handleEsc);
+    };
+  }, [showShareOptions]);
 
   // Подготовка закодированных параметров для шеринга
   const encodedUrl = encodeURIComponent(url);
@@ -73,6 +99,9 @@ const SocialShareButtons: React.FC<SocialShareButtonsProps> = ({ url, title, sum
       title: "Поделились результатами",
       description: `Спасибо, что поделились результатами аудита на ${platform}!`
     });
+    
+    // Close the share menu after sharing
+    setShowShareOptions(false);
   };
 
   // Анимация кнопок
@@ -100,123 +129,126 @@ const SocialShareButtons: React.FC<SocialShareButtonsProps> = ({ url, title, sum
         <span>Поделиться</span>
       </Button>
 
-      {showShareOptions && (
-        <motion.div
-          className="absolute top-full right-0 mt-2 p-3 bg-background shadow-lg rounded-lg border z-10 w-48"
-          initial={{ opacity: 0, scale: 0.9, y: -10 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.9, y: -10 }}
-          transition={{ duration: 0.2 }}
-        >
-          <div className="flex justify-between items-center mb-2">
-            <span className="text-sm font-medium">Поделиться</span>
-            <Button 
-              variant="ghost" 
-              size="icon"
-              className="h-6 w-6"
-              onClick={() => setShowShareOptions(false)}
-            >
-              <X className="h-3 w-3" />
-            </Button>
-          </div>
-          
-          <div className="space-y-2">
-            <motion.div
-              custom={0}
-              variants={buttonVariants}
-              initial="hidden"
-              animate="visible"
-            >
-              <Button
-                variant="outline"
-                size="sm"
-                className="w-full justify-start gap-2 bg-blue-50 hover:bg-blue-100 text-blue-600 border-blue-200"
-                onClick={shareToFacebook}
+      <AnimatePresence>
+        {showShareOptions && (
+          <motion.div
+            ref={shareMenuRef}
+            className="absolute top-full right-0 mt-2 p-3 bg-background shadow-lg rounded-lg border z-10 w-48"
+            initial={{ opacity: 0, scale: 0.9, y: -10 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.9, y: -10 }}
+            transition={{ duration: 0.2 }}
+          >
+            <div className="flex justify-between items-center mb-2">
+              <span className="text-sm font-medium">Поделиться</span>
+              <Button 
+                variant="ghost" 
+                size="icon"
+                className="h-6 w-6"
+                onClick={() => setShowShareOptions(false)}
               >
-                <Facebook className="h-4 w-4" />
-                Facebook
+                <X className="h-3 w-3" />
               </Button>
-            </motion.div>
+            </div>
             
-            <motion.div
-              custom={1}
-              variants={buttonVariants}
-              initial="hidden"
-              animate="visible"
-            >
-              <Button
-                variant="outline"
-                size="sm"
-                className="w-full justify-start gap-2 bg-sky-50 hover:bg-sky-100 text-sky-600 border-sky-200"
-                onClick={shareToTwitter}
+            <div className="space-y-2">
+              <motion.div
+                custom={0}
+                variants={buttonVariants}
+                initial="hidden"
+                animate="visible"
               >
-                <Twitter className="h-4 w-4" />
-                Twitter
-              </Button>
-            </motion.div>
-            
-            <motion.div
-              custom={2}
-              variants={buttonVariants}
-              initial="hidden"
-              animate="visible"
-            >
-              <Button
-                variant="outline"
-                size="sm"
-                className="w-full justify-start gap-2 bg-blue-50 hover:bg-blue-100 text-blue-700 border-blue-200"
-                onClick={shareToLinkedin}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="w-full justify-start gap-2 bg-blue-50 hover:bg-blue-100 text-blue-600 border-blue-200"
+                  onClick={shareToFacebook}
+                >
+                  <Facebook className="h-4 w-4" />
+                  Facebook
+                </Button>
+              </motion.div>
+              
+              <motion.div
+                custom={1}
+                variants={buttonVariants}
+                initial="hidden"
+                animate="visible"
               >
-                <Linkedin className="h-4 w-4" />
-                LinkedIn
-              </Button>
-            </motion.div>
-            
-            <motion.div
-              custom={3}
-              variants={buttonVariants}
-              initial="hidden"
-              animate="visible"
-            >
-              <Button
-                variant="outline"
-                size="sm"
-                className="w-full justify-start gap-2 bg-red-50 hover:bg-red-100 text-red-600 border-red-200"
-                onClick={shareByEmail}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="w-full justify-start gap-2 bg-sky-50 hover:bg-sky-100 text-sky-600 border-sky-200"
+                  onClick={shareToTwitter}
+                >
+                  <Twitter className="h-4 w-4" />
+                  Twitter
+                </Button>
+              </motion.div>
+              
+              <motion.div
+                custom={2}
+                variants={buttonVariants}
+                initial="hidden"
+                animate="visible"
               >
-                <Mail className="h-4 w-4" />
-                Email
-              </Button>
-            </motion.div>
-            
-            <motion.div
-              custom={4}
-              variants={buttonVariants}
-              initial="hidden"
-              animate="visible"
-            >
-              <Button
-                variant="outline"
-                size="sm"
-                className="w-full justify-start gap-2"
-                onClick={copyToClipboard}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="w-full justify-start gap-2 bg-blue-50 hover:bg-blue-100 text-blue-700 border-blue-200"
+                  onClick={shareToLinkedin}
+                >
+                  <Linkedin className="h-4 w-4" />
+                  LinkedIn
+                </Button>
+              </motion.div>
+              
+              <motion.div
+                custom={3}
+                variants={buttonVariants}
+                initial="hidden"
+                animate="visible"
               >
-                {linkCopied ? (
-                  <>
-                    <Check className="h-4 w-4 text-green-500" />
-                    <span className="text-green-500">Скопировано</span>
-                  </>
-                ) : (
-                  <>
-                    <Link className="h-4 w-4" />
-                    Копировать ссылку
-                  </>
-                )}
-              </Button>
-            </motion.div>
-          </div>
-        </motion.div>
-      )}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="w-full justify-start gap-2 bg-red-50 hover:bg-red-100 text-red-600 border-red-200"
+                  onClick={shareByEmail}
+                >
+                  <Mail className="h-4 w-4" />
+                  Email
+                </Button>
+              </motion.div>
+              
+              <motion.div
+                custom={4}
+                variants={buttonVariants}
+                initial="hidden"
+                animate="visible"
+              >
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="w-full justify-start gap-2"
+                  onClick={copyToClipboard}
+                >
+                  {linkCopied ? (
+                    <>
+                      <Check className="h-4 w-4 text-green-500" />
+                      <span className="text-green-500">Скопировано</span>
+                    </>
+                  ) : (
+                    <>
+                      <Link className="h-4 w-4" />
+                      Копировать ссылку
+                    </>
+                  )}
+                </Button>
+              </motion.div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
