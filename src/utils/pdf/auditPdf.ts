@@ -5,19 +5,27 @@ import { AuditData } from '@/types/audit';
 import html2canvas from 'html2canvas';
 import { OptimizationItem } from '@/components/audit/results/components/OptimizationCost';
 
-interface GeneratePdfReportOptions {
+export interface GenerateAuditPdfOptions {
   auditData: AuditData;
   url: string;
   recommendations?: any;
   pageStats?: any;
   optimizationCost?: number;
   optimizationItems?: OptimizationItem[];
-  date: string;
+  date?: string;
 }
 
 // Функция для генерации полного PDF-отчета
-export const generateAuditPdf = async (options: GeneratePdfReportOptions): Promise<Blob> => {
-  const { auditData, url, recommendations, pageStats, optimizationCost, optimizationItems, date } = options;
+export const generateAuditPdf = async (options: GenerateAuditPdfOptions): Promise<Blob> => {
+  const { 
+    auditData, 
+    url, 
+    recommendations, 
+    pageStats, 
+    optimizationCost, 
+    optimizationItems, 
+    date = auditData.date
+  } = options;
   
   // Создаем новый PDF документ
   const doc = new jsPDF({
@@ -162,9 +170,9 @@ export const generateAuditPdf = async (options: GeneratePdfReportOptions): Promi
       `${new Intl.NumberFormat('ru-RU').format(item.totalPrice)} ₽`
     ]);
     
-    yPosition = 58;
+    let costTableY = 58;
     autoTable(doc, {
-      startY: yPosition,
+      startY: costTableY,
       head: [['Тип оптимизации', 'Количество', 'Цена за единицу', 'Итого']],
       body: costDetailsData,
       theme: 'grid',
@@ -173,9 +181,9 @@ export const generateAuditPdf = async (options: GeneratePdfReportOptions): Promi
     });
     
     // Добавляем перечень что включено
-    yPosition = (doc as any).lastAutoTable.finalY + 15;
+    let includesY = (doc as any).lastAutoTable.finalY + 15;
     doc.setFontSize(14);
-    doc.text('Оптимизация включает:', 15, yPosition);
+    doc.text('Оптимизация включает:', 15, includesY);
     
     const includedItems = [
       'Оптимизация всех мета-тегов',
@@ -187,7 +195,7 @@ export const generateAuditPdf = async (options: GeneratePdfReportOptions): Promi
       'Исправление URL (замена подчеркиваний на дефисы)'
     ];
     
-    let yPos = yPosition + 5;
+    let yPos = includesY + 5;
     includedItems.forEach(item => {
       doc.setFontSize(12);
       doc.text(`• ${item}`, 20, yPos);
@@ -205,45 +213,45 @@ export const generateAuditPdf = async (options: GeneratePdfReportOptions): Promi
   doc.text('Рекомендации по оптимизации', 15, 15);
   
   doc.setTextColor(0, 0, 0);
-  let yPosition = 30;
+  let recPosition = 30;
   
   if (recommendations) {
     Object.entries(recommendations).forEach(([category, categoryData]: [string, any], index) => {
       // Проверяем, нужно ли добавить новую страницу
-      if (yPosition > 250) {
+      if (recPosition > 250) {
         doc.addPage();
-        yPosition = 30;
+        recPosition = 30;
       }
       
       doc.setFontSize(14);
-      doc.text(`${index + 1}. ${category} (Оценка: ${categoryData.score}/100)`, 15, yPosition);
-      yPosition += 10;
+      doc.text(`${index + 1}. ${category} (Оценка: ${categoryData.score}/100)`, 15, recPosition);
+      recPosition += 10;
       
       if (categoryData.issues && categoryData.issues.length > 0) {
         categoryData.issues.slice(0, 5).forEach((issue: any, issueIndex: number) => {
           doc.setFontSize(12);
-          doc.text(`${index + 1}.${issueIndex + 1}. ${issue.title}`, 20, yPosition);
-          yPosition += 7;
+          doc.text(`${index + 1}.${issueIndex + 1}. ${issue.title}`, 20, recPosition);
+          recPosition += 7;
           
           doc.setFontSize(10);
           const descriptionLines = doc.splitTextToSize(issue.description, 170);
           descriptionLines.forEach((line: string) => {
-            doc.text(line, 25, yPosition);
-            yPosition += 5;
+            doc.text(line, 25, recPosition);
+            recPosition += 5;
           });
           
-          yPosition += 5;
+          recPosition += 5;
         });
       } else {
         doc.setFontSize(12);
-        doc.text('Нет обнаруженных проблем в этой категории', 20, yPosition);
-        yPosition += 10;
+        doc.text('Нет обнаруженных проблем в этой категории', 20, recPosition);
+        recPosition += 10;
       }
       
-      yPosition += 5;
+      recPosition += 5;
     });
   } else {
-    doc.text('Нет доступных рекомендаций', 15, yPosition);
+    doc.text('Нет доступных рекомендаций', 15, recPosition);
   }
   
   // Добавляем информацию о контактах
