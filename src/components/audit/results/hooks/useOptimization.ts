@@ -1,8 +1,7 @@
-
 import { useState } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import { createOptimizedSite } from '@/services/auditService';
-import { OptimizationItem } from '../components/OptimizationCost';
+import { OptimizationItem } from '../components/optimization';
 
 interface PageContent {
   url: string;

@@ -1,9 +1,8 @@
-
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { AuditData } from '@/types/audit';
 import html2canvas from 'html2canvas';
-import { OptimizationItem } from '@/components/audit/results/components/OptimizationCost';
+import { OptimizationItem } from '@/components/audit/results/components/optimization';
 
 export interface GenerateAuditPdfOptions {
   auditData: AuditData;
