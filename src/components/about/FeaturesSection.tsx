@@ -1,10 +1,43 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Award, Search, FileText, TrendingUp } from 'lucide-react';
+import { Award, Search, FileText, TrendingUp, Globe, Star } from 'lucide-react';
 import FeatureCard from './FeatureCard';
 
 const FeaturesSection = () => {
+  const features = [
+    {
+      title: "Глубокий анализ", 
+      description: "Комплексная проверка более 100 параметров SEO-оптимизации вашего сайта",
+      icon: <Search className="w-6 h-6" />
+    },
+    {
+      title: "Умные рекомендации", 
+      description: "Автоматически генерируемые рекомендации на основе анализа вашего сайта",
+      icon: <FileText className="w-6 h-6" />
+    },
+    {
+      title: "Отслеживание прогресса", 
+      description: "Мониторинг изменений и эффективности внедренных оптимизаций",
+      icon: <TrendingUp className="w-6 h-6" />
+    },
+    {
+      title: "Международный сервис", 
+      description: "Анализ сайтов на различных языках с учетом региональных особенностей",
+      icon: <Globe className="w-6 h-6" />
+    },
+    {
+      title: "Экспертная поддержка", 
+      description: "Помощь экспертов по SEO для решения сложных проблем оптимизации",
+      icon: <Star className="w-6 h-6" />
+    },
+    {
+      title: "Качество сервиса", 
+      description: "Высокий уровень обслуживания и постоянное улучшение функциональности",
+      icon: <Award className="w-6 h-6" />
+    }
+  ];
+
   return (
     <motion.section 
       initial={{ opacity: 0, y: 20 }}
@@ -22,22 +55,15 @@ const FeaturesSection = () => {
           Наш сервис предоставляет комплексное решение для SEO-оптимизации
         </p>
       </div>
-      <div className="grid md:grid-cols-3 gap-8">
-        <FeatureCard 
-          title="Глубокий анализ" 
-          description="Комплексная проверка более 100 параметров SEO-оптимизации вашего сайта"
-          icon={<Search className="w-6 h-6" />}
-        />
-        <FeatureCard 
-          title="Умные рекомендации" 
-          description="Автоматически генерируемые рекомендации на основе анализа вашего сайта"
-          icon={<FileText className="w-6 h-6" />}
-        />
-        <FeatureCard 
-          title="Отслеживание прогресса" 
-          description="Мониторинг изменений и эффективности внедренных оптимизаций"
-          icon={<TrendingUp className="w-6 h-6" />}
-        />
+      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+        {features.map((feature, index) => (
+          <FeatureCard 
+            key={index}
+            title={feature.title} 
+            description={feature.description}
+            icon={feature.icon}
+          />
+        ))}
       </div>
     </motion.section>
   );
