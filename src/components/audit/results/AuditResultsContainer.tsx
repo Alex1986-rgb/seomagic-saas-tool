@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import AuditSummary from '@/components/AuditSummary';
@@ -25,6 +26,7 @@ const AuditResultsContainer: React.FC<AuditResultsContainerProps> = ({ url }) =>
     isRefreshing,
     isScanning,
     scanDetails,
+    pageStats,
     loadAuditData
   } = useAuditData(url);
 
@@ -85,6 +87,7 @@ const AuditResultsContainer: React.FC<AuditResultsContainerProps> = ({ url }) =>
           <PageCountDisplay 
             pageCount={auditData.pageCount} 
             isScanning={false}
+            pageStats={pageStats}
           />
         )}
         

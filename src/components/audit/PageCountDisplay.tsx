@@ -1,14 +1,33 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Files, FileSearch } from 'lucide-react';
+import { Files, FileSearch, Layers, FolderTree } from 'lucide-react';
+
+interface PageStatistics {
+  totalPages: number;
+  subpages?: Record<string, number>;
+  levels?: Record<number, number>;
+}
 
 interface PageCountDisplayProps {
   pageCount: number;
   isScanning: boolean;
+  pageStats?: PageStatistics;
 }
 
-const PageCountDisplay: React.FC<PageCountDisplayProps> = ({ pageCount, isScanning }) => {
+const PageCountDisplay: React.FC<PageCountDisplayProps> = ({ pageCount, isScanning, pageStats }) => {
+  // Translations for page types
+  const pageTypeTranslations: Record<string, string> = {
+    'product': 'Продукты',
+    'category': 'Категории',
+    'blog': 'Блог',
+    'contact': 'Контакты',
+    'about': 'О нас',
+    'faq': 'FAQ',
+    'terms': 'Условия',
+    'privacy': 'Приватность'
+  };
+
   return (
     <motion.div 
       className="p-4 border border-primary/20 rounded-lg mb-4 bg-card/50"
@@ -46,9 +65,41 @@ const PageCountDisplay: React.FC<PageCountDisplayProps> = ({ pageCount, isScanni
         )}
       </div>
       
-      {!isScanning && pageCount > 0 && (
-        <div className="mt-3 text-sm">
-          <p className="text-muted-foreground">
+      {!isScanning && pageCount > 0 && pageStats && (
+        <div className="mt-4 space-y-3">
+          {pageStats.subpages && Object.keys(pageStats.subpages).length > 0 && (
+            <div className="bg-primary/5 p-3 rounded-lg">
+              <div className="flex items-center mb-2">
+                <FolderTree className="h-4 w-4 text-primary mr-2" />
+                <h4 className="text-sm font-medium">Структура страниц</h4>
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                {Object.entries(pageStats.subpages).map(([type, count]) => (
+                  <div key={type} className="text-xs bg-background p-2 rounded border border-border">
+                    <span className="font-medium">{pageTypeTranslations[type] || type}:</span> {count} стр.
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+          
+          {pageStats.levels && Object.keys(pageStats.levels).length > 0 && (
+            <div className="bg-primary/5 p-3 rounded-lg">
+              <div className="flex items-center mb-2">
+                <Layers className="h-4 w-4 text-primary mr-2" />
+                <h4 className="text-sm font-medium">Глубина сайта</h4>
+              </div>
+              <div className="grid grid-cols-3 gap-2">
+                {Object.entries(pageStats.levels).map(([level, count]) => (
+                  <div key={level} className="text-xs bg-background p-2 rounded border border-border">
+                    <span className="font-medium">Уровень {level}:</span> {count} стр.
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+          
+          <p className="text-sm text-muted-foreground mt-2">
             Ценообразование формируется на основе количества страниц на сайте
           </p>
         </div>

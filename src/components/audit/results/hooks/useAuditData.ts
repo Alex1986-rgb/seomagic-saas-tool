@@ -4,6 +4,12 @@ import { useToast } from "@/hooks/use-toast";
 import { AuditData, RecommendationData, AuditHistoryData, ScanOptions } from '@/types/audit';
 import { fetchAuditData, fetchRecommendations, fetchAuditHistory, scanWebsite } from '@/services/auditService';
 
+interface PageStatistics {
+  totalPages: number;
+  subpages: Record<string, number>;
+  levels: Record<number, number>;
+}
+
 export const useAuditData = (url: string) => {
   const [isLoading, setIsLoading] = useState(true);
   const [loadingProgress, setLoadingProgress] = useState(0);
@@ -22,6 +28,7 @@ export const useAuditData = (url: string) => {
     totalPages: 0,
     currentUrl: ''
   });
+  const [pageStats, setPageStats] = useState<PageStatistics | undefined>(undefined);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -72,7 +79,10 @@ export const useAuditData = (url: string) => {
           }
         };
         
-        await scanWebsite(url, scanOptions);
+        const scanResult = await scanWebsite(url, scanOptions);
+        if (scanResult.success && scanResult.pageStats) {
+          setPageStats(scanResult.pageStats);
+        }
         setIsScanning(false);
       }
       
@@ -120,6 +130,7 @@ export const useAuditData = (url: string) => {
     isRefreshing,
     isScanning,
     scanDetails,
+    pageStats,
     loadAuditData,
     setIsRefreshing
   };

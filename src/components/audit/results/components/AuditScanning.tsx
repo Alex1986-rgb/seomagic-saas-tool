@@ -1,6 +1,7 @@
 
 import React from 'react';
-import { FileSearch } from 'lucide-react';
+import { FileSearch, FolderTree, Network } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 interface AuditScanningProps {
   url: string;
@@ -36,10 +37,34 @@ const AuditScanning: React.FC<AuditScanningProps> = ({ url, scanDetails }) => {
         </div>
         
         {scanDetails.currentUrl && (
-          <p className="text-xs text-muted-foreground truncate mb-4">
-            Сканирование: {scanDetails.currentUrl}
-          </p>
+          <div className="mb-4">
+            <p className="text-xs text-muted-foreground truncate mb-2">
+              Сканирование: {scanDetails.currentUrl}
+            </p>
+            <motion.div
+              className="flex items-center justify-center space-x-2"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.5 }}
+            >
+              <Network className="h-4 w-4 text-primary animate-pulse" />
+              <span className="text-xs">Исследуем структуру сайта</span>
+            </motion.div>
+          </div>
         )}
+        
+        <div className="grid grid-cols-2 gap-4 max-w-md mx-auto mt-6">
+          <div className="bg-primary/10 p-3 rounded-lg text-center">
+            <FolderTree className="h-5 w-5 text-primary mx-auto mb-2" />
+            <p className="text-sm font-medium">Структура сайта</p>
+            <p className="text-xs text-muted-foreground">Анализируем иерархию страниц</p>
+          </div>
+          <div className="bg-primary/10 p-3 rounded-lg text-center">
+            <FileSearch className="h-5 w-5 text-primary mx-auto mb-2" />
+            <p className="text-sm font-medium">Подстраницы</p>
+            <p className="text-xs text-muted-foreground">Находим все разделы сайта</p>
+          </div>
+        </div>
       </div>
     </div>
   );
