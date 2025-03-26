@@ -11,5 +11,5 @@
 /* Import utility styles */
 @import './utilities.css';
 
-/* Import animations */
-@import './animations.css';
+/* Import animation styles */
+@import './animations/index.css';

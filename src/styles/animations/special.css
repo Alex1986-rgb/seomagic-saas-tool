@@ -1,0 +1,108 @@
+
+/* Special-purpose animations */
+/* Progress bar animations */
+/* Progress animation */
+.progress-line {
+  position: relative;
+  height: 4px;
+  overflow: hidden;
+  background-color: rgba(var(--primary-rgb), 0.1);
+  border-radius: 4px;
+}
+
+.progress-line::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 50%;
+  background-color: rgba(var(--primary-rgb), 1);
+  animation: progressAnimate 2s infinite;
+  border-radius: 4px;
+}
+
+@keyframes progressAnimate {
+  0% {
+    left: -50%;
+  }
+  100% {
+    left: 100%;
+  }
+}
+
+/* Progress bar loader */
+@keyframes progressLoader {
+  0% {
+    width: 0%;
+  }
+  100% {
+    width: 100%;
+  }
+}
+
+.progress-loader {
+  position: relative;
+  height: 4px;
+  background-color: rgba(var(--primary-rgb), 0.1);
+  overflow: hidden;
+  border-radius: 2px;
+}
+
+.progress-loader::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  background-color: rgba(var(--primary-rgb), 1);
+  animation: progressLoader 2.5s ease-in-out forwards;
+}
+
+/* Spinner loader with gradient */
+.spinner-gradient {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 3px solid transparent;
+  border-top-color: rgba(var(--primary-rgb), 1);
+  border-right-color: rgba(var(--primary-rgb), 0.7);
+  border-bottom-color: rgba(var(--primary-rgb), 0.5);
+  animation: spinGradient 1s linear infinite;
+}
+
+@keyframes spinGradient {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Ripple animation */
+.ripple {
+  position: relative;
+  overflow: hidden;
+}
+
+.ripple::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 100px;
+  height: 100px;
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 50%;
+  transform: translate(-50%, -50%) scale(0);
+  animation: ripple 1.5s ease-out infinite;
+}
+
+@keyframes ripple {
+  0% {
+    transform: translate(-50%, -50%) scale(0);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(3);
+    opacity: 0;
+  }
+}

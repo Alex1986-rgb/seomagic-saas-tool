@@ -1,0 +1,45 @@
+
+/* Fade-related animations */
+.animate-in {
+  animation: fadeIn 0.5s ease forwards;
+}
+
+/* Staggered fade animations for lists and groups */
+.stagger-children > * {
+  @apply opacity-0;
+  animation: fadeIn 0.5s ease forwards;
+}
+
+.stagger-children > *:nth-child(1) { animation-delay: 0.1s; }
+.stagger-children > *:nth-child(2) { animation-delay: 0.2s; }
+.stagger-children > *:nth-child(3) { animation-delay: 0.3s; }
+.stagger-children > *:nth-child(4) { animation-delay: 0.4s; }
+.stagger-children > *:nth-child(5) { animation-delay: 0.5s; }
+.stagger-children > *:nth-child(6) { animation-delay: 0.6s; }
+
+/* Reveal list items with animation */
+.reveal-list > * {
+  opacity: 0;
+  transform: translateY(10px);
+}
+
+.reveal-list > *:nth-child(1) { animation: revealItem 0.5s 0.1s forwards; }
+.reveal-list > *:nth-child(2) { animation: revealItem 0.5s 0.2s forwards; }
+.reveal-list > *:nth-child(3) { animation: revealItem 0.5s 0.3s forwards; }
+.reveal-list > *:nth-child(4) { animation: revealItem 0.5s 0.4s forwards; }
+.reveal-list > *:nth-child(5) { animation: revealItem 0.5s 0.5s forwards; }
+.reveal-list > *:nth-child(6) { animation: revealItem 0.5s 0.6s forwards; }
+
+@keyframes revealItem {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Animation delay utility classes */
+.delay-100 { animation-delay: 0.1s !important; }
+.delay-200 { animation-delay: 0.2s !important; }
+.delay-300 { animation-delay: 0.3s !important; }
+.delay-400 { animation-delay: 0.4s !important; }
+.delay-500 { animation-delay: 0.5s !important; }

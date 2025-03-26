@@ -1,0 +1,9 @@
+
+/* Main animations index file */
+@import './basics.css';
+@import './fades.css';
+@import './scales.css';
+@import './movements.css';
+@import './pulses.css';
+@import './special.css';
+@import './interactive.css';
