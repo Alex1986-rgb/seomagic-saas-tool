@@ -26,7 +26,7 @@ const StarryBackground: React.FC<StarProps> = ({
       const group = document.createElement('div');
       group.className = `star-group star-group-${g}`;
       
-      // Create stars for this group
+      // Create top labels for this group
       for (let i = 0; i < starsPerGroup; i++) {
         const star = document.createElement('div');
         const size = Math.ceil(Math.random() * maxSize);
@@ -35,6 +35,10 @@ const StarryBackground: React.FC<StarProps> = ({
         // Random position
         star.style.left = `${Math.random() * 100}%`;
         star.style.top = `${Math.random() * 100}%`;
+        
+        // Set text content (ТОП + random number)
+        const topNumber = Math.floor(Math.random() * 100) + 1; // Random number between 1 and 100
+        star.textContent = `ТОП ${topNumber}`;
         
         // Add to group
         group.appendChild(star);

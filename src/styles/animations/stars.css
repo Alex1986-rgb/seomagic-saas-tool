@@ -13,11 +13,18 @@
 
 .star {
   position: absolute;
-  background-color: #fff;
+  background-color: transparent;
   border-radius: 50%;
   opacity: 0;
   animation: twinkle var(--twinkle-duration, 4s) ease-in-out infinite;
   animation-delay: var(--twinkle-delay, 0s);
+  color: rgba(255, 255, 255, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  text-shadow: 0 0 5px rgba(255, 255, 255, 0.3);
+  font-family: 'Arial', sans-serif;
 }
 
 @keyframes twinkle {
@@ -58,29 +65,33 @@
 
 /* Different star sizes */
 .star-size-1 {
-  width: 1px;
-  height: 1px;
+  width: 40px;
+  height: 20px;
   --star-opacity: 0.4;
   --twinkle-duration: 7s;
+  font-size: 10px;
 }
 
 .star-size-2 {
-  width: 2px;
-  height: 2px;
+  width: 50px;
+  height: 25px;
   --star-opacity: 0.6;
   --twinkle-duration: 6s;
+  font-size: 12px;
 }
 
 .star-size-3 {
-  width: 3px;
-  height: 3px;
+  width: 60px;
+  height: 30px;
   --star-opacity: 0.8;
   --twinkle-duration: 5s;
+  font-size: 14px;
 }
 
 .star-size-4 {
-  width: 4px;
-  height: 4px;
+  width: 70px;
+  height: 35px;
   --star-opacity: 0.9;
   --twinkle-duration: 4s;
+  font-size: 16px;
 }
