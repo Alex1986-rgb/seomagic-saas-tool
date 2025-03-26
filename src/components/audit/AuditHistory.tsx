@@ -51,7 +51,7 @@ const AuditHistory: React.FC<AuditHistoryProps> = ({ historyItems, onSelectAudit
     });
   };
 
-  // Handle dot click event
+  // Handle dot click event - properly typed to match Recharts expectations
   const handleDotClick = (data: any) => {
     if (onSelectAudit && data && data.id) {
       onSelectAudit(data.id);
@@ -127,9 +127,10 @@ const AuditHistory: React.FC<AuditHistoryProps> = ({ historyItems, onSelectAudit
                     fill="rgba(var(--primary-rgb), 0.1)" 
                     activeDot={{ 
                       r: 6, 
-                      onClick: (_, event) => {
-                        if (event && event.payload) {
-                          handleDotClick(event.payload);
+                      onClick: (dotData) => {
+                        // The dotData parameter already contains the chart data for this point
+                        if (dotData && dotData.id) {
+                          handleDotClick(dotData);
                         }
                       }
                     }} 
