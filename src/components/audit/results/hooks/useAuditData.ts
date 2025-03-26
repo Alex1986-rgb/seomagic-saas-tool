@@ -25,7 +25,7 @@ export const useAuditData = (url: string) => {
     currentUrl: string;
   }>({
     pagesScanned: 0,
-    totalPages: 250000, // Увеличиваем до 250000 страниц
+    totalPages: 250000, // Увеличено до 250000 страниц
     currentUrl: ''
   });
   const [pageStats, setPageStats] = useState<PageStatistics | undefined>(undefined);
@@ -65,7 +65,7 @@ export const useAuditData = (url: string) => {
         setIsScanning(true);
         
         const scanOptions: ScanOptions = {
-          maxPages: 250000, // Увеличиваем до 250000 страниц
+          maxPages: 250000, // Увеличено до 250000 страниц
           maxDepth: 4,
           followExternalLinks: false,
           checkMobile: true,
@@ -137,14 +137,30 @@ export const useAuditData = (url: string) => {
   const downloadSitemap = () => {
     if (sitemap) {
       const blob = new Blob([sitemap], { type: 'text/xml' });
-      const url = window.URL.createObjectURL(blob);
+      const downloadUrl = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
-      a.href = url;
-      a.download = `sitemap_${new URL(url.startsWith('http') ? url : `https://${url}`).hostname}.xml`;
+      a.href = downloadUrl;
+      
+      // Формируем имя файла из домена
+      let hostname;
+      try {
+        // Проверяем, что URL валидный, добавляем протокол, если нужно
+        hostname = new URL(url.startsWith('http') ? url : `https://${url}`).hostname;
+      } catch (error) {
+        // Если URL невалидный, используем безопасное имя файла
+        hostname = url.replace(/[^a-zA-Z0-9]/g, '_');
+      }
+      
+      a.download = `sitemap_${hostname}.xml`;
       document.body.appendChild(a);
       a.click();
-      window.URL.revokeObjectURL(url);
+      window.URL.revokeObjectURL(downloadUrl);
       document.body.removeChild(a);
+      
+      toast({
+        title: "Карта сайта скачана",
+        description: "XML-файл карты сайта успешно сохранен",
+      });
     } else {
       toast({
         title: "Карта сайта не найдена",
@@ -172,6 +188,6 @@ export const useAuditData = (url: string) => {
     sitemap,
     loadAuditData,
     setIsRefreshing,
-    downloadSitemap // Экспортируем новую функцию
+    downloadSitemap
   };
 };

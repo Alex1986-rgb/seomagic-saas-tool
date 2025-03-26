@@ -4,14 +4,14 @@ import autoTable from 'jspdf-autotable';
 import html2canvas from 'html2canvas';
 import { AuditData, AuditHistoryItem, AuditItemData } from '@/types/audit';
 
-// Function to generate PDF from audit data
+// Функция для генерации PDF из данных аудита
 export const generateAuditPDF = async (auditData: AuditData, url: string): Promise<void> => {
   const pdf = new jsPDF('p', 'mm', 'a4');
   const pageWidth = pdf.internal.pageSize.getWidth();
   const pageHeight = pdf.internal.pageSize.getHeight();
   const margin = 10;
   
-  // Add header with logo and title
+  // Добавляем заголовок с логотипом и названием
   pdf.setFillColor(245, 245, 245);
   pdf.rect(0, 0, pageWidth, 30, 'F');
   
@@ -20,7 +20,7 @@ export const generateAuditPDF = async (auditData: AuditData, url: string): Promi
   pdf.setTextColor(44, 62, 80);
   pdf.text('SEO Аудит', pageWidth / 2, 15, { align: 'center' });
   
-  // Add URL and date
+  // Добавляем URL и дату
   pdf.setFont('helvetica', 'normal');
   pdf.setFontSize(12);
   pdf.setTextColor(100, 100, 100);
@@ -28,7 +28,7 @@ export const generateAuditPDF = async (auditData: AuditData, url: string): Promi
   pdf.text(`Дата: ${new Date(auditData.date).toLocaleDateString('ru-RU')}`, margin, 47);
   pdf.text(`ID аудита: ${auditData.id}`, margin, 54);
   
-  // Add overall score
+  // Добавляем общий рейтинг
   pdf.setFillColor(230, 240, 255);
   pdf.rect(margin, 60, pageWidth - margin * 2, 25, 'F');
   pdf.setFontSize(14);
@@ -43,7 +43,7 @@ export const generateAuditPDF = async (auditData: AuditData, url: string): Promi
   pdf.setTextColor(scoreColor[0], scoreColor[1], scoreColor[2]);
   pdf.text(`${auditData.score}/100`, pageWidth / 2, 80, { align: 'center' });
   
-  // Add issues summary
+  // Добавляем сводку проблем
   pdf.setFontSize(14);
   pdf.setTextColor(44, 62, 80);
   pdf.text('Обзор проблем', margin, 95);
@@ -69,7 +69,7 @@ export const generateAuditPDF = async (auditData: AuditData, url: string): Promi
     margin: { left: margin, right: margin }
   });
   
-  // Add category scores
+  // Добавляем оценки категорий
   pdf.setFontSize(14);
   pdf.setTextColor(44, 62, 80);
   pdf.text('Результаты по категориям', margin, 145);
@@ -96,13 +96,13 @@ export const generateAuditPDF = async (auditData: AuditData, url: string): Promi
     margin: { left: margin, right: margin }
   });
   
-  // Start a new page for detailed analysis
+  // Начинаем новую страницу для детального анализа
   pdf.addPage();
   
-  // Add detailed analysis for each category
+  // Добавляем детальный анализ для каждой категории
   let yPos = 20;
   
-  // SEO Details
+  // SEO Детали
   pdf.setFontSize(16);
   pdf.setTextColor(44, 62, 80);
   pdf.setFont('helvetica', 'bold');
@@ -112,13 +112,13 @@ export const generateAuditPDF = async (auditData: AuditData, url: string): Promi
   addCategoryDetails(pdf, auditData.details.seo.items, yPos, margin);
   yPos += (auditData.details.seo.items.length * 12) + 20;
   
-  // Check if we need a new page
+  // Проверяем, нужна ли новая страница
   if (yPos > pageHeight - 40) {
     pdf.addPage();
     yPos = 20;
   }
   
-  // Performance Details
+  // Детали производительности
   pdf.setFontSize(16);
   pdf.setTextColor(44, 62, 80);
   pdf.text('Анализ производительности', margin, yPos);
@@ -127,13 +127,13 @@ export const generateAuditPDF = async (auditData: AuditData, url: string): Promi
   addCategoryDetails(pdf, auditData.details.performance.items, yPos, margin);
   yPos += (auditData.details.performance.items.length * 12) + 20;
   
-  // Check if we need a new page
+  // Проверяем, нужна ли новая страница
   if (yPos > pageHeight - 40) {
     pdf.addPage();
     yPos = 20;
   }
   
-  // Content Details
+  // Детали контента
   pdf.setFontSize(16);
   pdf.setTextColor(44, 62, 80);
   pdf.text('Анализ контента', margin, yPos);
@@ -142,13 +142,13 @@ export const generateAuditPDF = async (auditData: AuditData, url: string): Promi
   addCategoryDetails(pdf, auditData.details.content.items, yPos, margin);
   yPos += (auditData.details.content.items.length * 12) + 20;
   
-  // Check if we need a new page
+  // Проверяем, нужна ли новая страница
   if (yPos > pageHeight - 40) {
     pdf.addPage();
     yPos = 20;
   }
   
-  // Technical Details
+  // Технические детали
   pdf.setFontSize(16);
   pdf.setTextColor(44, 62, 80);
   pdf.text('Технический анализ', margin, yPos);
@@ -156,7 +156,7 @@ export const generateAuditPDF = async (auditData: AuditData, url: string): Promi
   
   addCategoryDetails(pdf, auditData.details.technical.items, yPos, margin);
   
-  // Add footer with date and page numbers
+  // Добавляем колонтитулы с датой и номерами страниц
   const totalPages = pdf.getNumberOfPages();
   for (let i = 1; i <= totalPages; i++) {
     pdf.setPage(i);
@@ -166,11 +166,11 @@ export const generateAuditPDF = async (auditData: AuditData, url: string): Promi
     pdf.text(`Отчет создан: ${new Date().toLocaleDateString('ru-RU', { year: 'numeric', month: 'long', day: 'numeric' })}`, margin, pageHeight - 10);
   }
   
-  // Save the PDF
-  pdf.save(`SEO_Audit_${url.replace(/[^a-zA-Z0-9]/g, '_')}.pdf`);
+  // Сохраняем PDF
+  pdf.save(`SEO_Аудит_${url.replace(/[^a-zA-Z0-9]/g, '_')}.pdf`);
 };
 
-// Helper functions
+// Вспомогательные функции
 function getCategoryStatus(score: number): string {
   if (score >= 80) return 'Отлично';
   if (score >= 60) return 'Хорошо';
@@ -202,7 +202,7 @@ function addCategoryDetails(pdf: jsPDF, items: AuditItemData[], startY: number, 
   });
 }
 
-// Function to generate snapshot of chart as image
+// Функция для генерации снимка графика как изображения
 export const generateHistoryChartImage = async (chartContainer: HTMLElement): Promise<string> => {
   const canvas = await html2canvas(chartContainer, {
     scale: 2,
@@ -212,13 +212,13 @@ export const generateHistoryChartImage = async (chartContainer: HTMLElement): Pr
   return canvas.toDataURL('image/png');
 };
 
-// Function to generate PDF with history data
+// Функция для генерации PDF с данными истории
 export const generateHistoryPDF = async (historyItems: AuditHistoryItem[], url: string, chartContainer?: HTMLElement): Promise<void> => {
   const pdf = new jsPDF('p', 'mm', 'a4');
   const pageWidth = pdf.internal.pageSize.getWidth();
   const margin = 10;
   
-  // Add header with logo and title
+  // Добавляем заголовок с логотипом и названием
   pdf.setFillColor(245, 245, 245);
   pdf.rect(0, 0, pageWidth, 30, 'F');
   
@@ -227,7 +227,7 @@ export const generateHistoryPDF = async (historyItems: AuditHistoryItem[], url: 
   pdf.setTextColor(44, 62, 80);
   pdf.text('История SEO аудитов', pageWidth / 2, 15, { align: 'center' });
   
-  // Add URL
+  // Добавляем URL
   pdf.setFont('helvetica', 'normal');
   pdf.setFontSize(12);
   pdf.setTextColor(100, 100, 100);
@@ -235,7 +235,7 @@ export const generateHistoryPDF = async (historyItems: AuditHistoryItem[], url: 
   pdf.text(`Всего аудитов: ${historyItems.length}`, margin, 47);
   pdf.text(`Отчет создан: ${new Date().toLocaleDateString('ru-RU')}`, margin, 54);
   
-  // Add chart image if available
+  // Добавляем изображение графика, если доступно
   let yPos = 65;
   if (chartContainer) {
     try {
@@ -243,12 +243,12 @@ export const generateHistoryPDF = async (historyItems: AuditHistoryItem[], url: 
       pdf.addImage(chartImage, 'PNG', margin, yPos, pageWidth - margin * 2, 60);
       yPos += 70;
     } catch (error) {
-      console.error('Error generating chart image:', error);
+      console.error('Ошибка генерации изображения графика:', error);
       yPos += 10;
     }
   }
   
-  // Add history data table
+  // Добавляем таблицу данных истории
   pdf.setFontSize(14);
   pdf.setTextColor(44, 62, 80);
   pdf.text('История изменений', margin, yPos);
@@ -287,7 +287,7 @@ export const generateHistoryPDF = async (historyItems: AuditHistoryItem[], url: 
     margin: { left: margin, right: margin }
   });
   
-  // Add footer with page numbers
+  // Добавляем колонтитулы с номерами страниц
   const totalPages = pdf.getNumberOfPages();
   for (let i = 1; i <= totalPages; i++) {
     pdf.setPage(i);
@@ -296,6 +296,6 @@ export const generateHistoryPDF = async (historyItems: AuditHistoryItem[], url: 
     pdf.text(`Страница ${i} из ${totalPages}`, pageWidth - margin, pdf.internal.pageSize.getHeight() - 10);
   }
   
-  // Save the PDF
-  pdf.save(`SEO_History_${url.replace(/[^a-zA-Z0-9]/g, '_')}.pdf`);
+  // Сохраняем PDF
+  pdf.save(`SEO_История_${url.replace(/[^a-zA-Z0-9]/g, '_')}.pdf`);
 };

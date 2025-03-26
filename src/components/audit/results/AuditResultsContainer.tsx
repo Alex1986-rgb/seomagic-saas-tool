@@ -41,12 +41,8 @@ const AuditResultsContainer: React.FC<AuditResultsContainerProps> = ({ url }) =>
   };
 
   const handleSelectHistoricalAudit = (auditId: string) => {
-    // This could be moved to a separate function or context in a future refactoring
-    // For now, keeping the original implementation
-    // toast({
-    //   title: "Исторический аудит",
-    //   description: `Запрос данных аудита ID: ${auditId}`,
-    // });
+    // Это может быть перенесено в отдельную функцию или контекст в будущей рефакторизации
+    // Пока оставляем исходную реализацию
   };
 
   if (isLoading) {
@@ -91,6 +87,7 @@ const AuditResultsContainer: React.FC<AuditResultsContainerProps> = ({ url }) =>
             pageCount={auditData.pageCount} 
             isScanning={false}
             pageStats={pageStats}
+            onDownloadSitemap={sitemap ? downloadSitemap : undefined}
           />
         )}
         
