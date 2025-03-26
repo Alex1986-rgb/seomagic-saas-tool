@@ -21,6 +21,7 @@ const CostSummary: React.FC<CostSummaryProps> = ({ pageCount, optimizationCost }
       <div className="bg-primary/10 p-3 rounded-lg">
         <div className="text-sm text-muted-foreground">Стоимость за страницу</div>
         <div className="text-xl font-semibold">50 ₽</div>
+        <div className="text-xs text-muted-foreground">(разовый платёж)</div>
       </div>
       
       <div className="bg-primary/10 p-3 rounded-lg">
