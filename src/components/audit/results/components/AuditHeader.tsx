@@ -1,56 +1,70 @@
 
 import React from 'react';
-import { RefreshCw, Calendar, FileSearch, Download } from 'lucide-react';
 import { Button } from "@/components/ui/button";
-import AuditActionButtons from './AuditActionButtons';
-import ExportDropdown from '../../share/ExportDropdown';
+import { RefreshCw, Download, Scan, Text } from 'lucide-react';
 
 interface AuditHeaderProps {
   onRefresh: () => void;
   onDeepScan: () => void;
   isRefreshing: boolean;
   onDownloadSitemap?: () => void;
+  onTogglePrompt?: () => void;
+  showPrompt?: boolean;
 }
 
 const AuditHeader: React.FC<AuditHeaderProps> = ({ 
   onRefresh, 
   onDeepScan, 
-  isRefreshing,
-  onDownloadSitemap
+  isRefreshing, 
+  onDownloadSitemap,
+  onTogglePrompt,
+  showPrompt = false
 }) => {
   return (
-    <div className="flex flex-col md:flex-row items-start md:items-center justify-between bg-card/50 border border-border/50 rounded-lg p-4 mb-6">
-      <div className="flex flex-col">
-        <h2 className="text-xl font-semibold mb-1">Результаты аудита</h2>
-        <div className="flex items-center text-sm text-muted-foreground">
-          <Calendar className="h-4 w-4 mr-1" />
-          <span>{new Date().toLocaleDateString('ru-RU', { 
-            day: '2-digit', 
-            month: 'long', 
-            year: 'numeric' 
-          })}</span>
-        </div>
-      </div>
-      
-      <div className="flex mt-4 md:mt-0 gap-2 w-full md:w-auto justify-between md:justify-end">
-        {onDownloadSitemap && (
+    <div className="flex flex-wrap gap-2 justify-between items-center mb-4">
+      <div className="flex gap-2">
+        <Button 
+          onClick={onRefresh} 
+          variant="outline" 
+          className="gap-2" 
+          disabled={isRefreshing}
+        >
+          <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+          <span>Обновить</span>
+        </Button>
+        
+        <Button 
+          onClick={onDeepScan} 
+          variant="outline" 
+          className="gap-2"
+          disabled={isRefreshing}
+        >
+          <Scan className="h-4 w-4" />
+          <span>Глубокий анализ</span>
+        </Button>
+        
+        {onTogglePrompt && (
           <Button 
-            variant="outline" 
-            size="sm"
+            onClick={onTogglePrompt} 
+            variant={showPrompt ? "default" : "outline"} 
             className="gap-2"
-            onClick={onDownloadSitemap}
           >
-            <Download className="h-4 w-4" />
-            Скачать Sitemap
+            <Text className="h-4 w-4" />
+            <span>{showPrompt ? 'Скрыть промпт' : 'Оптимизация контента'}</span>
           </Button>
         )}
-        <AuditActionButtons
-          onRefresh={onRefresh}
-          onDeepScan={onDeepScan}
-          isRefreshing={isRefreshing}
-        />
-        <ExportDropdown />
       </div>
+      
+      {onDownloadSitemap && (
+        <Button 
+          onClick={onDownloadSitemap} 
+          variant="outline" 
+          className="gap-2"
+        >
+          <Download className="h-4 w-4" />
+          <span>Скачать Sitemap</span>
+        </Button>
+      )}
     </div>
   );
 };

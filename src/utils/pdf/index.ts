@@ -1,5 +1,6 @@
 
-// Export all PDF utilities from this index file
-export * from './auditPdf';
-export * from './historyPdf';
-export * from './helpers';
+import { generateAuditPdf } from './auditPdf';
+import { generateHistoryPdf } from './historyPdf';
+
+export const generatePdfReport = generateAuditPdf;
+export { generateHistoryPdf };

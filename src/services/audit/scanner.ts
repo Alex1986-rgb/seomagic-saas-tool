@@ -1,6 +1,8 @@
+
 import { ScanOptions } from "@/types/audit";
 import { faker } from '@faker-js/faker';
 import { toast } from "@/hooks/use-toast";
+import { OptimizationItem } from '@/components/audit/results/components/OptimizationCost';
 
 interface PageStatistics {
   totalPages: number;
@@ -25,7 +27,7 @@ interface PageContent {
 /**
  * Генерирует карту сайта XML на основе просканированных URL с дополнительной информацией
  */
-export const generateSitemap = (domain: string, pageCount: number, includeContent = false): string => {
+export const generateSitemap = (domain: string, pageCount: number, includeContent = true): string => {
   const baseUrl = domain.startsWith('http') ? domain : `https://${domain}`;
   let sitemap = '<?xml version="1.0" encoding="UTF-8"?>\n';
   
@@ -41,6 +43,17 @@ export const generateSitemap = (domain: string, pageCount: number, includeConten
   if (includeContent) {
     sitemap += `    <content:title>Главная страница ${domain}</content:title>\n`;
     sitemap += `    <content:meta name="description" content="Официальный сайт ${domain}"/>\n`;
+    sitemap += `    <content:body><![CDATA[
+      <h1>Добро пожаловать на сайт ${domain}</h1>
+      <p>${faker.lorem.paragraphs(3)}</p>
+      <h2>Наши услуги</h2>
+      <ul>
+        <li>Услуга 1</li>
+        <li>Услуга 2</li>
+        <li>Услуга 3</li>
+      </ul>
+      <p>${faker.lorem.paragraphs(2)}</p>
+    ]]></content:body>\n`;
   }
   sitemap += `  </url>\n`;
   
@@ -50,8 +63,21 @@ export const generateSitemap = (domain: string, pageCount: number, includeConten
   for (const type of pageTypes) {
     sitemap += `  <url>\n    <loc>${baseUrl}/${type}</loc>\n    <priority>0.8</priority>\n`;
     if (includeContent) {
-      sitemap += `    <content:title>${type.charAt(0).toUpperCase() + type.slice(1)} - ${domain}</content:title>\n`;
+      const pageTitle = `${type.charAt(0).toUpperCase() + type.slice(1)} - ${domain}`;
+      sitemap += `    <content:title>${pageTitle}</content:title>\n`;
       sitemap += `    <content:meta name="description" content="${faker.lorem.sentence(10)}"/>\n`;
+      sitemap += `    <content:meta name="keywords" content="${faker.lorem.words(6)}"/>\n`;
+      
+      // Добавляем примеры контента
+      sitemap += `    <content:body><![CDATA[
+        <h1>${pageTitle}</h1>
+        <p>${faker.lorem.paragraphs(3)}</p>
+        <h2>${faker.commerce.productAdjective()} ${faker.commerce.product()}</h2>
+        <div class="content-block">
+          <img src="/images/${type}-main.jpg" alt="${faker.lorem.words(4)}" />
+          <p>${faker.lorem.paragraphs(2)}</p>
+        </div>
+      ]]></content:body>\n`;
     }
     sitemap += `  </url>\n`;
   }
@@ -61,21 +87,52 @@ export const generateSitemap = (domain: string, pageCount: number, includeConten
   for (let i = 0; i < maxSamplePages; i++) {
     const pageType = faker.helpers.arrayElement(pageTypes);
     const slugPart = faker.lorem.slug(2);
-    sitemap += `  <url>\n    <loc>${baseUrl}/${pageType}/${slugPart}</loc>\n    <priority>0.6</priority>\n`;
+    const useUnderscore = Math.random() > 0.7; // 30% шанс использования подчеркиваний вместо дефисов
+    const slug = useUnderscore ? slugPart.replace(/-/g, '_') : slugPart;
+    
+    sitemap += `  <url>\n    <loc>${baseUrl}/${pageType}/${slug}</loc>\n    <priority>0.6</priority>\n`;
     
     if (includeContent) {
       const pageTitle = faker.commerce.productName();
+      const hasDescription = Math.random() > 0.3; // 70% шанс наличия мета-описания
+      const hasKeywords = Math.random() > 0.4; // 60% шанс наличия ключевых слов
+      const hasAltTags = Math.random() > 0.5; // 50% шанс наличия alt-тегов для изображений
+      const hasDuplicateContent = Math.random() > 0.8; // 20% шанс дублирования контента
+      
       sitemap += `    <content:title>${pageTitle}</content:title>\n`;
-      sitemap += `    <content:meta name="description" content="${faker.lorem.sentences(2)}"/>\n`;
+      
+      if (hasDescription) {
+        sitemap += `    <content:meta name="description" content="${faker.lorem.sentences(2)}"/>\n`;
+      }
+      
+      if (hasKeywords) {
+        sitemap += `    <content:meta name="keywords" content="${faker.lorem.words(5)}"/>\n`;
+      }
       
       // Добавляем примеры контента
-      sitemap += `    <content:body><![CDATA[
-        <h1>${pageTitle}</h1>
-        <p>${faker.lorem.paragraphs(3)}</p>
-        <h2>${faker.commerce.productAdjective()} ${faker.commerce.product()}</h2>
-        <p>${faker.lorem.paragraphs(2)}</p>
-        <img src="/images/${slugPart}.jpg" alt="${pageTitle}"/>
-      ]]></content:body>\n`;
+      if (hasDuplicateContent && i > 0) {
+        // Дублирование контента с предыдущей страницы
+        sitemap += `    <content:body><![CDATA[
+          <h1>${pageTitle}</h1>
+          <p>${faker.lorem.paragraphs(3)}</p>
+          <h2>${faker.commerce.productAdjective()} ${faker.commerce.product()}</h2>
+          <p>${faker.lorem.paragraphs(2)}</p>
+          <div class="duplicate-content">
+            <p>${faker.lorem.paragraphs(1)}</p>
+          </div>
+        ]]></content:body>\n`;
+      } else {
+        sitemap += `    <content:body><![CDATA[
+          <h1>${pageTitle}</h1>
+          <p>${faker.lorem.paragraphs(3)}</p>
+          <h2>${faker.commerce.productAdjective()} ${faker.commerce.product()}</h2>
+          <p>${faker.lorem.paragraphs(2)}</p>
+          ${hasAltTags 
+            ? `<img src="/images/${slug}.jpg" alt="${faker.lorem.words(4)}"/>`
+            : `<img src="/images/${slug}.jpg"/>`
+          }
+        ]]></content:body>\n`;
+      }
     }
     
     sitemap += `  </url>\n`;
@@ -107,7 +164,7 @@ export const collectPagesContent = async (
     },
     images: Array.from({ length: 5 }, (_, i) => ({
       src: `/img/home-${i}.jpg`,
-      alt: faker.lorem.words(3)
+      alt: Math.random() > 0.3 ? faker.lorem.words(3) : undefined
     }))
   });
   
@@ -116,19 +173,26 @@ export const collectPagesContent = async (
   for (let i = 0; i < maxSamplePages; i++) {
     const pageType = faker.helpers.arrayElement(pageTypes);
     const slugPart = faker.lorem.slug(2);
+    const useUnderscore = Math.random() > 0.7; // 30% шанс использования подчеркиваний вместо дефисов
+    const slug = useUnderscore ? slugPart.replace(/-/g, '_') : slugPart;
     const title = faker.commerce.productName();
     
+    // Определяем наличие метаданных и alt-тегов
+    const hasDescription = Math.random() > 0.3; // 70% шанс наличия мета-описания
+    const hasKeywords = Math.random() > 0.4; // 60% шанс наличия ключевых слов
+    const hasAltTags = Math.random() > 0.5; // 50% шанс наличия alt-тегов для изображений
+    
     pages.push({
-      url: `${baseUrl}/${pageType}/${slugPart}`,
+      url: `${baseUrl}/${pageType}/${slug}`,
       title,
       content: faker.lorem.paragraphs(4),
       meta: {
-        description: faker.lorem.sentences(1),
-        keywords: faker.lorem.words(5)
+        description: hasDescription ? faker.lorem.sentences(1) : undefined,
+        keywords: hasKeywords ? faker.lorem.words(5) : undefined
       },
       images: Array.from({ length: Math.floor(Math.random() * 8) + 1 }, (_, i) => ({
-        src: `/img/${pageType}-${slugPart}-${i}.jpg`,
-        alt: Math.random() > 0.3 ? faker.lorem.words(3) : undefined
+        src: `/img/${pageType}-${slug}-${i}.jpg`,
+        alt: hasAltTags ? faker.lorem.words(3) : undefined
       }))
     });
   }
@@ -148,6 +212,7 @@ export const scanWebsite = async (
   sitemap?: string;
   pagesContent?: PageContent[];
   optimizationCost?: number;
+  optimizationItems?: OptimizationItem[];
 }> => {
   // Симуляция сканирования сайта
   const { maxPages, maxDepth, onProgress } = options;
@@ -280,16 +345,26 @@ export const scanWebsite = async (
       }
     }
     
-    // Генерируем карту сайта XML
-    const sitemap = generateSitemap(domain, pageStats.totalPages);
+    // Генерируем карту сайта XML с контентом
+    const sitemap = generateSitemap(domain, pageStats.totalPages, true);
     
     // Собираем контент страниц для оптимизации
     const pagesContent = await collectPagesContent(domain, pageStats.totalPages);
     
-    // Рассчитываем стоимость оптимизации
-    const optimizationCost = calculateOptimizationCost(pageStats, pagesContent);
+    // Анализируем контент и рассчитываем метрики оптимизации
+    const {
+      optimizationCost,
+      optimizationItems
+    } = calculateOptimizationMetrics(pageStats, pagesContent);
     
-    return { success: true, pageStats, sitemap, pagesContent, optimizationCost };
+    return { 
+      success: true, 
+      pageStats, 
+      sitemap, 
+      pagesContent, 
+      optimizationCost,
+      optimizationItems
+    };
   } catch (error) {
     console.error('Ошибка сканирования сайта:', error);
     return { success: false, pageStats: { totalPages: 0, subpages: {}, levels: {} } };
@@ -297,60 +372,195 @@ export const scanWebsite = async (
 };
 
 /**
- * Рассчитывает стоимость оптимизации на основе анализа
+ * Анализирует контент и рассчитывает метрики оптимизации
  */
-const calculateOptimizationCost = (pageStats: PageStatistics, pagesContent?: PageContent[]): number => {
-  // Базовые ставки стоимости
-  const baseCost = 1000; // Базовая стоимость аудита
-  const perPageCost = 10; // Стоимость за страницу
-  const perImageCost = 5; // Стоимость за оптимизацию изображения
-  const perMetaCost = 15; // Стоимость за оптимизацию мета-тегов
+const calculateOptimizationMetrics = (
+  pageStats: PageStatistics, 
+  pagesContent?: PageContent[]
+): {
+  optimizationCost: number;
+  optimizationItems: OptimizationItem[];
+} => {
+  // Базовые цены
+  const basePagePrice = 500; // 500р за страницу
   
-  // Рассчитываем стоимость на основе количества страниц
-  let totalCost = baseCost;
+  // Цены по типам оптимизации
+  const pricePerMissingMetaDescription = 50;
+  const pricePerMissingMetaKeywords = 30;
+  const pricePerMissingAltTag = 20;
+  const pricePerUnderscoreUrl = 10;
+  const pricePerDuplicateContent = 200;
+  const pricePerContentRewrite = 150;
   
-  // Добавляем стоимость за количество страниц
-  totalCost += pageStats.totalPages * perPageCost;
+  let totalCost = 0;
+  const optimizationItems: OptimizationItem[] = [];
   
-  // Если есть контент страниц, учитываем детали
+  // Переменные для подсчета проблем
+  let missingMetaDescriptionCount = 0;
+  let missingMetaKeywordsCount = 0;
+  let missingAltTagsCount = 0;
+  let underscoreUrlCount = 0;
+  let duplicateContentCount = 0;
+  let contentToRewriteCount = 0;
+  
+  // Базовая стоимость за общее количество страниц
+  const totalPagesCount = pageStats.totalPages;
+  const basePagesCost = totalPagesCount * basePagePrice;
+  optimizationItems.push({
+    type: 'Базовая оптимизация страниц',
+    count: totalPagesCount,
+    pricePerUnit: basePagePrice,
+    totalPrice: basePagesCost,
+    description: 'Базовая оптимизация страниц включает общий технический аудит, проверку структуры и основные улучшения SEO'
+  });
+  totalCost += basePagesCost;
+  
+  // Анализируем контент страниц, если доступен
   if (pagesContent && pagesContent.length > 0) {
-    let missingMetaTags = 0;
-    let imagesWithoutAlt = 0;
+    const uniqueContents = new Set<string>();
     
-    // Анализируем каждую страницу
     pagesContent.forEach(page => {
-      // Проверяем мета-теги
-      if (!page.meta.description || page.meta.description.length < 50) {
-        missingMetaTags++;
-      }
-      if (!page.meta.keywords) {
-        missingMetaTags++;
+      // Проверка метаданных
+      if (!page.meta.description) {
+        missingMetaDescriptionCount++;
       }
       
-      // Проверяем alt-теги изображений
-      page.images.forEach(img => {
-        if (!img.alt) {
-          imagesWithoutAlt++;
+      if (!page.meta.keywords) {
+        missingMetaKeywordsCount++;
+      }
+      
+      // Проверка alt-тегов в изображениях
+      page.images.forEach(image => {
+        if (!image.alt) {
+          missingAltTagsCount++;
         }
       });
+      
+      // Проверка URL на подчеркивания
+      if (page.url.includes('_')) {
+        underscoreUrlCount++;
+      }
+      
+      // Проверка на дубликаты контента
+      const contentHash = page.content.slice(0, 200); // Используем первые 200 символов для упрощения
+      if (uniqueContents.has(contentHash)) {
+        duplicateContentCount++;
+      } else {
+        uniqueContents.add(contentHash);
+        
+        // Контент, который нужно переписать (примерно 70% уникального контента)
+        if (Math.random() > 0.3) {
+          contentToRewriteCount++;
+        }
+      }
     });
     
-    // Добавляем стоимость за оптимизацию мета-тегов и изображений
-    totalCost += missingMetaTags * perMetaCost;
-    totalCost += imagesWithoutAlt * perImageCost;
+    // Добавляем стоимость оптимизации мета-описаний
+    if (missingMetaDescriptionCount > 0) {
+      const metaDescriptionCost = missingMetaDescriptionCount * pricePerMissingMetaDescription;
+      optimizationItems.push({
+        type: 'Оптимизация мета-описаний',
+        count: missingMetaDescriptionCount,
+        pricePerUnit: pricePerMissingMetaDescription,
+        totalPrice: metaDescriptionCost,
+        description: 'Создание или улучшение мета-тегов description для лучшего отображения в поисковой выдаче'
+      });
+      totalCost += metaDescriptionCost;
+    }
+    
+    // Добавляем стоимость оптимизации ключевых слов
+    if (missingMetaKeywordsCount > 0) {
+      const metaKeywordsCost = missingMetaKeywordsCount * pricePerMissingMetaKeywords;
+      optimizationItems.push({
+        type: 'Оптимизация ключевых слов',
+        count: missingMetaKeywordsCount,
+        pricePerUnit: pricePerMissingMetaKeywords,
+        totalPrice: metaKeywordsCost,
+        description: 'Добавление или улучшение мета-тегов keywords с релевантными ключевыми словами'
+      });
+      totalCost += metaKeywordsCost;
+    }
+    
+    // Добавляем стоимость оптимизации alt-тегов
+    if (missingAltTagsCount > 0) {
+      const altTagsCost = missingAltTagsCount * pricePerMissingAltTag;
+      optimizationItems.push({
+        type: 'Оптимизация alt-тегов изображений',
+        count: missingAltTagsCount,
+        pricePerUnit: pricePerMissingAltTag,
+        totalPrice: altTagsCost,
+        description: 'Добавление атрибутов alt к изображениям для улучшения SEO и доступности'
+      });
+      totalCost += altTagsCost;
+    }
+    
+    // Добавляем стоимость оптимизации URL
+    if (underscoreUrlCount > 0) {
+      const urlCost = underscoreUrlCount * pricePerUnderscoreUrl;
+      optimizationItems.push({
+        type: 'Оптимизация URL (замена подчеркиваний)',
+        count: underscoreUrlCount,
+        pricePerUnit: pricePerUnderscoreUrl,
+        totalPrice: urlCost,
+        description: 'Замена подчеркиваний (_) на дефисы (-) в URL для лучшей SEO-оптимизации'
+      });
+      totalCost += urlCost;
+    }
+    
+    // Добавляем стоимость исправления дублей контента
+    if (duplicateContentCount > 0) {
+      const duplicateContentCost = duplicateContentCount * pricePerDuplicateContent;
+      optimizationItems.push({
+        type: 'Исправление дублей контента',
+        count: duplicateContentCount,
+        pricePerUnit: pricePerDuplicateContent,
+        totalPrice: duplicateContentCost,
+        description: 'Создание уникального контента для страниц с дублирующимся содержимым'
+      });
+      totalCost += duplicateContentCost;
+    }
+    
+    // Добавляем стоимость переписывания контента
+    if (contentToRewriteCount > 0) {
+      const contentRewriteCost = contentToRewriteCount * pricePerContentRewrite;
+      optimizationItems.push({
+        type: 'Оптимизация текстового контента',
+        count: contentToRewriteCount,
+        pricePerUnit: pricePerContentRewrite,
+        totalPrice: contentRewriteCost,
+        description: 'Улучшение и SEO-оптимизация существующего контента согласно лучшим практикам'
+      });
+      totalCost += contentRewriteCost;
+    }
   }
   
-  // Скидка для крупных сайтов
-  if (pageStats.totalPages > 1000) {
-    totalCost = totalCost * 0.85; // 15% скидка
-  } else if (pageStats.totalPages > 500) {
-    totalCost = totalCost * 0.9; // 10% скидка
-  } else if (pageStats.totalPages > 200) {
-    totalCost = totalCost * 0.95; // 5% скидка
+  // Скидки для больших проектов
+  let discountPercent = 0;
+  if (totalPagesCount > 1000) {
+    discountPercent = 15; // 15% скидка
+  } else if (totalPagesCount > 500) {
+    discountPercent = 10; // 10% скидка
+  } else if (totalPagesCount > 200) {
+    discountPercent = 5; // 5% скидка
   }
   
-  // Округляем до целого числа
-  return Math.round(totalCost);
+  if (discountPercent > 0) {
+    const discountAmount = Math.round(totalCost * (discountPercent / 100));
+    totalCost -= discountAmount;
+    
+    optimizationItems.push({
+      type: `Скидка за объем (${discountPercent}%)`,
+      count: 1,
+      pricePerUnit: -discountAmount,
+      totalPrice: -discountAmount,
+      description: `Скидка ${discountPercent}% от общей стоимости за большое количество страниц (${totalPagesCount})`
+    });
+  }
+  
+  return {
+    optimizationCost: Math.round(totalCost),
+    optimizationItems
+  };
 };
 
 /**

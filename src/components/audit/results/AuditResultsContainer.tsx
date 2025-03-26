@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import AuditSummary from '@/components/AuditSummary';
 import AuditLoading from '../AuditLoading';
@@ -11,12 +11,14 @@ import AuditHeader from './components/AuditHeader';
 import AuditScanning from './components/AuditScanning';
 import AuditRefreshing from './components/AuditRefreshing';
 import OptimizationCost from './components/OptimizationCost';
+import ContentOptimizationPrompt from './components/ContentOptimizationPrompt';
 
 interface AuditResultsContainerProps {
   url: string;
 }
 
 const AuditResultsContainer: React.FC<AuditResultsContainerProps> = ({ url }) => {
+  const [showPrompt, setShowPrompt] = useState(false);
   const {
     isLoading,
     loadingProgress,
@@ -30,10 +32,14 @@ const AuditResultsContainer: React.FC<AuditResultsContainerProps> = ({ url }) =>
     pageStats,
     sitemap,
     optimizationCost,
+    optimizationItems,
     isOptimized,
+    contentPrompt,
     loadAuditData,
     downloadSitemap,
-    downloadOptimizedSite
+    downloadOptimizedSite,
+    generatePdfReportFile,
+    setContentOptimizationPrompt
   } = useAuditData(url);
 
   const handleRefreshAudit = () => {
@@ -47,6 +53,10 @@ const AuditResultsContainer: React.FC<AuditResultsContainerProps> = ({ url }) =>
   const handleSelectHistoricalAudit = (auditId: string) => {
     // Это может быть перенесено в отдельную функцию или контекст в будущей рефакторизации
     // Пока оставляем исходную реализацию
+  };
+
+  const toggleContentPrompt = () => {
+    setShowPrompt(!showPrompt);
   };
 
   if (isLoading) {
@@ -84,7 +94,17 @@ const AuditResultsContainer: React.FC<AuditResultsContainerProps> = ({ url }) =>
           onDeepScan={handleDeepScan}
           isRefreshing={isRefreshing}
           onDownloadSitemap={sitemap ? downloadSitemap : undefined}
+          onTogglePrompt={toggleContentPrompt}
+          showPrompt={showPrompt}
         />
+        
+        {showPrompt && (
+          <ContentOptimizationPrompt 
+            prompt={contentPrompt} 
+            setPrompt={setContentOptimizationPrompt} 
+            className="mb-4"
+          />
+        )}
         
         {auditData.pageCount && (
           <PageCountDisplay 
@@ -102,6 +122,8 @@ const AuditResultsContainer: React.FC<AuditResultsContainerProps> = ({ url }) =>
             url={url}
             onDownloadOptimized={downloadOptimizedSite}
             isOptimized={isOptimized}
+            optimizationItems={optimizationItems}
+            onGeneratePdfReport={generatePdfReportFile}
             className="mb-4"
           />
         )}

@@ -3,6 +3,8 @@ import { useState, useEffect } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import { AuditData, RecommendationData, AuditHistoryData, ScanOptions } from '@/types/audit';
 import { fetchAuditData, fetchRecommendations, fetchAuditHistory, scanWebsite, createOptimizedSite } from '@/services/auditService';
+import { generatePdfReport } from '@/utils/pdfExport';
+import { OptimizationItem } from '../components/OptimizationCost';
 
 interface PageStatistics {
   totalPages: number;
@@ -46,7 +48,9 @@ export const useAuditData = (url: string) => {
   const [sitemap, setSitemap] = useState<string | undefined>(undefined);
   const [pagesContent, setPagesContent] = useState<PageContent[] | undefined>(undefined);
   const [optimizationCost, setOptimizationCost] = useState<number | undefined>(undefined);
+  const [optimizationItems, setOptimizationItems] = useState<OptimizationItem[]>([]);
   const [isOptimized, setIsOptimized] = useState(false);
+  const [contentPrompt, setContentPrompt] = useState<string>('');
   const { toast } = useToast();
 
   useEffect(() => {
@@ -118,6 +122,12 @@ export const useAuditData = (url: string) => {
           // Сохраняем стоимость оптимизации
           if (scanResult.optimizationCost) {
             setOptimizationCost(scanResult.optimizationCost);
+
+            // Создаем детализацию стоимости оптимизации
+            if (scanResult.optimizationItems) {
+              setOptimizationItems(scanResult.optimizationItems);
+            }
+            
             toast({
               title: "Расчет стоимости оптимизации",
               description: `Стоимость оптимизации сайта: ${new Intl.NumberFormat('ru-RU').format(scanResult.optimizationCost)} ₽`,
@@ -201,6 +211,66 @@ export const useAuditData = (url: string) => {
     }
   };
   
+  // Функция для генерации и скачивания PDF-отчета
+  const generatePdfReportFile = async () => {
+    if (!auditData || !url) {
+      toast({
+        title: "Недостаточно данных",
+        description: "Необходимо завершить аудит сайта",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    toast({
+      title: "Создание PDF отчета",
+      description: "Пожалуйста, подождите...",
+    });
+    
+    try {
+      const pdfBlob = await generatePdfReport({
+        auditData,
+        url,
+        recommendations: recommendations || undefined,
+        pageStats,
+        optimizationCost,
+        optimizationItems,
+        date: new Date().toISOString()
+      });
+      
+      if (!pdfBlob) throw new Error("Не удалось создать PDF");
+      
+      // Формируем имя файла из домена
+      let hostname;
+      try {
+        hostname = new URL(url.startsWith('http') ? url : `https://${url}`).hostname;
+      } catch (error) {
+        hostname = url.replace(/[^a-zA-Z0-9]/g, '_');
+      }
+      
+      const downloadUrl = window.URL.createObjectURL(pdfBlob);
+      const a = document.createElement('a');
+      a.href = downloadUrl;
+      a.download = `seo_audit_${hostname}_${new Date().toISOString().split('T')[0]}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(downloadUrl);
+      document.body.removeChild(a);
+      
+      toast({
+        title: "Готово!",
+        description: "PDF отчет успешно создан и скачан",
+      });
+    } catch (error) {
+      console.error('Ошибка при создании PDF отчета:', error);
+      toast({
+        title: "Ошибка",
+        description: "Не удалось создать PDF отчет",
+        variant: "destructive",
+      });
+    }
+  };
+  
   // Функция для скачивания оптимизированного сайта
   const downloadOptimizedSite = async () => {
     if (!url || !pagesContent) {
@@ -225,15 +295,27 @@ export const useAuditData = (url: string) => {
         hostname = url.replace(/[^a-zA-Z0-9]/g, '_');
       }
       
+      // Применяем промпт для улучшения контента, если он задан
+      let contentToOptimize = pagesContent;
+      if (contentPrompt) {
+        // Здесь будет логика для применения промпта к контенту
+        // В реальном приложении это может быть вызов API генерации текста
+        toast({
+          title: "Применение SEO-промпта",
+          description: "Оптимизируем контент согласно заданному промпту...",
+        });
+        
+        // Имитация обработки промпта (в реальности будет отправка на обработку)
+        await new Promise(resolve => setTimeout(resolve, 1500));
+      }
+      
       // В реальном приложении здесь будет вызов createOptimizedSite с реальными данными
       // и обработка ZIP-архива
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      const optimizedSiteBlob = await createOptimizedSite(hostname, contentToOptimize);
       
       setIsOptimized(true);
       
-      // Создаем тестовый архив для демонстрации
-      const testZip = new Blob(['Optimized site content would be here'], { type: 'application/zip' });
-      const downloadUrl = window.URL.createObjectURL(testZip);
+      const downloadUrl = window.URL.createObjectURL(optimizedSiteBlob);
       const a = document.createElement('a');
       a.href = downloadUrl;
       a.download = `optimized_${hostname}.zip`;
@@ -256,6 +338,17 @@ export const useAuditData = (url: string) => {
     }
   };
 
+  // Функция для задания промпта для оптимизации контента
+  const setContentOptimizationPrompt = (prompt: string) => {
+    setContentPrompt(prompt);
+    if (prompt) {
+      toast({
+        title: "Промпт для контента задан",
+        description: "Промпт будет применен при создании оптимизированной версии сайта",
+      });
+    }
+  };
+
   useEffect(() => {
     loadAuditData();
   }, [url]);
@@ -273,10 +366,14 @@ export const useAuditData = (url: string) => {
     pageStats,
     sitemap,
     optimizationCost,
+    optimizationItems,
     isOptimized,
+    contentPrompt,
     loadAuditData,
     setIsRefreshing,
     downloadSitemap,
-    downloadOptimizedSite
+    downloadOptimizedSite,
+    generatePdfReportFile,
+    setContentOptimizationPrompt
   };
 };
