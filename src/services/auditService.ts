@@ -234,11 +234,11 @@ export const getAdvancedSeoDetails = async (url: string): Promise<any> => {
           largeImages: faker.number.int({ min: 0, max: 5 })
         },
         performance: {
-          loadTime: faker.number.float({ min: 1, max: 10, precision: 0.1 }),
-          firstContentfulPaint: faker.number.float({ min: 0.5, max: 5, precision: 0.1 }),
-          largestContentfulPaint: faker.number.float({ min: 1, max: 8, precision: 0.1 }),
-          cumulativeLayoutShift: faker.number.float({ min: 0, max: 0.5, precision: 0.01 }),
-          totalBlockingTime: faker.number.float({ min: 0, max: 500, precision: 1 })
+          loadTime: faker.number.float({ min: 1, max: 10, fractionDigits: 1 }),
+          firstContentfulPaint: faker.number.float({ min: 0.5, max: 5, fractionDigits: 1 }),
+          largestContentfulPaint: faker.number.float({ min: 1, max: 8, fractionDigits: 1 }),
+          cumulativeLayoutShift: faker.number.float({ min: 0, max: 0.5, fractionDigits: 2 }),
+          totalBlockingTime: faker.number.float({ min: 0, max: 500, fractionDigits: 0 })
         },
         technical: {
           hasRobotsTxt: faker.datatype.boolean(),
