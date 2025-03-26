@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import { AuditData, RecommendationData, AuditHistoryData, ScanOptions } from '@/types/audit';
@@ -58,7 +57,7 @@ export const useAuditData = (url: string) => {
   const [optimizationCost, setOptimizationCost] = useState<number | undefined>(undefined);
   const [optimizationItems, setOptimizationItems] = useState<OptimizationItem[]>([]);
   const [isOptimized, setIsOptimized] = useState(false);
-  const [optimizationScores, setOptimizationScores] = useState<{
+  const [optimizationScoresData, setOptimizationScoresData] = useState<{
     beforeScore: number;
     afterScore: number;
   } | null>(null);
@@ -94,13 +93,12 @@ export const useAuditData = (url: string) => {
         await new Promise(resolve => setTimeout(resolve, 1000));
       }
       
-      // Если запрошено глубокое сканирование, сначала выполняем обход сайта
       if (deepScan) {
         setIsScanning(true);
         
         const scanOptions: ScanOptions = {
-          maxPages: 250000, // Увеличено до 250000 страниц
-          maxDepth: 50,     // Увеличено до 50 уровней глубины
+          maxPages: 250000,
+          maxDepth: 50,
           followExternalLinks: false,
           checkMobile: true,
           analyzeSEO: true,
@@ -119,28 +117,21 @@ export const useAuditData = (url: string) => {
           setPageStats(scanResult.pageStats);
           if (scanResult.sitemap) {
             setSitemap(scanResult.sitemap);
-            
-            // Уведомляем пользователя о создании карты сайта
             toast({
               title: "Карта сайта создана",
               description: "XML sitemap сгенерирован на основе структуры сайта",
             });
           }
           
-          // Сохраняем содержимое страниц для дальнейшего использования
           if (scanResult.pagesContent) {
             setPagesContent(scanResult.pagesContent);
           }
           
-          // Сохраняем стоимость оптимизации
           if (scanResult.optimizationCost) {
             setOptimizationCost(scanResult.optimizationCost);
-
-            // Создаем детализацию стоимости оптимизации
             if (scanResult.optimizationItems) {
               setOptimizationItems(scanResult.optimizationItems);
             }
-            
             toast({
               title: "Расчет стоимости оптимизации",
               description: `Стоимость оптимизации сайта: ${new Intl.NumberFormat('ru-RU').format(scanResult.optimizationCost)} ₽`,
@@ -156,7 +147,6 @@ export const useAuditData = (url: string) => {
         fetchAuditHistory(url)
       ]);
       
-      // Обновляем количество страниц в результате аудита, если мы сканировали сайт
       if (pageStats && pageStats.totalPages > 0) {
         auditResult.pageCount = pageStats.totalPages;
       }
@@ -187,7 +177,6 @@ export const useAuditData = (url: string) => {
     }
   };
 
-  // Функция для скачивания sitemap
   const downloadSitemap = () => {
     if (sitemap) {
       const blob = new Blob([sitemap], { type: 'text/xml' });
@@ -195,13 +184,10 @@ export const useAuditData = (url: string) => {
       const a = document.createElement('a');
       a.href = downloadUrl;
       
-      // Формируем имя файла из домена
       let hostname;
       try {
-        // Проверяем, что URL валидный, добавляем протокол, если нужно
         hostname = new URL(url.startsWith('http') ? url : `https://${url}`).hostname;
       } catch (error) {
-        // Если URL невалидный, используем безопасное имя файла
         hostname = url.replace(/[^a-zA-Z0-9]/g, '_');
       }
       
@@ -223,8 +209,7 @@ export const useAuditData = (url: string) => {
       });
     }
   };
-  
-  // Функция для генерации и скачивания PDF-отчета
+
   const generatePdfReportFile = async () => {
     if (!auditData || !url) {
       toast({
@@ -248,13 +233,11 @@ export const useAuditData = (url: string) => {
         pageStats,
         optimizationCost,
         optimizationItems,
-        optimizationScores,
         date: new Date().toISOString()
       });
       
       if (!pdfBlob) throw new Error("Не удалось создать PDF");
       
-      // Формируем имя файла из домена
       let hostname;
       try {
         hostname = new URL(url.startsWith('http') ? url : `https://${url}`).hostname;
@@ -284,8 +267,7 @@ export const useAuditData = (url: string) => {
       });
     }
   };
-  
-  // Функция для скачивания оптимизированного сайта
+
   const downloadOptimizedSite = async () => {
     if (!url || !pagesContent) {
       toast({
@@ -309,7 +291,6 @@ export const useAuditData = (url: string) => {
         hostname = url.replace(/[^a-zA-Z0-9]/g, '_');
       }
       
-      // Применяем промпт для улучшения контента, если он задан
       let contentToOptimize = pagesContent;
       if (contentPrompt) {
         toast({
@@ -317,16 +298,13 @@ export const useAuditData = (url: string) => {
           description: "Оптимизируем контент согласно заданному промпту...",
         });
         
-        // Имитация обработки промпта (в реальности будет отправка на обработку)
         await new Promise(resolve => setTimeout(resolve, 1500));
       }
       
-      // Создаем оптимизированную версию сайта
       const optimizationResult = await createOptimizedSite(hostname, contentToOptimize);
       
-      // Сохраняем информацию об оптимизации
       if (optimizationResult.beforeScore && optimizationResult.afterScore) {
-        setOptimizationScores({
+        setOptimizationScoresData({
           beforeScore: optimizationResult.beforeScore,
           afterScore: optimizationResult.afterScore
         });
@@ -338,7 +316,6 @@ export const useAuditData = (url: string) => {
       
       setIsOptimized(true);
       
-      // Скачиваем архив
       const downloadUrl = window.URL.createObjectURL(optimizationResult.blob);
       const a = document.createElement('a');
       a.href = downloadUrl;
@@ -362,7 +339,6 @@ export const useAuditData = (url: string) => {
     }
   };
 
-  // Функция для задания промпта для оптимизации контента
   const setContentOptimizationPrompt = (prompt: string) => {
     setContentPrompt(prompt);
     if (prompt) {

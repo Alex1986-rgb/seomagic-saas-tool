@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Check, Download, CreditCard, Package, Info, FileText, Play } from 'lucide-react';
@@ -65,6 +64,7 @@ const OptimizationCost: React.FC<OptimizationCostProps> = ({
   const [isOptimizing, setIsOptimizing] = useState(false);
   const [optimizationProgress, setOptimizationProgress] = useState(0);
   const [optimizationStage, setOptimizationStage] = useState('');
+  const [localIsOptimized, setLocalIsOptimized] = useState(isOptimized);
   const [optimizationResult, setOptimizationResult] = useState<{
     beforeScore: number;
     afterScore: number;
@@ -85,12 +85,13 @@ const OptimizationCost: React.FC<OptimizationCostProps> = ({
     };
   } | null>(null);
   
+  const isOptimizedState = isOptimized || localIsOptimized;
+  
   const formatNumber = (num: number) => {
     return new Intl.NumberFormat('ru-RU').format(num);
   };
   
   const handlePayment = () => {
-    // В реальном приложении здесь будет интеграция с платежной системой
     toast({
       title: "Оплата успешно произведена",
       description: "Теперь вы можете запустить процесс оптимизации",
@@ -105,7 +106,6 @@ const OptimizationCost: React.FC<OptimizationCostProps> = ({
     setOptimizationProgress(0);
     setOptimizationStage('Начало процесса оптимизации...');
     
-    // Симулируем процесс оптимизации
     const stages = [
       'Анализ структуры сайта...',
       'Оптимизация мета-тегов...',
@@ -123,11 +123,9 @@ const OptimizationCost: React.FC<OptimizationCostProps> = ({
     for (let i = 0; i < stages.length; i++) {
       setOptimizationStage(stages[i]);
       
-      // Обновляем прогресс
       const startProgress = (i / stages.length) * 100;
       const endProgress = ((i + 1) / stages.length) * 100;
       
-      // Анимируем прогресс
       const stepDuration = i === stages.length - 1 ? 1000 : 500 + Math.random() * 1500;
       const steps = 10;
       
@@ -138,11 +136,9 @@ const OptimizationCost: React.FC<OptimizationCostProps> = ({
       }
     }
     
-    // Генерируем результаты оптимизации
-    const beforeScore = Math.floor(Math.random() * 40) + 30; // 30-70
-    const afterScore = Math.floor(Math.random() * 20) + 80; // 80-100
+    const beforeScore = Math.floor(Math.random() * 40) + 30;
+    const afterScore = Math.floor(Math.random() * 20) + 80;
     
-    // Демо-страница
     const demoPage = {
       title: `${url} - Главная страница`,
       content: `Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam eget felis eget urna malesuada maximus. 
@@ -187,7 +183,7 @@ Praesent nec nisi sed metus sollicitudin tincidunt vel nec arcu. Nullam tincidun
     });
     
     setIsOptimizing(false);
-    setIsOptimized(true);
+    setLocalIsOptimized(true);
     
     toast({
       title: "Оптимизация завершена",
@@ -217,7 +213,7 @@ Praesent nec nisi sed metus sollicitudin tincidunt vel nec arcu. Nullam tincidun
         
         <div className="bg-primary/10 p-3 rounded-lg">
           <div className="text-sm text-muted-foreground">Стоимость за страницу</div>
-          <div className="text-xl font-semibold">{formatNumber(Math.round(optimizationCost / pageCount))} ₽</div>
+          <div className="text-xl font-semibold">50 ₽</div>
         </div>
         
         <div className="bg-primary/10 p-3 rounded-lg">
@@ -316,7 +312,7 @@ Praesent nec nisi sed metus sollicitudin tincidunt vel nec arcu. Nullam tincidun
             </Button>
           )}
           
-          {isOptimized || optimizationResult ? (
+          {isOptimizedState || optimizationResult ? (
             <Button 
               onClick={onDownloadOptimized}
               className="gap-2"

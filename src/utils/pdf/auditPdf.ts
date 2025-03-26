@@ -87,9 +87,9 @@ export const generateAuditPdf = async (options: GenerateAuditPdfOptions): Promis
     ['Незначительные проблемы', auditData.issues.opportunities.toString()]
   ];
   
-  let yPosition = 65;
+  let currentYPosition = 65;
   autoTable(doc, {
-    startY: yPosition,
+    startY: currentYPosition,
     head: [['Параметр', 'Значение']],
     body: statsData,
     theme: 'grid',
@@ -98,12 +98,12 @@ export const generateAuditPdf = async (options: GenerateAuditPdfOptions): Promis
   });
   
   // Get the Y position after the table
-  yPosition = (doc as any).lastAutoTable.finalY + 15;
+  currentYPosition = (doc as any).lastAutoTable.finalY + 15;
   
   // Добавляем детали распределения страниц по типам, если доступно
   if (pageStats && pageStats.subpages) {
     doc.setFontSize(16);
-    doc.text('Распределение страниц', 15, yPosition);
+    doc.text('Распределение страниц', 15, currentYPosition);
     
     const pageTypesData = Object.entries(pageStats.subpages).map(([type, count]) => [
       type.charAt(0).toUpperCase() + type.slice(1),
@@ -111,7 +111,7 @@ export const generateAuditPdf = async (options: GenerateAuditPdfOptions): Promis
     ]);
     
     autoTable(doc, {
-      startY: yPosition + 5,
+      startY: currentYPosition + 5,
       head: [['Тип страницы', 'Количество']],
       body: pageTypesData,
       theme: 'grid',
@@ -120,12 +120,12 @@ export const generateAuditPdf = async (options: GenerateAuditPdfOptions): Promis
     });
     
     // Update Y position
-    yPosition = (doc as any).lastAutoTable.finalY + 15;
+    currentYPosition = (doc as any).lastAutoTable.finalY + 15;
   }
   
   // Добавляем анализ проблем
   doc.setFontSize(16);
-  doc.text('Анализ обнаруженных проблем', 15, yPosition);
+  doc.text('Анализ обнаруженных проблем', 15, currentYPosition);
   
   if (recommendations) {
     const recommendationsData = Object.entries(recommendations).map(([category, categoryData]: [string, any]) => [
@@ -135,7 +135,7 @@ export const generateAuditPdf = async (options: GenerateAuditPdfOptions): Promis
     ]);
     
     autoTable(doc, {
-      startY: yPosition + 5,
+      startY: currentYPosition + 5,
       head: [['Категория', 'Количество проблем', 'Оценка']],
       body: recommendationsData,
       theme: 'grid',
@@ -158,7 +158,7 @@ export const generateAuditPdf = async (options: GenerateAuditPdfOptions): Promis
     doc.setFontSize(12);
     doc.text(`Общая стоимость: ${new Intl.NumberFormat('ru-RU').format(optimizationCost)} ₽`, 15, 30);
     doc.text(`Количество страниц: ${auditData.pageCount}`, 15, 38);
-    doc.text(`Стоимость за страницу: ${new Intl.NumberFormat('ru-RU').format(Math.round(optimizationCost / (auditData.pageCount || 1)))} ₽`, 15, 46);
+    doc.text(`Стоимость за страницу: 50 ₽`, 15, 46);
     
     doc.setFontSize(14);
     doc.text('Детализация стоимости:', 15, 54);
