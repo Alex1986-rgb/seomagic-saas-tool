@@ -6,7 +6,7 @@ import { faker } from '@faker-js/faker';
  */
 export const getAdvancedSeoDetails = async (url: string): Promise<any> => {
   // Set faker locale to Russian
-  faker.setLocale('ru');
+  faker.locale = 'ru';
   
   // Simulating fetching detailed SEO metrics
   return new Promise((resolve) => {
