@@ -36,7 +36,7 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
       <DialogTrigger asChild>
         <Button className="gap-2">Оплатить и оптимизировать</Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md w-[95%] mx-auto">
         <DialogHeader className="text-center">
           <DialogTitle className="text-xl font-semibold">Оплата оптимизации</DialogTitle>
           <DialogDescription className="pt-2">
