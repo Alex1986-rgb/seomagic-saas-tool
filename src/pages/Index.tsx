@@ -3,7 +3,7 @@ import React from 'react';
 import Layout from '@/components/Layout';
 import HeroSection from '@/components/hero';
 import VideoDemo from '@/components/VideoDemo';
-import FeatureSection from '@/components/FeatureSection';
+import FeatureSection from '@/components/features';
 import DemoWorkflow from '@/components/DemoWorkflow';
 import GrowthAnimation from '@/components/growth/GrowthAnimation';
 import PricingSection from '@/components/sections/PricingSection';
