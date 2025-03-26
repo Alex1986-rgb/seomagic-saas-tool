@@ -5,6 +5,9 @@ import { faker } from '@faker-js/faker';
  * Gets advanced SEO audit details for a URL
  */
 export const getAdvancedSeoDetails = async (url: string): Promise<any> => {
+  // Set faker locale to Russian
+  faker.locale = 'ru';
+  
   // Simulating fetching detailed SEO metrics
   return new Promise((resolve) => {
     setTimeout(() => {
