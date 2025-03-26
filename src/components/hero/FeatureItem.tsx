@@ -19,7 +19,7 @@ const FeatureItem: React.FC<FeatureItemProps> = ({ icon, text }) => {
       </div>
       <p className="text-sm md:text-base font-medium text-center relative z-10">{text}</p>
       
-      {/* Анимированный фон при наведении */}
+      {/* Animated background on hover */}
       <div className="absolute inset-0 bg-gradient-to-tr from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
       <motion.div 
         className="absolute -bottom-10 -right-10 w-20 h-20 bg-primary/5 rounded-full z-0"
