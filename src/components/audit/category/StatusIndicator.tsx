@@ -1,5 +1,7 @@
 
 import React from 'react';
+import { CheckCircle, AlertTriangle, XCircle, Info } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 interface StatusIndicatorProps {
   status: 'good' | 'warning' | 'error';
@@ -8,10 +10,10 @@ interface StatusIndicatorProps {
 const StatusIndicator: React.FC<StatusIndicatorProps> = ({ status }) => {
   const getStatusIcon = (status: string) => {
     switch(status) {
-      case 'good': return '✓';
-      case 'warning': return '⚠';
-      case 'error': return '✗';
-      default: return '•';
+      case 'good': return <CheckCircle className="h-5 w-5" />;
+      case 'warning': return <AlertTriangle className="h-5 w-5" />;
+      case 'error': return <XCircle className="h-5 w-5" />;
+      default: return <Info className="h-5 w-5" />;
     }
   };
 
@@ -24,10 +26,23 @@ const StatusIndicator: React.FC<StatusIndicatorProps> = ({ status }) => {
     }
   };
 
+  const statusVariants = {
+    initial: { scale: 0.8, opacity: 0 },
+    animate: { scale: 1, opacity: 1 },
+    exit: { scale: 0.8, opacity: 0 }
+  };
+
   return (
-    <span className="inline-block w-6 h-6 text-center mr-3">
+    <motion.span 
+      className={`inline-flex items-center justify-center w-7 h-7 rounded-full mr-3 border ${getStatusColor(status)}`}
+      initial="initial"
+      animate="animate"
+      exit="exit"
+      variants={statusVariants}
+      transition={{ type: "spring", stiffness: 300, damping: 20 }}
+    >
       {getStatusIcon(status)}
-    </span>
+    </motion.span>
   );
 };
 
