@@ -43,7 +43,20 @@ const OptimizationResults: React.FC<OptimizationResultsProps> = ({
   onGeneratePdfReport,
   className
 }) => {
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  
   if (!optimizationResult) return null;
+  
+  // Dummy handlers for required props
+  const handlePayment = () => {
+    // This function is required but won't be used
+    console.log("Payment handler called");
+  };
+  
+  const handleStartOptimization = () => {
+    // This function is required but won't be used
+    console.log("Start optimization handler called");
+  };
   
   return (
     <div className={className}>
@@ -66,9 +79,15 @@ const OptimizationResults: React.FC<OptimizationResultsProps> = ({
           {onGeneratePdfReport && (
             <OptimizationActions
               url={url} 
+              optimizationCost={0} // Providing default value
               isOptimized={true}
+              isPaymentComplete={true} // Since optimization is complete
               onDownloadOptimized={onDownloadOptimized}
               onGeneratePdfReport={onGeneratePdfReport}
+              onStartOptimization={handleStartOptimization}
+              onPayment={handlePayment}
+              isDialogOpen={isDialogOpen}
+              setIsDialogOpen={setIsDialogOpen}
             />
           )}
         </div>
