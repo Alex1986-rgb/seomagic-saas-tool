@@ -8,6 +8,9 @@ import { AnimatePresence } from "framer-motion";
 import Index from "./pages/Index";
 import Audit from "./pages/Audit";
 import Dashboard from "./pages/Dashboard";
+import Auth from "./pages/Auth";
+import AdminPanel from "./pages/AdminPanel";
+import ClientProfile from "./pages/ClientProfile";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -23,6 +26,9 @@ const App = () => (
             <Route path="/" element={<Index />} />
             <Route path="/audit" element={<Audit />} />
             <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/auth" element={<Auth />} />
+            <Route path="/admin" element={<AdminPanel />} />
+            <Route path="/profile" element={<ClientProfile />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

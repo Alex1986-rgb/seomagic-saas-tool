@@ -1,76 +1,9 @@
 
 import React, { useState, useEffect } from 'react';
-import { 
-  Loader2, 
-  CheckCircle, 
-  XCircle, 
-  AlertTriangle, 
-  RefreshCw, 
-  Download, 
-  Globe 
-} from 'lucide-react';
-
-// Mock data for demonstration
-const mockAuditData = {
-  score: 67,
-  url: 'https://example.com',
-  timestamp: new Date().toISOString(),
-  categories: [
-    {
-      name: 'Мета-теги',
-      score: 72,
-      items: [
-        { name: 'Title тег', status: 'warning', message: 'Заголовок слишком короткий (32 символа)' },
-        { name: 'Meta Description', status: 'error', message: 'Отсутствует мета-описание' },
-        { name: 'Canonical тег', status: 'success', message: 'Канонический тег правильно установлен' },
-        { name: 'Robots Meta', status: 'success', message: 'Мета-тег robots правильно установлен' },
-      ]
-    },
-    {
-      name: 'Заголовки',
-      score: 85,
-      items: [
-        { name: 'H1 тег', status: 'success', message: 'H1 тег присутствует и оптимизирован' },
-        { name: 'Структура заголовков', status: 'warning', message: 'Некоторые заголовки не по порядку (H2 перед H1)' },
-        { name: 'Содержание заголовков', status: 'success', message: 'Заголовки содержат релевантные ключевые слова' },
-      ]
-    },
-    {
-      name: 'Изображения',
-      score: 40,
-      items: [
-        { name: 'Alt теги', status: 'error', message: 'У 8 изображений отсутствуют alt-теги' },
-        { name: 'Размер изображений', status: 'warning', message: '3 изображения не оптимизированы для веба' },
-        { name: 'Имена изображений', status: 'error', message: 'Большинство имен файлов изображений не являются описательными' },
-      ]
-    },
-    {
-      name: 'Производительность',
-      score: 62,
-      items: [
-        { name: 'Скорость страницы', status: 'warning', message: 'Время загрузки страницы 3.2с (рекомендуется < 2с)' },
-        { name: 'Мобильная адаптация', status: 'success', message: 'Страница адаптирована для мобильных устройств' },
-        { name: 'HTTPS', status: 'success', message: 'Сайт использует HTTPS' },
-      ]
-    },
-    {
-      name: 'Контент',
-      score: 78,
-      items: [
-        { name: 'Количество слов', status: 'success', message: 'На странице достаточно контента (1 250 слов)' },
-        { name: 'Плотность ключевых слов', status: 'warning', message: 'Плотность основного ключевого слова слишком высокая (5.2%)' },
-        { name: 'Читабельность', status: 'success', message: 'Контент имеет хороший показатель читабельности' },
-      ]
-    },
-  ],
-  recommendations: [
-    'Добавьте мета-описание для улучшения показателя кликов из результатов поиска',
-    'Оптимизируйте 8 изображений с помощью описательных alt-тегов',
-    'Улучшите скорость страницы, оптимизируя изображения и минимизируя CSS/JS',
-    'Исправьте структуру заголовков, чтобы следовать правильной иерархии',
-    'Уменьшите плотность ключевых слов, чтобы избежать штрафов за переоптимизацию',
-  ]
-};
+import { Loader2, Share2 } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import AuditSummary from './AuditSummary';
+import { useToast } from "@/hooks/use-toast";
 
 interface SeoAuditResultsProps {
   url: string;
@@ -79,237 +12,275 @@ interface SeoAuditResultsProps {
 const SeoAuditResults: React.FC<SeoAuditResultsProps> = ({ url }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [auditData, setAuditData] = useState<any>(null);
-  const [activeTab, setActiveTab] = useState('overview');
+  const { toast } = useToast();
 
+  // Симуляция загрузки данных аудита
   useEffect(() => {
-    // Simulate API call to get audit results
-    const timer = setTimeout(() => {
-      setAuditData(mockAuditData);
-      setIsLoading(false);
-    }, 3000);
-
-    return () => clearTimeout(timer);
-  }, [url]);
+    const fetchAuditData = async () => {
+      setIsLoading(true);
+      
+      // Имитация задержки API
+      setTimeout(() => {
+        // Мок-данные результатов аудита
+        const mockAuditData = {
+          score: 67,
+          date: new Date().toISOString(),
+          issues: {
+            critical: 3,
+            important: 8,
+            opportunities: 12,
+          },
+          details: {
+            performance: {
+              score: 72,
+              items: [
+                { id: 'p1', title: 'Время до интерактивности', value: '3.2s', status: 'warning' },
+                { id: 'p2', title: 'Скорость загрузки первого контента', value: '1.8s', status: 'good' },
+                { id: 'p3', title: 'Общий размер страницы', value: '2.4MB', status: 'warning' },
+                { id: 'p4', title: 'Количество запросов', value: '45', status: 'warning' },
+              ],
+            },
+            seo: {
+              score: 58,
+              items: [
+                { id: 's1', title: 'Отсутствуют meta-теги', description: 'Отсутствуют важные meta-теги на странице', status: 'error' },
+                { id: 's2', title: 'Дублирующийся контент', description: 'Обнаружены страницы с дублирующимся контентом', status: 'error' },
+                { id: 's3', title: 'Заголовки H1-H6', description: 'Структура заголовков нуждается в оптимизации', status: 'warning' },
+                { id: 's4', title: 'Alt-теги изображений', description: 'Некоторые изображения не имеют alt-тегов', status: 'warning' },
+                { id: 's5', title: 'Оптимизация мобильной версии', description: 'Сайт адаптирован для мобильных устройств', status: 'good' },
+              ],
+            },
+            content: {
+              score: 75,
+              items: [
+                { id: 'c1', title: 'Плотность ключевых слов', description: 'Хорошая плотность ключевых слов', status: 'good' },
+                { id: 'c2', title: 'Длина контента', description: 'Контент достаточной длины', status: 'good' },
+                { id: 'c3', title: 'Читабельность', description: 'Контент имеет хорошую читабельность', status: 'good' },
+                { id: 'c4', title: 'Внутренние ссылки', description: 'Недостаточно внутренних ссылок', status: 'warning' },
+              ],
+            },
+            technical: {
+              score: 62,
+              items: [
+                { id: 't1', title: 'Robots.txt', description: 'Файл robots.txt отсутствует или неправильно настроен', status: 'error' },
+                { id: 't2', title: 'Sitemap.xml', description: 'Файл sitemap.xml присутствует', status: 'good' },
+                { id: 't3', title: 'SSL сертификат', description: 'SSL сертификат активен и корректен', status: 'good' },
+                { id: 't4', title: 'Редиректы', description: 'Обнаружены проблемы с редиректами', status: 'warning' },
+                { id: 't5', title: 'Ошибки сервера', description: 'Обнаружены ошибки 404', status: 'warning' },
+              ],
+            },
+          },
+        };
+        
+        setAuditData(mockAuditData);
+        setIsLoading(false);
+        
+        toast({
+          title: "Аудит завершен",
+          description: "SEO аудит сайта успешно завершен",
+        });
+      }, 3000);
+    };
+    
+    fetchAuditData();
+  }, [url, toast]);
 
   if (isLoading) {
     return (
-      <div className="flex flex-col items-center justify-center py-20">
-        <Loader2 className="h-16 w-16 text-primary animate-spin mb-6" />
-        <h2 className="text-2xl font-semibold mb-2">Анализируем ваш сайт</h2>
-        <p className="text-muted-foreground mb-8">Это может занять минуту...</p>
-        
-        <div className="w-full max-w-md bg-secondary/30 rounded-full h-3 mb-2">
-          <div className="h-3 bg-primary rounded-full animate-pulse-slow" style={{ width: '70%' }}></div>
-        </div>
-        <p className="text-sm text-muted-foreground">Проверяем мета-теги, заголовки, изображения и многое другое</p>
-      </div>
-    );
-  }
-
-  if (!auditData) {
-    return (
-      <div className="flex flex-col items-center justify-center py-20">
-        <XCircle className="h-16 w-16 text-destructive mb-6" />
-        <h2 className="text-2xl font-semibold mb-2">Анализ не удался</h2>
-        <p className="text-muted-foreground mb-8">Мы не смогли проанализировать этот сайт. Пожалуйста, попробуйте снова.</p>
-        <button 
-          className="bg-primary text-white px-6 py-3 rounded-full flex items-center"
-          onClick={() => window.location.reload()}
-        >
-          <RefreshCw className="mr-2 h-5 w-5" />
-          Попробовать снова
-        </button>
+      <div className="flex flex-col items-center justify-center py-16">
+        <Loader2 className="h-10 w-10 animate-spin text-primary mb-4" />
+        <h3 className="text-xl font-medium mb-2">Анализируем сайт</h3>
+        <p className="text-muted-foreground">
+          Пожалуйста, подождите. Это может занять несколько минут.
+        </p>
       </div>
     );
   }
 
   return (
-    <div className="max-w-5xl mx-auto">
-      {/* Score Overview */}
-      <div className="glass-panel p-8 mb-8">
-        <div className="flex flex-col md:flex-row items-center justify-between">
-          <div className="flex flex-col items-center md:items-start mb-6 md:mb-0">
-            <h2 className="text-3xl font-bold mb-2">SEO оценка: {auditData.score}/100</h2>
-            <p className="text-muted-foreground mb-4">{url}</p>
-            
-            {/* Score gauge */}
-            <div className="w-full bg-secondary/30 rounded-full h-3 mb-2 max-w-md">
-              <div 
-                className={`h-3 rounded-full ${
-                  auditData.score >= 80 ? 'bg-green-500' : 
-                  auditData.score >= 60 ? 'bg-amber-500' : 'bg-destructive'
-                }`} 
-                style={{ width: `${auditData.score}%` }}
-              ></div>
-            </div>
-            
-            <p className="text-sm text-muted-foreground">
-              Проанализировано {new Date(auditData.timestamp).toLocaleDateString()}
-            </p>
-          </div>
+    <div>
+      <AuditSummary 
+        url={url} 
+        score={auditData.score}
+        date={auditData.date}
+        issues={auditData.issues}
+      />
+      
+      <div className="neo-card p-6 mb-8">
+        <Tabs defaultValue="seo">
+          <TabsList className="mb-6 grid grid-cols-2 md:grid-cols-4">
+            <TabsTrigger value="seo">SEO</TabsTrigger>
+            <TabsTrigger value="performance">Производительность</TabsTrigger>
+            <TabsTrigger value="content">Контент</TabsTrigger>
+            <TabsTrigger value="technical">Технические аспекты</TabsTrigger>
+          </TabsList>
           
-          <div className="flex flex-col sm:flex-row gap-3">
-            <button 
-              className="bg-primary text-white px-6 py-3 rounded-full flex items-center justify-center"
-              onClick={() => {/* Download PDF logic */}}
-            >
-              <Download className="mr-2 h-5 w-5" />
-              Скачать отчет
-            </button>
-            <button 
-              className="bg-secondary text-foreground px-6 py-3 rounded-full flex items-center justify-center"
-              onClick={() => {/* Generate optimized site */}}
-            >
-              <Globe className="mr-2 h-5 w-5" />
-              Сгенерировать оптимизированный сайт
-            </button>
-          </div>
-        </div>
+          <TabsContent value="seo">
+            <AuditCategorySection 
+              title="SEO оптимизация"
+              score={auditData.details.seo.score}
+              items={auditData.details.seo.items}
+              description="Анализ SEO-факторов, которые влияют на ранжирование вашего сайта в поисковых системах."
+            />
+          </TabsContent>
+          
+          <TabsContent value="performance">
+            <AuditCategorySection 
+              title="Производительность"
+              score={auditData.details.performance.score}
+              items={auditData.details.performance.items}
+              description="Анализ скорости и производительности вашего сайта, которые влияют на удобство использования и SEO."
+            />
+          </TabsContent>
+          
+          <TabsContent value="content">
+            <AuditCategorySection 
+              title="Контент"
+              score={auditData.details.content.score}
+              items={auditData.details.content.items}
+              description="Анализ содержимого страниц, включая тексты, заголовки, ключевые слова и медиафайлы."
+            />
+          </TabsContent>
+          
+          <TabsContent value="technical">
+            <AuditCategorySection 
+              title="Технические аспекты"
+              score={auditData.details.technical.score}
+              items={auditData.details.technical.items}
+              description="Анализ технических аспектов сайта, влияющих на индексацию и работу поисковых систем."
+            />
+          </TabsContent>
+        </Tabs>
       </div>
       
-      {/* Navigation Tabs */}
-      <div className="flex border-b border-border mb-8">
-        <TabButton 
-          active={activeTab === 'overview'} 
-          onClick={() => setActiveTab('overview')}
-        >
-          Обзор
-        </TabButton>
-        <TabButton 
-          active={activeTab === 'issues'} 
-          onClick={() => setActiveTab('issues')}
-        >
-          Проблемы
-        </TabButton>
-        <TabButton 
-          active={activeTab === 'recommendations'} 
-          onClick={() => setActiveTab('recommendations')}
-        >
-          Рекомендации
-        </TabButton>
-      </div>
-      
-      {/* Tab Content */}
-      <div className="mb-12">
-        {activeTab === 'overview' && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {auditData.categories.map((category: any) => (
-              <CategoryCard key={category.name} category={category} />
-            ))}
-          </div>
-        )}
-        
-        {activeTab === 'issues' && (
-          <div className="space-y-6">
-            {auditData.categories.map((category: any) => (
-              <IssuesSection key={category.name} category={category} />
-            ))}
-          </div>
-        )}
-        
-        {activeTab === 'recommendations' && (
-          <div className="glass-panel p-6">
-            <h3 className="text-xl font-semibold mb-4">Рекомендации по улучшению вашего SEO</h3>
-            <ul className="space-y-4">
-              {auditData.recommendations.map((rec: string, index: number) => (
-                <li key={index} className="flex items-start">
-                  <CheckCircle className="h-5 w-5 text-primary mr-3 mt-0.5 flex-shrink-0" />
-                  <span>{rec}</span>
-                </li>
-              ))}
+      <div className="neo-card p-6 mb-8">
+        <h2 className="text-xl font-semibold mb-4">Рекомендации по оптимизации</h2>
+        <div className="space-y-4">
+          <div className="p-4 border-l-4 border-red-500 bg-red-50 rounded">
+            <h3 className="font-medium">Критические ошибки</h3>
+            <ul className="mt-2 space-y-2">
+              <li>Добавьте мета-теги title и description на все страницы сайта</li>
+              <li>Устраните дублирующийся контент с использованием canonical тегов</li>
+              <li>Создайте и настройте файл robots.txt</li>
             </ul>
           </div>
-        )}
-      </div>
-    </div>
-  );
-};
-
-// Helper Components
-const TabButton: React.FC<{
-  children: React.ReactNode;
-  active: boolean;
-  onClick: () => void;
-}> = ({ children, active, onClick }) => (
-  <button
-    className={`px-6 py-3 font-medium border-b-2 transition-colors ${
-      active 
-        ? 'border-primary text-primary' 
-        : 'border-transparent text-muted-foreground hover:text-foreground hover:border-border'
-    }`}
-    onClick={onClick}
-  >
-    {children}
-  </button>
-);
-
-const CategoryCard: React.FC<{ category: any }> = ({ category }) => (
-  <div className="neo-card p-6">
-    <div className="flex justify-between items-center mb-4">
-      <h3 className="font-semibold">{category.name}</h3>
-      <div className="flex items-center">
-        <span className={`text-sm font-medium ${
-          category.score >= 80 ? 'text-green-500' : 
-          category.score >= 60 ? 'text-amber-500' : 'text-destructive'
-        }`}>
-          {category.score}/100
-        </span>
-      </div>
-    </div>
-    
-    <div className="space-y-3">
-      {category.items.map((item: any, index: number) => (
-        <div key={index} className="flex items-start">
-          <StatusIcon status={item.status} />
-          <div className="ml-3">
-            <p className="text-sm font-medium">{item.name}</p>
-            <p className="text-xs text-muted-foreground">{item.message}</p>
+          
+          <div className="p-4 border-l-4 border-amber-500 bg-amber-50 rounded">
+            <h3 className="font-medium">Важные улучшения</h3>
+            <ul className="mt-2 space-y-2">
+              <li>Оптимизируйте структуру заголовков H1-H6</li>
+              <li>Добавьте alt-теги ко всем изображениям</li>
+              <li>Исправьте проблемы с редиректами</li>
+              <li>Оптимизируйте размер страницы для ускорения загрузки</li>
+            </ul>
+          </div>
+          
+          <div className="p-4 border-l-4 border-green-500 bg-green-50 rounded">
+            <h3 className="font-medium">Возможности для улучшения</h3>
+            <ul className="mt-2 space-y-2">
+              <li>Увеличьте количество внутренних ссылок для улучшения структуры сайта</li>
+              <li>Оптимизируйте изображения для ускорения загрузки</li>
+              <li>Добавьте структурированные данные (schema.org)</li>
+              <li>Используйте более длинные и информативные описания для страниц</li>
+            </ul>
           </div>
         </div>
-      ))}
-    </div>
-  </div>
-);
-
-const IssuesSection: React.FC<{ category: any }> = ({ category }) => {
-  const hasIssues = category.items.some((item: any) => item.status !== 'success');
-  
-  if (!hasIssues) {
-    return null;
-  }
-  
-  return (
-    <div className="neo-card p-6">
-      <h3 className="font-semibold mb-4">{category.name}</h3>
+      </div>
       
-      <div className="space-y-4">
-        {category.items
-          .filter((item: any) => item.status !== 'success')
-          .map((item: any, index: number) => (
-            <div key={index} className="flex items-start">
-              <StatusIcon status={item.status} />
-              <div className="ml-3">
-                <p className="font-medium">{item.name}</p>
-                <p className="text-sm text-muted-foreground">{item.message}</p>
-              </div>
-            </div>
-          ))}
+      <div className="text-center">
+        <button 
+          className="inline-flex items-center gap-2 text-primary hover:underline"
+          onClick={() => {
+            navigator.clipboard.writeText(window.location.href);
+            toast({
+              title: "Ссылка скопирована",
+              description: "Ссылка на результаты аудита скопирована в буфер обмена",
+            });
+          }}
+        >
+          <Share2 className="h-4 w-4" />
+          <span>Поделиться результатами</span>
+        </button>
       </div>
     </div>
   );
 };
 
-const StatusIcon: React.FC<{ status: string }> = ({ status }) => {
-  switch (status) {
-    case 'success':
-      return <CheckCircle className="h-5 w-5 text-green-500 flex-shrink-0" />;
-    case 'warning':
-      return <AlertTriangle className="h-5 w-5 text-amber-500 flex-shrink-0" />;
-    case 'error':
-      return <XCircle className="h-5 w-5 text-destructive flex-shrink-0" />;
-    default:
-      return null;
-  }
+interface AuditCategorySectionProps {
+  title: string;
+  score: number;
+  items: Array<{
+    id: string;
+    title: string;
+    description?: string;
+    value?: string;
+    status: 'good' | 'warning' | 'error';
+  }>;
+  description?: string;
+}
+
+const AuditCategorySection: React.FC<AuditCategorySectionProps> = ({
+  title,
+  score,
+  items,
+  description,
+}) => {
+  const getStatusColor = (status: string) => {
+    switch(status) {
+      case 'good': return 'text-green-500 bg-green-50 border-green-200';
+      case 'warning': return 'text-amber-500 bg-amber-50 border-amber-200';
+      case 'error': return 'text-red-500 bg-red-50 border-red-200';
+      default: return 'text-muted-foreground bg-muted border-border';
+    }
+  };
+
+  const getStatusIcon = (status: string) => {
+    switch(status) {
+      case 'good': return '✓';
+      case 'warning': return '⚠';
+      case 'error': return '✗';
+      default: return '•';
+    }
+  };
+
+  return (
+    <div>
+      <div className="flex justify-between items-center mb-4">
+        <div>
+          <h2 className="text-xl font-semibold">{title}</h2>
+          {description && <p className="text-muted-foreground mt-1">{description}</p>}
+        </div>
+        <div className="text-2xl font-bold">
+          <span className={score >= 80 ? 'text-green-500' : score >= 60 ? 'text-amber-500' : 'text-red-500'}>
+            {score}
+          </span>
+          <span className="text-muted-foreground">/100</span>
+        </div>
+      </div>
+      
+      <div className="space-y-4">
+        {items.map((item) => (
+          <div 
+            key={item.id} 
+            className={`p-4 border rounded-lg ${getStatusColor(item.status)}`}
+          >
+            <div className="flex justify-between items-center">
+              <div className="flex items-center">
+                <span className="inline-block w-6 h-6 text-center mr-3">
+                  {getStatusIcon(item.status)}
+                </span>
+                <h3 className="font-medium">{item.title}</h3>
+              </div>
+              {item.value && <div className="font-mono">{item.value}</div>}
+            </div>
+            {item.description && (
+              <p className="mt-2 ml-9">{item.description}</p>
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
 };
 
 export default SeoAuditResults;
