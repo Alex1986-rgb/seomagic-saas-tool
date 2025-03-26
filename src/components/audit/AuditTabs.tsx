@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import AuditCategorySection from './AuditCategorySection';
+import { AuditCategorySection } from './category';
 import { AuditDetailsData } from '@/types/audit';
 
 interface AuditTabsProps {
