@@ -5,7 +5,7 @@ import AuditSummary from '@/components/AuditSummary';
 import AuditLoading from '../AuditLoading';
 import AuditError from './AuditError';
 import AuditContent from './AuditContent';
-import PageCountDisplay from '../PageCountDisplay';
+import PageCountDisplay from '../page-count';
 import { useAuditData } from './hooks/useAuditData';
 import AuditHeader from './components/AuditHeader';
 import AuditScanning from './components/AuditScanning';
