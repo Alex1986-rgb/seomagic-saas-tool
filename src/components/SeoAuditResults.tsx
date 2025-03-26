@@ -77,7 +77,7 @@ const SeoAuditResults: React.FC<SeoAuditResultsProps> = ({ url }) => {
       
       <AuditRecommendations recommendations={recommendations} />
       
-      <AuditShareResults />
+      <AuditShareResults auditId={auditData.id} />
     </div>
   );
 };
