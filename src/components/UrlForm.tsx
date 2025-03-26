@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { ArrowRight, Loader2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from "@/hooks/use-toast";
+import { Button } from './ui/button';
 
 const UrlForm: React.FC = () => {
   const [url, setUrl] = useState('');
@@ -52,20 +53,23 @@ const UrlForm: React.FC = () => {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="w-full">
-      <div className="relative w-full glass-panel p-2 flex items-center overflow-hidden">
-        <input
-          type="text"
-          value={url}
-          onChange={(e) => setUrl(e.target.value)}
-          placeholder="Введите URL сайта (например, example.com)"
-          className="flex-grow bg-transparent px-4 py-3 focus:outline-none text-foreground placeholder:text-muted-foreground"
-          disabled={isLoading}
-        />
-        <button
+    <form onSubmit={handleSubmit} className="w-full max-w-3xl mx-auto">
+      <div className="neo-glass p-2 md:p-3 flex flex-col md:flex-row items-center gap-3 rounded-xl overflow-hidden">
+        <div className="flex items-center w-full px-2 gap-2">
+          <span className="text-primary">https://</span>
+          <input
+            type="text"
+            value={url}
+            onChange={(e) => setUrl(e.target.value)}
+            placeholder="Введите URL сайта (например, example.com)"
+            className="flex-grow bg-transparent px-2 py-3 focus:outline-none text-foreground placeholder:text-muted-foreground w-full"
+            disabled={isLoading}
+          />
+        </div>
+        <Button
           type="submit"
           disabled={isLoading}
-          className="bg-primary hover:bg-primary/90 text-white font-medium px-6 py-3 rounded-full flex items-center justify-center min-w-[120px] transition-colors"
+          className="bg-primary hover:bg-primary/90 text-white font-medium px-6 py-3 rounded-lg shadow-lg hover:shadow-xl transition-colors w-full md:w-auto"
         >
           {isLoading ? (
             <Loader2 className="h-5 w-5 animate-spin" />
@@ -75,7 +79,7 @@ const UrlForm: React.FC = () => {
               <ArrowRight size={16} />
             </>
           )}
-        </button>
+        </Button>
       </div>
     </form>
   );

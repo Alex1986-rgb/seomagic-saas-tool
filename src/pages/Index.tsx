@@ -3,19 +3,22 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import Layout from '@/components/Layout';
 import HeroSection from '@/components/HeroSection';
+import VideoDemo from '@/components/VideoDemo';
 import FeatureSection from '@/components/FeatureSection';
 import DemoWorkflow from '@/components/DemoWorkflow';
-import VideoDemo from '@/components/VideoDemo';
 import { Quote, Star, ArrowRight, Shield, Award, Target } from 'lucide-react';
 
 const Index: React.FC = () => {
   return (
     <Layout>
+      {/* Hero Section */}
       <HeroSection />
-      <FeatureSection />
       
-      {/* Video Demo Section */}
+      {/* Video Demo Section - перемещено выше для лучшего ознакомления */}
       <VideoDemo />
+      
+      {/* Feature Section */}
+      <FeatureSection />
       
       {/* Demo Workflow Section */}
       <DemoWorkflow />

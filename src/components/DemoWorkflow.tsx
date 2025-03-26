@@ -60,19 +60,26 @@ const DemoWorkflow: React.FC = () => {
     <section className="py-20 overflow-hidden relative">
       <div className="absolute top-0 left-0 w-full h-20 bg-gradient-to-b from-background via-background/80 to-transparent z-10"></div>
       <div className="absolute bottom-0 left-0 w-full h-20 bg-gradient-to-t from-background via-background/80 to-transparent z-10"></div>
+      <div className="absolute inset-0 bg-gradient-to-b from-secondary/10 via-transparent to-primary/5 -z-10" />
       
       <div className="container mx-auto px-4 md:px-6 text-center">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
           transition={{ duration: 0.6 }}
           className="mb-12"
         >
-          <div className="inline-flex items-center px-4 py-2 rounded-full bg-primary/10 text-primary font-medium mb-4">
+          <div className="inline-flex items-center px-4 py-2 rounded-full bg-primary/10 text-primary font-medium mb-4 border border-primary/20">
             <Activity className="w-4 h-4 mr-2" />
             Процесс работы
           </div>
-          <h2 className="text-3xl md:text-4xl font-bold mb-4 font-playfair">От аудита до оптимизированного сайта</h2>
+          <h2 className="text-3xl md:text-4xl font-bold mb-4 font-playfair">
+            <span className="inline-block relative">
+              От аудита до оптимизированного сайта
+              <div className="absolute -bottom-2 left-0 right-0 h-1 bg-primary/60 rounded-full"></div>
+            </span>
+          </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
             Посмотрите, как SeoMarket анализирует и оптимизирует ваш сайт всего за несколько шагов
           </p>
@@ -82,7 +89,7 @@ const DemoWorkflow: React.FC = () => {
           <Button 
             variant={isAutoPlaying ? "default" : "outline"}
             onClick={() => setIsAutoPlaying(!isAutoPlaying)}
-            className="rounded-full"
+            className="rounded-full border border-primary/20"
           >
             {isAutoPlaying ? "Остановить демо" : "Запустить демо"}
           </Button>
@@ -91,7 +98,7 @@ const DemoWorkflow: React.FC = () => {
         <div className="relative max-w-5xl mx-auto">
           {/* Process steps */}
           <div className="flex justify-between items-center mb-10 relative">
-            <div className="absolute left-0 right-0 top-1/2 h-1 bg-secondary -z-10"></div>
+            <div className="absolute left-0 right-0 top-1/2 h-1 bg-gradient-to-r from-primary/20 via-primary/40 to-primary/20 -z-10"></div>
             
             {steps.map((step, index) => (
               <motion.div 
@@ -102,7 +109,7 @@ const DemoWorkflow: React.FC = () => {
                 animate={{ scale: currentStep === index ? 1.1 : 1 }}
                 transition={{ duration: 0.3 }}
               >
-                <div className={`w-14 h-14 rounded-full flex items-center justify-center 
+                <div className={`w-14 h-14 rounded-full flex items-center justify-center shadow-md
                   ${currentStep === index 
                     ? 'bg-primary text-white' 
                     : currentStep > index 
@@ -131,7 +138,7 @@ const DemoWorkflow: React.FC = () => {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
             transition={{ duration: 0.5 }}
-            className="p-10 neo-glass rounded-xl border border-primary/20 shadow-xl min-h-[320px] flex flex-col items-center justify-center"
+            className="p-10 neo-glass rounded-xl border border-primary/20 shadow-xl min-h-[320px] flex flex-col items-center justify-center backdrop-blur-sm"
           >
             <motion.div
               className={`mb-6 ${steps[currentStep].animation}`}
@@ -153,7 +160,7 @@ const DemoWorkflow: React.FC = () => {
             
             <div className="flex gap-4">
               {currentStep === 0 && (
-                <Button asChild className="gap-2">
+                <Button asChild className="gap-2 shadow-lg hover:shadow-xl transition-all">
                   <Link to="/audit">
                     Начать аудит <ArrowRight className="w-4 h-4" />
                   </Link>
@@ -161,13 +168,17 @@ const DemoWorkflow: React.FC = () => {
               )}
               
               {currentStep < steps.length - 1 && (
-                <Button variant={currentStep === 0 ? "outline" : "default"} onClick={() => setCurrentStep(curr => curr + 1)} className="gap-2">
+                <Button 
+                  variant={currentStep === 0 ? "outline" : "default"} 
+                  onClick={() => setCurrentStep(curr => curr + 1)} 
+                  className="gap-2 border-primary/20"
+                >
                   Следующий шаг <ArrowRight className="w-4 h-4" />
                 </Button>
               )}
               
               {currentStep === steps.length - 1 && (
-                <Button className="gap-2">
+                <Button className="gap-2 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg">
                   <Sparkles className="w-4 h-4" /> Оптимизировать мой сайт
                 </Button>
               )}
