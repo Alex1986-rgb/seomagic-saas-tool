@@ -36,7 +36,7 @@ export const generateAuditData = (): AuditData => {
 
   return {
     id: crypto.randomUUID(),
-    url: "example.com", // Add the missing url property
+    url: "example.com",
     score,
     date: new Date().toISOString(),
     previousScore,
