@@ -37,53 +37,49 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
         <Button className="gap-2">Оплатить и оптимизировать</Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle>Оплата оптимизации</DialogTitle>
-          <DialogDescription>
+        <DialogHeader className="text-center">
+          <DialogTitle className="text-xl font-semibold">Оплата оптимизации</DialogTitle>
+          <DialogDescription className="pt-2">
             Оптимизация сайта {url} будет выполнена после оплаты
           </DialogDescription>
         </DialogHeader>
         <div className="grid gap-4 py-4">
           <div className="rounded-lg bg-primary/10 p-4">
-            <h4 className="font-medium mb-2">Что включено:</h4>
+            <h4 className="font-medium mb-2 text-center">Что включено:</h4>
             <ul className="space-y-1 text-sm">
               <li className="flex items-center gap-2">
-                <Check className="h-4 w-4 text-green-500" />
+                <Check className="h-4 w-4 text-primary" />
                 Оптимизация всех мета-тегов
               </li>
               <li className="flex items-center gap-2">
-                <Check className="h-4 w-4 text-green-500" />
+                <Check className="h-4 w-4 text-primary" />
                 Исправление проблем с изображениями
               </li>
               <li className="flex items-center gap-2">
-                <Check className="h-4 w-4 text-green-500" />
+                <Check className="h-4 w-4 text-primary" />
                 Оптимизация контента для SEO
               </li>
               <li className="flex items-center gap-2">
-                <Check className="h-4 w-4 text-green-500" />
+                <Check className="h-4 w-4 text-primary" />
                 Улучшение скорости загрузки
               </li>
               <li className="flex items-center gap-2">
-                <Check className="h-4 w-4 text-green-500" />
+                <Check className="h-4 w-4 text-primary" />
                 Исправление технических проблем
               </li>
               <li className="flex items-center gap-2">
-                <Check className="h-4 w-4 text-green-500" />
+                <Check className="h-4 w-4 text-primary" />
                 Удаление дублей и создание уникального контента
-              </li>
-              <li className="flex items-center gap-2">
-                <Check className="h-4 w-4 text-green-500" />
-                Исправление URL (замена подчеркиваний на дефисы)
               </li>
             </ul>
           </div>
           
-          <div className="flex justify-between items-center p-3 border border-border rounded-lg">
+          <div className="flex justify-between items-center p-3 border border-primary/30 rounded-lg">
             <span className="font-medium">Итого к оплате:</span>
             <span className="text-xl font-bold">{formatNumber(optimizationCost)} ₽</span>
           </div>
         </div>
-        <DialogFooter>
+        <DialogFooter className="flex justify-between sm:justify-end gap-3">
           <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
             Отмена
           </Button>
