@@ -15,9 +15,8 @@
   position: absolute;
   background-color: rgba(0, 0, 0, 0.6);
   border-radius: 8px;
-  opacity: 0;
-  animation: twinkle var(--twinkle-duration, 4s) ease-in-out infinite;
-  animation-delay: var(--twinkle-delay, 0s);
+  opacity: 1; /* Changed from 0 to always be visible */
+  /* Removed animation property that was causing twinkling */
   color: white;
   display: flex;
   align-items: center;
@@ -30,6 +29,7 @@
   padding: 4px 8px;
 }
 
+/* Keeping the keyframes for reference but not using them */
 @keyframes twinkle {
   0% {
     opacity: 0;
@@ -45,7 +45,7 @@
   }
 }
 
-/* Star groups with different appearance sequences */
+/* Star groups with different appearance sequences - not animating anymore */
 .star-group-1 .star {
   --twinkle-delay: 0s;
 }
