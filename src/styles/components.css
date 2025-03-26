@@ -1,0 +1,69 @@
+
+@tailwind components;
+
+@layer components {
+  /* Elegant card styles */
+  .elegant-card {
+    @apply bg-white rounded-sm shadow-sm border border-border/30 hover:shadow-md transition-all duration-300;
+  }
+  
+  .premium-button {
+    @apply rounded-sm bg-primary text-primary-foreground transition-colors hover:brightness-105;
+  }
+  
+  .premium-gradient {
+    @apply bg-gradient-to-r from-primary/90 to-primary;
+  }
+
+  .luxury-glass {
+    @apply bg-white/90 backdrop-blur-md border border-white/40 rounded-sm shadow-sm;
+  }
+  
+  .elegant-icon-button {
+    @apply rounded-sm p-3 bg-secondary text-foreground hover:bg-secondary/80 transition-colors;
+  }
+
+  /* Border styles */
+  .border-elegant {
+    @apply border-t border-r border-b border-l border-border/50;
+  }
+
+  /* Enhanced elegant divider - стили для разделителей */
+  .elegant-divider {
+    @apply relative h-px w-full my-12;
+  }
+  
+  .elegant-divider::before {
+    content: "";
+    @apply absolute inset-0 bg-gradient-to-r from-transparent via-primary/40 to-transparent;
+  }
+  
+  .elegant-divider::after {
+    content: "❦";
+    @apply absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-primary/70 text-sm bg-white px-3;
+  }
+  
+  /* Альтернативный стиль разделителя */
+  .elegant-divider-alt {
+    @apply relative h-px w-full my-12;
+  }
+  
+  .elegant-divider-alt::before {
+    content: "";
+    @apply absolute inset-0 bg-gradient-to-r from-transparent via-primary/30 to-transparent;
+  }
+  
+  .elegant-divider-alt::after {
+    content: "◆";
+    @apply absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-primary/60 text-xs bg-white px-3;
+  }
+
+  /* Heading with underline */
+  .heading-gradient {
+    @apply relative inline-block;
+    background: linear-gradient(to right, theme('colors.primary.DEFAULT'), theme('colors.primary.DEFAULT'));
+    background-position: 0 85%;
+    background-repeat: no-repeat;
+    background-size: 100% 8%;
+  }
+}
