@@ -7,7 +7,7 @@
 
 @layer base {
   :root {
-    --background: 210 40% 98%;
+    --background: 0 0% 100%;
     --foreground: 220 20% 10%;
 
     --card: 0 0% 100%;
@@ -16,26 +16,26 @@
     --popover: 0 0% 100%;
     --popover-foreground: 220 20% 10%;
 
-    --primary: 220 70% 50%;
-    --primary-foreground: 210 40% 98%;
+    --primary: 20 80% 45%;
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 210 20% 93%;
+    --secondary: 30 30% 96%;
     --secondary-foreground: 220 20% 10%;
 
-    --muted: 210 20% 93%;
+    --muted: 30 30% 96%;
     --muted-foreground: 220 10% 40%;
 
-    --accent: 220 70% 50%;
-    --accent-foreground: 210 40% 98%;
+    --accent: 20 80% 45%;
+    --accent-foreground: 0 0% 100%;
 
     --destructive: 0 84% 60%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 220 20% 93%;
-    --input: 220 20% 93%;
-    --ring: 220 70% 50%;
+    --border: 30 10% 90%;
+    --input: 30 10% 90%;
+    --ring: 20 80% 45%;
 
-    --radius: 0.75rem;
+    --radius: 0.5rem;
 
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 240 5% 26%;
@@ -88,25 +88,25 @@
     font-feature-settings: "rlig" 1, "calt" 1;
   }
 
-  /* iPad-inspired styles */
-  .ipad-card {
-    @apply bg-white rounded-2xl shadow-sm border border-border/30 hover:shadow-md transition-all duration-300;
+  /* Elegant card styles */
+  .elegant-card {
+    @apply bg-white rounded-sm shadow-sm border border-border/30 hover:shadow-md transition-all duration-300;
   }
   
-  .ipad-button {
-    @apply rounded-full bg-primary text-primary-foreground transition-colors hover:brightness-105 shadow-sm;
+  .premium-button {
+    @apply rounded-sm bg-primary text-primary-foreground transition-colors hover:brightness-105;
   }
   
-  .ipad-gradient {
+  .premium-gradient {
     @apply bg-gradient-to-r from-primary/90 to-primary;
   }
 
-  .ipad-glass {
-    @apply bg-white/70 backdrop-blur-md border border-white/40 rounded-2xl shadow-sm;
+  .luxury-glass {
+    @apply bg-white/90 backdrop-blur-md border border-white/40 rounded-sm shadow-sm;
   }
   
-  .ipad-icon-button {
-    @apply rounded-full p-3 bg-secondary text-foreground hover:bg-secondary/80 transition-colors;
+  .elegant-icon-button {
+    @apply rounded-sm p-3 bg-secondary text-foreground hover:bg-secondary/80 transition-colors;
   }
 
   /* Improved focus outlines */
@@ -130,7 +130,7 @@
 
   /* Clean typography */
   h1, h2, h3, h4, h5, h6 {
-    @apply font-inter font-medium tracking-tight;
+    @apply font-playfair font-medium tracking-tight;
   }
   
   h1 {
@@ -160,6 +160,25 @@
   
   .hover-lift {
     @apply transition-all duration-200 hover:-translate-y-1 hover:shadow-md;
+  }
+
+  /* Heading with underline */
+  .heading-gradient {
+    @apply relative inline-block;
+    background: linear-gradient(to right, theme('colors.primary.DEFAULT'), theme('colors.primary.DEFAULT'));
+    background-position: 0 85%;
+    background-repeat: no-repeat;
+    background-size: 100% 8%;
+  }
+
+  /* Border styles */
+  .border-elegant {
+    @apply border-t border-r border-b border-l border-border/50;
+  }
+
+  /* Special divider */
+  .elegant-divider {
+    @apply h-px w-full bg-gradient-to-r from-border/10 via-border/50 to-border/10 my-8;
   }
 }
 

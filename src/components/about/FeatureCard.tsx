@@ -17,10 +17,10 @@ const FeatureCard = ({ title, description, icon }: FeatureCardProps) => (
     viewport={{ once: true }}
     transition={{ duration: 0.5 }}
   >
-    <Card className="relative overflow-hidden border border-border/20 shadow-sm bg-white rounded-2xl h-full hover:shadow-md transition-all duration-300 group">
+    <Card className="relative overflow-hidden border border-border/20 shadow-sm bg-white rounded-sm h-full hover:shadow-md transition-all duration-300 group">
       <CardContent className="p-8 relative z-10">
-        <div className="mb-6 inline-flex p-4 rounded-full bg-secondary/50 text-primary group-hover:bg-secondary/80 transition-all duration-300">{icon}</div>
-        <h3 className="text-xl font-semibold mb-3 text-foreground">{title}</h3>
+        <div className="mb-6 inline-flex p-4 rounded-sm bg-secondary/80 text-primary group-hover:bg-secondary transition-all duration-300">{icon}</div>
+        <h3 className="text-xl font-semibold mb-3 text-foreground font-playfair">{title}</h3>
         <p className="text-muted-foreground">{description}</p>
       </CardContent>
     </Card>

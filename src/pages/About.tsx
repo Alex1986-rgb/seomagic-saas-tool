@@ -18,11 +18,15 @@ const About = () => {
         transition={{ duration: 0.5 }}
         className="container px-4 py-8 mx-auto relative"
       >
-        <div className="absolute inset-0 bg-gradient-to-b from-secondary/30 to-transparent -z-10" />
+        <div className="absolute inset-0 bg-gradient-to-b from-secondary/20 to-transparent -z-10" />
         <AboutHero />
+        <div className="elegant-divider" />
         <MissionSection />
+        <div className="elegant-divider" />
         <FeaturesSection />
+        <div className="elegant-divider" />
         <TeamSection />
+        <div className="elegant-divider" />
         <TestimonialsSection />
         <CtaSection />
       </motion.div>

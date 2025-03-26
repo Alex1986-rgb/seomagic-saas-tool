@@ -35,7 +35,7 @@ const Audit: React.FC = () => {
   return (
     <Layout>
       <div className="container mx-auto px-4 md:px-6 pt-32 pb-20 relative">
-        <div className="absolute inset-0 bg-gradient-to-b from-secondary/30 to-transparent -z-10" />
+        <div className="absolute inset-0 bg-gradient-to-b from-secondary/20 to-transparent -z-10" />
         
         <motion.div 
           className="mb-12 text-center max-w-3xl mx-auto"
@@ -43,12 +43,12 @@ const Audit: React.FC = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
         >
-          <div className="inline-flex items-center px-4 py-2 rounded-full bg-secondary text-primary font-medium mb-4">
+          <div className="inline-flex items-center px-4 py-2 rounded-sm bg-secondary text-primary font-medium mb-4">
             {url ? <Target className="w-4 h-4 mr-2" /> : <Rocket className="w-4 h-4 mr-2" />}
             {url ? 'SEO Анализ' : 'SEO Аудит'}
           </div>
           
-          <h1 className="text-3xl md:text-4xl font-bold mb-4">
+          <h1 className="text-3xl md:text-4xl font-bold mb-4 font-playfair">
             {url ? 'Результаты SEO аудита' : 'Начните SEO аудит'}
           </h1>
           
@@ -62,7 +62,7 @@ const Audit: React.FC = () => {
 
         {!url && (
           <motion.div 
-            className="max-w-2xl mx-auto mb-16 ipad-card p-8"
+            className="max-w-2xl mx-auto mb-16 elegant-card p-8"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.5, delay: 0.2 }}
