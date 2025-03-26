@@ -20,7 +20,7 @@ const HeroTitle: React.FC<HeroTitleProps> = ({ itemVariants }) => {
         transition={{ type: "spring", stiffness: 400, damping: 10 }}
       >
         <Sparkles className="w-4 h-4 mr-2 animate-pulse-slow" />
-        Профессиональная SEO оптимизация
+        Бесплатный SEO аудит всех страниц сайта
         <motion.span 
           className="absolute -top-1 -right-1 w-2 h-2 bg-primary rounded-full"
           animate={{ 
@@ -54,7 +54,7 @@ const HeroTitle: React.FC<HeroTitleProps> = ({ itemVariants }) => {
         className="text-lg md:text-xl text-muted-foreground max-w-2xl"
         variants={itemVariants}
       >
-        SeoMarket анализирует ваш сайт, генерирует мгновенные отчеты и предоставляет подробные рекомендации для улучшения позиций в поисковой выдаче.
+        SeoMarket <span className="font-bold">бесплатно</span> анализирует ваш сайт, генерирует мгновенные отчеты и предоставляет подробные рекомендации для улучшения позиций в поисковой выдаче.
       </motion.p>
     </>
   );
