@@ -23,6 +23,7 @@ const AuditTabs: React.FC<AuditTabsProps> = ({ details }) => {
           <AuditCategorySection 
             title="SEO оптимизация"
             score={details.seo.score}
+            previousScore={details.seo.previousScore}
             items={details.seo.items}
             description="Анализ SEO-факторов, которые влияют на ранжирование вашего сайта в поисковых системах."
           />
@@ -32,6 +33,7 @@ const AuditTabs: React.FC<AuditTabsProps> = ({ details }) => {
           <AuditCategorySection 
             title="Производительность"
             score={details.performance.score}
+            previousScore={details.performance.previousScore}
             items={details.performance.items}
             description="Анализ скорости и производительности вашего сайта, которые влияют на удобство использования и SEO."
           />
@@ -41,6 +43,7 @@ const AuditTabs: React.FC<AuditTabsProps> = ({ details }) => {
           <AuditCategorySection 
             title="Контент"
             score={details.content.score}
+            previousScore={details.content.previousScore}
             items={details.content.items}
             description="Анализ содержимого страниц, включая тексты, заголовки, ключевые слова и медиафайлы."
           />
@@ -50,6 +53,7 @@ const AuditTabs: React.FC<AuditTabsProps> = ({ details }) => {
           <AuditCategorySection 
             title="Технические аспекты"
             score={details.technical.score}
+            previousScore={details.technical.previousScore}
             items={details.technical.items}
             description="Анализ технических аспектов сайта, влияющих на индексацию и работу поисковых систем."
           />

@@ -1,8 +1,9 @@
 
 import React from 'react';
-import { ArrowDown, ArrowUp, Download, ExternalLink, Share } from 'lucide-react';
+import { ArrowDown, ArrowUp, Download, ExternalLink, Share, TrendingUp, TrendingDown, Minus } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import ScoreGauge from './ScoreGauge';
+import { motion } from 'framer-motion';
 
 interface AuditSummaryProps {
   url: string;
@@ -13,9 +14,18 @@ interface AuditSummaryProps {
     important: number;
     opportunities: number;
   };
+  previousScore?: number;
 }
 
-const AuditSummary: React.FC<AuditSummaryProps> = ({ url, score, date, issues }) => {
+const AuditSummary: React.FC<AuditSummaryProps> = ({ url, score, date, issues, previousScore }) => {
+  const scoreDiff = previousScore !== undefined ? score - previousScore : undefined;
+  const getTrendIcon = () => {
+    if (scoreDiff === undefined) return null;
+    if (scoreDiff > 0) return <TrendingUp className="h-4 w-4 text-green-500" />;
+    if (scoreDiff < 0) return <TrendingDown className="h-4 w-4 text-red-500" />;
+    return <Minus className="h-4 w-4 text-amber-500" />;
+  };
+
   return (
     <div className="neo-card p-6 mb-8">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
@@ -27,8 +37,26 @@ const AuditSummary: React.FC<AuditSummaryProps> = ({ url, score, date, issues })
           </p>
         </div>
         
-        <div className="flex justify-center">
+        <div className="flex justify-center relative">
           <ScoreGauge score={score} size={140} />
+          
+          {scoreDiff !== undefined && (
+            <motion.div
+              initial={{ scale: 0.5, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ duration: 0.3, delay: 0.5 }}
+              className={`absolute bottom-0 right-0 flex items-center gap-1 py-1 px-2 rounded-full ${
+                scoreDiff > 0 ? 'bg-green-100 text-green-600' : 
+                scoreDiff < 0 ? 'bg-red-100 text-red-600' : 
+                'bg-amber-100 text-amber-600'
+              }`}
+            >
+              {getTrendIcon()}
+              <span className="text-sm font-medium">
+                {scoreDiff > 0 ? '+' : ''}{scoreDiff}
+              </span>
+            </motion.div>
+          )}
         </div>
         
         <div className="space-y-2">
@@ -54,15 +82,15 @@ const AuditSummary: React.FC<AuditSummaryProps> = ({ url, score, date, issues })
       </div>
       
       <div className="mt-6 pt-4 border-t border-border flex flex-wrap gap-3 justify-center md:justify-end">
-        <Button variant="outline" size="sm">
+        <Button variant="outline" size="sm" className="hover-lift">
           <Download className="h-4 w-4 mr-2" />
           Скачать PDF
         </Button>
-        <Button variant="outline" size="sm">
+        <Button variant="outline" size="sm" className="hover-lift">
           <Share className="h-4 w-4 mr-2" />
           Поделиться
         </Button>
-        <Button size="sm">
+        <Button size="sm" className="hover-lift">
           <ExternalLink className="h-4 w-4 mr-2" />
           Оптимизировать сайт
         </Button>

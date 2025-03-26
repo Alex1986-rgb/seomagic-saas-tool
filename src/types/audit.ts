@@ -11,11 +11,14 @@ export interface AuditItemData {
   description?: string;
   value?: string;
   status: 'good' | 'warning' | 'error';
+  trend?: 'up' | 'down' | 'neutral';
+  helpText?: string;
 }
 
 export interface AuditCategoryData {
   score: number;
   items: AuditItemData[];
+  previousScore?: number;
 }
 
 export interface AuditDetailsData {
@@ -26,15 +29,28 @@ export interface AuditDetailsData {
 }
 
 export interface AuditData {
-  id: string; // Added this property
+  id: string;
   score: number;
   date: string;
   issues: AuditIssues;
   details: AuditDetailsData;
+  previousScore?: number;
+  historyAvailable?: boolean;
 }
 
 export interface RecommendationData {
   critical: string[];
   important: string[];
   opportunities: string[];
+}
+
+export interface AuditHistoryItem {
+  id: string;
+  date: string;
+  score: number;
+  issues: AuditIssues;
+}
+
+export interface AuditHistoryData {
+  items: AuditHistoryItem[];
 }

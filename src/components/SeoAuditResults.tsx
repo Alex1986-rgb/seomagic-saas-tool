@@ -6,10 +6,12 @@ import AuditLoading from './audit/AuditLoading';
 import AuditTabs from './audit/AuditTabs';
 import AuditRecommendations from './audit/AuditRecommendations';
 import AuditShareResults from './audit/AuditShareResults';
-import { fetchAuditData, fetchRecommendations } from '@/services/auditService';
-import { AuditData, RecommendationData } from '@/types/audit';
+import AuditHistory from './audit/AuditHistory';
+import { fetchAuditData, fetchRecommendations, fetchAuditHistory } from '@/services/auditService';
+import { AuditData, RecommendationData, AuditHistoryData } from '@/types/audit';
 import { motion, AnimatePresence } from 'framer-motion';
-import { AlertTriangle } from 'lucide-react';
+import { AlertTriangle, RefreshCw } from 'lucide-react';
+import { Button } from "@/components/ui/button";
 
 interface SeoAuditResultsProps {
   url: string;
@@ -20,7 +22,9 @@ const SeoAuditResults: React.FC<SeoAuditResultsProps> = ({ url }) => {
   const [loadingProgress, setLoadingProgress] = useState(0);
   const [auditData, setAuditData] = useState<AuditData | null>(null);
   const [recommendations, setRecommendations] = useState<RecommendationData | null>(null);
+  const [historyData, setHistoryData] = useState<AuditHistoryData | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const { toast } = useToast();
 
   // Симуляция прогресса загрузки
@@ -40,45 +44,70 @@ const SeoAuditResults: React.FC<SeoAuditResultsProps> = ({ url }) => {
   }, [isLoading]);
 
   // Загрузка данных аудита
-  useEffect(() => {
-    const loadAuditData = async () => {
+  const loadAuditData = async (refresh = false) => {
+    if (refresh) {
+      setIsRefreshing(true);
+    } else {
       setIsLoading(true);
-      setError(null);
-      
-      try {
-        // Добавляем небольшую задержку для загрузочного состояния
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        
-        const [auditResult, recommendationsResult] = await Promise.all([
-          fetchAuditData(url),
-          fetchRecommendations()
-        ]);
-        
-        setAuditData(auditResult);
-        setRecommendations(recommendationsResult);
-        
-        toast({
-          title: "Аудит завершен",
-          description: "SEO аудит сайта успешно завершен",
-        });
-      } catch (error) {
-        console.error('Error loading audit data:', error);
-        setError("Не удалось загрузить данные аудита. Пожалуйста, проверьте URL и попробуйте снова.");
-        toast({
-          title: "Ошибка",
-          description: "Не удалось загрузить результаты аудита",
-          variant: "destructive",
-        });
-      } finally {
-        // Небольшая задержка, чтобы показать полный прогресс
-        setTimeout(() => {
-          setIsLoading(false);
-        }, 500);
-      }
-    };
+    }
+    setError(null);
     
+    try {
+      // Добавляем небольшую задержку для загрузочного состояния при первоначальной загрузке
+      if (!refresh) {
+        await new Promise(resolve => setTimeout(resolve, 1000));
+      }
+      
+      const [auditResult, recommendationsResult, historyResult] = await Promise.all([
+        fetchAuditData(url),
+        fetchRecommendations(),
+        fetchAuditHistory(url)
+      ]);
+      
+      setAuditData(auditResult);
+      setRecommendations(recommendationsResult);
+      setHistoryData(historyResult);
+      
+      toast({
+        title: refresh ? "Аудит обновлен" : "Аудит завершен",
+        description: refresh ? "SEO аудит сайта успешно обновлен" : "SEO аудит сайта успешно завершен",
+      });
+    } catch (error) {
+      console.error('Error loading audit data:', error);
+      setError("Не удалось загрузить данные аудита. Пожалуйста, проверьте URL и попробуйте снова.");
+      toast({
+        title: "Ошибка",
+        description: "Не удалось загрузить результаты аудита",
+        variant: "destructive",
+      });
+    } finally {
+      // Небольшая задержка, чтобы показать полный прогресс
+      setTimeout(() => {
+        setIsLoading(false);
+        setIsRefreshing(false);
+      }, 500);
+    }
+  };
+  
+  // Загрузка при первом рендере
+  useEffect(() => {
     loadAuditData();
   }, [url, toast]);
+  
+  // Обработчик обновления аудита
+  const handleRefreshAudit = () => {
+    loadAuditData(true);
+  };
+  
+  // Обработчик выбора аудита из истории
+  const handleSelectHistoricalAudit = (auditId: string) => {
+    // В реальном приложении здесь был бы запрос на получение исторических данных
+    // Для демонстрации просто показываем уведомление
+    toast({
+      title: "Исторический аудит",
+      description: `Запрос данных аудита ID: ${auditId}`,
+    });
+  };
 
   if (isLoading) {
     return <AuditLoading progress={loadingProgress} />;
@@ -93,9 +122,10 @@ const SeoAuditResults: React.FC<SeoAuditResultsProps> = ({ url }) => {
       >
         <AlertTriangle className="h-16 w-16 text-amber-500 mx-auto mb-4" />
         <p className="text-lg text-red-500 mb-4">{error}</p>
-        <p className="text-muted-foreground">
+        <p className="text-muted-foreground mb-6">
           Пожалуйста, проверьте URL и попробуйте снова. Если проблема повторяется, обратитесь в службу поддержки.
         </p>
+        <Button onClick={() => loadAuditData()}>Попробовать снова</Button>
       </motion.div>
     );
   }
@@ -114,13 +144,49 @@ const SeoAuditResults: React.FC<SeoAuditResultsProps> = ({ url }) => {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.5 }}
+        className="relative"
       >
+        {isRefreshing && (
+          <div className="absolute inset-0 bg-background/60 flex items-center justify-center z-10 rounded-lg">
+            <div className="text-center">
+              <RefreshCw className="h-10 w-10 animate-spin text-primary mx-auto mb-4" />
+              <p className="text-lg font-medium">Обновление аудита...</p>
+            </div>
+          </div>
+        )}
+        
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-2xl font-semibold">Результаты SEO аудита</h2>
+          <Button 
+            onClick={handleRefreshAudit} 
+            disabled={isRefreshing}
+            size="sm"
+          >
+            <RefreshCw className={`h-4 w-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
+            Обновить аудит
+          </Button>
+        </div>
+        
         <AuditSummary 
           url={url} 
           score={auditData.score}
           date={auditData.date}
           issues={auditData.issues}
+          previousScore={auditData.previousScore}
         />
+        
+        {historyData && historyData.items.length > 1 && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.1 }}
+          >
+            <AuditHistory 
+              historyItems={historyData.items} 
+              onSelectAudit={handleSelectHistoricalAudit}
+            />
+          </motion.div>
+        )}
         
         <motion.div
           initial={{ opacity: 0, y: 20 }}

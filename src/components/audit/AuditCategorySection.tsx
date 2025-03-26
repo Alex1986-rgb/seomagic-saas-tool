@@ -1,8 +1,9 @@
 
 import React, { useState } from 'react';
-import { Check, Copy, ChevronDown, ChevronUp } from 'lucide-react';
+import { Check, Copy, ChevronDown, ChevronUp, Info, TrendingUp, TrendingDown, Minus } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import { motion, AnimatePresence } from 'framer-motion';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface AuditCategoryItemProps {
   id: string;
@@ -10,6 +11,8 @@ interface AuditCategoryItemProps {
   description?: string;
   value?: string;
   status: 'good' | 'warning' | 'error';
+  trend?: 'up' | 'down' | 'neutral';
+  helpText?: string;
 }
 
 interface AuditCategorySectionProps {
@@ -17,6 +20,7 @@ interface AuditCategorySectionProps {
   score: number;
   items: AuditCategoryItemProps[];
   description?: string;
+  previousScore?: number;
 }
 
 const AuditCategorySection: React.FC<AuditCategorySectionProps> = ({
@@ -24,6 +28,7 @@ const AuditCategorySection: React.FC<AuditCategorySectionProps> = ({
   score,
   items,
   description,
+  previousScore,
 }) => {
   const { toast } = useToast();
   const [expanded, setExpanded] = useState(true);
@@ -47,6 +52,17 @@ const AuditCategorySection: React.FC<AuditCategorySectionProps> = ({
     }
   };
 
+  const getTrendIcon = (trend?: string) => {
+    if (!trend) return null;
+    
+    switch(trend) {
+      case 'up': return <TrendingUp className="h-3 w-3 text-green-500" />;
+      case 'down': return <TrendingDown className="h-3 w-3 text-red-500" />;
+      case 'neutral': return <Minus className="h-3 w-3 text-amber-500" />;
+      default: return null;
+    }
+  };
+
   const handleCopyValue = (value: string, id: string) => {
     navigator.clipboard.writeText(value);
     setCopiedId(id);
@@ -59,6 +75,18 @@ const AuditCategorySection: React.FC<AuditCategorySectionProps> = ({
       setCopiedId(null);
     }, 2000);
   };
+
+  // Calculate trend for overall score
+  const getScoreTrend = () => {
+    if (!previousScore) return undefined;
+    
+    const diff = score - previousScore;
+    if (diff > 3) return 'up';
+    if (diff < -3) return 'down';
+    return 'neutral';
+  };
+
+  const scoreTrend = getScoreTrend();
 
   return (
     <motion.div 
@@ -78,14 +106,36 @@ const AuditCategorySection: React.FC<AuditCategorySectionProps> = ({
               <ChevronUp className="h-5 w-5 text-muted-foreground" /> : 
               <ChevronDown className="h-5 w-5 text-muted-foreground" />
             }
+            
+            {description && (
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Info className="h-4 w-4 text-muted-foreground cursor-help ml-1" />
+                  </TooltipTrigger>
+                  <TooltipContent className="max-w-xs">
+                    <p>{description}</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            )}
           </h2>
-          {description && <p className="text-muted-foreground mt-1">{description}</p>}
         </div>
-        <div className="text-2xl font-bold">
+        
+        <div className="text-2xl font-bold flex items-center gap-2">
           <span className={score >= 80 ? 'text-green-500' : score >= 60 ? 'text-amber-500' : 'text-red-500'}>
             {score}
           </span>
           <span className="text-muted-foreground">/100</span>
+          
+          {scoreTrend && (
+            <span className={`trend-indicator ${scoreTrend === 'up' ? 'trend-up' : scoreTrend === 'down' ? 'trend-down' : 'trend-neutral'} flex items-center gap-1`}>
+              {getTrendIcon(scoreTrend)}
+              <span className="text-xs">{scoreTrend === 'up' ? '+' : scoreTrend === 'down' ? '-' : ''}
+                {Math.abs(score - (previousScore || 0))}
+              </span>
+            </span>
+          )}
         </div>
       </div>
       
@@ -109,7 +159,25 @@ const AuditCategorySection: React.FC<AuditCategorySectionProps> = ({
                     <span className="inline-block w-6 h-6 text-center mr-3">
                       {getStatusIcon(item.status)}
                     </span>
-                    <h3 className="font-medium">{item.title}</h3>
+                    <h3 className="font-medium flex items-center">
+                      {item.title}
+                      {item.trend && (
+                        <span className="ml-2">{getTrendIcon(item.trend)}</span>
+                      )}
+                      
+                      {item.helpText && (
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Info className="h-3.5 w-3.5 text-muted-foreground cursor-help ml-1.5" />
+                            </TooltipTrigger>
+                            <TooltipContent className="max-w-xs">
+                              <p>{item.helpText}</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      )}
+                    </h3>
                   </div>
                   {item.value && (
                     <div className="flex items-center gap-2">
