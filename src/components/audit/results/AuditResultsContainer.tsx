@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import AuditSummary from '@/components/AuditSummary';
@@ -51,7 +50,7 @@ const AuditResultsContainer: React.FC<AuditResultsContainerProps> = ({ url }) =>
   };
 
   const handleSelectHistoricalAudit = (auditId: string) => {
-    // Это может быть перенесено в отдельную функцию или контекст в будущей рефакторизации
+    // This can be moved to a separate function or context in a future refactoring
   };
 
   const toggleContentPrompt = () => {

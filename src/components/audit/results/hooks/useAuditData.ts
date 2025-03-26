@@ -1,10 +1,10 @@
-import { useState, useEffect } from 'react';
+
+import { useState } from 'react';
 import { useAuditCore } from './useAuditCore';
 import { useScanningState } from './useScanningState';
 import { useOptimization } from './useOptimization';
 import { usePdfReport } from './usePdfReport';
 import { AuditData } from '@/types/audit';
-import { OptimizationItem } from '../components/optimization';
 
 export const useAuditData = (url: string) => {
   const { 
@@ -16,7 +16,7 @@ export const useAuditData = (url: string) => {
     error,
     isRefreshing,
     setIsRefreshing,
-    loadAuditData,
+    loadAuditData: loadAuditDataCore,
     setAuditData
   } = useAuditCore(url);
 
@@ -56,7 +56,7 @@ export const useAuditData = (url: string) => {
   const { generatePdfReportFile } = usePdfReport();
 
   const handleLoadAuditData = async (refresh = false, deepScan = false) => {
-    const result = await loadAuditData(refresh, deepScan);
+    const result = await loadAuditDataCore(refresh, deepScan);
     
     if (deepScan) {
       const scanResult = await handleScanWebsite();
