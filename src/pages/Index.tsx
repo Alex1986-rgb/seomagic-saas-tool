@@ -1,8 +1,7 @@
-
 import React from 'react';
 import { motion } from 'framer-motion';
 import Layout from '@/components/Layout';
-import HeroSection from '@/components/HeroSection';
+import HeroSection from '@/components/hero';
 import VideoDemo from '@/components/VideoDemo';
 import FeatureSection from '@/components/FeatureSection';
 import DemoWorkflow from '@/components/DemoWorkflow';
