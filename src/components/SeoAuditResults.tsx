@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import AuditSummary from './AuditSummary';
@@ -7,6 +6,9 @@ import AuditTabs from './audit/AuditTabs';
 import AuditRecommendations from './audit/AuditRecommendations';
 import AuditShareResults from './audit/AuditShareResults';
 import AuditHistory from './audit/AuditHistory';
+import AuditDataVisualizer from './audit/data-visualization/AuditDataVisualizer';
+import AuditComparison from './audit/comparison/AuditComparison';
+import AuditComments from './audit/comments/AuditComments';
 import { fetchAuditData, fetchRecommendations, fetchAuditHistory } from '@/services/auditService';
 import { AuditData, RecommendationData, AuditHistoryData } from '@/types/audit';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -27,7 +29,6 @@ const SeoAuditResults: React.FC<SeoAuditResultsProps> = ({ url }) => {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const { toast } = useToast();
 
-  // Симуляция прогресса загрузки
   useEffect(() => {
     if (isLoading) {
       const interval = setInterval(() => {
@@ -43,7 +44,6 @@ const SeoAuditResults: React.FC<SeoAuditResultsProps> = ({ url }) => {
     }
   }, [isLoading]);
 
-  // Загрузка данных аудита
   const loadAuditData = async (refresh = false) => {
     if (refresh) {
       setIsRefreshing(true);
@@ -53,7 +53,6 @@ const SeoAuditResults: React.FC<SeoAuditResultsProps> = ({ url }) => {
     setError(null);
     
     try {
-      // Добавляем небольшую задержку для загрузочного состояния при первоначальной загрузке
       if (!refresh) {
         await new Promise(resolve => setTimeout(resolve, 1000));
       }
@@ -81,28 +80,22 @@ const SeoAuditResults: React.FC<SeoAuditResultsProps> = ({ url }) => {
         variant: "destructive",
       });
     } finally {
-      // Небольшая задержка, чтобы показать полный прогресс
       setTimeout(() => {
         setIsLoading(false);
         setIsRefreshing(false);
       }, 500);
     }
   };
-  
-  // Загрузка при первом рендере
+
   useEffect(() => {
     loadAuditData();
   }, [url, toast]);
-  
-  // Обработчик обновления аудита
+
   const handleRefreshAudit = () => {
     loadAuditData(true);
   };
-  
-  // Обработчик выбора аудита из истории
+
   const handleSelectHistoricalAudit = (auditId: string) => {
-    // В реальном приложении здесь был бы запрос на получение исторических данных
-    // Для демонстрации просто показываем уведомление
     toast({
       title: "Исторический аудит",
       description: `Запрос данных аудита ID: ${auditId}`,
@@ -191,7 +184,28 @@ const SeoAuditResults: React.FC<SeoAuditResultsProps> = ({ url }) => {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.2 }}
+          transition={{ duration: 0.5, delay: 0.15 }}
+        >
+          <AuditDataVisualizer auditData={auditData.details} />
+        </motion.div>
+        
+        {historyData && historyData.items.length > 1 && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+          >
+            <AuditComparison 
+              currentAudit={auditData} 
+              historyItems={historyData.items} 
+            />
+          </motion.div>
+        )}
+        
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.25 }}
         >
           <AuditTabs details={auditData.details} />
         </motion.div>
@@ -199,7 +213,7 @@ const SeoAuditResults: React.FC<SeoAuditResultsProps> = ({ url }) => {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.4 }}
+          transition={{ duration: 0.5, delay: 0.3 }}
         >
           <AuditRecommendations recommendations={recommendations} />
         </motion.div>
@@ -207,7 +221,15 @@ const SeoAuditResults: React.FC<SeoAuditResultsProps> = ({ url }) => {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.6 }}
+          transition={{ duration: 0.5, delay: 0.35 }}
+        >
+          <AuditComments auditId={auditData.id} />
+        </motion.div>
+        
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.4 }}
         >
           <AuditShareResults 
             auditId={auditData.id} 
