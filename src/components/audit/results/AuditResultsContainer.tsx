@@ -27,7 +27,9 @@ const AuditResultsContainer: React.FC<AuditResultsContainerProps> = ({ url }) =>
     isScanning,
     scanDetails,
     pageStats,
-    loadAuditData
+    sitemap,
+    loadAuditData,
+    downloadSitemap
   } = useAuditData(url);
 
   const handleRefreshAudit = () => {
@@ -52,7 +54,7 @@ const AuditResultsContainer: React.FC<AuditResultsContainerProps> = ({ url }) =>
   }
 
   if (isScanning) {
-    return <AuditScanning url={url} scanDetails={scanDetails} />;
+    return <AuditScanning url={url} scanDetails={scanDetails} onDownloadSitemap={downloadSitemap} />;
   }
 
   if (error) {
@@ -81,6 +83,7 @@ const AuditResultsContainer: React.FC<AuditResultsContainerProps> = ({ url }) =>
           onRefresh={handleRefreshAudit}
           onDeepScan={handleDeepScan}
           isRefreshing={isRefreshing}
+          onDownloadSitemap={sitemap ? downloadSitemap : undefined}
         />
         
         {auditData.pageCount && (

@@ -1,7 +1,8 @@
 
 import React from 'react';
-import { FileSearch, FolderTree, Network, FileText } from 'lucide-react';
+import { FileSearch, FolderTree, Network, FileText, Download } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { Button } from "@/components/ui/button";
 
 interface AuditScanningProps {
   url: string;
@@ -10,9 +11,10 @@ interface AuditScanningProps {
     totalPages: number;
     currentUrl: string;
   };
+  onDownloadSitemap?: () => void;
 }
 
-const AuditScanning: React.FC<AuditScanningProps> = ({ url, scanDetails }) => {
+const AuditScanning: React.FC<AuditScanningProps> = ({ url, scanDetails, onDownloadSitemap }) => {
   const percentComplete = scanDetails.totalPages 
     ? Math.floor((scanDetails.pagesScanned / scanDetails.totalPages) * 100) 
     : Math.min(scanDetails.pagesScanned, 100);
@@ -65,6 +67,20 @@ const AuditScanning: React.FC<AuditScanningProps> = ({ url, scanDetails }) => {
             <p className="text-xs text-muted-foreground">Создаем XML Sitemap</p>
           </div>
         </div>
+        
+        {onDownloadSitemap && scanDetails.pagesScanned > scanDetails.totalPages * 0.5 && (
+          <div className="mt-4">
+            <Button 
+              variant="outline" 
+              size="sm"
+              className="gap-2"
+              onClick={onDownloadSitemap}
+            >
+              <Download className="h-4 w-4" />
+              Скачать Sitemap
+            </Button>
+          </div>
+        )}
         
         <div className="mt-6 text-sm text-muted-foreground">
           <p>Сканирование больших сайтов может занять некоторое время. Пожалуйста, подождите...</p>

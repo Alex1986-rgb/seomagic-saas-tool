@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { FileText, Share, ExternalLink } from 'lucide-react';
+import { FileText, Share, ExternalLink, Download } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { generateAuditPDF } from '@/utils/pdfExport';
@@ -8,9 +8,10 @@ import { generateAuditPDF } from '@/utils/pdfExport';
 interface ActionButtonsProps {
   auditData?: any;
   url: string;
+  onDownloadSitemap?: () => void;
 }
 
-const ActionButtons: React.FC<ActionButtonsProps> = ({ auditData, url }) => {
+const ActionButtons: React.FC<ActionButtonsProps> = ({ auditData, url, onDownloadSitemap }) => {
   const { toast } = useToast();
   
   const handleDownloadPDF = async () => {
@@ -49,10 +50,24 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ auditData, url }) => {
         <FileText className="h-4 w-4" />
         Скачать PDF
       </Button>
+      
+      {onDownloadSitemap && (
+        <Button 
+          variant="outline" 
+          size="sm" 
+          className="hover-lift flex items-center gap-2"
+          onClick={onDownloadSitemap}
+        >
+          <Download className="h-4 w-4" />
+          Скачать Sitemap
+        </Button>
+      )}
+      
       <Button variant="outline" size="sm" className="hover-lift flex items-center gap-2">
         <Share className="h-4 w-4" />
         Поделиться
       </Button>
+      
       <Button size="sm" className="hover-lift flex items-center gap-2">
         <ExternalLink className="h-4 w-4" />
         Оптимизировать сайт

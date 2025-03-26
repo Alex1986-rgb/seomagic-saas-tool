@@ -25,7 +25,7 @@ export const useAuditData = (url: string) => {
     currentUrl: string;
   }>({
     pagesScanned: 0,
-    totalPages: 50000, // Устанавливаем более высокое значение по умолчанию
+    totalPages: 250000, // Увеличиваем до 250000 страниц
     currentUrl: ''
   });
   const [pageStats, setPageStats] = useState<PageStatistics | undefined>(undefined);
@@ -65,8 +65,8 @@ export const useAuditData = (url: string) => {
         setIsScanning(true);
         
         const scanOptions: ScanOptions = {
-          maxPages: 50000, // Увеличиваем до 50000 страниц
-          maxDepth: 4, // Увеличиваем глубину до 4
+          maxPages: 250000, // Увеличиваем до 250000 страниц
+          maxDepth: 4,
           followExternalLinks: false,
           checkMobile: true,
           analyzeSEO: true,
@@ -133,6 +133,27 @@ export const useAuditData = (url: string) => {
     }
   };
 
+  // Функция для скачивания sitemap
+  const downloadSitemap = () => {
+    if (sitemap) {
+      const blob = new Blob([sitemap], { type: 'text/xml' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `sitemap_${new URL(url.startsWith('http') ? url : `https://${url}`).hostname}.xml`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } else {
+      toast({
+        title: "Карта сайта не найдена",
+        description: "Сначала необходимо выполнить сканирование сайта",
+        variant: "destructive",
+      });
+    }
+  };
+
   useEffect(() => {
     loadAuditData();
   }, [url]);
@@ -150,6 +171,7 @@ export const useAuditData = (url: string) => {
     pageStats,
     sitemap,
     loadAuditData,
-    setIsRefreshing
+    setIsRefreshing,
+    downloadSitemap // Экспортируем новую функцию
   };
 };

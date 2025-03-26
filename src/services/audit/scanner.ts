@@ -59,9 +59,8 @@ export const scanWebsite = async (
     const formattedUrl = url.startsWith('http') ? url : `https://${url}`;
     const domain = new URL(formattedUrl).hostname;
     
-    // Для демонстрации, симулируем большее количество страниц
-    // Поддерживаем запрос больших сайтов до 50,000 страниц
-    const pagesToScan = Math.min(50000, maxPages);
+    // Поддерживаем сканирование до 250 000 страниц
+    const pagesToScan = Math.min(250000, maxPages);
     let totalScannedPages = 0;
     
     // Инициализируем статистику страниц
@@ -138,7 +137,7 @@ export const scanWebsite = async (
     const remainingPages = pagesToScan - initialBatchSize;
     if (remainingPages > 0) {
       // Разбиваем оставшиеся страницы на пакеты
-      const batchSize = 500;
+      const batchSize = 1000;
       const numBatches = Math.ceil(remainingPages / batchSize);
       
       for (let batch = 0; batch < numBatches; batch++) {
