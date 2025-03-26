@@ -6,7 +6,7 @@ import HeroSection from '@/components/HeroSection';
 import VideoDemo from '@/components/VideoDemo';
 import FeatureSection from '@/components/FeatureSection';
 import DemoWorkflow from '@/components/DemoWorkflow';
-import GrowthAnimation from '@/components/GrowthAnimation';
+import GrowthAnimation from '@/components/growth/GrowthAnimation';
 import { Quote, Star, ArrowRight, Shield, Award, Target } from 'lucide-react';
 
 const Index: React.FC = () => {
