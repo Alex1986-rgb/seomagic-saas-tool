@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
-import { AnimatePresence } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 import { useMediaQuery } from '@/hooks/use-mobile';
 import NavbarLogo from './NavbarLogo';
 import NavbarDesktopLinks from './NavbarDesktopLinks';
@@ -46,14 +46,19 @@ const Navbar: React.FC = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const navbarClass = `fixed top-0 w-full z-50 transition-all duration-300 ${
+  const navbarClass = `fixed top-0 w-full z-50 transition-all duration-500 ${
     isScrolled || isOpen
-      ? 'backdrop-blur-lg bg-background/80 shadow-md'
+      ? 'backdrop-blur-lg bg-background/90 shadow-md'
       : 'bg-transparent'
   }`;
 
   return (
-    <nav className={navbarClass}>
+    <motion.nav 
+      className={navbarClass}
+      initial={{ y: -20, opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
+      transition={{ duration: 0.5 }}
+    >
       <div className="container mx-auto px-4 md:px-6">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
@@ -94,7 +99,7 @@ const Navbar: React.FC = () => {
         toggleAuth={toggleAuth}
         toggleAdmin={toggleAdmin}
       />
-    </nav>
+    </motion.nav>
   );
 };
 

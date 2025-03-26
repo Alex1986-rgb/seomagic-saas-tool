@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import Layout from '@/components/Layout';
 import HeroSection from '@/components/HeroSection';
 import FeatureSection from '@/components/FeatureSection';
+import DemoWorkflow from '@/components/DemoWorkflow';
 import { Quote, Star, ArrowRight, Shield, Award, Target } from 'lucide-react';
 
 const Index: React.FC = () => {
@@ -11,6 +12,9 @@ const Index: React.FC = () => {
     <Layout>
       <HeroSection />
       <FeatureSection />
+      
+      {/* Demo Workflow Section */}
+      <DemoWorkflow />
       
       {/* Testimonials Section */}
       <section className="py-20 overflow-hidden relative">
