@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { ArrowRight, Loader2, Globe, CheckCircle, Settings, Search, FileSearch, AlertTriangle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -23,8 +22,8 @@ const UrlForm: React.FC = () => {
   const [progressStage, setProgressStage] = useState(0);
   const [showAdvancedOptions, setShowAdvancedOptions] = useState(false);
   const [advancedOptions, setAdvancedOptions] = useState({
-    maxPages: 100,
-    scanDepth: 3,
+    maxPages: 1000,
+    scanDepth: 10,
     followExternalLinks: false,
     analyzeMobile: true,
     checkSecurity: true,
@@ -33,31 +32,24 @@ const UrlForm: React.FC = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  // Validate URL as user types
   useEffect(() => {
     if (!url) {
       setIsValid(null);
       return;
     }
     
-    // Simple check while typing
     const hasValidFormat = /^(https?:\/\/)?([\w-]+(\.[\w-]+)+\/?)([\w.,@?^=%&:/~+#-]*[\w@?^=%&/~+#-])?$/i.test(url);
     setIsValid(hasValidFormat);
   }, [url]);
 
   const checkWebsiteAccessibility = async (websiteUrl: string): Promise<boolean> => {
-    // In a real implementation, this would make a request to check if the website is accessible
-    // For this demo, we'll simulate a check with a delay
     await new Promise(resolve => setTimeout(resolve, 800));
-    
-    // 90% chance of success for demo purposes
     return Math.random() > 0.1;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Validate URL
     if (!url) {
       toast({
         title: "URL обязателен",
@@ -67,14 +59,12 @@ const UrlForm: React.FC = () => {
       return;
     }
     
-    // Add http:// prefix if missing
     let formattedUrl = url;
     if (!/^https?:\/\//i.test(url)) {
       formattedUrl = 'https://' + url;
     }
     
     try {
-      // Validate URL format
       new URL(formattedUrl);
     } catch (err) {
       toast({
@@ -87,13 +77,11 @@ const UrlForm: React.FC = () => {
     
     setIsLoading(true);
     
-    // Display animated progress stages
     toast({
       title: "Проверка сайта",
       description: "Проверяем доступность сайта...",
     });
     
-    // Check if the website is accessible
     const isAccessible = await checkWebsiteAccessibility(formattedUrl);
     
     if (!isAccessible) {
@@ -106,7 +94,6 @@ const UrlForm: React.FC = () => {
       return;
     }
     
-    // Simulated multi-stage progress
     const stages = [
       "Проверка доступности сайта...",
       "Анализ структуры страницы...",
@@ -115,7 +102,6 @@ const UrlForm: React.FC = () => {
       "Формирование отчета..."
     ];
     
-    // Progress animation simulation
     let currentStage = 0;
     const interval = setInterval(() => {
       if (currentStage < stages.length) {
@@ -128,7 +114,6 @@ const UrlForm: React.FC = () => {
       } else {
         clearInterval(interval);
         setIsLoading(false);
-        // Navigate to audit page with the URL as a parameter
         navigate(`/audit?url=${encodeURIComponent(formattedUrl)}`);
       }
     }, 600);
@@ -219,9 +204,9 @@ const UrlForm: React.FC = () => {
                   </div>
                   <Slider 
                     value={[advancedOptions.maxPages]} 
-                    min={10}
-                    max={500}
-                    step={10}
+                    min={100}
+                    max={250000}
+                    step={100}
                     onValueChange={(value) => handleAdvancedOptionsChange('maxPages', value[0])}
                   />
                 </div>
@@ -233,7 +218,7 @@ const UrlForm: React.FC = () => {
                   <Slider 
                     value={[advancedOptions.scanDepth]} 
                     min={1}
-                    max={5}
+                    max={50}
                     step={1}
                     onValueChange={(value) => handleAdvancedOptionsChange('scanDepth', value[0])}
                   />

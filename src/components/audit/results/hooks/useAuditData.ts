@@ -66,7 +66,7 @@ export const useAuditData = (url: string) => {
         
         const scanOptions: ScanOptions = {
           maxPages: 250000, // Увеличено до 250000 страниц
-          maxDepth: 4,
+          maxDepth: 50,     // Увеличено до 50 уровней глубины
           followExternalLinks: false,
           checkMobile: true,
           analyzeSEO: true,

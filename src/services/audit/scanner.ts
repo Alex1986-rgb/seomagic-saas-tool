@@ -1,4 +1,3 @@
-
 import { ScanOptions } from "@/types/audit";
 import { faker } from '@faker-js/faker';
 import { toast } from "@/hooks/use-toast";
@@ -59,7 +58,7 @@ export const scanWebsite = async (
     const formattedUrl = url.startsWith('http') ? url : `https://${url}`;
     const domain = new URL(formattedUrl).hostname;
     
-    // Поддерживаем сканирование до 250 000 страниц
+    // Поддерживаем сканирование до 250 000 страниц с глубиной до 50
     const pagesToScan = Math.min(250000, maxPages);
     let totalScannedPages = 0;
     
@@ -107,8 +106,8 @@ export const scanWebsite = async (
       }
       pageStats.subpages[randomPageType]++;
       
-      // Симулируем уровни глубины страниц (1-3)
-      const pageDepth = Math.min(Math.floor(Math.random() * 3) + 1, maxDepth);
+      // Симулируем уровни глубины страниц (1-maxDepth)
+      const pageDepth = Math.min(Math.floor(Math.random() * maxDepth) + 1, maxDepth);
       if (!pageStats.levels[pageDepth]) {
         pageStats.levels[pageDepth] = 0;
       }
@@ -137,7 +136,7 @@ export const scanWebsite = async (
     const remainingPages = pagesToScan - initialBatchSize;
     if (remainingPages > 0) {
       // Разбиваем оставшиеся страницы на пакеты
-      const batchSize = 1000;
+      const batchSize = 5000; // Увеличиваем размер пакета для более эффективной обработки
       const numBatches = Math.ceil(remainingPages / batchSize);
       
       for (let batch = 0; batch < numBatches; batch++) {
@@ -150,9 +149,14 @@ export const scanWebsite = async (
           const countForType = Math.floor(currentBatchSize * pageDistribution[pageType]);
           pageStats.subpages[pageType] = (pageStats.subpages[pageType] || 0) + countForType;
           
-          // Распределяем по уровням глубины
+          // Распределяем по уровням глубины (до maxDepth)
           for (let level = 1; level <= maxDepth; level++) {
-            const levelProb = level === 1 ? 0.2 : level === 2 ? 0.5 : 0.3;
+            // Рассчитываем вероятность страниц на данном уровне (убывает с глубиной)
+            const levelProb = level === 1 ? 0.1 : 
+                               level <= 5 ? 0.4 : 
+                               level <= 15 ? 0.3 : 
+                               level <= 30 ? 0.15 : 0.05;
+            
             const pagesAtLevel = Math.floor(countForType * levelProb);
             pageStats.levels[level] = (pageStats.levels[level] || 0) + pagesAtLevel;
           }

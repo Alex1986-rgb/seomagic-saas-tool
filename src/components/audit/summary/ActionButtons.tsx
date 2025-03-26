@@ -41,7 +41,7 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ auditData, url, onDownloa
       console.error('Ошибка генерации PDF:', error);
       toast({
         title: "Ошибка экспорта",
-        description: "Произошла ошибка при создании PDF",
+        description: "Произошла ошибка при создании PDF. Пожалуйста, попробуйте еще раз.",
         variant: "destructive"
       });
     }
@@ -57,7 +57,9 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ auditData, url, onDownloa
         const linkElement = document.createElement('a');
         linkElement.setAttribute('href', dataUri);
         linkElement.setAttribute('download', exportName);
+        document.body.appendChild(linkElement);
         linkElement.click();
+        document.body.removeChild(linkElement);
         
         toast({
           title: "Данные экспортированы",
@@ -74,7 +76,7 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ auditData, url, onDownloa
       console.error('Ошибка экспорта JSON:', error);
       toast({
         title: "Ошибка экспорта",
-        description: "Произошла ошибка при экспорте JSON",
+        description: "Произошла ошибка при экспорте JSON. Пожалуйста, попробуйте еще раз.",
         variant: "destructive"
       });
     }
@@ -82,36 +84,15 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ auditData, url, onDownloa
 
   return (
     <div className="mt-6 pt-4 border-t border-border flex flex-wrap gap-3 justify-center md:justify-end">
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button 
-            variant="outline" 
-            size="sm" 
-            className="hover-lift flex items-center gap-2"
-          >
-            <FileText className="h-4 w-4" />
-            Экспортировать
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-56 bg-background border border-border shadow-lg">
-          <DropdownMenuLabel>Варианты экспорта</DropdownMenuLabel>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem 
-            onClick={handleDownloadPDF} 
-            className="cursor-pointer flex items-center"
-          >
-            <FileText className="h-4 w-4 mr-2 text-primary" />
-            Скачать отчет аудита (PDF)
-          </DropdownMenuItem>
-          <DropdownMenuItem 
-            onClick={handleExportJSON} 
-            className="cursor-pointer flex items-center"
-          >
-            <FileJson className="h-4 w-4 mr-2 text-primary" />
-            Экспортировать как JSON
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
+      <Button 
+        variant="outline" 
+        size="sm" 
+        className="hover-lift flex items-center gap-2"
+        onClick={handleDownloadPDF}
+      >
+        <FileText className="h-4 w-4" />
+        Скачать отчет
+      </Button>
       
       {onDownloadSitemap && (
         <Button 
@@ -125,14 +106,39 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ auditData, url, onDownloa
         </Button>
       )}
       
-      <Button variant="outline" size="sm" className="hover-lift flex items-center gap-2">
+      <Button 
+        variant="outline" 
+        size="sm" 
+        className="hover-lift flex items-center gap-2"
+        onClick={handleExportJSON}
+      >
+        <FileJson className="h-4 w-4" />
+        Экспорт JSON
+      </Button>
+      
+      <Button 
+        variant="outline" 
+        size="sm" 
+        className="hover-lift flex items-center gap-2"
+        onClick={() => {
+          navigator.clipboard.writeText(window.location.href);
+          toast({
+            title: "Ссылка скопирована",
+            description: "Ссылка на аудит скопирована в буфер обмена",
+          });
+        }}
+      >
         <Share className="h-4 w-4" />
         Поделиться
       </Button>
       
-      <Button size="sm" className="hover-lift flex items-center gap-2">
+      <Button 
+        size="sm" 
+        className="hover-lift flex items-center gap-2"
+        onClick={() => window.open(`https://www.google.com/search?q=site:${url}`, '_blank')}
+      >
         <ExternalLink className="h-4 w-4" />
-        Оптимизировать сайт
+        Анализировать в Google
       </Button>
     </div>
   );
