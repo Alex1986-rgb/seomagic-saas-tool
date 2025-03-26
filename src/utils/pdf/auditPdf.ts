@@ -87,9 +87,9 @@ export const generateAuditPdf = async (options: GenerateAuditPdfOptions): Promis
     ['Незначительные проблемы', auditData.issues.opportunities.toString()]
   ];
   
-  let currentYPosition = 65;
+  let tableYPosition = 65;
   autoTable(doc, {
-    startY: currentYPosition,
+    startY: tableYPosition,
     head: [['Параметр', 'Значение']],
     body: statsData,
     theme: 'grid',
@@ -98,12 +98,12 @@ export const generateAuditPdf = async (options: GenerateAuditPdfOptions): Promis
   });
   
   // Get the Y position after the table
-  currentYPosition = (doc as any).lastAutoTable.finalY + 15;
+  tableYPosition = (doc as any).lastAutoTable.finalY + 15;
   
   // Добавляем детали распределения страниц по типам, если доступно
   if (pageStats && pageStats.subpages) {
     doc.setFontSize(16);
-    doc.text('Распределение страниц', 15, currentYPosition);
+    doc.text('Распределение страниц', 15, tableYPosition);
     
     const pageTypesData = Object.entries(pageStats.subpages).map(([type, count]) => [
       type.charAt(0).toUpperCase() + type.slice(1),
@@ -111,7 +111,7 @@ export const generateAuditPdf = async (options: GenerateAuditPdfOptions): Promis
     ]);
     
     autoTable(doc, {
-      startY: currentYPosition + 5,
+      startY: tableYPosition + 5,
       head: [['Тип страницы', 'Количество']],
       body: pageTypesData,
       theme: 'grid',
@@ -120,12 +120,12 @@ export const generateAuditPdf = async (options: GenerateAuditPdfOptions): Promis
     });
     
     // Update Y position
-    currentYPosition = (doc as any).lastAutoTable.finalY + 15;
+    tableYPosition = (doc as any).lastAutoTable.finalY + 15;
   }
   
   // Добавляем анализ проблем
   doc.setFontSize(16);
-  doc.text('Анализ обнаруженных проблем', 15, currentYPosition);
+  doc.text('Анализ обнаруженных проблем', 15, tableYPosition);
   
   if (recommendations) {
     const recommendationsData = Object.entries(recommendations).map(([category, categoryData]: [string, any]) => [
@@ -135,7 +135,7 @@ export const generateAuditPdf = async (options: GenerateAuditPdfOptions): Promis
     ]);
     
     autoTable(doc, {
-      startY: currentYPosition + 5,
+      startY: tableYPosition + 5,
       head: [['Категория', 'Количество проблем', 'Оценка']],
       body: recommendationsData,
       theme: 'grid',
