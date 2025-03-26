@@ -5,10 +5,10 @@
 
 import { ScanOptions } from "@/types/audit";
 import { faker } from '@faker-js/faker';
-import { OptimizationItem } from '@/components/audit/results/components/optimization';
+import type { OptimizationItem } from '@/components/audit/results/components/optimization';
 import { generateSitemap } from './sitemap';
-import { collectPagesContent, PageContent } from './content';
-import { calculateOptimizationMetrics, PageStatistics } from './optimization';
+import { collectPagesContent, type PageContent } from './content';
+import { calculateOptimizationMetrics, type PageStatistics } from './optimization';
 import { createOptimizedSite } from './optimizedSite';
 
 /**
@@ -158,6 +158,8 @@ export const scanWebsite = async (
 
 // Re-export all the needed functions from the other modules
 export { generateSitemap } from './sitemap';
-export { collectPagesContent, PageContent } from './content';
-export { calculateOptimizationMetrics, PageStatistics } from './optimization';
+export type { PageContent } from './content';
+export { collectPagesContent } from './content';
+export type { PageStatistics } from './optimization';
+export { calculateOptimizationMetrics } from './optimization';
 export { createOptimizedSite } from './optimizedSite';

@@ -1,8 +1,8 @@
+
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { AuditData } from '@/types/audit';
-import html2canvas from 'html2canvas';
-import { OptimizationItem } from '@/components/audit/results/components/optimization';
+import type { OptimizationItem } from '@/components/audit/results/components/optimization';
 
 export interface GenerateAuditPdfOptions {
   auditData: AuditData;
@@ -42,7 +42,33 @@ export const generateAuditPdf = async (options: GenerateAuditPdfOptions): Promis
     minute: '2-digit'
   });
   
-  // Добавляем логотип и заголовок
+  // Добавляем основную информацию
+  addHeader(doc, url, formattedDate);
+  addSummaryInfo(doc, auditData);
+  
+  // Добавляем статистику сайта
+  let currentY = addSiteStatistics(doc, auditData, pageStats);
+  
+  // Добавляем анализ проблем
+  currentY = addIssuesAnalysis(doc, recommendations, currentY);
+  
+  // Добавляем калькуляцию стоимости оптимизации
+  if (optimizationCost && optimizationItems) {
+    addOptimizationCostPage(doc, auditData, optimizationCost, optimizationItems);
+  }
+  
+  // Добавляем рекомендации
+  addRecommendationsPage(doc, recommendations);
+  
+  // Добавляем контактную информацию
+  addContactInfo(doc);
+  
+  // Возвращаем PDF как Blob
+  return doc.output('blob');
+};
+
+// Добавляет заголовок и общую информацию в PDF
+function addHeader(doc: jsPDF, url: string, formattedDate: string): void {
   doc.setFillColor(56, 189, 248);
   doc.rect(0, 0, 210, 30, 'F');
   
@@ -53,10 +79,13 @@ export const generateAuditPdf = async (options: GenerateAuditPdfOptions): Promis
   doc.setFontSize(14);
   doc.text(`Сайт: ${url}`, 15, 22);
   
-  // Добавляем основную информацию
   doc.setTextColor(0, 0, 0);
   doc.setFontSize(12);
   doc.text(`Дата аудита: ${formattedDate}`, 15, 40);
+}
+
+// Добавляет сводную информацию об аудите
+function addSummaryInfo(doc: jsPDF, auditData: AuditData): void {
   doc.text(`Общая SEO оценка: ${auditData.score}/100`, 15, 48);
   
   // Рисуем цветной индикатор оценки
@@ -69,8 +98,10 @@ export const generateAuditPdf = async (options: GenerateAuditPdfOptions): Promis
   
   // Возвращаемся к основному цвету текста
   doc.setTextColor(0, 0, 0);
-  
-  // Добавляем информацию о страницах
+}
+
+// Добавляет статистику сайта
+function addSiteStatistics(doc: jsPDF, auditData: AuditData, pageStats?: any): number {
   doc.setFontSize(16);
   doc.text('Статистика сайта', 15, 60);
   
@@ -122,9 +153,13 @@ export const generateAuditPdf = async (options: GenerateAuditPdfOptions): Promis
     tableYPosition = (doc as any).lastAutoTable.finalY + 15;
   }
   
-  // Добавляем анализ проблем
+  return tableYPosition;
+}
+
+// Добавляет анализ проблем
+function addIssuesAnalysis(doc: jsPDF, recommendations: any, yPosition: number): number {
   doc.setFontSize(16);
-  doc.text('Анализ обнаруженных проблем', 15, tableYPosition);
+  doc.text('Анализ обнаруженных проблем', 15, yPosition);
   
   if (recommendations) {
     const recommendationsData = Object.entries(recommendations).map(([category, categoryData]: [string, any]) => [
@@ -134,75 +169,86 @@ export const generateAuditPdf = async (options: GenerateAuditPdfOptions): Promis
     ]);
     
     autoTable(doc, {
-      startY: tableYPosition + 5,
+      startY: yPosition + 5,
       head: [['Категория', 'Количество проблем', 'Оценка']],
       body: recommendationsData,
       theme: 'grid',
       styles: { halign: 'left' },
       headStyles: { fillColor: [56, 189, 248] }
     });
+    
+    return (doc as any).lastAutoTable.finalY + 15;
   }
   
-  // Добавляем страницу для калькуляции стоимости оптимизации
-  if (optimizationCost && optimizationItems) {
-    doc.addPage();
-    
-    doc.setFillColor(56, 189, 248);
-    doc.rect(0, 0, 210, 20, 'F');
-    doc.setFontSize(18);
-    doc.setTextColor(255, 255, 255);
-    doc.text('Стоимость оптимизации', 15, 15);
-    
-    doc.setTextColor(0, 0, 0);
+  return yPosition + 10;
+}
+
+// Добавляет страницу с калькуляцией стоимости оптимизации
+function addOptimizationCostPage(
+  doc: jsPDF, 
+  auditData: AuditData, 
+  optimizationCost: number, 
+  optimizationItems: OptimizationItem[]
+): void {
+  doc.addPage();
+  
+  doc.setFillColor(56, 189, 248);
+  doc.rect(0, 0, 210, 20, 'F');
+  doc.setFontSize(18);
+  doc.setTextColor(255, 255, 255);
+  doc.text('Стоимость оптимизации', 15, 15);
+  
+  doc.setTextColor(0, 0, 0);
+  doc.setFontSize(12);
+  doc.text(`Общая стоимость: ${new Intl.NumberFormat('ru-RU').format(optimizationCost)} ₽`, 15, 30);
+  doc.text(`Количество страниц: ${auditData.pageCount}`, 15, 38);
+  doc.text(`Стоимость за страницу: 50 ₽`, 15, 46);
+  
+  doc.setFontSize(14);
+  doc.text('Детализация стоимости:', 15, 54);
+  
+  const costDetailsData = optimizationItems.map(item => [
+    item.type,
+    item.count.toString(),
+    `${new Intl.NumberFormat('ru-RU').format(item.pricePerUnit)} ₽`,
+    `${new Intl.NumberFormat('ru-RU').format(item.totalPrice)} ₽`
+  ]);
+  
+  let costTableY = 58;
+  autoTable(doc, {
+    startY: costTableY,
+    head: [['Тип оптимизации', 'Количество', 'Цена за единицу', 'Итого']],
+    body: costDetailsData,
+    theme: 'grid',
+    styles: { halign: 'left' },
+    headStyles: { fillColor: [56, 189, 248] }
+  });
+  
+  // Добавляем перечень что включено
+  let includesY = (doc as any).lastAutoTable.finalY + 15;
+  doc.setFontSize(14);
+  doc.text('Оптимизация включает:', 15, includesY);
+  
+  const includedItems = [
+    'Оптимизация всех мета-тегов',
+    'Исправление проблем с изображениями',
+    'Оптимизация контента для SEO',
+    'Улучшение скорости загрузки',
+    'Исправление технических проблем',
+    'Удаление дублей и создание уникального контента',
+    'Исправление URL (замена подчеркиваний на дефисы)'
+  ];
+  
+  let yPos = includesY + 5;
+  includedItems.forEach(item => {
     doc.setFontSize(12);
-    doc.text(`Общая стоимость: ${new Intl.NumberFormat('ru-RU').format(optimizationCost)} ₽`, 15, 30);
-    doc.text(`Количество страниц: ${auditData.pageCount}`, 15, 38);
-    doc.text(`Стоимость за страницу: 50 ₽`, 15, 46);
-    
-    doc.setFontSize(14);
-    doc.text('Детализация стоимости:', 15, 54);
-    
-    const costDetailsData = optimizationItems.map(item => [
-      item.type,
-      item.count.toString(),
-      `${new Intl.NumberFormat('ru-RU').format(item.pricePerUnit)} ₽`,
-      `${new Intl.NumberFormat('ru-RU').format(item.totalPrice)} ₽`
-    ]);
-    
-    let costTableY = 58;
-    autoTable(doc, {
-      startY: costTableY,
-      head: [['Тип оптимизации', 'Количество', 'Цена за единицу', 'Итого']],
-      body: costDetailsData,
-      theme: 'grid',
-      styles: { halign: 'left' },
-      headStyles: { fillColor: [56, 189, 248] }
-    });
-    
-    // Добавляем перечень что включено
-    let includesY = (doc as any).lastAutoTable.finalY + 15;
-    doc.setFontSize(14);
-    doc.text('Оптимизация включает:', 15, includesY);
-    
-    const includedItems = [
-      'Оптимизация всех мета-тегов',
-      'Исправление проблем с изображениями',
-      'Оптимизация контента для SEO',
-      'Улучшение скорости загрузки',
-      'Исправление технических проблем',
-      'Удаление дублей и создание уникального контента',
-      'Исправление URL (замена подчеркиваний на дефисы)'
-    ];
-    
-    let yPos = includesY + 5;
-    includedItems.forEach(item => {
-      doc.setFontSize(12);
-      doc.text(`• ${item}`, 20, yPos);
-      yPos += 8;
-    });
-  }
-  
-  // Добавляем информацию о рекомендациях
+    doc.text(`• ${item}`, 20, yPos);
+    yPos += 8;
+  });
+}
+
+// Добавляет страницу с рекомендациями
+function addRecommendationsPage(doc: jsPDF, recommendations: any): void {
   doc.addPage();
   
   doc.setFillColor(56, 189, 248);
@@ -252,12 +298,11 @@ export const generateAuditPdf = async (options: GenerateAuditPdfOptions): Promis
   } else {
     doc.text('Нет доступных рекомендаций', 15, recPosition);
   }
-  
-  // Добавляем информацию о контактах
+}
+
+// Добавляет контактную информацию
+function addContactInfo(doc: jsPDF): void {
   doc.setFontSize(10);
   doc.text('SEO Market - профессиональная оптимизация сайтов', 15, 280);
   doc.text('Контакты: support@seomarket.ru | +7 (XXX) XXX-XX-XX', 15, 285);
-  
-  // Возвращаем PDF как Blob
-  return doc.output('blob');
-};
+}
