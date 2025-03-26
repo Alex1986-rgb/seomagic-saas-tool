@@ -8,6 +8,7 @@ import FeaturesSection from '@/components/about/FeaturesSection';
 import TeamSection from '@/components/about/TeamSection';
 import TestimonialsSection from '@/components/about/TestimonialsSection';
 import CtaSection from '@/components/about/CtaSection';
+import { Separator } from '@/components/ui/separator';
 
 const About = () => {
   return (
@@ -22,11 +23,11 @@ const About = () => {
         <AboutHero />
         <div className="elegant-divider" />
         <MissionSection />
-        <div className="elegant-divider" />
+        <div className="elegant-divider-alt" />
         <FeaturesSection />
         <div className="elegant-divider" />
         <TeamSection />
-        <div className="elegant-divider" />
+        <div className="elegant-divider-alt" />
         <TestimonialsSection />
         <CtaSection />
       </motion.div>

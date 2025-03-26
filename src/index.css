@@ -8,24 +8,25 @@
 @layer base {
   :root {
     --background: 0 0% 100%;
-    --foreground: 220 20% 10%;
+    --foreground: 20 25% 12%;
 
     --card: 0 0% 100%;
-    --card-foreground: 220 20% 10%;
+    --card-foreground: 20 25% 12%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 220 20% 10%;
+    --popover-foreground: 20 25% 12%;
 
-    --primary: 20 80% 45%;
+    /* Обновленный основной цвет - более глубокий коричневый */
+    --primary: 22 65% 25%;
     --primary-foreground: 0 0% 100%;
 
     --secondary: 30 30% 96%;
-    --secondary-foreground: 220 20% 10%;
+    --secondary-foreground: 20 25% 12%;
 
     --muted: 30 30% 96%;
-    --muted-foreground: 220 10% 40%;
+    --muted-foreground: 20 15% 35%;
 
-    --accent: 20 80% 45%;
+    --accent: 22 65% 25%;
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 84% 60%;
@@ -33,7 +34,7 @@
 
     --border: 30 10% 90%;
     --input: 30 10% 90%;
-    --ring: 20 80% 45%;
+    --ring: 22 65% 25%;
 
     --radius: 0.5rem;
 
@@ -176,9 +177,34 @@
     @apply border-t border-r border-b border-l border-border/50;
   }
 
-  /* Special divider */
+  /* Enhanced elegant divider - новые стили для разделителей */
   .elegant-divider {
-    @apply h-px w-full bg-gradient-to-r from-border/10 via-border/50 to-border/10 my-8;
+    @apply relative h-px w-full my-12;
+  }
+  
+  .elegant-divider::before {
+    content: "";
+    @apply absolute inset-0 bg-gradient-to-r from-transparent via-primary/40 to-transparent;
+  }
+  
+  .elegant-divider::after {
+    content: "❦";
+    @apply absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-primary/70 text-sm bg-white px-3;
+  }
+  
+  /* Альтернативный стиль разделителя */
+  .elegant-divider-alt {
+    @apply relative h-px w-full my-12;
+  }
+  
+  .elegant-divider-alt::before {
+    content: "";
+    @apply absolute inset-0 bg-gradient-to-r from-transparent via-primary/30 to-transparent;
+  }
+  
+  .elegant-divider-alt::after {
+    content: "◆";
+    @apply absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-primary/60 text-xs bg-white px-3;
   }
 }
 

@@ -7,6 +7,7 @@ import UrlForm from '@/components/UrlForm';
 import { useToast } from "@/hooks/use-toast";
 import { motion } from 'framer-motion';
 import { Rocket, Target } from 'lucide-react';
+import { Separator } from '@/components/ui/separator';
 
 const Audit: React.FC = () => {
   const [searchParams] = useSearchParams();
@@ -71,7 +72,14 @@ const Audit: React.FC = () => {
           </motion.div>
         )}
 
-        {url && <SeoAuditResults url={url} />}
+        {url && (
+          <>
+            <div className="mb-8">
+              <div className="elegant-divider-alt" />
+            </div>
+            <SeoAuditResults url={url} />
+          </>
+        )}
       </div>
     </Layout>
   );
