@@ -25,10 +25,11 @@ export const useAuditData = (url: string) => {
     currentUrl: string;
   }>({
     pagesScanned: 0,
-    totalPages: 0,
+    totalPages: 50000, // Устанавливаем более высокое значение по умолчанию
     currentUrl: ''
   });
   const [pageStats, setPageStats] = useState<PageStatistics | undefined>(undefined);
+  const [sitemap, setSitemap] = useState<string | undefined>(undefined);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -59,13 +60,13 @@ export const useAuditData = (url: string) => {
         await new Promise(resolve => setTimeout(resolve, 1000));
       }
       
-      // If deep scan is requested, perform website crawling first
+      // Если запрошено глубокое сканирование, сначала выполняем обход сайта
       if (deepScan) {
         setIsScanning(true);
         
         const scanOptions: ScanOptions = {
-          maxPages: 200,
-          maxDepth: 3,
+          maxPages: 50000, // Увеличиваем до 50000 страниц
+          maxDepth: 4, // Увеличиваем глубину до 4
           followExternalLinks: false,
           checkMobile: true,
           analyzeSEO: true,
@@ -82,6 +83,15 @@ export const useAuditData = (url: string) => {
         const scanResult = await scanWebsite(url, scanOptions);
         if (scanResult.success && scanResult.pageStats) {
           setPageStats(scanResult.pageStats);
+          if (scanResult.sitemap) {
+            setSitemap(scanResult.sitemap);
+            
+            // Уведомляем пользователя о создании карты сайта
+            toast({
+              title: "Карта сайта создана",
+              description: "XML sitemap сгенерирован на основе структуры сайта",
+            });
+          }
         }
         setIsScanning(false);
       }
@@ -92,16 +102,23 @@ export const useAuditData = (url: string) => {
         fetchAuditHistory(url)
       ]);
       
+      // Обновляем количество страниц в результате аудита, если мы сканировали сайт
+      if (pageStats && pageStats.totalPages > 0) {
+        auditResult.pageCount = pageStats.totalPages;
+      }
+      
       setAuditData(auditResult);
       setRecommendations(recommendationsResult);
       setHistoryData(historyResult);
       
       toast({
         title: refresh ? "Аудит обновлен" : "Аудит завершен",
-        description: refresh ? "SEO аудит сайта успешно обновлен" : `SEO аудит завершен. Проанализировано ${auditResult.pageCount} страниц.`,
+        description: refresh 
+          ? "SEO аудит сайта успешно обновлен" 
+          : `SEO аудит завершен. Проанализировано ${auditResult.pageCount} страниц.`,
       });
     } catch (error) {
-      console.error('Error loading audit data:', error);
+      console.error('Ошибка загрузки данных аудита:', error);
       setError("Не удалось загрузить данные аудита. Пожалуйста, проверьте URL и попробуйте снова.");
       toast({
         title: "Ошибка",
@@ -118,7 +135,7 @@ export const useAuditData = (url: string) => {
 
   useEffect(() => {
     loadAuditData();
-  }, [url, toast]);
+  }, [url]);
 
   return {
     isLoading,
@@ -131,6 +148,7 @@ export const useAuditData = (url: string) => {
     isScanning,
     scanDetails,
     pageStats,
+    sitemap,
     loadAuditData,
     setIsRefreshing
   };

@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Files, FileSearch, Layers, FolderTree } from 'lucide-react';
+import { Files, FileSearch, Layers, FolderTree, FileText } from 'lucide-react';
 
 interface PageStatistics {
   totalPages: number;
@@ -16,16 +16,16 @@ interface PageCountDisplayProps {
 }
 
 const PageCountDisplay: React.FC<PageCountDisplayProps> = ({ pageCount, isScanning, pageStats }) => {
-  // Translations for page types
+  // Переводы типов страниц
   const pageTypeTranslations: Record<string, string> = {
-    'product': 'Продукты',
+    'product': 'Товары',
     'category': 'Категории',
     'blog': 'Блог',
     'contact': 'Контакты',
     'about': 'О нас',
     'faq': 'FAQ',
     'terms': 'Условия',
-    'privacy': 'Приватность'
+    'privacy': 'Политика'
   };
 
   return (
@@ -47,8 +47,8 @@ const PageCountDisplay: React.FC<PageCountDisplayProps> = ({ pageCount, isScanni
             <FileSearch className="h-4 w-4 text-muted-foreground mr-2" />
             <p className="text-sm text-muted-foreground">
               {isScanning 
-                ? `Обнаружено страниц: ${pageCount}... сканирование продолжается` 
-                : `Всего страниц на сайте: ${pageCount}`
+                ? `Обнаружено страниц: ${pageCount.toLocaleString('ru-RU')}... сканирование продолжается` 
+                : `Всего страниц на сайте: ${pageCount.toLocaleString('ru-RU')}`
               }
             </p>
           </div>
@@ -76,7 +76,7 @@ const PageCountDisplay: React.FC<PageCountDisplayProps> = ({ pageCount, isScanni
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                 {Object.entries(pageStats.subpages).map(([type, count]) => (
                   <div key={type} className="text-xs bg-background p-2 rounded border border-border">
-                    <span className="font-medium">{pageTypeTranslations[type] || type}:</span> {count} стр.
+                    <span className="font-medium">{pageTypeTranslations[type] || type}:</span> {count.toLocaleString('ru-RU')} стр.
                   </div>
                 ))}
               </div>
@@ -92,15 +92,25 @@ const PageCountDisplay: React.FC<PageCountDisplayProps> = ({ pageCount, isScanni
               <div className="grid grid-cols-3 gap-2">
                 {Object.entries(pageStats.levels).map(([level, count]) => (
                   <div key={level} className="text-xs bg-background p-2 rounded border border-border">
-                    <span className="font-medium">Уровень {level}:</span> {count} стр.
+                    <span className="font-medium">Уровень {level}:</span> {count.toLocaleString('ru-RU')} стр.
                   </div>
                 ))}
               </div>
             </div>
           )}
           
+          <div className="bg-primary/5 p-3 rounded-lg">
+            <div className="flex items-center mb-2">
+              <FileText className="h-4 w-4 text-primary mr-2" />
+              <h4 className="text-sm font-medium">Карта сайта</h4>
+            </div>
+            <p className="text-xs">
+              XML Sitemap создан для {pageCount.toLocaleString('ru-RU')} страниц сайта
+            </p>
+          </div>
+          
           <p className="text-sm text-muted-foreground mt-2">
-            Ценообразование формируется на основе количества страниц на сайте
+            Анализ основан на структуре и глубине сайта с учетом всех подстраниц
           </p>
         </div>
       )}

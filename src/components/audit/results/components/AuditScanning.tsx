@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { FileSearch, FolderTree, Network } from 'lucide-react';
+import { FileSearch, FolderTree, Network, FileText } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 interface AuditScanningProps {
@@ -13,6 +13,10 @@ interface AuditScanningProps {
 }
 
 const AuditScanning: React.FC<AuditScanningProps> = ({ url, scanDetails }) => {
+  const percentComplete = scanDetails.totalPages 
+    ? Math.floor((scanDetails.pagesScanned / scanDetails.totalPages) * 100) 
+    : Math.min(scanDetails.pagesScanned, 100);
+
   return (
     <div className="neo-card p-6">
       <div className="text-center mb-6">
@@ -22,17 +26,13 @@ const AuditScanning: React.FC<AuditScanningProps> = ({ url, scanDetails }) => {
         
         <div className="flex justify-between items-center mb-2 text-sm">
           <span>Прогресс сканирования:</span>
-          <span>{scanDetails.pagesScanned} / {scanDetails.totalPages || '?'} страниц</span>
+          <span>{scanDetails.pagesScanned.toLocaleString('ru-RU')} / {scanDetails.totalPages.toLocaleString('ru-RU')} страниц</span>
         </div>
         
         <div className="w-full bg-muted rounded-full h-2 mb-4">
           <div 
             className="bg-primary h-2 rounded-full" 
-            style={{ 
-              width: scanDetails.totalPages ? 
-                `${(scanDetails.pagesScanned / scanDetails.totalPages) * 100}%` : 
-                `${Math.min(scanDetails.pagesScanned, 100)}%` 
-            }}
+            style={{ width: `${percentComplete}%` }}
           ></div>
         </div>
         
@@ -60,10 +60,14 @@ const AuditScanning: React.FC<AuditScanningProps> = ({ url, scanDetails }) => {
             <p className="text-xs text-muted-foreground">Анализируем иерархию страниц</p>
           </div>
           <div className="bg-primary/10 p-3 rounded-lg text-center">
-            <FileSearch className="h-5 w-5 text-primary mx-auto mb-2" />
-            <p className="text-sm font-medium">Подстраницы</p>
-            <p className="text-xs text-muted-foreground">Находим все разделы сайта</p>
+            <FileText className="h-5 w-5 text-primary mx-auto mb-2" />
+            <p className="text-sm font-medium">Карта сайта</p>
+            <p className="text-xs text-muted-foreground">Создаем XML Sitemap</p>
           </div>
+        </div>
+        
+        <div className="mt-6 text-sm text-muted-foreground">
+          <p>Сканирование больших сайтов может занять некоторое время. Пожалуйста, подождите...</p>
         </div>
       </div>
     </div>
