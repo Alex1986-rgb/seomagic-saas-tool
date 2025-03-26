@@ -26,6 +26,7 @@ export interface AuditDetailsData {
 }
 
 export interface AuditData {
+  id: string; // Added this property
   score: number;
   date: string;
   issues: AuditIssues;

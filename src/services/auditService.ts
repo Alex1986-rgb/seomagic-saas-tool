@@ -1,4 +1,3 @@
-
 import { AuditData, RecommendationData } from '@/types/audit';
 
 // Mock data structure for SEO audit
@@ -8,6 +7,7 @@ export const fetchAuditData = async (url: string): Promise<AuditData> => {
     setTimeout(() => {
       // Mock audit data
       const mockAuditData: AuditData = {
+        id: `audit-${Date.now()}`, // Generate a unique ID
         score: 67,
         date: new Date().toISOString(),
         issues: {

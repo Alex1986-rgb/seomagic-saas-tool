@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Share2, Copy, Mail, Download, FileJson, Loader2 } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
@@ -66,7 +65,7 @@ const AuditShareResults: React.FC<AuditShareResultsProps> = ({ auditId }) => {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
     >
-      <p className="text-muted-foreground text-sm mb-2">Поделиться результатами аудита</p>
+      <p className="text-muted-foreground text-sm mb-2">Поделиться результатами аудита {auditId ? `#${auditId}` : ''}</p>
       
       <div className="flex flex-wrap gap-2 justify-center">
         <Button 
