@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { FileText, Download, FileJson, Loader2 } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
@@ -12,7 +11,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { AuditData, AuditHistoryItem } from '@/types/audit';
-import { generateAuditPDF, generateHistoryPDF } from '@/utils/pdfExport';
+import { generateAuditPDF } from '@/utils/pdf/auditPdf';
+import { generateHistoryPDF } from '@/utils/pdf/historyPdf';
 
 interface ExportDropdownProps {
   auditData?: AuditData;
