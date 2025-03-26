@@ -15,8 +15,15 @@ import ClientAudits from '@/components/client/ClientAudits';
 import ClientSettings from '@/components/client/ClientSettings';
 import ClientSubscription from '@/components/client/ClientSubscription';
 import ClientReports from '@/components/client/ClientReports';
+import ProfileNavButton from '@/components/client/ProfileNavButton';
 
 const ClientProfile: React.FC = () => {
+  const [activeTab, setActiveTab] = useState('audits');
+
+  const handleNavButtonClick = (tabId: string) => {
+    setActiveTab(tabId);
+  };
+
   return (
     <Layout>
       <div className="container mx-auto px-4 md:px-6 pt-32 pb-20">
@@ -40,53 +47,57 @@ const ClientProfile: React.FC = () => {
               </div>
               
               <nav className="neo-card p-4 space-y-1">
-                <NavButton 
-                  active={true} 
+                <ProfileNavButton 
+                  active={activeTab === 'audits'} 
                   icon={<History size={18} />} 
-                  onClick={() => {}}
+                  onClick={() => handleNavButtonClick('audits')}
                 >
                   История аудитов
-                </NavButton>
-                <NavButton 
-                  active={false} 
+                </ProfileNavButton>
+                <ProfileNavButton 
+                  active={activeTab === 'statistics'} 
                   icon={<BarChart size={18} />} 
-                  onClick={() => {}}
+                  onClick={() => handleNavButtonClick('statistics')}
                 >
                   Статистика
-                </NavButton>
-                <NavButton 
-                  active={false} 
+                </ProfileNavButton>
+                <ProfileNavButton 
+                  active={activeTab === 'reports'} 
                   icon={<FileText size={18} />} 
-                  onClick={() => {}}
+                  onClick={() => handleNavButtonClick('reports')}
                 >
                   Отчеты
-                </NavButton>
-                <NavButton 
-                  active={false} 
+                </ProfileNavButton>
+                <ProfileNavButton 
+                  active={activeTab === 'subscription'} 
                   icon={<CreditCard size={18} />} 
-                  onClick={() => {}}
+                  onClick={() => handleNavButtonClick('subscription')}
                 >
                   Подписка
-                </NavButton>
-                <NavButton 
-                  active={false} 
+                </ProfileNavButton>
+                <ProfileNavButton 
+                  active={activeTab === 'notifications'} 
                   icon={<Bell size={18} />} 
-                  onClick={() => {}}
+                  onClick={() => handleNavButtonClick('notifications')}
                 >
                   Уведомления
-                </NavButton>
-                <NavButton 
-                  active={false} 
+                </ProfileNavButton>
+                <ProfileNavButton 
+                  active={activeTab === 'settings'} 
                   icon={<Settings size={18} />} 
-                  onClick={() => {}}
+                  onClick={() => handleNavButtonClick('settings')}
                 >
                   Настройки
-                </NavButton>
+                </ProfileNavButton>
               </nav>
             </div>
             
             <div className="md:col-span-3">
-              <Tabs defaultValue="audits">
+              <Tabs 
+                defaultValue="audits" 
+                value={activeTab} 
+                onValueChange={setActiveTab}
+              >
                 <TabsList className="mb-6">
                   <TabsTrigger value="audits" className="flex items-center gap-2">
                     <History className="h-4 w-4" />
@@ -131,24 +142,5 @@ const ClientProfile: React.FC = () => {
     </Layout>
   );
 };
-
-const NavButton: React.FC<{
-  children: React.ReactNode;
-  icon: React.ReactNode;
-  active: boolean;
-  onClick: () => void;
-}> = ({ children, icon, active, onClick }) => (
-  <button
-    className={`w-full flex items-center px-4 py-3 rounded-lg transition-colors ${
-      active 
-        ? 'bg-primary text-white' 
-        : 'text-foreground hover:bg-secondary'
-    }`}
-    onClick={onClick}
-  >
-    <span className="mr-3">{icon}</span>
-    <span className="font-medium">{children}</span>
-  </button>
-);
 
 export default ClientProfile;
