@@ -16,8 +16,8 @@ const UrlForm: React.FC = () => {
     // Validate URL
     if (!url) {
       toast({
-        title: "URL Required",
-        description: "Please enter a valid website URL",
+        title: "URL обязателен",
+        description: "Пожалуйста, введите корректный URL сайта",
         variant: "destructive",
       });
       return;
@@ -34,8 +34,8 @@ const UrlForm: React.FC = () => {
       new URL(formattedUrl);
     } catch (err) {
       toast({
-        title: "Invalid URL",
-        description: "Please enter a valid website URL",
+        title: "Некорректный URL",
+        description: "Пожалуйста, введите корректный URL сайта",
         variant: "destructive",
       });
       return;
@@ -58,7 +58,7 @@ const UrlForm: React.FC = () => {
           type="text"
           value={url}
           onChange={(e) => setUrl(e.target.value)}
-          placeholder="Enter website URL (e.g., example.com)"
+          placeholder="Введите URL сайта (например, example.com)"
           className="flex-grow bg-transparent px-4 py-3 focus:outline-none text-foreground placeholder:text-muted-foreground"
           disabled={isLoading}
         />
@@ -71,7 +71,7 @@ const UrlForm: React.FC = () => {
             <Loader2 className="h-5 w-5 animate-spin" />
           ) : (
             <>
-              <span className="mr-2">Analyze</span>
+              <span className="mr-2">Анализировать</span>
               <ArrowRight size={16} />
             </>
           )}

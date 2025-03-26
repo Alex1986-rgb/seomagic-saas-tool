@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { motion } from 'framer-motion';
 import { ArrowRight, Search, FileText, Globe, Wrench } from 'lucide-react';
 import UrlForm from './UrlForm';
@@ -15,7 +15,7 @@ const HeroSection: React.FC = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
           >
-            Optimize Your Site With <span className="text-primary">Professional SEO</span> Audit
+            Оптимизируйте ваш сайт с <span className="text-primary">профессиональным SEO</span> аудитом
           </motion.h1>
           
           <motion.p 
@@ -24,7 +24,7 @@ const HeroSection: React.FC = () => {
             animate={{ opacity: 1 }}
             transition={{ duration: 0.6, delay: 0.2 }}
           >
-            SeoMarket analyzes your website, generates instant reports, and provides optimized copies with enhanced SEO.
+            SeoMarket анализирует ваш сайт, генерирует мгновенные отчеты и предоставляет оптимизированные копии с улучшенным SEO.
           </motion.p>
           
           <motion.div 
@@ -44,19 +44,19 @@ const HeroSection: React.FC = () => {
           >
             <FeatureItem 
               icon={<Search size={24} />}
-              text="Get SEO Analysis" 
+              text="SEO Анализ" 
             />
             <FeatureItem 
               icon={<FileText size={24} />}
-              text="PDF Report" 
+              text="PDF Отчет" 
             />
             <FeatureItem 
               icon={<Wrench size={24} />}
-              text="Fix Issues Automatically" 
+              text="Автоматическое исправление" 
             />
             <FeatureItem 
               icon={<Globe size={24} />}
-              text="Optimized Site Copy" 
+              text="Оптимизированная копия" 
             />
           </motion.div>
         </div>

@@ -22,7 +22,7 @@ const Index: React.FC = () => {
               viewport={{ once: true }}
               transition={{ duration: 0.6 }}
             >
-              Trusted by SEO Professionals
+              Нам доверяют SEO-профессионалы
             </motion.h2>
             <motion.p 
               className="text-lg text-muted-foreground max-w-2xl mx-auto"
@@ -31,25 +31,25 @@ const Index: React.FC = () => {
               viewport={{ once: true }}
               transition={{ duration: 0.6, delay: 0.2 }}
             >
-              See what our users are saying about SeoMarket's powerful optimization tools.
+              Узнайте, что говорят пользователи о мощных инструментах оптимизации SeoMarket.
             </motion.p>
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <TestimonialCard
-              quote="SeoMarket helped us identify critical SEO issues we had missed for months. Our organic traffic increased by 43% after implementing their recommendations."
-              author="Sarah Johnson"
-              role="Marketing Director, TechCorp"
+              quote="SeoMarket помог нам выявить критические SEO-проблемы, которые мы пропускали месяцами. Наш органический трафик увеличился на 43% после внедрения их рекомендаций."
+              author="Сергей Иванов"
+              role="Директор по маркетингу, ТехКорп"
             />
             <TestimonialCard
-              quote="The automated site optimization feature saved us countless hours of manual work. The PDF reports are perfect for sharing with clients."
-              author="Alex Chen"
-              role="SEO Consultant"
+              quote="Функция автоматической оптимизации сайта сэкономила нам бесчисленные часы ручной работы. PDF-отчеты идеально подходят для совместного использования с клиентами."
+              author="Алексей Чен"
+              role="SEO-консультант"
             />
             <TestimonialCard
-              quote="As a small business owner, I needed an affordable SEO solution. SeoMarket provided enterprise-level insights at a fraction of the cost."
-              author="Michael Brown"
-              role="Founder, StyleBoutique"
+              quote="Как владельцу малого бизнеса мне нужно было доступное SEO-решение. SeoMarket предоставил корпоративные инсайты по доступной цене."
+              author="Михаил Браун"
+              role="Основатель, СтильБутик"
             />
           </div>
         </div>
@@ -66,7 +66,7 @@ const Index: React.FC = () => {
               viewport={{ once: true }}
               transition={{ duration: 0.6 }}
             >
-              Ready to Optimize Your Website?
+              Готовы оптимизировать ваш сайт?
             </motion.h2>
             <motion.p 
               className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto"
@@ -75,7 +75,7 @@ const Index: React.FC = () => {
               viewport={{ once: true }}
               transition={{ duration: 0.6, delay: 0.2 }}
             >
-              Start with a free SEO audit today and discover how SeoMarket can transform your online presence.
+              Начните с бесплатного SEO-аудита сегодня и узнайте, как SeoMarket может преобразить ваше онлайн-присутствие.
             </motion.p>
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -91,7 +91,7 @@ const Index: React.FC = () => {
                   window.scrollTo({ top: 0, behavior: 'smooth' });
                 }}
               >
-                Get Your Free SEO Audit
+                Получить бесплатный SEO-аудит
               </a>
             </motion.div>
           </div>

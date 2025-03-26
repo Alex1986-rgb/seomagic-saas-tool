@@ -17,58 +17,58 @@ const mockAuditData = {
   timestamp: new Date().toISOString(),
   categories: [
     {
-      name: 'Meta Tags',
+      name: 'Мета-теги',
       score: 72,
       items: [
-        { name: 'Title Tag', status: 'warning', message: 'Title is too short (32 characters)' },
-        { name: 'Meta Description', status: 'error', message: 'Missing meta description' },
-        { name: 'Canonical Tag', status: 'success', message: 'Canonical tag is properly set' },
-        { name: 'Robots Meta', status: 'success', message: 'Robots meta is properly set' },
+        { name: 'Title тег', status: 'warning', message: 'Заголовок слишком короткий (32 символа)' },
+        { name: 'Meta Description', status: 'error', message: 'Отсутствует мета-описание' },
+        { name: 'Canonical тег', status: 'success', message: 'Канонический тег правильно установлен' },
+        { name: 'Robots Meta', status: 'success', message: 'Мета-тег robots правильно установлен' },
       ]
     },
     {
-      name: 'Headings',
+      name: 'Заголовки',
       score: 85,
       items: [
-        { name: 'H1 Tag', status: 'success', message: 'H1 tag is present and optimized' },
-        { name: 'Heading Structure', status: 'warning', message: 'Some headings are out of order (H2 before H1)' },
-        { name: 'Heading Content', status: 'success', message: 'Headings contain relevant keywords' },
+        { name: 'H1 тег', status: 'success', message: 'H1 тег присутствует и оптимизирован' },
+        { name: 'Структура заголовков', status: 'warning', message: 'Некоторые заголовки не по порядку (H2 перед H1)' },
+        { name: 'Содержание заголовков', status: 'success', message: 'Заголовки содержат релевантные ключевые слова' },
       ]
     },
     {
-      name: 'Images',
+      name: 'Изображения',
       score: 40,
       items: [
-        { name: 'Alt Tags', status: 'error', message: '8 images missing alt tags' },
-        { name: 'Image Size', status: 'warning', message: '3 images are not optimized for web' },
-        { name: 'Image Names', status: 'error', message: 'Most image filenames are not descriptive' },
+        { name: 'Alt теги', status: 'error', message: 'У 8 изображений отсутствуют alt-теги' },
+        { name: 'Размер изображений', status: 'warning', message: '3 изображения не оптимизированы для веба' },
+        { name: 'Имена изображений', status: 'error', message: 'Большинство имен файлов изображений не являются описательными' },
       ]
     },
     {
-      name: 'Performance',
+      name: 'Производительность',
       score: 62,
       items: [
-        { name: 'Page Speed', status: 'warning', message: 'Page load time is 3.2s (recommended < 2s)' },
-        { name: 'Mobile Friendly', status: 'success', message: 'Page is mobile friendly' },
-        { name: 'HTTPS', status: 'success', message: 'Site uses HTTPS' },
+        { name: 'Скорость страницы', status: 'warning', message: 'Время загрузки страницы 3.2с (рекомендуется < 2с)' },
+        { name: 'Мобильная адаптация', status: 'success', message: 'Страница адаптирована для мобильных устройств' },
+        { name: 'HTTPS', status: 'success', message: 'Сайт использует HTTPS' },
       ]
     },
     {
-      name: 'Content',
+      name: 'Контент',
       score: 78,
       items: [
-        { name: 'Word Count', status: 'success', message: 'Page has adequate content (1,250 words)' },
-        { name: 'Keyword Density', status: 'warning', message: 'Primary keyword density is too high (5.2%)' },
-        { name: 'Readability', status: 'success', message: 'Content has good readability score' },
+        { name: 'Количество слов', status: 'success', message: 'На странице достаточно контента (1 250 слов)' },
+        { name: 'Плотность ключевых слов', status: 'warning', message: 'Плотность основного ключевого слова слишком высокая (5.2%)' },
+        { name: 'Читабельность', status: 'success', message: 'Контент имеет хороший показатель читабельности' },
       ]
     },
   ],
   recommendations: [
-    'Add a meta description to improve click-through rates from search results',
-    'Optimize 8 images with descriptive alt tags',
-    'Improve page speed by optimizing images and minimizing CSS/JS',
-    'Fix heading structure to follow proper hierarchy',
-    'Reduce keyword density to avoid over-optimization penalties',
+    'Добавьте мета-описание для улучшения показателя кликов из результатов поиска',
+    'Оптимизируйте 8 изображений с помощью описательных alt-тегов',
+    'Улучшите скорость страницы, оптимизируя изображения и минимизируя CSS/JS',
+    'Исправьте структуру заголовков, чтобы следовать правильной иерархии',
+    'Уменьшите плотность ключевых слов, чтобы избежать штрафов за переоптимизацию',
   ]
 };
 
@@ -95,13 +95,13 @@ const SeoAuditResults: React.FC<SeoAuditResultsProps> = ({ url }) => {
     return (
       <div className="flex flex-col items-center justify-center py-20">
         <Loader2 className="h-16 w-16 text-primary animate-spin mb-6" />
-        <h2 className="text-2xl font-semibold mb-2">Analyzing Your Website</h2>
-        <p className="text-muted-foreground mb-8">This may take a minute...</p>
+        <h2 className="text-2xl font-semibold mb-2">Анализируем ваш сайт</h2>
+        <p className="text-muted-foreground mb-8">Это может занять минуту...</p>
         
         <div className="w-full max-w-md bg-secondary/30 rounded-full h-3 mb-2">
           <div className="h-3 bg-primary rounded-full animate-pulse-slow" style={{ width: '70%' }}></div>
         </div>
-        <p className="text-sm text-muted-foreground">Checking meta tags, headings, images, and more</p>
+        <p className="text-sm text-muted-foreground">Проверяем мета-теги, заголовки, изображения и многое другое</p>
       </div>
     );
   }
@@ -110,14 +110,14 @@ const SeoAuditResults: React.FC<SeoAuditResultsProps> = ({ url }) => {
     return (
       <div className="flex flex-col items-center justify-center py-20">
         <XCircle className="h-16 w-16 text-destructive mb-6" />
-        <h2 className="text-2xl font-semibold mb-2">Analysis Failed</h2>
-        <p className="text-muted-foreground mb-8">We couldn't analyze this website. Please try again.</p>
+        <h2 className="text-2xl font-semibold mb-2">Анализ не удался</h2>
+        <p className="text-muted-foreground mb-8">Мы не смогли проанализировать этот сайт. Пожалуйста, попробуйте снова.</p>
         <button 
           className="bg-primary text-white px-6 py-3 rounded-full flex items-center"
           onClick={() => window.location.reload()}
         >
           <RefreshCw className="mr-2 h-5 w-5" />
-          Try Again
+          Попробовать снова
         </button>
       </div>
     );
@@ -129,7 +129,7 @@ const SeoAuditResults: React.FC<SeoAuditResultsProps> = ({ url }) => {
       <div className="glass-panel p-8 mb-8">
         <div className="flex flex-col md:flex-row items-center justify-between">
           <div className="flex flex-col items-center md:items-start mb-6 md:mb-0">
-            <h2 className="text-3xl font-bold mb-2">SEO Score: {auditData.score}/100</h2>
+            <h2 className="text-3xl font-bold mb-2">SEO оценка: {auditData.score}/100</h2>
             <p className="text-muted-foreground mb-4">{url}</p>
             
             {/* Score gauge */}
@@ -144,7 +144,7 @@ const SeoAuditResults: React.FC<SeoAuditResultsProps> = ({ url }) => {
             </div>
             
             <p className="text-sm text-muted-foreground">
-              Analyzed on {new Date(auditData.timestamp).toLocaleDateString()}
+              Проанализировано {new Date(auditData.timestamp).toLocaleDateString()}
             </p>
           </div>
           
@@ -154,14 +154,14 @@ const SeoAuditResults: React.FC<SeoAuditResultsProps> = ({ url }) => {
               onClick={() => {/* Download PDF logic */}}
             >
               <Download className="mr-2 h-5 w-5" />
-              Download Report
+              Скачать отчет
             </button>
             <button 
               className="bg-secondary text-foreground px-6 py-3 rounded-full flex items-center justify-center"
               onClick={() => {/* Generate optimized site */}}
             >
               <Globe className="mr-2 h-5 w-5" />
-              Generate Optimized Site
+              Сгенерировать оптимизированный сайт
             </button>
           </div>
         </div>
@@ -173,19 +173,19 @@ const SeoAuditResults: React.FC<SeoAuditResultsProps> = ({ url }) => {
           active={activeTab === 'overview'} 
           onClick={() => setActiveTab('overview')}
         >
-          Overview
+          Обзор
         </TabButton>
         <TabButton 
           active={activeTab === 'issues'} 
           onClick={() => setActiveTab('issues')}
         >
-          Issues
+          Проблемы
         </TabButton>
         <TabButton 
           active={activeTab === 'recommendations'} 
           onClick={() => setActiveTab('recommendations')}
         >
-          Recommendations
+          Рекомендации
         </TabButton>
       </div>
       
@@ -209,7 +209,7 @@ const SeoAuditResults: React.FC<SeoAuditResultsProps> = ({ url }) => {
         
         {activeTab === 'recommendations' && (
           <div className="glass-panel p-6">
-            <h3 className="text-xl font-semibold mb-4">Recommendations to Improve Your SEO</h3>
+            <h3 className="text-xl font-semibold mb-4">Рекомендации по улучшению вашего SEO</h3>
             <ul className="space-y-4">
               {auditData.recommendations.map((rec: string, index: number) => (
                 <li key={index} className="flex items-start">

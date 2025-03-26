@@ -21,8 +21,8 @@ const Audit: React.FC = () => {
         setUrl(urlParam);
       } catch (err) {
         toast({
-          title: "Invalid URL",
-          description: "The provided URL is invalid. Please try again.",
+          title: "Некорректный URL",
+          description: "Предоставленный URL некорректен. Пожалуйста, попробуйте снова.",
           variant: "destructive",
         });
         setUrl('');
@@ -35,12 +35,12 @@ const Audit: React.FC = () => {
       <div className="container mx-auto px-4 md:px-6 pt-32 pb-20">
         <div className="mb-12 text-center max-w-3xl mx-auto">
           <h1 className="text-3xl md:text-4xl font-bold mb-4">
-            {url ? 'SEO Audit Results' : 'Start Your SEO Audit'}
+            {url ? 'Результаты SEO аудита' : 'Начните SEO аудит'}
           </h1>
           <p className="text-lg text-muted-foreground">
             {url 
-              ? `Comprehensive analysis of ${url}`
-              : 'Enter your website URL to receive a detailed SEO analysis'
+              ? `Комплексный анализ ${url}`
+              : 'Введите URL вашего сайта для получения детального SEO анализа'
             }
           </p>
         </div>

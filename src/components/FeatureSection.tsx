@@ -30,43 +30,43 @@ const FeatureSection: React.FC = () => {
       <div className="container mx-auto px-4 md:px-6">
         <div className="text-center mb-16">
           <h2 className="text-3xl md:text-4xl font-bold mb-4 animate-on-scroll">
-            All-in-One SEO Solution
+            Комплексное SEO решение
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto animate-on-scroll">
-            Analyze, optimize, and monitor your website's SEO performance with our comprehensive suite of tools.
+            Анализируйте, оптимизируйте и контролируйте SEO-производительность вашего сайта с помощью нашего полного набора инструментов.
           </p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           <FeatureCard
             icon={<CheckCircle2 size={24} className="text-primary" />}
-            title="Complete SEO Audit"
-            description="Deep analysis of meta tags, headings, images, links, and more to identify all SEO issues."
+            title="Полный SEO аудит"
+            description="Глубокий анализ мета-тегов, заголовков, изображений, ссылок и многого другого для выявления всех SEO-проблем."
           />
           <FeatureCard
             icon={<FileText size={24} className="text-primary" />}
-            title="Detailed Reports"
-            description="Get comprehensive PDF reports with actionable insights and prioritized recommendations."
+            title="Подробные отчеты"
+            description="Получите комплексные PDF-отчеты с практическими рекомендациями и приоритизированными рекомендациями."
           />
           <FeatureCard
             icon={<Globe size={24} className="text-primary" />}
-            title="Optimized Site Copy"
-            description="Receive a fully optimized version of your site with improved SEO elements."
+            title="Оптимизированная копия сайта"
+            description="Получите полностью оптимизированную версию вашего сайта с улучшенными SEO-элементами."
           />
           <FeatureCard
             icon={<RefreshCw size={24} className="text-primary" />}
-            title="Before/After Comparison"
-            description="See the difference between your original site and the optimized version."
+            title="Сравнение До/После"
+            description="Увидьте разницу между вашим оригинальным сайтом и оптимизированной версией."
           />
           <FeatureCard
             icon={<ShieldCheck size={24} className="text-primary" />}
-            title="Technical SEO Fixes"
-            description="Automatic generation of sitemaps, robots.txt, and structured data."
+            title="Технические SEO исправления"
+            description="Автоматическая генерация sitemap.xml, robots.txt и структурированных данных."
           />
           <FeatureCard
             icon={<Zap size={24} className="text-primary" />}
-            title="AI-Powered Suggestions"
-            description="Intelligent recommendations for meta titles, descriptions, and content optimizations."
+            title="ИИ-рекомендации"
+            description="Интеллектуальные рекомендации для мета-заголовков, описаний и оптимизации контента."
           />
         </div>
       </div>
