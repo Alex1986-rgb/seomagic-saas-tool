@@ -13,39 +13,13 @@
 
 .star {
   position: absolute;
-  background-color: rgba(0, 0, 0, 0.6);
-  border-radius: 8px;
-  opacity: 1; /* Changed from 0 to always be visible */
-  /* Removed animation property that was causing twinkling */
-  color: white;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: bold;
-  text-shadow: 0 0 10px rgba(255, 255, 255, 0.8), 0 0 20px rgba(255, 255, 255, 0.5);
-  font-family: 'Arial', sans-serif;
-  box-shadow: 0 0 15px rgba(255, 255, 255, 0.6);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  padding: 4px 8px;
+  background-color: rgba(255, 255, 255, 0.6);
+  border-radius: 50%;
+  opacity: 1;
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.6);
 }
 
-/* Keeping the keyframes for reference but not using them */
-@keyframes twinkle {
-  0% {
-    opacity: 0;
-    transform: scale(0.3);
-  }
-  50% {
-    opacity: var(--star-opacity, 0.8);
-    transform: scale(1);
-  }
-  100% {
-    opacity: 0;
-    transform: scale(0.3);
-  }
-}
-
-/* Star groups with different appearance sequences - not animating anymore */
+/* Star groups with different appearance sequences - not animating */
 .star-group-1 .star {
   --twinkle-delay: 0s;
 }
@@ -68,37 +42,25 @@
 
 /* Different star sizes */
 .star-size-1 {
-  width: 60px;
-  height: 30px;
-  --star-opacity: 0.9;
-  --twinkle-duration: 7s;
-  font-size: 14px;
-  letter-spacing: 0.5px;
+  width: 2px;
+  height: 2px;
+  --star-opacity: 0.7;
 }
 
 .star-size-2 {
-  width: 70px;
-  height: 35px;
-  --star-opacity: 0.9;
-  --twinkle-duration: 6s;
-  font-size: 16px;
-  letter-spacing: 0.5px;
+  width: 3px;
+  height: 3px;
+  --star-opacity: 0.8;
 }
 
 .star-size-3 {
-  width: 80px;
-  height: 40px;
-  --star-opacity: 1;
-  --twinkle-duration: 5s;
-  font-size: 18px;
-  letter-spacing: 0.5px;
+  width: 4px;
+  height: 4px;
+  --star-opacity: 0.9;
 }
 
 .star-size-4 {
-  width: 90px;
-  height: 45px;
+  width: 5px;
+  height: 5px;
   --star-opacity: 1;
-  --twinkle-duration: 4s;
-  font-size: 20px;
-  letter-spacing: 0.5px;
 }
