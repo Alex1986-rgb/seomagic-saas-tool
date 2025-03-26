@@ -1,14 +1,8 @@
-
 import React, { useState } from 'react';
 import { ChevronDown, ChevronUp, AlertTriangle, AlertCircle, Lightbulb, Copy, Check } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useToast } from "@/hooks/use-toast";
-
-interface RecommendationData {
-  critical: string[];
-  important: string[];
-  opportunities: string[];
-}
+import { RecommendationData } from '@/types/audit';
 
 interface AuditRecommendationsProps {
   recommendations: RecommendationData;

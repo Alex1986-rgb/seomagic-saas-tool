@@ -1,17 +1,16 @@
 
 import React, { useState } from 'react';
-import { Copy, Check, Info } from 'lucide-react';
-import { useToast } from "@/hooks/use-toast";
-import { motion } from 'framer-motion';
+import { ChevronDown, ChevronUp, Info } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { StatusIndicator } from './';
+import StatusIndicator from './StatusIndicator';
 
 interface AuditCategoryItemProps {
   id: string;
   title: string;
-  description?: string;
-  value?: string;
+  description: string;
   status: 'good' | 'warning' | 'error';
+  value?: number | string;
   trend?: 'up' | 'down' | 'neutral';
   helpText?: string;
   getTrendIcon: (trend?: string) => React.ReactNode;
@@ -21,88 +20,69 @@ const AuditCategoryItem: React.FC<AuditCategoryItemProps> = ({
   id,
   title,
   description,
-  value,
   status,
+  value,
   trend,
   helpText,
   getTrendIcon
 }) => {
-  const { toast } = useToast();
-  const [copiedId, setCopiedId] = useState<string | null>(null);
-
-  const handleCopyValue = (value: string, id: string) => {
-    navigator.clipboard.writeText(value);
-    setCopiedId(id);
-    toast({
-      title: "Значение скопировано",
-      description: "Значение скопировано в буфер обмена",
-    });
-    
-    setTimeout(() => {
-      setCopiedId(null);
-    }, 2000);
-  };
-
-  const getStatusColor = (status: string) => {
-    switch(status) {
-      case 'good': return 'text-green-500 bg-green-50 border-green-200';
-      case 'warning': return 'text-amber-500 bg-amber-50 border-amber-200';
-      case 'error': return 'text-red-500 bg-red-50 border-red-200';
-      default: return 'text-muted-foreground bg-muted border-border';
-    }
-  };
+  const [expanded, setExpanded] = useState(false);
 
   return (
-    <motion.div 
-      key={id} 
-      className={`p-4 border rounded-lg transition-all duration-300 hover:shadow-md ${getStatusColor(status)}`}
-      whileHover={{ y: -2 }}
-    >
-      <div className="flex justify-between items-center">
+    <div className="border rounded-lg overflow-hidden">
+      <div 
+        className="p-4 bg-card flex justify-between items-center cursor-pointer hover:bg-muted/30 transition-colors"
+        onClick={() => setExpanded(!expanded)}
+      >
         <div className="flex items-center">
           <StatusIndicator status={status} />
-          <h3 className="font-medium flex items-center">
-            {title}
-            {trend && (
-              <span className="ml-2">{getTrendIcon(trend)}</span>
-            )}
-            
-            {helpText && (
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Info className="h-3.5 w-3.5 text-muted-foreground cursor-help ml-1.5" />
-                  </TooltipTrigger>
-                  <TooltipContent className="max-w-xs">
-                    <p>{helpText}</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-            )}
-          </h3>
+          <h3 className="font-medium">{title}</h3>
+          
+          {value && (
+            <div className="ml-3 flex items-center gap-1 text-sm">
+              <span className="text-muted-foreground">
+                {typeof value === 'number' ? `${value}%` : value}
+              </span>
+              {trend && getTrendIcon(trend)}
+            </div>
+          )}
         </div>
-        {value && (
-          <div className="flex items-center gap-2">
-            <div className="font-mono">{value}</div>
-            <button 
-              onClick={(e) => {
-                e.stopPropagation();
-                value && handleCopyValue(value, id);
-              }}
-              className="p-1 rounded hover:bg-background/50"
-            >
-              {copiedId === id ? 
-                <Check className="h-4 w-4 text-green-500" /> : 
-                <Copy className="h-4 w-4 text-muted-foreground" />
-              }
-            </button>
-          </div>
-        )}
+        
+        <div className="flex items-center">
+          {helpText && (
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Info className="h-4 w-4 text-muted-foreground cursor-help mr-2" />
+                </TooltipTrigger>
+                <TooltipContent className="max-w-xs">
+                  <p>{helpText}</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          )}
+          
+          {expanded ? 
+            <ChevronUp className="h-5 w-5 text-muted-foreground" /> : 
+            <ChevronDown className="h-5 w-5 text-muted-foreground" />
+          }
+        </div>
       </div>
-      {description && (
-        <p className="mt-2 ml-9 text-sm">{description}</p>
-      )}
-    </motion.div>
+      
+      <AnimatePresence>
+        {expanded && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.3 }}
+            className="px-4 py-3 bg-card/50 border-t"
+          >
+            <p className="text-sm text-muted-foreground">{description}</p>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
   );
 };
 

@@ -32,7 +32,7 @@ const AuditComparison: React.FC<AuditComparisonProps> = ({ currentAudit, history
 
   // Подготовка данных для сравнения
   const prepareComparisonData = () => {
-    if (!selectedAudit) return [];
+    if (!selectedAudit || !selectedAudit.details) return [];
 
     return [
       {
