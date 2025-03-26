@@ -8,6 +8,7 @@ import AuditComments from '../comments/AuditComments';
 import AuditHistory from '../AuditHistory';
 import AuditDataVisualizer from '../data-visualization/AuditDataVisualizer';
 import AuditComparison from '../comparison/AuditComparison';
+import GrowthVisualization from '../data-visualization/GrowthVisualization';
 import { AuditData, RecommendationData, AuditHistoryData } from '@/types/audit';
 
 interface AuditContentProps {
@@ -25,6 +26,31 @@ const AuditContent: React.FC<AuditContentProps> = ({
   url,
   onSelectAudit 
 }) => {
+  // Sample data for growth visualization
+  const growthData = {
+    overview: [
+      { category: 'Общий балл', before: auditData.previousScore || 65, after: auditData.score },
+      { category: 'SEO', before: auditData.details.seo.previousScore || 60, after: auditData.details.seo.score },
+      { category: 'Производительность', before: auditData.details.performance.previousScore || 55, after: auditData.details.performance.score },
+      { category: 'Контент', before: auditData.details.content.previousScore || 70, after: auditData.details.content.score },
+      { category: 'Технические аспекты', before: auditData.details.technical.previousScore || 45, after: auditData.details.technical.score },
+    ],
+    seo: [
+      { category: 'Meta-теги', before: 55, after: 85 },
+      { category: 'Ключевые слова', before: 60, after: 80 },
+      { category: 'Структура URL', before: 70, after: 90 },
+      { category: 'Внутренние ссылки', before: 50, after: 75 },
+      { category: 'Внешние ссылки', before: 65, after: 85 },
+    ],
+    performance: [
+      { category: 'Время загрузки', before: 45, after: 75 },
+      { category: 'Размер страницы', before: 50, after: 80 },
+      { category: 'Кеширование', before: 60, after: 90 },
+      { category: 'Мобильная оптимизация', before: 55, after: 85 },
+      { category: 'Core Web Vitals', before: 40, after: 70 },
+    ]
+  };
+
   const renderWithAnimation = (component: React.ReactNode, delay: number) => (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -34,6 +60,9 @@ const AuditContent: React.FC<AuditContentProps> = ({
       {component}
     </motion.div>
   );
+
+  const showGrowthVisualization = auditData.previousScore !== undefined || 
+    historyData?.items?.length > 1;
 
   return (
     <>
@@ -52,29 +81,36 @@ const AuditContent: React.FC<AuditContentProps> = ({
         0.15
       )}
       
+      {showGrowthVisualization && 
+        renderWithAnimation(
+          <GrowthVisualization beforeAfterData={growthData} />,
+          0.2
+        )
+      }
+      
       {historyData && historyData.items.length > 1 && 
         renderWithAnimation(
           <AuditComparison 
             currentAudit={auditData} 
             historyItems={historyData.items} 
           />, 
-          0.2
+          0.25
         )
       }
       
       {renderWithAnimation(
         <AuditTabs details={auditData.details} />, 
-        0.25
-      )}
-      
-      {renderWithAnimation(
-        <AuditRecommendations recommendations={recommendations} />, 
         0.3
       )}
       
       {renderWithAnimation(
-        <AuditComments auditId={auditData.id} />, 
+        <AuditRecommendations recommendations={recommendations} />, 
         0.35
+      )}
+      
+      {renderWithAnimation(
+        <AuditComments auditId={auditData.id} />, 
+        0.4
       )}
       
       {renderWithAnimation(
@@ -84,7 +120,7 @@ const AuditContent: React.FC<AuditContentProps> = ({
           url={url}
           historyItems={historyData?.items}
         />, 
-        0.4
+        0.45
       )}
     </>
   );

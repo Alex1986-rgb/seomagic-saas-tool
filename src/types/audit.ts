@@ -1,60 +1,42 @@
-
-export interface AuditIssues {
-  critical: number;
-  important: number;
-  opportunities: number;
-}
-
 export interface AuditItemData {
-  id: string;
   title: string;
-  description?: string;
-  value?: string;
+  description: string;
   status: 'good' | 'warning' | 'error';
-  trend?: 'up' | 'down' | 'neutral';
-  helpText?: string;
+  details?: string;
 }
 
 export interface AuditCategoryData {
   score: number;
-  items: AuditItemData[];
   previousScore?: number;
-}
-
-export interface AuditDetailsData {
-  performance: AuditCategoryData;
-  seo: AuditCategoryData;
-  content: AuditCategoryData;
-  technical: AuditCategoryData;
+  items: AuditItemData[];
 }
 
 export interface AuditData {
   id: string;
-  score: number;
+  url: string;
   date: string;
-  issues: AuditIssues;
-  details: AuditDetailsData;
+  score: number;
   previousScore?: number;
-  historyAvailable?: boolean;
+  issues: number;
+  details: {
+    seo: AuditCategoryData;
+    performance: AuditCategoryData;
+    content: AuditCategoryData;
+    technical: AuditCategoryData;
+  };
 }
 
 export interface RecommendationData {
-  critical: string[];
-  important: string[];
-  opportunities: string[];
+  title: string;
+  description: string;
+  category: string;
+  priority: 'high' | 'medium' | 'low';
 }
 
 export interface AuditHistoryItem {
   id: string;
   date: string;
   score: number;
-  issues: AuditIssues;
-  details?: {
-    performance?: { score?: number };
-    seo?: { score?: number };
-    content?: { score?: number };
-    technical?: { score?: number };
-  };
 }
 
 export interface AuditHistoryData {
