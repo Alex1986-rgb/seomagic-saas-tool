@@ -1,10 +1,11 @@
+
 import { AuditData } from "@/types/audit";
 import { faker } from '@faker-js/faker';
 
 const generateRandomAuditItem = () => {
   // Explicitly define status options as the exact types needed
   const statusOptions = ['good', 'warning', 'error'] as const;
-  const trendOptions = ['up', 'down', 'neutral'];
+  const trendOptions = ['up', 'down', 'neutral'] as const;
 
   return {
     id: faker.string.uuid(),
@@ -13,7 +14,7 @@ const generateRandomAuditItem = () => {
     status: faker.helpers.arrayElement(statusOptions), // This now returns only 'good', 'warning', or 'error'
     details: faker.lorem.sentence(),
     value: faker.number.int({ min: 0, max: 100 }),
-    trend: faker.helpers.arrayElement(trendOptions),
+    trend: faker.helpers.arrayElement(trendOptions), // This now returns only 'up', 'down', or 'neutral'
     helpText: faker.lorem.sentence(),
   };
 };
