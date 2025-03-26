@@ -45,7 +45,7 @@ const ContentOptimizationPrompt: React.FC<ContentOptimizationPromptProps> = ({
 
   return (
     <motion.div
-      className={`border border-primary/20 rounded-lg p-4 bg-card/50 ${className || ''}`}
+      className={`border border-primary/20 rounded-lg p-4 bg-card/70 ${className || ''}`}
       initial={{ opacity: 0, height: 0 }}
       animate={{ opacity: 1, height: 'auto' }}
       exit={{ opacity: 0, height: 0 }}
