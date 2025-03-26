@@ -16,7 +16,7 @@ const About = () => {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.5 }}
-        className="container px-4 py-16 mx-auto"
+        className="container px-4 py-8 mx-auto"
       >
         <AboutHero />
         <MissionSection />

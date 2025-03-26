@@ -1,5 +1,5 @@
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -16,7 +16,7 @@
     --popover: 0 0% 100%;
     --popover-foreground: 220 20% 10%;
 
-    --primary: 210 100% 50%;
+    --primary: 220 80% 50%;
     --primary-foreground: 210 20% 98%;
 
     --secondary: 210 10% 90%;
@@ -25,15 +25,15 @@
     --muted: 210 10% 90%;
     --muted-foreground: 220 10% 40%;
 
-    --accent: 210 10% 90%;
-    --accent-foreground: 220 20% 10%;
+    --accent: 220 80% 50%;
+    --accent-foreground: 210 20% 98%;
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 210 20% 98%;
 
     --border: 220 10% 90%;
     --input: 220 10% 90%;
-    --ring: 210 100% 50%;
+    --ring: 220 80% 50%;
 
     --radius: 0.75rem;
 
@@ -57,7 +57,7 @@
     --popover: 220 20% 10%;
     --popover-foreground: 210 20% 98%;
 
-    --primary: 210 100% 50%;
+    --primary: 220 80% 50%;
     --primary-foreground: 210 20% 98%;
 
     --secondary: 215 30% 20%;
@@ -74,7 +74,7 @@
 
     --border: 215 30% 20%;
     --input: 215 30% 20%;
-    --ring: 210 100% 50%;
+    --ring: 220 80% 50%;
   }
 }
 
@@ -88,21 +88,26 @@
     font-feature-settings: "rlig" 1, "calt" 1;
   }
 
-  /* Neomorphism-inspired styles */
-  .neo-card {
-    @apply bg-white rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-300;
-    box-shadow: 
-      8px 8px 16px rgba(174, 174, 192, 0.1),
-      -8px -8px 16px rgba(255, 255, 255, 0.7);
+  /* Modern design styles */
+  .heading-gradient {
+    @apply bg-gradient-to-r from-primary via-primary/80 to-primary/60 bg-clip-text text-transparent;
   }
 
-  .glass-panel {
-    @apply bg-white/80 backdrop-blur-md border border-white/20 rounded-2xl shadow-sm;
+  .glass-card {
+    @apply bg-white/60 backdrop-blur-md border border-white/20 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300;
   }
 
-  /* Smooth scrolling */
-  html {
-    scroll-behavior: smooth;
+  .premium-card {
+    @apply bg-gradient-to-br from-background to-secondary/20 border-none shadow-lg hover:shadow-xl transition-all duration-300;
+  }
+  
+  .premium-gradient {
+    @apply bg-gradient-to-r from-primary to-blue-600;
+  }
+
+  /* Neo-glass morphism styles */
+  .neo-glass {
+    @apply bg-white/80 backdrop-blur-xl border border-white/20 shadow-lg rounded-2xl;
   }
 
   /* Improved focus outlines */
@@ -112,37 +117,41 @@
 
   /* Custom scrollbar */
   ::-webkit-scrollbar {
-    width: 10px;
-    height: 10px;
+    width: 8px;
+    height: 8px;
   }
   
   ::-webkit-scrollbar-track {
-    @apply bg-secondary/50;
+    @apply bg-secondary/30 rounded-full;
   }
   
   ::-webkit-scrollbar-thumb {
-    @apply bg-muted-foreground/30 hover:bg-muted-foreground/50 rounded-full transition-colors;
+    @apply bg-primary/30 hover:bg-primary/50 rounded-full transition-colors;
   }
 
-  /* Typography scaling */
+  /* Modern typography */
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-playfair tracking-tight;
+  }
+  
   h1 {
-    @apply text-4xl font-bold tracking-tight md:text-5xl lg:text-6xl;
+    @apply text-4xl font-bold md:text-5xl lg:text-6xl;
   }
   
   h2 {
-    @apply text-3xl font-semibold tracking-tight md:text-4xl;
+    @apply text-3xl font-semibold md:text-4xl;
   }
   
   h3 {
-    @apply text-2xl font-semibold tracking-tight md:text-3xl;
+    @apply text-2xl font-semibold md:text-3xl;
   }
   
   h4 {
-    @apply text-xl font-semibold tracking-tight md:text-2xl;
+    @apply text-xl font-semibold md:text-2xl;
   }
 
   p {
-    @apply text-base md:text-lg leading-relaxed;
+    @apply text-base md:text-lg leading-relaxed font-inter;
   }
 
   /* Button hover effects */
@@ -184,4 +193,39 @@
   .stagger-children > *:nth-child(4) { animation-delay: 0.4s; }
   .stagger-children > *:nth-child(5) { animation-delay: 0.5s; }
   .stagger-children > *:nth-child(6) { animation-delay: 0.6s; }
+  
+  /* Gradient animation */
+  .bg-animate {
+    background-size: 200% 200%;
+    animation: gradient 15s ease infinite;
+  }
+  
+  @keyframes gradient {
+    0% {
+      background-position: 0% 50%;
+    }
+    50% {
+      background-position: 100% 50%;
+    }
+    100% {
+      background-position: 0% 50%;
+    }
+  }
+  
+  /* Floating animation */
+  .floating {
+    animation: floating 3s ease-in-out infinite;
+  }
+  
+  @keyframes floating {
+    0% {
+      transform: translateY(0px);
+    }
+    50% {
+      transform: translateY(-10px);
+    }
+    100% {
+      transform: translateY(0px);
+    }
+  }
 }

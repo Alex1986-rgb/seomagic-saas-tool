@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Globe } from 'lucide-react';
+import { Users } from 'lucide-react';
 import TeamMember from './TeamMember';
 
 const TeamSection = () => {
@@ -14,10 +14,10 @@ const TeamSection = () => {
     >
       <div className="text-center mb-16">
         <div className="inline-flex items-center px-4 py-2 rounded-full bg-primary/10 text-primary font-medium mb-4">
-          <Globe className="w-4 h-4 mr-2" />
+          <Users className="w-4 h-4 mr-2" />
           Наша команда
         </div>
-        <h2 className="text-4xl font-bold mb-6">Эксперты SEO Market</h2>
+        <h2 className="font-playfair text-4xl font-bold mb-6">Эксперты SEO Market</h2>
         <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
           Профессионалы с многолетним опытом в SEO-оптимизации
         </p>

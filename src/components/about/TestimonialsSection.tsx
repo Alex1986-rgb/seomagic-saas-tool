@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
+import { MessageSquare } from 'lucide-react';
 import Testimonial from './Testimonial';
 
 const TestimonialsSection = () => {
@@ -39,9 +40,13 @@ const TestimonialsSection = () => {
       className="mb-32"
     >
       <div className="text-center mb-16">
-        <h2 className="text-4xl font-bold mb-6">Отзывы клиентов</h2>
+        <div className="inline-flex items-center px-4 py-2 rounded-full bg-primary/10 text-primary font-medium mb-4">
+          <MessageSquare className="w-4 h-4 mr-2" />
+          Отзывы клиентов
+        </div>
+        <h2 className="font-playfair text-4xl font-bold mb-6">Что говорят наши клиенты</h2>
         <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-          Что говорят о нас клиенты после использования сервиса
+          Реальные результаты использования нашего сервиса
         </p>
       </div>
       <div className="grid md:grid-cols-2 gap-8">
