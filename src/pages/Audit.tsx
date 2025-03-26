@@ -6,12 +6,15 @@ import SeoAuditResults from '@/components/SeoAuditResults';
 import UrlForm from '@/components/UrlForm';
 import { useToast } from "@/hooks/use-toast";
 import { motion } from 'framer-motion';
-import { Rocket, Target } from 'lucide-react';
+import { Rocket, Target, AlertTriangle } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
+import { Button } from '@/components/ui/button';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 const Audit: React.FC = () => {
   const [searchParams] = useSearchParams();
   const [url, setUrl] = useState<string>('');
+  const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -20,9 +23,11 @@ const Audit: React.FC = () => {
     if (urlParam) {
       try {
         // Validate URL format
-        new URL(urlParam);
+        new URL(urlParam.startsWith('http') ? urlParam : `https://${urlParam}`);
         setUrl(urlParam);
+        setError(null);
       } catch (err) {
+        setError("Предоставленный URL некорректен. Пожалуйста, попробуйте снова.");
         toast({
           title: "Некорректный URL",
           description: "Предоставленный URL некорректен. Пожалуйста, попробуйте снова.",
@@ -32,6 +37,10 @@ const Audit: React.FC = () => {
       }
     }
   }, [searchParams, toast]);
+
+  const handleClearError = () => {
+    setError(null);
+  };
 
   return (
     <Layout>
@@ -60,6 +69,27 @@ const Audit: React.FC = () => {
             }
           </p>
         </motion.div>
+
+        {error && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="max-w-2xl mx-auto mb-6"
+          >
+            <Alert variant="destructive">
+              <AlertTriangle className="h-4 w-4" />
+              <AlertDescription className="ml-2">{error}</AlertDescription>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={handleClearError}
+                className="ml-auto"
+              >
+                Закрыть
+              </Button>
+            </Alert>
+          </motion.div>
+        )}
 
         {!url && (
           <motion.div 

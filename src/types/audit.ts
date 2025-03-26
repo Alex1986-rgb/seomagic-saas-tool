@@ -48,6 +48,7 @@ export interface AuditHistoryItem {
   id: string;
   date: string;
   score: number;
+  url?: string;
   issues?: {
     critical: number;
     important: number;
@@ -64,4 +65,66 @@ export interface AuditHistoryItem {
 
 export interface AuditHistoryData {
   items: AuditHistoryItem[];
+}
+
+export interface ScanOptions {
+  maxPages: number;
+  maxDepth: number;
+  followExternalLinks?: boolean;
+  checkMobile?: boolean;
+  analyzeSEO?: boolean;
+  analyzePerformance?: boolean;
+  onProgress?: (pagesScanned: number, totalPages: number, currentUrl: string) => void;
+}
+
+export interface PageScanResult {
+  url: string;
+  statusCode: number;
+  title: string;
+  headings: {
+    h1: string[];
+    h2: string[];
+    h3: string[];
+  };
+  metaTags: {
+    description?: string;
+    keywords?: string;
+    robots?: string;
+    viewport?: string;
+    ogTitle?: string;
+    ogDescription?: string;
+    ogImage?: string;
+    twitterCard?: string;
+  };
+  links: {
+    internal: string[];
+    external: string[];
+  };
+  images: {
+    withAlt: number;
+    withoutAlt: number;
+    totalSize: number;
+  };
+  performance: {
+    documentSize: number;
+    loadTime?: number;
+    resourceCount: number;
+  };
+  errors: string[];
+  warnings: string[];
+}
+
+export interface WebsiteScanResult {
+  domain: string;
+  pagesScanned: number;
+  startTime: string;
+  endTime: string;
+  pageResults: PageScanResult[];
+  summary: {
+    averageScore: number;
+    criticalIssues: number;
+    majorIssues: number;
+    minorIssues: number;
+    passedChecks: number;
+  };
 }

@@ -2,15 +2,15 @@
 import React, { useState, useEffect } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import { motion, AnimatePresence } from 'framer-motion';
-import { AlertTriangle, RefreshCw, Files } from 'lucide-react';
+import { AlertTriangle, RefreshCw, Files, FileSearch, BarChart4 } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import AuditSummary from '@/components/AuditSummary';
 import AuditLoading from '../AuditLoading';
 import AuditError from './AuditError';
 import AuditContent from './AuditContent';
 import PageCountDisplay from '../PageCountDisplay';
-import { fetchAuditData, fetchRecommendations, fetchAuditHistory } from '@/services/auditService';
-import { AuditData, RecommendationData, AuditHistoryData } from '@/types/audit';
+import { fetchAuditData, fetchRecommendations, fetchAuditHistory, scanWebsite } from '@/services/auditService';
+import { AuditData, RecommendationData, AuditHistoryData, ScanOptions } from '@/types/audit';
 
 interface AuditResultsContainerProps {
   url: string;
@@ -24,6 +24,16 @@ const AuditResultsContainer: React.FC<AuditResultsContainerProps> = ({ url }) =>
   const [historyData, setHistoryData] = useState<AuditHistoryData | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isScanning, setIsScanning] = useState(false);
+  const [scanDetails, setScanDetails] = useState<{
+    pagesScanned: number;
+    totalPages: number;
+    currentUrl: string;
+  }>({
+    pagesScanned: 0,
+    totalPages: 0,
+    currentUrl: ''
+  });
   const { toast } = useToast();
 
   useEffect(() => {
@@ -41,7 +51,7 @@ const AuditResultsContainer: React.FC<AuditResultsContainerProps> = ({ url }) =>
     }
   }, [isLoading]);
 
-  const loadAuditData = async (refresh = false) => {
+  const loadAuditData = async (refresh = false, deepScan = false) => {
     if (refresh) {
       setIsRefreshing(true);
     } else {
@@ -54,10 +64,34 @@ const AuditResultsContainer: React.FC<AuditResultsContainerProps> = ({ url }) =>
         await new Promise(resolve => setTimeout(resolve, 1000));
       }
       
+      // If deep scan is requested, perform website crawling first
+      if (deepScan) {
+        setIsScanning(true);
+        
+        const scanOptions: ScanOptions = {
+          maxPages: 200,
+          maxDepth: 3,
+          followExternalLinks: false,
+          checkMobile: true,
+          analyzeSEO: true,
+          analyzePerformance: true,
+          onProgress: (pagesScanned, totalPages, currentUrl) => {
+            setScanDetails({
+              pagesScanned,
+              totalPages,
+              currentUrl
+            });
+          }
+        };
+        
+        await scanWebsite(url, scanOptions);
+        setIsScanning(false);
+      }
+      
       const [auditResult, recommendationsResult, historyResult] = await Promise.all([
-        fetchAuditData(),  // Removed url parameter
-        fetchRecommendations(),
-        fetchAuditHistory() // Removed url parameter
+        fetchAuditData(url),
+        fetchRecommendations(url),
+        fetchAuditHistory(url)
       ]);
       
       setAuditData(auditResult);
@@ -92,6 +126,10 @@ const AuditResultsContainer: React.FC<AuditResultsContainerProps> = ({ url }) =>
     loadAuditData(true);
   };
 
+  const handleDeepScan = () => {
+    loadAuditData(false, true);
+  };
+
   const handleSelectHistoricalAudit = (auditId: string) => {
     toast({
       title: "Исторический аудит",
@@ -101,6 +139,40 @@ const AuditResultsContainer: React.FC<AuditResultsContainerProps> = ({ url }) =>
 
   if (isLoading) {
     return <AuditLoading progress={loadingProgress} />;
+  }
+
+  if (isScanning) {
+    return (
+      <div className="neo-card p-6">
+        <div className="text-center mb-6">
+          <FileSearch className="h-12 w-12 animate-pulse text-primary mx-auto mb-4" />
+          <h3 className="text-xl font-medium mb-2">Глубокое сканирование сайта</h3>
+          <p className="text-muted-foreground mb-4">Анализируем страницы сайта {url}</p>
+          
+          <div className="flex justify-between items-center mb-2 text-sm">
+            <span>Прогресс сканирования:</span>
+            <span>{scanDetails.pagesScanned} / {scanDetails.totalPages || '?'} страниц</span>
+          </div>
+          
+          <div className="w-full bg-muted rounded-full h-2 mb-4">
+            <div 
+              className="bg-primary h-2 rounded-full" 
+              style={{ 
+                width: scanDetails.totalPages ? 
+                  `${(scanDetails.pagesScanned / scanDetails.totalPages) * 100}%` : 
+                  `${Math.min(scanDetails.pagesScanned, 100)}%` 
+              }}
+            ></div>
+          </div>
+          
+          {scanDetails.currentUrl && (
+            <p className="text-xs text-muted-foreground truncate mb-4">
+              Сканирование: {scanDetails.currentUrl}
+            </p>
+          )}
+        </div>
+      </div>
+    );
   }
 
   if (error) {
@@ -134,14 +206,24 @@ const AuditResultsContainer: React.FC<AuditResultsContainerProps> = ({ url }) =>
         
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-2xl font-semibold">Результаты SEO аудита</h2>
-          <Button 
-            onClick={handleRefreshAudit} 
-            disabled={isRefreshing}
-            size="sm"
-          >
-            <RefreshCw className={`h-4 w-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
-            Обновить аудит
-          </Button>
+          <div className="flex gap-2">
+            <Button 
+              onClick={handleDeepScan}
+              variant="outline"
+              size="sm"
+            >
+              <FileSearch className="h-4 w-4 mr-2" />
+              Глубокий анализ
+            </Button>
+            <Button 
+              onClick={handleRefreshAudit} 
+              disabled={isRefreshing}
+              size="sm"
+            >
+              <RefreshCw className={`h-4 w-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
+              Обновить аудит
+            </Button>
+          </div>
         </div>
         
         {auditData.pageCount && (
@@ -157,6 +239,7 @@ const AuditResultsContainer: React.FC<AuditResultsContainerProps> = ({ url }) =>
           date={auditData.date}
           issues={auditData.issues}
           previousScore={auditData.previousScore}
+          auditData={auditData}
         />
         
         <AuditContent 
