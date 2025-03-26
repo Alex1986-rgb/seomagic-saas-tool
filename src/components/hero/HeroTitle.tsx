@@ -15,7 +15,7 @@ const HeroTitle: React.FC<HeroTitleProps> = ({ itemVariants }) => {
     <>
       <motion.div 
         variants={itemVariants}
-        className="inline-flex items-center px-4 py-2 rounded-full bg-primary/10 text-primary font-medium relative"
+        className="inline-flex items-center px-4 py-2 rounded-full bg-secondary text-primary font-medium relative"
         whileHover={{ scale: 1.05 }}
         transition={{ type: "spring", stiffness: 400, damping: 10 }}
       >

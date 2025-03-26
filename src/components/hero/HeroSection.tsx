@@ -27,7 +27,7 @@ const HeroSection: React.FC = () => {
 
   return (
     <section className="pt-20 pb-16 md:pt-32 md:pb-20 overflow-hidden relative">
-      <div className="absolute inset-0 bg-gradient-to-b from-primary/10 to-transparent -z-10" />
+      <div className="absolute inset-0 bg-gradient-to-b from-secondary/20 to-transparent -z-10" />
       <HeroBackground />
       
       <div className="container mx-auto px-4 md:px-6">
@@ -40,7 +40,7 @@ const HeroSection: React.FC = () => {
           <HeroTitle itemVariants={itemVariants} />
           
           <motion.div 
-            className="w-full max-w-2xl"
+            className="w-full max-w-2xl neo-card p-8"
             variants={itemVariants}
           >
             <UrlForm />
