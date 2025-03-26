@@ -1,17 +1,31 @@
 
-import React, { useState } from 'react';
-import { ArrowRight, Loader2, Globe } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { ArrowRight, Loader2, Globe, CheckCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from "@/hooks/use-toast";
 import { Button } from './ui/button';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const UrlForm: React.FC = () => {
   const [url, setUrl] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
+  const [isValid, setIsValid] = useState<boolean | null>(null);
+  const [progressStage, setProgressStage] = useState(0);
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  // Validate URL as user types
+  useEffect(() => {
+    if (!url) {
+      setIsValid(null);
+      return;
+    }
+    
+    // Simple check while typing
+    const hasValidFormat = /^(https?:\/\/)?([\w-]+(\.[\w-]+)+\/?)([\w.,@?^=%&:/~+#-]*[\w@?^=%&/~+#-])?$/i.test(url);
+    setIsValid(hasValidFormat);
+  }, [url]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -46,17 +60,38 @@ const UrlForm: React.FC = () => {
     
     setIsLoading(true);
     
-    // Simulate API call with animated dots
+    // Display animated progress stages
     toast({
       title: "Анализируем сайт",
-      description: "Пожалуйста, подождите...",
+      description: "Подключаемся к серверу...",
     });
     
-    setTimeout(() => {
-      setIsLoading(false);
-      // Navigate to audit page with the URL as a parameter
-      navigate(`/audit?url=${encodeURIComponent(formattedUrl)}`);
-    }, 1500);
+    // Simulated multi-stage progress
+    const stages = [
+      "Проверка доступности сайта...",
+      "Анализ структуры страницы...",
+      "Проверка метаданных...",
+      "Оценка мобильной версии...",
+      "Формирование отчета..."
+    ];
+    
+    // Progress animation simulation
+    let currentStage = 0;
+    const interval = setInterval(() => {
+      if (currentStage < stages.length) {
+        setProgressStage(currentStage);
+        toast({
+          title: "Анализируем сайт",
+          description: stages[currentStage],
+        });
+        currentStage++;
+      } else {
+        clearInterval(interval);
+        setIsLoading(false);
+        // Navigate to audit page with the URL as a parameter
+        navigate(`/audit?url=${encodeURIComponent(formattedUrl)}`);
+      }
+    }, 400);
   };
 
   return (
@@ -68,12 +103,32 @@ const UrlForm: React.FC = () => {
       transition={{ duration: 0.4 }}
     >
       <motion.div 
-        className={`neo-glass p-2 md:p-3 flex flex-col md:flex-row items-center gap-3 rounded-xl overflow-hidden ${isFocused ? 'ring-2 ring-primary/50' : ''}`}
+        className={`neo-glass p-2 md:p-3 flex flex-col md:flex-row items-center gap-3 rounded-xl overflow-hidden transition-all duration-300 ${isFocused ? 'ring-2 ring-primary/50 shadow-lg' : ''} ${isValid === true && url ? 'ring-1 ring-green-500/50' : ''} ${isValid === false && url ? 'ring-1 ring-red-500/50' : ''}`}
         whileHover={{ y: -2, boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.1)" }}
         transition={{ duration: 0.2 }}
       >
         <div className="flex items-center w-full px-2 gap-2 group">
-          <Globe className={`h-5 w-5 ${isFocused ? 'text-primary' : 'text-muted-foreground'} group-hover:text-primary transition-colors duration-200`} />
+          <AnimatePresence mode="wait">
+            {isValid === true && url ? (
+              <motion.div
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                exit={{ scale: 0 }}
+                transition={{ duration: 0.2 }}
+              >
+                <CheckCircle className="h-5 w-5 text-green-500" />
+              </motion.div>
+            ) : (
+              <motion.div
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                exit={{ scale: 0 }}
+                transition={{ duration: 0.2 }}
+              >
+                <Globe className={`h-5 w-5 ${isFocused ? 'text-primary' : 'text-muted-foreground'} group-hover:text-primary transition-colors duration-200`} />
+              </motion.div>
+            )}
+          </AnimatePresence>
           <input
             type="text"
             value={url}
@@ -93,7 +148,10 @@ const UrlForm: React.FC = () => {
         >
           <span className="absolute inset-0 w-0 bg-white/20 transition-all duration-500 ease-out group-hover:w-full"></span>
           {isLoading ? (
-            <Loader2 className="h-5 w-5 animate-spin" />
+            <div className="flex items-center gap-2">
+              <Loader2 className="h-5 w-5 animate-spin" />
+              <span className="text-xs">{progressStage + 1}/5</span>
+            </div>
           ) : (
             <>
               <span className="mr-2 relative z-10">Анализировать</span>
@@ -102,14 +160,25 @@ const UrlForm: React.FC = () => {
           )}
         </Button>
       </motion.div>
-      <motion.p 
-        className="text-xs text-muted-foreground text-center mt-2"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 0.8 }}
-        transition={{ delay: 0.5, duration: 0.4 }}
-      >
-        Мы проанализируем ваш сайт и предоставим подробные рекомендации
-      </motion.p>
+      <AnimatePresence>
+        {!isLoading && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            <motion.p 
+              className="text-xs text-muted-foreground text-center mt-2"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 0.8 }}
+              transition={{ delay: 0.5, duration: 0.4 }}
+            >
+              Мы проанализируем ваш сайт и предоставим подробные рекомендации
+            </motion.p>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </motion.form>
   );
 };
