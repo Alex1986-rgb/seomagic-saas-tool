@@ -18,8 +18,8 @@ const FloatingIndicators: React.FC = () => {
           repeatType: "reverse"
         }}
       >
-        <div className="flex items-center gap-2 bg-indigo-500/10 px-2 py-1 rounded-full">
-          <Check size={12} className="text-indigo-400" />
+        <div className="flex items-center gap-2 bg-primary/10 px-2 py-1 rounded-full">
+          <Check size={12} className="text-primary" />
           <span className="text-xs">PageSpeed 98/100</span>
         </div>
       </motion.div>
