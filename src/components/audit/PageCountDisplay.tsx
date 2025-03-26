@@ -117,13 +117,12 @@ const PageCountDisplay: React.FC<PageCountDisplayProps> = ({
                       </div>
                       <Progress 
                         value={getPercentage(count, pageCount)} 
-                        className="h-1.5" 
-                        indicatorClassName={
-                          type === 'product' ? "bg-primary" : 
-                          type === 'category' ? "bg-blue-500" :
-                          type === 'blog' ? "bg-purple-500" :
-                          "bg-secondary"
-                        }
+                        className={`h-1.5 ${
+                          type === 'product' ? "bg-secondary [&>div]:bg-primary" : 
+                          type === 'category' ? "bg-secondary [&>div]:bg-blue-500" :
+                          type === 'blog' ? "bg-secondary [&>div]:bg-purple-500" :
+                          "bg-secondary [&>div]:bg-secondary"
+                        }`}
                       />
                     </div>
                   ))
@@ -198,10 +197,9 @@ const PageCountDisplay: React.FC<PageCountDisplayProps> = ({
                   <span>Средняя глубина:</span>
                   <span className="font-medium">
                     {pageStats.levels 
-                      ? Object.entries(pageStats.levels)
+                      ? (Object.entries(pageStats.levels)
                           .reduce((avg, [level, count]) => avg + parseInt(level) * count, 0) / 
-                          Object.values(pageStats.levels).reduce((sum, count) => sum + count, 0)
-                          .toFixed(1)
+                          Object.values(pageStats.levels).reduce((sum, count) => sum + count, 0)).toFixed(1)
                       : "N/A"}
                   </span>
                 </div>
