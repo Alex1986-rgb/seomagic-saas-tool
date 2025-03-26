@@ -35,7 +35,7 @@
     --input: 220 10% 90%;
     --ring: 220 80% 50%;
 
-    --radius: 0.75rem;
+    --radius: 0.375rem;
 
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 240 5% 26%;
@@ -88,7 +88,7 @@
     font-feature-settings: "rlig" 1, "calt" 1;
   }
 
-  /* Modern design styles */
+  /* World of Tanks inspired styles */
   .heading-gradient {
     @apply bg-gradient-to-r from-primary via-primary/80 to-primary/60 bg-clip-text text-transparent;
   }
@@ -105,9 +105,18 @@
     @apply bg-gradient-to-r from-primary to-blue-600;
   }
 
+  /* World of Tanks cards */
+  .tanks-card {
+    @apply bg-gradient-to-b from-background to-background/80 backdrop-blur-sm border border-primary/20 rounded-none shadow-lg;
+  }
+
+  .battle-card {
+    @apply bg-gradient-to-b from-background/90 to-background/70 backdrop-blur-lg border border-primary/20 shadow-lg;
+  }
+
   /* Neo-glass morphism styles */
   .neo-glass {
-    @apply bg-white/80 backdrop-blur-xl border border-white/20 shadow-lg rounded-2xl;
+    @apply bg-white/80 backdrop-blur-xl border border-white/20 shadow-lg rounded-md;
   }
 
   /* Improved focus outlines */
@@ -226,6 +235,49 @@
     }
     100% {
       transform: translateY(0px);
+    }
+  }
+
+  /* World of Tanks inspired animations */
+  .tanks-pulse {
+    animation: tanksPulse 2s infinite;
+  }
+  
+  @keyframes tanksPulse {
+    0% {
+      box-shadow: 0 0 0 0 rgba(var(--primary), 0.4);
+    }
+    70% {
+      box-shadow: 0 0 0 10px rgba(var(--primary), 0);
+    }
+    100% {
+      box-shadow: 0 0 0 0 rgba(var(--primary), 0);
+    }
+  }
+  
+  .tactical-scan {
+    position: relative;
+  }
+  
+  .tactical-scan::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(to bottom, transparent, rgba(var(--primary), 0.1), transparent);
+    background-size: 100% 200%;
+    animation: tacticalScan 2s linear infinite;
+    pointer-events: none;
+  }
+  
+  @keyframes tacticalScan {
+    0% {
+      background-position: 0 -200%;
+    }
+    100% {
+      background-position: 0 200%;
     }
   }
 }
