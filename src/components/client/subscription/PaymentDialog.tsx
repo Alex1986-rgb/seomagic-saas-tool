@@ -32,7 +32,7 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
 }) => {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px] fixed left-[50%] top-[50%] translate-x-[-50%] translate-y-[-50%] z-50">
+      <DialogContent className="sm:max-w-[500px] w-[95%] backdrop-blur-lg bg-background/95 border border-primary/20">
         <DialogHeader>
           <DialogTitle>Оплата тарифа {selectedPlan}</DialogTitle>
           <DialogDescription>

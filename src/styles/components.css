@@ -11,7 +11,7 @@
 }
 
 .heading-gradient {
-  background: linear-gradient(to right, rgba(var(--primary), 1), rgba(var(--primary), 0.8));
+  background: linear-gradient(to right, hsl(var(--primary)), hsl(var(--primary)/0.8));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -108,7 +108,7 @@
   left: 0;
   right: 0;
   height: 1px;
-  background: linear-gradient(to right, transparent, rgba(var(--primary), 0.5), transparent);
+  background: linear-gradient(to right, transparent, hsl(var(--primary)/0.5), transparent);
 }
 
 .glow-card::before {
@@ -118,21 +118,21 @@
   left: 20%;
   right: 20%;
   height: 1px;
-  background: linear-gradient(to right, transparent, rgba(var(--primary), 0.3), transparent);
+  background: linear-gradient(to right, transparent, hsl(var(--primary)/0.3), transparent);
 }
 
 .glow-card:hover {
   transform: translateY(-5px);
   box-shadow: 
     0 15px 30px -10px rgba(0, 0, 0, 0.2),
-    0 0 10px rgba(var(--primary), 0.1);
+    0 0 10px hsl(var(--primary)/0.2);
 }
 
 /* Modern button styles */
 .button-3d {
   position: relative;
-  background: rgba(var(--primary), 0.9);
-  color: rgba(var(--primary-foreground), 1);
+  background: hsl(var(--primary)/0.9);
+  color: hsl(var(--primary-foreground));
   border: none;
   border-radius: 8px;
   padding: 12px 24px;
@@ -141,7 +141,7 @@
   transform: perspective(1000px);
   transition: all 0.3s ease;
   box-shadow: 
-    0 10px 20px -10px rgba(var(--primary), 0.5),
+    0 10px 20px -10px hsl(var(--primary)/0.5),
     0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
@@ -152,7 +152,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(var(--primary), 0.7);
+  background: hsl(var(--primary)/0.7);
   border-radius: 8px;
   transform: translateZ(-10px);
   z-index: -1;
@@ -161,13 +161,13 @@
 .button-3d:hover {
   transform: perspective(1000px) translateZ(5px);
   box-shadow: 
-    0 15px 30px -10px rgba(var(--primary), 0.6),
+    0 15px 30px -10px hsl(var(--primary)/0.6),
     0 1px 2px rgba(0, 0, 0, 0.2);
 }
 
 .button-3d:active {
   transform: perspective(1000px) translateZ(2px);
   box-shadow: 
-    0 5px 10px -5px rgba(var(--primary), 0.4),
+    0 5px 10px -5px hsl(var(--primary)/0.4),
     0 1px 2px rgba(0, 0, 0, 0.1);
 }
