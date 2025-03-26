@@ -1,6 +1,6 @@
 
 import { generateAuditPdf } from './auditPdf';
-import { generateHistoryPdf } from './historyPdf';
+import { generateHistoryPDF } from './historyPdf';
 
 export const generatePdfReport = generateAuditPdf;
-export { generateHistoryPdf };
+export { generateHistoryPDF };

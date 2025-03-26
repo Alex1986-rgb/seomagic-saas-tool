@@ -67,13 +67,16 @@ export const generateAuditPdf = async (options: GeneratePdfReportOptions): Promi
   doc.setFontSize(16);
   doc.text('Статистика сайта', 15, 60);
   
+  // Расчет общего количества проблем
+  const totalIssues = auditData.issues.critical + auditData.issues.important + auditData.issues.opportunities;
+  
   // Таблица статистики
   const statsData = [
     ['Проанализировано страниц', auditData.pageCount?.toString() || '0'],
-    ['Обнаружено проблем', auditData.issues.total.toString()],
+    ['Обнаружено проблем', totalIssues.toString()],
     ['Критические ошибки', auditData.issues.critical.toString()],
-    ['Средние проблемы', auditData.issues.medium.toString()],
-    ['Незначительные проблемы', auditData.issues.minor.toString()]
+    ['Средние проблемы', auditData.issues.important.toString()],
+    ['Незначительные проблемы', auditData.issues.opportunities.toString()]
   ];
   
   autoTable(doc, {
@@ -88,7 +91,8 @@ export const generateAuditPdf = async (options: GeneratePdfReportOptions): Promi
   // Добавляем детали распределения страниц по типам, если доступно
   if (pageStats && pageStats.subpages) {
     doc.setFontSize(16);
-    doc.text('Распределение страниц', 15, doc.lastAutoTable.finalY + 15);
+    let currentY = doc.previousAutoTable.finalY + 15;
+    doc.text('Распределение страниц', 15, currentY);
     
     const pageTypesData = Object.entries(pageStats.subpages).map(([type, count]) => [
       type.charAt(0).toUpperCase() + type.slice(1),
@@ -96,7 +100,7 @@ export const generateAuditPdf = async (options: GeneratePdfReportOptions): Promi
     ]);
     
     autoTable(doc, {
-      startY: doc.lastAutoTable.finalY + 20,
+      startY: currentY + 5,
       head: [['Тип страницы', 'Количество']],
       body: pageTypesData,
       theme: 'grid',
@@ -107,7 +111,8 @@ export const generateAuditPdf = async (options: GeneratePdfReportOptions): Promi
   
   // Добавляем анализ проблем
   doc.setFontSize(16);
-  doc.text('Анализ обнаруженных проблем', 15, doc.lastAutoTable.finalY + 15);
+  let currentY = doc.previousAutoTable.finalY + 15;
+  doc.text('Анализ обнаруженных проблем', 15, currentY);
   
   if (recommendations) {
     const recommendationsData = Object.entries(recommendations).map(([category, categoryData]: [string, any]) => [
@@ -117,7 +122,7 @@ export const generateAuditPdf = async (options: GeneratePdfReportOptions): Promi
     ]);
     
     autoTable(doc, {
-      startY: doc.lastAutoTable.finalY + 20,
+      startY: currentY + 5,
       head: [['Категория', 'Количество проблем', 'Оценка']],
       body: recommendationsData,
       theme: 'grid',
@@ -163,7 +168,8 @@ export const generateAuditPdf = async (options: GeneratePdfReportOptions): Promi
     
     // Добавляем перечень что включено
     doc.setFontSize(14);
-    doc.text('Оптимизация включает:', 15, doc.lastAutoTable.finalY + 15);
+    currentY = doc.previousAutoTable.finalY + 15;
+    doc.text('Оптимизация включает:', 15, currentY);
     
     const includedItems = [
       'Оптимизация всех мета-тегов',
@@ -175,7 +181,7 @@ export const generateAuditPdf = async (options: GeneratePdfReportOptions): Promi
       'Исправление URL (замена подчеркиваний на дефисы)'
     ];
     
-    let yPos = doc.lastAutoTable.finalY + 20;
+    let yPos = currentY + 5;
     includedItems.forEach(item => {
       doc.setFontSize(12);
       doc.text(`• ${item}`, 20, yPos);

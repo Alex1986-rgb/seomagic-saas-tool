@@ -3,7 +3,7 @@ import React from 'react';
 import { FileText, Share, ExternalLink, Download, FileJson } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { generateAuditPDF } from '@/utils/pdf/auditPdf';
+import { generateAuditPdf } from '@/utils/pdf/auditPdf';
 import { 
   DropdownMenu, 
   DropdownMenuContent, 
