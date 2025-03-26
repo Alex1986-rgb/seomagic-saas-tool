@@ -1,10 +1,9 @@
-
 import React from 'react';
 import { motion } from 'framer-motion';
 import Layout from '@/components/Layout';
 import HeroSection from '@/components/HeroSection';
 import FeatureSection from '@/components/FeatureSection';
-import { Quote, Star } from 'lucide-react';
+import { Quote, Star, ArrowRight } from 'lucide-react';
 
 const Index: React.FC = () => {
   return (
