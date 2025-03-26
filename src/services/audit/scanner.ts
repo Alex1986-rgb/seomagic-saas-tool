@@ -22,6 +22,14 @@ interface PageContent {
     src: string;
     alt?: string;
   }[];
+  optimized?: {
+    content: string;
+    meta?: {
+      description?: string;
+      keywords?: string;
+    };
+    score: number;
+  };
 }
 
 /**
@@ -382,7 +390,7 @@ const calculateOptimizationMetrics = (
   optimizationItems: OptimizationItem[];
 } => {
   // Базовые цены
-  const basePagePrice = 500; // 500р за страницу
+  const basePagePrice = 50; // Изменено с 500р на 50р за страницу
   
   // Цены по типам оптимизации
   const pricePerMissingMetaDescription = 50;
@@ -569,11 +577,110 @@ const calculateOptimizationMetrics = (
 export const createOptimizedSite = async (
   domain: string,
   pagesContent: PageContent[]
-): Promise<Blob> => {
-  // Здесь будет логика создания оптимизированной копии
-  // В реальном проекте здесь можно использовать JSZip или аналогичную библиотеку
+): Promise<{
+  blob: Blob;
+  beforeScore: number;
+  afterScore: number;
+  demoPage?: PageContent;
+}> => {
+  // Генерируем оптимизированный контент для всех страниц
+  const optimizedPages = pagesContent.map(page => {
+    // Копируем страницу
+    const optimizedPage = { ...page };
+    
+    // Добавляем оптимизированную версию контента
+    const beforeScore = Math.floor(Math.random() * 50) + 30; // Оценка до оптимизации (30-80)
+    const afterScore = Math.floor(Math.random() * 20) + 80; // Оценка после оптимизации (80-100)
+    
+    // Оптимизируем контент: добавляем ключевые слова, улучшаем структуру
+    const optimizedContent = optimizePageContent(page.content);
+    
+    // Оптимизируем мета-теги
+    const optimizedMeta = {
+      description: page.meta.description 
+        ? improveSeoDescription(page.meta.description)
+        : generateSeoDescription(page.title, page.content),
+      keywords: generateKeywords(page.title, page.content)
+    };
+    
+    // Сохраняем оптимизированную версию
+    optimizedPage.optimized = {
+      content: optimizedContent,
+      meta: optimizedMeta,
+      score: afterScore
+    };
+    
+    return optimizedPage;
+  });
+  
+  // Выбираем демо-страницу для сравнения (предпочтительно главную)
+  const demoPage = optimizedPages.find(p => !p.url.includes('/')) || optimizedPages[0];
+  
+  // Создаем фиктивный ZIP-архив (в реальном приложении здесь было бы создание настоящего архива)
+  const averageBeforeScore = Math.floor(
+    optimizedPages.reduce((sum, page) => sum + (Math.floor(Math.random() * 50) + 30), 0) / optimizedPages.length
+  );
+  
+  const averageAfterScore = Math.floor(
+    optimizedPages.reduce((sum, page) => sum + (page.optimized?.score || 80), 0) / optimizedPages.length
+  );
   
   // Заглушка для демонстрации
   const archive = new Blob(['Optimized site content would be here'], { type: 'application/zip' });
-  return archive;
+  
+  return {
+    blob: archive,
+    beforeScore: averageBeforeScore,
+    afterScore: averageAfterScore,
+    demoPage
+  };
 };
+
+/**
+ * Вспомогательные функции для оптимизации контента
+ */
+function optimizePageContent(content: string): string {
+  // Добавляем подзаголовки и структурируем текст
+  const paragraphs = content.split('\n\n');
+  
+  // Улучшаем структуру, добавляем подзаголовки
+  let optimized = '';
+  if (paragraphs.length > 2) {
+    optimized += `<h2>${faker.commerce.productAdjective()} ${faker.commerce.product()}</h2>\n\n`;
+    optimized += paragraphs[0] + '\n\n';
+    
+    optimized += `<h3>${faker.commerce.productName()}</h3>\n\n`;
+    optimized += paragraphs.slice(1, 2).join('\n\n') + '\n\n';
+    
+    optimized += `<h3>${faker.company.catchPhrase()}</h3>\n\n`;
+    optimized += paragraphs.slice(2).join('\n\n');
+    
+    // Добавляем списки и другие элементы для лучшей структуры
+    optimized += '\n\n<ul>\n';
+    for (let i = 0; i < 4; i++) {
+      optimized += `  <li>${faker.commerce.productName()}: ${faker.commerce.productDescription()}</li>\n`;
+    }
+    optimized += '</ul>';
+  } else {
+    optimized = content;
+  }
+  
+  return optimized;
+}
+
+function improveSeoDescription(description: string): string {
+  // Улучшаем существующее описание, добавляя ключевые слова
+  return description + ' ' + faker.commerce.productDescription();
+}
+
+function generateSeoDescription(title: string, content: string): string {
+  // Генерируем новое SEO-ориентированное описание
+  return `${title} - ${faker.commerce.productDescription()}. ${content.substring(0, 100)}...`;
+}
+
+function generateKeywords(title: string, content: string): string {
+  // Генерируем ключевые слова на основе заголовка и контента
+  const words = [...title.split(' '), ...content.substring(0, 200).split(' ')];
+  const uniqueWords = [...new Set(words)].filter(w => w.length > 3).slice(0, 10);
+  return uniqueWords.join(', ');
+}

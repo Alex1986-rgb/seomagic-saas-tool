@@ -52,7 +52,6 @@ const AuditResultsContainer: React.FC<AuditResultsContainerProps> = ({ url }) =>
 
   const handleSelectHistoricalAudit = (auditId: string) => {
     // Это может быть перенесено в отдельную функцию или контекст в будущей рефакторизации
-    // Пока оставляем исходную реализацию
   };
 
   const toggleContentPrompt = () => {

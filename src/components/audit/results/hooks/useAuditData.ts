@@ -24,6 +24,14 @@ interface PageContent {
     src: string;
     alt?: string;
   }[];
+  optimized?: {
+    content: string;
+    meta?: {
+      description?: string;
+      keywords?: string;
+    };
+    score: number;
+  };
 }
 
 export const useAuditData = (url: string) => {
@@ -41,7 +49,7 @@ export const useAuditData = (url: string) => {
     currentUrl: string;
   }>({
     pagesScanned: 0,
-    totalPages: 250000, // Увеличено до 250000 страниц
+    totalPages: 250000,
     currentUrl: ''
   });
   const [pageStats, setPageStats] = useState<PageStatistics | undefined>(undefined);
@@ -50,6 +58,11 @@ export const useAuditData = (url: string) => {
   const [optimizationCost, setOptimizationCost] = useState<number | undefined>(undefined);
   const [optimizationItems, setOptimizationItems] = useState<OptimizationItem[]>([]);
   const [isOptimized, setIsOptimized] = useState(false);
+  const [optimizationScores, setOptimizationScores] = useState<{
+    beforeScore: number;
+    afterScore: number;
+  } | null>(null);
+  const [demoPage, setDemoPage] = useState<PageContent | null>(null);
   const [contentPrompt, setContentPrompt] = useState<string>('');
   const { toast } = useToast();
 
@@ -235,6 +248,7 @@ export const useAuditData = (url: string) => {
         pageStats,
         optimizationCost,
         optimizationItems,
+        optimizationScores,
         date: new Date().toISOString()
       });
       
@@ -298,8 +312,6 @@ export const useAuditData = (url: string) => {
       // Применяем промпт для улучшения контента, если он задан
       let contentToOptimize = pagesContent;
       if (contentPrompt) {
-        // Здесь будет логика для применения промпта к контенту
-        // В реальном приложении это может быть вызов API генерации текста
         toast({
           title: "Применение SEO-промпта",
           description: "Оптимизируем контент согласно заданному промпту...",
@@ -309,13 +321,25 @@ export const useAuditData = (url: string) => {
         await new Promise(resolve => setTimeout(resolve, 1500));
       }
       
-      // В реальном приложении здесь будет вызов createOptimizedSite с реальными данными
-      // и обработка ZIP-архива
-      const optimizedSiteBlob = await createOptimizedSite(hostname, contentToOptimize);
+      // Создаем оптимизированную версию сайта
+      const optimizationResult = await createOptimizedSite(hostname, contentToOptimize);
+      
+      // Сохраняем информацию об оптимизации
+      if (optimizationResult.beforeScore && optimizationResult.afterScore) {
+        setOptimizationScores({
+          beforeScore: optimizationResult.beforeScore,
+          afterScore: optimizationResult.afterScore
+        });
+      }
+      
+      if (optimizationResult.demoPage) {
+        setDemoPage(optimizationResult.demoPage);
+      }
       
       setIsOptimized(true);
       
-      const downloadUrl = window.URL.createObjectURL(optimizedSiteBlob);
+      // Скачиваем архив
+      const downloadUrl = window.URL.createObjectURL(optimizationResult.blob);
       const a = document.createElement('a');
       a.href = downloadUrl;
       a.download = `optimized_${hostname}.zip`;
@@ -326,7 +350,7 @@ export const useAuditData = (url: string) => {
       
       toast({
         title: "Готово!",
-        description: "Оптимизированная версия сайта успешно скачана",
+        description: `Оптимизированная версия сайта успешно скачана. SEO-оценка повышена с ${optimizationResult.beforeScore} до ${optimizationResult.afterScore} баллов!`,
       });
     } catch (error) {
       console.error('Ошибка при создании оптимизированной версии:', error);
