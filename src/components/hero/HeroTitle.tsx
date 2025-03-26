@@ -15,14 +15,14 @@ const HeroTitle: React.FC<HeroTitleProps> = ({ itemVariants }) => {
     <>
       <motion.div 
         variants={itemVariants}
-        className="inline-flex items-center px-4 py-2 rounded-full bg-secondary text-primary font-medium relative"
+        className="inline-flex items-center px-4 py-2 rounded-full bg-indigo-600/20 text-indigo-400 font-medium relative"
         whileHover={{ scale: 1.05 }}
         transition={{ type: "spring", stiffness: 400, damping: 10 }}
       >
         <Sparkles className="w-4 h-4 mr-2 animate-pulse-slow" />
         Бесплатный SEO аудит всех страниц сайта
         <motion.span 
-          className="absolute -top-1 -right-1 w-2 h-2 bg-primary rounded-full"
+          className="absolute -top-1 -right-1 w-2 h-2 bg-indigo-400 rounded-full"
           animate={{ 
             scale: [1, 1.5, 1],
             opacity: [1, 0.5, 1]
@@ -40,9 +40,9 @@ const HeroTitle: React.FC<HeroTitleProps> = ({ itemVariants }) => {
       >
         <span className="relative inline-block">
           Оптимизируйте ваш сайт с 
-          <span className="heading-gradient block md:inline"> профессиональным SEO</span>
+          <span className="bg-gradient-to-r from-primary via-indigo-400 to-primary/80 bg-clip-text text-transparent block md:inline"> профессиональным SEO</span>
           <motion.div 
-            className="absolute -bottom-2 left-0 right-0 h-1 bg-primary/60 rounded-full"
+            className="absolute -bottom-2 left-0 right-0 h-1 bg-gradient-to-r from-primary/60 to-indigo-400/60 rounded-full"
             initial={{ width: 0 }}
             animate={{ width: "100%" }}
             transition={{ delay: 0.8, duration: 0.8 }}

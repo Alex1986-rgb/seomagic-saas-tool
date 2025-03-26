@@ -6,7 +6,7 @@ const HeroBackground: React.FC = () => {
   return (
     <>
       <motion.div 
-        className="absolute top-1/3 -left-20 w-96 h-96 bg-primary/10 rounded-full blur-3xl -z-10"
+        className="absolute top-1/3 -left-20 w-96 h-96 bg-indigo-500/10 rounded-full blur-3xl -z-10"
         animate={{ 
           scale: [1, 1.2, 1],
           opacity: [0.5, 0.7, 0.5]
