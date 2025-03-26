@@ -1,4 +1,3 @@
-
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -128,5 +127,69 @@
   }
   to {
     transform: rotate(360deg);
+  }
+}
+
+/* 3D Icon Animation */
+.icon-3d {
+  transform-style: preserve-3d;
+  perspective: 1000px;
+  transition: transform 0.3s ease;
+}
+
+.icon-3d:hover {
+  transform: translateZ(20px) rotateX(10deg) rotateY(10deg);
+  filter: drop-shadow(0 10px 15px rgba(0, 0, 0, 0.2));
+}
+
+/* Float with shadow */
+.float-3d {
+  animation: float3d 3s ease-in-out infinite;
+  filter: drop-shadow(0 5px 15px rgba(0, 0, 0, 0.1));
+}
+
+@keyframes float3d {
+  0% {
+    transform: translateZ(0) translateY(0);
+  }
+  50% {
+    transform: translateZ(20px) translateY(-10px);
+  }
+  100% {
+    transform: translateZ(0) translateY(0);
+  }
+}
+
+/* Glow effect */
+.glow-effect {
+  position: relative;
+}
+
+.glow-effect::after {
+  content: '';
+  position: absolute;
+  inset: -5px;
+  background: radial-gradient(circle, rgba(var(--primary-rgb), 0.2), transparent 70%);
+  z-index: -1;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.glow-effect:hover::after {
+  opacity: 1;
+}
+
+/* Smooth rotation */
+.rotate-3d {
+  animation: rotate3d 20s linear infinite;
+  transform-style: preserve-3d;
+}
+
+@keyframes rotate3d {
+  from {
+    transform: rotateY(0deg) rotateX(10deg);
+  }
+  to {
+    transform: rotateY(360deg) rotateX(10deg);
   }
 }
