@@ -13,7 +13,7 @@
 
 .star {
   position: absolute;
-  background-color: rgba(0, 0, 0, 0.4);
+  background-color: rgba(0, 0, 0, 0.6);
   border-radius: 8px;
   opacity: 0;
   animation: twinkle var(--twinkle-duration, 4s) ease-in-out infinite;
