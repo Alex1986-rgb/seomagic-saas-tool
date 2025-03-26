@@ -53,13 +53,17 @@ const ContentOptimizationPrompt: React.FC<ContentOptimizationPromptProps> = ({
     >
       <div className="flex items-center gap-2 mb-3">
         <Text className="h-5 w-5 text-primary" />
-        <h3 className="text-lg font-medium">Промпт для оптимизации контента</h3>
+        <h3 className="text-lg font-medium text-foreground">Промпт для оптимизации контента</h3>
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger>
               <Info className="h-4 w-4 text-muted-foreground cursor-help" />
             </TooltipTrigger>
-            <TooltipContent className="max-w-md">
+            <TooltipContent 
+              className="max-w-md text-foreground bg-popover border border-border" 
+              side="top" 
+              align="center"
+            >
               <p>
                 Задайте инструкции для ИИ, который будет оптимизировать контент вашего сайта.
                 Промпт будет применен ко всем текстам, мета-описаниям и альтернативным текстам изображений.
@@ -73,7 +77,7 @@ const ContentOptimizationPrompt: React.FC<ContentOptimizationPromptProps> = ({
         placeholder="Введите инструкции для оптимизации контента, например: 'Оптимизируй тексты для SEO, исправь грамматические ошибки, добавь ключевые слова...'"
         value={localPrompt}
         onChange={handlePromptChange}
-        className="min-h-32 mb-3"
+        className="min-h-32 mb-3 bg-background/50 text-foreground placeholder:text-muted-foreground"
       />
 
       <div className="mb-4">
@@ -84,7 +88,7 @@ const ContentOptimizationPrompt: React.FC<ContentOptimizationPromptProps> = ({
               key={index}
               variant="outline"
               size="sm"
-              className="text-xs"
+              className="text-xs text-foreground"
               onClick={() => handleUseExample(example)}
             >
               <MessageSquare className="h-3 w-3 mr-1" />

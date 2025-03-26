@@ -41,7 +41,10 @@ const AuditRecommendations: React.FC<AuditRecommendationsProps> = ({ recommendat
       title: "Критические ошибки", 
       icon: AlertTriangle, 
       items: recommendations.critical,
-      color: "red",
+      borderColor: "border-red-500",
+      bgColor: "bg-red-900/20",
+      hoverBgColor: "hover:bg-red-900/30",
+      textColor: "text-red-400",
       description: "Эти проблемы серьезно влияют на ваш SEO рейтинг и требуют немедленного внимания."
     },
     { 
@@ -49,7 +52,10 @@ const AuditRecommendations: React.FC<AuditRecommendationsProps> = ({ recommendat
       title: "Важные улучшения", 
       icon: AlertCircle, 
       items: recommendations.important,
-      color: "amber",
+      borderColor: "border-amber-500",
+      bgColor: "bg-amber-900/20",
+      hoverBgColor: "hover:bg-amber-900/30",
+      textColor: "text-amber-400",
       description: "Исправление этих проблем значительно улучшит производительность вашего сайта."
     },
     { 
@@ -57,7 +63,10 @@ const AuditRecommendations: React.FC<AuditRecommendationsProps> = ({ recommendat
       title: "Возможности для улучшения", 
       icon: Lightbulb, 
       items: recommendations.opportunities,
-      color: "green",
+      borderColor: "border-green-500",
+      bgColor: "bg-green-900/20",
+      hoverBgColor: "hover:bg-green-900/30",
+      textColor: "text-green-400",
       description: "Эти изменения помогут оптимизировать сайт и улучшить пользовательский опыт."
     },
   ];
@@ -74,7 +83,7 @@ const AuditRecommendations: React.FC<AuditRecommendationsProps> = ({ recommendat
           return (
             <motion.div 
               key={section.id}
-              className={`border-l-4 border-${section.color}-500 bg-${section.color}-50 rounded overflow-hidden`}
+              className={`border-l-4 ${section.borderColor} ${section.bgColor} rounded overflow-hidden`}
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.4 }}
@@ -84,9 +93,9 @@ const AuditRecommendations: React.FC<AuditRecommendationsProps> = ({ recommendat
                 onClick={() => toggleSection(section.id)}
               >
                 <div className="flex items-center gap-2">
-                  <Icon className={`h-5 w-5 text-${section.color}-500`} />
-                  <h3 className="font-medium">{section.title}</h3>
-                  <span className={`ml-2 px-2 py-0.5 text-xs rounded-full bg-${section.color}-100 text-${section.color}-700`}>
+                  <Icon className={`h-5 w-5 ${section.textColor}`} />
+                  <h3 className="font-medium text-foreground">{section.title}</h3>
+                  <span className={`ml-2 px-2 py-0.5 text-xs rounded-full bg-background/40 text-foreground`}>
                     {section.items.length}
                   </span>
                 </div>
@@ -106,14 +115,14 @@ const AuditRecommendations: React.FC<AuditRecommendationsProps> = ({ recommendat
                     animate={{ height: 'auto', opacity: 1 }}
                     exit={{ height: 0, opacity: 0 }}
                     transition={{ duration: 0.3 }}
-                    className={`px-4 pb-4 bg-${section.color}-50`}
+                    className={`px-4 pb-4 ${section.bgColor}`}
                   >
-                    <p className="text-sm text-muted-foreground mb-3">{section.description}</p>
+                    <p className="text-sm text-foreground/80 mb-3">{section.description}</p>
                     <ul className="mt-2 space-y-2 reveal-list">
                       {section.items.map((item, index) => (
                         <motion.li 
                           key={`${section.id}-${index}`}
-                          className={`flex justify-between py-2 px-3 rounded-md bg-${section.color}-100/50 hover:bg-${section.color}-100 transition-colors`}
+                          className={`flex justify-between py-2 px-3 rounded-md ${section.bgColor} ${section.hoverBgColor} transition-colors text-foreground`}
                           whileHover={{ x: 3 }}
                         >
                           <span>{item}</span>
@@ -122,11 +131,11 @@ const AuditRecommendations: React.FC<AuditRecommendationsProps> = ({ recommendat
                               e.stopPropagation();
                               handleCopy(item);
                             }}
-                            className="p-1 rounded-md hover:bg-white/50 transition-colors"
+                            className="p-1 rounded-md hover:bg-background/20 transition-colors"
                             title="Скопировать"
                           >
                             {copiedItem === item ? 
-                              <Check className="h-4 w-4 text-green-500" /> : 
+                              <Check className="h-4 w-4 text-green-400" /> : 
                               <Copy className="h-4 w-4 text-muted-foreground" />
                             }
                           </button>
