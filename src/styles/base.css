@@ -9,6 +9,9 @@
   body {
     @apply bg-background text-foreground;
     font-feature-settings: "rlig" 1, "calt" 1;
+    position: relative;
+    min-height: 100vh;
+    overflow-x: hidden;
   }
 
   /* Clean typography */
@@ -53,5 +56,19 @@
   
   ::-webkit-scrollbar-thumb {
     @apply bg-primary/20 hover:bg-primary/30 rounded-full transition-colors;
+  }
+
+  /* Content over stars */
+  main, header, footer {
+    position: relative;
+    z-index: 1;
+    backdrop-filter: blur(3px);
+  }
+
+  /* Card style updates for starry background */
+  .card, .battle-card {
+    backdrop-filter: blur(8px);
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
   }
 }
