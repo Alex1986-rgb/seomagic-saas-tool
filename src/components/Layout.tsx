@@ -10,7 +10,7 @@ interface LayoutProps {
 const Layout: React.FC<LayoutProps> = ({ children }) => {
   return (
     <div className="flex flex-col min-h-screen relative">
-      <div className="bg-gradient-to-b from-background/80 to-background/50 fixed inset-0 z-[-1]" />
+      <div className="bg-gradient-to-b from-background/60 to-background/30 backdrop-blur-sm fixed inset-0 z-[-1]" />
       <Navbar />
       <main className="flex-grow relative z-10">{children}</main>
       <Footer />
