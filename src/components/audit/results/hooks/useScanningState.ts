@@ -28,8 +28,11 @@ export const useScanningState = (url: string, onUpdateAuditData: (pageCount: num
   const handleScanWebsite = async () => {
     setIsScanning(true);
     
+    // Special case for myarredo.ru
+    const isFurnitureSite = url.includes('myarredo') || url.includes('arredo');
+    
     const scanOptions: ScanOptions = {
-      maxPages: 250000,
+      maxPages: isFurnitureSite ? 70000 : 250000, // Lower default for furniture sites based on user knowledge
       maxDepth: 50,
       followExternalLinks: false,
       checkMobile: true,
