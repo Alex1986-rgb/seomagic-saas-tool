@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useMediaQuery } from '@/hooks/use-mobile';
 import { AlignJustify, X, UserCircle, Search, ChevronDown } from 'lucide-react';
 import { Button } from "@/components/ui/button";
+import { ThemeSwitcher, ThemeSwitcherIcon } from '@/components/ThemeSwitcher';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -112,8 +113,10 @@ const Navbar: React.FC = () => {
             ))}
           </div>
 
-          {/* Desktop Auth Buttons */}
+          {/* Desktop Auth Buttons and Theme Switcher */}
           <div className="hidden md:flex items-center space-x-4">
+            <ThemeSwitcher />
+            
             {isLoggedIn ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -155,14 +158,17 @@ const Navbar: React.FC = () => {
             )}
           </div>
 
-          {/* Mobile Menu Button */}
-          <button
-            className="md:hidden rounded-md p-2 focus:outline-none"
-            onClick={() => setIsOpen(!isOpen)}
-            aria-label="Toggle menu"
-          >
-            {isOpen ? <X size={24} /> : <AlignJustify size={24} />}
-          </button>
+          {/* Mobile Icons */}
+          <div className="flex md:hidden items-center space-x-2">
+            <ThemeSwitcherIcon />
+            <button
+              className="rounded-md p-2 focus:outline-none"
+              onClick={() => setIsOpen(!isOpen)}
+              aria-label="Toggle menu"
+            >
+              {isOpen ? <X size={24} /> : <AlignJustify size={24} />}
+            </button>
+          </div>
         </div>
       </div>
 
