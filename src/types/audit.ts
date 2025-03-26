@@ -49,6 +49,12 @@ export interface AuditHistoryItem {
   date: string;
   score: number;
   issues: AuditIssues;
+  details?: {
+    performance?: { score?: number };
+    seo?: { score?: number };
+    content?: { score?: number };
+    technical?: { score?: number };
+  };
 }
 
 export interface AuditHistoryData {

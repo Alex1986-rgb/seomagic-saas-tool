@@ -51,6 +51,13 @@ const AuditHistory: React.FC<AuditHistoryProps> = ({ historyItems, onSelectAudit
     });
   };
 
+  // Handle dot click event
+  const handleDotClick = (data: any) => {
+    if (onSelectAudit && data && data.id) {
+      onSelectAudit(data.id);
+    }
+  };
+
   return (
     <div className="neo-card p-6 mb-8">
       <div 
@@ -118,7 +125,14 @@ const AuditHistory: React.FC<AuditHistoryProps> = ({ historyItems, onSelectAudit
                     dataKey="score" 
                     stroke="rgba(var(--primary-rgb))" 
                     fill="rgba(var(--primary-rgb), 0.1)" 
-                    activeDot={{ r: 6, onClick: (data) => onSelectAudit && onSelectAudit(data.payload.id) }} 
+                    activeDot={{ 
+                      r: 6, 
+                      onClick: (_, event) => {
+                        if (event && event.payload) {
+                          handleDotClick(event.payload);
+                        }
+                      }
+                    }} 
                   />
                 </AreaChart>
               </ResponsiveContainer>
