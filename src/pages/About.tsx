@@ -18,7 +18,7 @@ const About = () => {
         transition={{ duration: 0.5 }}
         className="container px-4 py-8 mx-auto relative"
       >
-        <div className="absolute inset-0 bg-[url('/img/metal-texture.jpg')] opacity-5 mix-blend-overlay -z-10" />
+        <div className="absolute inset-0 bg-gradient-to-b from-secondary/30 to-transparent -z-10" />
         <AboutHero />
         <MissionSection />
         <FeaturesSection />
