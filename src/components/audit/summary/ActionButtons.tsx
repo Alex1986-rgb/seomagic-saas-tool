@@ -25,7 +25,7 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ auditData, url, onDownloa
   const handleDownloadPDF = async () => {
     try {
       if (auditData) {
-        await generateAuditPDF(auditData, url);
+        await generateAuditPdf(auditData, url);
         toast({
           title: "Отчёт сохранён",
           description: "PDF-отчёт успешно сохранён на ваше устройство",

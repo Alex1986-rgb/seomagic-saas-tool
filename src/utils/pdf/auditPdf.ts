@@ -79,8 +79,9 @@ export const generateAuditPdf = async (options: GeneratePdfReportOptions): Promi
     ['Незначительные проблемы', auditData.issues.opportunities.toString()]
   ];
   
+  let yPosition = 65;
   autoTable(doc, {
-    startY: 65,
+    startY: yPosition,
     head: [['Параметр', 'Значение']],
     body: statsData,
     theme: 'grid',
@@ -88,11 +89,13 @@ export const generateAuditPdf = async (options: GeneratePdfReportOptions): Promi
     headStyles: { fillColor: [56, 189, 248] }
   });
   
+  // Get the Y position after the table
+  yPosition = (doc as any).lastAutoTable.finalY + 15;
+  
   // Добавляем детали распределения страниц по типам, если доступно
   if (pageStats && pageStats.subpages) {
     doc.setFontSize(16);
-    let currentY = doc.previousAutoTable.finalY + 15;
-    doc.text('Распределение страниц', 15, currentY);
+    doc.text('Распределение страниц', 15, yPosition);
     
     const pageTypesData = Object.entries(pageStats.subpages).map(([type, count]) => [
       type.charAt(0).toUpperCase() + type.slice(1),
@@ -100,19 +103,21 @@ export const generateAuditPdf = async (options: GeneratePdfReportOptions): Promi
     ]);
     
     autoTable(doc, {
-      startY: currentY + 5,
+      startY: yPosition + 5,
       head: [['Тип страницы', 'Количество']],
       body: pageTypesData,
       theme: 'grid',
       styles: { halign: 'left' },
       headStyles: { fillColor: [56, 189, 248] }
     });
+    
+    // Update Y position
+    yPosition = (doc as any).lastAutoTable.finalY + 15;
   }
   
   // Добавляем анализ проблем
   doc.setFontSize(16);
-  let currentY = doc.previousAutoTable.finalY + 15;
-  doc.text('Анализ обнаруженных проблем', 15, currentY);
+  doc.text('Анализ обнаруженных проблем', 15, yPosition);
   
   if (recommendations) {
     const recommendationsData = Object.entries(recommendations).map(([category, categoryData]: [string, any]) => [
@@ -122,7 +127,7 @@ export const generateAuditPdf = async (options: GeneratePdfReportOptions): Promi
     ]);
     
     autoTable(doc, {
-      startY: currentY + 5,
+      startY: yPosition + 5,
       head: [['Категория', 'Количество проблем', 'Оценка']],
       body: recommendationsData,
       theme: 'grid',
@@ -157,8 +162,9 @@ export const generateAuditPdf = async (options: GeneratePdfReportOptions): Promi
       `${new Intl.NumberFormat('ru-RU').format(item.totalPrice)} ₽`
     ]);
     
+    yPosition = 58;
     autoTable(doc, {
-      startY: 58,
+      startY: yPosition,
       head: [['Тип оптимизации', 'Количество', 'Цена за единицу', 'Итого']],
       body: costDetailsData,
       theme: 'grid',
@@ -167,9 +173,9 @@ export const generateAuditPdf = async (options: GeneratePdfReportOptions): Promi
     });
     
     // Добавляем перечень что включено
+    yPosition = (doc as any).lastAutoTable.finalY + 15;
     doc.setFontSize(14);
-    currentY = doc.previousAutoTable.finalY + 15;
-    doc.text('Оптимизация включает:', 15, currentY);
+    doc.text('Оптимизация включает:', 15, yPosition);
     
     const includedItems = [
       'Оптимизация всех мета-тегов',
@@ -181,7 +187,7 @@ export const generateAuditPdf = async (options: GeneratePdfReportOptions): Promi
       'Исправление URL (замена подчеркиваний на дефисы)'
     ];
     
-    let yPos = currentY + 5;
+    let yPos = yPosition + 5;
     includedItems.forEach(item => {
       doc.setFontSize(12);
       doc.text(`• ${item}`, 20, yPos);

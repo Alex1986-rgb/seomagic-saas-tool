@@ -34,7 +34,7 @@ const ExportDropdown: React.FC<ExportDropdownProps> = ({
     
     try {
       if (auditData && url) {
-        await generateAuditPDF(auditData, url);
+        await generateAuditPdf(auditData, url);
         toast({
           title: "Отчёт сохранён",
           description: "PDF-отчёт успешно сохранён на ваше устройство",
