@@ -22,7 +22,15 @@ export const calculateOptimizationMetrics = (
   optimizationCost: number;
   optimizationItems: OptimizationItem[];
 } => {
-  const basePagePrice = 50;
+  // Обновленные цены в соответствии с требованиями
+  let basePagePrice = 500; // Базовая стоимость для сайтов до 50 страниц
+  
+  // Определяем базовую стоимость в зависимости от количества страниц
+  if (pageStats.totalPages > 500) {
+    basePagePrice = 150; // От 500 страниц
+  } else if (pageStats.totalPages > 50) {
+    basePagePrice = 300; // От 50 до 500 страниц
+  }
   
   const pricePerMissingMetaDescription = 50;
   const pricePerMissingMetaKeywords = 30;

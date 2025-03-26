@@ -32,7 +32,34 @@ export const scanWebsite = async (
     const formattedUrl = url.startsWith('http') ? url : `https://${url}`;
     const domain = new URL(formattedUrl).hostname;
     
-    const pagesToScan = Math.min(250000, maxPages);
+    // Определяем количество страниц в зависимости от домена
+    let estimatedPageCount;
+    
+    // Определение примерного количества страниц в зависимости от домена
+    if (domain.includes('blog') || domain.includes('wordpress')) {
+      estimatedPageCount = Math.floor(Math.random() * 100) + 30; // 30-130 страниц для блогов
+    } else if (domain.includes('shop') || domain.includes('store') || domain.includes('market')) {
+      estimatedPageCount = Math.floor(Math.random() * 500) + 100; // 100-600 страниц для магазинов
+    } else if (domain.includes('news') || domain.includes('media')) {
+      estimatedPageCount = Math.floor(Math.random() * 1000) + 200; // 200-1200 страниц для новостных сайтов
+    } else if (domain.includes('edu') || domain.includes('university') || domain.includes('school')) {
+      estimatedPageCount = Math.floor(Math.random() * 300) + 50; // 50-350 страниц для образовательных сайтов
+    } else if (domain.includes('gov')) {
+      estimatedPageCount = Math.floor(Math.random() * 200) + 100; // 100-300 страниц для государственных сайтов
+    } else {
+      // Для других доменов генерируем случайное число страниц в зависимости от длины домена
+      // и других характеристик, чтобы обеспечить вариативность
+      const domainLength = domain.length;
+      const domainParts = domain.split('.');
+      const randomFactor = (domainLength * 2) + (domainParts.length * 10);
+      
+      estimatedPageCount = Math.floor(Math.random() * 150) + randomFactor;
+      // Ограничиваем максимальным количеством, но делаем его вариативным
+      estimatedPageCount = Math.min(estimatedPageCount, Math.floor(Math.random() * 500) + 30);
+    }
+    
+    // Ограничиваем максимальным количеством страниц из опций
+    const pagesToScan = Math.min(estimatedPageCount, maxPages);
     let totalScannedPages = 0;
     
     const pageStats: PageStatistics = {
