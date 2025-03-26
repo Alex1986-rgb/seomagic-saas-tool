@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { FileSearch, FolderTree, Network, FileText, Download, Loader2 } from 'lucide-react';
+import { FileSearch, FolderTree, Network, FileText, Download, Loader2, Map } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";

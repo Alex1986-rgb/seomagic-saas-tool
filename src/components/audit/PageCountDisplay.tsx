@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Files, FileSearch, Layers, FolderTree, FileText, Sitemap } from 'lucide-react';
+import { Files, FileSearch, Layers, FolderTree, FileText, Map } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 
 interface PageStatistics {
@@ -84,7 +84,7 @@ const PageCountDisplay: React.FC<PageCountDisplayProps> = ({
             className="hover-lift flex items-center gap-2"
             onClick={onDownloadSitemap}
           >
-            <Sitemap className="h-4 w-4" />
+            <Map className="h-4 w-4" />
             Скачать Sitemap
           </Button>
         )}
