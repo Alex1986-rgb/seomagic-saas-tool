@@ -2,12 +2,13 @@
 import React, { useState, useEffect } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import { motion, AnimatePresence } from 'framer-motion';
-import { AlertTriangle, RefreshCw } from 'lucide-react';
+import { AlertTriangle, RefreshCw, Files } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import AuditSummary from '@/components/AuditSummary';
 import AuditLoading from '../AuditLoading';
 import AuditError from './AuditError';
 import AuditContent from './AuditContent';
+import PageCountDisplay from '../PageCountDisplay';
 import { fetchAuditData, fetchRecommendations, fetchAuditHistory } from '@/services/auditService';
 import { AuditData, RecommendationData, AuditHistoryData } from '@/types/audit';
 
@@ -65,7 +66,7 @@ const AuditResultsContainer: React.FC<AuditResultsContainerProps> = ({ url }) =>
       
       toast({
         title: refresh ? "Аудит обновлен" : "Аудит завершен",
-        description: refresh ? "SEO аудит сайта успешно обновлен" : "SEO аудит сайта успешно завершен",
+        description: refresh ? "SEO аудит сайта успешно обновлен" : `SEO аудит завершен. Проанализировано ${auditResult.pageCount} страниц.`,
       });
     } catch (error) {
       console.error('Error loading audit data:', error);
@@ -142,6 +143,13 @@ const AuditResultsContainer: React.FC<AuditResultsContainerProps> = ({ url }) =>
             Обновить аудит
           </Button>
         </div>
+        
+        {auditData.pageCount && (
+          <PageCountDisplay 
+            pageCount={auditData.pageCount} 
+            isScanning={false}
+          />
+        )}
         
         <AuditSummary 
           url={url} 

@@ -1,5 +1,4 @@
-
-import { AuditData, RecommendationData, AuditHistoryData, AuditHistoryItem } from '@/types/audit';
+import { AuditData, RecommendationData, AuditHistoryData, AuditHistoryItem, AuditItemData } from '@/types/audit';
 
 // Helper function to simulate API delay with progress
 const simulateApiDelay = (ms: number) => {
@@ -60,13 +59,16 @@ export const fetchAuditData = async (url: string): Promise<AuditData> => {
   const contentScore = generateRelativeScore(previousAudit?.details?.content?.score);
   const technicalScore = generateRelativeScore(previousAudit?.details?.technical?.score);
   
+  // Генерируем количество страниц для сайта
+  const pageCount = Math.floor(Math.random() * 50) + 10;
+  
   // Создаем объект с данными аудита
   const mockAuditData: AuditData = {
     id: `audit-${Date.now()}`, // Generate a unique ID
     score: newScore,
     date: new Date().toISOString(),
     previousScore: previousAudit?.score,
-    historyAvailable: hasHistory,
+    pageCount: pageCount,
     issues: {
       critical: Math.floor(Math.random() * 4) + 1,
       important: Math.floor(Math.random() * 6) + 4,
@@ -80,6 +82,7 @@ export const fetchAuditData = async (url: string): Promise<AuditData> => {
           { 
             id: 'p1', 
             title: 'Время до интерактивности', 
+            description: `${(Math.random() * 4 + 1.5).toFixed(1)}s - время до полной интерактивности`,
             value: `${(Math.random() * 4 + 1.5).toFixed(1)}s`, 
             status: Math.random() > 0.5 ? 'warning' : 'good',
             trend: getTrend(Math.random(), Math.random()),
@@ -88,6 +91,7 @@ export const fetchAuditData = async (url: string): Promise<AuditData> => {
           { 
             id: 'p2', 
             title: 'Скорость загрузки первого контента', 
+            description: `${(Math.random() * 2 + 0.8).toFixed(1)}s - время до отображения первого контента`,
             value: `${(Math.random() * 2 + 0.8).toFixed(1)}s`, 
             status: Math.random() > 0.7 ? 'warning' : 'good',
             trend: getTrend(Math.random(), Math.random()),
@@ -96,6 +100,7 @@ export const fetchAuditData = async (url: string): Promise<AuditData> => {
           { 
             id: 'p3', 
             title: 'Общий размер страницы', 
+            description: `${(Math.random() * 3 + 1.2).toFixed(1)}MB - общий объем ресурсов страницы`,
             value: `${(Math.random() * 3 + 1.2).toFixed(1)}MB`, 
             status: Math.random() > 0.4 ? 'warning' : 'good',
             trend: getTrend(Math.random(), Math.random()),
@@ -104,6 +109,7 @@ export const fetchAuditData = async (url: string): Promise<AuditData> => {
           { 
             id: 'p4', 
             title: 'Количество запросов', 
+            description: `${Math.floor(Math.random() * 30 + 25)} HTTP запросов на странице`,
             value: `${Math.floor(Math.random() * 30 + 25)}`, 
             status: Math.random() > 0.6 ? 'warning' : 'good',
             trend: getTrend(Math.random(), Math.random()),
@@ -268,7 +274,14 @@ export const fetchAuditData = async (url: string): Promise<AuditData> => {
     id: mockAuditData.id,
     date: mockAuditData.date,
     score: mockAuditData.score,
-    issues: { ...mockAuditData.issues },
+    pageCount: mockAuditData.pageCount,
+    issues: mockAuditData.issues,
+    details: {
+      seo: { score: mockAuditData.details.seo.score },
+      performance: { score: mockAuditData.details.performance.score },
+      content: { score: mockAuditData.details.content.score },
+      technical: { score: mockAuditData.details.technical.score },
+    }
   });
   
   // Оставляем только последние 10 аудитов в истории

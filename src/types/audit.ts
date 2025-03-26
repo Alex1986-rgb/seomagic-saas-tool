@@ -29,7 +29,12 @@ export interface AuditData {
   date: string;
   score: number;
   previousScore?: number;
-  issues: number;
+  issues: {
+    critical: number;
+    important: number;
+    opportunities: number;
+  };
+  pageCount?: number;
   details: AuditDetailsData;
 }
 
@@ -43,7 +48,12 @@ export interface AuditHistoryItem {
   id: string;
   date: string;
   score: number;
-  issues?: number;
+  issues?: {
+    critical: number;
+    important: number;
+    opportunities: number;
+  };
+  pageCount?: number;
   details?: {
     seo?: { score: number };
     performance?: { score: number };

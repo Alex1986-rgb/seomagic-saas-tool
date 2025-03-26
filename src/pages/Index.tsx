@@ -6,6 +6,7 @@ import HeroSection from '@/components/HeroSection';
 import VideoDemo from '@/components/VideoDemo';
 import FeatureSection from '@/components/FeatureSection';
 import DemoWorkflow from '@/components/DemoWorkflow';
+import GrowthAnimation from '@/components/GrowthAnimation';
 import { Quote, Star, ArrowRight, Shield, Award, Target } from 'lucide-react';
 
 const Index: React.FC = () => {
@@ -14,14 +15,118 @@ const Index: React.FC = () => {
       {/* Hero Section */}
       <HeroSection />
       
-      {/* Video Demo Section - перемещено выше для лучшего ознакомления */}
+      {/* Video Demo Section */}
       <VideoDemo />
+      
+      {/* Growth Animation Section */}
+      <GrowthAnimation />
       
       {/* Feature Section */}
       <FeatureSection />
       
       {/* Demo Workflow Section */}
       <DemoWorkflow />
+      
+      {/* Pricing Information Section */}
+      <section className="py-16 overflow-hidden relative">
+        <div className="absolute inset-0 bg-gradient-to-b from-background/50 to-background/30 -z-10" />
+        <div className="container mx-auto px-4 md:px-6">
+          <div className="text-center mb-12">
+            <motion.div
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6 }}
+              className="inline-flex items-center px-4 py-2 rounded-full bg-primary/10 text-primary font-medium mb-4 border border-primary/20"
+            >
+              <Target className="w-4 h-4 mr-2 fill-primary" />
+              Прозрачное ценообразование
+            </motion.div>
+            
+            <motion.h2 
+              className="text-3xl md:text-4xl font-bold mb-4 font-playfair relative"
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6 }}
+            >
+              <span className="inline-block relative">
+                Оплата за страницы, а не за весь сайт
+                <div className="absolute -bottom-2 left-0 right-0 h-1 bg-primary/60 rounded-full"></div>
+              </span>
+            </motion.h2>
+            <motion.p 
+              className="text-lg text-muted-foreground max-w-2xl mx-auto"
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+            >
+              Мы адаптируем стоимость услуг под размер вашего проекта. Платите только за то, что действительно нужно оптимизировать.
+            </motion.p>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+            <PricingCard 
+              title="Небольшой сайт"
+              price="4 900"
+              pagesRange="до 30 страниц"
+              features={[
+                "Полный SEO аудит всех страниц",
+                "Базовая оптимизация метатегов",
+                "Исправление технических ошибок",
+                "Отчет с рекомендациями",
+                "Поддержка 14 дней"
+              ]}
+              recommended={false}
+            />
+            
+            <PricingCard 
+              title="Средний бизнес"
+              price="9 900"
+              pagesRange="до 100 страниц"
+              features={[
+                "Полный SEO аудит всех страниц",
+                "Расширенная оптимизация",
+                "Анализ конкурентов",
+                "Стратегия контент-маркетинга",
+                "Оптимизация скорости",
+                "Поддержка 30 дней"
+              ]}
+              recommended={true}
+            />
+            
+            <PricingCard 
+              title="Корпоративный"
+              price="24 900"
+              pagesRange="до 500 страниц"
+              features={[
+                "Комплексный аудит всех страниц",
+                "Индивидуальная стратегия",
+                "Глубокий анализ конкурентов",
+                "Ежемесячные отчеты",
+                "Оптимизация конверсий",
+                "Техническая поддержка 24/7",
+                "Приоритетные обновления"
+              ]}
+              recommended={false}
+            />
+          </div>
+          
+          <div className="text-center mt-12">
+            <p className="text-muted-foreground mb-4">
+              Нужно больше? У нас есть индивидуальные решения для крупных проектов
+            </p>
+            <a 
+              href="/pricing" 
+              className="text-primary hover:text-primary/80 font-medium inline-flex items-center"
+            >
+              Узнать подробнее
+              <ArrowRight className="ml-1 h-4 w-4" />
+            </a>
+          </div>
+        </div>
+      </section>
       
       {/* Testimonials Section */}
       <section className="py-20 overflow-hidden relative">
@@ -189,6 +294,76 @@ const TestimonialCard: React.FC<{
       <p className="text-sm text-muted-foreground">{role}</p>
     </div>
   </motion.div>
+);
+
+const PricingCard: React.FC<{
+  title: string;
+  price: string;
+  pagesRange: string;
+  features: string[];
+  recommended: boolean;
+}> = ({ title, price, pagesRange, features, recommended }) => (
+  <motion.div 
+    className={`relative rounded-xl p-6 border ${
+      recommended 
+        ? 'border-primary shadow-lg shadow-primary/20' 
+        : 'border-primary/30'
+    } flex flex-col h-full`}
+    initial={{ opacity: 0, y: 20 }}
+    whileInView={{ opacity: 1, y: 0 }}
+    viewport={{ once: true }}
+    transition={{ duration: 0.6 }}
+    whileHover={{ y: -10, boxShadow: recommended ? '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)' : 'none' }}
+  >
+    {recommended && (
+      <div className="absolute -top-3 left-0 right-0 mx-auto w-max px-3 py-1 text-xs font-medium bg-primary text-primary-foreground rounded-full">
+        Рекомендуемый
+      </div>
+    )}
+    
+    <h3 className="text-xl font-bold mb-1">{title}</h3>
+    <p className="text-muted-foreground text-sm mb-6">{pagesRange}</p>
+    
+    <div className="mb-6">
+      <span className="text-3xl font-bold">{price} ₽</span>
+      <span className="text-muted-foreground ml-1">/ месяц</span>
+    </div>
+    
+    <ul className="space-y-3 mb-8 flex-grow">
+      {features.map((feature, index) => (
+        <li key={index} className="flex items-start">
+          <Check className="h-5 w-5 text-primary mr-2 shrink-0 mt-0.5" />
+          <span className="text-sm">{feature}</span>
+        </li>
+      ))}
+    </ul>
+    
+    <a 
+      href="/audit"
+      className={`w-full py-2 px-4 rounded-md text-center font-medium ${
+        recommended 
+          ? 'bg-primary text-primary-foreground hover:bg-primary/90' 
+          : 'bg-primary/10 text-primary hover:bg-primary/20'
+      } transition-colors`}
+    >
+      Начать
+    </a>
+  </motion.div>
+);
+
+const Check: React.FC<{ className?: string }> = ({ className }) => (
+  <svg 
+    xmlns="http://www.w3.org/2000/svg" 
+    viewBox="0 0 24 24" 
+    fill="none" 
+    stroke="currentColor" 
+    strokeWidth="2" 
+    strokeLinecap="round" 
+    strokeLinejoin="round" 
+    className={className}
+  >
+    <polyline points="20 6 9 17 4 12"></polyline>
+  </svg>
 );
 
 export default Index;

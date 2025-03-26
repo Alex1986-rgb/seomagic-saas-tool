@@ -1,6 +1,6 @@
 
-import React from 'react';
-import { Loader2, Search, FileSearch, BarChart4 } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Loader2, Search, FileSearch, BarChart4, Files } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Progress } from "@/components/ui/progress";
 
@@ -9,11 +9,26 @@ interface AuditLoadingProps {
 }
 
 const AuditLoading: React.FC<AuditLoadingProps> = ({ progress = 0 }) => {
+  const [pageCount, setPageCount] = useState(0);
   const stages = [
-    { icon: Search, text: "Сканирование страницы", active: progress > 0 },
-    { icon: FileSearch, text: "Анализ метаданных", active: progress > 30 },
-    { icon: BarChart4, text: "Создание отчета", active: progress > 70 }
+    { icon: Search, text: "Сканирование сайта", active: progress > 0 },
+    { icon: Files, text: "Анализ страниц", active: progress > 25 },
+    { icon: FileSearch, text: "Анализ метаданных", active: progress > 50 },
+    { icon: BarChart4, text: "Создание отчета", active: progress > 75 }
   ];
+
+  useEffect(() => {
+    if (progress > 20 && progress < 80) {
+      const interval = setInterval(() => {
+        setPageCount(prev => {
+          const increase = Math.floor(Math.random() * 3) + 1;
+          return prev + increase;
+        });
+      }, 1500);
+      
+      return () => clearInterval(interval);
+    }
+  }, [progress]);
 
   return (
     <div className="flex flex-col items-center justify-center py-16">
@@ -25,7 +40,29 @@ const AuditLoading: React.FC<AuditLoadingProps> = ({ progress = 0 }) => {
         <p className="text-right text-sm text-muted-foreground mt-1">{Math.round(progress)}%</p>
       </div>
       
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 w-full max-w-2xl">
+      {pageCount > 0 && (
+        <motion.div 
+          className="w-full max-w-md mb-6 p-4 border border-primary/20 rounded-lg"
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3 }}
+        >
+          <div className="flex items-center">
+            <Files className="h-5 w-5 text-primary mr-2" />
+            <span className="text-sm">
+              Обнаружено страниц: <span className="font-medium">{pageCount}</span>
+              <motion.span 
+                className="inline-block ml-1"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: [0, 1, 0] }}
+                transition={{ duration: 1.5, repeat: Infinity }}
+              >...</motion.span>
+            </span>
+          </div>
+        </motion.div>
+      )}
+      
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 w-full max-w-3xl">
         {stages.map((stage, index) => {
           const Icon = stage.icon;
           return (
