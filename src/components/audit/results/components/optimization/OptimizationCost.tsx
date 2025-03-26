@@ -1,41 +1,19 @@
+
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Check, Download, CreditCard, Package, Info, FileText, Play } from 'lucide-react';
-import { Button } from "@/components/ui/button";
+import { CreditCard, Info } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
-import { 
+import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import OptimizationProgress from './OptimizationProgress';
-import OptimizationDemo from './OptimizationDemo';
-
-export interface OptimizationItem {
-  type: string;
-  count: number;
-  pricePerUnit: number;
-  totalPrice: number;
-  description: string;
-}
+import OptimizationProgress from '../OptimizationProgress';
+import OptimizationDemo from '../OptimizationDemo';
+import CostSummary from './CostSummary';
+import CostDetailsTable, { OptimizationItem } from './CostDetailsTable';
+import OptimizationActions from './OptimizationActions';
 
 interface OptimizationCostProps {
   optimizationCost?: number;
@@ -86,10 +64,6 @@ const OptimizationCost: React.FC<OptimizationCostProps> = ({
   } | null>(null);
   
   const isOptimizedState = isOptimized || localIsOptimized;
-  
-  const formatNumber = (num: number) => {
-    return new Intl.NumberFormat('ru-RU').format(num);
-  };
   
   const handlePayment = () => {
     toast({
@@ -205,59 +179,9 @@ Praesent nec nisi sed metus sollicitudin tincidunt vel nec arcu. Nullam tincidun
         Стоимость оптимизации
       </h3>
       
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
-        <div className="bg-primary/10 p-3 rounded-lg">
-          <div className="text-sm text-muted-foreground">Количество страниц</div>
-          <div className="text-xl font-semibold">{formatNumber(pageCount)}</div>
-        </div>
-        
-        <div className="bg-primary/10 p-3 rounded-lg">
-          <div className="text-sm text-muted-foreground">Стоимость за страницу</div>
-          <div className="text-xl font-semibold">50 ₽</div>
-        </div>
-        
-        <div className="bg-primary/10 p-3 rounded-lg">
-          <div className="text-sm text-muted-foreground">Итоговая стоимость</div>
-          <div className="text-xl font-semibold">{formatNumber(optimizationCost)} ₽</div>
-        </div>
-      </div>
+      <CostSummary pageCount={pageCount} optimizationCost={optimizationCost} />
       
-      {optimizationItems.length > 0 && (
-        <div className="mb-4 overflow-x-auto">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Тип оптимизации</TableHead>
-                <TableHead>Количество</TableHead>
-                <TableHead>Цена за ед.</TableHead>
-                <TableHead>Сумма</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {optimizationItems.map((item, index) => (
-                <TableRow key={index}>
-                  <TableCell>
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger className="flex items-center">
-                          {item.type}
-                          <Info className="h-3 w-3 ml-1 cursor-help text-muted-foreground" />
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p className="max-w-xs">{item.description}</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
-                  </TableCell>
-                  <TableCell>{formatNumber(item.count)}</TableCell>
-                  <TableCell>{formatNumber(item.pricePerUnit)} ₽</TableCell>
-                  <TableCell className="font-medium">{formatNumber(item.totalPrice)} ₽</TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
-      )}
+      <CostDetailsTable optimizationItems={optimizationItems} />
       
       {isOptimizing ? (
         <OptimizationProgress 
@@ -300,101 +224,18 @@ Praesent nec nisi sed metus sollicitudin tincidunt vel nec arcu. Nullam tincidun
           </TooltipProvider>
         </div>
         
-        <div className="flex gap-2">
-          {onGeneratePdfReport && (
-            <Button 
-              onClick={onGeneratePdfReport}
-              className="gap-2"
-              variant="outline"
-            >
-              <FileText className="h-4 w-4" />
-              Скачать PDF отчет
-            </Button>
-          )}
-          
-          {isOptimizedState || optimizationResult ? (
-            <Button 
-              onClick={onDownloadOptimized}
-              className="gap-2"
-              variant="default"
-            >
-              <Download className="h-4 w-4" />
-              Скачать оптимизированный сайт
-            </Button>
-          ) : isPaymentComplete ? (
-            <Button 
-              onClick={startOptimization}
-              className="gap-2"
-              variant="default"
-            >
-              <Play className="h-4 w-4" />
-              Запустить оптимизацию
-            </Button>
-          ) : (
-            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-              <DialogTrigger asChild>
-                <Button className="gap-2">Оплатить и оптимизировать</Button>
-              </DialogTrigger>
-              <DialogContent className="sm:max-w-md">
-                <DialogHeader>
-                  <DialogTitle>Оплата оптимизации</DialogTitle>
-                  <DialogDescription>
-                    Оптимизация сайта {url} будет выполнена после оплаты
-                  </DialogDescription>
-                </DialogHeader>
-                <div className="grid gap-4 py-4">
-                  <div className="rounded-lg bg-primary/10 p-4">
-                    <h4 className="font-medium mb-2">Что включено:</h4>
-                    <ul className="space-y-1 text-sm">
-                      <li className="flex items-center gap-2">
-                        <Check className="h-4 w-4 text-green-500" />
-                        Оптимизация всех мета-тегов
-                      </li>
-                      <li className="flex items-center gap-2">
-                        <Check className="h-4 w-4 text-green-500" />
-                        Исправление проблем с изображениями
-                      </li>
-                      <li className="flex items-center gap-2">
-                        <Check className="h-4 w-4 text-green-500" />
-                        Оптимизация контента для SEO
-                      </li>
-                      <li className="flex items-center gap-2">
-                        <Check className="h-4 w-4 text-green-500" />
-                        Улучшение скорости загрузки
-                      </li>
-                      <li className="flex items-center gap-2">
-                        <Check className="h-4 w-4 text-green-500" />
-                        Исправление технических проблем
-                      </li>
-                      <li className="flex items-center gap-2">
-                        <Check className="h-4 w-4 text-green-500" />
-                        Удаление дублей и создание уникального контента
-                      </li>
-                      <li className="flex items-center gap-2">
-                        <Check className="h-4 w-4 text-green-500" />
-                        Исправление URL (замена подчеркиваний на дефисы)
-                      </li>
-                    </ul>
-                  </div>
-                  
-                  <div className="flex justify-between items-center p-3 border border-border rounded-lg">
-                    <span className="font-medium">Итого к оплате:</span>
-                    <span className="text-xl font-bold">{formatNumber(optimizationCost)} ₽</span>
-                  </div>
-                </div>
-                <DialogFooter>
-                  <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
-                    Отмена
-                  </Button>
-                  <Button onClick={handlePayment} className="gap-2">
-                    <CreditCard className="h-4 w-4" />
-                    Оплатить
-                  </Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
-          )}
-        </div>
+        <OptimizationActions 
+          url={url}
+          optimizationCost={optimizationCost}
+          isOptimized={isOptimizedState}
+          isPaymentComplete={isPaymentComplete}
+          onDownloadOptimized={onDownloadOptimized}
+          onGeneratePdfReport={onGeneratePdfReport}
+          onStartOptimization={startOptimization}
+          onPayment={handlePayment}
+          isDialogOpen={isDialogOpen}
+          setIsDialogOpen={setIsDialogOpen}
+        />
       </div>
     </motion.div>
   );

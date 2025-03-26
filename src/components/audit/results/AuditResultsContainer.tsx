@@ -10,7 +10,7 @@ import { useAuditData } from './hooks/useAuditData';
 import AuditHeader from './components/AuditHeader';
 import AuditScanning from './components/AuditScanning';
 import AuditRefreshing from './components/AuditRefreshing';
-import OptimizationCost from './components/OptimizationCost';
+import { OptimizationCost } from './components/optimization';
 import ContentOptimizationPrompt from './components/ContentOptimizationPrompt';
 
 interface AuditResultsContainerProps {

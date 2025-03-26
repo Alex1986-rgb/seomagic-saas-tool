@@ -1,10 +1,10 @@
-
 import { useState, useEffect } from 'react';
 import { useAuditCore } from './useAuditCore';
 import { useScanningState } from './useScanningState';
 import { useOptimization } from './useOptimization';
 import { usePdfReport } from './usePdfReport';
 import { AuditData } from '@/types/audit';
+import { OptimizationItem } from '../components/optimization';
 
 export const useAuditData = (url: string) => {
   const { 
