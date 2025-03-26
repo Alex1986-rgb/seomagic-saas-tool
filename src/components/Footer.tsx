@@ -15,42 +15,42 @@ const Footer: React.FC = () => {
               <span className="text-primary">Seo</span>Market
             </Link>
             <p className="mt-4 text-muted-foreground">
-              Your all-in-one solution for professional SEO audits and optimizations.
+              Комплексное решение для профессионального SEO аудита и оптимизации.
             </p>
           </div>
           
           <div>
-            <h3 className="font-semibold text-lg mb-4">Product</h3>
+            <h3 className="font-semibold text-lg mb-4">Продукт</h3>
             <ul className="space-y-3">
-              <FooterLink to="/features">Features</FooterLink>
-              <FooterLink to="/pricing">Pricing</FooterLink>
-              <FooterLink to="/demo">Demo</FooterLink>
+              <FooterLink to="/features">Возможности</FooterLink>
+              <FooterLink to="/pricing">Цены</FooterLink>
+              <FooterLink to="/demo">Демо</FooterLink>
             </ul>
           </div>
           
           <div>
-            <h3 className="font-semibold text-lg mb-4">Resources</h3>
+            <h3 className="font-semibold text-lg mb-4">Ресурсы</h3>
             <ul className="space-y-3">
-              <FooterLink to="/blog">Blog</FooterLink>
-              <FooterLink to="/guides">Guides</FooterLink>
-              <FooterLink to="/support">Support</FooterLink>
+              <FooterLink to="/blog">Блог</FooterLink>
+              <FooterLink to="/guides">Руководства</FooterLink>
+              <FooterLink to="/support">Поддержка</FooterLink>
             </ul>
           </div>
           
           <div>
-            <h3 className="font-semibold text-lg mb-4">Company</h3>
+            <h3 className="font-semibold text-lg mb-4">Компания</h3>
             <ul className="space-y-3">
-              <FooterLink to="/about">About</FooterLink>
-              <FooterLink to="/contact">Contact</FooterLink>
-              <FooterLink to="/privacy">Privacy</FooterLink>
-              <FooterLink to="/terms">Terms</FooterLink>
+              <FooterLink to="/about">О нас</FooterLink>
+              <FooterLink to="/contact">Контакты</FooterLink>
+              <FooterLink to="/privacy">Конфиденциальность</FooterLink>
+              <FooterLink to="/terms">Условия</FooterLink>
             </ul>
           </div>
         </div>
         
         <div className="border-t border-border mt-12 pt-8 flex flex-col md:flex-row justify-between items-center">
           <p className="text-sm text-muted-foreground">
-            &copy; {new Date().getFullYear()} SeoMarket. All rights reserved.
+            &copy; {new Date().getFullYear()} SeoMarket. Все права защищены.
           </p>
           <div className="flex space-x-6 mt-4 md:mt-0">
             <SocialLink href="#" aria-label="Twitter">
