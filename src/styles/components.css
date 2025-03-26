@@ -1,69 +1,90 @@
 
-@tailwind components;
+/* Neo-glass UI styling */
+.neo-glass {
+  backdrop-filter: blur(8px);
+  background: rgba(var(--background), 0.7);
+  border: 1px solid rgba(var(--primary), 0.1);
+  box-shadow: 
+    0 10px 15px -3px rgba(0, 0, 0, 0.1),
+    0 4px 6px -2px rgba(0, 0, 0, 0.05),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+}
 
-@layer components {
-  /* Elegant card styles */
-  .elegant-card {
-    @apply bg-white rounded-sm shadow-sm border border-border/30 hover:shadow-md transition-all duration-300;
-  }
-  
-  .premium-button {
-    @apply rounded-sm bg-primary text-primary-foreground transition-colors hover:brightness-105;
-  }
-  
-  .premium-gradient {
-    @apply bg-gradient-to-r from-primary/90 to-primary;
-  }
+.heading-gradient {
+  background: linear-gradient(to right, rgba(var(--primary), 1), rgba(var(--primary), 0.8));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  color: transparent;
+}
 
-  .luxury-glass {
-    @apply bg-white/90 backdrop-blur-md border border-white/40 rounded-sm shadow-sm;
-  }
-  
-  .elegant-icon-button {
-    @apply rounded-sm p-3 bg-secondary text-foreground hover:bg-secondary/80 transition-colors;
-  }
+.tanks-card {
+  background: rgba(var(--card), 0.5);
+  backdrop-filter: blur(8px);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
 
-  /* Border styles */
-  .border-elegant {
-    @apply border-t border-r border-b border-l border-border/50;
-  }
+.tanks-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
 
-  /* Enhanced elegant divider - стили для разделителей */
-  .elegant-divider {
-    @apply relative h-px w-full my-12;
-  }
-  
-  .elegant-divider::before {
-    content: "";
-    @apply absolute inset-0 bg-gradient-to-r from-transparent via-primary/40 to-transparent;
-  }
-  
-  .elegant-divider::after {
-    content: "❦";
-    @apply absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-primary/70 text-sm bg-white px-3;
-  }
-  
-  /* Альтернативный стиль разделителя */
-  .elegant-divider-alt {
-    @apply relative h-px w-full my-12;
-  }
-  
-  .elegant-divider-alt::before {
-    content: "";
-    @apply absolute inset-0 bg-gradient-to-r from-transparent via-primary/30 to-transparent;
-  }
-  
-  .elegant-divider-alt::after {
-    content: "◆";
-    @apply absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-primary/60 text-xs bg-white px-3;
-  }
+.battle-card {
+  background: rgba(var(--card), 0.5);
+  backdrop-filter: blur(8px);
+  transition: all 0.3s ease;
+}
 
-  /* Heading with underline */
-  .heading-gradient {
-    @apply relative inline-block;
-    background: linear-gradient(to right, theme('colors.primary.DEFAULT'), theme('colors.primary.DEFAULT'));
-    background-position: 0 85%;
-    background-repeat: no-repeat;
-    background-size: 100% 8%;
-  }
+.neo-card {
+  border-radius: 12px;
+  background: rgba(var(--card), 0.8);
+  border: 1px solid rgba(var(--primary), 0.1);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.neo-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+/* Video player styling */
+.video-container {
+  position: relative;
+  overflow: hidden;
+  border-radius: 12px;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+.video-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.4);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.video-container:hover .video-overlay {
+  opacity: 1;
+}
+
+.video-controls {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 16px;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.8), transparent);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.video-container:hover .video-controls {
+  opacity: 1;
 }
