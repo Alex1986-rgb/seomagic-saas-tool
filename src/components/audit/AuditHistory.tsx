@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { Calendar, ChevronDown, ChevronUp, TrendingUp, TrendingDown } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AuditHistoryItem } from '@/types/audit';
@@ -21,6 +21,7 @@ interface AuditHistoryProps {
 
 const AuditHistory: React.FC<AuditHistoryProps> = ({ historyItems, onSelectAudit }) => {
   const [expanded, setExpanded] = useState(false);
+  const chartRef = useRef<HTMLDivElement>(null);
   
   if (!historyItems || historyItems.length < 2) {
     return null;
@@ -51,7 +52,7 @@ const AuditHistory: React.FC<AuditHistoryProps> = ({ historyItems, onSelectAudit
     });
   };
 
-  // Handle dot click event - properly typed to match Recharts expectations
+  // Handle dot click event
   const handleDotClick = (data: any) => {
     if (onSelectAudit && data && data.id) {
       onSelectAudit(data.id);
@@ -102,7 +103,7 @@ const AuditHistory: React.FC<AuditHistoryProps> = ({ historyItems, onSelectAudit
             transition={{ duration: 0.3 }}
             className="mt-4"
           >
-            <div className="h-64 mb-6">
+            <div className="h-64 mb-6 history-chart-container" ref={chartRef}>
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart
                   data={chartData}

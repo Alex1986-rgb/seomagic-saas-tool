@@ -1,22 +1,36 @@
-import React, { useState } from 'react';
-import { Share2, Copy, Mail, Download, FileJson, Loader2 } from 'lucide-react';
+
+import React, { useState, useRef } from 'react';
+import { Share2, Copy, Mail, Download, FileJson, Loader2, FilePdf } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import { 
   DropdownMenu, 
   DropdownMenuContent, 
   DropdownMenuItem, 
-  DropdownMenuTrigger 
+  DropdownMenuTrigger,
+  DropdownMenuSeparator,
+  DropdownMenuLabel
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { motion } from 'framer-motion';
+import { generateAuditPDF, generateHistoryPDF } from '@/utils/pdfExport';
+import { AuditData, AuditHistoryItem } from '@/types/audit';
 
 interface AuditShareResultsProps {
   auditId?: string;
+  auditData?: AuditData;
+  url?: string;
+  historyItems?: AuditHistoryItem[];
 }
 
-const AuditShareResults: React.FC<AuditShareResultsProps> = ({ auditId }) => {
+const AuditShareResults: React.FC<AuditShareResultsProps> = ({ 
+  auditId, 
+  auditData, 
+  url = window.location.href, 
+  historyItems 
+}) => {
   const { toast } = useToast();
   const [isExporting, setIsExporting] = useState(false);
+  const chartRef = useRef<HTMLDivElement>(null);
   
   const handleCopyLink = () => {
     navigator.clipboard.writeText(window.location.href);
@@ -32,30 +46,105 @@ const AuditShareResults: React.FC<AuditShareResultsProps> = ({ auditId }) => {
     window.open(`mailto:?subject=${subject}&body=${body}`);
   };
   
-  const handleDownloadPDF = () => {
+  const handleDownloadPDF = async () => {
     setIsExporting(true);
     
-    // Имитация загрузки PDF (в реальном проекте здесь будет API вызов)
-    setTimeout(() => {
-      setIsExporting(false);
+    try {
+      if (auditData && url) {
+        await generateAuditPDF(auditData, url);
+        toast({
+          title: "Отчёт сохранён",
+          description: "PDF-отчёт успешно сохранён на ваше устройство",
+        });
+      } else {
+        toast({
+          title: "Ошибка экспорта",
+          description: "Не удалось создать PDF - недостаточно данных",
+          variant: "destructive"
+        });
+      }
+    } catch (error) {
+      console.error('Error generating PDF:', error);
       toast({
-        title: "Отчёт сохранён",
-        description: "PDF-отчёт успешно сохранён на ваше устройство",
+        title: "Ошибка экспорта",
+        description: "Произошла ошибка при создании PDF",
+        variant: "destructive"
       });
-    }, 2000);
+    } finally {
+      setIsExporting(false);
+    }
+  };
+  
+  const handleExportHistoryPDF = async () => {
+    setIsExporting(true);
+    
+    try {
+      if (historyItems && historyItems.length > 0 && url) {
+        // Find chart container if it exists
+        const chartContainer = document.querySelector('.history-chart-container');
+        await generateHistoryPDF(
+          historyItems, 
+          url, 
+          chartContainer as HTMLElement || undefined
+        );
+        toast({
+          title: "Отчёт сохранён",
+          description: "PDF с историей аудитов успешно сохранён",
+        });
+      } else {
+        toast({
+          title: "Ошибка экспорта",
+          description: "Не удалось создать PDF - недостаточно данных истории",
+          variant: "destructive"
+        });
+      }
+    } catch (error) {
+      console.error('Error generating history PDF:', error);
+      toast({
+        title: "Ошибка экспорта",
+        description: "Произошла ошибка при создании PDF истории",
+        variant: "destructive"
+      });
+    } finally {
+      setIsExporting(false);
+    }
   };
   
   const handleExportJSON = () => {
     setIsExporting(true);
     
-    // Имитация экспорта JSON (в реальном проекте здесь будет API вызов)
-    setTimeout(() => {
-      setIsExporting(false);
+    try {
+      if (auditData) {
+        const dataStr = JSON.stringify(auditData, null, 2);
+        const dataUri = `data:application/json;charset=utf-8,${encodeURIComponent(dataStr)}`;
+        const exportName = `audit_${auditId || new Date().getTime()}.json`;
+        
+        const linkElement = document.createElement('a');
+        linkElement.setAttribute('href', dataUri);
+        linkElement.setAttribute('download', exportName);
+        linkElement.click();
+        
+        toast({
+          title: "Данные экспортированы",
+          description: "JSON-файл с данными аудита успешно сохранён",
+        });
+      } else {
+        toast({
+          title: "Ошибка экспорта",
+          description: "Не удалось создать JSON - недостаточно данных",
+          variant: "destructive"
+        });
+      }
+    } catch (error) {
+      console.error('Error exporting JSON:', error);
       toast({
-        title: "Данные экспортированы",
-        description: "JSON-файл с данными аудита успешно сохранён",
+        title: "Ошибка экспорта",
+        description: "Произошла ошибка при экспорте JSON",
+        variant: "destructive"
       });
-    }, 1500);
+    } finally {
+      setIsExporting(false);
+    }
   };
   
   return (
@@ -94,19 +183,40 @@ const AuditShareResults: React.FC<AuditShareResultsProps> = ({ auditId }) => {
               {isExporting ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
               ) : (
-                <Share2 className="h-4 w-4" />
+                <FilePdf className="h-4 w-4" />
               )}
               <span>Экспортировать</span>
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-48 bg-background border border-border shadow-lg">
-            <DropdownMenuItem onClick={handleDownloadPDF} className="cursor-pointer">
-              <Download className="h-4 w-4 mr-2" />
-              Скачать PDF
+          <DropdownMenuContent align="end" className="w-56 bg-background border border-border shadow-lg">
+            <DropdownMenuLabel>Варианты экспорта</DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem 
+              onClick={handleDownloadPDF} 
+              className="cursor-pointer flex items-center"
+              disabled={isExporting || !auditData}
+            >
+              <FilePdf className="h-4 w-4 mr-2 text-primary" />
+              Скачать отчет аудита (PDF)
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={handleExportJSON} className="cursor-pointer">
-              <FileJson className="h-4 w-4 mr-2" />
-              Экспортировать JSON
+            {historyItems && historyItems.length > 1 && (
+              <DropdownMenuItem 
+                onClick={handleExportHistoryPDF} 
+                className="cursor-pointer flex items-center"
+                disabled={isExporting}
+              >
+                <Download className="h-4 w-4 mr-2 text-primary" />
+                Скачать историю аудитов (PDF)
+              </DropdownMenuItem>
+            )}
+            <DropdownMenuSeparator />
+            <DropdownMenuItem 
+              onClick={handleExportJSON} 
+              className="cursor-pointer flex items-center"
+              disabled={isExporting || !auditData}
+            >
+              <FileJson className="h-4 w-4 mr-2 text-primary" />
+              Экспортировать как JSON
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

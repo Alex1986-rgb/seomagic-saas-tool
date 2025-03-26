@@ -209,7 +209,12 @@ const SeoAuditResults: React.FC<SeoAuditResultsProps> = ({ url }) => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.6 }}
         >
-          <AuditShareResults auditId={auditData.id} />
+          <AuditShareResults 
+            auditId={auditData.id} 
+            auditData={auditData}
+            url={url}
+            historyItems={historyData?.items}
+          />
         </motion.div>
       </motion.div>
     </AnimatePresence>

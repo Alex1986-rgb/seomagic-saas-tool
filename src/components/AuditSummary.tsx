@@ -1,9 +1,11 @@
 
 import React from 'react';
-import { ArrowDown, ArrowUp, Download, ExternalLink, Share, TrendingUp, TrendingDown, Minus } from 'lucide-react';
+import { ArrowDown, ArrowUp, Download, ExternalLink, Share, TrendingUp, TrendingDown, Minus, FilePdf } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import ScoreGauge from './ScoreGauge';
 import { motion } from 'framer-motion';
+import { useToast } from "@/hooks/use-toast";
+import { generateAuditPDF } from '@/utils/pdfExport';
 
 interface AuditSummaryProps {
   url: string;
@@ -15,15 +17,49 @@ interface AuditSummaryProps {
     opportunities: number;
   };
   previousScore?: number;
+  auditData?: any; // Full audit data if available
 }
 
-const AuditSummary: React.FC<AuditSummaryProps> = ({ url, score, date, issues, previousScore }) => {
+const AuditSummary: React.FC<AuditSummaryProps> = ({ 
+  url, 
+  score, 
+  date, 
+  issues, 
+  previousScore,
+  auditData 
+}) => {
+  const { toast } = useToast();
   const scoreDiff = previousScore !== undefined ? score - previousScore : undefined;
   const getTrendIcon = () => {
     if (scoreDiff === undefined) return null;
     if (scoreDiff > 0) return <TrendingUp className="h-4 w-4 text-green-500" />;
     if (scoreDiff < 0) return <TrendingDown className="h-4 w-4 text-red-500" />;
     return <Minus className="h-4 w-4 text-amber-500" />;
+  };
+
+  const handleDownloadPDF = async () => {
+    try {
+      if (auditData) {
+        await generateAuditPDF(auditData, url);
+        toast({
+          title: "Отчёт сохранён",
+          description: "PDF-отчёт успешно сохранён на ваше устройство",
+        });
+      } else {
+        toast({
+          title: "Недостаточно данных",
+          description: "Для экспорта в PDF необходимы полные данные аудита",
+          variant: "destructive"
+        });
+      }
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+      toast({
+        title: "Ошибка экспорта",
+        description: "Произошла ошибка при создании PDF",
+        variant: "destructive"
+      });
+    }
   };
 
   return (
@@ -82,16 +118,21 @@ const AuditSummary: React.FC<AuditSummaryProps> = ({ url, score, date, issues, p
       </div>
       
       <div className="mt-6 pt-4 border-t border-border flex flex-wrap gap-3 justify-center md:justify-end">
-        <Button variant="outline" size="sm" className="hover-lift">
-          <Download className="h-4 w-4 mr-2" />
+        <Button 
+          variant="outline" 
+          size="sm" 
+          className="hover-lift flex items-center gap-2"
+          onClick={handleDownloadPDF}
+        >
+          <FilePdf className="h-4 w-4" />
           Скачать PDF
         </Button>
-        <Button variant="outline" size="sm" className="hover-lift">
-          <Share className="h-4 w-4 mr-2" />
+        <Button variant="outline" size="sm" className="hover-lift flex items-center gap-2">
+          <Share className="h-4 w-4" />
           Поделиться
         </Button>
-        <Button size="sm" className="hover-lift">
-          <ExternalLink className="h-4 w-4 mr-2" />
+        <Button size="sm" className="hover-lift flex items-center gap-2">
+          <ExternalLink className="h-4 w-4" />
           Оптимизировать сайт
         </Button>
       </div>
