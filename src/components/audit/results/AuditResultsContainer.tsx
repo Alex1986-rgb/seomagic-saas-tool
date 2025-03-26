@@ -10,6 +10,7 @@ import { useAuditData } from './hooks/useAuditData';
 import AuditHeader from './components/AuditHeader';
 import AuditScanning from './components/AuditScanning';
 import AuditRefreshing from './components/AuditRefreshing';
+import OptimizationCost from './components/OptimizationCost';
 
 interface AuditResultsContainerProps {
   url: string;
@@ -28,8 +29,11 @@ const AuditResultsContainer: React.FC<AuditResultsContainerProps> = ({ url }) =>
     scanDetails,
     pageStats,
     sitemap,
+    optimizationCost,
+    isOptimized,
     loadAuditData,
-    downloadSitemap
+    downloadSitemap,
+    downloadOptimizedSite
   } = useAuditData(url);
 
   const handleRefreshAudit = () => {
@@ -88,6 +92,17 @@ const AuditResultsContainer: React.FC<AuditResultsContainerProps> = ({ url }) =>
             isScanning={false}
             pageStats={pageStats}
             onDownloadSitemap={sitemap ? downloadSitemap : undefined}
+          />
+        )}
+        
+        {optimizationCost && (
+          <OptimizationCost 
+            optimizationCost={optimizationCost}
+            pageCount={auditData.pageCount || 0}
+            url={url}
+            onDownloadOptimized={downloadOptimizedSite}
+            isOptimized={isOptimized}
+            className="mb-4"
           />
         )}
         

@@ -2,12 +2,26 @@
 import { useState, useEffect } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import { AuditData, RecommendationData, AuditHistoryData, ScanOptions } from '@/types/audit';
-import { fetchAuditData, fetchRecommendations, fetchAuditHistory, scanWebsite } from '@/services/auditService';
+import { fetchAuditData, fetchRecommendations, fetchAuditHistory, scanWebsite, createOptimizedSite } from '@/services/auditService';
 
 interface PageStatistics {
   totalPages: number;
   subpages: Record<string, number>;
   levels: Record<number, number>;
+}
+
+interface PageContent {
+  url: string;
+  title: string;
+  content: string;
+  meta: {
+    description?: string;
+    keywords?: string;
+  };
+  images: {
+    src: string;
+    alt?: string;
+  }[];
 }
 
 export const useAuditData = (url: string) => {
@@ -30,6 +44,9 @@ export const useAuditData = (url: string) => {
   });
   const [pageStats, setPageStats] = useState<PageStatistics | undefined>(undefined);
   const [sitemap, setSitemap] = useState<string | undefined>(undefined);
+  const [pagesContent, setPagesContent] = useState<PageContent[] | undefined>(undefined);
+  const [optimizationCost, setOptimizationCost] = useState<number | undefined>(undefined);
+  const [isOptimized, setIsOptimized] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -90,6 +107,20 @@ export const useAuditData = (url: string) => {
             toast({
               title: "Карта сайта создана",
               description: "XML sitemap сгенерирован на основе структуры сайта",
+            });
+          }
+          
+          // Сохраняем содержимое страниц для дальнейшего использования
+          if (scanResult.pagesContent) {
+            setPagesContent(scanResult.pagesContent);
+          }
+          
+          // Сохраняем стоимость оптимизации
+          if (scanResult.optimizationCost) {
+            setOptimizationCost(scanResult.optimizationCost);
+            toast({
+              title: "Расчет стоимости оптимизации",
+              description: `Стоимость оптимизации сайта: ${new Intl.NumberFormat('ru-RU').format(scanResult.optimizationCost)} ₽`,
             });
           }
         }
@@ -169,6 +200,61 @@ export const useAuditData = (url: string) => {
       });
     }
   };
+  
+  // Функция для скачивания оптимизированного сайта
+  const downloadOptimizedSite = async () => {
+    if (!url || !pagesContent) {
+      toast({
+        title: "Недостаточно данных",
+        description: "Необходимо выполнить глубокое сканирование сайта",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    toast({
+      title: "Создание оптимизированной версии",
+      description: "Пожалуйста, подождите...",
+    });
+    
+    try {
+      let hostname;
+      try {
+        hostname = new URL(url.startsWith('http') ? url : `https://${url}`).hostname;
+      } catch (error) {
+        hostname = url.replace(/[^a-zA-Z0-9]/g, '_');
+      }
+      
+      // В реальном приложении здесь будет вызов createOptimizedSite с реальными данными
+      // и обработка ZIP-архива
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      setIsOptimized(true);
+      
+      // Создаем тестовый архив для демонстрации
+      const testZip = new Blob(['Optimized site content would be here'], { type: 'application/zip' });
+      const downloadUrl = window.URL.createObjectURL(testZip);
+      const a = document.createElement('a');
+      a.href = downloadUrl;
+      a.download = `optimized_${hostname}.zip`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(downloadUrl);
+      document.body.removeChild(a);
+      
+      toast({
+        title: "Готово!",
+        description: "Оптимизированная версия сайта успешно скачана",
+      });
+    } catch (error) {
+      console.error('Ошибка при создании оптимизированной версии:', error);
+      toast({
+        title: "Ошибка",
+        description: "Не удалось создать оптимизированную версию сайта",
+        variant: "destructive",
+      });
+    }
+  };
 
   useEffect(() => {
     loadAuditData();
@@ -186,8 +272,11 @@ export const useAuditData = (url: string) => {
     scanDetails,
     pageStats,
     sitemap,
+    optimizationCost,
+    isOptimized,
     loadAuditData,
     setIsRefreshing,
-    downloadSitemap
+    downloadSitemap,
+    downloadOptimizedSite
   };
 };
