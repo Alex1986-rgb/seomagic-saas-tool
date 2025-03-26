@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowRight, Search, FileText, Globe, Tool } from 'lucide-react';
+import { ArrowRight, Search, FileText, Globe, Wrench } from 'lucide-react';
 import UrlForm from './UrlForm';
 
 const HeroSection: React.FC = () => {
@@ -51,7 +51,7 @@ const HeroSection: React.FC = () => {
               text="PDF Report" 
             />
             <FeatureItem 
-              icon={<Tool size={24} />}
+              icon={<Wrench size={24} />}
               text="Fix Issues Automatically" 
             />
             <FeatureItem 
