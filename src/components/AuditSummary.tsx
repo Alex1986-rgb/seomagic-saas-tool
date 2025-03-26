@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { ArrowDown, ArrowUp, Download, ExternalLink, Share, TrendingUp, TrendingDown, Minus, FilePdf } from 'lucide-react';
+import { ArrowDown, ArrowUp, Download, ExternalLink, Share, TrendingUp, TrendingDown, Minus, FileText } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import ScoreGauge from './ScoreGauge';
 import { motion } from 'framer-motion';
@@ -124,7 +124,7 @@ const AuditSummary: React.FC<AuditSummaryProps> = ({
           className="hover-lift flex items-center gap-2"
           onClick={handleDownloadPDF}
         >
-          <FilePdf className="h-4 w-4" />
+          <FileText className="h-4 w-4" />
           Скачать PDF
         </Button>
         <Button variant="outline" size="sm" className="hover-lift flex items-center gap-2">

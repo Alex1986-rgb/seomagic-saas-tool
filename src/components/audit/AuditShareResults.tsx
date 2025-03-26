@@ -1,6 +1,5 @@
-
 import React, { useState, useRef } from 'react';
-import { Share2, Copy, Mail, Download, FileJson, Loader2, FilePdf } from 'lucide-react';
+import { Share2, Copy, Mail, Download, FileJson, Loader2, FileText } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import { 
   DropdownMenu, 
@@ -183,7 +182,7 @@ const AuditShareResults: React.FC<AuditShareResultsProps> = ({
               {isExporting ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
               ) : (
-                <FilePdf className="h-4 w-4" />
+                <FileText className="h-4 w-4" />
               )}
               <span>Экспортировать</span>
             </Button>
@@ -196,7 +195,7 @@ const AuditShareResults: React.FC<AuditShareResultsProps> = ({
               className="cursor-pointer flex items-center"
               disabled={isExporting || !auditData}
             >
-              <FilePdf className="h-4 w-4 mr-2 text-primary" />
+              <FileText className="h-4 w-4 mr-2 text-primary" />
               Скачать отчет аудита (PDF)
             </DropdownMenuItem>
             {historyItems && historyItems.length > 1 && (
