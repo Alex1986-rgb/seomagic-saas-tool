@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import { ScanOptions } from '@/types/audit';
-import { scanWebsite } from '@/services/auditService';
+import { scanWebsite } from '@/services/audit/scanner';
 
 interface PageStatistics {
   totalPages: number;
