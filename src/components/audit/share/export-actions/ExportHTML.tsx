@@ -40,10 +40,10 @@ const ExportHTML: React.FC<ExportHTMLProps> = ({
         <p>Общий балл: ${auditData.score}/100</p>
         <h2>Основные показатели</h2>
         <ul>
-          <li>SEO: ${auditData.seoScore || 0}/100</li>
-          <li>Производительность: ${auditData.performanceScore || 0}/100</li>
-          <li>Доступность: ${auditData.accessibilityScore || 0}/100</li>
-          <li>Лучшие практики: ${auditData.bestPracticesScore || 0}/100</li>
+          <li>SEO: ${auditData.details.seo.score || 0}/100</li>
+          <li>Производительность: ${auditData.details.performance.score || 0}/100</li>
+          <li>Контент: ${auditData.details.content.score || 0}/100</li>
+          <li>Технические аспекты: ${auditData.details.technical.score || 0}/100</li>
         </ul>
         <p><a href="issues.html">Просмотреть все проблемы</a></p>
         <p><a href="recommendations.html">Рекомендации по улучшению</a></p>`
@@ -52,42 +52,60 @@ const ExportHTML: React.FC<ExportHTMLProps> = ({
       zip.file('index.html', indexHTML);
       
       // Add issues.html
-      if (auditData.issues && auditData.issues.length > 0) {
-        let issuesContent = `<h1>Проблемы, обнаруженные на сайте ${url}</h1>
-        <p>Всего проблем: ${auditData.issues.length}</p>
-        <ul>`;
-        
-        auditData.issues.forEach(issue => {
-          issuesContent += `<li>
-            <strong>${issue.title}</strong>
-            <p>${issue.description}</p>
-            <p>Важность: ${issue.severity}</p>
-          </li>`;
-        });
-        
-        issuesContent += `</ul>
-        <p><a href="index.html">Вернуться на главную</a></p>`;
-        
-        zip.file('issues.html', generateHTMLPage('Проблемы', issuesContent));
-      }
+      const criticalCount = auditData.issues.critical;
+      const importantCount = auditData.issues.important;
+      const opportunitiesCount = auditData.issues.opportunities;
+      const totalIssues = criticalCount + importantCount + opportunitiesCount;
+      
+      let issuesContent = `<h1>Проблемы, обнаруженные на сайте ${url}</h1>
+      <p>Всего проблем: ${totalIssues}</p>
+      <ul>
+        <li>Критические ошибки: ${criticalCount}</li>
+        <li>Важные улучшения: ${importantCount}</li>
+        <li>Возможности для оптимизации: ${opportunitiesCount}</li>
+      </ul>
+      <p><a href="index.html">Вернуться на главную</a></p>`;
+      
+      zip.file('issues.html', generateHTMLPage('Проблемы', issuesContent));
       
       // Add recommendations.html
-      if (auditData.recommendations && auditData.recommendations.length > 0) {
-        let recommendationsContent = `<h1>Рекомендации по улучшению сайта ${url}</h1>
-        <ul>`;
-        
-        auditData.recommendations.forEach(rec => {
-          recommendationsContent += `<li>
-            <strong>${rec.title}</strong>
-            <p>${rec.description}</p>
-          </li>`;
-        });
-        
-        recommendationsContent += `</ul>
-        <p><a href="index.html">Вернуться на главную</a></p>`;
-        
-        zip.file('recommendations.html', generateHTMLPage('Рекомендации', recommendationsContent));
+      let recommendationsContent = `<h1>Рекомендации по улучшению сайта ${url}</h1>
+      <p>На основе анализа мы рекомендуем следующие действия:</p>
+      <ul>`;
+      
+      // Add sample recommendations based on categories
+      if (auditData.details.seo.score < 80) {
+        recommendationsContent += `<li>
+          <strong>Улучшите SEO оптимизацию</strong>
+          <p>Добавьте мета-теги, улучшите структуру заголовков и оптимизируйте контент для поисковых систем.</p>
+        </li>`;
       }
+      
+      if (auditData.details.performance.score < 70) {
+        recommendationsContent += `<li>
+          <strong>Оптимизируйте производительность</strong>
+          <p>Сжатие изображений, минимизация CSS и JavaScript, использование кэширования браузера.</p>
+        </li>`;
+      }
+      
+      if (auditData.details.content.score < 80) {
+        recommendationsContent += `<li>
+          <strong>Улучшите контент</strong>
+          <p>Добавьте уникальный и полезный контент, улучшите форматирование и читаемость.</p>
+        </li>`;
+      }
+      
+      if (auditData.details.technical.score < 75) {
+        recommendationsContent += `<li>
+          <strong>Исправьте технические ошибки</strong>
+          <p>Устраните битые ссылки, оптимизируйте структуру сайта, исправьте ошибки валидации.</p>
+        </li>`;
+      }
+      
+      recommendationsContent += `</ul>
+      <p><a href="index.html">Вернуться на главную</a></p>`;
+      
+      zip.file('recommendations.html', generateHTMLPage('Рекомендации', recommendationsContent));
       
       // Add styles.css
       const css = `
