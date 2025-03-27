@@ -1,51 +1,42 @@
 
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowUp, ArrowDown } from 'lucide-react';
+import { Card, CardContent } from "@/components/ui/card";
 
 interface StatCardProps {
   title: string;
   value: string | number;
-  description: string;
-  trend?: string;
-  trendType?: 'up' | 'down' | 'neutral';
-  icon?: React.ReactNode;
-  className?: string;
+  icon: React.ReactNode;
+  footer?: string;
+  trend?: {
+    value: number;
+    isUp: boolean;
+  };
 }
 
-export function StatCard({ 
-  title, 
-  value, 
-  description, 
-  trend, 
-  trendType, 
-  icon, 
-  className 
-}: StatCardProps) {
+export function StatCard({ title, value, icon, footer, trend }: StatCardProps) {
   return (
-    <Card className={className}>
-      <CardHeader className="pb-2">
-        <div className="flex justify-between items-start">
-          <CardTitle className="text-sm font-medium">{title}</CardTitle>
-          {icon && <div className="text-muted-foreground">{icon}</div>}
-        </div>
-      </CardHeader>
-      <CardContent>
-        <div className="flex items-baseline gap-2">
-          <div className="text-2xl font-bold">{value}</div>
+    <Card>
+      <CardContent className="pt-6">
+        <div className="flex justify-between items-start mb-2">
+          <div className="p-2 rounded-full bg-primary/10">
+            {icon}
+          </div>
+          
           {trend && (
-            <div className={`text-sm font-medium ${
-              trendType === 'up' ? 'text-green-500' : 
-              trendType === 'down' ? 'text-red-500' : 
-              'text-muted-foreground'
-            } flex items-center`}>
-              {trendType === 'up' && <ArrowUp className="h-3 w-3 mr-1" />}
-              {trendType === 'down' && <ArrowDown className="h-3 w-3 mr-1" />}
-              {trend}
+            <div className={`flex items-center ${trend.isUp ? 'text-green-500' : 'text-red-500'}`}>
+              {trend.isUp ? '↑' : '↓'} {trend.value}%
             </div>
           )}
         </div>
-        <p className="text-xs text-muted-foreground mt-1">{description}</p>
+        
+        <h3 className="text-sm font-medium text-muted-foreground">{title}</h3>
+        <div className="mt-1">
+          <h2 className="text-2xl font-bold">{value}</h2>
+        </div>
+        
+        {footer && (
+          <p className="text-xs text-muted-foreground mt-1">{footer}</p>
+        )}
       </CardContent>
     </Card>
   );

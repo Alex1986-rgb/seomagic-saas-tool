@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { 
   Calendar, 
@@ -10,12 +9,15 @@ import {
   Settings, 
   User,
   BarChart2,
-  TrendingUp
+  TrendingUp,
+  LayoutDashboard,
+  Activity,
+  FileSpreadsheet,
+  Bell
 } from 'lucide-react';
 import Layout from '@/components/Layout';
 import ClientPositionTracker from '@/components/client/ClientPositionTracker';
 
-// Mock data for demonstration
 const mockAudits = [
   {
     id: '1',
@@ -54,7 +56,6 @@ const Dashboard: React.FC = () => {
     <Layout>
       <div className="container mx-auto px-4 md:px-6 pt-32 pb-20">
         <div className="max-w-6xl mx-auto">
-          {/* Dashboard Header */}
           <div className="mb-12">
             <h1 className="text-3xl md:text-4xl font-bold mb-4">Панель управления</h1>
             <p className="text-lg text-muted-foreground">
@@ -62,10 +63,16 @@ const Dashboard: React.FC = () => {
             </p>
           </div>
           
-          {/* Dashboard Navigation */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
             <div className="md:col-span-1">
-              <nav className="neo-card p-4 space-y-1">
+              <nav className="neo-card p-4 space-y-1 sticky top-24">
+                <NavButton 
+                  active={activeTab === 'dashboard'} 
+                  icon={<LayoutDashboard size={18} />} 
+                  onClick={() => setActiveTab('dashboard')}
+                >
+                  Обзор
+                </NavButton>
                 <NavButton 
                   active={activeTab === 'positions'} 
                   icon={<TrendingUp size={18} />} 
@@ -85,7 +92,7 @@ const Dashboard: React.FC = () => {
                   icon={<Globe size={18} />} 
                   onClick={() => setActiveTab('sites')}
                 >
-                  Оптимизированные сайты
+                  Оптимизация сайтов
                 </NavButton>
                 <NavButton 
                   active={activeTab === 'reports'} 
@@ -93,6 +100,13 @@ const Dashboard: React.FC = () => {
                   onClick={() => setActiveTab('reports')}
                 >
                   Отчеты
+                </NavButton>
+                <NavButton 
+                  active={activeTab === 'notifications'} 
+                  icon={<Bell size={18} />} 
+                  onClick={() => setActiveTab('notifications')}
+                >
+                  Уведомления
                 </NavButton>
                 <NavButton 
                   active={activeTab === 'account'} 
@@ -112,6 +126,10 @@ const Dashboard: React.FC = () => {
             </div>
             
             <div className="md:col-span-3">
+              {activeTab === 'dashboard' && (
+                <DashboardOverview />
+              )}
+            
               {activeTab === 'positions' && (
                 <ClientPositionTracker />
               )}
@@ -155,6 +173,16 @@ const Dashboard: React.FC = () => {
                       lastOptimized="2023-10-08" 
                       score={76} 
                     />
+                    <SiteCard 
+                      url="https://online-store.com" 
+                      lastOptimized="2023-10-15" 
+                      score={65} 
+                    />
+                    <SiteCard 
+                      url="https://portfolio-site.net" 
+                      lastOptimized="2023-10-10" 
+                      score={89} 
+                    />
                   </div>
                 </div>
               )}
@@ -189,6 +217,45 @@ const Dashboard: React.FC = () => {
                       title="Технический аудит" 
                       date="2023-09-05" 
                       type="HTML" 
+                    />
+                  </div>
+                </div>
+              )}
+              
+              {activeTab === 'notifications' && (
+                <div className="space-y-6">
+                  <div className="flex justify-between items-center mb-6">
+                    <h2 className="text-xl font-semibold">Уведомления</h2>
+                    <button className="bg-secondary text-foreground px-4 py-2 rounded-full text-sm flex items-center">
+                      <Settings size={16} className="mr-2" />
+                      Настройки уведомлений
+                    </button>
+                  </div>
+                  
+                  <div className="space-y-4">
+                    <NotificationCard 
+                      title="Проверка позиций завершена" 
+                      description="Проверка позиций для сайта example.com успешно завершена" 
+                      time="10 минут назад"
+                      type="info"
+                    />
+                    <NotificationCard 
+                      title="Улучшение позиций" 
+                      description="Ключевое слово 'SEO оптимизация' поднялось на 5 позиций" 
+                      time="3 часа назад"
+                      type="success"
+                    />
+                    <NotificationCard 
+                      title="Аудит сайта" 
+                      description="Аудит сайта company-blog.net завершен, найдено 12 проблем" 
+                      time="Вчера, 18:45"
+                      type="warning"
+                    />
+                    <NotificationCard 
+                      title="Срок подписки" 
+                      description="Ваша подписка 'Бизнес' истекает через 5 дней" 
+                      time="2 дня назад"
+                      type="error"
                     />
                   </div>
                 </div>
@@ -346,7 +413,6 @@ const AuditCard: React.FC<{ audit: any }> = ({ audit }) => (
   </div>
 );
 
-// New Components for the enhanced Dashboard
 const SiteCard: React.FC<{ url: string; lastOptimized: string; score: number }> = ({ 
   url, lastOptimized, score 
 }) => (
@@ -402,8 +468,6 @@ const ReportCard: React.FC<{ title: string; date: string; type: string }> = ({
   </div>
 );
 
-import { Bell, Lock, Link } from 'lucide-react';
-
 const SettingsCard: React.FC<{ 
   title: string; 
   description: string; 
@@ -423,5 +487,162 @@ const SettingsCard: React.FC<{
     </div>
   </div>
 );
+
+const DashboardOverview = () => {
+  return (
+    <div className="space-y-8">
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-xl font-semibold">Обзор SEO-активности</h2>
+        <div className="flex gap-2">
+          <button className="bg-secondary text-foreground px-4 py-2 rounded-full text-sm flex items-center">
+            <Calendar size={16} className="mr-2" />
+            За месяц
+          </button>
+          <button className="bg-primary text-white px-4 py-2 rounded-full text-sm flex items-center">
+            <FileSpreadsheet size={16} className="mr-2" />
+            Экспорт
+          </button>
+        </div>
+      </div>
+      
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <InfoCard 
+          title="Проверки позиций" 
+          value="42" 
+          change={"+12%"} 
+          icon={<Activity className="h-5 w-5 text-blue-500" />}
+        />
+        <InfoCard 
+          title="Новые аудиты" 
+          value="7" 
+          change={"-3%"} 
+          icon={<Search className="h-5 w-5 text-amber-500" />}
+          isNegative
+        />
+        <InfoCard 
+          title="Средняя позиция" 
+          value="14.3" 
+          change={"+2 позиции"} 
+          icon={<TrendingUp className="h-5 w-5 text-green-500" />}
+        />
+      </div>
+      
+      <div className="neo-card p-6">
+        <h3 className="text-lg font-semibold mb-4">График позиций сайта</h3>
+        <div className="h-80 bg-muted/20 rounded-lg flex items-center justify-center">
+          <p className="text-muted-foreground">График изменения позиций в течение времени</p>
+        </div>
+      </div>
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="neo-card p-6">
+          <h3 className="text-lg font-semibold mb-4">Последние аудиты</h3>
+          {mockAudits.slice(0, 2).map((audit) => (
+            <div key={audit.id} className="flex justify-between items-center py-3 border-b border-border-secondary last:border-0">
+              <div>
+                <h4 className="font-medium">{audit.url}</h4>
+                <div className="text-sm text-muted-foreground">
+                  {new Date(audit.date).toLocaleDateString()}
+                </div>
+              </div>
+              <div className={`text-lg font-semibold ${
+                audit.score >= 80 ? 'text-green-500' : 
+                audit.score >= 60 ? 'text-amber-500' : 'text-destructive'
+              }`}>
+                {audit.status === 'processing' ? 
+                  <RefreshCw size={18} className="animate-spin" /> :
+                  `${audit.score}/100`
+                }
+              </div>
+            </div>
+          ))}
+          <div className="mt-4">
+            <a href="#" className="text-primary text-sm hover:underline">Посмотреть все аудиты →</a>
+          </div>
+        </div>
+        
+        <div className="neo-card p-6">
+          <h3 className="text-lg font-semibold mb-4">Активность</h3>
+          <div className="space-y-4">
+            <ActivityItem 
+              icon={<TrendingUp className="h-4 w-4" />} 
+              title="Проверка позиций" 
+              description="Проверены позиции для сайта example.com" 
+              time="2 часа назад"
+            />
+            <ActivityItem 
+              icon={<Search className="h-4 w-4" />} 
+              title="Новый аудит" 
+              description="Запущен аудит для company-blog.net" 
+              time="Вчера"
+            />
+            <ActivityItem 
+              icon={<FileText className="h-4 w-4" />} 
+              title="Отчет сгенерирован" 
+              description="Создан отчет по аудиту для e-store.example" 
+              time="3 дня назад"
+            />
+          </div>
+          <div className="mt-4">
+            <a href="#" className="text-primary text-sm hover:underline">Вся активность →</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const InfoCard = ({ title, value, change, icon, isNegative = false }) => {
+  return (
+    <div className="neo-card p-6">
+      <div className="flex justify-between items-start mb-4">
+        <div className="p-3 rounded-full bg-primary/10">{icon}</div>
+        <div className={`text-sm font-medium ${isNegative ? 'text-destructive' : 'text-green-500'}`}>
+          {change}
+        </div>
+      </div>
+      <h3 className="text-sm text-muted-foreground">{title}</h3>
+      <div className="text-2xl font-bold mt-1">{value}</div>
+    </div>
+  );
+};
+
+const ActivityItem = ({ icon, title, description, time }) => {
+  return (
+    <div className="flex gap-4">
+      <div className="p-2 rounded-full bg-secondary">
+        {icon}
+      </div>
+      <div>
+        <h4 className="font-medium">{title}</h4>
+        <p className="text-sm text-muted-foreground">{description}</p>
+        <p className="text-xs text-muted-foreground mt-1">{time}</p>
+      </div>
+    </div>
+  );
+};
+
+const NotificationCard = ({ title, description, time, type = 'info' }) => {
+  const getTypeStyles = () => {
+    switch (type) {
+      case 'success': return 'border-l-4 border-l-green-500';
+      case 'warning': return 'border-l-4 border-l-amber-500';
+      case 'error': return 'border-l-4 border-l-destructive';
+      default: return 'border-l-4 border-l-blue-500';
+    }
+  };
+  
+  return (
+    <div className={`neo-card p-4 ${getTypeStyles()}`}>
+      <div className="flex justify-between items-start">
+        <h3 className="font-medium">{title}</h3>
+        <span className="text-xs text-muted-foreground">{time}</span>
+      </div>
+      <p className="text-sm text-muted-foreground mt-1">{description}</p>
+    </div>
+  );
+};
+
+import { Bell, Lock, Link } from 'lucide-react';
 
 export default Dashboard;

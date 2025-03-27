@@ -2,22 +2,21 @@
 import React from 'react';
 import { PositionData } from '@/services/position/positionTracker';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
-import { Badge } from "@/components/ui/badge";
+import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
 
 interface RankingDistributionProps {
   history: PositionData[];
 }
 
 export function RankingDistribution({ history }: RankingDistributionProps) {
-  const calculatePositionGroups = () => {
-    const groups = {
+  const getRankingDistribution = () => {
+    if (!history.length) return [];
+    
+    const distribution = {
       top3: 0,
       top10: 0,
       top30: 0,
-      top50: 0,
       top100: 0,
-      beyond100: 0,
       notFound: 0
     };
     
@@ -26,106 +25,70 @@ export function RankingDistribution({ history }: RankingDistributionProps) {
     history.forEach(item => {
       item.keywords.forEach(keyword => {
         total++;
-        
         if (keyword.position === 0) {
-          groups.notFound++;
+          distribution.notFound++;
         } else if (keyword.position <= 3) {
-          groups.top3++;
+          distribution.top3++;
         } else if (keyword.position <= 10) {
-          groups.top10++;
+          distribution.top10++;
         } else if (keyword.position <= 30) {
-          groups.top30++;
-        } else if (keyword.position <= 50) {
-          groups.top50++;
-        } else if (keyword.position <= 100) {
-          groups.top100++;
+          distribution.top30++;
         } else {
-          groups.beyond100++;
+          distribution.top100++;
         }
       });
     });
     
-    return { groups, total };
+    const data = [
+      { name: 'ТОП 3', value: distribution.top3, color: '#4CAF50' },
+      { name: 'ТОП 4-10', value: distribution.top10, color: '#2196F3' },
+      { name: 'ТОП 11-30', value: distribution.top30, color: '#FFC107' },
+      { name: 'ТОП 31-100', value: distribution.top100, color: '#FF9800' },
+      { name: 'Не найдено', value: distribution.notFound, color: '#F44336' }
+    ];
+    
+    return data.filter(item => item.value > 0); // Remove empty segments
   };
   
-  const { groups, total } = calculatePositionGroups();
-  
-  // Форматирование процентов
-  const formatPercent = (value: number) => {
-    return total > 0 ? Math.round((value / total) * 100) : 0;
-  };
+  const distributionData = getRankingDistribution();
   
   return (
     <Card>
       <CardHeader>
         <CardTitle>Распределение позиций</CardTitle>
-        <CardDescription>Детальный анализ распределения позиций по диапазонам</CardDescription>
+        <CardDescription>
+          Распределение ключевых слов по позициям в поисковой выдаче
+        </CardDescription>
       </CardHeader>
-      <CardContent>
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Badge className="bg-green-100 text-green-800 hover:bg-green-200">ТОП 3</Badge>
-              <span className="text-sm font-medium">{groups.top3} запросов</span>
-            </div>
-            <span className="text-sm font-medium">{formatPercent(groups.top3)}%</span>
+      <CardContent className="h-80">
+        {distributionData.length > 0 ? (
+          <ResponsiveContainer width="100%" height="100%">
+            <PieChart>
+              <Pie
+                data={distributionData}
+                cx="50%"
+                cy="50%"
+                labelLine={false}
+                outerRadius={100}
+                fill="#8884d8"
+                dataKey="value"
+                label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+              >
+                {distributionData.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={entry.color} />
+                ))}
+              </Pie>
+              <Tooltip 
+                formatter={(value, name) => [`${value} ключевых слов`, name]}
+              />
+              <Legend />
+            </PieChart>
+          </ResponsiveContainer>
+        ) : (
+          <div className="h-full flex items-center justify-center text-muted-foreground">
+            Нет данных для отображения
           </div>
-          <Progress value={formatPercent(groups.top3)} className="h-2 bg-muted" />
-          
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-200">ТОП 4-10</Badge>
-              <span className="text-sm font-medium">{groups.top10} запросов</span>
-            </div>
-            <span className="text-sm font-medium">{formatPercent(groups.top10)}%</span>
-          </div>
-          <Progress value={formatPercent(groups.top10)} className="h-2 bg-muted" />
-          
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Badge className="bg-purple-100 text-purple-800 hover:bg-purple-200">ТОП 11-30</Badge>
-              <span className="text-sm font-medium">{groups.top30} запросов</span>
-            </div>
-            <span className="text-sm font-medium">{formatPercent(groups.top30)}%</span>
-          </div>
-          <Progress value={formatPercent(groups.top30)} className="h-2 bg-muted" />
-          
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Badge className="bg-yellow-100 text-yellow-800 hover:bg-yellow-200">ТОП 31-50</Badge>
-              <span className="text-sm font-medium">{groups.top50} запросов</span>
-            </div>
-            <span className="text-sm font-medium">{formatPercent(groups.top50)}%</span>
-          </div>
-          <Progress value={formatPercent(groups.top50)} className="h-2 bg-muted" />
-          
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Badge className="bg-orange-100 text-orange-800 hover:bg-orange-200">ТОП 51-100</Badge>
-              <span className="text-sm font-medium">{groups.top100} запросов</span>
-            </div>
-            <span className="text-sm font-medium">{formatPercent(groups.top100)}%</span>
-          </div>
-          <Progress value={formatPercent(groups.top100)} className="h-2 bg-muted" />
-          
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Badge className="bg-red-100 text-red-800 hover:bg-red-200">Ниже 100</Badge>
-              <span className="text-sm font-medium">{groups.beyond100} запросов</span>
-            </div>
-            <span className="text-sm font-medium">{formatPercent(groups.beyond100)}%</span>
-          </div>
-          <Progress value={formatPercent(groups.beyond100)} className="h-2 bg-muted" />
-          
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Badge className="bg-gray-100 text-gray-800 hover:bg-gray-200">Не найдено</Badge>
-              <span className="text-sm font-medium">{groups.notFound} запросов</span>
-            </div>
-            <span className="text-sm font-medium">{formatPercent(groups.notFound)}%</span>
-          </div>
-          <Progress value={formatPercent(groups.notFound)} className="h-2 bg-muted" />
-        </div>
+        )}
       </CardContent>
     </Card>
   );
