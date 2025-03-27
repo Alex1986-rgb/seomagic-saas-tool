@@ -35,7 +35,7 @@ export const pdfFonts = {
     family: 'helvetica'
   },
   
-  normal: {
+  normalText: {  // Changed name from 'normal' to 'normalText' to avoid duplicate
     size: 11,
     weight: 'normal',
     family: 'helvetica'

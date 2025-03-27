@@ -62,7 +62,7 @@ export const generateHistoryPDF = async (historyItems: AuditHistoryItem[], domai
     formatDateString(item.date),
     String(item.score),
     getScoreStatus(item.score),
-    item.changes ? (item.changes > 0 ? `+${item.changes}` : String(item.changes)) : 'N/A'
+    item.changes !== undefined ? (item.changes > 0 ? `+${item.changes}` : String(item.changes)) : 'N/A'
   ]);
   
   // Create table
@@ -97,27 +97,30 @@ export const generateHistoryPDF = async (historyItems: AuditHistoryItem[], domai
     yPosition += 10;
     
     const latestAudit = sortedHistory[0];
-    const categoryData = Object.entries(latestAudit.categoryScores).map(([category, score]) => [
-      formatCategoryName(category),
-      String(score),
-      getCategoryStatus(score)
-    ]);
     
-    autoTable(doc, {
-      startY: yPosition,
-      head: [['Категория', 'Оценка', 'Статус']],
-      body: categoryData,
-      theme: 'grid',
-      styles: { fontSize: 10 },
-      columnStyles: {
-        0: { cellWidth: 80 },
-        1: { cellWidth: 30, halign: 'center' },
-        2: { cellWidth: 50 }
-      },
-      headStyles: { fillColor: [pdfColors.success[0], pdfColors.success[1], pdfColors.success[2]] }
-    });
-    
-    yPosition = (doc as any).lastAutoTable.finalY + 20;
+    if (latestAudit.categoryScores) {
+      const categoryData = Object.entries(latestAudit.categoryScores).map(([category, score]) => [
+        formatCategoryName(category),
+        String(score),
+        getCategoryStatus(Number(score))
+      ]);
+      
+      autoTable(doc, {
+        startY: yPosition,
+        head: [['Категория', 'Оценка', 'Статус']],
+        body: categoryData,
+        theme: 'grid',
+        styles: { fontSize: 10 },
+        columnStyles: {
+          0: { cellWidth: 80 },
+          1: { cellWidth: 30, halign: 'center' },
+          2: { cellWidth: 50 }
+        },
+        headStyles: { fillColor: [pdfColors.success[0], pdfColors.success[1], pdfColors.success[2]] }
+      });
+      
+      yPosition = (doc as any).lastAutoTable.finalY + 20;
+    }
   }
   
   // Add trend analysis

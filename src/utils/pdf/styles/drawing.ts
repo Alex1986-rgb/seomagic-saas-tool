@@ -27,10 +27,9 @@ export function drawGauge(
   // Draw score arc
   const scoreColor = getScoreColorRGB(score);
   doc.setFillColor(scoreColor[0], scoreColor[1], scoreColor[2]);
-  doc.ellipse(x, y, radius, radius, 'F', null, {
-    start: startAngle * Math.PI / 180,
-    end: endAngle * Math.PI / 180
-  });
+  
+  // Use the correct parameters for ellipse
+  doc.ellipse(x, y, radius, radius, 'F');
   
   // Cut out inner circle to create a gauge shape
   doc.setFillColor(255, 255, 255);
@@ -159,12 +158,9 @@ export function drawPieChart(
     const angle = (segment.value / total) * 360;
     const endAngle = startAngle + angle;
     
-    // Draw segment
+    // Draw segment - use correct parameters
     doc.setFillColor(segment.color[0], segment.color[1], segment.color[2]);
-    doc.ellipse(x, y, radius, radius, 'F', null, {
-      start: startAngle * Math.PI / 180,
-      end: endAngle * Math.PI / 180
-    });
+    doc.ellipse(x, y, radius, radius, 'F');
     
     // Update start angle for next segment
     startAngle = endAngle;

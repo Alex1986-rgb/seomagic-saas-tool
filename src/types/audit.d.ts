@@ -38,4 +38,6 @@ export interface AuditHistoryItem {
   url: string;
   date: string;
   score: number;
+  changes?: number;
+  categoryScores?: Record<string, number>;
 }

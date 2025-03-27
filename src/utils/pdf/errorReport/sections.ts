@@ -1,418 +1,452 @@
 
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import { AnalyzedError, AnalyzedErrors, ErrorReportSection } from './types';
-import { pdfColors } from '../styles/colors';
-import { pdfFonts } from '../styles/fonts';
-import { formatReportHeader } from '../styles/formatting';
+import { pdfColors, pdfFonts } from '../styles';
+import { ErrorReportData, ErrorTypeData } from './types';
 
 /**
- * Renders the critical errors section
+ * Adds the report header section
  */
-export const renderCriticalErrorsSection = (
-  doc: jsPDF, 
-  errors: AnalyzedErrors, 
-  startY: number
-): number => {
-  if (errors.critical.length === 0) {
-    return startY;
-  }
+export function addReportHeaderSection(
+  doc: jsPDF,
+  title: string,
+  url: string,
+  date: string,
+  pageCount: number
+): number {
+  // Header background
+  doc.setFillColor(...pdfColors.primary as [number, number, number]);
+  doc.rect(0, 0, 210, 35, 'F');
   
-  const section: ErrorReportSection = {
-    title: 'Критические ошибки',
-    errors: errors.critical,
-    color: pdfColors.error
-  };
+  // Title
+  doc.setFontSize(24);
+  doc.setTextColor(255, 255, 255);
+  doc.setFont(pdfFonts.primary, pdfFonts.bold);
+  doc.text(title, 15, 15);
   
-  return renderErrorSection(doc, section, startY);
-};
-
-/**
- * Renders the important issues section
- */
-export const renderImportantIssuesSection = (
-  doc: jsPDF, 
-  errors: AnalyzedErrors, 
-  startY: number
-): number => {
-  if (errors.important.length === 0) {
-    return startY;
-  }
+  // Subtitle
+  doc.setFontSize(14);
+  doc.text(`Домен: ${url}`, 15, 25);
   
-  const section: ErrorReportSection = {
-    title: 'Важные проблемы',
-    errors: errors.important,
-    color: pdfColors.warning
-  };
-  
-  return renderErrorSection(doc, section, startY);
-};
-
-/**
- * Renders the minor issues section
- */
-export const renderMinorIssuesSection = (
-  doc: jsPDF, 
-  errors: AnalyzedErrors, 
-  startY: number
-): number => {
-  if (errors.minor.length === 0) {
-    return startY;
-  }
-  
-  const section: ErrorReportSection = {
-    title: 'Незначительные проблемы',
-    errors: errors.minor,
-    color: pdfColors.info
-  };
-  
-  return renderErrorSection(doc, section, startY);
-};
-
-/**
- * Renders a generic error section
- */
-const renderErrorSection = (
-  doc: jsPDF, 
-  section: ErrorReportSection, 
-  startY: number
-): number => {
-  // Add section title
-  doc.setFontSize(pdfFonts.subheading.size);
-  doc.setTextColor(section.color[0], section.color[1], section.color[2]);
-  doc.text(section.title, 14, startY);
-  
-  // Reset text color
+  // Reset color
   doc.setTextColor(0, 0, 0);
   
-  // Create error table
-  const tableData = section.errors.map(error => [
-    error.title,
-    error.description,
-    error.solution || '',
-    error.category || ''
-  ]);
+  // Report info
+  let yPosition = 45;
+  
+  doc.setFontSize(12);
+  doc.setFont(pdfFonts.primary, pdfFonts.bold);
+  doc.text('Информация об отчете:', 15, yPosition);
+  yPosition += 8;
+  
+  doc.setFont(pdfFonts.primary, pdfFonts.normal);
+  doc.text(`Дата создания: ${date}`, 15, yPosition);
+  yPosition += 6;
+  
+  if (pageCount) {
+    doc.text(`Проверено страниц: ${pageCount}`, 15, yPosition);
+    yPosition += 6;
+  }
+  
+  doc.text(`Сгенерировано: ${new Date().toLocaleString('ru-RU')}`, 15, yPosition);
+  yPosition += 15;
+  
+  return yPosition;
+}
+
+/**
+ * Adds the error summary section
+ */
+export function addErrorSummarySection(
+  doc: jsPDF,
+  data: ErrorReportData,
+  yPosition: number
+): number {
+  // Section header
+  doc.setFontSize(pdfFonts.heading.size);
+  doc.setFont(pdfFonts.primary, pdfFonts.bold);
+  doc.text('Сводка ошибок', 15, yPosition);
+  yPosition += 10;
+  
+  // Create summary table
+  const totalErrors = data.critical.length + data.major.length + data.minor.length;
+  
+  const tableData = [
+    ['Критические ошибки', data.critical.length.toString(), `${((data.critical.length / totalErrors) * 100).toFixed(1)}%`],
+    ['Основные ошибки', data.major.length.toString(), `${((data.major.length / totalErrors) * 100).toFixed(1)}%`],
+    ['Незначительные ошибки', data.minor.length.toString(), `${((data.minor.length / totalErrors) * 100).toFixed(1)}%`],
+    ['Всего ошибок', totalErrors.toString(), '100%']
+  ];
   
   autoTable(doc, {
-    startY: startY + 5,
-    head: [['Ошибка', 'Описание', 'Решение', 'Категория']],
+    startY: yPosition,
+    head: [['Тип ошибки', 'Количество', 'Процент']],
     body: tableData,
     theme: 'grid',
     headStyles: {
-      fillColor: [section.color[0], section.color[1], section.color[2]],
-      textColor: [255, 255, 255]
+      fillColor: pdfColors.primary as [number, number, number],
+      textColor: [255, 255, 255],
+      fontStyle: 'bold'
     },
-    styles: {
-      fontSize: pdfFonts.normal.size,
-      cellPadding: 3
+    foot: [['Всего ошибок', totalErrors.toString(), '100%']],
+    footStyles: {
+      fillColor: [240, 240, 240],
+      fontStyle: 'bold'
+    }
+  });
+  
+  return (doc as any).lastAutoTable.finalY + 15;
+}
+
+/**
+ * Adds critical error section
+ */
+export function addCriticalErrorsSection(
+  doc: jsPDF, 
+  errors: ErrorTypeData[],
+  yPosition: number
+): number {
+  if (errors.length === 0) {
+    return yPosition;
+  }
+  
+  // Check if we need a new page
+  if (yPosition > 200) {
+    doc.addPage();
+    yPosition = 20;
+  }
+  
+  // Section header
+  doc.setFontSize(pdfFonts.heading.size);
+  doc.setFont(pdfFonts.primary, pdfFonts.bold);
+  doc.text('Критические ошибки', 15, yPosition);
+  yPosition += 10;
+  
+  // Description
+  doc.setFontSize(11);
+  doc.setFont(pdfFonts.primary, pdfFonts.normal);
+  doc.text('Эти ошибки требуют немедленного внимания и могут серьезно влиять на работу сайта.', 15, yPosition);
+  yPosition += 8;
+  
+  // Create errors table
+  const tableData = errors.map(error => [
+    error.name,
+    error.description,
+    error.urls.length.toString()
+  ]);
+  
+  autoTable(doc, {
+    startY: yPosition,
+    head: [['Ошибка', 'Описание', 'Страниц']],
+    body: tableData,
+    theme: 'grid',
+    styles: { cellPadding: 4 },
+    headStyles: {
+      fillColor: pdfColors.error as [number, number, number],
+      textColor: [255, 255, 255],
+      fontStyle: 'bold'
     },
     columnStyles: {
       0: { cellWidth: 50 },
-      1: { cellWidth: 70 },
-      2: { cellWidth: 50 },
-      3: { cellWidth: 20 }
+      1: { cellWidth: 100 },
+      2: { cellWidth: 20, halign: 'center' }
     }
   });
   
-  // Get the Y position after the table
-  return (doc as any).lastAutoTable.finalY + 10;
-};
-
-/**
- * Renders page-specific errors section
- */
-export const renderPageErrorsSection = (
-  doc: jsPDF, 
-  errors: AnalyzedErrors
-): number => {
-  if (!errors.byPage || Object.keys(errors.byPage).length === 0) {
-    return 0;
-  }
-  
-  // Add a new page for page-specific errors
-  doc.addPage();
-  
-  // Add title
-  doc.setFontSize(pdfFonts.heading.size);
-  doc.setTextColor(pdfColors.primary[0], pdfColors.primary[1], pdfColors.primary[2]);
-  doc.text('Ошибки по страницам', 105, 20, { align: 'center' });
-  
-  // Reset text color
-  doc.setTextColor(0, 0, 0);
-  
-  let currentY = 40;
-  
-  // Render errors for each page
-  Object.entries(errors.byPage).forEach(([url, pageErrors], index) => {
-    // Check if we need to add a new page
-    if (currentY > 250) {
-      doc.addPage();
-      currentY = 40;
-    }
-    
-    // Add URL
-    doc.setFontSize(pdfFonts.subheading.size);
-    doc.setTextColor(pdfColors.primary[0], pdfColors.primary[1], pdfColors.primary[2]);
-    doc.text(`${index + 1}. ${url}`, 14, currentY);
-    
-    // Reset text color
-    doc.setTextColor(0, 0, 0);
-    
-    // Create error table for this page
-    const tableData = pageErrors.map(error => [
-      getImpactIcon(error.impact || 'low'),
-      error.title,
-      error.category || ''
-    ]);
-    
-    autoTable(doc, {
-      startY: currentY + 5,
-      head: [['Важность', 'Ошибка', 'Категория']],
-      body: tableData,
-      theme: 'grid',
-      headStyles: {
-        fillColor: [pdfColors.gray[0], pdfColors.gray[1], pdfColors.gray[2]],
-        textColor: [255, 255, 255]
-      },
-      styles: {
-        fontSize: pdfFonts.normal.size,
-        cellPadding: 3
-      },
-      columnStyles: {
-        0: { cellWidth: 20 },
-        1: { cellWidth: 130 },
-        2: { cellWidth: 40 }
-      }
-    });
-    
-    // Get the Y position after the table
-    currentY = (doc as any).lastAutoTable.finalY + 20;
-  });
-  
-  return currentY;
-};
-
-/**
- * Returns an icon representation for impact level
- */
-const getImpactIcon = (impact: 'high' | 'medium' | 'low'): string => {
-  switch (impact) {
-    case 'high': return '⚠️ Высокий';
-    case 'medium': return '⚠ Средний';
-    case 'low': return 'ℹ️ Низкий';
-    default: return 'ℹ️ Низкий';
-  }
-};
-
-/**
- * Renders recommendations section
- */
-export const renderRecommendationsSection = (doc: jsPDF): number => {
-  // Add a new page for recommendations
-  doc.addPage();
-  
-  // Add title
-  doc.setFontSize(pdfFonts.heading.size);
-  doc.setTextColor(pdfColors.primary[0], pdfColors.primary[1], pdfColors.primary[2]);
-  doc.text('Рекомендации по оптимизации', 105, 20, { align: 'center' });
-  
-  // Reset text color
-  doc.setTextColor(0, 0, 0);
-  
-  const recommendations = [
-    {
-      title: 'SEO оптимизация',
-      items: [
-        'Добавьте уникальные мета-теги для каждой страницы',
-        'Улучшите структуру URL для лучшей индексации',
-        'Настройте правильную структуру заголовков (H1-H6)',
-        'Создайте и отправьте XML sitemap в Google Search Console',
-        'Оптимизируйте изображения и добавьте alt-атрибуты'
-      ]
-    },
-    {
-      title: 'Производительность',
-      items: [
-        'Минимизируйте JavaScript и CSS файлы',
-        'Используйте кэширование браузера для статических ресурсов',
-        'Оптимизируйте размеры изображений и используйте современные форматы',
-        'Реализуйте ленивую загрузку изображений и контента',
-        'Уменьшите время до первого содержательного рендеринга'
-      ]
-    },
-    {
-      title: 'Контент',
-      items: [
-        'Создавайте уникальный, полезный контент для пользователей',
-        'Правильно структурируйте контент с помощью заголовков',
-        'Добавляйте внутренние ссылки между связанными страницами',
-        'Регулярно обновляйте и расширяйте контент',
-        'Используйте ключевые слова естественным образом'
-      ]
-    }
-  ];
-  
-  let currentY = 40;
-  
-  // Render each recommendation section
-  recommendations.forEach((section, index) => {
-    // Check if we need to add a new page
-    if (currentY > 250) {
-      doc.addPage();
-      currentY = 40;
-    }
-    
-    // Add section title
-    doc.setFontSize(pdfFonts.subheading.size);
-    doc.setTextColor(pdfColors.primary[0], pdfColors.primary[1], pdfColors.primary[2]);
-    doc.text(`${index + 1}. ${section.title}`, 14, currentY);
-    
-    // Reset text color
-    doc.setTextColor(0, 0, 0);
-    
-    // Add items
-    doc.setFontSize(pdfFonts.normal.size);
-    
-    currentY += 10;
-    
-    section.items.forEach((item, i) => {
-      doc.text(`${index + 1}.${i + 1}. ${item}`, 20, currentY);
-      currentY += 8;
-    });
-    
-    currentY += 10;
-  });
-  
-  return currentY;
-};
-
-/**
- * Renders SEO scores section
- */
-export const renderScoresSection = (doc: jsPDF, auditData: any): number => {
-  // Add a new page for scores
-  doc.addPage();
-  
-  // Add title
-  doc.setFontSize(pdfFonts.heading.size);
-  doc.setTextColor(pdfColors.primary[0], pdfColors.primary[1], pdfColors.primary[2]);
-  doc.text('Общие показатели SEO', 105, 20, { align: 'center' });
-  
-  // Reset text color
-  doc.setTextColor(0, 0, 0);
-  
-  // Create a table with scores
-  const scoresData = [
-    ['Общий балл SEO', `${auditData.score}/100`],
-    ['SEO', `${auditData.details.seo.score}/100`],
-    ['Производительность', `${auditData.details.performance.score}/100`],
-    ['Контент', `${auditData.details.content.score}/100`],
-    ['Технические аспекты', `${auditData.details.technical.score}/100`],
-    ['Мобильная оптимизация', `${auditData.details.mobile.score}/100`]
-  ];
-  
-  autoTable(doc, {
-    startY: 40,
-    body: scoresData,
-    theme: 'grid',
-    styles: {
-      fontSize: pdfFonts.normal.size,
-      cellPadding: 5
-    },
-    columnStyles: {
-      0: { 
-        font: 'bold',
-        cellWidth: 100
-      },
-      1: { 
-        halign: 'center',
-        cellWidth: 60
-      }
-    }
-  });
-  
-  // Get the Y position after the table
-  return (doc as any).lastAutoTable.finalY + 10;
-};
-
-/**
- * Renders executive summary section
- */
-export const renderExecutiveSummarySection = (
-  doc: jsPDF, 
-  errors: AnalyzedErrors, 
-  auditData: any,
-  url: string
-): number => {
-  // Add title
-  doc.setFontSize(pdfFonts.heading.size);
-  doc.setTextColor(pdfColors.primary[0], pdfColors.primary[1], pdfColors.primary[2]);
-  doc.text('Сводка по ошибкам', 105, 20, { align: 'center' });
-  
-  // Reset text color
-  doc.setTextColor(0, 0, 0);
-  
-  doc.setFontSize(pdfFonts.normal.size);
-  doc.text(`Сайт: ${url}`, 14, 40);
-  doc.text(`Дата проверки: ${new Date(auditData.date).toLocaleDateString('ru-RU')}`, 14, 48);
-  doc.text(`Общий SEO балл: ${auditData.score}/100`, 14, 56);
-  
-  // Create summary table
-  const summaryData = [
-    ['Критические ошибки', errors.critical.length.toString(), 'Высокий приоритет - требуют немедленного исправления'],
-    ['Важные проблемы', errors.important.length.toString(), 'Средний приоритет - следует исправить в ближайшее время'],
-    ['Незначительные проблемы', errors.minor.length.toString(), 'Низкий приоритет - можно исправить в плановом порядке']
-  ];
-  
-  autoTable(doc, {
-    startY: 65,
-    head: [['Тип проблем', 'Количество', 'Приоритет']],
-    body: summaryData,
-    theme: 'grid',
-    headStyles: {
-      fillColor: [pdfColors.primary[0], pdfColors.primary[1], pdfColors.primary[2]],
-      textColor: [255, 255, 255]
-    },
-    styles: {
-      fontSize: pdfFonts.normal.size,
-      cellPadding: 5
-    },
-    columnStyles: {
-      0: { cellWidth: 60 },
-      1: { cellWidth: 30, halign: 'center' },
-      2: { cellWidth: 100 }
-    }
-  });
-  
-  return (doc as any).lastAutoTable.finalY + 10;
-};
-
-// Add missing helper functions
-export function applyRecommendationPriorityColor(doc: jsPDF, priority: string): void {
-  switch (priority) {
-    case 'high':
-      doc.setTextColor(pdfColors.error[0], pdfColors.error[1], pdfColors.error[2]);
-      break;
-    case 'medium':
-      doc.setTextColor(pdfColors.warning[0], pdfColors.warning[1], pdfColors.warning[2]);
-      break;
-    case 'low':
-      doc.setTextColor(pdfColors.info[0], pdfColors.info[1], pdfColors.info[2]);
-      break;
-    default:
-      doc.setTextColor(0, 0, 0);
-  }
+  return (doc as any).lastAutoTable.finalY + 15;
 }
 
-export function getRecommendationPriorityText(priority: string): string {
-  switch (priority) {
-    case 'high':
-      return 'Высокий';
-    case 'medium':
-      return 'Средний';
-    case 'low':
-      return 'Низкий';
-    default:
-      return 'Средний';
+/**
+ * Adds major error section
+ */
+export function addMajorErrorsSection(
+  doc: jsPDF, 
+  errors: ErrorTypeData[],
+  yPosition: number
+): number {
+  if (errors.length === 0) {
+    return yPosition;
   }
+  
+  // Check if we need a new page
+  if (yPosition > 200) {
+    doc.addPage();
+    yPosition = 20;
+  }
+  
+  // Section header
+  doc.setFontSize(pdfFonts.heading.size);
+  doc.setFont(pdfFonts.primary, pdfFonts.bold);
+  doc.text('Основные ошибки', 15, yPosition);
+  yPosition += 10;
+  
+  // Description
+  doc.setFontSize(11);
+  doc.setFont(pdfFonts.primary, pdfFonts.normal);
+  doc.text('Эти ошибки важны и должны быть исправлены, но они не нарушают работу сайта.', 15, yPosition);
+  yPosition += 8;
+  
+  // Create errors table
+  const tableData = errors.map(error => [
+    error.name,
+    error.description,
+    error.urls.length.toString()
+  ]);
+  
+  autoTable(doc, {
+    startY: yPosition,
+    head: [['Ошибка', 'Описание', 'Страниц']],
+    body: tableData,
+    theme: 'grid',
+    styles: { cellPadding: 4 },
+    headStyles: {
+      fillColor: pdfColors.warning as [number, number, number],
+      textColor: [255, 255, 255],
+      fontStyle: 'bold'
+    },
+    columnStyles: {
+      0: { cellWidth: 50 },
+      1: { cellWidth: 100 },
+      2: { cellWidth: 20, halign: 'center' }
+    }
+  });
+  
+  return (doc as any).lastAutoTable.finalY + 15;
+}
+
+/**
+ * Adds minor error section
+ */
+export function addMinorErrorsSection(
+  doc: jsPDF, 
+  errors: ErrorTypeData[],
+  yPosition: number
+): number {
+  if (errors.length === 0) {
+    return yPosition;
+  }
+  
+  // Check if we need a new page
+  if (yPosition > 200) {
+    doc.addPage();
+    yPosition = 20;
+  }
+  
+  // Section header
+  doc.setFontSize(pdfFonts.heading.size);
+  doc.setFont(pdfFonts.primary, pdfFonts.bold);
+  doc.text('Незначительные ошибки', 15, yPosition);
+  yPosition += 10;
+  
+  // Description
+  doc.setFontSize(11);
+  doc.setFont(pdfFonts.primary, pdfFonts.normal);
+  doc.text('Эти ошибки не критичны, но их исправление улучшит качество сайта.', 15, yPosition);
+  yPosition += 8;
+  
+  // Create errors table
+  const tableData = errors.map(error => [
+    error.name,
+    error.description,
+    error.urls.length.toString()
+  ]);
+  
+  autoTable(doc, {
+    startY: yPosition,
+    head: [['Ошибка', 'Описание', 'Страниц']],
+    body: tableData,
+    theme: 'grid',
+    styles: { cellPadding: 4 },
+    headStyles: {
+      fillColor: pdfColors.info as [number, number, number],
+      textColor: [255, 255, 255],
+      fontStyle: 'bold'
+    },
+    columnStyles: {
+      0: { cellWidth: 50 },
+      1: { cellWidth: 100 },
+      2: { cellWidth: 20, halign: 'center' }
+    }
+  });
+  
+  return (doc as any).lastAutoTable.finalY + 15;
+}
+
+/**
+ * Adds the error details section
+ */
+export function addErrorDetailsSection(
+  doc: jsPDF,
+  data: ErrorReportData,
+  yPosition: number
+): number {
+  // Check if we need a new page
+  if (yPosition > 100) {
+    doc.addPage();
+    yPosition = 20;
+  }
+  
+  // Section header
+  doc.setFontSize(pdfFonts.heading.size);
+  doc.setFont(pdfFonts.primary, pdfFonts.bold);
+  doc.text('Детали ошибок', 15, yPosition);
+  yPosition += 10;
+  
+  // Combine all errors
+  const allErrors = [...data.critical, ...data.major, ...data.minor];
+  
+  for (const error of allErrors) {
+    // Check if we need a new page
+    if (yPosition > 230) {
+      doc.addPage();
+      yPosition = 20;
+    }
+    
+    // Error header with color indication
+    let errorColor: [number, number, number];
+    if (data.critical.includes(error)) {
+      errorColor = pdfColors.error as [number, number, number];
+    } else if (data.major.includes(error)) {
+      errorColor = pdfColors.warning as [number, number, number];
+    } else {
+      errorColor = pdfColors.info as [number, number, number];
+    }
+    
+    doc.setFillColor(...errorColor);
+    doc.rect(15, yPosition - 5, 180, 7, 'F');
+    
+    doc.setFontSize(12);
+    doc.setTextColor(255, 255, 255);
+    doc.setFont(pdfFonts.primary, pdfFonts.bold);
+    doc.text(error.name, 20, yPosition);
+    yPosition += 8;
+    
+    // Reset text color
+    doc.setTextColor(0, 0, 0);
+    
+    // Error description
+    doc.setFontSize(11);
+    doc.setFont(pdfFonts.primary, pdfFonts.normal);
+    doc.text(error.description, 15, yPosition);
+    yPosition += 8;
+    
+    // Impact/priority
+    const priority = data.critical.includes(error) 
+      ? 'Высокий' 
+      : data.major.includes(error) 
+        ? 'Средний' 
+        : 'Низкий';
+        
+    doc.setFont(pdfFonts.primary, pdfFonts.bold);
+    doc.text(`Приоритет: ${priority}`, 15, yPosition);
+    yPosition += 6;
+    
+    // Solution
+    if (error.solution) {
+      doc.setFont(pdfFonts.primary, pdfFonts.bold);
+      doc.text('Решение:', 15, yPosition);
+      yPosition += 6;
+      
+      doc.setFont(pdfFonts.primary, pdfFonts.normal);
+      doc.text(error.solution, 15, yPosition, { maxWidth: 180 });
+      yPosition += 10;
+    }
+    
+    // Affected URLs
+    doc.setFont(pdfFonts.primary, pdfFonts.bold);
+    doc.text(`Затронутые URL (${error.urls.length}):`, 15, yPosition);
+    yPosition += 6;
+    
+    // List URLs - limited to first 5 with option to note there are more
+    const displayUrls = error.urls.slice(0, 5);
+    
+    for (const url of displayUrls) {
+      doc.setFont(pdfFonts.primary, pdfFonts.normal);
+      doc.text(`• ${url}`, 20, yPosition);
+      yPosition += 5;
+    }
+    
+    if (error.urls.length > 5) {
+      doc.setFont(pdfFonts.primary, pdfFonts.italic);
+      doc.text(`...и ещё ${error.urls.length - 5} URL(s)`, 20, yPosition);
+      yPosition += 5;
+    }
+    
+    yPosition += 10;
+  }
+  
+  return yPosition;
+}
+
+/**
+ * Adds the recommendations section
+ */
+export function addRecommendationsSection(
+  doc: jsPDF,
+  data: ErrorReportData,
+  yPosition: number
+): number {
+  // Check if we need a new page
+  if (yPosition > 230) {
+    doc.addPage();
+    yPosition = 20;
+  }
+  
+  // Section header
+  doc.setFontSize(pdfFonts.heading.size);
+  doc.setFont(pdfFonts.primary, pdfFonts.bold);
+  doc.text('Рекомендации по исправлению', 15, yPosition);
+  yPosition += 10;
+  
+  // Description
+  doc.setFontSize(11);
+  doc.setFont(pdfFonts.primary, pdfFonts.normal);
+  doc.text('Здесь приведены рекомендации по исправлению обнаруженных ошибок в порядке приоритета.', 15, yPosition);
+  yPosition += 10;
+  
+  // Recommendations based on priority
+  const addRecommendationGroup = (title: string, errors: ErrorTypeData[], color: [number, number, number]) => {
+    if (errors.length === 0) return;
+    
+    // Check if we need a new page
+    if (yPosition > 240) {
+      doc.addPage();
+      yPosition = 20;
+    }
+    
+    doc.setFillColor(...color);
+    doc.rect(15, yPosition - 5, 180, 8, 'F');
+    
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(12);
+    doc.setFont(pdfFonts.primary, pdfFonts.bold);
+    doc.text(title, 20, yPosition);
+    yPosition += 10;
+    
+    // Reset text color
+    doc.setTextColor(0, 0, 0);
+    
+    errors.forEach((error, index) => {
+      doc.setFont(pdfFonts.primary, pdfFonts.bold);
+      doc.text(`${index + 1}. ${error.name}`, 15, yPosition);
+      yPosition += 6;
+      
+      if (error.solution) {
+        doc.setFont(pdfFonts.primary, pdfFonts.normal);
+        doc.text(error.solution, 20, yPosition, { maxWidth: 175 });
+        yPosition += 10;
+      } else {
+        doc.setFont(pdfFonts.primary, pdfFonts.normal);
+        doc.text(`Исправьте ошибку "${error.name}" на всех затронутых страницах.`, 20, yPosition);
+        yPosition += 10;
+      }
+    });
+  };
+  
+  // Add recommendations by priority
+  addRecommendationGroup('Критические исправления', data.critical, pdfColors.error as [number, number, number]);
+  addRecommendationGroup('Важные исправления', data.major, pdfColors.warning as [number, number, number]);
+  addRecommendationGroup('Улучшения', data.minor, pdfColors.info as [number, number, number]);
+  
+  return yPosition;
 }
