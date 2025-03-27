@@ -1,7 +1,7 @@
 
 import React from 'react';
 import VideoControls from './VideoControls';
-import AnimatedVideoPlaceholder from './AnimatedVideoPlaceholder';
+import AnimatedVideoPlaceholder from './placeholders';
 import VideoOverlay from './VideoOverlay';
 import VideoLoading from './VideoLoading';
 import VideoProgressBar from './VideoProgressBar';
