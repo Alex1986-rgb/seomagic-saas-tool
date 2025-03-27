@@ -1,5 +1,5 @@
 
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import Layout from '@/components/Layout';
 import SeoAuditResults from '@/components/SeoAuditResults';
@@ -7,7 +7,6 @@ import UrlForm from '@/components/url-form';
 import { useToast } from "@/hooks/use-toast";
 import { motion } from 'framer-motion';
 import { Rocket, Target, AlertTriangle, Microscope } from 'lucide-react';
-import { Separator } from '@/components/ui/separator';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { 
@@ -21,15 +20,19 @@ const Audit: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [showAdvancedTools, setShowAdvancedTools] = useState(false);
   const [scannedUrls, setScannedUrls] = useState<string[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
 
-  useEffect(() => {
+  // Безопасно извлекаем URL из параметров
+  const extractUrlParam = useCallback(() => {
+    setIsLoading(true);
     const urlParam = searchParams.get('url');
     
     if (urlParam) {
       try {
-        // Validate URL format
-        new URL(urlParam.startsWith('http') ? urlParam : `https://${urlParam}`);
+        // Валидируем URL
+        const formattedUrl = urlParam.startsWith('http') ? urlParam : `https://${urlParam}`;
+        new URL(formattedUrl);
         setUrl(urlParam);
         setError(null);
       } catch (err) {
@@ -41,8 +44,21 @@ const Audit: React.FC = () => {
         });
         setUrl('');
       }
+    } else {
+      setUrl('');
     }
+    
+    setIsLoading(false);
   }, [searchParams, toast]);
+
+  useEffect(() => {
+    // Задержка для предотвращения мгновенного рендеринга
+    const timer = setTimeout(() => {
+      extractUrlParam();
+    }, 300);
+    
+    return () => clearTimeout(timer);
+  }, [extractUrlParam]);
 
   const handleClearError = () => {
     setError(null);
@@ -109,75 +125,83 @@ const Audit: React.FC = () => {
           </motion.div>
         )}
 
-        {!url && (
-          <motion.div 
-            className="max-w-2xl mx-auto mb-16 elegant-card p-8"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-          >
-            <UrlForm />
-          </motion.div>
-        )}
-
-        {url && (
+        {isLoading ? (
+          <div className="flex justify-center items-center min-h-[200px]">
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+          </div>
+        ) : (
           <>
-            <div className="mb-8">
-              <div className="elegant-divider-alt" />
-            </div>
-            <SeoAuditResults url={url} />
-          </>
-        )}
-        
-        {url && (
-          <motion.div 
-            className="mt-12"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.5, delay: 0.3 }}
-          >
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-2">
-                <Microscope className="h-5 w-5 text-primary" />
-                <h2 className="text-xl font-semibold">Продвинутый технический анализ</h2>
-              </div>
-              <Button 
-                variant={showAdvancedTools ? "default" : "outline"} 
-                onClick={() => setShowAdvancedTools(!showAdvancedTools)}
+            {!url && (
+              <motion.div 
+                className="max-w-2xl mx-auto mb-16 elegant-card p-8"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.5, delay: 0.2 }}
               >
-                {showAdvancedTools ? 'Скрыть' : 'Показать'}
-              </Button>
-            </div>
-            
-            {showAdvancedTools && (
-              <div className="space-y-6">
-                {scannedUrls.length === 0 ? (
-                  <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.3 }}
-                    className="mb-6"
-                  >
-                    <SimpleSitemapCreatorTool 
-                      initialUrl={url} 
-                      onUrlsScanned={handleUrlsScanned} 
-                    />
-                  </motion.div>
-                ) : (
-                  <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.3 }}
-                  >
-                    <AdvancedAnalysisTools 
-                      domain={url.replace(/^https?:\/\//, '')} 
-                      urls={scannedUrls} 
-                    />
-                  </motion.div>
-                )}
-              </div>
+                <UrlForm />
+              </motion.div>
             )}
-          </motion.div>
+
+            {url && (
+              <>
+                <div className="mb-8">
+                  <div className="elegant-divider-alt" />
+                </div>
+                <SeoAuditResults url={url} />
+              </>
+            )}
+            
+            {url && (
+              <motion.div 
+                className="mt-12"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.5, delay: 0.3 }}
+              >
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-2">
+                    <Microscope className="h-5 w-5 text-primary" />
+                    <h2 className="text-xl font-semibold">Продвинутый технический анализ</h2>
+                  </div>
+                  <Button 
+                    variant={showAdvancedTools ? "default" : "outline"} 
+                    onClick={() => setShowAdvancedTools(!showAdvancedTools)}
+                  >
+                    {showAdvancedTools ? 'Скрыть' : 'Показать'}
+                  </Button>
+                </div>
+                
+                {showAdvancedTools && (
+                  <div className="space-y-6">
+                    {scannedUrls.length === 0 ? (
+                      <motion.div
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.3 }}
+                        className="mb-6"
+                      >
+                        <SimpleSitemapCreatorTool 
+                          initialUrl={url} 
+                          onUrlsScanned={handleUrlsScanned} 
+                        />
+                      </motion.div>
+                    ) : (
+                      <motion.div
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.3 }}
+                      >
+                        <AdvancedAnalysisTools 
+                          domain={url.replace(/^https?:\/\//, '')} 
+                          urls={scannedUrls} 
+                        />
+                      </motion.div>
+                    )}
+                  </div>
+                )}
+              </motion.div>
+            )}
+          </>
         )}
       </div>
     </Layout>

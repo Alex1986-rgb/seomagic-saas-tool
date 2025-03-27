@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import AuditSummary from '@/components/AuditSummary';
 import AuditLoading from '../AuditLoading';
@@ -20,6 +20,7 @@ interface AuditResultsContainerProps {
 
 const AuditResultsContainer: React.FC<AuditResultsContainerProps> = ({ url }) => {
   const [showPrompt, setShowPrompt] = useState(false);
+  const [isInitialized, setIsInitialized] = useState(false);
   const {
     isLoading,
     loadingProgress,
@@ -42,6 +43,13 @@ const AuditResultsContainer: React.FC<AuditResultsContainerProps> = ({ url }) =>
     generatePdfReportFile,
     setContentOptimizationPrompt
   } = useAuditData(url);
+
+  useEffect(() => {
+    if (!isInitialized && url) {
+      loadAuditData();
+      setIsInitialized(true);
+    }
+  }, [url, isInitialized, loadAuditData]);
 
   const handleRefreshAudit = () => {
     loadAuditData(true);

@@ -5,7 +5,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
-import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import CrawlResults from './CrawlResults';
 import CrawlProgressView from './components/CrawlProgressView';
@@ -27,6 +26,7 @@ export const DeepCrawlProgressDialog: React.FC<DeepCrawlProgressDialogProps> = (
   const [activeTab, setActiveTab] = useState<string>("progress");
   const [seoPrompt, setSeoPrompt] = useState<string>("");
   const [selectedPromptTemplate, setSelectedPromptTemplate] = useState<string>("");
+  const [isCrawlInitiated, setIsCrawlInitiated] = useState(false);
   
   const {
     progress,
@@ -48,7 +48,7 @@ export const DeepCrawlProgressDialog: React.FC<DeepCrawlProgressDialogProps> = (
     isOptimizing
   } = useCrawlProgress(url);
 
-  // Predefined SEO prompt templates
+  // Предопределенные шаблоны промптов для SEO
   const promptTemplates = [
     {
       id: "general",
@@ -103,16 +103,25 @@ export const DeepCrawlProgressDialog: React.FC<DeepCrawlProgressDialogProps> = (
   ];
 
   useEffect(() => {
-    if (open) {
-      startCrawling();
+    if (open && !isCrawlInitiated) {
+      // Добавляем небольшую задержку перед запуском
+      const timer = setTimeout(() => {
+        startCrawling();
+        setIsCrawlInitiated(true);
+      }, 300);
+      return () => clearTimeout(timer);
     }
-  }, [open]);
+    
+    if (!open) {
+      setIsCrawlInitiated(false);
+    }
+  }, [open, isCrawlInitiated, startCrawling]);
 
   const handleClose = () => {
     if (isCompleted) {
       onClose(pagesScanned);
     } else {
-      // Ask for confirmation
+      // Запрашиваем подтверждение
       if (window.confirm("Вы уверены, что хотите прервать сканирование?")) {
         onClose();
       }
@@ -137,12 +146,12 @@ export const DeepCrawlProgressDialog: React.FC<DeepCrawlProgressDialogProps> = (
     }
   };
 
-  // Get stage information
+  // Получаем информацию о текущем этапе
   const { title, info } = getStageTitleAndInfo(crawlStage, error, pagesScanned);
 
   return (
     <Dialog open={open} onOpenChange={() => handleClose()}>
-      <DialogContent className="sm:max-w-2xl">
+      <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <FileSearch className="h-5 w-5 text-primary" />
@@ -236,7 +245,7 @@ export const DeepCrawlProgressDialog: React.FC<DeepCrawlProgressDialogProps> = (
               
               <Button 
                 onClick={downloadOptimizedSite}
-                disabled={!isOptimizing && !isCompleted}
+                disabled={isOptimizing || !isCompleted}
                 variant="outline"
                 className="w-full gap-2"
               >
