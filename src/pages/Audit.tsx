@@ -6,17 +6,19 @@ import SeoAuditResults from '@/components/SeoAuditResults';
 import UrlForm from '@/components/url-form';
 import { useToast } from "@/hooks/use-toast";
 import { motion } from 'framer-motion';
-import { Rocket, Target, AlertTriangle } from 'lucide-react';
+import { Rocket, Target, AlertTriangle, Computer } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { SimpleSitemapCreatorTool } from '@/components/audit/deep-crawl';
+import { ExternalAnalysisTools } from '@/components/audit/external-tools';
 
 const Audit: React.FC = () => {
   const [searchParams] = useSearchParams();
   const [url, setUrl] = useState<string>('');
   const [error, setError] = useState<string | null>(null);
   const [showSitemapCreator, setShowSitemapCreator] = useState(false);
+  const [showExternalTools, setShowExternalTools] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -121,16 +123,32 @@ const Audit: React.FC = () => {
         >
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-semibold">Дополнительные инструменты</h2>
-            <Button 
-              variant="ghost" 
-              onClick={() => setShowSitemapCreator(!showSitemapCreator)}
-            >
-              {showSitemapCreator ? 'Скрыть' : 'Показать'}
-            </Button>
+            <div className="flex gap-2">
+              <Button 
+                variant="ghost" 
+                onClick={() => setShowSitemapCreator(!showSitemapCreator)}
+              >
+                {showSitemapCreator ? 'Скрыть карту сайта' : 'Показать карту сайта'}
+              </Button>
+              {url && (
+                <Button 
+                  variant="ghost" 
+                  onClick={() => setShowExternalTools(!showExternalTools)}
+                  className="flex items-center gap-2"
+                >
+                  <Computer className="h-4 w-4" />
+                  {showExternalTools ? 'Скрыть интеграции' : 'Интеграции с ПО'}
+                </Button>
+              )}
+            </div>
           </div>
           
           {showSitemapCreator && (
             <SimpleSitemapCreatorTool initialUrl={url} />
+          )}
+          
+          {showExternalTools && url && (
+            <ExternalAnalysisTools url={url} />
           )}
         </motion.div>
       </div>
