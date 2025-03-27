@@ -64,7 +64,7 @@ const NavbarMobile: React.FC<NavbarMobileProps> = ({
       animate="visible"
       exit="exit"
       variants={containerVariants}
-      className="bg-background shadow-md overflow-hidden"
+      className="backdrop-blur-lg bg-background/90 shadow-md overflow-hidden"
     >
       <div className="container mx-auto px-4 py-4">
         <div className="flex flex-col space-y-3">
@@ -76,10 +76,10 @@ const NavbarMobile: React.FC<NavbarMobileProps> = ({
               <motion.div key={item.href} variants={itemVariants}>
                 <Link
                   to={item.href}
-                  className={`block py-2 text-lg ${
+                  className={`block py-2 text-base font-medium ${
                     location.pathname === item.href
-                      ? 'text-primary font-medium'
-                      : 'text-foreground'
+                      ? 'text-primary'
+                      : 'text-foreground hover:text-primary/80 transition-colors'
                   }`}
                 >
                   {item.label}
@@ -91,7 +91,7 @@ const NavbarMobile: React.FC<NavbarMobileProps> = ({
           <motion.div variants={itemVariants}>
             <Accordion type="single" collapsible className="w-full">
               <AccordionItem value="resources" className="border-none">
-                <AccordionTrigger className="py-2 text-lg">
+                <AccordionTrigger className="py-2 text-base font-medium hover:text-primary/80 transition-colors">
                   Ресурсы
                   <ChevronDown className="h-4 w-4 ml-1" />
                 </AccordionTrigger>
@@ -104,7 +104,7 @@ const NavbarMobile: React.FC<NavbarMobileProps> = ({
                         className={`py-1 ${
                           location.pathname === item.href
                             ? 'text-primary font-medium'
-                            : 'text-muted-foreground'
+                            : 'text-foreground/80 hover:text-primary/80 transition-colors'
                         }`}
                       >
                         {item.label}
@@ -115,7 +115,7 @@ const NavbarMobile: React.FC<NavbarMobileProps> = ({
               </AccordionItem>
 
               <AccordionItem value="company" className="border-none">
-                <AccordionTrigger className="py-2 text-lg">
+                <AccordionTrigger className="py-2 text-base font-medium hover:text-primary/80 transition-colors">
                   Компания
                   <ChevronDown className="h-4 w-4 ml-1" />
                 </AccordionTrigger>
@@ -128,7 +128,7 @@ const NavbarMobile: React.FC<NavbarMobileProps> = ({
                         className={`py-1 ${
                           location.pathname === item.href
                             ? 'text-primary font-medium'
-                            : 'text-muted-foreground'
+                            : 'text-foreground/80 hover:text-primary/80 transition-colors'
                         }`}
                       >
                         {item.label}
@@ -149,7 +149,7 @@ const NavbarMobile: React.FC<NavbarMobileProps> = ({
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="w-full justify-start"
+                    className="w-full justify-start hover:bg-primary/10 transition-colors"
                     onClick={() => window.location.href = '/profile'}
                   >
                     Профиль
@@ -157,7 +157,7 @@ const NavbarMobile: React.FC<NavbarMobileProps> = ({
                   <Button 
                     variant="outline" 
                     size="sm"
-                    className="w-full justify-start"
+                    className="w-full justify-start hover:bg-primary/10 transition-colors"
                     onClick={toggleAuth}
                   >
                     Выйти
@@ -168,7 +168,7 @@ const NavbarMobile: React.FC<NavbarMobileProps> = ({
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="w-full justify-start"
+                    className="w-full justify-start hover:bg-primary/10 transition-colors"
                     onClick={() => window.location.href = '/auth'}
                   >
                     Войти

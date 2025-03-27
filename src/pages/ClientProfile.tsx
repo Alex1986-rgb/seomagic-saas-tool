@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import ProfileHeader from '@/components/client/ProfileHeader';
 import ProfileSidebar from '@/components/client/ProfileSidebar';
 import ProfileContent from '@/components/client/ProfileContent';
+import { Card } from '@/components/ui/card';
 
 const ClientProfile: React.FC = () => {
   const [activeTab, setActiveTab] = useState('audits');
@@ -22,10 +23,14 @@ const ClientProfile: React.FC = () => {
             onTabChange={handleTabChange} 
           />
           
-          <ProfileContent 
-            activeTab={activeTab} 
-            onTabChange={handleTabChange} 
-          />
+          <div className="md:col-span-3">
+            <Card className="backdrop-blur-sm bg-card/80 border border-primary/10 shadow-sm">
+              <ProfileContent 
+                activeTab={activeTab} 
+                onTabChange={handleTabChange} 
+              />
+            </Card>
+          </div>
         </div>
       </div>
     </div>

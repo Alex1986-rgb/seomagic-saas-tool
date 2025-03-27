@@ -1,13 +1,14 @@
 
 import React from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { User, Settings, CreditCard, FileText, BarChart, Bell, History } from 'lucide-react';
+import { User, Settings, CreditCard, FileText, BarChart, Bell, History, ShieldCheck } from 'lucide-react';
 import ClientAudits from './ClientAudits';
 import ClientSettings from './ClientSettings';
 import ClientSubscription from './ClientSubscription';
 import ClientReports from './ClientReports';
 import ClientPositionTracker from './ClientPositionTracker';
 import ClientNotifications from './ClientNotifications';
+import ClientSecurityTab from './settings/ClientSecurityTab';
 
 interface ProfileContentProps {
   activeTab: string;
@@ -16,14 +17,14 @@ interface ProfileContentProps {
 
 const ProfileContent: React.FC<ProfileContentProps> = ({ activeTab, onTabChange }) => {
   return (
-    <div className="md:col-span-3">
+    <div className="p-4 md:p-6">
       <Tabs 
         defaultValue="audits" 
         value={activeTab} 
         onValueChange={onTabChange}
       >
         <div className="overflow-x-auto pb-2">
-          <TabsList className="mb-6 flex flex-wrap md:flex-nowrap">
+          <TabsList className="mb-6 flex flex-wrap md:flex-nowrap bg-background/50 p-1 rounded-lg">
             <TabsTrigger value="audits" className="flex items-center gap-2 text-xs md:text-sm">
               <History className="h-3 w-3 md:h-4 md:w-4" />
               <span>История аудитов</span>
@@ -48,34 +49,40 @@ const ProfileContent: React.FC<ProfileContentProps> = ({ activeTab, onTabChange 
               <Settings className="h-3 w-3 md:h-4 md:w-4" />
               <span>Настройки</span>
             </TabsTrigger>
+            <TabsTrigger value="security" className="flex items-center gap-2 text-xs md:text-sm">
+              <ShieldCheck className="h-3 w-3 md:h-4 md:w-4" />
+              <span>Безопасность</span>
+            </TabsTrigger>
           </TabsList>
         </div>
         
-        <div className="neo-card p-4 md:p-6">
-          <TabsContent value="audits">
-            <ClientAudits />
-          </TabsContent>
-          
-          <TabsContent value="positions">
-            <ClientPositionTracker />
-          </TabsContent>
-          
-          <TabsContent value="reports">
-            <ClientReports />
-          </TabsContent>
-          
-          <TabsContent value="subscription">
-            <ClientSubscription />
-          </TabsContent>
-          
-          <TabsContent value="notifications">
-            <ClientNotifications />
-          </TabsContent>
-          
-          <TabsContent value="settings">
-            <ClientSettings />
-          </TabsContent>
-        </div>
+        <TabsContent value="audits">
+          <ClientAudits />
+        </TabsContent>
+        
+        <TabsContent value="positions">
+          <ClientPositionTracker />
+        </TabsContent>
+        
+        <TabsContent value="reports">
+          <ClientReports />
+        </TabsContent>
+        
+        <TabsContent value="subscription">
+          <ClientSubscription />
+        </TabsContent>
+        
+        <TabsContent value="notifications">
+          <ClientNotifications />
+        </TabsContent>
+        
+        <TabsContent value="settings">
+          <ClientSettings />
+        </TabsContent>
+        
+        <TabsContent value="security">
+          <ClientSecurityTab />
+        </TabsContent>
       </Tabs>
     </div>
   );
