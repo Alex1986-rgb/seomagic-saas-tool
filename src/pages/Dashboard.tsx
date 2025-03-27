@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
@@ -97,6 +98,18 @@ const Dashboard: React.FC = () => {
 
   const handleNotificationSettings = () => {
     setIsNotificationsSettingsOpen(true);
+  };
+
+  const handleNavigateToAudits = () => {
+    navigate('/audits');
+  };
+
+  const handleNavigateToSites = () => {
+    navigate('/sites');
+  };
+
+  const handleNavigateToReports = () => {
+    navigate('/reports');
   };
 
   return (
@@ -229,7 +242,16 @@ const Dashboard: React.FC = () => {
               )}
               
               {activeTab === 'notifications' && (
-                <ClientNotifications />
+                <div className="space-y-6">
+                  <div className="flex justify-between items-center mb-6">
+                    <h2 className="text-xl font-semibold">Уведомления</h2>
+                    <Button className="gap-2" onClick={handleNotificationSettings}>
+                      <Settings size={16} className="mr-2" />
+                      Настройки уведомлений
+                    </Button>
+                  </div>
+                  <ClientNotifications />
+                </div>
               )}
               
               {activeTab === 'account' && (
@@ -273,11 +295,11 @@ const Dashboard: React.FC = () => {
                     </div>
 
                     <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <Button variant="outline" className="gap-2">
+                      <Button variant="outline" className="gap-2" onClick={() => navigate('/account/change-password')}>
                         <Lock className="h-4 w-4" />
                         Изменить пароль
                       </Button>
-                      <Button variant="outline" className="gap-2">
+                      <Button variant="outline" className="gap-2" onClick={() => navigate('/account/edit-profile')}>
                         <User className="h-4 w-4" />
                         Редактировать профиль
                       </Button>
