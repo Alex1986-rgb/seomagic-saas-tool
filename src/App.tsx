@@ -51,8 +51,11 @@ function App() {
                 <Route path="/settings" element={<Layout><Settings /></Layout>} />
                 <Route path="/admin" element={<Layout><AdminPanel /></Layout>} />
                 <Route path="/pricing" element={<Layout><Pricing /></Layout>} />
-                <Route path="/demo" element={<Layout><Demo /></Layout>} />
-                <Route path="/about" element={<Layout><About /></Layout>} />
+                
+                {/* Fix duplicate footer/navbar issue for these pages */}
+                <Route path="/demo" element={<Demo />} />
+                <Route path="/about" element={<About />} />
+                
                 <Route path="/blog" element={<Layout><Blog /></Layout>} />
                 <Route path="/guides" element={<Layout><Guides /></Layout>} />
                 <Route path="/support" element={<Layout><Support /></Layout>} />

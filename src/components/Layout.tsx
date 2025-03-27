@@ -8,16 +8,23 @@ import { cn } from '@/lib/utils';
 interface LayoutProps {
   children: React.ReactNode;
   className?: string;
+  hideNavbar?: boolean;
+  hideFooter?: boolean;
 }
 
-const Layout: React.FC<LayoutProps> = ({ children, className }) => {
+const Layout: React.FC<LayoutProps> = ({ 
+  children, 
+  className,
+  hideNavbar = false,
+  hideFooter = false 
+}) => {
   return (
     <div className={cn("flex flex-col min-h-screen relative", className)}>
       <div className="neo-glass fixed inset-0 z-[-1]" />
       <StarryBackground />
-      <Navbar />
+      {!hideNavbar && <Navbar />}
       <main className="flex-grow relative z-10">{children}</main>
-      <Footer />
+      {!hideFooter && <Footer />}
     </div>
   );
 };
