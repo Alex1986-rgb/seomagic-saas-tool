@@ -1,53 +1,12 @@
 
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Moon, Sun } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
-
-// Simple theme detection function that doesn't rely on context
-const detectTheme = (): 'dark' | 'light' => {
-  // Check localStorage first
-  const savedTheme = localStorage.getItem('theme');
-  if (savedTheme === 'dark') return 'dark';
-  if (savedTheme === 'light') return 'light';
-  
-  // Check system preference
-  if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-    return 'dark';
-  }
-  
-  return 'light';
-};
-
-// Simple theme toggle function that doesn't rely on context
-const toggleThemeManually = (currentTheme: 'light' | 'dark'): 'light' | 'dark' => {
-  const newTheme = currentTheme === 'light' ? 'dark' : 'light';
-  
-  // Update DOM
-  if (newTheme === 'dark') {
-    document.documentElement.classList.add('dark');
-  } else {
-    document.documentElement.classList.remove('dark');
-  }
-  
-  // Save to localStorage
-  localStorage.setItem('theme', newTheme);
-  
-  return newTheme;
-};
+import { useTheme } from '@/contexts/ThemeContext';
 
 export const ThemeSwitcher: React.FC = () => {
-  const [theme, setTheme] = useState<'light' | 'dark'>('light');
-  
-  useEffect(() => {
-    // Initialize theme on mount
-    setTheme(detectTheme());
-  }, []);
-  
-  const handleToggle = () => {
-    setTheme(toggleThemeManually(theme));
-  };
-
+  const { theme, toggleTheme } = useTheme();
   const isDark = theme === 'dark';
 
   return (
@@ -55,7 +14,7 @@ export const ThemeSwitcher: React.FC = () => {
       <Sun className="h-4 w-4 text-muted-foreground" />
       <Switch 
         checked={isDark}
-        onCheckedChange={handleToggle}
+        onCheckedChange={toggleTheme}
         aria-label="Toggle dark mode"
       />
       <Moon className="h-4 w-4 text-muted-foreground" />
@@ -64,24 +23,14 @@ export const ThemeSwitcher: React.FC = () => {
 };
 
 export const ThemeSwitcherIcon: React.FC = () => {
-  const [theme, setTheme] = useState<'light' | 'dark'>('light');
-  
-  useEffect(() => {
-    // Initialize theme on mount
-    setTheme(detectTheme());
-  }, []);
-  
-  const handleToggle = () => {
-    setTheme(toggleThemeManually(theme));
-  };
-
+  const { theme, toggleTheme } = useTheme();
   const isDark = theme === 'dark';
 
   return (
     <Button 
       variant="ghost" 
       size="icon" 
-      onClick={handleToggle} 
+      onClick={toggleTheme} 
       className="rounded-full"
       aria-label="Toggle theme"
     >

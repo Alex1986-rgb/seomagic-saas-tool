@@ -10,12 +10,14 @@ import NavbarMobileToggle from './NavbarMobileToggle';
 import NavbarMobile from './NavbarMobile';
 import DebugControls from './DebugControls';
 import { NAV_ITEMS } from './navConstants';
+import { useTheme } from '@/contexts/ThemeContext';
 
 const Navbar: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const isMobile = useMediaQuery('(max-width: 768px)');
   const location = useLocation();
+  const { theme } = useTheme();
 
   // Auth state
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -89,18 +91,6 @@ const Navbar: React.FC = () => {
       ? 'backdrop-blur-lg bg-background/90 shadow-md'
       : 'bg-transparent'
   }`;
-
-  // Initialize theme on component mount
-  useEffect(() => {
-    const savedTheme = localStorage.getItem('theme');
-    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    
-    if (savedTheme === 'dark' || (savedTheme === null && prefersDark)) {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
-  }, []);
 
   return (
     <motion.nav 
