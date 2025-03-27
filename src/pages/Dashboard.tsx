@@ -13,7 +13,9 @@ import {
   LayoutDashboard,
   Activity,
   FileSpreadsheet,
-  Bell
+  Bell,
+  Lock,
+  Link
 } from 'lucide-react';
 import Layout from '@/components/Layout';
 import ClientPositionTracker from '@/components/client/ClientPositionTracker';
@@ -436,7 +438,7 @@ const SiteCard: React.FC<{ url: string; lastOptimized: string; score: number }> 
         Аналитика
       </button>
       <button className="bg-secondary text-foreground px-3 py-1.5 rounded-full text-xs">
-        Оптимизировать
+        Оптимизироват��
       </button>
     </div>
   </div>
@@ -642,7 +644,5 @@ const NotificationCard = ({ title, description, time, type = 'info' }) => {
     </div>
   );
 };
-
-import { Bell, Lock, Link } from 'lucide-react';
 
 export default Dashboard;

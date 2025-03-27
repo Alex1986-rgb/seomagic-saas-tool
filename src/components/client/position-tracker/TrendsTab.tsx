@@ -94,26 +94,20 @@ const TrendsTab: React.FC<TrendsTabProps> = ({ history }) => {
         <StatCard
           title="Изменение за 30 дней"
           value="+8.3"
-          description="Улучшение средней позиции"
           icon={<TrendingUp className="h-5 w-5" />}
-          trend="+12%"
-          trendType="up"
+          trend={{ value: 12, isUp: true }}
         />
         <StatCard
           title="Топ растущие ключи"
           value="7"
-          description="Ключевые слова с ростом"
           icon={<BarChart className="h-5 w-5" />}
-          trend="+2"
-          trendType="up"
+          trend={{ value: 2, isUp: true }}
         />
         <StatCard
           title="Снижающиеся ключи"
           value="3"
-          description="Ключевые слова со снижением"
           icon={<BarChart className="h-5 w-5" />}
-          trend="-1"
-          trendType="down"
+          trend={{ value: 1, isUp: false }}
         />
       </div>
       

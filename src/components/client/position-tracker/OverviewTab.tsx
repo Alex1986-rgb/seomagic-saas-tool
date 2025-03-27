@@ -8,7 +8,8 @@ import {
   PositionsDistributionChart, 
   SearchEngineDistribution,
   DailyActivityChart,
-  TopKeywordsTable
+  TopKeywordsTable,
+  StatCard
 } from '@/components/position-tracker/analytics';
 
 interface OverviewTabProps {
@@ -67,21 +68,21 @@ const OverviewTab: React.FC<OverviewTabProps> = ({ history, isLoading, onRefresh
         />
         <StatCard 
           title="В ТОП-10" 
-          value={stats.top10} 
-          percentage={stats.total ? Math.round((stats.top10 / stats.total) * 100) : 0}
-          status="success" 
+          value={stats.top10}
+          icon={<ArrowUpRight className="h-4 w-4 text-green-500" />}
+          description={stats.total ? `${Math.round((stats.top10 / stats.total) * 100)}%` : "0%"} 
         />
         <StatCard 
           title="В ТОП-30" 
           value={stats.top30} 
-          percentage={stats.total ? Math.round((stats.top30 / stats.total) * 100) : 0}
-          status="warning" 
+          icon={<ArrowUpRight className="h-4 w-4 text-amber-500" />}
+          description={stats.total ? `${Math.round((stats.top30 / stats.total) * 100)}%` : "0%"} 
         />
         <StatCard 
           title="Не найдено" 
           value={stats.notFound} 
-          percentage={stats.total ? Math.round((stats.notFound / stats.total) * 100) : 0}
-          status="error" 
+          icon={<ArrowUpRight className="h-4 w-4 text-red-500" />}
+          description={stats.total ? `${Math.round((stats.notFound / stats.total) * 100)}%` : "0%"} 
         />
       </div>
       
@@ -103,29 +104,6 @@ const OverviewTab: React.FC<OverviewTabProps> = ({ history, isLoading, onRefresh
         <TopKeywordsTable history={history} limit={5} />
       </div>
     </div>
-  );
-};
-
-const StatCard = ({ title, value, percentage, status, icon }) => {
-  return (
-    <Card>
-      <CardContent className="pt-6">
-        <div className="flex justify-between items-start mb-2">
-          {icon ? icon : (
-            <div className={`p-2 rounded-full bg-${status === 'success' ? 'green' : status === 'warning' ? 'amber' : status === 'error' ? 'red' : 'blue'}-100`}>
-              <ArrowUpRight className={`h-4 w-4 text-${status === 'success' ? 'green' : status === 'warning' ? 'amber' : status === 'error' ? 'red' : 'blue'}-500`} />
-            </div>
-          )}
-        </div>
-        <h3 className="text-sm font-medium text-muted-foreground">{title}</h3>
-        <div className="flex items-baseline mt-1">
-          <h2 className="text-2xl font-bold">{value}</h2>
-          {percentage !== undefined && (
-            <span className="ml-2 text-sm text-muted-foreground">{percentage}%</span>
-          )}
-        </div>
-      </CardContent>
-    </Card>
   );
 };
 
