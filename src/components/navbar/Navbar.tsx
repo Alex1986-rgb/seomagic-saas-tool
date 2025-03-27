@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, useCallback, memo } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useMediaQuery } from '@/hooks/use-mobile';
@@ -34,7 +34,7 @@ const Navbar: React.FC = () => {
     
     checkAuthStatus();
     
-    // Слушатель изменений в localStorage
+    // Добавляем слушатель для обновления состояния при изменении localStorage
     window.addEventListener('storage', checkAuthStatus);
     
     return () => {
@@ -42,8 +42,8 @@ const Navbar: React.FC = () => {
     };
   }, []);
 
-  // Оптимизированный toggleAuth с useCallback
-  const toggleAuth = useCallback(() => {
+  // Toggle для входа/выхода из системы
+  const toggleAuth = () => {
     if (isLoggedIn) {
       localStorage.removeItem('isLoggedIn');
       localStorage.removeItem('isAdmin');
@@ -54,38 +54,37 @@ const Navbar: React.FC = () => {
       setIsLoggedIn(true);
     }
     
-    // Событие для обновления состояния в других компонентах
+    // Генерируем событие storage для обновления состояния в других компонентах
     window.dispatchEvent(new Event('storage'));
-  }, [isLoggedIn]);
+  };
 
-  // Оптимизированный toggleAdmin с useCallback
-  const toggleAdmin = useCallback(() => {
+  // Toggle для прав администратора
+  const toggleAdmin = () => {
     const newAdminState = !isAdmin;
     localStorage.setItem('isAdmin', newAdminState.toString());
     setIsAdmin(newAdminState);
     
-    // Событие для обновления состояния в других компонентах
+    // Генерируем событие storage для обновления состояния в других компонентах
     window.dispatchEvent(new Event('storage'));
-  }, [isAdmin]);
+  };
 
-  // Закрытие меню при изменении маршрута
+  // Закрываем меню при изменении маршрута
   useEffect(() => {
     setIsOpen(false);
   }, [location]);
 
-  // Оптимизированная обработка скролла
+  // Изменяем стиль навбара при прокрутке
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 10);
     };
 
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    handleScroll(); // Инициализация состояния
-    
+    window.addEventListener('scroll', handleScroll);
+    handleScroll(); // Вызываем сразу для инициализации состояния
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const navbarClass = `fixed top-0 w-full z-50 transition-all duration-300 ${
+  const navbarClass = `fixed top-0 w-full z-50 transition-all duration-500 ${
     isScrolled || isOpen
       ? 'backdrop-blur-lg bg-background/90 shadow-md'
       : 'bg-transparent'
@@ -97,7 +96,7 @@ const Navbar: React.FC = () => {
         className={navbarClass}
         initial={{ y: -20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.3 }}
+        transition={{ duration: 0.5 }}
       >
         <div className="container mx-auto px-4 md:px-6">
           <div className="flex justify-between items-center h-16">
@@ -132,7 +131,7 @@ const Navbar: React.FC = () => {
           )}
         </AnimatePresence>
 
-        {/* Debug Controls - убрать на продакшене */}
+        {/* Debug Controls - скрыть на продакшене */}
         {process.env.NODE_ENV !== 'production' && (
           <DebugControls 
             isLoggedIn={isLoggedIn}
@@ -146,4 +145,4 @@ const Navbar: React.FC = () => {
   );
 };
 
-export default memo(Navbar);
+export default Navbar;

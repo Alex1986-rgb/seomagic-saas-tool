@@ -5,39 +5,32 @@ import App from './App';
 import NetworkStatus from './components/NetworkStatus';
 import './index.css';
 
-// Функция для добавления предзагрузки внешних ресурсов
-const addPreconnectLinks = () => {
-  const preconnectLinks = [
-    { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
-    { rel: 'preconnect', href: 'https://fonts.gstatic.com', crossOrigin: 'anonymous' },
-    { rel: 'dns-prefetch', href: 'https://cdn.gpteng.co' }
-  ];
+// Add preconnect links for external resources
+const preconnectLinks = [
+  { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
+  { rel: 'preconnect', href: 'https://fonts.gstatic.com', crossOrigin: 'anonymous' }
+];
 
-  preconnectLinks.forEach(link => {
-    const linkEl = document.createElement('link');
-    linkEl.rel = link.rel;
-    linkEl.href = link.href;
-    if (link.crossOrigin) {
-      linkEl.crossOrigin = link.crossOrigin;
-    }
-    document.head.appendChild(linkEl);
-  });
-};
+preconnectLinks.forEach(link => {
+  const linkEl = document.createElement('link');
+  linkEl.rel = link.rel;
+  linkEl.href = link.href;
+  if (link.crossOrigin) {
+    linkEl.crossOrigin = link.crossOrigin;
+  }
+  document.head.appendChild(linkEl);
+});
 
-// Добавляем предзагрузку ресурсов
-addPreconnectLinks();
-
-// Инициализируем приложение с React 18's createRoot
-const root = ReactDOM.createRoot(document.getElementById('root')!);
-root.render(
+// Initialize the app with React 18's createRoot
+ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <App />
     <NetworkStatus />
   </React.StrictMode>
 );
 
-// Регистрируем service worker для лучшего оффлайн-опыта
-if ('serviceWorker' in navigator && process.env.NODE_ENV === 'production') {
+// Register service worker for better offline experience
+if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('/service-worker.js')
       .then(registration => {
@@ -48,16 +41,3 @@ if ('serviceWorker' in navigator && process.env.NODE_ENV === 'production') {
       });
   });
 }
-
-// Предзагрузка основных изображений
-const preloadImages = () => {
-  const imagesToPreload = ['/favicon.svg', '/logo.svg', '/img/video-poster.jpg'];
-  
-  imagesToPreload.forEach(src => {
-    const img = new Image();
-    img.src = src;
-  });
-};
-
-// Вызываем предзагрузку изображений с отложенным выполнением
-setTimeout(preloadImages, 1000);

@@ -1,5 +1,5 @@
 
-import React, { memo, useCallback } from 'react';
+import React, { memo } from 'react';
 import { Menu, X } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 
@@ -9,18 +9,13 @@ interface NavbarMobileToggleProps {
 }
 
 const NavbarMobileToggle: React.FC<NavbarMobileToggleProps> = ({ isOpen, setIsOpen }) => {
-  // Используем useCallback для предотвращения ненужных перерисовок
-  const handleToggle = useCallback(() => {
-    setIsOpen(!isOpen);
-  }, [isOpen, setIsOpen]);
-
   return (
     <div className="flex items-center md:hidden gap-2">
       <Button
         variant="ghost"
         className="px-2"
-        onClick={handleToggle}
-        aria-label={isOpen ? "Закрыть меню" : "Открыть меню"}
+        onClick={() => setIsOpen(!isOpen)}
+        aria-label={isOpen ? "Close menu" : "Open menu"}
       >
         {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
       </Button>
@@ -28,5 +23,5 @@ const NavbarMobileToggle: React.FC<NavbarMobileToggleProps> = ({ isOpen, setIsOp
   );
 };
 
-// Мемоизируем компонент для предотвращения ненужных ререндеров
+// Memoize component to prevent unnecessary rerenders
 export default memo(NavbarMobileToggle);
