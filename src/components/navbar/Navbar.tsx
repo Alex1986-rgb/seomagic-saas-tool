@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useMediaQuery } from '@/hooks/use-mobile';
 import NavbarLogo from './NavbarLogo';
@@ -16,6 +16,7 @@ const Navbar: React.FC = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const isMobile = useMediaQuery('(max-width: 768px)');
   const location = useLocation();
+  const navigate = useNavigate();
 
   // Authentication state
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -48,6 +49,9 @@ const Navbar: React.FC = () => {
       localStorage.removeItem('isAdmin');
       setIsLoggedIn(false);
       setIsAdmin(false);
+      
+      // Navigate to home page when logging out
+      navigate('/');
     } else {
       localStorage.setItem('isLoggedIn', 'true');
       setIsLoggedIn(true);

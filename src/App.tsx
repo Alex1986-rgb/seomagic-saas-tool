@@ -40,6 +40,7 @@ function App() {
           <Router>
             <Suspense fallback={<LoadingSpinner />}>
               <Routes>
+                {/* Make sure the Index page is the default route */}
                 <Route path="/" element={<Layout><Index /></Layout>} />
                 <Route path="/dashboard" element={<Layout><Dashboard /></Layout>} />
                 <Route path="/audit" element={<Layout><SiteAudit /></Layout>} />

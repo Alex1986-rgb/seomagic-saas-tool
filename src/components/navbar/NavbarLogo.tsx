@@ -2,29 +2,23 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Activity } from 'lucide-react';
 
 const NavbarLogo: React.FC = () => {
   return (
-    <motion.div
-      whileHover={{ 
-        scale: 1.05,
-        rotateX: 10,
-        rotateY: 10,
-        z: 50
-      }}
-      transition={{ type: "spring", stiffness: 400, damping: 10 }}
-      className="icon-3d"
-      style={{ perspective: 1000 }}
-    >
-      <Link to="/" className="flex items-center font-bold text-xl">
-        <Activity className="w-5 h-5 text-primary mr-2 float-3d glow-effect" />
-        <span className="text-primary bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/80">SEO</span>
-        <span className="bg-clip-text text-transparent bg-gradient-to-r from-foreground to-foreground/80">Market</span>
-      </Link>
-    </motion.div>
+    <Link to="/" className="flex items-center">
+      <motion.div 
+        className="flex items-center gap-2"
+        whileHover={{ scale: 1.03 }}
+        whileTap={{ scale: 0.98 }}
+      >
+        <div className="relative w-8 h-8 bg-gradient-to-br from-primary to-primary/60 rounded-lg flex items-center justify-center shadow-md">
+          <span className="text-primary-foreground font-bold text-xl">S</span>
+          <div className="absolute -right-1 -top-1 w-3 h-3 bg-background border-2 border-primary rounded-full" />
+        </div>
+        <span className="font-bold text-xl hidden sm:block">SeoMarket</span>
+      </motion.div>
+    </Link>
   );
 };
 
 export default NavbarLogo;
-
