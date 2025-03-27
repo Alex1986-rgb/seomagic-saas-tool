@@ -8,39 +8,16 @@ import axios from 'axios';
 import * as cheerio from 'cheerio';
 import { urlCache } from '../linkExtraction';
 import { DeepCrawler } from '../deepCrawler';
-import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
-
-// Rate limiting and request management
-interface RequestManager {
-  delayBetweenRequests: number;
-  maxConcurrentRequests: number;
-  requestQueue: Array<() => Promise<void>>;
-  activeRequests: number;
-  pause: () => void;
-  resume: () => void;
-  addToQueue: (request: () => Promise<void>) => void;
-  processQueue: () => void;
-}
-
-interface PageData {
-  url: string;
-  title: string | null;
-  headings: {h1: string[], h2: string[]};
-  metaDescription: string | null;
-  statusCode: number;
-  contentType: string | null;
-  contentLength: number | null;
-  internalLinks: string[];
-  externalLinks: string[];
-  images: {url: string, alt: string | null}[];
-  hasCanonical: boolean;
-  canonicalUrl: string | null;
-}
+import { PageData } from './types';
+import { createRequestManager } from './requestManager';
+import { ReportGenerator } from './reportGenerator';
+import { SiteAnalyzer } from './siteAnalyzer';
+import { RobotsTxtParser } from './robotsTxtParser';
 
 export class AdvancedCrawler extends DeepCrawler {
   private pageData: Map<string, PageData> = new Map();
-  private requestManager: RequestManager;
+  private requestManager = createRequestManager();
   private userAgent: string = 'Mozilla/5.0 (compatible; AdvancedSEOBot/2.0; +https://example.com/bot)';
   private crawlStartTime: number = 0;
   private crawlEndTime: number = 0;
@@ -48,55 +25,11 @@ export class AdvancedCrawler extends DeepCrawler {
     /\.(jpg|jpeg|png|gif|svg|webp|bmp|ico|css|js|pdf|zip|rar|gz|tar|mp4|mp3|webm|ogg|avi|mov|wmv|doc|docx|xls|xlsx|ppt|pptx)$/i,
     /\/?(wp-admin|wp-includes|wp-content\/plugins|cgi-bin|admin|login|logout|sign-in|signup|register|cart|checkout|account|search|sitemaps?)/i
   ];
-  private robotsTxtRules: Map<string, boolean> = new Map();
-  private hasReadRobotsTxt: boolean = false;
+  private robotsTxtParser: RobotsTxtParser;
 
   constructor(url: string, options: any) {
     super(url, options);
-
-    // Initialize request manager
-    this.requestManager = {
-      delayBetweenRequests: 50,
-      maxConcurrentRequests: 8,
-      requestQueue: [],
-      activeRequests: 0,
-      
-      pause: () => {
-        console.log('Request manager paused');
-      },
-      
-      resume: () => {
-        console.log('Request manager resumed');
-        this.requestManager.processQueue();
-      },
-      
-      addToQueue: (request: () => Promise<void>) => {
-        this.requestManager.requestQueue.push(request);
-        this.requestManager.processQueue();
-      },
-      
-      processQueue: () => {
-        if (this.requestManager.activeRequests >= this.requestManager.maxConcurrentRequests) {
-          return;
-        }
-        
-        if (this.requestManager.requestQueue.length === 0) {
-          return;
-        }
-        
-        const request = this.requestManager.requestQueue.shift();
-        if (request) {
-          this.requestManager.activeRequests++;
-          
-          setTimeout(() => {
-            request().finally(() => {
-              this.requestManager.activeRequests--;
-              this.requestManager.processQueue();
-            });
-          }, this.requestManager.delayBetweenRequests);
-        }
-      }
-    };
+    this.robotsTxtParser = new RobotsTxtParser(this.baseUrl, this.userAgent, this.excludePatterns);
   }
 
   async startCrawling() {
@@ -104,7 +37,7 @@ export class AdvancedCrawler extends DeepCrawler {
     console.log(`Starting advanced crawl of ${this.baseUrl}`);
     
     // Try to read robots.txt first
-    await this.readRobotsTxt();
+    this.excludePatterns = await this.robotsTxtParser.readRobotsTxt();
     
     // Run the original crawler method
     const result = await super.startCrawling();
@@ -113,60 +46,6 @@ export class AdvancedCrawler extends DeepCrawler {
     console.log(`Crawl completed in ${(this.crawlEndTime - this.crawlStartTime) / 1000} seconds`);
     
     return result;
-  }
-  
-  private async readRobotsTxt() {
-    if (this.hasReadRobotsTxt) return;
-    
-    try {
-      const robotsUrl = new URL('/robots.txt', this.baseUrl).toString();
-      console.log(`Reading robots.txt from ${robotsUrl}`);
-      
-      const response = await axios.get(robotsUrl, { timeout: 5000 });
-      const lines = response.data.split('\n');
-      
-      let currentUserAgent: string | null = null;
-      let isRelevantForUs = false;
-      
-      for (const line of lines) {
-        const trimmedLine = line.trim();
-        
-        // Skip comments and empty lines
-        if (!trimmedLine || trimmedLine.startsWith('#')) continue;
-        
-        // Check for User-agent
-        if (trimmedLine.toLowerCase().startsWith('user-agent:')) {
-          const agent = trimmedLine.substring(11).trim();
-          currentUserAgent = agent;
-          
-          // Check if this section applies to us
-          isRelevantForUs = agent === '*' || this.userAgent.includes(agent);
-        }
-        
-        // Process disallow rules if relevant for our user agent
-        if (isRelevantForUs && trimmedLine.toLowerCase().startsWith('disallow:')) {
-          const path = trimmedLine.substring(9).trim();
-          if (path) {
-            // Convert simple pattern to regex and store
-            const escapedPath = path
-              .replace(/\//g, '\\/')
-              .replace(/\./g, '\\.')
-              .replace(/\*/g, '.*');
-            
-            const pathPattern = new RegExp(`^${escapedPath}`);
-            this.excludePatterns.push(pathPattern);
-            this.robotsTxtRules.set(path, true);
-          }
-        }
-      }
-      
-      this.hasReadRobotsTxt = true;
-      console.log(`Processed robots.txt, added ${this.robotsTxtRules.size} exclusion rules`);
-      
-    } catch (error) {
-      console.warn('Could not read robots.txt:', error);
-      this.hasReadRobotsTxt = true; // Mark as read anyway to avoid retries
-    }
   }
   
   protected async processUrl(url: string, depth: number): Promise<void> {
@@ -292,113 +171,27 @@ export class AdvancedCrawler extends DeepCrawler {
   
   // Export the crawl data to a zip file
   async exportCrawlData(): Promise<Blob> {
-    const zip = new JSZip();
-    
-    // Add sitemap.xml
-    const domain = new URL(this.baseUrl).hostname;
     const sitemap = this.generateSitemap();
-    zip.file('sitemap.xml', sitemap);
-    
-    // Add crawl summary report
     const summary = this.generateSummaryReport();
-    zip.file('crawl-summary.json', JSON.stringify(summary, null, 2));
-    
-    // Add detailed page data
     const pagesData = Array.from(this.pageData.values());
-    zip.file('pages-data.json', JSON.stringify(pagesData, null, 2));
     
-    // Generate the zip file
-    return await zip.generateAsync({ type: 'blob' });
+    return ReportGenerator.createCrawlDataZip(this.domain, sitemap, summary, pagesData);
   }
   
   // Generate a sitemap based on discovered URLs
   generateSitemap(): string {
-    let sitemap = '<?xml version="1.0" encoding="UTF-8"?>\n';
-    sitemap += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n';
-    
-    // Add all URLs to the sitemap
-    for (const url of this.visited) {
-      // Skip URLs that don't belong to the crawled domain
-      try {
-        const urlObj = new URL(url);
-        if (urlObj.hostname !== this.domain) continue;
-        
-        // Skip non-HTML resources
-        if (this.excludePatterns.some(pattern => pattern.test(url))) continue;
-        
-        sitemap += `  <url>\n    <loc>${url}</loc>\n`;
-        
-        // Add priority based on depth (estimated)
-        const pageData = this.pageData.get(url);
-        if (pageData) {
-          // Higher priority for pages with h1 headings and full content
-          if (pageData.headings.h1.length > 0) {
-            sitemap += `    <priority>0.8</priority>\n`;
-          } else {
-            sitemap += `    <priority>0.5</priority>\n`;
-          }
-        }
-        
-        sitemap += `  </url>\n`;
-      } catch (e) {
-        // Skip invalid URLs
-      }
-    }
-    
-    sitemap += '</urlset>';
-    return sitemap;
+    return ReportGenerator.generateSitemap(this.domain, this.visited, this.excludePatterns);
   }
   
   // Generate a summary report of the crawl
   generateSummaryReport() {
-    const totalPages = this.pageData.size;
-    const crawlTime = (this.crawlEndTime - this.crawlStartTime) / 1000;
-    
-    // Calculate statistics
-    let totalInternalLinks = 0;
-    let totalExternalLinks = 0;
-    let totalImages = 0;
-    let pagesWithoutTitle = 0;
-    let pagesWithoutDescription = 0;
-    let pagesWithoutH1 = 0;
-    
-    for (const page of this.pageData.values()) {
-      totalInternalLinks += page.internalLinks.length;
-      totalExternalLinks += page.externalLinks.length;
-      totalImages += page.images.length;
-      
-      if (!page.title) pagesWithoutTitle++;
-      if (!page.metaDescription) pagesWithoutDescription++;
-      if (page.headings.h1.length === 0) pagesWithoutH1++;
-    }
-    
-    return {
-      crawlSummary: {
-        url: this.baseUrl,
-        domain: this.domain,
-        startTime: new Date(this.crawlStartTime).toISOString(),
-        endTime: new Date(this.crawlEndTime).toISOString(),
-        duration: `${crawlTime.toFixed(2)} seconds`,
-        totalPages,
-        crawlRate: `${(totalPages / crawlTime).toFixed(2)} pages/sec`
-      },
-      pageStats: {
-        totalInternalLinks,
-        totalExternalLinks,
-        totalImages,
-        avgInternalLinksPerPage: (totalInternalLinks / totalPages).toFixed(2),
-        avgExternalLinksPerPage: (totalExternalLinks / totalPages).toFixed(2),
-        avgImagesPerPage: (totalImages / totalPages).toFixed(2)
-      },
-      seoIssues: {
-        pagesWithoutTitle,
-        pagesWithoutDescription,
-        pagesWithoutH1,
-        percentWithoutTitle: `${((pagesWithoutTitle / totalPages) * 100).toFixed(2)}%`,
-        percentWithoutDescription: `${((pagesWithoutDescription / totalPages) * 100).toFixed(2)}%`,
-        percentWithoutH1: `${((pagesWithoutH1 / totalPages) * 100).toFixed(2)}%`
-      }
-    };
+    return ReportGenerator.generateSummaryReport(
+      this.pageData, 
+      this.domain, 
+      this.baseUrl, 
+      this.crawlStartTime, 
+      this.crawlEndTime
+    );
   }
   
   // Get all collected page data
@@ -408,38 +201,6 @@ export class AdvancedCrawler extends DeepCrawler {
   
   // Enhanced site structure analysis
   analyzeSiteStructure() {
-    const levels: Record<number, number> = {};
-    const pathCounts: Record<string, number> = {};
-    
-    for (const url of this.visited) {
-      try {
-        const urlObj = new URL(url);
-        
-        // Skip external URLs
-        if (urlObj.hostname !== this.domain) continue;
-        
-        // Calculate level (depth) based on path segments
-        const pathSegments = urlObj.pathname.split('/').filter(s => s);
-        const level = pathSegments.length;
-        
-        levels[level] = (levels[level] || 0) + 1;
-        
-        // Count URLs by first directory
-        if (pathSegments.length > 0) {
-          const firstDir = pathSegments[0];
-          pathCounts[firstDir] = (pathCounts[firstDir] || 0) + 1;
-        } else {
-          // Root pages
-          pathCounts['root'] = (pathCounts['root'] || 0) + 1;
-        }
-      } catch (e) {
-        // Skip invalid URLs
-      }
-    }
-    
-    return {
-      levels,
-      pathCounts
-    };
+    return SiteAnalyzer.analyzeSiteStructure(this.visited, this.domain);
   }
 }
