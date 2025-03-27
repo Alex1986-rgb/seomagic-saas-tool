@@ -25,16 +25,14 @@ function App() {
         <Router>
           <Suspense fallback={<LoadingSpinner />}>
             <Routes>
-              <Route path="/" element={<Layout />}>
-                <Route index element={<Dashboard />} />
-                <Route path="dashboard" element={<Dashboard />} />
-                <Route path="audit" element={<SiteAudit />} />
-                <Route path="positions" element={<PositionTracking />} />
-                <Route path="history" element={<AuditHistory />} />
-                <Route path="reports" element={<Reports />} />
-                <Route path="settings" element={<Settings />} />
-                <Route path="admin" element={<AdminPanel />} />
-              </Route>
+              <Route path="/" element={<Layout><Dashboard /></Layout>} />
+              <Route path="dashboard" element={<Layout><Dashboard /></Layout>} />
+              <Route path="audit" element={<SiteAudit />} />
+              <Route path="positions" element={<PositionTracking />} />
+              <Route path="history" element={<AuditHistory />} />
+              <Route path="reports" element={<Reports />} />
+              <Route path="settings" element={<Settings />} />
+              <Route path="admin" element={<AdminPanel />} />
             </Routes>
           </Suspense>
         </Router>

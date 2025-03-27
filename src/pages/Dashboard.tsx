@@ -7,6 +7,7 @@ import ClientPositionTracker from '@/components/client/ClientPositionTracker';
 import ClientAudits from '@/components/client/ClientAudits';
 import ClientReports from '@/components/client/ClientReports';
 import ClientSettings from '@/components/client/ClientSettings';
+import ClientNotifications from '@/components/client/ClientNotifications';
 import { useToast } from "@/hooks/use-toast";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -18,7 +19,7 @@ import DashboardOverview from '@/components/dashboard/overview/DashboardOverview
 import { SitesTab } from '@/components/dashboard/sites/SitesTab';
 import { AccountTab } from '@/components/dashboard/account/AccountTab';
 import { NotificationsTab } from '@/components/dashboard/notifications/NotificationsTab';
-import { mockAudits } from '@/components/dashboard/mock-data';
+import { mockAudits } from '@/data/mockData';
 
 const Dashboard: React.FC = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -71,54 +72,52 @@ const Dashboard: React.FC = () => {
   };
 
   return (
-    <Layout>
-      <div className="container mx-auto px-4 md:px-6 pt-32 pb-20">
-        <div className="max-w-6xl mx-auto">
-          <div className="mb-12">
-            <h1 className="text-3xl md:text-4xl font-bold mb-4">Панель управления</h1>
-            <p className="text-lg text-muted-foreground">
-              Управляйте вашими SEO-аудитами и отслеживайте позиции сайта
-            </p>
-          </div>
-          
-          <DashboardLayout activeTab={activeTab} setActiveTab={setActiveTab}>
-            {activeTab === 'dashboard' && (
-              <DashboardOverview 
-                onStartNewAudit={handleStartNewAudit}
-                onAddSite={handleAddSite}
-                onCreateReport={handleCreateReport}
-              />
-            )}
-          
-            {activeTab === 'positions' && (
-              <ClientPositionTracker />
-            )}
-          
-            {activeTab === 'audits' && (
-              <ClientAudits onStartNewAudit={handleStartNewAudit} />
-            )}
-            
-            {activeTab === 'sites' && (
-              <SitesTab onAddSite={handleAddSite} />
-            )}
-            
-            {activeTab === 'reports' && (
-              <ClientReports onCreateReport={handleCreateReport} />
-            )}
-            
-            {activeTab === 'notifications' && (
-              <NotificationsTab onOpenSettings={handleNotificationSettings} />
-            )}
-            
-            {activeTab === 'account' && (
-              <AccountTab />
-            )}
-            
-            {activeTab === 'settings' && (
-              <ClientSettings />
-            )}
-          </DashboardLayout>
+    <div className="container mx-auto px-4 md:px-6 pt-32 pb-20">
+      <div className="max-w-6xl mx-auto">
+        <div className="mb-12">
+          <h1 className="text-3xl md:text-4xl font-bold mb-4">Панель управления</h1>
+          <p className="text-lg text-muted-foreground">
+            Управляйте вашими SEO-аудитами и отслеживайте позиции сайта
+          </p>
         </div>
+        
+        <DashboardLayout activeTab={activeTab} setActiveTab={setActiveTab}>
+          {activeTab === 'dashboard' && (
+            <DashboardOverview 
+              onStartNewAudit={handleStartNewAudit}
+              onAddSite={handleAddSite}
+              onCreateReport={handleCreateReport}
+            />
+          )}
+        
+          {activeTab === 'positions' && (
+            <ClientPositionTracker />
+          )}
+        
+          {activeTab === 'audits' && (
+            <ClientAudits onStartNewAudit={handleStartNewAudit} />
+          )}
+          
+          {activeTab === 'sites' && (
+            <SitesTab onAddSite={handleAddSite} />
+          )}
+          
+          {activeTab === 'reports' && (
+            <ClientReports onCreateReport={handleCreateReport} />
+          )}
+          
+          {activeTab === 'notifications' && (
+            <NotificationsTab onOpenSettings={handleNotificationSettings} />
+          )}
+          
+          {activeTab === 'account' && (
+            <AccountTab />
+          )}
+          
+          {activeTab === 'settings' && (
+            <ClientSettings />
+          )}
+        </DashboardLayout>
       </div>
 
       <Dialog open={isNewAuditDialogOpen} onOpenChange={setIsNewAuditDialogOpen}>
@@ -142,7 +141,7 @@ const Dashboard: React.FC = () => {
           </div>
         </DialogContent>
       </Dialog>
-    </Layout>
+    </div>
   );
 };
 

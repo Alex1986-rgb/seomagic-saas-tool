@@ -5,15 +5,21 @@ import { useNavigate } from 'react-router-dom';
 import { RefreshCw } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { InfoCard } from './InfoCard';
-import { SparkAreaChart } from '@/components/charts/SparkAreaChart';
+import SparkAreaChart from '@/components/charts/SparkAreaChart';
 import { Activity, ArrowUpRight, Users, LineChart } from 'lucide-react';
 import { mockAudits } from '@/data/mockData';
 
 interface DashboardOverviewProps {
-  onOpenNotifications: () => void;
+  onStartNewAudit?: () => void;
+  onAddSite?: () => void;
+  onCreateReport?: () => void;
 }
 
-export const DashboardOverview: React.FC<DashboardOverviewProps> = ({ onOpenNotifications }) => {
+const DashboardOverview: React.FC<DashboardOverviewProps> = ({ 
+  onStartNewAudit,
+  onAddSite,
+  onCreateReport
+}) => {
   const navigate = useNavigate();
   
   const navigateToAudit = () => {
@@ -115,3 +121,5 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({ onOpenNoti
     </div>
   );
 };
+
+export default DashboardOverview;
