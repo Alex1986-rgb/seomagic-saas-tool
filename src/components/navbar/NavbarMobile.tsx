@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { UserCircle, Home, LogOut } from 'lucide-react';
 import { ThemeSwitcher } from '@/components/ThemeSwitcher';
@@ -11,7 +11,7 @@ interface NavbarMobileProps {
   isOpen: boolean;
   navItems: Array<{
     name: string;
-    path: string;
+    href: string;
   }>;
   isLoggedIn: boolean;
   isAdmin: boolean;
@@ -26,7 +26,6 @@ const NavbarMobile: React.FC<NavbarMobileProps> = ({
   toggleAuth
 }) => {
   const navigate = useNavigate();
-  const location = useLocation();
   const { toast } = useToast();
 
   const handleLogout = () => {
@@ -37,9 +36,6 @@ const NavbarMobile: React.FC<NavbarMobileProps> = ({
       description: "Вы вышли из своего аккаунта",
     });
   };
-
-  // Проверяем, находимся ли мы на главной странице
-  const isHomePage = location.pathname === '/';
 
   return (
     <motion.div
@@ -53,8 +49,8 @@ const NavbarMobile: React.FC<NavbarMobileProps> = ({
         <nav className="grid gap-2">
           {navItems.map((item) => (
             <Link
-              key={item.path}
-              to={item.path}
+              key={item.name}
+              to={item.href}
               className="flex items-center px-3 py-2 text-lg transition-colors rounded-md hover:bg-accent"
             >
               {item.name}
@@ -75,17 +71,15 @@ const NavbarMobile: React.FC<NavbarMobileProps> = ({
                 <span>Личный кабинет</span>
               </Link>
 
-              {!isHomePage && (
-                <Link
-                  to="/dashboard"
-                  className="flex items-center gap-2 px-3 py-2 transition-colors rounded-md hover:bg-accent"
-                >
-                  <Home className="h-5 w-5" />
-                  <span>Панель управления</span>
-                </Link>
-              )}
+              <Link
+                to="/dashboard"
+                className="flex items-center gap-2 px-3 py-2 transition-colors rounded-md hover:bg-accent"
+              >
+                <Home className="h-5 w-5" />
+                <span>Панель управления</span>
+              </Link>
 
-              {isAdmin && !isHomePage && (
+              {isAdmin && (
                 <Link
                   to="/admin"
                   className="flex items-center gap-2 px-3 py-2 transition-colors rounded-md hover:bg-accent"

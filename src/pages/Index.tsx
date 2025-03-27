@@ -12,7 +12,7 @@ import PositionTrackerFeature from '@/components/position-tracker/PositionTracke
 
 const Index: React.FC = () => {
   return (
-    <div className="w-full pt-16 md:pt-0">
+    <div className="pt-16 md:pt-0">
       {/* Hero Section */}
       <HeroSection />
       
