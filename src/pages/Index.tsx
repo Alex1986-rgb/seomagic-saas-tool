@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useNavigate } from 'react-router-dom';
-import { Search, ArrowRight, BarChart, PieChart, Zap, CheckCircle } from 'lucide-react';
+import { Search, ArrowRight, BarChart, PieChart, Zap, CheckCircle, Sparkles } from 'lucide-react';
 import VideoDemo from '../components/VideoDemo';
 import HeroSection from '../components/hero/HeroSection';
 import PositionTrackerFeature from '../components/position-tracker/PositionTrackerFeature';
@@ -28,38 +28,6 @@ const Index: React.FC = () => {
     <div className="flex flex-col min-h-[calc(100vh-4rem)]">
       {/* Hero Section */}
       <HeroSection />
-      
-      {/* Video Demo Section - Positioned early to explain how the platform works */}
-      <section className="py-20 bg-gradient-to-b from-background to-muted/20">
-        <div className="container mx-auto px-4 md:px-6">
-          <div className="text-center mb-12 max-w-3xl mx-auto">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }}
-              viewport={{ once: true }}
-            >
-              <h2 className="text-3xl md:text-4xl font-bold mb-6 font-playfair relative inline-block">
-                Как это работает
-                <div className="absolute -bottom-2 left-0 right-0 h-1 bg-primary/60 rounded-full"></div>
-              </h2>
-              <p className="text-lg text-muted-foreground mx-auto">
-                Посмотрите короткое видео о том, как наша платформа проводит аудит и оптимизацию сайтов
-              </p>
-            </motion.div>
-          </div>
-          
-          <motion.div
-            className="max-w-4xl mx-auto neo-card p-1 rounded-xl shadow-lg overflow-hidden"
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            transition={{ duration: 0.7 }}
-            viewport={{ once: true }}
-          >
-            <VideoDemo />
-          </motion.div>
-        </div>
-      </section>
       
       {/* Core Features Section - Key benefits presented in a clean layout */}
       <section className="py-24 bg-muted/30 relative overflow-hidden">
@@ -104,7 +72,7 @@ const Index: React.FC = () => {
               whileHover={{ y: -5 }}
             >
               <div className="mb-5 p-3 bg-primary/10 rounded-full inline-block">
-                <Search className="h-6 w-6 text-primary" />
+                <Search className="h-6 w-6 text-primary animate-pulse-slow" />
               </div>
               <h3 className="text-xl font-medium mb-3">SEO Аудит</h3>
               <p className="text-muted-foreground">
@@ -122,7 +90,7 @@ const Index: React.FC = () => {
               whileHover={{ y: -5 }}
             >
               <div className="mb-5 p-3 bg-primary/10 rounded-full inline-block">
-                <Zap className="h-6 w-6 text-primary" />
+                <Zap className="h-6 w-6 text-primary animate-pulse-slow" />
               </div>
               <h3 className="text-xl font-medium mb-3">ИИ оптимизация</h3>
               <p className="text-muted-foreground">
@@ -140,7 +108,7 @@ const Index: React.FC = () => {
               whileHover={{ y: -5 }}
             >
               <div className="mb-5 p-3 bg-primary/10 rounded-full inline-block">
-                <BarChart className="h-6 w-6 text-primary" />
+                <BarChart className="h-6 w-6 text-primary animate-pulse-slow" />
               </div>
               <h3 className="text-xl font-medium mb-3">Отслеживание позиций</h3>
               <p className="text-muted-foreground">
@@ -152,8 +120,40 @@ const Index: React.FC = () => {
         </div>
       </section>
       
-      {/* Position Tracker Feature - Highlighted as a key functionality */}
+      {/* Position Tracker Feature - Highlighted as a key functionality - Moved up for better visibility */}
       <PositionTrackerFeature />
+      
+      {/* Video Demo Section - Moved down as requested */}
+      <section className="py-20 bg-gradient-to-b from-background to-muted/20">
+        <div className="container mx-auto px-4 md:px-6">
+          <div className="text-center mb-12 max-w-3xl mx-auto">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
+              viewport={{ once: true }}
+            >
+              <h2 className="text-3xl md:text-4xl font-bold mb-6 font-playfair relative inline-block">
+                Как это работает
+                <div className="absolute -bottom-2 left-0 right-0 h-1 bg-primary/60 rounded-full"></div>
+              </h2>
+              <p className="text-lg text-muted-foreground mx-auto">
+                Посмотрите короткое видео о том, как наша платформа проводит аудит и оптимизацию сайтов
+              </p>
+            </motion.div>
+          </div>
+          
+          <motion.div
+            className="max-w-4xl mx-auto neo-card p-1 rounded-xl shadow-lg overflow-hidden"
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            transition={{ duration: 0.7 }}
+            viewport={{ once: true }}
+          >
+            <VideoDemo />
+          </motion.div>
+        </div>
+      </section>
       
       {/* Detailed Features Section - Comprehensive feature list */}
       <FeatureSection />
