@@ -9,12 +9,15 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { SiteStructureVisualization } from '../position-tracker/SiteStructureVisualization';
+import { useToast } from "@/hooks/use-toast";
 import { 
   BrokenLinksAnalyzer, 
   DuplicatesDetector,
   SiteStructureVisualization
 } from '@/components/position-tracker';
+import { PositionData, checkPositions } from '@/services/position/positionTracker';
+import { getPositionHistory, getHistoricalData } from '@/services/position/positionHistory';
+import { exportHistoryToExcel } from '@/services/position/exportService';
 
 const AdminPositions = () => {
   const [history, setHistory] = useState<PositionData[]>([]);
