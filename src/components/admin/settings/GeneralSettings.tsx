@@ -1,10 +1,10 @@
-
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge"; // Added missing Badge import
 import { Save, Check } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 
@@ -31,7 +31,7 @@ const GeneralSettings: React.FC = () => {
       });
     }, 800);
   };
-
+  
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
