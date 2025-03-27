@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
+import { useToast } from "@/hooks/use-toast";
 
 interface DebugControlsProps {
   isLoggedIn: boolean;
@@ -15,12 +16,32 @@ const DebugControls: React.FC<DebugControlsProps> = ({
   toggleAuth,
   toggleAdmin
 }) => {
+  const { toast } = useToast();
+  
+  const handleToggleAuth = () => {
+    toggleAuth();
+    
+    toast({
+      title: isLoggedIn ? "Выход выполнен (Debug)" : "Вход выполнен (Debug)",
+      description: isLoggedIn ? "Вы вышли из системы" : "Вы вошли в систему",
+    });
+  };
+  
+  const handleToggleAdmin = () => {
+    toggleAdmin();
+    
+    toast({
+      title: isAdmin ? "Роль администратора отключена (Debug)" : "Роль администратора включена (Debug)",
+      description: isAdmin ? "Вы больше не администратор" : "Вы теперь администратор",
+    });
+  };
+  
   return (
-    <div className="fixed bottom-4 right-4 z-50 flex flex-col gap-2 opacity-50">
+    <div className="fixed bottom-4 right-4 z-50 flex flex-col gap-2 bg-card p-3 rounded-lg shadow-lg border border-border">
       <Button 
         variant="outline" 
         size="sm" 
-        onClick={toggleAuth}
+        onClick={handleToggleAuth}
         className="text-xs"
       >
         {isLoggedIn ? 'Выйти (Debug)' : 'Войти (Debug)'}
@@ -29,7 +50,7 @@ const DebugControls: React.FC<DebugControlsProps> = ({
         <Button 
           variant="outline" 
           size="sm" 
-          onClick={toggleAdmin}
+          onClick={handleToggleAdmin}
           className="text-xs"
         >
           {isAdmin ? 'Убрать админа (Debug)' : 'Сделать админом (Debug)'}

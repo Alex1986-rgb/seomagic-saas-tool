@@ -15,6 +15,7 @@ import PositionTracker from './pages/PositionTracker';
 import Demo from './pages/Demo';
 import Index from './pages/Index';
 import ClientProfile from './pages/ClientProfile';
+import Auth from './pages/Auth';
 
 // Lazy load non-critical pages for better performance
 const SiteAudit = React.lazy(() => import('./pages/SiteAudit'));
@@ -58,6 +59,7 @@ function App() {
                 <Route path="/privacy" element={<Layout><Privacy /></Layout>} />
                 <Route path="/terms" element={<Layout><Terms /></Layout>} />
                 <Route path="/profile" element={<Layout><ClientProfile /></Layout>} />
+                <Route path="/auth" element={<Auth />} />
                 {/* Перенаправление с неизвестных маршрутов на главную */}
                 <Route path="*" element={<Navigate to="/" replace />} />
               </Routes>

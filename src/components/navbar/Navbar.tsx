@@ -18,26 +18,62 @@ const Navbar: React.FC = () => {
   const isMobile = useMediaQuery('(max-width: 768px)');
   const location = useLocation();
 
-  // Mock data for auth state
+  // Состояние авторизации
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
 
-  // Toggle for mimicking login/logout
+  // Проверяем состояние авторизации при загрузке компонента
+  useEffect(() => {
+    const checkAuthStatus = () => {
+      const loggedIn = localStorage.getItem('isLoggedIn') === 'true';
+      const admin = localStorage.getItem('isAdmin') === 'true';
+      
+      setIsLoggedIn(loggedIn);
+      setIsAdmin(admin);
+    };
+    
+    checkAuthStatus();
+    
+    // Добавляем слушатель для обновления состояния при изменении localStorage
+    window.addEventListener('storage', checkAuthStatus);
+    
+    return () => {
+      window.removeEventListener('storage', checkAuthStatus);
+    };
+  }, []);
+
+  // Toggle для входа/выхода из системы
   const toggleAuth = () => {
-    setIsLoggedIn(!isLoggedIn);
+    if (isLoggedIn) {
+      localStorage.removeItem('isLoggedIn');
+      localStorage.removeItem('isAdmin');
+      setIsLoggedIn(false);
+      setIsAdmin(false);
+    } else {
+      localStorage.setItem('isLoggedIn', 'true');
+      setIsLoggedIn(true);
+    }
+    
+    // Генерируем событие storage для обновления состояния в других компонентах
+    window.dispatchEvent(new Event('storage'));
   };
 
-  // Toggle for mimicking admin rights
+  // Toggle для прав администратора
   const toggleAdmin = () => {
-    setIsAdmin(!isAdmin);
+    const newAdminState = !isAdmin;
+    localStorage.setItem('isAdmin', newAdminState.toString());
+    setIsAdmin(newAdminState);
+    
+    // Генерируем событие storage для обновления состояния в других компонентах
+    window.dispatchEvent(new Event('storage'));
   };
 
-  // Close menu when route changes
+  // Закрываем меню при изменении маршрута
   useEffect(() => {
     setIsOpen(false);
   }, [location]);
 
-  // Change navbar style on scroll
+  // Изменяем стиль навбара при прокрутке
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 10);

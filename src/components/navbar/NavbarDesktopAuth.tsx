@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { UserCircle, ChevronDown } from 'lucide-react';
 import { ThemeSwitcher } from '@/components/ThemeSwitcher';
 import { Button } from "@/components/ui/button";
@@ -10,6 +10,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useToast } from "@/hooks/use-toast";
 
 interface NavbarDesktopAuthProps {
   isLoggedIn: boolean;
@@ -22,6 +23,18 @@ const NavbarDesktopAuth: React.FC<NavbarDesktopAuthProps> = ({
   isAdmin, 
   toggleAuth 
 }) => {
+  const navigate = useNavigate();
+  const { toast } = useToast();
+  
+  const handleLogout = () => {
+    toggleAuth();
+    navigate('/');
+    toast({
+      title: "Выход выполнен успешно",
+      description: "Вы вышли из своего аккаунта",
+    });
+  };
+  
   return (
     <div className="hidden md:flex items-center space-x-4">
       <ThemeSwitcher />
@@ -48,7 +61,7 @@ const NavbarDesktopAuth: React.FC<NavbarDesktopAuthProps> = ({
               </DropdownMenuItem>
             )}
             <DropdownMenuItem 
-              onClick={toggleAuth}
+              onClick={handleLogout}
               className="cursor-pointer text-red-500"
             >
               Выйти
