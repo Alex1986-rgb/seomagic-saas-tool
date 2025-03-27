@@ -8,9 +8,12 @@ import {
   RefreshCw, 
   Search, 
   Settings, 
-  User 
+  User,
+  BarChart2,
+  TrendingUp
 } from 'lucide-react';
 import Layout from '@/components/Layout';
+import ClientPositionTracker from '@/components/client/ClientPositionTracker';
 
 // Mock data for demonstration
 const mockAudits = [
@@ -45,7 +48,7 @@ const mockAudits = [
 ];
 
 const Dashboard: React.FC = () => {
-  const [activeTab, setActiveTab] = useState('audits');
+  const [activeTab, setActiveTab] = useState('positions');
 
   return (
     <Layout>
@@ -55,7 +58,7 @@ const Dashboard: React.FC = () => {
           <div className="mb-12">
             <h1 className="text-3xl md:text-4xl font-bold mb-4">Панель управления</h1>
             <p className="text-lg text-muted-foreground">
-              Управляйте вашими SEO-аудитами и оптимизированными сайтами
+              Управляйте вашими SEO-аудитами и отслеживайте позиции сайта
             </p>
           </div>
           
@@ -63,6 +66,13 @@ const Dashboard: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
             <div className="md:col-span-1">
               <nav className="neo-card p-4 space-y-1">
+                <NavButton 
+                  active={activeTab === 'positions'} 
+                  icon={<TrendingUp size={18} />} 
+                  onClick={() => setActiveTab('positions')}
+                >
+                  Позиции сайта
+                </NavButton>
                 <NavButton 
                   active={activeTab === 'audits'} 
                   icon={<Search size={18} />} 
@@ -102,6 +112,10 @@ const Dashboard: React.FC = () => {
             </div>
             
             <div className="md:col-span-3">
+              {activeTab === 'positions' && (
+                <ClientPositionTracker />
+              )}
+            
               {activeTab === 'audits' && (
                 <>
                   <div className="flex justify-between items-center mb-6">
@@ -121,24 +135,137 @@ const Dashboard: React.FC = () => {
               )}
               
               {activeTab === 'sites' && (
-                <div className="glass-panel p-8 text-center">
-                  <Globe size={48} className="mx-auto text-muted-foreground mb-4" />
-                  <h3 className="text-xl font-semibold mb-2">Пока нет оптимизированных сайтов</h3>
-                  <p className="text-muted-foreground mb-6">
-                    После завершения аудита вы можете сгенерировать оптимизированную версию вашего сайта.
-                  </p>
-                  <button className="bg-primary text-white px-6 py-2 rounded-full">
-                    Начать с аудита
-                  </button>
+                <div className="space-y-6">
+                  <div className="flex justify-between items-center mb-6">
+                    <h2 className="text-xl font-semibold">Оптимизированные сайты</h2>
+                    <button className="bg-primary text-white px-4 py-2 rounded-full text-sm flex items-center">
+                      <Globe size={16} className="mr-2" />
+                      Добавить сайт
+                    </button>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <SiteCard 
+                      url="https://example.com" 
+                      lastOptimized="2023-10-12" 
+                      score={82} 
+                    />
+                    <SiteCard 
+                      url="https://company-blog.net" 
+                      lastOptimized="2023-10-08" 
+                      score={76} 
+                    />
+                  </div>
                 </div>
               )}
               
-              {['reports', 'account', 'settings'].includes(activeTab) && (
-                <div className="glass-panel p-8 text-center">
-                  <h3 className="text-xl font-semibold mb-2">Скоро будет доступно</h3>
-                  <p className="text-muted-foreground">
-                    Эта функция находится в разработке и будет доступна в ближайшее время.
-                  </p>
+              {activeTab === 'reports' && (
+                <div className="space-y-6">
+                  <div className="flex justify-between items-center mb-6">
+                    <h2 className="text-xl font-semibold">Отчеты</h2>
+                    <button className="bg-primary text-white px-4 py-2 rounded-full text-sm flex items-center">
+                      <FileText size={16} className="mr-2" />
+                      Создать отчет
+                    </button>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <ReportCard 
+                      title="Ежемесячный отчет" 
+                      date="2023-10-01" 
+                      type="PDF" 
+                    />
+                    <ReportCard 
+                      title="Сравнительный анализ" 
+                      date="2023-09-15" 
+                      type="Excel" 
+                    />
+                    <ReportCard 
+                      title="Аналитика ключевых слов" 
+                      date="2023-09-10" 
+                      type="PDF" 
+                    />
+                    <ReportCard 
+                      title="Технический аудит" 
+                      date="2023-09-05" 
+                      type="HTML" 
+                    />
+                  </div>
+                </div>
+              )}
+              
+              {activeTab === 'account' && (
+                <div className="space-y-6">
+                  <div className="flex justify-between items-center mb-6">
+                    <h2 className="text-xl font-semibold">Информация об аккаунте</h2>
+                    <button className="bg-secondary text-foreground px-4 py-2 rounded-full text-sm flex items-center">
+                      <Settings size={16} className="mr-2" />
+                      Редактировать
+                    </button>
+                  </div>
+                  
+                  <div className="neo-card p-6">
+                    <div className="flex items-center gap-6 mb-6">
+                      <div className="h-20 w-20 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+                        <User size={32} />
+                      </div>
+                      <div>
+                        <h3 className="text-xl font-medium">Иван Петров</h3>
+                        <p className="text-muted-foreground">ivan@example.com</p>
+                      </div>
+                    </div>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div>
+                        <h4 className="text-sm font-medium text-muted-foreground mb-2">Текущий тариф</h4>
+                        <p className="font-medium">Бизнес</p>
+                      </div>
+                      <div>
+                        <h4 className="text-sm font-medium text-muted-foreground mb-2">Дата продления</h4>
+                        <p className="font-medium">15 ноября 2023</p>
+                      </div>
+                      <div>
+                        <h4 className="text-sm font-medium text-muted-foreground mb-2">Использовано проверок</h4>
+                        <p className="font-medium">42/100</p>
+                      </div>
+                      <div>
+                        <h4 className="text-sm font-medium text-muted-foreground mb-2">Дата регистрации</h4>
+                        <p className="font-medium">5 марта 2023</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+              
+              {activeTab === 'settings' && (
+                <div className="space-y-6">
+                  <div className="mb-6">
+                    <h2 className="text-xl font-semibold">Настройки</h2>
+                    <p className="text-muted-foreground">Управление настройками аккаунта и системы</p>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <SettingsCard 
+                      title="Профиль" 
+                      description="Управление личной информацией" 
+                      icon={<User className="h-6 w-6" />} 
+                    />
+                    <SettingsCard 
+                      title="Уведомления" 
+                      description="Настройка оповещений и сообщений" 
+                      icon={<Bell className="h-6 w-6" />} 
+                    />
+                    <SettingsCard 
+                      title="Безопасность" 
+                      description="Изменение пароля и настройки безопасности" 
+                      icon={<Lock className="h-6 w-6" />} 
+                    />
+                    <SettingsCard 
+                      title="Интеграции" 
+                      description="Подключение внешних сервисов" 
+                      icon={<Link className="h-6 w-6" />} 
+                    />
+                  </div>
                 </div>
               )}
             </div>
@@ -214,6 +341,84 @@ const AuditCard: React.FC<{ audit: any }> = ({ audit }) => (
             </a>
           </>
         )}
+      </div>
+    </div>
+  </div>
+);
+
+// New Components for the enhanced Dashboard
+const SiteCard: React.FC<{ url: string; lastOptimized: string; score: number }> = ({ 
+  url, lastOptimized, score 
+}) => (
+  <div className="neo-card p-6">
+    <div className="flex justify-between items-start mb-4">
+      <div>
+        <h3 className="font-medium">{url}</h3>
+        <p className="text-sm text-muted-foreground">
+          Последняя оптимизация: {new Date(lastOptimized).toLocaleDateString()}
+        </p>
+      </div>
+      <div className={`text-xl font-semibold ${
+        score >= 80 ? 'text-green-500' : 
+        score >= 60 ? 'text-amber-500' : 'text-destructive'
+      }`}>
+        {score}/100
+      </div>
+    </div>
+    <div className="flex gap-2">
+      <button className="bg-secondary text-foreground px-3 py-1.5 rounded-full text-xs">
+        Аналитика
+      </button>
+      <button className="bg-secondary text-foreground px-3 py-1.5 rounded-full text-xs">
+        Оптимизировать
+      </button>
+    </div>
+  </div>
+);
+
+const ReportCard: React.FC<{ title: string; date: string; type: string }> = ({ 
+  title, date, type 
+}) => (
+  <div className="neo-card p-6">
+    <div className="flex justify-between items-start mb-4">
+      <div>
+        <h3 className="font-medium">{title}</h3>
+        <p className="text-sm text-muted-foreground">
+          {new Date(date).toLocaleDateString()}
+        </p>
+      </div>
+      <div className="text-xs font-medium bg-secondary/50 px-2 py-1 rounded">
+        {type}
+      </div>
+    </div>
+    <div className="flex gap-2">
+      <button className="bg-secondary text-foreground px-3 py-1.5 rounded-full text-xs">
+        Просмотр
+      </button>
+      <button className="bg-secondary text-foreground px-3 py-1.5 rounded-full text-xs">
+        Скачать
+      </button>
+    </div>
+  </div>
+);
+
+import { Bell, Lock, Link } from 'lucide-react';
+
+const SettingsCard: React.FC<{ 
+  title: string; 
+  description: string; 
+  icon: React.ReactNode 
+}> = ({ 
+  title, description, icon 
+}) => (
+  <div className="neo-card p-6 hover:shadow-md transition-shadow">
+    <div className="flex items-start gap-4">
+      <div className="p-3 bg-primary/10 rounded-lg text-primary">
+        {icon}
+      </div>
+      <div>
+        <h3 className="font-medium mb-1">{title}</h3>
+        <p className="text-sm text-muted-foreground">{description}</p>
       </div>
     </div>
   </div>
