@@ -4,13 +4,13 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { Lock, Mail, User } from "lucide-react";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
+import { ThemeProvider } from '@/contexts/ThemeContext';
 
 // Определяем схемы валидации
 const loginSchema = z.object({
@@ -92,167 +92,169 @@ const Auth: React.FC = () => {
   }, []);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background py-12 px-4 sm:px-6 lg:px-8">
-      <div 
-        id="auth-container"
-        className="max-w-md w-full space-y-8 bg-card p-8 rounded-xl shadow-lg"
-        tabIndex={-1}
-      >
-        <div className="text-center">
-          <h1 className="text-3xl font-bold">Доступ к SeoMarket</h1>
-          <p className="text-muted-foreground mt-2">
-            Войдите или создайте аккаунт для доступа к расширенным возможностям
-          </p>
-        </div>
+    <ThemeProvider>
+      <div className="min-h-screen flex items-center justify-center bg-background py-12 px-4 sm:px-6 lg:px-8">
+        <div 
+          id="auth-container"
+          className="max-w-md w-full space-y-8 bg-card p-8 rounded-xl shadow-lg"
+          tabIndex={-1}
+        >
+          <div className="text-center">
+            <h1 className="text-3xl font-bold">Доступ к SeoMarket</h1>
+            <p className="text-muted-foreground mt-2">
+              Войдите или создайте аккаунт для доступа к расширенным возможностям
+            </p>
+          </div>
 
-        <Tabs defaultValue={defaultTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-2 mb-6">
-            <TabsTrigger value="login">Вход</TabsTrigger>
-            <TabsTrigger value="register">Регистрация</TabsTrigger>
-          </TabsList>
-          
-          <TabsContent value="login">
-            <Form {...loginForm}>
-              <form onSubmit={loginForm.handleSubmit(handleLogin)} className="space-y-4">
-                <FormField
-                  control={loginForm.control}
-                  name="email"
-                  render={({ field }) => (
-                    <FormItem className="space-y-2">
-                      <FormLabel>Email</FormLabel>
-                      <div className="relative">
-                        <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                        <FormControl>
-                          <Input
-                            placeholder="mail@example.com"
-                            type="email"
-                            className="pl-10"
-                            {...field}
-                          />
-                        </FormControl>
-                      </div>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+          <Tabs defaultValue={defaultTab} className="w-full">
+            <TabsList className="grid w-full grid-cols-2 mb-6">
+              <TabsTrigger value="login">Вход</TabsTrigger>
+              <TabsTrigger value="register">Регистрация</TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="login">
+              <Form {...loginForm}>
+                <form onSubmit={loginForm.handleSubmit(handleLogin)} className="space-y-4">
+                  <FormField
+                    control={loginForm.control}
+                    name="email"
+                    render={({ field }) => (
+                      <FormItem className="space-y-2">
+                        <FormLabel>Email</FormLabel>
+                        <div className="relative">
+                          <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                          <FormControl>
+                            <Input
+                              placeholder="mail@example.com"
+                              type="email"
+                              className="pl-10"
+                              {...field}
+                            />
+                          </FormControl>
+                        </div>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
-                <FormField
-                  control={loginForm.control}
-                  name="password"
-                  render={({ field }) => (
-                    <FormItem className="space-y-2">
-                      <div className="flex items-center justify-between">
+                  <FormField
+                    control={loginForm.control}
+                    name="password"
+                    render={({ field }) => (
+                      <FormItem className="space-y-2">
+                        <div className="flex items-center justify-between">
+                          <FormLabel>Пароль</FormLabel>
+                          <a href="#" className="text-sm text-primary hover:underline">
+                            Забыли пароль?
+                          </a>
+                        </div>
+                        <div className="relative">
+                          <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                          <FormControl>
+                            <Input
+                              type="password"
+                              className="pl-10"
+                              {...field}
+                            />
+                          </FormControl>
+                        </div>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <Button type="submit" className="w-full" disabled={isLoading}>
+                    {isLoading ? 'Вход...' : 'Войти'}
+                  </Button>
+                </form>
+              </Form>
+            </TabsContent>
+            
+            <TabsContent value="register">
+              <Form {...registerForm}>
+                <form onSubmit={registerForm.handleSubmit(handleRegister)} className="space-y-4">
+                  <FormField
+                    control={registerForm.control}
+                    name="name"
+                    render={({ field }) => (
+                      <FormItem className="space-y-2">
+                        <FormLabel>Имя</FormLabel>
+                        <div className="relative">
+                          <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                          <FormControl>
+                            <Input
+                              placeholder="Иван Иванов"
+                              className="pl-10"
+                              {...field}
+                            />
+                          </FormControl>
+                        </div>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={registerForm.control}
+                    name="email"
+                    render={({ field }) => (
+                      <FormItem className="space-y-2">
+                        <FormLabel>Email</FormLabel>
+                        <div className="relative">
+                          <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                          <FormControl>
+                            <Input
+                              placeholder="mail@example.com"
+                              type="email"
+                              className="pl-10"
+                              {...field}
+                            />
+                          </FormControl>
+                        </div>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={registerForm.control}
+                    name="password"
+                    render={({ field }) => (
+                      <FormItem className="space-y-2">
                         <FormLabel>Пароль</FormLabel>
-                        <a href="#" className="text-sm text-primary hover:underline">
-                          Забыли пароль?
-                        </a>
-                      </div>
-                      <div className="relative">
-                        <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                        <FormControl>
-                          <Input
-                            type="password"
-                            className="pl-10"
-                            {...field}
-                          />
-                        </FormControl>
-                      </div>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                        <div className="relative">
+                          <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                          <FormControl>
+                            <Input
+                              type="password"
+                              className="pl-10"
+                              {...field}
+                            />
+                          </FormControl>
+                        </div>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
-                <Button type="submit" className="w-full" disabled={isLoading}>
-                  {isLoading ? 'Вход...' : 'Войти'}
-                </Button>
-              </form>
-            </Form>
-          </TabsContent>
-          
-          <TabsContent value="register">
-            <Form {...registerForm}>
-              <form onSubmit={registerForm.handleSubmit(handleRegister)} className="space-y-4">
-                <FormField
-                  control={registerForm.control}
-                  name="name"
-                  render={({ field }) => (
-                    <FormItem className="space-y-2">
-                      <FormLabel>Имя</FormLabel>
-                      <div className="relative">
-                        <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                        <FormControl>
-                          <Input
-                            placeholder="Иван Иванов"
-                            className="pl-10"
-                            {...field}
-                          />
-                        </FormControl>
-                      </div>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                  <Button type="submit" className="w-full" disabled={isLoading}>
+                    {isLoading ? 'Регистрация...' : 'Создать аккаунт'}
+                  </Button>
+                </form>
+              </Form>
+            </TabsContent>
+          </Tabs>
 
-                <FormField
-                  control={registerForm.control}
-                  name="email"
-                  render={({ field }) => (
-                    <FormItem className="space-y-2">
-                      <FormLabel>Email</FormLabel>
-                      <div className="relative">
-                        <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                        <FormControl>
-                          <Input
-                            placeholder="mail@example.com"
-                            type="email"
-                            className="pl-10"
-                            {...field}
-                          />
-                        </FormControl>
-                      </div>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={registerForm.control}
-                  name="password"
-                  render={({ field }) => (
-                    <FormItem className="space-y-2">
-                      <FormLabel>Пароль</FormLabel>
-                      <div className="relative">
-                        <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                        <FormControl>
-                          <Input
-                            type="password"
-                            className="pl-10"
-                            {...field}
-                          />
-                        </FormControl>
-                      </div>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <Button type="submit" className="w-full" disabled={isLoading}>
-                  {isLoading ? 'Регистрация...' : 'Создать аккаунт'}
-                </Button>
-              </form>
-            </Form>
-          </TabsContent>
-        </Tabs>
-
-        <div className="mt-6 pt-6 border-t border-border text-center text-sm text-muted-foreground">
-          <p>Также войти через:</p>
-          <div className="flex justify-center gap-4 mt-4">
-            <Button variant="outline" size="sm">Google</Button>
-            <Button variant="outline" size="sm">Facebook</Button>
+          <div className="mt-6 pt-6 border-t border-border text-center text-sm text-muted-foreground">
+            <p>Также войти через:</p>
+            <div className="flex justify-center gap-4 mt-4">
+              <Button variant="outline" size="sm">Google</Button>
+              <Button variant="outline" size="sm">Facebook</Button>
+            </div>
           </div>
         </div>
       </div>
-    </div>
+    </ThemeProvider>
   );
 };
 
