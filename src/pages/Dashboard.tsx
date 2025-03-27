@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Button } from "@/components/ui/button";
@@ -230,7 +229,7 @@ const Dashboard: React.FC = () => {
                       {['Анна С. запустила аудит example2.com', 'Иван П. обновил настройки отслеживания', 'Петр К. экспортировал отчет по SEO'].map((activity, i) => (
                         <div key={i} className="flex items-center gap-3">
                           <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                            {i === 0 ? <Search className="h-4 w-4" /> : i === 1 ? <Settings className="h-4 w-4" /> : <FileText className="h-4 w-4" />}
+                            {i === 0 ? <Search className="h-4 w-4" /> : i === 1 ? <SettingsIcon className="h-4 w-4" /> : <FileText className="h-4 w-4" />}
                           </div>
                           <div>
                             <p className="text-sm">{activity}</p>
