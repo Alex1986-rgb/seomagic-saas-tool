@@ -14,7 +14,8 @@ import {
   ExportPDF, 
   ExportJSON, 
   ExportHistory, 
-  ExportHistoryPDF 
+  ExportHistoryPDF,
+  ExportHTML
 } from './export-actions';
 
 interface ExportDropdownProps {
@@ -55,6 +56,17 @@ const ExportDropdown: React.FC<ExportDropdownProps> = ({
           isExporting={isExporting}
           setIsExporting={setIsExporting}
         />
+        
+        <ExportHTML
+          auditData={auditData}
+          url={url}
+          isExporting={isExporting}
+          setIsExporting={setIsExporting}
+        />
+        
+        <DropdownMenuSeparator />
+        <DropdownMenuLabel>История аудита</DropdownMenuLabel>
+        <DropdownMenuSeparator />
         
         <ExportHistory
           historyItems={historyItems}
