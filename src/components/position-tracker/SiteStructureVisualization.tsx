@@ -1,7 +1,6 @@
-
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Sitemap, BarChart3, Download, Network, ArrowRight } from 'lucide-react';
+import { FileTree, BarChart3, Download, Network, ArrowRight } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -26,7 +25,6 @@ export function SiteStructureVisualization({ domain, className = '' }: SiteStruc
   const [filter, setFilter] = useState('');
   const { toast } = useToast();
 
-  // Функция анализа структуры сайта
   const analyzeSiteStructure = async () => {
     if (!domainInput) {
       toast({
@@ -42,8 +40,6 @@ export function SiteStructureVisualization({ domain, className = '' }: SiteStruc
     setNodes([]);
 
     try {
-      // В реальном приложении здесь был бы вызов API для получения структуры сайта
-      // Для демонстрации генерируем искусственные данные
       await simulateAnalysis();
       
       toast({
@@ -63,13 +59,10 @@ export function SiteStructureVisualization({ domain, className = '' }: SiteStruc
     }
   };
 
-  // Симуляция анализа для демонстрации
   const simulateAnalysis = async () => {
-    // Генерируем случайную структуру сайта для демонстрации
     const sectionNames = ['about', 'products', 'services', 'blog', 'contact', 'careers', 'support'];
     const generatedNodes: PageNode[] = [];
     
-    // Главная страница
     generatedNodes.push({
       url: `https://${domainInput}/`,
       title: `${domainInput} - Главная страница`,
@@ -79,7 +72,6 @@ export function SiteStructureVisualization({ domain, className = '' }: SiteStruc
       level: 0
     });
     
-    // Разделы первого уровня
     for (const section of sectionNames) {
       const pagesInSection = Math.floor(Math.random() * 5) + 2;
       const pageRank = Math.floor(Math.random() * 40) + 30;
@@ -93,7 +85,6 @@ export function SiteStructureVisualization({ domain, className = '' }: SiteStruc
         level: 1
       });
       
-      // Подстраницы
       for (let i = 1; i <= pagesInSection; i++) {
         const subPageRank = Math.floor(Math.random() * 20) + 10;
         generatedNodes.push({
@@ -105,18 +96,15 @@ export function SiteStructureVisualization({ domain, className = '' }: SiteStruc
           level: 2
         });
         
-        // Имитация прогресса
         setProgress(Math.min(100, Math.round((generatedNodes.length / (sectionNames.length * 6)) * 100)));
         await new Promise(resolve => setTimeout(resolve, 100));
       }
     }
     
-    // Сортируем по PageRank
     generatedNodes.sort((a, b) => b.pageRank - a.pageRank);
     setNodes(generatedNodes);
   };
 
-  // Подготовка данных для визуализации
   const prepareTreemapData = () => {
     const data = nodes.map(node => ({
       name: node.title,
@@ -133,7 +121,6 @@ export function SiteStructureVisualization({ domain, className = '' }: SiteStruc
     }];
   };
 
-  // Фильтрация таблицы
   const filteredNodes = filter
     ? nodes.filter(node => 
         node.url.toLowerCase().includes(filter.toLowerCase()) || 
@@ -141,7 +128,6 @@ export function SiteStructureVisualization({ domain, className = '' }: SiteStruc
       )
     : nodes;
 
-  // Подготовка данных для уровней вложенности
   const getLevelData = () => {
     const levelCounts: Record<number, number> = {};
     nodes.forEach(node => {
@@ -166,31 +152,26 @@ export function SiteStructureVisualization({ domain, className = '' }: SiteStruc
       >
         <Card>
           <CardHeader>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Sitemap className="h-5 w-5 text-primary" />
-                <CardTitle>Визуализация структуры сайта</CardTitle>
-              </div>
-              {nodes.length > 0 && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="gap-1"
-                  onClick={() => {
-                    toast({
-                      title: "Экспорт структуры",
-                      description: "Функция будет доступна в полной версии",
-                    });
-                  }}
-                >
-                  <Download className="h-4 w-4" />
-                  Экспорт структуры
-                </Button>
-              )}
+            <div className="flex items-center gap-2">
+              <FileTree className="h-5 w-5 text-primary" />
+              <CardTitle>Визуализация структуры сайта</CardTitle>
             </div>
-            <CardDescription>
-              Представляет ссылочные связи в графическом виде, позволяя оценить внутреннюю перелинковку и структуру сайта
-            </CardDescription>
+            {nodes.length > 0 && (
+              <Button
+                variant="outline"
+                size="sm"
+                className="gap-1"
+                onClick={() => {
+                  toast({
+                    title: "Экспорт структуры",
+                    description: "Функция будет доступна в полной версии",
+                  });
+                }}
+              >
+                <Download className="h-4 w-4" />
+                Экспорт структуры
+              </Button>
+            )}
           </CardHeader>
           <CardContent>
             <div className="mb-6 grid grid-cols-1 md:grid-cols-4 gap-3">
@@ -256,41 +237,12 @@ export function SiteStructureVisualization({ domain, className = '' }: SiteStruc
                               ratio={4/3}
                               stroke="#fff"
                               fill="#8884d8"
-                              content={({ root, depth, x, y, width, height, index, payload, colors, rank, name }) => (
-                                <g>
-                                  <rect
-                                    x={x}
-                                    y={y}
-                                    width={width}
-                                    height={height}
-                                    style={{
-                                      fill: depth < 2 
-                                        ? '#8884d8' 
-                                        : `hsl(240, 70%, ${Math.max(40, 90 - (root.children?.[index]?.level || 0) * 10)}%)`,
-                                      stroke: '#fff',
-                                      strokeWidth: 2 / (depth + 1e-10),
-                                      strokeOpacity: 1 / (depth + 1e-10),
-                                    }}
-                                  />
-                                  {width > 50 && height > 30 && (
-                                    <text
-                                      x={x + width / 2}
-                                      y={y + height / 2 + 7}
-                                      textAnchor="middle"
-                                      fill="#fff"
-                                      fontSize={12}
-                                    >
-                                      {name}
-                                    </text>
-                                  )}
-                                </g>
-                              )}
                             >
                               <RechartsTooltip 
-                                formatter={(value: any, name: any, props: any) => {
-                                  if (props.payload.url) {
+                                formatter={(value, name, props) => {
+                                  if (props?.payload?.url) {
                                     return [
-                                      <div>
+                                      <div key="tooltip">
                                         <div><strong>URL:</strong> {props.payload.url}</div>
                                         <div><strong>PageRank:</strong> {props.payload.size}</div>
                                         <div><strong>Уровень:</strong> {props.payload.level}</div>
@@ -396,7 +348,7 @@ export function SiteStructureVisualization({ domain, className = '' }: SiteStruc
             {!isAnalyzing && nodes.length === 0 && (
               <Card className="bg-muted/50 border-dashed">
                 <CardContent className="flex flex-col items-center justify-center py-10">
-                  <Sitemap className="h-10 w-10 text-muted-foreground mb-3" />
+                  <FileTree className="h-10 w-10 text-muted-foreground mb-3" />
                   <p className="text-center text-muted-foreground mb-4">
                     Введите домен и запустите анализ, чтобы визуализировать структуру сайта и рассчитать внутренний PageRank
                   </p>

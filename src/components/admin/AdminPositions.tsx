@@ -1,7 +1,6 @@
-
 import React, { useState, useEffect } from 'react';
 import { Bar, BarChart, CartesianGrid, Legend, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
-import { Search, Users, Download, ArrowDown, ArrowUp, History, FileText, Webhook, Link2Off, CopyX, Sitemap } from 'lucide-react';
+import { Search, Users, Download, ArrowDown, ArrowUp, History, FileText, Webhook, Link2Off, CopyX, FileTree } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -45,7 +44,6 @@ const AdminPositions = () => {
     }
   };
 
-  // Подготовка данных для аналитики
   const getTopDomains = () => {
     const domains: Record<string, number> = {};
     history.forEach(item => {
@@ -84,7 +82,6 @@ const AdminPositions = () => {
   const getTotalChecksByDay = () => {
     const checksByDay: Record<string, number> = {};
     
-    // Группировка проверок по дням
     history.forEach(item => {
       const date = new Date(item.timestamp).toISOString().split('T')[0];
       if (!checksByDay[date]) {
@@ -93,11 +90,10 @@ const AdminPositions = () => {
       checksByDay[date]++;
     });
     
-    // Преобразование в формат для графика
     return Object.entries(checksByDay)
       .map(([date, count]) => ({ date, count }))
       .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
-      .slice(-10); // Последние 10 дней
+      .slice(-10);
   };
 
   const getPositionAnalytics = () => {
@@ -152,7 +148,6 @@ const AdminPositions = () => {
     setActiveTab('linkAnalysis');
   };
 
-  // Получаем аналитические данные
   const topDomains = getTopDomains();
   const searchEngineData = getSearchEngineDistribution();
   const checksByDay = getTotalChecksByDay();
@@ -251,12 +246,15 @@ const AdminPositions = () => {
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis type="number" />
                 <YAxis type="category" dataKey="name" width={100} />
-                <Tooltip formatter={(value: unknown, name, props) => {
-                  if (typeof value === 'number' && props && props.payload && typeof props.payload.percentage === 'number') {
-                    return [`${value} (${props.payload.percentage}%)`, props.payload.name];
-                  }
-                  return [value, name];
-                }} />
+                <Tooltip 
+                  formatter={(value, name, props) => {
+                    const payload = props?.payload;
+                    if (payload && typeof payload.percentage === 'number') {
+                      return [`${value} (${payload.percentage}%)`, payload.name as string];
+                    }
+                    return [value, name];
+                  }} 
+                />
                 <Bar dataKey="value" fill="#8884d8" />
               </BarChart>
             </ResponsiveContainer>
@@ -287,7 +285,7 @@ const AdminPositions = () => {
             Дубликаты
           </TabsTrigger>
           <TabsTrigger value="sitemap" className="flex items-center gap-1">
-            <Sitemap className="h-4 w-4" />
+            <FileTree className="h-4 w-4" />
             Структура сайта
           </TabsTrigger>
         </TabsList>
@@ -467,7 +465,7 @@ const AdminPositions = () => {
           ) : (
             <Card>
               <CardContent className="py-10 text-center">
-                <Sitemap className="h-10 w-10 text-muted-foreground mx-auto mb-4" />
+                <FileTree className="h-10 w-10 text-muted-foreground mx-auto mb-4" />
                 <p className="text-muted-foreground mb-4">
                   Выберите домен для визуализации структуры сайта
                 </p>

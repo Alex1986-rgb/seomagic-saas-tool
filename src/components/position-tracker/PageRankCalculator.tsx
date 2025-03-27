@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { BarChart3, LineChart, Download, Network, ArrowRight } from 'lucide-react';
@@ -101,7 +100,7 @@ export function PageRankCalculator({ domain, className = '' }: PageRankCalculato
       // Начальное значение PageRank
       let pageRank = isHomepage ? 10 : 1;
       
-      // Симуляция итерационного расчета PageRank
+      // Симуляция итер��ционного расчета PageRank
       for (let iter = 0; iter < iterations; iter++) {
         // Формула PageRank: PR(A) = (1-d) + d * (PR(T1)/C(T1) + ... + PR(Tn)/C(Tn))
         const contributingFactor = incomingLinks ? (outgoingLinks / incomingLinks) : 0;
@@ -304,7 +303,7 @@ export function PageRankCalculator({ domain, className = '' }: PageRankCalculato
                               <YAxis label={{ value: 'PageRank', angle: -90, position: 'insideLeft' }} />
                               <Tooltip 
                                 formatter={(value, name, props) => {
-                                  if (name === 'pageRank') {
+                                  if (name === 'pageRank' && typeof value === 'number') {
                                     return [`${value.toFixed(2)}`, 'PageRank'];
                                   }
                                   return [value, name];

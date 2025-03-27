@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Bar, BarChart, CartesianGrid, Legend, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { History, Download, ArrowDown, ArrowUp, LineChart as LineChartIcon, PieChart, FileBarChart } from 'lucide-react';
@@ -244,11 +243,11 @@ export function PositionTrackerAnalytics() {
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis type="number" />
                     <YAxis type="category" dataKey="name" width={100} />
-                    <Tooltip formatter={(value: unknown, name, props) => {
-                      if (typeof value === 'number' && props && props.payload && typeof props.payload.percentage === 'number') {
-                        return [`${value} (${props.payload.percentage}%)`, props.payload.name];
+                    <Tooltip formatter={(value, name, props) => {
+                      if (props?.payload && typeof props.payload.percentage === 'number') {
+                        return [`${value} (${props.payload.percentage}%)`, name as string];
                       }
-                      return [value, name];
+                      return [value, name as string];
                     }} />
                     <Bar dataKey="value" fill="#8884d8" />
                   </BarChart>
