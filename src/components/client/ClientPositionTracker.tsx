@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -23,8 +23,36 @@ import {
   KeywordPositionTrend,
   RankingDistribution
 } from '@/components/position-tracker/analytics';
+import { getPositionHistory } from '@/services/position/positionHistory';
+import { PositionData } from '@/services/position/positionTracker';
+import { useToast } from "@/hooks/use-toast";
 
 const ClientPositionTracker: React.FC = () => {
+  const [history, setHistory] = useState<PositionData[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const { toast } = useToast();
+
+  useEffect(() => {
+    const loadHistory = async () => {
+      setIsLoading(true);
+      try {
+        const data = await getPositionHistory();
+        setHistory(data);
+      } catch (error) {
+        console.error('Error loading position history:', error);
+        toast({
+          title: "Ошибка загрузки данных",
+          description: "Не удалось загрузить историю проверок позиций",
+          variant: "destructive",
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadHistory();
+  }, [toast]);
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
@@ -69,23 +97,23 @@ const ClientPositionTracker: React.FC = () => {
 
         {/* Overview Tab */}
         <TabsContent value="overview" className="space-y-6">
-          <StatsOverview />
+          <StatsOverview history={history} />
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <Card className="p-6">
               <h3 className="text-lg font-medium mb-4">Распределение позиций</h3>
-              <PositionsDistributionChart />
+              <PositionsDistributionChart history={history} />
             </Card>
             
             <Card className="p-6">
               <h3 className="text-lg font-medium mb-4">Распределение по поисковым системам</h3>
-              <SearchEngineDistribution />
+              <SearchEngineDistribution history={history} />
             </Card>
           </div>
           
           <Card className="p-6">
             <h3 className="text-lg font-medium mb-4">Динамика проверок</h3>
-            <DailyActivityChart />
+            <DailyActivityChart history={history} />
           </Card>
         </TabsContent>
 
@@ -95,24 +123,18 @@ const ClientPositionTracker: React.FC = () => {
             <StatCard
               title="Отслеживаемые ключевые слова"
               value="34"
-              trend="+3"
-              trendType="up"
               description="За последние 30 дней"
               icon={<Search className="h-5 w-5" />}
             />
             <StatCard
               title="Средняя позиция"
               value="12.4"
-              trend="-2.1"
-              trendType="up"
               description="За последние 30 дней"
               icon={<BarChart className="h-5 w-5" />}
             />
             <StatCard
               title="Ключевых слов в ТОП-10"
               value="18"
-              trend="+5"
-              trendType="up"
               description="За последние 30 дней"
               icon={<TrendingUp className="h-5 w-5" />}
             />
@@ -123,12 +145,12 @@ const ClientPositionTracker: React.FC = () => {
               <h3 className="text-lg font-medium">Топ ключевых слов</h3>
               <Button variant="outline" size="sm">Экспорт</Button>
             </div>
-            <TopKeywordsTable />
+            <TopKeywordsTable history={history} />
           </Card>
           
           <Card className="p-6">
             <h3 className="text-lg font-medium mb-4">Распределение по рангам</h3>
-            <RankingDistribution />
+            <RankingDistribution history={history} />
           </Card>
         </TabsContent>
 
@@ -138,24 +160,18 @@ const ClientPositionTracker: React.FC = () => {
             <StatCard
               title="Изменение за 30 дней"
               value="+8.3"
-              trend="23%"
-              trendType="up"
               description="Улучшение средней позиции"
               icon={<TrendingUp className="h-5 w-5" />}
             />
             <StatCard
               title="Топ растущие ключи"
               value="7"
-              trend="+4"
-              trendType="up"
               description="Ключевые слова с ростом"
               icon={<BarChart className="h-5 w-5" />}
             />
             <StatCard
               title="Снижающиеся ключи"
               value="3"
-              trend="-1"
-              trendType="down"
               description="Ключевые слова со снижением"
               icon={<BarChart className="h-5 w-5" />}
             />
@@ -163,7 +179,7 @@ const ClientPositionTracker: React.FC = () => {
           
           <Card className="p-6">
             <h3 className="text-lg font-medium mb-4">Тренд ключевого слова</h3>
-            <KeywordPositionTrend />
+            <KeywordPositionTrend history={history} />
           </Card>
         </TabsContent>
 
