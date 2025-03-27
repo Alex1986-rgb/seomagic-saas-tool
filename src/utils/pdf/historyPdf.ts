@@ -2,7 +2,8 @@
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { AuditHistoryItem } from '@/types/audit';
-import { addPaginationFooters, getCategoryStatus, getScoreColorRGB } from './helpers';
+import { addPaginationFooters, getCategoryStatus } from './helpers';
+import { getScoreColorRGB } from './styles/colors'; // Updated import path
 
 export const generateHistoryPDF = async (historyItems: AuditHistoryItem[], domain: string): Promise<Blob> => {
   const doc = new jsPDF({

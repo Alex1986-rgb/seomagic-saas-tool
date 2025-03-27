@@ -3,7 +3,8 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { AuditData } from '@/types/audit';
 import type { OptimizationItem } from '@/components/audit/results/components/optimization';
-import { getScoreColorRGB, addPaginationFooters } from './helpers';
+import { addPaginationFooters } from './helpers';
+import { getScoreColorRGB } from './styles/colors'; // Updated import path
 
 export interface GenerateAuditPdfOptions {
   auditData: AuditData;
