@@ -7,6 +7,9 @@ import { useNavigate } from 'react-router-dom';
 import { Search, ArrowRight, BarChart, PieChart, Zap, CheckCircle } from 'lucide-react';
 import VideoDemo from '../components/VideoDemo';
 import HeroSection from '../components/hero/HeroSection';
+import PositionTrackerFeature from '../components/position-tracker/PositionTrackerFeature';
+import FeatureSection from '../components/features';
+import CTASection from '../components/sections/CTASection';
 
 const Index: React.FC = () => {
   const navigate = useNavigate();
@@ -105,7 +108,16 @@ const Index: React.FC = () => {
         </div>
       </section>
       
+      {/* All features section */}
+      <FeatureSection />
+      
+      {/* Position Tracker Feature */}
+      <PositionTrackerFeature />
+      
       {/* Call to Action Section */}
+      <CTASection />
+      
+      {/* Final CTA Section */}
       <section className="py-20 bg-primary text-primary-foreground">
         <div className="container mx-auto text-center">
           <motion.div
