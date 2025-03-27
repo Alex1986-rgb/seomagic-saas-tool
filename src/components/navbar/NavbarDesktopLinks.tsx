@@ -1,32 +1,87 @@
 
-import React from 'react';
-import { Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import React, { useState } from 'react';
+import { Link, useLocation } from 'react-router-dom';
+import { ChevronDown } from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { RESOURCE_ITEMS, COMPANY_ITEMS } from './navConstants';
 
 interface NavbarDesktopLinksProps {
-  navItems: Array<{
-    name: string;
-    href: string;
-  }>;
+  navItems: { name: string; path: string }[];
 }
 
 const NavbarDesktopLinks: React.FC<NavbarDesktopLinksProps> = ({ navItems }) => {
+  const location = useLocation();
+  const [resourceOpen, setResourceOpen] = useState(false);
+  const [companyOpen, setCompanyOpen] = useState(false);
+
   return (
-    <div className="hidden md:flex items-center space-x-1">
+    <div className="hidden md:flex items-center space-x-3 lg:space-x-6">
       {navItems.map((item) => (
         <Link
-          key={item.name}
-          to={item.href}
-          className="px-3 py-2 text-sm font-medium rounded-md text-foreground hover:bg-accent/50 transition-colors"
+          key={item.path}
+          to={item.path}
+          className={`text-sm lg:text-base hover:text-primary transition-colors ${
+            location.pathname === item.path
+              ? 'text-primary font-medium'
+              : 'text-foreground'
+          }`}
         >
-          <motion.span
-            whileHover={{ y: -2 }}
-            transition={{ type: "spring", stiffness: 300 }}
-          >
-            {item.name}
-          </motion.span>
+          {item.name}
         </Link>
       ))}
+      
+      {/* Ресурсы выпадающее меню */}
+      <DropdownMenu open={resourceOpen} onOpenChange={setResourceOpen}>
+        <DropdownMenuTrigger className="flex items-center gap-1 hover:text-primary transition-colors text-sm lg:text-base">
+          Ресурсы
+          <ChevronDown className="h-4 w-4" />
+        </DropdownMenuTrigger>
+        <DropdownMenuContent className="bg-popover text-popover-foreground z-50">
+          {RESOURCE_ITEMS.map((item) => (
+            <DropdownMenuItem key={item.path} asChild>
+              <Link 
+                to={item.path}
+                className={`w-full px-4 py-2 text-sm ${
+                  location.pathname === item.path
+                    ? 'text-primary font-medium'
+                    : 'text-foreground'
+                }`}
+              >
+                {item.name}
+              </Link>
+            </DropdownMenuItem>
+          ))}
+        </DropdownMenuContent>
+      </DropdownMenu>
+      
+      {/* Компания выпадающее меню */}
+      <DropdownMenu open={companyOpen} onOpenChange={setCompanyOpen}>
+        <DropdownMenuTrigger className="flex items-center gap-1 hover:text-primary transition-colors text-sm lg:text-base">
+          Компания
+          <ChevronDown className="h-4 w-4" />
+        </DropdownMenuTrigger>
+        <DropdownMenuContent className="bg-popover text-popover-foreground z-50">
+          {COMPANY_ITEMS.map((item) => (
+            <DropdownMenuItem key={item.path} asChild>
+              <Link 
+                to={item.path}
+                className={`w-full px-4 py-2 text-sm ${
+                  location.pathname === item.path
+                    ? 'text-primary font-medium'
+                    : 'text-foreground'
+                }`}
+              >
+                {item.name}
+              </Link>
+            </DropdownMenuItem>
+          ))}
+        </DropdownMenuContent>
+      </DropdownMenu>
     </div>
   );
 };
