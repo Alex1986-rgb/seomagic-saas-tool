@@ -3,17 +3,40 @@ import React, { useState, useRef, useEffect } from 'react';
 import { toast } from 'sonner';
 import VideoControls from './VideoControls';
 import AnimatedVideoPlaceholder from './AnimatedVideoPlaceholder';
-import { Play, Loader2 } from 'lucide-react';
+import { Play, Loader2, Music } from 'lucide-react';
 import { Button } from '../ui/button';
 import { motion } from 'framer-motion';
 
-const VideoPlayer: React.FC = () => {
+interface VideoPlayerProps {
+  audioEnabled?: boolean;
+}
+
+const VideoPlayer: React.FC<VideoPlayerProps> = ({ audioEnabled = false }) => {
   const [isPlaying, setIsPlaying] = useState(false);
-  const [isMuted, setIsMuted] = useState(true);
+  const [isMuted, setIsMuted] = useState(!audioEnabled);
   const [progress, setProgress] = useState(0);
   const [isRealVideo, setIsRealVideo] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const audioRef = useRef<HTMLAudioElement>(null);
+
+  // Effect to handle audio toggle
+  useEffect(() => {
+    if (audioRef.current) {
+      if (audioEnabled && isPlaying) {
+        audioRef.current.play().catch(err => {
+          console.error("Failed to play audio:", err);
+        });
+      } else {
+        audioRef.current.pause();
+      }
+    }
+    
+    if (videoRef.current) {
+      videoRef.current.muted = !audioEnabled;
+      setIsMuted(!audioEnabled);
+    }
+  }, [audioEnabled, isPlaying]);
 
   // Проверяем, загрузилось ли реальное видео
   const checkVideoAvailability = () => {
@@ -55,12 +78,25 @@ const VideoPlayer: React.FC = () => {
         position: "top-center",
       });
       setIsPlaying(!isPlaying);
+      
+      // Start or pause the background audio if enabled
+      if (audioRef.current) {
+        if (!isPlaying && audioEnabled) {
+          audioRef.current.play().catch(err => {
+            console.error("Failed to play audio:", err);
+          });
+        } else {
+          audioRef.current.pause();
+        }
+      }
+      
       return;
     }
     
     if (videoRef.current) {
       if (isPlaying) {
         videoRef.current.pause();
+        if (audioRef.current) audioRef.current.pause();
       } else {
         videoRef.current.play().catch(error => {
           console.error("Error playing video:", error);
@@ -68,6 +104,12 @@ const VideoPlayer: React.FC = () => {
             icon: "⚠️"
           });
         });
+        
+        if (audioRef.current && audioEnabled) {
+          audioRef.current.play().catch(err => {
+            console.error("Failed to play audio:", err);
+          });
+        }
       }
       setIsPlaying(!isPlaying);
     }
@@ -132,6 +174,14 @@ const VideoPlayer: React.FC = () => {
         </div>
       )}
 
+      {/* Background audio */}
+      <audio 
+        ref={audioRef}
+        src="/audio/demo-background.mp3" 
+        loop
+        preload="auto"
+      />
+
       {/* Video Overlay when paused */}
       {!isPlaying && !isLoading && (
         <motion.div 
@@ -146,6 +196,13 @@ const VideoPlayer: React.FC = () => {
           >
             <Play className="w-8 h-8 ml-1" />
           </Button>
+          
+          {audioEnabled && (
+            <div className="absolute bottom-16 left-1/2 transform -translate-x-1/2 flex items-center text-white/80 text-sm">
+              <Music className="w-4 h-4 mr-2 animate-pulse" />
+              <span>Со звуковым сопровождением</span>
+            </div>
+          )}
         </motion.div>
       )}
 
@@ -166,7 +223,7 @@ const VideoPlayer: React.FC = () => {
         </video>
       ) : (
         <div className={isPlaying || isLoading ? "block" : "hidden"}>
-          <AnimatedVideoPlaceholder />
+          <AnimatedVideoPlaceholder isPlaying={isPlaying} />
         </div>
       )}
 

@@ -1,11 +1,20 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { VideoIcon, Star, ArrowRight } from 'lucide-react';
+import { VideoIcon, Star, ArrowRight, BarChart2, Music, Monitor } from 'lucide-react';
 import VideoPlayer from './VideoPlayer';
 import VideoInfo from './VideoInfo';
+import { Button } from '@/components/ui/button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const VideoDemo: React.FC = () => {
+  const [audioEnabled, setAudioEnabled] = useState(false);
+  const [activeTab, setActiveTab] = useState("video");
+
+  const toggleAudio = () => {
+    setAudioEnabled(!audioEnabled);
+  };
+
   return (
     <section className="py-20 overflow-hidden relative">
       <div className="absolute inset-0 bg-gradient-to-b from-background/90 via-primary/5 to-background/80 -z-10" />
@@ -22,7 +31,7 @@ const VideoDemo: React.FC = () => {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
-          className="text-center mb-12"
+          className="text-center mb-8"
         >
           <div className="inline-flex items-center px-4 py-2 rounded-full bg-primary/10 text-primary font-medium mb-4 border border-primary/20 shadow-sm hover:bg-primary/15 transition-colors">
             <VideoIcon className="w-4 h-4 mr-2" />
@@ -45,30 +54,90 @@ const VideoDemo: React.FC = () => {
           </p>
         </motion.div>
 
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          whileInView={{ opacity: 1, scale: 1 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
-          className="relative max-w-4xl mx-auto"
-        >
-          {/* Декоративная рамка */}
-          <div className="absolute -inset-1 bg-gradient-to-r from-primary/30 via-[#0EA5E9]/30 to-primary/30 rounded-xl blur-lg opacity-70 group-hover:opacity-100 transition duration-1000"></div>
-          
-          {/* Видео контейнер */}
-          <div className="relative rounded-xl overflow-hidden shadow-2xl bg-black">
-            <VideoPlayer />
-            <VideoInfo />
-            
-            {/* Декоративные элементы */}
-            <div className="absolute top-5 right-5 text-primary/80">
-              <Star className="w-6 h-6 animate-pulse" />
+        <Tabs defaultValue={activeTab} value={activeTab} onValueChange={setActiveTab} className="max-w-4xl mx-auto">
+          <TabsList className="grid w-full grid-cols-3 mb-8">
+            <TabsTrigger value="video" className="flex items-center gap-2">
+              <VideoIcon className="w-4 h-4" />
+              <span>Видео</span>
+            </TabsTrigger>
+            <TabsTrigger value="charts" className="flex items-center gap-2">
+              <BarChart2 className="w-4 h-4" />
+              <span>Графики роста</span>
+            </TabsTrigger>
+            <TabsTrigger value="monitor" className="flex items-center gap-2">
+              <Monitor className="w-4 h-4" />
+              <span>Мониторинг</span>
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="video">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6 }}
+              className="relative max-w-4xl mx-auto"
+            >
+              {/* Декоративная рамка */}
+              <div className="absolute -inset-1 bg-gradient-to-r from-primary/30 via-[#0EA5E9]/30 to-primary/30 rounded-xl blur-lg opacity-70 group-hover:opacity-100 transition duration-1000"></div>
+              
+              {/* Видео контейнер */}
+              <div className="relative rounded-xl overflow-hidden shadow-2xl bg-black">
+                <div className="absolute top-4 right-4 z-20 flex space-x-2">
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    className="rounded-full bg-black/30 backdrop-blur-sm hover:bg-black/50 text-white"
+                    onClick={toggleAudio}
+                  >
+                    <Music className={`w-4 h-4 ${audioEnabled ? 'text-primary' : 'text-white/80'}`} />
+                  </Button>
+                </div>
+                
+                <VideoPlayer audioEnabled={audioEnabled} />
+                <VideoInfo />
+                
+                {/* Декоративные элементы */}
+                <div className="absolute top-5 left-5 text-primary/80">
+                  <Star className="w-6 h-6 animate-pulse" />
+                </div>
+                <div className="absolute bottom-20 left-5 text-primary/80 rotate-[-30deg]">
+                  <ArrowRight className="w-6 h-6" />
+                </div>
+              </div>
+            </motion.div>
+          </TabsContent>
+
+          <TabsContent value="charts">
+            <div className="bg-card border border-border rounded-xl overflow-hidden shadow-xl">
+              <div className="p-6">
+                <h3 className="text-xl font-semibold mb-4">Динамика роста позиций</h3>
+                <div className="aspect-video bg-black/5 rounded-lg overflow-hidden">
+                  <iframe 
+                    src="/growth-animation" 
+                    className="w-full h-full border-0" 
+                    title="График роста позиций"
+                  ></iframe>
+                </div>
+              </div>
             </div>
-            <div className="absolute bottom-20 left-5 text-primary/80 rotate-[-30deg]">
-              <ArrowRight className="w-6 h-6" />
+          </TabsContent>
+
+          <TabsContent value="monitor">
+            <div className="bg-card border border-border rounded-xl overflow-hidden shadow-xl">
+              <div className="p-6">
+                <h3 className="text-xl font-semibold mb-4">Мониторинг позиций</h3>
+                <div className="aspect-video bg-black/5 rounded-lg overflow-hidden">
+                  <iframe 
+                    src="/position-tracker" 
+                    className="w-full h-full border-0" 
+                    title="Мониторинг позиций"
+                  ></iframe>
+                </div>
+              </div>
             </div>
-          </div>
-        </motion.div>
+          </TabsContent>
+        </Tabs>
         
         {/* Индикаторы внизу */}
         <div className="flex justify-center gap-2 mt-6">
