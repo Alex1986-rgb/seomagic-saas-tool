@@ -21,6 +21,7 @@ export interface AuditDetailsData {
   performance: AuditCategoryData;
   content: AuditCategoryData;
   technical: AuditCategoryData;
+  mobile: AuditCategoryData; // Added mobile category
 }
 
 export interface AuditData {

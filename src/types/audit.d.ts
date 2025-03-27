@@ -1,3 +1,4 @@
+
 export interface AuditData {
   id: string;
   url: string;
@@ -15,7 +16,7 @@ export interface AuditDetailsData {
   content: CategoryData;
   performance: CategoryData;
   technical: CategoryData;
-  mobile: CategoryData; // Add this missing mobile category
+  mobile: CategoryData; 
 }
 
 export interface IssuesData {
