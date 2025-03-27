@@ -8,6 +8,7 @@ import { Toaster } from './components/ui/toaster';
 import Layout from './components/Layout';
 import Dashboard from './pages/Dashboard';
 import LoadingSpinner from './components/LoadingSpinner';
+import { ThemeProvider } from './contexts/ThemeContext';
 
 // Lazy load non-critical pages for better performance
 const SiteAudit = React.lazy(() => import('./pages/SiteAudit'));
@@ -22,21 +23,23 @@ function App() {
     <HelmetProvider>
       <SEO />
       <AppErrorBoundary>
-        <Router>
-          <Suspense fallback={<LoadingSpinner />}>
-            <Routes>
-              <Route path="/" element={<Layout><Dashboard /></Layout>} />
-              <Route path="dashboard" element={<Layout><Dashboard /></Layout>} />
-              <Route path="audit" element={<SiteAudit />} />
-              <Route path="positions" element={<PositionTracking />} />
-              <Route path="history" element={<AuditHistory />} />
-              <Route path="reports" element={<Reports />} />
-              <Route path="settings" element={<Settings />} />
-              <Route path="admin" element={<AdminPanel />} />
-            </Routes>
-          </Suspense>
-        </Router>
-        <Toaster />
+        <ThemeProvider>
+          <Router>
+            <Suspense fallback={<LoadingSpinner />}>
+              <Routes>
+                <Route path="/" element={<Layout><Dashboard /></Layout>} />
+                <Route path="dashboard" element={<Layout><Dashboard /></Layout>} />
+                <Route path="audit" element={<Layout><SiteAudit /></Layout>} />
+                <Route path="positions" element={<Layout><PositionTracking /></Layout>} />
+                <Route path="history" element={<Layout><AuditHistory /></Layout>} />
+                <Route path="reports" element={<Layout><Reports /></Layout>} />
+                <Route path="settings" element={<Layout><Settings /></Layout>} />
+                <Route path="admin" element={<Layout><AdminPanel /></Layout>} />
+              </Routes>
+            </Suspense>
+          </Router>
+          <Toaster />
+        </ThemeProvider>
       </AppErrorBoundary>
     </HelmetProvider>
   );
