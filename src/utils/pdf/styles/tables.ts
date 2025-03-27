@@ -1,71 +1,63 @@
 
-import { pdfColors } from './colors';
-import { pdfFonts } from './fonts';
-
 /**
- * Table styles for different PDF report types
+ * Table styling utilities for PDF generation
  */
+
+// Default table styles
 export const pdfTableStyles = {
   default: {
     headStyles: {
-      fillColor: pdfColors.primary,
+      fillColor: [56, 189, 248],
       textColor: [255, 255, 255],
-      fontSize: pdfFonts.normal.size,
-      fontStyle: 'bold',
+      fontStyle: 'bold'
     },
     bodyStyles: {
-      fontSize: pdfFonts.normal.size,
-      fontStyle: 'normal',
+      textColor: [0, 0, 0]
     },
     alternateRowStyles: {
-      fillColor: [249, 250, 251],
-    },
-    footStyles: {
-      fillColor: [243, 244, 246],
-      textColor: pdfColors.darkGray,
-      fontStyle: 'bold',
-    },
+      fillColor: [241, 245, 249]
+    }
   },
-  comparison: {
+  
+  compact: {
+    styles: {
+      fontSize: 9,
+      cellPadding: 2
+    }
+  },
+  
+  error: {
     headStyles: {
-      fillColor: pdfColors.secondary,
-      textColor: [255, 255, 255],
-      fontSize: pdfFonts.normal.size,
-      fontStyle: 'bold',
-    },
-    bodyStyles: {
-      fontSize: pdfFonts.normal.size,
-    },
-    alternateRowStyles: {
-      fillColor: [249, 250, 251],
-    },
+      fillColor: [239, 68, 68]
+    }
   },
-  issues: {
+  
+  success: {
     headStyles: {
-      fillColor: pdfColors.tertiary,
-      textColor: [255, 255, 255],
-      fontSize: pdfFonts.normal.size,
-      fontStyle: 'bold',
-    },
-    bodyStyles: {
-      fontSize: pdfFonts.normal.size,
-    },
-    alternateRowStyles: {
-      fillColor: [249, 250, 251],
-    },
+      fillColor: [74, 222, 128]
+    }
   },
-  keywords: {
+  
+  warning: {
     headStyles: {
-      fillColor: pdfColors.info,
-      textColor: [255, 255, 255],
-      fontSize: pdfFonts.normal.size,
-      fontStyle: 'bold',
-    },
-    bodyStyles: {
-      fontSize: pdfFonts.normal.size,
-    },
-    alternateRowStyles: {
-      fillColor: [249, 250, 251],
-    },
-  },
+      fillColor: [251, 146, 60]
+    }
+  }
 };
+
+/**
+ * Applies row coloring based on value
+ */
+export function getRowColorByValue(
+  value: number, 
+  goodThreshold: number = 80,
+  mediumThreshold: number = 50
+): number[] {
+  if (value >= goodThreshold) {
+    return [240, 253, 244]; // Light green
+  } else if (value >= mediumThreshold) {
+    return [254, 249, 195]; // Light yellow
+  } else {
+    return [254, 226, 226]; // Light red
+  }
+}
