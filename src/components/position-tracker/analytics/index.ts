@@ -5,3 +5,5 @@ export { PositionsDistributionChart } from './PositionsDistributionChart';
 export { DailyActivityChart } from './DailyActivityChart';
 export { SearchEngineDistribution } from './SearchEngineDistribution';
 export { TopKeywordsTable } from './TopKeywordsTable';
+export { KeywordPositionTrend } from './KeywordPositionTrend';
+export { RankingDistribution } from './RankingDistribution';

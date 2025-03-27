@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { User, Settings, CreditCard, FileText, BarChart } from 'lucide-react';
+import { User, Settings, CreditCard, FileText, BarChart, Bell } from 'lucide-react';
 import ClientAudits from './ClientAudits';
 import ClientSettings from './ClientSettings';
 import ClientSubscription from './ClientSubscription';
@@ -38,6 +38,10 @@ const ProfileContent: React.FC<ProfileContentProps> = ({ activeTab, onTabChange 
             <CreditCard className="h-4 w-4" />
             <span>Подписка</span>
           </TabsTrigger>
+          <TabsTrigger value="notifications" className="flex items-center gap-2">
+            <Bell className="h-4 w-4" />
+            <span>Уведомления</span>
+          </TabsTrigger>
           <TabsTrigger value="settings" className="flex items-center gap-2">
             <Settings className="h-4 w-4" />
             <span>Настройки</span>
@@ -59,6 +63,16 @@ const ProfileContent: React.FC<ProfileContentProps> = ({ activeTab, onTabChange 
           
           <TabsContent value="subscription">
             <ClientSubscription />
+          </TabsContent>
+          
+          <TabsContent value="notifications">
+            <div className="text-center py-12">
+              <Bell className="h-16 w-16 mx-auto text-muted-foreground mb-4 opacity-50" />
+              <h3 className="text-xl font-medium mb-2">Уведомления</h3>
+              <p className="text-muted-foreground">
+                Здесь будут отображаться ваши уведомления о изменениях позиций, завершенных аудитах и других событиях
+              </p>
+            </div>
           </TabsContent>
           
           <TabsContent value="settings">

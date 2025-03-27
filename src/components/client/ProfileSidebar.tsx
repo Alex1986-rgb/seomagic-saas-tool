@@ -21,11 +21,17 @@ const ProfileSidebar: React.FC<ProfileSidebarProps> = ({ activeTab, onTabChange 
         <p className="text-muted-foreground">Pro план</p>
         <p className="text-sm text-muted-foreground mt-1">Участник с Мая 2023</p>
         
-        <div className="mt-4">
+        <div className="mt-4 grid grid-cols-1 gap-2">
           <Link to="/position-tracker">
             <Button variant="outline" size="sm" className="w-full flex items-center gap-2">
               <Globe className="h-4 w-4" />
               <span>Анализ позиций сайта</span>
+            </Button>
+          </Link>
+          <Link to="/audit">
+            <Button variant="outline" size="sm" className="w-full flex items-center gap-2">
+              <History className="h-4 w-4" />
+              <span>Запустить аудит</span>
             </Button>
           </Link>
         </div>
