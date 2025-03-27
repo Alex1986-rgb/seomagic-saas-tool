@@ -1,5 +1,5 @@
 
-import React, { createContext, useContext, useEffect, useState, useMemo } from "react";
+import React, { createContext, useContext, useEffect, useState, useMemo, useCallback } from "react";
 
 type Theme = "dark" | "light" | "system";
 
@@ -27,6 +27,7 @@ export function ThemeProvider({
   storageKey = "theme",
   ...props
 }: ThemeProviderProps) {
+  // Оптимизированное получение начальной темы с проверкой клиентской стороны
   const [theme, setTheme] = useState<Theme>(() => {
     if (typeof window !== 'undefined') {
       const storedTheme = localStorage.getItem(storageKey) as Theme;
@@ -35,6 +36,7 @@ export function ThemeProvider({
     return defaultTheme;
   });
 
+  // Отдельный эффект для применения темы к DOM
   useEffect(() => {
     const root = window.document.documentElement;
     root.classList.remove("light", "dark");
@@ -46,7 +48,7 @@ export function ThemeProvider({
         : "light";
       root.classList.add(systemTheme);
       
-      // Add listener for system theme changes
+      // Добавляем слушатель для изменения системной темы
       const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
       const handleChange = () => {
         const newTheme = mediaQuery.matches ? "dark" : "light";
@@ -61,20 +63,25 @@ export function ThemeProvider({
     }
   }, [theme]);
 
-  // Store theme in localStorage when it changes
+  // Сохраняем тему в localStorage при изменении
   useEffect(() => {
     if (typeof window !== 'undefined') {
       localStorage.setItem(storageKey, theme);
     }
   }, [theme, storageKey]);
 
-  // Memoize context value to prevent unnecessary renders
+  // Мемоизируем функцию setTheme для предотвращения ненужных ререндеров
+  const setThemeCallback = useCallback((newTheme: Theme) => {
+    setTheme(newTheme);
+  }, []);
+
+  // Мемоизируем значение контекста
   const value = useMemo(
     () => ({
       theme,
-      setTheme: (newTheme: Theme) => setTheme(newTheme),
+      setTheme: setThemeCallback,
     }),
-    [theme]
+    [theme, setThemeCallback]
   );
 
   return (

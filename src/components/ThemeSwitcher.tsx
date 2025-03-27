@@ -1,6 +1,6 @@
 
 import React, { memo } from "react";
-import { Moon, Sun } from "lucide-react";
+import { Moon, Sun, Laptop } from "lucide-react";
 import { useTheme } from "@/contexts/ThemeContext";
 import { Button } from "@/components/ui/button";
 import {
@@ -16,30 +16,30 @@ export const ThemeSwitcher = memo(function ThemeSwitcher() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon">
+        <Button variant="ghost" size="icon" aria-label="Изменить тему">
           <ThemeSwitcherIcon theme={theme} />
-          <span className="sr-only">Toggle theme</span>
+          <span className="sr-only">Переключить тему</span>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
         <DropdownMenuItem onClick={() => setTheme("light")}>
           <Sun className="h-4 w-4 mr-2" />
-          <span>Light</span>
+          <span>Светлая</span>
         </DropdownMenuItem>
         <DropdownMenuItem onClick={() => setTheme("dark")}>
           <Moon className="h-4 w-4 mr-2" />
-          <span>Dark</span>
+          <span>Тёмная</span>
         </DropdownMenuItem>
         <DropdownMenuItem onClick={() => setTheme("system")}>
-          <span className="h-4 w-4 mr-2">🖥️</span>
-          <span>System</span>
+          <Laptop className="h-4 w-4 mr-2" />
+          <span>Системная</span>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   );
 });
 
-// Separate the icon component to optimize rendering
+// Отдельный компонент для иконок, чтобы оптимизировать рендеринг
 const ThemeSwitcherIcon = memo(function ThemeSwitcherIcon({ theme }: { theme: string }) {
   if (theme === "dark") {
     return <Moon className="h-5 w-5" />;
@@ -49,13 +49,13 @@ const ThemeSwitcherIcon = memo(function ThemeSwitcherIcon({ theme }: { theme: st
     return <Sun className="h-5 w-5" />;
   }
   
-  // For system theme, check client-side only
+  // Для системной темы, проверяем только на клиенте
   if (typeof window !== 'undefined') {
     const isDarkMode = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
     return isDarkMode ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5" />;
   }
   
-  // Default fallback
+  // Дефолт
   return <Sun className="h-5 w-5" />;
 });
 

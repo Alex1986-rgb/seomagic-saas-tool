@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { memo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { UserCircle, Home, LogOut } from 'lucide-react';
@@ -18,6 +18,38 @@ interface NavbarMobileProps {
   toggleAuth: () => void;
 }
 
+// Оптимизированные анимации для мобильных устройств
+const menuVariants = {
+  hidden: { opacity: 0, y: -10, height: 0 },
+  visible: { 
+    opacity: 1, 
+    y: 0, 
+    height: 'auto',
+    transition: { 
+      duration: 0.2,
+      when: "beforeChildren",
+      staggerChildren: 0.05
+    }
+  },
+  exit: { 
+    opacity: 0, 
+    y: -10, 
+    height: 0,
+    transition: { 
+      duration: 0.2,
+      when: "afterChildren", 
+      staggerChildren: 0.05,
+      staggerDirection: -1
+    }
+  }
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: -5 },
+  visible: { opacity: 1, y: 0 },
+  exit: { opacity: 0, y: -5 }
+};
+
 const NavbarMobile: React.FC<NavbarMobileProps> = ({
   isOpen,
   navItems,
@@ -28,6 +60,11 @@ const NavbarMobile: React.FC<NavbarMobileProps> = ({
   const navigate = useNavigate();
   const { toast } = useToast();
 
+  // Если меню не открыто, не рендерим ничего для улучшения производительности
+  if (!isOpen) {
+    return null;
+  }
+
   const handleLogout = () => {
     toggleAuth();
     navigate('/');
@@ -37,92 +74,100 @@ const NavbarMobile: React.FC<NavbarMobileProps> = ({
     });
   };
 
-  // If menu is not open, don't render anything at all
-  if (!isOpen) {
-    return null;
-  }
-
   return (
     <AnimatePresence>
       {isOpen && (
         <motion.div
           className="md:hidden fixed top-16 inset-x-0 bg-background/90 backdrop-blur-md shadow-lg z-40 border-t border-border"
-          initial={{ opacity: 0, y: -10, height: 0 }}
-          animate={{ opacity: 1, y: 0, height: 'auto' }}
-          exit={{ opacity: 0, y: -10, height: 0 }}
-          transition={{ duration: 0.2 }}
+          variants={menuVariants}
+          initial="hidden"
+          animate="visible"
+          exit="exit"
         >
           <div className="pt-3 pb-5 px-4 flex flex-col gap-3">
             <nav className="grid gap-1">
               {navItems.map((item) => (
-                <Link
-                  key={item.name}
-                  to={item.href}
-                  className="flex items-center px-3 py-2 text-base transition-colors rounded-md hover:bg-accent"
-                >
-                  {item.name}
-                </Link>
+                <motion.div key={item.name} variants={itemVariants}>
+                  <Link
+                    to={item.href}
+                    className="flex items-center px-3 py-2 text-base transition-colors rounded-md hover:bg-accent"
+                  >
+                    {item.name}
+                  </Link>
+                </motion.div>
               ))}
             </nav>
 
-            <div className="h-px w-full bg-border my-2" />
+            <motion.div variants={itemVariants} className="h-px w-full bg-border my-2" />
 
             <div className="flex flex-col gap-2">
               {isLoggedIn ? (
                 <>
-                  <Link
-                    to="/profile"
-                    className="flex items-center gap-2 px-3 py-2 transition-colors rounded-md hover:bg-accent"
-                  >
-                    <UserCircle className="h-5 w-5" />
-                    <span>Личный кабинет</span>
-                  </Link>
-
-                  <Link
-                    to="/dashboard"
-                    className="flex items-center gap-2 px-3 py-2 transition-colors rounded-md hover:bg-accent"
-                  >
-                    <Home className="h-5 w-5" />
-                    <span>Панель управления</span>
-                  </Link>
-
-                  {isAdmin && (
+                  <motion.div variants={itemVariants}>
                     <Link
-                      to="/admin"
+                      to="/profile"
                       className="flex items-center gap-2 px-3 py-2 transition-colors rounded-md hover:bg-accent"
                     >
-                      <span className="h-5 w-5">👑</span>
-                      <span>Админ панель</span>
+                      <UserCircle className="h-5 w-5" />
+                      <span>Личный кабинет</span>
                     </Link>
+                  </motion.div>
+
+                  <motion.div variants={itemVariants}>
+                    <Link
+                      to="/dashboard"
+                      className="flex items-center gap-2 px-3 py-2 transition-colors rounded-md hover:bg-accent"
+                    >
+                      <Home className="h-5 w-5" />
+                      <span>Панель управления</span>
+                    </Link>
+                  </motion.div>
+
+                  {isAdmin && (
+                    <motion.div variants={itemVariants}>
+                      <Link
+                        to="/admin"
+                        className="flex items-center gap-2 px-3 py-2 transition-colors rounded-md hover:bg-accent"
+                      >
+                        <span className="h-5 w-5">👑</span>
+                        <span>Админ панель</span>
+                      </Link>
+                    </motion.div>
                   )}
 
-                  <Button
-                    variant="destructive"
-                    className="mt-2 w-full justify-start gap-2"
-                    onClick={handleLogout}
-                  >
-                    <LogOut className="h-5 w-5" />
-                    <span>Выйти</span>
-                  </Button>
+                  <motion.div variants={itemVariants}>
+                    <Button
+                      variant="destructive"
+                      className="mt-2 w-full justify-start gap-2"
+                      onClick={handleLogout}
+                    >
+                      <LogOut className="h-5 w-5" />
+                      <span>Выйти</span>
+                    </Button>
+                  </motion.div>
                 </>
               ) : (
                 <>
-                  <Button variant="outline" asChild className="w-full justify-center">
-                    <Link to="/auth">Войти</Link>
-                  </Button>
-                  <Button asChild className="w-full justify-center">
-                    <Link to="/auth?tab=register">Регистрация</Link>
-                  </Button>
+                  <motion.div variants={itemVariants}>
+                    <Button variant="outline" asChild className="w-full justify-center">
+                      <Link to="/auth">Войти</Link>
+                    </Button>
+                  </motion.div>
+                  <motion.div variants={itemVariants}>
+                    <Button asChild className="w-full justify-center">
+                      <Link to="/auth?tab=register">Регистрация</Link>
+                    </Button>
+                  </motion.div>
                 </>
               )}
             </div>
 
-            <div className="h-px w-full bg-border my-2" />
+            <motion.div variants={itemVariants} className="h-px w-full bg-border my-2" />
 
-            <div className="flex justify-between items-center">
+            <motion.div variants={itemVariants} className="flex justify-between items-center">
               <span className="text-sm text-muted-foreground">Тема:</span>
               <ThemeSwitcher />
-            </div>
+            </motion.div>
           </div>
         </motion.div>
       )}
@@ -130,4 +175,5 @@ const NavbarMobile: React.FC<NavbarMobileProps> = ({
   );
 };
 
-export default NavbarMobile;
+// Мемоизируем компонент для предотвращения ненужных ререндеров
+export default memo(NavbarMobile);
