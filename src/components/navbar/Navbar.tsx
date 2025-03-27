@@ -17,11 +17,11 @@ const Navbar: React.FC = () => {
   const isMobile = useMediaQuery('(max-width: 768px)');
   const location = useLocation();
 
-  // Состояние авторизации
+  // Authentication state
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
 
-  // Проверяем состояние авторизации при загрузке компонента
+  // Check authentication status when the component loads
   useEffect(() => {
     const checkAuthStatus = () => {
       const loggedIn = localStorage.getItem('isLoggedIn') === 'true';
@@ -33,7 +33,7 @@ const Navbar: React.FC = () => {
     
     checkAuthStatus();
     
-    // Добавляем слушатель для обновления состояния при изменении localStorage
+    // Add a listener to update the state when localStorage changes
     window.addEventListener('storage', checkAuthStatus);
     
     return () => {
@@ -41,7 +41,7 @@ const Navbar: React.FC = () => {
     };
   }, []);
 
-  // Toggle для входа/выхода из системы
+  // Toggle for login/logout
   const toggleAuth = () => {
     if (isLoggedIn) {
       localStorage.removeItem('isLoggedIn');
@@ -53,33 +53,33 @@ const Navbar: React.FC = () => {
       setIsLoggedIn(true);
     }
     
-    // Генерируем событие storage для обновления состояния в других компонентах
+    // Generate a storage event to update the state in other components
     window.dispatchEvent(new Event('storage'));
   };
 
-  // Toggle для прав администратора
+  // Toggle for admin rights
   const toggleAdmin = () => {
     const newAdminState = !isAdmin;
     localStorage.setItem('isAdmin', newAdminState.toString());
     setIsAdmin(newAdminState);
     
-    // Генерируем событие storage для обновления состояния в других компонентах
+    // Generate a storage event to update the state in other components
     window.dispatchEvent(new Event('storage'));
   };
 
-  // Закрываем меню при изменении маршрута
+  // Close the menu when the route changes
   useEffect(() => {
     setIsOpen(false);
   }, [location]);
 
-  // Изменяем стиль навбара при прокрутке
+  // Change navbar style on scroll
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 10);
     };
 
     window.addEventListener('scroll', handleScroll);
-    handleScroll(); // Вызываем сразу для инициализации состояния
+    handleScroll(); // Call immediately to initialize the state
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
@@ -129,7 +129,7 @@ const Navbar: React.FC = () => {
         )}
       </AnimatePresence>
 
-      {/* Debug Controls - скрыть на продакшене */}
+      {/* Debug Controls - hide in production */}
       {process.env.NODE_ENV !== 'production' && (
         <DebugControls 
           isLoggedIn={isLoggedIn}
