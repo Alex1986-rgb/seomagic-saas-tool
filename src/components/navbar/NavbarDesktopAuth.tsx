@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { UserCircle, ChevronDown } from 'lucide-react';
 import { ThemeSwitcher } from '@/components/ThemeSwitcher';
 import { Button } from "@/components/ui/button";
@@ -23,12 +23,15 @@ const NavbarDesktopAuth: React.FC<NavbarDesktopAuthProps> = ({
   isAdmin, 
   toggleAuth 
 }) => {
-  const navigate = useNavigate();
+  const location = useLocation();
   const { toast } = useToast();
+  
+  // Add a check to hide admin-specific links on homepage
+  const isHomePage = location.pathname === '/';
   
   const handleLogout = () => {
     toggleAuth();
-    navigate('/');
+    
     toast({
       title: "Выход выполнен успешно",
       description: "Вы вышли из своего аккаунта",
@@ -52,10 +55,12 @@ const NavbarDesktopAuth: React.FC<NavbarDesktopAuthProps> = ({
             <DropdownMenuItem asChild>
               <Link to="/profile" className="cursor-pointer">Личный кабинет</Link>
             </DropdownMenuItem>
-            <DropdownMenuItem asChild>
-              <Link to="/dashboard" className="cursor-pointer">Панель управления</Link>
-            </DropdownMenuItem>
-            {isAdmin && (
+            {!isHomePage && (
+              <DropdownMenuItem asChild>
+                <Link to="/dashboard" className="cursor-pointer">Панель управления</Link>
+              </DropdownMenuItem>
+            )}
+            {isAdmin && !isHomePage && (
               <DropdownMenuItem asChild>
                 <Link to="/admin" className="cursor-pointer">Админ панель</Link>
               </DropdownMenuItem>

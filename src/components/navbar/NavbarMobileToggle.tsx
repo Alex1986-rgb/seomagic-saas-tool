@@ -1,7 +1,6 @@
 
 import React from 'react';
 import { AlignJustify, X } from 'lucide-react';
-import { ThemeSwitcherIcon } from '@/components/ThemeSwitcher';
 
 interface NavbarMobileToggleProps {
   isOpen: boolean;
@@ -10,8 +9,7 @@ interface NavbarMobileToggleProps {
 
 const NavbarMobileToggle: React.FC<NavbarMobileToggleProps> = ({ isOpen, setIsOpen }) => {
   return (
-    <div className="flex md:hidden items-center space-x-2">
-      <ThemeSwitcherIcon />
+    <div className="flex md:hidden items-center">
       <button
         className="rounded-md p-2 focus:outline-none"
         onClick={() => setIsOpen(!isOpen)}

@@ -41,6 +41,9 @@ const NavbarMobile: React.FC<NavbarMobileProps> = ({
     setResourceOpen(false);
   };
 
+  // Add a check to hide admin-specific links on homepage
+  const isHomePage = location.pathname === '/';
+
   return (
     <motion.div
       initial="closed"
@@ -68,7 +71,7 @@ const NavbarMobile: React.FC<NavbarMobileProps> = ({
           </Link>
         ))}
         
-        {/* Ресурсы выпадающий раздел */}
+        {/* Resources dropdown section */}
         <div className="border-t border-border pt-4">
           <button 
             onClick={handleResourceToggle}
@@ -105,7 +108,7 @@ const NavbarMobile: React.FC<NavbarMobileProps> = ({
           </motion.div>
         </div>
         
-        {/* Компания выпадающий раздел */}
+        {/* Company dropdown section */}
         <div className="border-t border-border pt-4">
           <button 
             onClick={handleCompanyToggle}
@@ -142,12 +145,29 @@ const NavbarMobile: React.FC<NavbarMobileProps> = ({
           </motion.div>
         </div>
         
+        {/* Auth and theme switcher */}
         <div className="border-t border-border pt-4 flex justify-between items-center">
-          <NavbarDesktopAuth 
-            isLoggedIn={isLoggedIn}
-            isAdmin={isAdmin}
-            toggleAuth={toggleAuth}
-          />
+          {isLoggedIn && !isHomePage ? (
+            <Link to="/profile" className="text-primary hover:underline">Личный кабинет</Link>
+          ) : (
+            <div>
+              {isLoggedIn ? (
+                <button 
+                  onClick={toggleAuth} 
+                  className="text-red-500 hover:underline"
+                >
+                  Выйти
+                </button>
+              ) : (
+                <button 
+                  onClick={toggleAuth} 
+                  className="text-primary hover:underline"
+                >
+                  Войти
+                </button>
+              )}
+            </div>
+          )}
           <ThemeSwitcher />
         </div>
       </div>
