@@ -1,17 +1,45 @@
 
 import React, { useState, useRef } from 'react';
-import { Play, Pause, Volume2, VolumeX, Maximize, Download } from 'lucide-react';
-import { Button } from '../ui/button';
 import { toast } from 'sonner';
 import VideoControls from './VideoControls';
+import AnimatedVideoPlaceholder from './AnimatedVideoPlaceholder';
 
 const VideoPlayer: React.FC = () => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(true);
   const [progress, setProgress] = useState(0);
+  const [isRealVideo, setIsRealVideo] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
 
+  // Проверяем, загрузилось ли реальное видео
+  const checkVideoAvailability = () => {
+    if (videoRef.current) {
+      videoRef.current.addEventListener('error', () => {
+        console.error("Видео не загружено или произошла ошибка");
+        setIsRealVideo(false);
+      });
+      
+      videoRef.current.addEventListener('loadeddata', () => {
+        // Проверяем, что видео действительно есть (не является заглушкой)
+        if (videoRef.current && videoRef.current.videoWidth > 0) {
+          console.log("Реальное видео загружено");
+          setIsRealVideo(true);
+        }
+      });
+    }
+  };
+
+  React.useEffect(() => {
+    checkVideoAvailability();
+  }, []);
+
   const togglePlay = () => {
+    if (!isRealVideo) {
+      toast.info("Демонстрационный режим активирован");
+      setIsPlaying(!isPlaying);
+      return;
+    }
+    
     if (videoRef.current) {
       if (isPlaying) {
         videoRef.current.pause();
@@ -26,6 +54,11 @@ const VideoPlayer: React.FC = () => {
   };
 
   const toggleMute = () => {
+    if (!isRealVideo) {
+      toast.info("В демо-режиме звук отключен");
+      return;
+    }
+    
     if (videoRef.current) {
       videoRef.current.muted = !videoRef.current.muted;
       setIsMuted(!isMuted);
@@ -33,6 +66,11 @@ const VideoPlayer: React.FC = () => {
   };
 
   const toggleFullscreen = () => {
+    if (!isRealVideo) {
+      toast.info("Полноэкранный режим доступен только для реального видео");
+      return;
+    }
+    
     if (videoRef.current) {
       if (document.fullscreenElement) {
         document.exitFullscreen();
@@ -53,13 +91,7 @@ const VideoPlayer: React.FC = () => {
   };
 
   const handleDownload = () => {
-    const link = document.createElement('a');
-    link.href = '/video/seo-demo.mp4';
-    link.download = 'seo-demo.mp4';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    toast.success("Скачивание видео началось");
+    toast.info("Для скачивания требуется реальное видео");
   };
 
   return (
@@ -76,20 +108,26 @@ const VideoPlayer: React.FC = () => {
         </div>
       )}
 
-      {/* Video Element */}
-      <video
-        ref={videoRef}
-        className="w-full h-full object-cover"
-        src="/video/seo-demo.mp4"
-        poster="/img/video-poster.jpg"
-        muted={isMuted}
-        playsInline
-        onTimeUpdate={handleTimeUpdate}
-        onEnded={() => setIsPlaying(false)}
-      >
-        <source src="/video/seo-demo.mp4" type="video/mp4" />
-        Ваш браузер не поддерживает видео
-      </video>
+      {/* Показываем анимированный плейсхолдер или настоящее видео */}
+      {isRealVideo ? (
+        <video
+          ref={videoRef}
+          className="w-full h-full object-cover"
+          src="/video/seo-demo.mp4"
+          poster="/img/video-poster.jpg"
+          muted={isMuted}
+          playsInline
+          onTimeUpdate={handleTimeUpdate}
+          onEnded={() => setIsPlaying(false)}
+        >
+          <source src="/video/seo-demo.mp4" type="video/mp4" />
+          Ваш браузер не поддерживает видео
+        </video>
+      ) : (
+        <div className={isPlaying ? "block" : "hidden"}>
+          <AnimatedVideoPlaceholder />
+        </div>
+      )}
 
       {/* Video Progress Bar */}
       <div className="absolute bottom-14 left-0 w-full h-1.5 bg-gray-800/60 z-20">
@@ -111,5 +149,8 @@ const VideoPlayer: React.FC = () => {
     </div>
   );
 };
+
+import { Play } from 'lucide-react';
+import { Button } from '../ui/button';
 
 export default VideoPlayer;
