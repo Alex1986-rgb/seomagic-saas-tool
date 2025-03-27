@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Bar, BarChart, CartesianGrid, Legend, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
-import { Search, Users, Download, ArrowDown, ArrowUp, History, FileText, Webhook } from 'lucide-react';
+import { Search, Users, Download, ArrowDown, ArrowUp, History, FileText, Webhook, Link2Off, CopyX, Sitemap } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -11,10 +11,17 @@ import { getPositionHistory } from '@/services/position/positionHistory';
 import { exportHistoryToExcel } from '@/services/position/exportService';
 import { useToast } from "@/hooks/use-toast";
 import { PositionData, KeywordPosition } from '@/services/position/positionTracker';
+import { 
+  BrokenLinksAnalyzer, 
+  DuplicatesDetector,
+  SiteStructureVisualization
+} from '@/components/position-tracker';
 
 const AdminPositions = () => {
   const [history, setHistory] = useState<PositionData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState('history');
+  const [selectedDomain, setSelectedDomain] = useState<string | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -60,15 +67,17 @@ const AdminPositions = () => {
     
     history.forEach(item => {
       item.keywords.forEach(keyword => {
-        engines[keyword.searchEngine as keyof typeof engines]++;
-        total++;
+        if (typeof engines[keyword.searchEngine as keyof typeof engines] === 'number') {
+          engines[keyword.searchEngine as keyof typeof engines]++;
+          total++;
+        }
       });
     });
     
     return Object.entries(engines).map(([engine, count]) => ({
       engine: engine === 'google' ? 'Google' : engine === 'yandex' ? 'Яндекс' : 'Mail.ru',
       count,
-      percentage: Math.round((count / total) * 100)
+      percentage: total > 0 ? Math.round((count / total) * 100) : 0
     }));
   };
 
@@ -113,11 +122,11 @@ const AdminPositions = () => {
     });
     
     return [
-      { name: 'ТОП 3', value: topPositions.top3, percentage: Math.round((topPositions.top3 / total) * 100) },
-      { name: 'ТОП 4-10', value: topPositions.top10, percentage: Math.round((topPositions.top10 / total) * 100) },
-      { name: 'ТОП 11-30', value: topPositions.top30, percentage: Math.round((topPositions.top30 / total) * 100) },
-      { name: 'Ниже 30', value: topPositions.beyond, percentage: Math.round((topPositions.beyond / total) * 100) },
-      { name: 'Не найдено', value: topPositions.notFound, percentage: Math.round((topPositions.notFound / total) * 100) },
+      { name: 'ТОП 3', value: topPositions.top3, percentage: total > 0 ? Math.round((topPositions.top3 / total) * 100) : 0 },
+      { name: 'ТОП 4-10', value: topPositions.top10, percentage: total > 0 ? Math.round((topPositions.top10 / total) * 100) : 0 },
+      { name: 'ТОП 11-30', value: topPositions.top30, percentage: total > 0 ? Math.round((topPositions.top30 / total) * 100) : 0 },
+      { name: 'Ниже 30', value: topPositions.beyond, percentage: total > 0 ? Math.round((topPositions.beyond / total) * 100) : 0 },
+      { name: 'Не найдено', value: topPositions.notFound, percentage: total > 0 ? Math.round((topPositions.notFound / total) * 100) : 0 },
     ];
   };
 
@@ -136,6 +145,11 @@ const AdminPositions = () => {
         variant: "destructive",
       });
     }
+  };
+  
+  const handleCheckDomain = (domain: string) => {
+    setSelectedDomain(domain);
+    setActiveTab('linkAnalysis');
   };
 
   // Получаем аналитические данные
@@ -237,7 +251,12 @@ const AdminPositions = () => {
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis type="number" />
                 <YAxis type="category" dataKey="name" width={100} />
-                <Tooltip formatter={(value, name, props) => [`${value} (${props.payload.percentage}%)`, props.payload.name]} />
+                <Tooltip formatter={(value: unknown, name, props) => {
+                  if (typeof value === 'number' && props && props.payload && typeof props.payload.percentage === 'number') {
+                    return [`${value} (${props.payload.percentage}%)`, props.payload.name];
+                  }
+                  return [value, name];
+                }} />
                 <Bar dataKey="value" fill="#8884d8" />
               </BarChart>
             </ResponsiveContainer>
@@ -245,8 +264,8 @@ const AdminPositions = () => {
         </Card>
       </div>
 
-      <Tabs defaultValue="history">
-        <TabsList className="mb-4">
+      <Tabs defaultValue={activeTab} value={activeTab} onValueChange={setActiveTab}>
+        <TabsList className="mb-4 grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6">
           <TabsTrigger value="history" className="flex items-center gap-1">
             <History className="h-4 w-4" />
             История проверок
@@ -258,6 +277,18 @@ const AdminPositions = () => {
           <TabsTrigger value="engines" className="flex items-center gap-1">
             <Search className="h-4 w-4" />
             Поисковые системы
+          </TabsTrigger>
+          <TabsTrigger value="linkAnalysis" className="flex items-center gap-1">
+            <Link2Off className="h-4 w-4" />
+            Анализ ссылок
+          </TabsTrigger>
+          <TabsTrigger value="duplicates" className="flex items-center gap-1">
+            <CopyX className="h-4 w-4" />
+            Дубликаты
+          </TabsTrigger>
+          <TabsTrigger value="sitemap" className="flex items-center gap-1">
+            <Sitemap className="h-4 w-4" />
+            Структура сайта
           </TabsTrigger>
         </TabsList>
 
@@ -309,13 +340,13 @@ const AdminPositions = () => {
                           <TableCell className="text-center">
                             <span className="text-green-500 font-medium">{inTop10}</span>
                             <span className="text-xs text-muted-foreground ml-1">
-                              ({Math.round(inTop10/totalKeywords*100)}%)
+                              ({totalKeywords > 0 ? Math.round(inTop10/totalKeywords*100) : 0}%)
                             </span>
                           </TableCell>
                           <TableCell className="text-center">
                             <span className="text-red-500 font-medium">{notFound}</span>
                             <span className="text-xs text-muted-foreground ml-1">
-                              ({Math.round(notFound/totalKeywords*100)}%)
+                              ({totalKeywords > 0 ? Math.round(notFound/totalKeywords*100) : 0}%)
                             </span>
                           </TableCell>
                         </TableRow>
@@ -354,10 +385,26 @@ const AdminPositions = () => {
                       <TableCell className="font-medium">{item.domain}</TableCell>
                       <TableCell>{item.count}</TableCell>
                       <TableCell>
-                        <Button variant="outline" size="sm" className="gap-1" onClick={() => window.location.href = "/position-tracker"}>
-                          <Search className="h-4 w-4" />
-                          Проверить
-                        </Button>
+                        <div className="flex gap-2">
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            className="gap-1" 
+                            onClick={() => window.location.href = "/position-tracker"}
+                          >
+                            <Search className="h-4 w-4" />
+                            Проверить
+                          </Button>
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            className="gap-1"
+                            onClick={() => handleCheckDomain(item.domain)}
+                          >
+                            <Link2Off className="h-4 w-4" />
+                            Анализ
+                          </Button>
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))}
@@ -395,6 +442,50 @@ const AdminPositions = () => {
               </div>
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="linkAnalysis">
+          <BrokenLinksAnalyzer 
+            domain={selectedDomain || undefined} 
+            urls={[]}
+          />
+        </TabsContent>
+
+        <TabsContent value="duplicates">
+          <DuplicatesDetector
+            domain={selectedDomain || undefined}
+            urls={[]}
+          />
+        </TabsContent>
+
+        <TabsContent value="sitemap">
+          {selectedDomain ? (
+            <SiteStructureVisualization 
+              domain={selectedDomain}
+              className="mt-4"
+            />
+          ) : (
+            <Card>
+              <CardContent className="py-10 text-center">
+                <Sitemap className="h-10 w-10 text-muted-foreground mx-auto mb-4" />
+                <p className="text-muted-foreground mb-4">
+                  Выберите домен для визуализации структуры сайта
+                </p>
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2">
+                  {topDomains.slice(0, 5).map((item, index) => (
+                    <Button 
+                      key={index} 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => handleCheckDomain(item.domain)}
+                    >
+                      {item.domain}
+                    </Button>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
         </TabsContent>
       </Tabs>
     </div>
