@@ -28,7 +28,6 @@ const ExportDropdown: React.FC<ExportDropdownProps> = ({
   const [isExporting, setIsExporting] = React.useState<string | null>(null);
   const { toast } = useToast();
   
-  // Функция для экспорта PDF
   const handleExportPDF = async () => {
     if (!auditData) {
       toast({
@@ -42,7 +41,6 @@ const ExportDropdown: React.FC<ExportDropdownProps> = ({
     try {
       setIsExporting('pdf');
       
-      // Создание PDF на основе данных аудита
       const pdfBlob = await generateAuditPdf({auditData, url});
       
       if (!pdfBlob) throw new Error("Не удалось создать PDF");
@@ -65,7 +63,6 @@ const ExportDropdown: React.FC<ExportDropdownProps> = ({
     }
   };
   
-  // Функция для экспорта JSON
   const handleExportJSON = async () => {
     if (!auditData) {
       toast({
@@ -79,7 +76,6 @@ const ExportDropdown: React.FC<ExportDropdownProps> = ({
     try {
       setIsExporting('json');
       
-      // Преобразуем данные в JSON строку
       const jsonData = JSON.stringify(auditData, null, 2);
       const jsonBlob = new Blob([jsonData], { type: 'application/json' });
       saveAs(jsonBlob, `audit-${cleanUrl(url)}-${formatDate(auditData.date)}.json`);
@@ -100,7 +96,6 @@ const ExportDropdown: React.FC<ExportDropdownProps> = ({
     }
   };
   
-  // Функция для экспорта истории аудитов
   const handleExportHistory = async () => {
     if (!historyItems || historyItems.length === 0) {
       toast({
@@ -114,7 +109,6 @@ const ExportDropdown: React.FC<ExportDropdownProps> = ({
     try {
       setIsExporting('history');
       
-      // Преобразуем данные истории в JSON строку
       const jsonData = JSON.stringify(historyItems, null, 2);
       const jsonBlob = new Blob([jsonData], { type: 'application/json' });
       saveAs(jsonBlob, `audit-history-${cleanUrl(url)}-${formatDate(new Date().toISOString())}.json`);
@@ -135,12 +129,10 @@ const ExportDropdown: React.FC<ExportDropdownProps> = ({
     }
   };
   
-  // Вспомогательная функция для очистки URL
   const cleanUrl = (url: string): string => {
     return url.replace(/https?:\/\//, '').replace(/[^a-zA-Z0-9]/g, '-');
   };
   
-  // Вспомогательная функция для форматирования даты
   const formatDate = (dateString: string): string => {
     const date = new Date(dateString);
     return date.toISOString().split('T')[0];

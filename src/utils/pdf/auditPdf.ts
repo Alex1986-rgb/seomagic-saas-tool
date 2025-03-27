@@ -3,6 +3,7 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { AuditData } from '@/types/audit';
 import type { OptimizationItem } from '@/components/audit/results/components/optimization';
+import { getScoreColorRGB, addPaginationFooters } from './helpers';
 
 export interface GenerateAuditPdfOptions {
   auditData: AuditData;
@@ -53,7 +54,7 @@ export const generateAuditPdf = async (options: GenerateAuditPdfOptions): Promis
   doc.text(`Общая SEO оценка: ${auditData.score}/100`, 14, 46);
   
   // Рисуем цветной индикатор оценки
-  const scoreColor = auditData.score >= 80 ? [74, 222, 128] : auditData.score >= 60 ? [250, 204, 21] : [239, 68, 68];
+  const scoreColor = getScoreColorRGB(auditData.score);
   doc.setFillColor(scoreColor[0], scoreColor[1], scoreColor[2]);
   doc.circle(170, 44, 8, 'F');
   doc.setTextColor(255, 255, 255);
@@ -242,6 +243,9 @@ export const generateAuditPdf = async (options: GenerateAuditPdfOptions): Promis
   const lastPage = doc.getNumberOfPages();
   doc.setPage(lastPage);
   doc.text(`Отчет сгенерирован: ${new Date().toLocaleString('ru-RU')}`, 14, 285);
+  
+  // Add pagination footers
+  addPaginationFooters(doc);
   
   // Преобразуем документ в Blob и возвращаем
   return doc.output('blob');
