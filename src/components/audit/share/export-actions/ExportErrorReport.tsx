@@ -1,11 +1,10 @@
-
 import React from 'react';
 import { FileDown, Loader2 } from 'lucide-react';
 import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { AuditData } from '@/types/audit';
 import { saveAs } from 'file-saver';
 import { cleanUrl, formatDate, showExportError, showExportSuccess } from '../export-utils';
-import { generateErrorReportPdf } from '@/utils/pdf/errorReportPdf';
+import { generateErrorReportPdf } from '@/utils/pdf/errorReport';
 
 interface ExportErrorReportProps {
   auditData?: AuditData;
