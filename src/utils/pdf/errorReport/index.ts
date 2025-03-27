@@ -1,5 +1,5 @@
 
-import { AnalyzedErrors, ErrorReportPdfOptions } from './types';
+import { ErrorReportPdfOptions } from './types';
 import { analyzeErrors } from './analyzer';
 import { 
   renderCriticalErrorsSection, 
@@ -12,7 +12,8 @@ import {
 import jsPDF from 'jspdf';
 import { addPaginationFooters } from '../helpers';
 
-export { AnalyzedErrors, ErrorReportPdfOptions } from './types';
+// Re-export types using "export type" syntax for isolatedModules
+export type { AnalyzedErrors, ErrorReportPdfOptions, AnalyzedError } from './types';
 export { analyzeErrors } from './analyzer';
 
 /**
@@ -45,7 +46,7 @@ export const generateErrorReportPdf = async (options: ErrorReportPdfOptions): Pr
   doc.text(`Дата аудита: ${formattedDate}`, 14, 38);
   
   // Analyze errors
-  const errors: AnalyzedErrors = analyzeErrors(auditData);
+  const errors = analyzeErrors(auditData);
   
   // Render error sections
   let currentY = 50;
