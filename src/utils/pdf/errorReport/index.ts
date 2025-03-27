@@ -7,10 +7,13 @@ import {
   renderMinorIssuesSection,
   renderPageErrorsSection,
   renderRecommendationsSection,
-  renderScoresSection
+  renderScoresSection,
+  renderExecutiveSummarySection
 } from './sections';
 import jsPDF from 'jspdf';
 import { addPaginationFooters } from '../helpers';
+import { formatDateString } from '../helpers/formatting';
+import { formatReportHeader } from '../styles/formatting';
 
 // Re-export types using "export type" syntax for isolatedModules
 export type { AnalyzedErrors, ErrorReportPdfOptions, AnalyzedError } from './types';
@@ -20,7 +23,7 @@ export { analyzeErrors } from './analyzer';
  * Generates a PDF error report based on the audit data
  */
 export const generateErrorReportPdf = async (options: ErrorReportPdfOptions): Promise<Blob> => {
-  const { auditData, url, urls } = options;
+  const { auditData, url, urls = [], includeScreenshots = false, detailed = false } = options;
   
   // Create a new PDF document
   const doc = new jsPDF({
@@ -30,49 +33,44 @@ export const generateErrorReportPdf = async (options: ErrorReportPdfOptions): Pr
   });
   
   // Format date
-  const formattedDate = new Date(auditData.date).toLocaleDateString('ru-RU', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric'
-  });
+  const formattedDate = formatDateString(auditData.date);
   
-  // Add title
-  doc.setFontSize(22);
-  doc.text('Детальный отчет об ошибках', 105, 20, { align: 'center' });
-  
-  // Add website information
-  doc.setFontSize(12);
-  doc.text(`URL: ${url}`, 14, 30);
-  doc.text(`Дата аудита: ${formattedDate}`, 14, 38);
+  // Add header
+  formatReportHeader(doc, 'Детальный отчет об ошибках', formattedDate);
   
   // Analyze errors
-  const errors = analyzeErrors(auditData);
+  const errors = analyzeErrors(auditData, urls);
   
-  // Render error sections
-  let currentY = 50;
+  // Executive summary
+  let currentY = renderExecutiveSummarySection(doc, errors, auditData, url);
   
-  // Render critical errors section
+  // Add spacing between sections
+  currentY += 15;
+  
+  // Critical errors section
   currentY = renderCriticalErrorsSection(doc, errors, currentY);
   
   // Add spacing between sections
   currentY += 15;
   
-  // Render important issues section
+  // Important issues section
   currentY = renderImportantIssuesSection(doc, errors, currentY);
   
   // Add spacing between sections
   currentY += 15;
   
-  // Render minor issues section
-  renderMinorIssuesSection(doc, errors, currentY);
+  // Minor issues section
+  currentY = renderMinorIssuesSection(doc, errors, currentY);
   
-  // Render URL-specific errors section if URLs are provided
-  renderPageErrorsSection(doc, urls);
+  // Page-specific errors section if detailed mode is enabled
+  if (detailed && urls && urls.length > 0) {
+    renderPageErrorsSection(doc, errors);
+  }
   
-  // Render recommendations section
+  // Recommendations section
   renderRecommendationsSection(doc);
   
-  // Render SEO scores section
+  // SEO scores section
   renderScoresSection(doc, auditData);
   
   // Add footer information about the generated report

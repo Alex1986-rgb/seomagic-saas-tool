@@ -1,40 +1,29 @@
 
 /**
- * Primary color palette for PDF reports
+ * Color definitions for PDF reports
  */
+
 export const pdfColors = {
-  primary: [155, 135, 245],       // #9b87f5
-  secondary: [126, 105, 171],     // #7E69AB
-  tertiary: [110, 89, 165],       // #6E59A5
-  warning: [249, 115, 22],        // #F97316
-  danger: [239, 68, 68],          // #EF4444
-  success: [34, 197, 94],         // #22C55E
-  info: [14, 165, 233],           // #0EA5E9
-  dark: [31, 41, 55],             // #1F2937
-  light: [243, 244, 246],         // #F3F4F6
-  gray: [156, 163, 175],          // #9CA3AF
-  background: [249, 250, 251],    // #F9FAFB
-  text: [17, 24, 39],             // #111827
+  primary: [56, 189, 248] as [number, number, number], // sky blue
+  secondary: [139, 92, 246] as [number, number, number], // purple
+  error: [239, 68, 68] as [number, number, number], // red
+  warning: [251, 146, 60] as [number, number, number], // orange
+  success: [74, 222, 128] as [number, number, number], // green
+  info: [96, 165, 250] as [number, number, number], // blue
+  gray: [100, 116, 139] as [number, number, number], // slate
+  lightGray: [203, 213, 225] as [number, number, number], // light slate
+  darkGray: [51, 65, 85] as [number, number, number], // dark slate
+  black: [15, 23, 42] as [number, number, number], // slate black
+  white: [255, 255, 255] as [number, number, number], // white
 };
 
 /**
- * Returns color for metric visualization based on score
+ * Returns RGB color for score visualization
  */
-export const getMetricColor = (score: number): number[] => {
+export const getScoreColorRGB = (score: number): [number, number, number] => {
   if (score >= 90) return pdfColors.success;
-  if (score >= 70) return [75, 180, 80];  // Light green
-  if (score >= 50) return pdfColors.warning;
-  if (score >= 30) return [255, 170, 50];  // Orange
-  return pdfColors.danger;
-};
-
-/**
- * Returns text description for score
- */
-export const getScoreColor = (score: number): string => {
-  if (score >= 90) return 'отлично';
-  if (score >= 70) return 'хорошо';
-  if (score >= 50) return 'средне';
-  if (score >= 30) return 'плохо';
-  return 'критично';
+  if (score >= 70) return [134, 239, 172]; // light green
+  if (score >= 50) return [250, 204, 21];  // yellow
+  if (score >= 30) return pdfColors.warning;
+  return pdfColors.error;
 };
