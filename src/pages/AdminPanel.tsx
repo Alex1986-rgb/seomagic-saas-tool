@@ -9,7 +9,8 @@ import {
   User, 
   Globe, 
   Server, 
-  MessageSquare 
+  MessageSquare,
+  Search
 } from 'lucide-react';
 import Layout from '@/components/Layout';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -18,6 +19,7 @@ import AdminUsers from '@/components/admin/AdminUsers';
 import AdminAudits from '@/components/admin/AdminAudits';
 import AdminPayments from '@/components/admin/AdminPayments';
 import AdminSettings from '@/components/admin/AdminSettings';
+import AdminPositions from '@/components/admin/AdminPositions';
 
 const AdminPanel: React.FC = () => {
   return (
@@ -33,7 +35,7 @@ const AdminPanel: React.FC = () => {
           
           <Tabs defaultValue="analytics">
             <div className="mb-8">
-              <TabsList className="grid grid-cols-2 md:grid-cols-5 gap-2">
+              <TabsList className="grid grid-cols-2 md:grid-cols-6 gap-2">
                 <TabsTrigger value="analytics" className="flex items-center">
                   <BarChart3 className="h-4 w-4 mr-2" />
                   <span>Аналитика</span>
@@ -45,6 +47,10 @@ const AdminPanel: React.FC = () => {
                 <TabsTrigger value="audits" className="flex items-center">
                   <FileText className="h-4 w-4 mr-2" />
                   <span>Аудиты</span>
+                </TabsTrigger>
+                <TabsTrigger value="positions" className="flex items-center">
+                  <Search className="h-4 w-4 mr-2" />
+                  <span>Позиции</span>
                 </TabsTrigger>
                 <TabsTrigger value="payments" className="flex items-center">
                   <CreditCard className="h-4 w-4 mr-2" />
@@ -68,6 +74,10 @@ const AdminPanel: React.FC = () => {
               
               <TabsContent value="audits">
                 <AdminAudits />
+              </TabsContent>
+              
+              <TabsContent value="positions">
+                <AdminPositions />
               </TabsContent>
               
               <TabsContent value="payments">
