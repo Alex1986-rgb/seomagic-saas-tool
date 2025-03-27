@@ -3,7 +3,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import AuditTabs from '../AuditTabs';
 import AuditRecommendations from '../AuditRecommendations';
-import AuditShareResults from '../AuditShareResults';
+import AuditShareResults from '../share/AuditShareResults';
 import AuditComments from '../comments/AuditComments';
 import AuditHistory from '../AuditHistory';
 import AuditDataVisualizer from '../data-visualization/AuditDataVisualizer';
