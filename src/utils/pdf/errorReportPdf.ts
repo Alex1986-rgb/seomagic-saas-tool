@@ -68,7 +68,7 @@ export const generateErrorReportPdf = async (options: ErrorReportPdfOptions): Pr
   }
   
   // Add important issues section
-  let currentY = doc.autoTable.previous.finalY + 15 || 70;
+  let currentY = doc.lastAutoTable?.finalY + 15 || 70;
   
   doc.setFontSize(16);
   doc.text('Важные проблемы', 14, currentY);
@@ -97,7 +97,7 @@ export const generateErrorReportPdf = async (options: ErrorReportPdfOptions): Pr
   }
   
   // Add minor issues section
-  currentY = doc.autoTable.previous.finalY + 15 || currentY + 20;
+  currentY = doc.lastAutoTable?.finalY + 15 || currentY + 20;
   
   doc.setFontSize(16);
   doc.text('Незначительные замечания', 14, currentY);
@@ -259,13 +259,18 @@ export const generateErrorReportPdf = async (options: ErrorReportPdfOptions): Pr
       1: { cellWidth: 40 },
       2: { cellWidth: 70 }
     },
-    // Color rows based on score status
-    bodyStyles: (row) => {
-      const status = categoryScores[row.index][2];
-      if (status === 'Хорошо') return { textColor: [40, 167, 69] };
-      if (status === 'Нуждается в улучшении') return { textColor: [255, 193, 7] };
-      if (status === 'Требует внимания') return { textColor: [220, 53, 69] };
-      return {};
+    didParseCell: function(data) {
+      // Handle the cell styling based on status
+      if (data.section === 'body') {
+        const status = categoryScores[data.row.index][2];
+        if (status === 'Хорошо') {
+          data.cell.styles.textColor = [40, 167, 69];
+        } else if (status === 'Нуждается в улучшении') {
+          data.cell.styles.textColor = [255, 193, 7];
+        } else if (status === 'Требует внимания') {
+          data.cell.styles.textColor = [220, 53, 69];
+        }
+      }
     }
   });
   
