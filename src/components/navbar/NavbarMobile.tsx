@@ -1,34 +1,11 @@
 
-import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { UserCircle, Search } from 'lucide-react';
-import { Button } from "@/components/ui/button";
-
-const menuVariants = {
-  closed: {
-    opacity: 0,
-    y: -20,
-    transition: {
-      duration: 0.3,
-      staggerChildren: 0.05,
-      staggerDirection: -1
-    }
-  },
-  open: {
-    opacity: 1,
-    y: 0,
-    transition: {
-      duration: 0.3,
-      staggerChildren: 0.05,
-    }
-  }
-};
-
-const itemVariants = {
-  closed: { opacity: 0, y: -10 },
-  open: { opacity: 1, y: 0 }
-};
+import { Link, useLocation } from 'react-router-dom';
+import { ChevronDown, ChevronRight } from 'lucide-react';
+import { RESOURCE_ITEMS, COMPANY_ITEMS } from './navConstants';
+import NavbarDesktopAuth from './NavbarDesktopAuth';
+import { ThemeSwitcher } from '../ThemeSwitcher';
 
 interface NavbarMobileProps {
   isOpen: boolean;
@@ -43,78 +20,135 @@ const NavbarMobile: React.FC<NavbarMobileProps> = ({
   navItems,
   isLoggedIn,
   isAdmin,
-  toggleAuth
+  toggleAuth,
 }) => {
   const location = useLocation();
+  const [resourceOpen, setResourceOpen] = useState(false);
+  const [companyOpen, setCompanyOpen] = useState(false);
+
+  const variants = {
+    open: { opacity: 1, height: 'auto' },
+    closed: { opacity: 0, height: 0 }
+  };
+
+  const handleResourceToggle = () => {
+    setResourceOpen(!resourceOpen);
+    setCompanyOpen(false);
+  };
+
+  const handleCompanyToggle = () => {
+    setCompanyOpen(!companyOpen);
+    setResourceOpen(false);
+  };
 
   return (
     <motion.div
       initial="closed"
       animate="open"
       exit="closed"
-      variants={menuVariants}
-      className="md:hidden bg-background/95 backdrop-blur-lg shadow-lg"
+      variants={{
+        open: { opacity: 1, height: 'auto' },
+        closed: { opacity: 0, height: 0 }
+      }}
+      transition={{ duration: 0.3 }}
+      className="md:hidden bg-background/95 backdrop-blur-lg border-t border-border"
     >
-      <div className="container px-4 py-4">
-        <div className="flex flex-col space-y-3">
-          {navItems.map((item) => (
-            <motion.div key={item.path} variants={itemVariants}>
-              <Link
-                to={item.path}
-                className={`block py-2 px-4 rounded-md transition-colors ${
-                  location.pathname === item.path
-                    ? 'bg-primary/10 text-primary font-medium'
-                    : 'hover:bg-background'
-                }`}
-              >
-                {item.name}
-              </Link>
-            </motion.div>
-          ))}
-
-          <motion.div 
-            variants={itemVariants}
-            className="pt-4 border-t border-border flex flex-col space-y-3"
+      <div className="flex flex-col p-6 space-y-4">
+        {navItems.map((item) => (
+          <Link
+            key={item.path}
+            to={item.path}
+            className={`py-2 text-lg ${
+              location.pathname === item.path
+                ? 'text-primary font-medium'
+                : 'text-foreground'
+            }`}
           >
-            {isLoggedIn ? (
-              <>
+            {item.name}
+          </Link>
+        ))}
+        
+        {/* Ресурсы выпадающий раздел */}
+        <div className="border-t border-border pt-4">
+          <button 
+            onClick={handleResourceToggle}
+            className="flex justify-between items-center w-full py-2 text-lg"
+          >
+            <span>Ресурсы</span>
+            {resourceOpen ? 
+              <ChevronDown className="h-5 w-5" /> : 
+              <ChevronRight className="h-5 w-5" />
+            }
+          </button>
+          
+          <motion.div
+            initial="closed"
+            animate={resourceOpen ? "open" : "closed"}
+            variants={variants}
+            className="overflow-hidden"
+          >
+            <div className="pl-4 py-2 space-y-3">
+              {RESOURCE_ITEMS.map((item) => (
                 <Link
-                  to="/profile"
-                  className="flex items-center py-2 px-4 rounded-md hover:bg-background"
+                  key={item.path}
+                  to={item.path}
+                  className={`block py-1 ${
+                    location.pathname === item.path
+                      ? 'text-primary font-medium'
+                      : 'text-muted-foreground'
+                  }`}
                 >
-                  <UserCircle className="h-5 w-5 mr-2" />
-                  <span>Личный кабинет</span>
+                  {item.name}
                 </Link>
-                <Link
-                  to="/dashboard"
-                  className="flex items-center py-2 px-4 rounded-md hover:bg-background"
-                >
-                  <Search className="h-5 w-5 mr-2" />
-                  <span>Мои аудиты</span>
-                </Link>
-                {isAdmin && (
-                  <Link
-                    to="/admin"
-                    className="flex items-center py-2 px-4 rounded-md hover:bg-background"
-                  >
-                    <span>Админ панель</span>
-                  </Link>
-                )}
-                <Button variant="destructive" onClick={toggleAuth}>
-                  Выйти
-                </Button>
-              </>
-            ) : (
-              <>
-                <Link to="/auth">
-                  <Button variant="outline" className="w-full">Войти</Button>
-                </Link>
-                <Link to="/auth?tab=register">
-                  <Button className="w-full">Регистрация</Button>
-                </Link>
-              </>
-            )}
+              ))}
+            </div>
           </motion.div>
+        </div>
+        
+        {/* Компания выпадающий раздел */}
+        <div className="border-t border-border pt-4">
+          <button 
+            onClick={handleCompanyToggle}
+            className="flex justify-between items-center w-full py-2 text-lg"
+          >
+            <span>Компания</span>
+            {companyOpen ? 
+              <ChevronDown className="h-5 w-5" /> : 
+              <ChevronRight className="h-5 w-5" />
+            }
+          </button>
+          
+          <motion.div
+            initial="closed"
+            animate={companyOpen ? "open" : "closed"}
+            variants={variants}
+            className="overflow-hidden"
+          >
+            <div className="pl-4 py-2 space-y-3">
+              {COMPANY_ITEMS.map((item) => (
+                <Link
+                  key={item.path}
+                  to={item.path}
+                  className={`block py-1 ${
+                    location.pathname === item.path
+                      ? 'text-primary font-medium'
+                      : 'text-muted-foreground'
+                  }`}
+                >
+                  {item.name}
+                </Link>
+              ))}
+            </div>
+          </motion.div>
+        </div>
+        
+        <div className="border-t border-border pt-4 flex justify-between items-center">
+          <NavbarDesktopAuth 
+            isLoggedIn={isLoggedIn}
+            isAdmin={isAdmin}
+            toggleAuth={toggleAuth}
+          />
+          <ThemeSwitcher />
         </div>
       </div>
     </motion.div>
