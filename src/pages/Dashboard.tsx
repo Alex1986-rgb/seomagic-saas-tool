@@ -14,7 +14,7 @@ import {
   LayoutDashboard,
   Activity,
   FileSpreadsheet,
-  Bell as BellIcon,
+  Bell,
   Lock,
   Link
 } from 'lucide-react';
@@ -150,7 +150,7 @@ const Dashboard: React.FC = () => {
                 </NavButton>
                 <NavButton 
                   active={activeTab === 'notifications'} 
-                  icon={<BellIcon size={18} />} 
+                  icon={<Bell size={18} />} 
                   onClick={() => setActiveTab('notifications')}
                 >
                   Уведомления
@@ -477,6 +477,8 @@ const DashboardOverview: React.FC<DashboardOverviewProps> = ({
   onAddSite, 
   onCreateReport 
 }) => {
+  const navigate = useNavigate();
+  
   return (
     <div className="space-y-8">
       <div className="flex justify-between items-center mb-6">
