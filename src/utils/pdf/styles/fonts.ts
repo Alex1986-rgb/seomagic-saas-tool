@@ -20,7 +20,26 @@ export const pdfFonts = {
   h4: 14,
   body: 12,
   small: 10,
-  xsmall: 8
+  xsmall: 8,
+  
+  // For sections formatting
+  heading: {
+    size: 18,
+    weight: 'bold',
+    family: 'helvetica'
+  },
+  
+  subheading: {
+    size: 14,
+    weight: 'bold',
+    family: 'helvetica'
+  },
+  
+  normal: {
+    size: 11,
+    weight: 'normal',
+    family: 'helvetica'
+  }
 };
 
 /**

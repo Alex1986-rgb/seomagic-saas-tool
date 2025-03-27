@@ -31,11 +31,62 @@ const ExportErrorReport: React.FC<ExportErrorReportProps> = ({
     try {
       setIsExporting('error-report');
       
+      // Create errors array from audit data
+      const errors = [];
+      
+      if (auditData?.details?.technical?.items) {
+        auditData.details.technical.items
+          .filter(item => item.status === 'error' || item.status === 'warning')
+          .forEach(item => {
+            errors.push({
+              url: url,
+              type: 'Технический',
+              description: item.description || item.title,
+              severity: item.status === 'error' ? 'high' : 'medium'
+            });
+          });
+      }
+      
+      if (auditData?.details?.seo?.items) {
+        auditData.details.seo.items
+          .filter(item => item.status === 'error' || item.status === 'warning')
+          .forEach(item => {
+            errors.push({
+              url: url,
+              type: 'SEO',
+              description: item.description || item.title,
+              severity: item.status === 'error' ? 'high' : 'medium'
+            });
+          });
+      }
+      
+      if (auditData?.details?.content?.items) {
+        auditData.details.content.items
+          .filter(item => item.status === 'error' || item.status === 'warning')
+          .forEach(item => {
+            errors.push({
+              url: url,
+              type: 'Контент',
+              description: item.description || item.title,
+              severity: item.status === 'error' ? 'high' : 'medium'
+            });
+          });
+      }
+
+      if (errors.length === 0) {
+        showExportError("Нет ошибок для формирования отчета");
+        setIsExporting(null);
+        return;
+      }
+      
       const pdfBlob = await generateErrorReportPdf({
-        auditData, 
+        domain: url,
+        errors: errors,
+        scanDate: auditData.date,
         url,
         urls,
-        detailed
+        detailed,
+        auditData
       });
       
       if (!pdfBlob) throw new Error("Не удалось создать PDF");

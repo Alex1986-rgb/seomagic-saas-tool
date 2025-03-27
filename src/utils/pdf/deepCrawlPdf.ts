@@ -8,6 +8,7 @@ import { pdfFonts } from './styles/fonts';
 import { pdfTableStyles } from './styles/tables';
 import { formatReportHeader } from './styles/formatting';
 import { drawGauge } from './styles/drawing';
+import { analyzeCommonPaths, getSeoRecommendations, getSiteSummary } from './errorReport/analyzer';
 
 interface DeepCrawlPdfOptions {
   domain: string;
@@ -69,8 +70,8 @@ export const generateDeepCrawlPdf = async (options: DeepCrawlPdfOptions): Promis
   // Add enhanced header with graphics
   if (enhancedStyling) {
     // Background gradient for header
-    const gradient = doc.setFillColor(56, 189, 248)
-      .rect(0, 0, 210, 40, 'F');
+    doc.setFillColor(56, 189, 248);
+    doc.rect(0, 0, 210, 40, 'F');
     
     // Add header graphic elements
     doc.setFillColor(70, 203, 255);
@@ -163,7 +164,7 @@ export const generateDeepCrawlPdf = async (options: DeepCrawlPdfOptions): Promis
     body: summaryData,
     theme: 'grid',
     styles: { halign: 'left' },
-    headStyles: { fillColor: pdfColors.primary }
+    headStyles: { fillColor: [pdfColors.primary[0], pdfColors.primary[1], pdfColors.primary[2]] }
   });
   
   // Update current position after table
@@ -194,7 +195,7 @@ export const generateDeepCrawlPdf = async (options: DeepCrawlPdfOptions): Promis
       body: pageTypesData,
       theme: 'grid',
       styles: { halign: 'left' },
-      headStyles: { fillColor: pdfColors.primary }
+      headStyles: { fillColor: [pdfColors.primary[0], pdfColors.primary[1], pdfColors.primary[2]] }
     });
     
     // Update current Y position
@@ -226,7 +227,7 @@ export const generateDeepCrawlPdf = async (options: DeepCrawlPdfOptions): Promis
       body: depthTableData,
       theme: 'grid',
       styles: { halign: 'left' },
-      headStyles: { fillColor: pdfColors.secondary }
+      headStyles: { fillColor: [pdfColors.secondary[0], pdfColors.secondary[1], pdfColors.secondary[2]] }
     });
     
     // Update current Y position
@@ -277,7 +278,7 @@ export const generateDeepCrawlPdf = async (options: DeepCrawlPdfOptions): Promis
       body: urlMetricsData,
       theme: 'grid',
       styles: { halign: 'left' },
-      headStyles: { fillColor: pdfColors.info }
+      headStyles: { fillColor: [pdfColors.info[0], pdfColors.info[1], pdfColors.info[2]] }
     });
     
     yPosition = (doc as any).lastAutoTable.finalY + 15;
@@ -317,7 +318,7 @@ export const generateDeepCrawlPdf = async (options: DeepCrawlPdfOptions): Promis
           1: { cellWidth: 30 },
           2: { cellWidth: 30 }
         },
-        headStyles: { fillColor: pdfColors.info }
+        headStyles: { fillColor: [pdfColors.info[0], pdfColors.info[1], pdfColors.info[2]] }
       });
       
       yPosition = (doc as any).lastAutoTable.finalY + 15;
@@ -353,7 +354,7 @@ export const generateDeepCrawlPdf = async (options: DeepCrawlPdfOptions): Promis
       0: { cellWidth: 10 },
       1: { cellWidth: 'auto' }
     },
-    headStyles: { fillColor: pdfColors.primary }
+    headStyles: { fillColor: [pdfColors.primary[0], pdfColors.primary[1], pdfColors.primary[2]] }
   });
   
   // Add note if there are more URLs
@@ -368,7 +369,7 @@ export const generateDeepCrawlPdf = async (options: DeepCrawlPdfOptions): Promis
   if (brokenLinks.length > 0) {
     doc.addPage();
     
-    doc.setFillColor(239, 68, 68); // Red color for errors
+    doc.setFillColor(pdfColors.error[0], pdfColors.error[1], pdfColors.error[2]); // Red color for errors
     doc.rect(0, 0, 210, 20, 'F');
     doc.setFontSize(18);
     doc.setTextColor(255, 255, 255);
@@ -403,7 +404,7 @@ export const generateDeepCrawlPdf = async (options: DeepCrawlPdfOptions): Promis
         2: { cellWidth: 15 },
         3: { cellWidth: 50 }
       },
-      headStyles: { fillColor: pdfColors.error }
+      headStyles: { fillColor: [pdfColors.error[0], pdfColors.error[1], pdfColors.error[2]] }
     });
     
     // Add note if there are more broken links
@@ -440,7 +441,7 @@ export const generateDeepCrawlPdf = async (options: DeepCrawlPdfOptions): Promis
   if (duplicatePages.length > 0) {
     doc.addPage();
     
-    doc.setFillColor(251, 146, 60); // Orange color for warnings
+    doc.setFillColor(pdfColors.warning[0], pdfColors.warning[1], pdfColors.warning[2]); // Orange color for warnings
     doc.rect(0, 0, 210, 20, 'F');
     doc.setFontSize(18);
     doc.setTextColor(255, 255, 255);
@@ -530,7 +531,7 @@ export const generateDeepCrawlPdf = async (options: DeepCrawlPdfOptions): Promis
   // Add SEO recommendations page
   doc.addPage();
   
-  doc.setFillColor(74, 222, 128); // Green color for recommendations
+  doc.setFillColor(pdfColors.success[0], pdfColors.success[1], pdfColors.success[2]); // Green color for recommendations
   doc.rect(0, 0, 210, 20, 'F');
   doc.setFontSize(18);
   doc.setTextColor(255, 255, 255);
@@ -607,7 +608,7 @@ export const generateDeepCrawlPdf = async (options: DeepCrawlPdfOptions): Promis
         1: { cellWidth: 30 },
         2: { cellWidth: 20 }
       },
-      headStyles: { fillColor: pdfColors.success }
+      headStyles: { fillColor: [pdfColors.success[0], pdfColors.success[1], pdfColors.success[2]] }
     });
     
     recY = (doc as any).lastAutoTable.finalY + 15;
@@ -618,7 +619,7 @@ export const generateDeepCrawlPdf = async (options: DeepCrawlPdfOptions): Promis
   
   if (enhancedStyling) {
     // Add summary header with style
-    doc.setFillColor(139, 92, 246); // Purple for summary
+    doc.setFillColor(pdfColors.secondary[0], pdfColors.secondary[1], pdfColors.secondary[2]); // Purple for summary
     doc.rect(0, 0, 210, 20, 'F');
     doc.setFontSize(18);
     doc.setTextColor(255, 255, 255);
@@ -695,7 +696,7 @@ export const generateDeepCrawlPdf = async (options: DeepCrawlPdfOptions): Promis
     '• Более эффективное сканирование сайта поисковыми роботами',
     '• Повышение пользовательского опыта и конверсии',
     '• Более четкая и понятная структура сайта',
-    '• Лучшее распределение "весомости" страниц'
+    '• Лучшее распределение \"весомости\" страниц'
   ];
   
   benefits.forEach(benefit => {
@@ -803,129 +804,23 @@ function getErrorDescription(statusCode: number): string {
   }
 }
 
-/**
- * Analyze common paths in URLs
- */
-function analyzeCommonPaths(urls: string[]): { path: string; count: number }[] {
-  const pathCounts: Record<string, number> = {};
-  
-  urls.forEach(url => {
-    try {
-      const parsedUrl = new URL(url);
-      const path = parsedUrl.pathname;
-      
-      // Skip empty paths
-      if (!path || path === '/') {
-        return;
-      }
-      
-      // Count occurrences of each path
-      if (pathCounts[path]) {
-        pathCounts[path]++;
-      } else {
-        pathCounts[path] = 1;
-      }
-    } catch (error) {
-      // Skip invalid URLs
-      console.error('Invalid URL:', url);
-    }
-  });
-  
-  // Convert to array and sort by count (descending)
-  const pathArray = Object.entries(pathCounts).map(([path, count]) => ({ path, count }));
-  return pathArray.sort((a, b) => b.count - a.count);
+// Additional helper functions copied from other modules to ensure functionality
+function applyRecommendationPriorityColor(doc: jsPDF, priority: string): void {
+  switch (priority) {
+    case 'high':
+      doc.setTextColor(pdfColors.error[0], pdfColors.error[1], pdfColors.error[2]);
+      break;
+    case 'medium':
+      doc.setTextColor(pdfColors.warning[0], pdfColors.warning[1], pdfColors.warning[2]);
+      break;
+    case 'low':
+      doc.setTextColor(pdfColors.info[0], pdfColors.info[1], pdfColors.info[2]);
+      break;
+    default:
+      doc.setTextColor(0, 0, 0);
+  }
 }
 
-/**
- * Get SEO recommendations based on site analysis
- */
-function getSeoRecommendations(
-  brokenLinksCount: number,
-  duplicatesCount: number,
-  totalUrls: number,
-  depthData: { level: number; count: number }[] = []
-): Array<{
-  title: string;
-  description: string;
-  priority: 'high' | 'medium' | 'low';
-}> {
-  const recommendations: Array<{
-    title: string;
-    description: string;
-    priority: 'high' | 'medium' | 'low';
-  }> = [];
-  
-  // Add recommendations based on broken links
-  if (brokenLinksCount > 0) {
-    recommendations.push({
-      title: 'Исправление битых ссылок',
-      description: `Обнаружено ${brokenLinksCount} битых ссылок. Необходимо исправить или удалить эти ссылки, так как они негативно влияют на пользовательский опыт и SEO.`,
-      priority: brokenLinksCount > 10 ? 'high' : 'medium'
-    });
-  }
-  
-  // Add recommendations based on duplicates
-  if (duplicatesCount > 0) {
-    recommendations.push({
-      title: 'Устранение дубликатов страниц',
-      description: `Обнаружено ${duplicatesCount} групп дублированных страниц. Рекомендуется использовать каноникализацию или редиректы для консолидации контента.`,
-      priority: duplicatesCount > 5 ? 'high' : 'medium'
-    });
-  }
-  
-  // Check for deep site structure
-  const hasDeepStructure = depthData.some(item => item.level > 3 && item.count > 5);
-  if (hasDeepStructure) {
-    recommendations.push({
-      title: 'Оптимизация глубины вложенности',
-      description: 'На сайте обнаружены страницы с глубокой вложенностью (более 3 уровней). Рекомендуется улучшить структуру сайта и уменьшить глубину вложенности для улучшения индексации.', 
-      priority: 'medium'
-    });
-  }
-  
-  // Add general recommendations
-  recommendations.push({
-    title: 'Создание или обновление XML Sitemap',
-    description: 'Регулярно обновляйте XML карту сайта и отправляйте её в поисковые системы для более эффективной индексации.',
-    priority: 'medium'
-  });
-  
-  recommendations.push({
-    title: 'Оптимизация robots.txt',
-    description: 'Проверьте и оптимизируйте файл robots.txt для правильного управления индексацией страниц поисковыми роботами.',
-    priority: 'medium'
-  });
-  
-  recommendations.push({
-    title: 'Использование SSL-сертификата',
-    description: 'Если сайт еще не использует HTTPS, рекомендуется установить SSL-сертификат для повышения безопасности и улучшения ранжирования.',
-    priority: 'high'
-  });
-  
-  recommendations.push({
-    title: 'Оптимизация URL-адресов',
-    description: 'Создавайте дружественные для пользователей и поисковых систем URL-адреса. Используйте ключевые слова в URL и избегайте параметров, где это возможно.',
-    priority: 'low'
-  });
-  
-  recommendations.push({
-    title: 'Улучшение мета-тегов',
-    description: 'Проверьте и оптимизируйте мета-теги title и description на всех страницах. Они должны быть уникальными и содержать ключевые слова.',
-    priority: 'medium'
-  });
-  
-  recommendations.push({
-    title: 'Оптимизация скорости загрузки',
-    description: 'Улучшите время загрузки страниц путем оптимизации изображений, использования кэширования и минификации CSS/JavaScript.',
-    priority: 'high'
-  });
-  
-  return recommendations;
-}
-
-/**
- * Get text representation of recommendation priority
- */
 function getRecommendationPriorityText(priority: string): string {
   switch (priority) {
     case 'high':
@@ -937,76 +832,4 @@ function getRecommendationPriorityText(priority: string): string {
     default:
       return 'Средний';
   }
-}
-
-/**
- * Get color for recommendation priority
- */
-function getRecommendationPriorityColor(priority: string): number[] {
-  switch (priority) {
-    case 'high':
-      return pdfColors.error;
-    case 'medium':
-      return pdfColors.warning;
-    case 'low':
-      return pdfColors.success;
-    default:
-      return pdfColors.info;
-  }
-}
-
-/**
- * Apply color for recommendation priority
- */
-function applyRecommendationPriorityColor(doc: jsPDF, priority: string): void {
-  const color = getRecommendationPriorityColor(priority);
-  doc.setTextColor(color[0], color[1], color[2]);
-}
-
-/**
- * Get site summary based on analysis
- */
-function getSiteSummary(
-  score: number,
-  brokenLinksCount: number,
-  duplicatesCount: number,
-  totalUrls: number
-): string {
-  let summary = '';
-  
-  if (score >= 90) {
-    summary = `Ваш сайт в отличном состоянии с общей оценкой ${score}/100. `;
-  } else if (score >= 70) {
-    summary = `Ваш сайт в хорошем состоянии с общей оценкой ${score}/100, но есть возможности для улучшения. `;
-  } else if (score >= 50) {
-    summary = `Ваш сайт имеет среднюю оценку ${score}/100 и требует улучшений. `;
-  } else {
-    summary = `Ваш сайт имеет низкую оценку ${score}/100 и требует значительной оптимизации. `;
-  }
-  
-  // Add issues summary
-  if (brokenLinksCount > 0 || duplicatesCount > 0) {
-    summary += 'Основные проблемы: ';
-    
-    if (brokenLinksCount > 0) {
-      summary += `${brokenLinksCount} битых ссылок`;
-    }
-    
-    if (brokenLinksCount > 0 && duplicatesCount > 0) {
-      summary += ' и ';
-    }
-    
-    if (duplicatesCount > 0) {
-      summary += `${duplicatesCount} групп дубликатов страниц`;
-    }
-    
-    summary += '. ';
-  } else {
-    summary += 'Не обнаружено серьезных проблем. ';
-  }
-  
-  // Add recommendations
-  summary += 'Следуя рекомендациям из этого отчета, вы сможете улучшить SEO-показатели вашего сайта и повысить видимость в поисковых системах.';
-  
-  return summary;
 }

@@ -27,7 +27,7 @@ export function drawGauge(
   // Draw score arc
   const scoreColor = getScoreColorRGB(score);
   doc.setFillColor(scoreColor[0], scoreColor[1], scoreColor[2]);
-  doc.ellipse(x, y, radius, radius, 'F', undefined, {
+  doc.ellipse(x, y, radius, radius, 'F', null, {
     start: startAngle * Math.PI / 180,
     end: endAngle * Math.PI / 180
   });
@@ -58,11 +58,11 @@ function drawGaugeMarkers(
   // Draw major markers
   const markerPositions = [0, 25, 50, 75, 100];
   const markerColors = [
-    [239, 68, 68],   // Red (0)
-    [251, 146, 60],  // Orange (25)
-    [251, 191, 36],  // Yellow (50)
-    [163, 230, 53],  // Light green (75)
-    [74, 222, 128]   // Green (100)
+    [239, 68, 68] as [number, number, number],   // Red (0)
+    [251, 146, 60] as [number, number, number],  // Orange (25)
+    [251, 191, 36] as [number, number, number],  // Yellow (50)
+    [163, 230, 53] as [number, number, number],  // Light green (75)
+    [74, 222, 128] as [number, number, number]   // Green (100)
   ];
   
   // Draw small dots for the markers
@@ -90,7 +90,7 @@ export function drawHorizontalBar(
   width: number, 
   height: number, 
   percentage: number, 
-  color: number[] = [56, 189, 248]
+  color: [number, number, number] = [56, 189, 248]
 ): void {
   // Draw background
   doc.setFillColor(240, 240, 240);
@@ -117,7 +117,7 @@ export function drawVerticalBar(
   width: number, 
   height: number, 
   percentage: number, 
-  color: number[] = [56, 189, 248],
+  color: [number, number, number] = [56, 189, 248],
   showLabel: boolean = true
 ): void {
   // Calculate dimensions based on percentage
@@ -147,7 +147,7 @@ export function drawPieChart(
   x: number, 
   y: number, 
   radius: number, 
-  segments: Array<{ value: number; color: number[]; label?: string }>
+  segments: Array<{ value: number; color: [number, number, number]; label?: string }>
 ): void {
   // Calculate total value
   const total = segments.reduce((sum, segment) => sum + segment.value, 0);
@@ -161,7 +161,7 @@ export function drawPieChart(
     
     // Draw segment
     doc.setFillColor(segment.color[0], segment.color[1], segment.color[2]);
-    doc.ellipse(x, y, radius, radius, 'F', undefined, {
+    doc.ellipse(x, y, radius, radius, 'F', null, {
       start: startAngle * Math.PI / 180,
       end: endAngle * Math.PI / 180
     });

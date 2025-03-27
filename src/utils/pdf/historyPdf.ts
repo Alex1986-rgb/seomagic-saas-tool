@@ -2,152 +2,257 @@
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { AuditHistoryItem } from '@/types/audit';
-import { addPaginationFooters, getCategoryStatus } from './helpers';
-import { getScoreColorRGB } from './styles/colors'; // Updated import path
+import { pdfColors } from './styles/colors';
+import { formatDateString } from './helpers/formatting';
 
+/**
+ * Generates a PDF report for audit history
+ */
 export const generateHistoryPDF = async (historyItems: AuditHistoryItem[], domain: string): Promise<Blob> => {
+  // Create PDF document
   const doc = new jsPDF({
     orientation: 'portrait',
     unit: 'mm',
     format: 'a4'
   });
   
-  // Заголовок отчета
-  doc.setFillColor(56, 189, 248);
+  // Set document properties
+  doc.setProperties({
+    title: `История аудитов для ${domain}`,
+    subject: 'Отчет по истории SEO аудитов',
+    author: 'SEO Analyzer',
+    creator: 'SEO Analyzer Tool'
+  });
+  
+  // Add header
+  doc.setFillColor(pdfColors.info[0], pdfColors.info[1], pdfColors.info[2]);
   doc.rect(0, 0, 210, 30, 'F');
   
   doc.setFontSize(24);
   doc.setTextColor(255, 255, 255);
-  doc.text('История SEO аудитов', 15, 15);
+  doc.text('История аудитов', 15, 15);
   
   doc.setFontSize(14);
-  doc.text(`Сайт: ${domain}`, 15, 22);
+  doc.text(`Домен: ${domain}`, 15, 22);
   
+  // Reset text color
   doc.setTextColor(0, 0, 0);
+  
+  // Add report information
+  let yPosition = 40;
   doc.setFontSize(12);
-  doc.text(`Создано: ${new Date().toLocaleDateString('ru-RU')}`, 15, 40);
+  doc.text(`Дата создания: ${new Date().toLocaleDateString('ru-RU')}`, 15, yPosition);
+  yPosition += 8;
+  doc.text(`Количество аудитов: ${historyItems.length}`, 15, yPosition);
+  yPosition += 15;
   
-  // Таблица с историей аудитов
-  const tableData = historyItems.map(item => {
-    const date = new Date(item.date).toLocaleDateString('ru-RU', {
-      year: 'numeric', 
-      month: 'long', 
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-    
-    return [
-      date,
-      item.score,
-      item.issues ? `${item.issues.critical + item.issues.important + item.issues.opportunities}` : 'Н/Д',
-      item.pageCount || 'Н/Д',
-      item.details?.seo?.score || 'Н/Д',
-      item.details?.performance?.score || 'Н/Д'
-    ];
-  });
+  // Create history summary table
+  doc.setFontSize(16);
+  doc.setFont('helvetica', 'bold');
+  doc.text('Сводка по аудитам', 15, yPosition);
+  yPosition += 10;
   
+  // Sort history items by date (newest first)
+  const sortedHistory = [...historyItems].sort(
+    (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+  );
+  
+  // Format data for table
+  const historyData = sortedHistory.map(item => [
+    formatDateString(item.date),
+    String(item.score),
+    getScoreStatus(item.score),
+    item.changes ? (item.changes > 0 ? `+${item.changes}` : String(item.changes)) : 'N/A'
+  ]);
+  
+  // Create table
   autoTable(doc, {
-    startY: 50,
-    head: [['Дата', 'Общий балл', 'Проблемы', 'Страницы', 'SEO', 'Performance']],
-    body: tableData,
+    startY: yPosition,
+    head: [['Дата', 'Оценка', 'Статус', 'Изменение']],
+    body: historyData,
     theme: 'grid',
-    headStyles: { fillColor: [56, 189, 248], textColor: 255, fontStyle: 'bold' },
     styles: { fontSize: 10 },
     columnStyles: {
-      0: { cellWidth: 45 },
-      1: { cellWidth: 25, halign: 'center' },
-      2: { cellWidth: 25, halign: 'center' },
-      3: { cellWidth: 25, halign: 'center' },
-      4: { cellWidth: 25, halign: 'center' },
-      5: { cellWidth: 25, halign: 'center' }
-    }
+      0: { cellWidth: 50 },
+      1: { cellWidth: 30, halign: 'center' },
+      2: { cellWidth: 50 },
+      3: { cellWidth: 30, halign: 'center' }
+    },
+    headStyles: { fillColor: [pdfColors.info[0], pdfColors.info[1], pdfColors.info[2]] }
   });
   
-  // Таблица с динамикой баллов
-  if (historyItems.length > 1) {
-    doc.addPage();
-    
-    doc.setFillColor(56, 189, 248);
-    doc.rect(0, 0, 210, 20, 'F');
-    doc.setFontSize(18);
-    doc.setTextColor(255, 255, 255);
-    doc.text('Динамика изменений', 15, 15);
-    
-    doc.setTextColor(0, 0, 0);
-    doc.setFontSize(14);
-    doc.text('Прогресс показателей по аудитам', 15, 30);
-    
-    const progressData = [];
-    
-    for (let i = 0; i < historyItems.length - 1; i++) {
-      const current = historyItems[i];
-      const previous = historyItems[i+1];
-      
-      const dateCurrent = new Date(current.date).toLocaleDateString('ru-RU', {
-        month: 'short', 
-        day: 'numeric'
-      });
-      
-      const datePrevious = new Date(previous.date).toLocaleDateString('ru-RU', {
-        month: 'short', 
-        day: 'numeric'
-      });
-      
-      const scoreDiff = current.score - previous.score;
-      const seoDiff = (current.details?.seo?.score || 0) - (previous.details?.seo?.score || 0);
-      const perfDiff = (current.details?.performance?.score || 0) - (previous.details?.performance?.score || 0);
-      
-      progressData.push([
-        `${datePrevious} → ${dateCurrent}`,
-        current.score,
-        scoreDiff >= 0 ? `+${scoreDiff}` : scoreDiff,
-        current.details?.seo?.score || 'Н/Д',
-        seoDiff >= 0 ? `+${seoDiff}` : seoDiff,
-        current.details?.performance?.score || 'Н/Д',
-        perfDiff >= 0 ? `+${perfDiff}` : perfDiff
-      ]);
+  yPosition = (doc as any).lastAutoTable.finalY + 20;
+  
+  // Add category scores breakdown if there's enough data
+  if (sortedHistory.length > 0 && sortedHistory[0].categoryScores) {
+    // Check if we need a new page
+    if (yPosition > 220) {
+      doc.addPage();
+      yPosition = 40;
     }
     
+    doc.setFontSize(16);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Последний аудит: Оценки по категориям', 15, yPosition);
+    yPosition += 10;
+    
+    const latestAudit = sortedHistory[0];
+    const categoryData = Object.entries(latestAudit.categoryScores).map(([category, score]) => [
+      formatCategoryName(category),
+      String(score),
+      getCategoryStatus(score)
+    ]);
+    
     autoTable(doc, {
-      startY: 40,
-      head: [['Период', 'Общий балл', 'Изменение', 'SEO', 'Изменение', 'Производительность', 'Изменение']],
-      body: progressData,
+      startY: yPosition,
+      head: [['Категория', 'Оценка', 'Статус']],
+      body: categoryData,
       theme: 'grid',
-      headStyles: { fillColor: [56, 189, 248], textColor: 255, fontStyle: 'bold' },
-      styles: { fontSize: 9 },
+      styles: { fontSize: 10 },
       columnStyles: {
-        0: { cellWidth: 30 },
-        2: { halign: 'center' },
-        4: { halign: 'center' },
-        6: { halign: 'center' }
-      }
+        0: { cellWidth: 80 },
+        1: { cellWidth: 30, halign: 'center' },
+        2: { cellWidth: 50 }
+      },
+      headStyles: { fillColor: [pdfColors.success[0], pdfColors.success[1], pdfColors.success[2]] }
     });
     
-    // Рекомендации
-    const yPosition = (doc as any).lastAutoTable.finalY + 15;
+    yPosition = (doc as any).lastAutoTable.finalY + 20;
+  }
+  
+  // Add trend analysis
+  if (sortedHistory.length >= 2) {
+    // Check if we need a new page
+    if (yPosition > 200) {
+      doc.addPage();
+      yPosition = 40;
+    }
+    
+    doc.setFontSize(16);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Анализ тенденций', 15, yPosition);
+    yPosition += 10;
+    
+    // Calculate overall trend
+    const firstScore = sortedHistory[sortedHistory.length - 1].score;
+    const latestScore = sortedHistory[0].score;
+    const scoreDifference = latestScore - firstScore;
+    const percentChange = ((scoreDifference) / firstScore) * 100;
+    
+    doc.setFontSize(12);
+    doc.setFont('helvetica', 'normal');
+    
+    let trendText = '';
+    if (scoreDifference > 0) {
+      trendText = `Улучшение на ${scoreDifference.toFixed(1)} пунктов (${percentChange.toFixed(1)}%)`;
+      doc.setTextColor(pdfColors.success[0], pdfColors.success[1], pdfColors.success[2]);
+    } else if (scoreDifference < 0) {
+      trendText = `Снижение на ${Math.abs(scoreDifference).toFixed(1)} пунктов (${Math.abs(percentChange).toFixed(1)}%)`;
+      doc.setTextColor(pdfColors.error[0], pdfColors.error[1], pdfColors.error[2]);
+    } else {
+      trendText = 'Без изменений (0%)';
+      doc.setTextColor(pdfColors.muted[0], pdfColors.muted[1], pdfColors.muted[2]);
+    }
+    
+    doc.text(`Изменение оценки с первого аудита: ${trendText}`, 15, yPosition);
+    yPosition += 15;
+    
+    // Reset text color
+    doc.setTextColor(0, 0, 0);
+    
+    // Add recommendations based on trend
     doc.setFontSize(14);
+    doc.setFont('helvetica', 'bold');
     doc.text('Рекомендации', 15, yPosition);
+    yPosition += 10;
     
-    const recommendations = [
-      'Регулярно выполняйте аудит сайта для отслеживания прогресса',
-      'Обращайте внимание на критические ошибки в первую очередь',
-      'Исправляйте технические проблемы для повышения производительности',
-      'Оптимизируйте метатеги и контент для улучшения SEO-показателей',
-      'Используйте историю аудитов для анализа эффективности внесенных изменений'
-    ];
+    doc.setFontSize(11);
+    doc.setFont('helvetica', 'normal');
     
-    let recY = yPosition + 10;
-    recommendations.forEach(rec => {
-      doc.setFontSize(11);
-      doc.text(`• ${rec}`, 20, recY);
-      recY += 7;
+    let recommendations = [];
+    
+    if (scoreDifference > 5) {
+      recommendations = [
+        'Продолжайте применять успешные стратегии оптимизации.',
+        'Обратите внимание на категории с наименьшим прогрессом.',
+        'Регулярно обновляйте контент для поддержания позитивной динамики.',
+        'Документируйте успешные изменения для будущих проектов.'
+      ];
+    } else if (scoreDifference < -5) {
+      recommendations = [
+        'Проведите детальный анализ упущений и технических проблем.',
+        'Сравните изменения на сайте с падением оценок.',
+        'Уделите внимание категориям с наибольшим снижением.',
+        'Рассмотрите возможность возврата к предыдущим стратегиям.'
+      ];
+    } else {
+      recommendations = [
+        'Экспериментируйте с новыми стратегиями оптимизации.',
+        'Обратите внимание на конкурентов и передовые практики в отрасли.',
+        'Фокусируйтесь на улучшении пользовательского опыта.',
+        'Регулярно обновляйте и расширяйте контент.'
+      ];
+    }
+    
+    recommendations.forEach((rec, index) => {
+      doc.text(`${index + 1}. ${rec}`, 15, yPosition);
+      yPosition += 8;
     });
   }
   
-  // Добавляем нумерацию страниц
-  addPaginationFooters(doc, 15);
+  // Add footer with page numbers
+  const totalPages = doc.getNumberOfPages();
   
-  // Возвращаем PDF как Blob
+  for (let i = 1; i <= totalPages; i++) {
+    doc.setPage(i);
+    
+    // Add page number at the bottom center
+    doc.setFontSize(9);
+    doc.setTextColor(100, 100, 100);
+    doc.text(`Страница ${i} из ${totalPages}`, 105, 285, { align: 'center' });
+    
+    // Add timestamp at the bottom left
+    doc.text(`Сгенерировано: ${new Date().toLocaleString('ru-RU')}`, 15, 285);
+    
+    // Add copyright notice at the bottom right
+    doc.text('© SEO Analyzer', 195, 285, { align: 'right' });
+  }
+  
   return doc.output('blob');
 };
+
+/**
+ * Helper function to get a status text based on the score
+ */
+function getScoreStatus(score: number): string {
+  if (score >= 90) return 'Отлично';
+  if (score >= 70) return 'Хорошо';
+  if (score >= 50) return 'Удовлетворительно';
+  return 'Требует улучшения';
+}
+
+/**
+ * Helper function for category score status
+ */
+function getCategoryStatus(score: number): string {
+  if (score >= 90) return 'Отлично';
+  if (score >= 70) return 'Хорошо';
+  if (score >= 50) return 'Удовлетворительно';
+  return 'Требует улучшения';
+}
+
+/**
+ * Format category name for display
+ */
+function formatCategoryName(category: string): string {
+  switch (category.toLowerCase()) {
+    case 'seo': return 'SEO';
+    case 'performance': return 'Производительность';
+    case 'content': return 'Контент';
+    case 'technical': return 'Технические аспекты';
+    case 'mobile': return 'Мобильная оптимизация';
+    case 'security': return 'Безопасность';
+    case 'usability': return 'Удобство использования';
+    default: return category.charAt(0).toUpperCase() + category.slice(1);
+  }
+}

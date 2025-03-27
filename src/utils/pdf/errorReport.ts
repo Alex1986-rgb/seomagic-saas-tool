@@ -13,13 +13,18 @@ export interface ErrorReportOptions {
   }>;
   scanDate?: string;
   recommendations?: string[];
+  url?: string;
+  urls?: string[];
+  auditData?: any;
+  detailed?: boolean;
+  includeScreenshots?: boolean;
 }
 
 /**
  * Generates a PDF report focusing on errors found during an audit
  */
 export const generateErrorReportPdf = async (options: ErrorReportOptions): Promise<Blob> => {
-  const { domain, errors, scanDate = new Date().toISOString(), recommendations = [] } = options;
+  const { domain, errors, scanDate = new Date().toISOString(), recommendations = [], url } = options;
   
   // Create new PDF document
   const doc = new jsPDF({
@@ -37,14 +42,14 @@ export const generateErrorReportPdf = async (options: ErrorReportOptions): Promi
   
   // Set document title
   doc.setProperties({
-    title: `Отчет об ошибках для ${domain}`,
+    title: `Отчет об ошибках для ${domain || url}`,
     subject: 'Отчет об ошибках аудита сайта',
     author: 'SEO Analyzer',
     creator: 'SEO Analyzer Tool'
   });
   
   // Add header
-  doc.setFillColor(239, 68, 68); // Red for error report
+  doc.setFillColor(pdfColors.error[0], pdfColors.error[1], pdfColors.error[2]); // Red for error report
   doc.rect(0, 0, 210, 30, 'F');
   
   doc.setFontSize(24);
@@ -52,7 +57,7 @@ export const generateErrorReportPdf = async (options: ErrorReportOptions): Promi
   doc.text('Отчет об ошибках', 15, 15);
   
   doc.setFontSize(14);
-  doc.text(`Домен: ${domain}`, 15, 22);
+  doc.text(`Домен: ${domain || url}`, 15, 22);
   
   // Reset text color
   doc.setTextColor(0, 0, 0);
@@ -100,7 +105,7 @@ export const generateErrorReportPdf = async (options: ErrorReportOptions): Promi
       2: { cellWidth: 80 },
       3: { cellWidth: 20 }
     },
-    headStyles: { fillColor: pdfColors.error }
+    headStyles: { fillColor: [pdfColors.error[0], pdfColors.error[1], pdfColors.error[2]] }
   });
   
   // Add recommendations

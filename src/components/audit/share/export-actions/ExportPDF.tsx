@@ -3,7 +3,7 @@ import React from 'react';
 import { FileText, Loader2 } from 'lucide-react';
 import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { AuditData } from '@/types/audit';
-import { generateAuditPdf } from '@/utils/pdf';
+import { generateAuditPdf } from '@/utils/pdf/auditPdf';
 import { saveAs } from 'file-saver';
 import { cleanUrl, formatDate, showExportError, showExportSuccess } from '../export-utils';
 

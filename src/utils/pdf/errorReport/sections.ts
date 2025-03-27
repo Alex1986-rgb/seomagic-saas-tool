@@ -79,7 +79,7 @@ const renderErrorSection = (
 ): number => {
   // Add section title
   doc.setFontSize(pdfFonts.subheading.size);
-  doc.setTextColor(...section.color);
+  doc.setTextColor(section.color[0], section.color[1], section.color[2]);
   doc.text(section.title, 14, startY);
   
   // Reset text color
@@ -99,7 +99,7 @@ const renderErrorSection = (
     body: tableData,
     theme: 'grid',
     headStyles: {
-      fillColor: section.color,
+      fillColor: [section.color[0], section.color[1], section.color[2]],
       textColor: [255, 255, 255]
     },
     styles: {
@@ -134,7 +134,7 @@ export const renderPageErrorsSection = (
   
   // Add title
   doc.setFontSize(pdfFonts.heading.size);
-  doc.setTextColor(...pdfColors.primary);
+  doc.setTextColor(pdfColors.primary[0], pdfColors.primary[1], pdfColors.primary[2]);
   doc.text('Ошибки по страницам', 105, 20, { align: 'center' });
   
   // Reset text color
@@ -152,7 +152,7 @@ export const renderPageErrorsSection = (
     
     // Add URL
     doc.setFontSize(pdfFonts.subheading.size);
-    doc.setTextColor(...pdfColors.primary);
+    doc.setTextColor(pdfColors.primary[0], pdfColors.primary[1], pdfColors.primary[2]);
     doc.text(`${index + 1}. ${url}`, 14, currentY);
     
     // Reset text color
@@ -171,7 +171,7 @@ export const renderPageErrorsSection = (
       body: tableData,
       theme: 'grid',
       headStyles: {
-        fillColor: pdfColors.gray,
+        fillColor: [pdfColors.gray[0], pdfColors.gray[1], pdfColors.gray[2]],
         textColor: [255, 255, 255]
       },
       styles: {
@@ -213,7 +213,7 @@ export const renderRecommendationsSection = (doc: jsPDF): number => {
   
   // Add title
   doc.setFontSize(pdfFonts.heading.size);
-  doc.setTextColor(...pdfColors.primary);
+  doc.setTextColor(pdfColors.primary[0], pdfColors.primary[1], pdfColors.primary[2]);
   doc.text('Рекомендации по оптимизации', 105, 20, { align: 'center' });
   
   // Reset text color
@@ -264,7 +264,7 @@ export const renderRecommendationsSection = (doc: jsPDF): number => {
     
     // Add section title
     doc.setFontSize(pdfFonts.subheading.size);
-    doc.setTextColor(...pdfColors.primary);
+    doc.setTextColor(pdfColors.primary[0], pdfColors.primary[1], pdfColors.primary[2]);
     doc.text(`${index + 1}. ${section.title}`, 14, currentY);
     
     // Reset text color
@@ -295,7 +295,7 @@ export const renderScoresSection = (doc: jsPDF, auditData: any): number => {
   
   // Add title
   doc.setFontSize(pdfFonts.heading.size);
-  doc.setTextColor(...pdfColors.primary);
+  doc.setTextColor(pdfColors.primary[0], pdfColors.primary[1], pdfColors.primary[2]);
   doc.text('Общие показатели SEO', 105, 20, { align: 'center' });
   
   // Reset text color
@@ -346,7 +346,7 @@ export const renderExecutiveSummarySection = (
 ): number => {
   // Add title
   doc.setFontSize(pdfFonts.heading.size);
-  doc.setTextColor(...pdfColors.primary);
+  doc.setTextColor(pdfColors.primary[0], pdfColors.primary[1], pdfColors.primary[2]);
   doc.text('Сводка по ошибкам', 105, 20, { align: 'center' });
   
   // Reset text color
@@ -370,7 +370,7 @@ export const renderExecutiveSummarySection = (
     body: summaryData,
     theme: 'grid',
     headStyles: {
-      fillColor: pdfColors.primary,
+      fillColor: [pdfColors.primary[0], pdfColors.primary[1], pdfColors.primary[2]],
       textColor: [255, 255, 255]
     },
     styles: {
@@ -386,3 +386,33 @@ export const renderExecutiveSummarySection = (
   
   return (doc as any).lastAutoTable.finalY + 10;
 };
+
+// Add missing helper functions
+export function applyRecommendationPriorityColor(doc: jsPDF, priority: string): void {
+  switch (priority) {
+    case 'high':
+      doc.setTextColor(pdfColors.error[0], pdfColors.error[1], pdfColors.error[2]);
+      break;
+    case 'medium':
+      doc.setTextColor(pdfColors.warning[0], pdfColors.warning[1], pdfColors.warning[2]);
+      break;
+    case 'low':
+      doc.setTextColor(pdfColors.info[0], pdfColors.info[1], pdfColors.info[2]);
+      break;
+    default:
+      doc.setTextColor(0, 0, 0);
+  }
+}
+
+export function getRecommendationPriorityText(priority: string): string {
+  switch (priority) {
+    case 'high':
+      return 'Высокий';
+    case 'medium':
+      return 'Средний';
+    case 'low':
+      return 'Низкий';
+    default:
+      return 'Средний';
+  }
+}
