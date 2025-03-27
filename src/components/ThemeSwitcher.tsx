@@ -50,9 +50,13 @@ export function ThemeSwitcherIcon() {
     return <Sun className="h-5 w-5" />;
   }
   
-  // For system theme, we'll check the actual current appearance
-  // and match the icon accordingly
-  const isDarkMode = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+  // For system theme, we need to check if the window object is available
+  // since this component might be rendered on the server
+  if (typeof window !== 'undefined') {
+    const isDarkMode = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    return isDarkMode ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5" />;
+  }
   
-  return isDarkMode ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5" />;
+  // Default fallback
+  return <Sun className="h-5 w-5" />;
 }
