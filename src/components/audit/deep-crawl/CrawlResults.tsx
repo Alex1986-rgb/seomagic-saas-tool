@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { FileSearch, FileText, Download, ClipboardCopy, CheckCircle, Server, FilePlus } from 'lucide-react';
@@ -43,7 +42,6 @@ export const CrawlResults: React.FC<CrawlResultsProps> = ({
   const { toast } = useToast();
   const [copiedUrl, setCopiedUrl] = useState<string | null>(null);
 
-  // Calculate some basic SEO metrics
   const topLevelPages = urls.filter(u => (u.match(/\//g) || []).length <= 3).length;
   const deepPages = urls.filter(u => (u.match(/\//g) || []).length > 3).length;
   const potentialProductPages = urls.filter(u => 
@@ -200,8 +198,8 @@ export const CrawlResults: React.FC<CrawlResultsProps> = ({
                   depthData={depthData}
                   brokenLinks={brokenLinks}
                   duplicatePages={duplicatePages}
-                  enhancedStyling={false}
                   includeFullDetails={false}
+                  enhancedStyling={false}
                 />
               </div>
             </DropdownMenuItem>
@@ -215,8 +213,8 @@ export const CrawlResults: React.FC<CrawlResultsProps> = ({
                   depthData={depthData}
                   brokenLinks={brokenLinks}
                   duplicatePages={duplicatePages}
-                  enhancedStyling={true}
                   includeFullDetails={true}
+                  enhancedStyling={true}
                   variant="ghost"
                   className="w-full justify-start px-2"
                 >

@@ -17,6 +17,9 @@ interface ExportDeepCrawlPdfProps {
   className?: string;
   variant?: "default" | "outline" | "secondary" | "destructive" | "ghost";
   size?: "default" | "sm" | "lg" | "icon";
+  enhancedStyling?: boolean;
+  includeFullDetails?: boolean;
+  children?: React.ReactNode;
 }
 
 const ExportDeepCrawlPdf: React.FC<ExportDeepCrawlPdfProps> = ({
@@ -30,7 +33,10 @@ const ExportDeepCrawlPdf: React.FC<ExportDeepCrawlPdfProps> = ({
   duplicatePages = [],
   className,
   variant = "outline",
-  size = "sm"
+  size = "sm",
+  enhancedStyling = true,
+  includeFullDetails = true,
+  children
 }) => {
   const [isExporting, setIsExporting] = useState(false);
   const { toast } = useToast();
@@ -56,8 +62,8 @@ const ExportDeepCrawlPdf: React.FC<ExportDeepCrawlPdfProps> = ({
         depthData,
         brokenLinks,
         duplicatePages,
-        includeFullDetails: true, // Добавляем параметр для генерации полного отчета
-        enhancedStyling: true // Добавляем параметр для улучшенных стилей
+        includeFullDetails,
+        enhancedStyling
       });
       
       if (!pdfBlob) throw new Error("Не удалось создать PDF");
@@ -105,7 +111,7 @@ const ExportDeepCrawlPdf: React.FC<ExportDeepCrawlPdfProps> = ({
       ) : (
         <>
           <FileText className="h-4 w-4" />
-          <span>Скачать полный PDF отчет</span>
+          {children || <span>Скачать полный PDF отчет</span>}
         </>
       )}
     </Button>

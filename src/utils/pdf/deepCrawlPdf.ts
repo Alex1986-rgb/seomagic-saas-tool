@@ -1,4 +1,3 @@
-
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { addPaginationFooters } from './helpers';
@@ -907,7 +906,7 @@ function getSeoRecommendations(
 /**
  * Get color for recommendation priority
  */
-function getRecommendationPriorityColor(priority: 'high' | 'medium' | 'low'): [number, number, number] {
+function getRecommendationPriorityColor(priority: 'high' | 'medium' | 'low'): number[] {
   switch (priority) {
     case 'high':
       return [239, 68, 68]; // Red
