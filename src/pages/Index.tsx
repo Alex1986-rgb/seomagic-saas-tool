@@ -158,43 +158,8 @@ const Index: React.FC = () => {
       {/* Detailed Features Section - Comprehensive feature list */}
       <FeatureSection />
       
-      {/* Call to Action Section - Combined from the two similar sections */}
-      <section className="py-20 bg-gradient-to-r from-primary/90 to-primary text-primary-foreground relative overflow-hidden">
-        <div className="absolute inset-0 bg-[url('/img/grid-pattern.png')] opacity-10" />
-        
-        <div className="container mx-auto px-4 md:px-6 text-center">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.5 }}
-            viewport={{ once: true }}
-            className="max-w-2xl mx-auto"
-          >
-            <h2 className="text-3xl md:text-4xl font-bold mb-6">Готовы улучшить SEO вашего сайта?</h2>
-            <p className="text-xl mb-8 opacity-90">
-              Начните бесплатный аудит прямо сейчас и получите детальные рекомендации по оптимизации
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button 
-                onClick={() => navigate('/audit')} 
-                size="lg" 
-                variant="secondary"
-                className="px-8 py-6 text-lg font-medium shadow-xl hover:shadow-2xl transition-all duration-300"
-              >
-                Начать бесплатно
-                <ArrowRight className="ml-2 h-5 w-5" />
-              </Button>
-              <a 
-                href="/pricing" 
-                className="bg-transparent border border-secondary/70 hover:border-secondary text-secondary-foreground font-medium px-8 py-4 rounded-md inline-flex items-center justify-center transition-colors relative overflow-hidden group"
-              >
-                <span className="absolute inset-0 w-full h-full bg-gradient-to-r from-secondary/0 via-secondary/10 to-secondary/0 group-hover:translate-x-full transition-transform duration-700 ease-in-out -z-10"></span>
-                Узнать о тарифах
-              </a>
-            </div>
-          </motion.div>
-        </div>
-      </section>
+      {/* Call to Action Section */}
+      <CTASection />
     </div>
   );
 };
