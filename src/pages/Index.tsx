@@ -29,6 +29,9 @@ const Index: React.FC = () => {
       {/* Hero Section */}
       <HeroSection />
       
+      {/* Position Tracker Feature - Moved up for better visibility and conversion */}
+      <PositionTrackerFeature />
+      
       {/* Core Features Section - Key benefits presented in a clean layout */}
       <section className="py-24 bg-muted/30 relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-b from-background via-secondary/5 to-background -z-10" />
@@ -42,7 +45,7 @@ const Index: React.FC = () => {
             transition={{ duration: 0.6 }}
           >
             <div className="inline-flex items-center px-4 py-2 rounded-full bg-primary/10 text-primary font-medium mb-4 border border-primary/20">
-              <CheckCircle className="w-4 h-4 mr-2" />
+              <CheckCircle className="w-4 h-4 mr-2 animate-pulse-slow" />
               Комплексное SEO решение
             </div>
             <h2 className="text-3xl md:text-4xl font-bold mb-4 font-playfair">
@@ -120,10 +123,7 @@ const Index: React.FC = () => {
         </div>
       </section>
       
-      {/* Position Tracker Feature - Highlighted as a key functionality - Moved up for better visibility */}
-      <PositionTrackerFeature />
-      
-      {/* Video Demo Section - Moved down as requested */}
+      {/* Video Demo Section - Moved down for better flow */}
       <section className="py-20 bg-gradient-to-b from-background to-muted/20">
         <div className="container mx-auto px-4 md:px-6">
           <div className="text-center mb-12 max-w-3xl mx-auto">
@@ -133,9 +133,19 @@ const Index: React.FC = () => {
               transition={{ duration: 0.6 }}
               viewport={{ once: true }}
             >
+              <div className="inline-flex items-center px-4 py-2 rounded-full bg-primary/10 text-primary font-medium mb-4 border border-primary/20">
+                <Sparkles className="w-4 h-4 mr-2 animate-pulse-slow" />
+                Посмотрите сервис в действии
+              </div>
               <h2 className="text-3xl md:text-4xl font-bold mb-6 font-playfair relative inline-block">
                 Как это работает
-                <div className="absolute -bottom-2 left-0 right-0 h-1 bg-primary/60 rounded-full"></div>
+                <motion.div 
+                  className="absolute -bottom-2 left-0 right-0 h-1 bg-primary/60 rounded-full"
+                  initial={{ width: 0 }}
+                  whileInView={{ width: "100%" }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.8, delay: 0.3 }}
+                />
               </h2>
               <p className="text-lg text-muted-foreground mx-auto">
                 Посмотрите короткое видео о том, как наша платформа проводит аудит и оптимизацию сайтов
