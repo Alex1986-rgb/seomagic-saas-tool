@@ -1,24 +1,45 @@
 
-const NAV_ITEMS = [
-  { name: 'Главная', path: '/' },
-  { name: 'Аудит', path: '/audit' },
-  { name: 'Анализ позиций', path: '/position-tracker' },
-  { name: 'Тарифы', path: '/pricing' },
-  { name: 'Демо', path: '/demo' },
-  { name: 'О сервисе', path: '/about' },
-  { name: 'Блог', path: '/blog' },
+export const NAV_ITEMS = [
+  {
+    name: "Главная",
+    href: "/",
+    description: "Домашняя страница SEO-аудита и оптимизации сайтов",
+    keywords: "SEO аудит, оптимизация сайта, поисковая оптимизация"
+  },
+  {
+    name: "Аудит",
+    href: "/audit",
+    description: "Комплексный анализ SEO-показателей вашего сайта",
+    keywords: "SEO анализ, проверка сайта, технический аудит сайта"
+  },
+  {
+    name: "Отслеживание позиций",
+    href: "/positions",
+    description: "Мониторинг позиций вашего сайта в поисковых системах",
+    keywords: "позиции сайта, отслеживание рейтинга, мониторинг поисковой выдачи"
+  },
+  {
+    name: "Отчеты",
+    href: "/reports",
+    description: "Детальные отчеты о состоянии и продвижении вашего сайта",
+    keywords: "SEO отчеты, аналитика сайта, показатели эффективности"
+  },
+  {
+    name: "Цены",
+    href: "/pricing",
+    description: "Тарифы и планы на услуги SEO-оптимизации и аудита",
+    keywords: "цены SEO, тарифы оптимизации, стоимость продвижения"
+  },
+  {
+    name: "Блог",
+    href: "/blog",
+    description: "Полезные статьи о SEO и продвижении сайтов",
+    keywords: "блог о SEO, статьи по продвижению, советы веб-мастерам"
+  },
+  {
+    name: "О компании",
+    href: "/about",
+    description: "Информация о нашей компании и услугах SEO-оптимизации",
+    keywords: "SEO компания, услуги оптимизации, команда специалистов"
+  }
 ];
-
-const RESOURCE_ITEMS = [
-  { name: 'Руководства', path: '/guides' },
-  { name: 'Поддержка', path: '/support' },
-];
-
-const COMPANY_ITEMS = [
-  { name: 'О нас', path: '/about' },
-  { name: 'Контакты', path: '/contact' },
-  { name: 'Конфиденциальность', path: '/privacy' },
-  { name: 'Условия', path: '/terms' },
-];
-
-export { NAV_ITEMS, RESOURCE_ITEMS, COMPANY_ITEMS };

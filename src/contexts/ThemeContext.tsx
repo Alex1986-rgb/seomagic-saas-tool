@@ -1,77 +1,101 @@
 
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState, useMemo, useCallback } from "react";
 
-type Theme = 'light' | 'dark';
+type Theme = "dark" | "light" | "system";
 
-type ThemeContextType = {
-  theme: Theme;
-  toggleTheme: () => void;
+type ThemeProviderProps = {
+  children: React.ReactNode;
+  defaultTheme?: Theme;
+  storageKey?: string;
 };
 
-const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
+type ThemeProviderState = {
+  theme: Theme;
+  setTheme: (theme: Theme) => void;
+};
 
-export function ThemeProvider({ children }: { children: React.ReactNode }) {
+const initialState: ThemeProviderState = {
+  theme: "system",
+  setTheme: () => null,
+};
+
+const ThemeProviderContext = createContext<ThemeProviderState>(initialState);
+
+export function ThemeProvider({
+  children,
+  defaultTheme = "system",
+  storageKey = "theme",
+  ...props
+}: ThemeProviderProps) {
+  // Оптимизированное получение начальной темы с проверкой клиентской стороны
   const [theme, setTheme] = useState<Theme>(() => {
     if (typeof window !== 'undefined') {
-      // Check if user has previously selected a theme
-      const savedTheme = localStorage.getItem('theme');
-      // Check user's system preference
-      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      
-      if (savedTheme === 'dark' || (savedTheme === null && prefersDark)) {
-        return 'dark';
-      }
-      
-      return 'light';
+      const storedTheme = localStorage.getItem(storageKey) as Theme;
+      return storedTheme || defaultTheme;
     }
-    
-    // Default to light if window is not available (SSR)
-    return 'light';
+    return defaultTheme;
   });
 
+  // Отдельный эффект для применения темы к DOM
   useEffect(() => {
-    // Update the document class when theme changes
-    if (theme === 'dark') {
-      document.documentElement.classList.add('dark');
+    const root = window.document.documentElement;
+    root.classList.remove("light", "dark");
+
+    if (theme === "system") {
+      const systemTheme = window.matchMedia("(prefers-color-scheme: dark)")
+        .matches
+        ? "dark"
+        : "light";
+      root.classList.add(systemTheme);
+      
+      // Добавляем слушатель для изменения системной темы
+      const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
+      const handleChange = () => {
+        const newTheme = mediaQuery.matches ? "dark" : "light";
+        root.classList.remove("light", "dark");
+        root.classList.add(newTheme);
+      };
+      
+      mediaQuery.addEventListener("change", handleChange);
+      return () => mediaQuery.removeEventListener("change", handleChange);
     } else {
-      document.documentElement.classList.remove('dark');
+      root.classList.add(theme);
     }
-    
-    // Save the theme preference to localStorage
-    localStorage.setItem('theme', theme);
   }, [theme]);
 
-  const toggleTheme = () => {
-    setTheme(prevTheme => prevTheme === 'light' ? 'dark' : 'light');
-  };
+  // Сохраняем тему в localStorage при изменении
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(storageKey, theme);
+    }
+  }, [theme, storageKey]);
+
+  // Мемоизируем функцию setTheme для предотвращения ненужных ререндеров
+  const setThemeCallback = useCallback((newTheme: Theme) => {
+    setTheme(newTheme);
+  }, []);
+
+  // Мемоизируем значение контекста
+  const value = useMemo(
+    () => ({
+      theme,
+      setTheme: setThemeCallback,
+    }),
+    [theme, setThemeCallback]
+  );
 
   return (
-    <ThemeContext.Provider value={{ theme, toggleTheme }}>
+    <ThemeProviderContext.Provider value={value} {...props}>
       {children}
-    </ThemeContext.Provider>
+    </ThemeProviderContext.Provider>
   );
 }
 
-export function useTheme() {
-  const context = useContext(ThemeContext);
-  if (context === undefined) {
-    // Return a fallback implementation if used outside provider
-    return {
-      theme: (typeof window !== 'undefined' && 
-        (localStorage.getItem('theme') === 'dark' || 
-        window.matchMedia('(prefers-color-scheme: dark)').matches)) 
-        ? 'dark' : 'light',
-      toggleTheme: () => {
-        const current = localStorage.getItem('theme');
-        const newTheme = current === 'dark' ? 'light' : 'dark';
-        localStorage.setItem('theme', newTheme);
-        if (newTheme === 'dark') {
-          document.documentElement.classList.add('dark');
-        } else {
-          document.documentElement.classList.remove('dark');
-        }
-      }
-    };
-  }
+export const useTheme = () => {
+  const context = useContext(ThemeProviderContext);
+
+  if (context === undefined)
+    throw new Error("useTheme must be used within a ThemeProvider");
+
   return context;
-}
+};
