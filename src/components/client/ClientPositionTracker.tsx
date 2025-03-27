@@ -22,25 +22,25 @@ const ClientPositionTracker: React.FC = () => {
   const { toast } = useToast();
 
   useEffect(() => {
-    const loadHistory = async () => {
-      setIsLoading(true);
-      try {
-        const data = await getPositionHistory();
-        setHistory(data);
-      } catch (error) {
-        console.error('Error loading position history:', error);
-        toast({
-          title: "Ошибка загрузки данных",
-          description: "Не удалось загрузить историю проверок позиций",
-          variant: "destructive",
-        });
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
     loadHistory();
-  }, [toast]);
+  }, []);
+
+  const loadHistory = async () => {
+    setIsLoading(true);
+    try {
+      const data = await getPositionHistory();
+      setHistory(data);
+    } catch (error) {
+      console.error('Error loading position history:', error);
+      toast({
+        title: "Ошибка загрузки данных",
+        description: "Не удалось загрузить историю проверок позиций",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleOrder = (type: 'audit' | 'position' | 'optimization') => {
     setOrderType(type);
@@ -105,9 +105,20 @@ const ClientPositionTracker: React.FC = () => {
     }
   };
 
+  const getLastCheckDate = () => {
+    if (history.length > 0) {
+      return history[0].date || history[0].timestamp;
+    }
+    return undefined;
+  };
+
   return (
     <div className="space-y-6">
-      <PositionTrackerHeader handleOrder={handleOrder} />
+      <PositionTrackerHeader 
+        handleOrder={handleOrder} 
+        lastCheckDate={getLastCheckDate()}
+        domainName={history.length > 0 ? history[0].domain : undefined}
+      />
       
       <Tabs defaultValue="overview">
         <TabsList className="mb-6">
@@ -130,7 +141,11 @@ const ClientPositionTracker: React.FC = () => {
         </TabsList>
 
         <TabsContent value="overview" className="space-y-6">
-          <OverviewTab history={history} />
+          <OverviewTab 
+            history={history} 
+            isLoading={isLoading}
+            onRefresh={loadHistory}
+          />
         </TabsContent>
 
         <TabsContent value="keywords" className="space-y-6">
