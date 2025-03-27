@@ -8,13 +8,7 @@ import { Mail, Lock } from "lucide-react";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
-
-// Define validation schema
-const loginSchema = z.object({
-  email: z.string().email({ message: "Введите корректный email" }),
-  password: z.string().min(6, { message: "Пароль должен содержать минимум 6 символов" }),
-});
+import { loginSchema, type LoginFormValues } from './validationSchemas';
 
 type LoginFormProps = {
   onSuccess?: () => void;
@@ -26,7 +20,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSuccess }) => {
   const navigate = useNavigate();
 
   // Initialize login form
-  const form = useForm<z.infer<typeof loginSchema>>({
+  const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
       email: "",
@@ -34,7 +28,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSuccess }) => {
     },
   });
 
-  const handleLogin = async (values: z.infer<typeof loginSchema>) => {
+  const handleLogin = async (values: LoginFormValues) => {
     setIsLoading(true);
     
     // Simulate authorization request

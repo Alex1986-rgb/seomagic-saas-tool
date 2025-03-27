@@ -8,14 +8,7 @@ import { User, Mail, Lock } from "lucide-react";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
-
-// Define validation schema
-const registerSchema = z.object({
-  name: z.string().min(2, { message: "Имя должно содержать минимум 2 символа" }),
-  email: z.string().email({ message: "Введите корректный email" }),
-  password: z.string().min(6, { message: "Пароль должен содержать минимум 6 символов" }),
-});
+import { registerSchema, type RegisterFormValues } from './validationSchemas';
 
 type RegisterFormProps = {
   onSuccess?: () => void;
@@ -27,7 +20,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSuccess }) => {
   const navigate = useNavigate();
 
   // Initialize registration form
-  const form = useForm<z.infer<typeof registerSchema>>({
+  const form = useForm<RegisterFormValues>({
     resolver: zodResolver(registerSchema),
     defaultValues: {
       name: "",
@@ -36,7 +29,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSuccess }) => {
     },
   });
 
-  const handleRegister = async (values: z.infer<typeof registerSchema>) => {
+  const handleRegister = async (values: RegisterFormValues) => {
     setIsLoading(true);
     
     // Simulate registration request
