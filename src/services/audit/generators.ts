@@ -78,6 +78,11 @@ export const generateAuditData = (url: string): AuditData => {
         previousScore: faker.number.int({ min: 0, max: 100 }),
         items: Array.from({ length: faker.number.int({ min: 3, max: 7 }) }, () => generateRandomAuditItem()),
       },
+      mobile: {
+        score: faker.number.int({ min: 0, max: 100 }),
+        previousScore: faker.number.int({ min: 0, max: 100 }),
+        items: Array.from({ length: faker.number.int({ min: 3, max: 7 }) }, () => generateRandomAuditItem()),
+      }
     }
   };
 };
