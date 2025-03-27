@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
+import ExportDeepCrawlPdf from './ExportDeepCrawlPdf';
 
 interface CrawlResultsProps {
   pageCount: number;
@@ -15,6 +16,10 @@ interface CrawlResultsProps {
   onDownloadSitemap?: () => void;
   onDownloadReport?: () => void;
   onDownloadAllData?: () => void;
+  pageTypes?: Record<string, number>;
+  depthData?: { level: number; count: number }[];
+  brokenLinks?: { url: string; statusCode: number }[];
+  duplicatePages?: { url: string; similarUrls: string[] }[];
 }
 
 export const CrawlResults: React.FC<CrawlResultsProps> = ({
@@ -24,6 +29,10 @@ export const CrawlResults: React.FC<CrawlResultsProps> = ({
   onDownloadSitemap,
   onDownloadReport,
   onDownloadAllData,
+  pageTypes = {},
+  depthData = [],
+  brokenLinks = [],
+  duplicatePages = []
 }) => {
   const { toast } = useToast();
   const [copiedUrl, setCopiedUrl] = React.useState<string | null>(null);
@@ -154,7 +163,7 @@ export const CrawlResults: React.FC<CrawlResultsProps> = ({
         </TabsContent>
       </Tabs>
       
-      <div className="flex justify-end space-x-2 mt-4">
+      <div className="flex flex-wrap justify-end space-x-2 mt-4">
         {onDownloadSitemap && (
           <Button 
             onClick={onDownloadSitemap}
@@ -166,6 +175,16 @@ export const CrawlResults: React.FC<CrawlResultsProps> = ({
             Скачать Sitemap
           </Button>
         )}
+        
+        <ExportDeepCrawlPdf
+          domain={domain}
+          urls={urls}
+          pageCount={pageCount}
+          pageTypes={pageTypes}
+          depthData={depthData}
+          brokenLinks={brokenLinks}
+          duplicatePages={duplicatePages}
+        />
         
         {onDownloadReport && (
           <Button 

@@ -4,6 +4,7 @@ export * from './reportGenerator';
 export * from './auditPdf';
 export * from './historyPdf';
 export * from './errorReportPdf';
+export * from './deepCrawlPdf'; // Export the new deep crawl PDF generator
 
 // Export helpers from the new structure
 export * from './helpers';

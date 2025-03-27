@@ -1,0 +1,113 @@
+
+import React, { useState } from 'react';
+import { FileText, Loader2 } from 'lucide-react';
+import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast";
+import { generateDeepCrawlPdf } from '@/utils/pdf/deepCrawlPdf';
+
+interface ExportDeepCrawlPdfProps {
+  domain: string;
+  urls: string[];
+  pageCount: number;
+  scanDate?: string;
+  pageTypes?: Record<string, number>;
+  depthData?: { level: number; count: number }[];
+  brokenLinks?: { url: string; statusCode: number }[];
+  duplicatePages?: { url: string; similarUrls: string[] }[];
+  className?: string;
+  variant?: "default" | "outline" | "secondary" | "destructive" | "ghost";
+  size?: "default" | "sm" | "lg" | "icon";
+}
+
+const ExportDeepCrawlPdf: React.FC<ExportDeepCrawlPdfProps> = ({
+  domain,
+  urls,
+  pageCount,
+  scanDate = new Date().toISOString(),
+  pageTypes = {},
+  depthData = [],
+  brokenLinks = [],
+  duplicatePages = [],
+  className,
+  variant = "outline",
+  size = "sm"
+}) => {
+  const [isExporting, setIsExporting] = useState(false);
+  const { toast } = useToast();
+  
+  const handleExport = async () => {
+    if (isExporting) return;
+    
+    try {
+      setIsExporting(true);
+      
+      toast({
+        title: "Подготовка PDF отчета",
+        description: "Пожалуйста, подождите...",
+      });
+      
+      const pdfBlob = await generateDeepCrawlPdf({
+        domain,
+        scanDate,
+        pagesScanned: pageCount,
+        totalPages: pageCount,
+        urls,
+        pageTypes,
+        depthData,
+        brokenLinks,
+        duplicatePages
+      });
+      
+      if (!pdfBlob) throw new Error("Не удалось создать PDF");
+      
+      // Create a download link for the PDF
+      const url = window.URL.createObjectURL(pdfBlob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `deep-scan-${domain.replace(/[^a-zA-Z0-9]/g, '-')}-${new Date().toISOString().split('T')[0]}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+      
+      toast({
+        title: "Отчет сохранен",
+        description: "Детальный PDF отчет успешно скачан",
+      });
+    } catch (error) {
+      console.error('Ошибка при создании PDF:', error);
+      
+      toast({
+        title: "Ошибка",
+        description: "Не удалось создать PDF отчет. Пожалуйста, попробуйте еще раз.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsExporting(false);
+    }
+  };
+  
+  return (
+    <Button
+      variant={variant}
+      size={size}
+      className={`flex items-center gap-2 ${className}`}
+      onClick={handleExport}
+      disabled={isExporting}
+    >
+      {isExporting ? (
+        <>
+          <Loader2 className="h-4 w-4 animate-spin" />
+          <span>Создание PDF...</span>
+        </>
+      ) : (
+        <>
+          <FileText className="h-4 w-4" />
+          <span>Скачать детальный PDF отчет</span>
+        </>
+      )}
+    </Button>
+  );
+};
+
+export default ExportDeepCrawlPdf;
