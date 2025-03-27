@@ -22,34 +22,36 @@ const ProfileContent: React.FC<ProfileContentProps> = ({ activeTab, onTabChange 
         value={activeTab} 
         onValueChange={onTabChange}
       >
-        <TabsList className="mb-6">
-          <TabsTrigger value="audits" className="flex items-center gap-2">
-            <History className="h-4 w-4" />
-            <span>История аудитов</span>
-          </TabsTrigger>
-          <TabsTrigger value="positions" className="flex items-center gap-2">
-            <BarChart className="h-4 w-4" />
-            <span>Позиции сайта</span>
-          </TabsTrigger>
-          <TabsTrigger value="reports" className="flex items-center gap-2">
-            <FileText className="h-4 w-4" />
-            <span>Отчеты</span>
-          </TabsTrigger>
-          <TabsTrigger value="subscription" className="flex items-center gap-2">
-            <CreditCard className="h-4 w-4" />
-            <span>Подписка</span>
-          </TabsTrigger>
-          <TabsTrigger value="notifications" className="flex items-center gap-2">
-            <Bell className="h-4 w-4" />
-            <span>Уведомления</span>
-          </TabsTrigger>
-          <TabsTrigger value="settings" className="flex items-center gap-2">
-            <Settings className="h-4 w-4" />
-            <span>Настройки</span>
-          </TabsTrigger>
-        </TabsList>
+        <div className="overflow-x-auto pb-2">
+          <TabsList className="mb-6 flex flex-wrap md:flex-nowrap">
+            <TabsTrigger value="audits" className="flex items-center gap-2 text-xs md:text-sm">
+              <History className="h-3 w-3 md:h-4 md:w-4" />
+              <span>История аудитов</span>
+            </TabsTrigger>
+            <TabsTrigger value="positions" className="flex items-center gap-2 text-xs md:text-sm">
+              <BarChart className="h-3 w-3 md:h-4 md:w-4" />
+              <span>Позиции сайта</span>
+            </TabsTrigger>
+            <TabsTrigger value="reports" className="flex items-center gap-2 text-xs md:text-sm">
+              <FileText className="h-3 w-3 md:h-4 md:w-4" />
+              <span>Отчеты</span>
+            </TabsTrigger>
+            <TabsTrigger value="subscription" className="flex items-center gap-2 text-xs md:text-sm">
+              <CreditCard className="h-3 w-3 md:h-4 md:w-4" />
+              <span>Подписка</span>
+            </TabsTrigger>
+            <TabsTrigger value="notifications" className="flex items-center gap-2 text-xs md:text-sm">
+              <Bell className="h-3 w-3 md:h-4 md:w-4" />
+              <span>Уведомления</span>
+            </TabsTrigger>
+            <TabsTrigger value="settings" className="flex items-center gap-2 text-xs md:text-sm">
+              <Settings className="h-3 w-3 md:h-4 md:w-4" />
+              <span>Настройки</span>
+            </TabsTrigger>
+          </TabsList>
+        </div>
         
-        <div className="neo-card p-6">
+        <div className="neo-card p-4 md:p-6">
           <TabsContent value="audits">
             <ClientAudits />
           </TabsContent>

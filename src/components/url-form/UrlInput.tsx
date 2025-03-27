@@ -35,11 +35,11 @@ const UrlInput: React.FC<UrlInputProps> = ({
 
   return (
     <motion.div 
-      className={`glass-panel p-2 md:p-3 flex flex-col md:flex-row items-center gap-3 overflow-hidden transition-all duration-300 ${isFocused ? 'ring-2 ring-primary/50 shadow-lg shadow-primary/10' : ''} ${isValid === true && url ? 'ring-1 ring-green-500/50' : ''} ${isValid === false && url ? 'ring-1 ring-red-500/50' : ''}`}
+      className={`glass-panel p-2 md:p-3 flex flex-col md:flex-row items-center gap-2 md:gap-3 overflow-hidden transition-all duration-300 ${isFocused ? 'ring-2 ring-primary/50 shadow-lg shadow-primary/10' : ''} ${isValid === true && url ? 'ring-1 ring-green-500/50' : ''} ${isValid === false && url ? 'ring-1 ring-red-500/50' : ''}`}
       whileHover={{ y: -2, boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.15)" }}
       transition={{ duration: 0.2 }}
     >
-      <div className="flex items-center w-full px-2 gap-2 group">
+      <div className="flex items-center w-full px-1 md:px-2 gap-1 md:gap-2 group">
         <AnimatePresence mode="wait">
           {isValid === true && url ? (
             <motion.div
@@ -48,7 +48,7 @@ const UrlInput: React.FC<UrlInputProps> = ({
               exit={{ scale: 0 }}
               transition={{ duration: 0.2 }}
             >
-              <CheckCircle className="h-5 w-5 text-green-500" />
+              <CheckCircle className="h-4 w-4 md:h-5 md:w-5 text-green-500" />
             </motion.div>
           ) : isValid === false && url ? (
             <motion.div
@@ -57,7 +57,7 @@ const UrlInput: React.FC<UrlInputProps> = ({
               exit={{ scale: 0 }}
               transition={{ duration: 0.2 }}
             >
-              <AlertTriangle className="h-5 w-5 text-red-500" />
+              <AlertTriangle className="h-4 w-4 md:h-5 md:w-5 text-red-500" />
             </motion.div>
           ) : (
             <motion.div
@@ -66,7 +66,7 @@ const UrlInput: React.FC<UrlInputProps> = ({
               exit={{ scale: 0 }}
               transition={{ duration: 0.2 }}
             >
-              <Globe className={`h-5 w-5 ${isFocused ? 'text-primary' : 'text-muted-foreground'} group-hover:text-primary transition-colors duration-200`} />
+              <Globe className={`h-4 w-4 md:h-5 md:w-5 ${isFocused ? 'text-primary' : 'text-muted-foreground'} group-hover:text-primary transition-colors duration-200`} />
             </motion.div>
           )}
         </AnimatePresence>
@@ -77,7 +77,7 @@ const UrlInput: React.FC<UrlInputProps> = ({
           onFocus={() => setIsFocused(true)}
           onBlur={() => setIsFocused(false)}
           placeholder="Введите URL сайта (например, example.com)"
-          className="flex-grow bg-transparent px-2 py-3 focus:outline-none text-foreground placeholder:text-muted-foreground w-full transition-all duration-200"
+          className="flex-grow bg-transparent px-1 md:px-2 py-2 md:py-3 focus:outline-none text-foreground placeholder:text-muted-foreground w-full transition-all duration-200 text-sm md:text-base"
           disabled={isLoading}
           autoFocus
         />
@@ -91,17 +91,17 @@ const UrlInput: React.FC<UrlInputProps> = ({
         type="submit"
         disabled={isLoading}
         variant="glassmorphic"
-        className="w-full md:w-auto relative overflow-hidden group"
+        className="w-full md:w-auto relative overflow-hidden group text-sm md:text-base py-1.5 md:py-2"
       >
         <span className="absolute inset-0 w-0 bg-white/20 transition-all duration-500 ease-out group-hover:w-full"></span>
         {isLoading ? (
           <div className="flex items-center gap-2">
-            <Loader2 className="h-5 w-5 animate-spin" />
-            <span className="text-xs">{progressStage + 1}/5</span>
+            <Loader2 className="h-4 w-4 md:h-5 md:w-5 animate-spin" />
+            <span className="text-xs md:text-sm">{progressStage + 1}/5</span>
           </div>
         ) : (
           <>
-            <span className="mr-2 relative z-10">Анализировать</span>
+            <span className="mr-1 md:mr-2 relative z-10">Анализировать</span>
             <ArrowRight size={16} className="relative z-10 group-hover:translate-x-1 transition-transform duration-200" />
           </>
         )}

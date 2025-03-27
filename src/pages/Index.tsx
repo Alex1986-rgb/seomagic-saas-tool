@@ -12,7 +12,7 @@ import PositionTrackerFeature from '@/components/position-tracker/PositionTracke
 
 const Index: React.FC = () => {
   return (
-    <>
+    <div className="pt-16 md:pt-0">
       {/* Hero Section */}
       <HeroSection />
       
@@ -39,7 +39,7 @@ const Index: React.FC = () => {
       
       {/* CTA Section */}
       <CTASection />
-    </>
+    </div>
   );
 };
 

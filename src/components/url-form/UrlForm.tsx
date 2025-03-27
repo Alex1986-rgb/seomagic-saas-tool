@@ -129,7 +129,7 @@ const UrlForm: React.FC = () => {
   return (
     <motion.form 
       onSubmit={handleSubmit} 
-      className="w-full max-w-3xl mx-auto"
+      className="w-full max-w-3xl mx-auto px-4 md:px-0"
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4 }}

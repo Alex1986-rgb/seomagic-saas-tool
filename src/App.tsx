@@ -1,6 +1,6 @@
 
 import React, { Suspense } from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { HelmetProvider } from 'react-helmet-async';
 import { SEO } from './components/SEO';
 import { AppErrorBoundary } from './components/ErrorBoundary';
@@ -58,6 +58,8 @@ function App() {
                 <Route path="/privacy" element={<Layout><Privacy /></Layout>} />
                 <Route path="/terms" element={<Layout><Terms /></Layout>} />
                 <Route path="/profile" element={<Layout><ClientProfile /></Layout>} />
+                {/* Перенаправление с неизвестных маршрутов на главную */}
+                <Route path="*" element={<Navigate to="/" replace />} />
               </Routes>
             </Suspense>
           </Router>

@@ -44,6 +44,7 @@ const Navbar: React.FC = () => {
     };
 
     window.addEventListener('scroll', handleScroll);
+    handleScroll(); // Вызываем сразу для инициализации состояния
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
@@ -94,13 +95,15 @@ const Navbar: React.FC = () => {
           )}
         </AnimatePresence>
 
-        {/* Debug Controls */}
-        <DebugControls 
-          isLoggedIn={isLoggedIn}
-          isAdmin={isAdmin}
-          toggleAuth={toggleAuth}
-          toggleAdmin={toggleAdmin}
-        />
+        {/* Debug Controls - скрыть на продакшене */}
+        {process.env.NODE_ENV !== 'production' && (
+          <DebugControls 
+            isLoggedIn={isLoggedIn}
+            isAdmin={isAdmin}
+            toggleAuth={toggleAuth}
+            toggleAdmin={toggleAdmin}
+          />
+        )}
       </motion.nav>
     </ThemeProvider>
   );

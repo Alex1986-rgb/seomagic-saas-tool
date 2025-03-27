@@ -20,12 +20,12 @@ const NavbarDesktopLinks: React.FC<NavbarDesktopLinksProps> = ({ navItems }) => 
   const [companyOpen, setCompanyOpen] = useState(false);
 
   return (
-    <div className="hidden md:flex items-center space-x-6">
+    <div className="hidden md:flex items-center space-x-3 lg:space-x-6">
       {navItems.map((item) => (
         <Link
           key={item.path}
           to={item.path}
-          className={`hover:text-primary transition-colors ${
+          className={`text-sm lg:text-base hover:text-primary transition-colors ${
             location.pathname === item.path
               ? 'text-primary font-medium'
               : 'text-foreground'
@@ -37,16 +37,16 @@ const NavbarDesktopLinks: React.FC<NavbarDesktopLinksProps> = ({ navItems }) => 
       
       {/* Ресурсы выпадающее меню */}
       <DropdownMenu open={resourceOpen} onOpenChange={setResourceOpen}>
-        <DropdownMenuTrigger className="flex items-center gap-1 hover:text-primary transition-colors">
+        <DropdownMenuTrigger className="flex items-center gap-1 hover:text-primary transition-colors text-sm lg:text-base">
           Ресурсы
           <ChevronDown className="h-4 w-4" />
         </DropdownMenuTrigger>
-        <DropdownMenuContent>
+        <DropdownMenuContent className="bg-popover text-popover-foreground z-50">
           {RESOURCE_ITEMS.map((item) => (
             <DropdownMenuItem key={item.path} asChild>
               <Link 
                 to={item.path}
-                className={`w-full px-4 py-2 ${
+                className={`w-full px-4 py-2 text-sm ${
                   location.pathname === item.path
                     ? 'text-primary font-medium'
                     : 'text-foreground'
@@ -61,16 +61,16 @@ const NavbarDesktopLinks: React.FC<NavbarDesktopLinksProps> = ({ navItems }) => 
       
       {/* Компания выпадающее меню */}
       <DropdownMenu open={companyOpen} onOpenChange={setCompanyOpen}>
-        <DropdownMenuTrigger className="flex items-center gap-1 hover:text-primary transition-colors">
+        <DropdownMenuTrigger className="flex items-center gap-1 hover:text-primary transition-colors text-sm lg:text-base">
           Компания
           <ChevronDown className="h-4 w-4" />
         </DropdownMenuTrigger>
-        <DropdownMenuContent>
+        <DropdownMenuContent className="bg-popover text-popover-foreground z-50">
           {COMPANY_ITEMS.map((item) => (
             <DropdownMenuItem key={item.path} asChild>
               <Link 
                 to={item.path}
-                className={`w-full px-4 py-2 ${
+                className={`w-full px-4 py-2 text-sm ${
                   location.pathname === item.path
                     ? 'text-primary font-medium'
                     : 'text-foreground'
