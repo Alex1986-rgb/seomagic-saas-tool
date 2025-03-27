@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Bar, BarChart, CartesianGrid, Legend, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
-import { Search, Users, Download, ArrowDown, ArrowUp, History, FileText, Webhook, Link2Off, CopyX, FileTree } from 'lucide-react';
+import { Search, Users, Download, ArrowDown, ArrowUp, History, FileText, Webhook, Link2Off, CopyX, FolderTree } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -285,7 +285,7 @@ const AdminPositions = () => {
             Дубликаты
           </TabsTrigger>
           <TabsTrigger value="sitemap" className="flex items-center gap-1">
-            <FileTree className="h-4 w-4" />
+            <FolderTree className="h-4 w-4" />
             Структура сайта
           </TabsTrigger>
         </TabsList>
@@ -465,7 +465,7 @@ const AdminPositions = () => {
           ) : (
             <Card>
               <CardContent className="py-10 text-center">
-                <FileTree className="h-10 w-10 text-muted-foreground mx-auto mb-4" />
+                <FolderTree className="h-10 w-10 text-muted-foreground mx-auto mb-4" />
                 <p className="text-muted-foreground mb-4">
                   Выберите домен для визуализации структуры сайта
                 </p>

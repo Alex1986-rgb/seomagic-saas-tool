@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { FileTree, BarChart3, Download, Network, ArrowRight } from 'lucide-react';
+import { FolderTree, BarChart3, Download, Network, ArrowRight } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -153,7 +153,7 @@ export function SiteStructureVisualization({ domain, className = '' }: SiteStruc
         <Card>
           <CardHeader>
             <div className="flex items-center gap-2">
-              <FileTree className="h-5 w-5 text-primary" />
+              <FolderTree className="h-5 w-5 text-primary" />
               <CardTitle>Визуализация структуры сайта</CardTitle>
             </div>
             {nodes.length > 0 && (
@@ -234,7 +234,6 @@ export function SiteStructureVisualization({ domain, className = '' }: SiteStruc
                               data={prepareTreemapData()}
                               dataKey="size"
                               nameKey="name"
-                              ratio={4/3}
                               stroke="#fff"
                               fill="#8884d8"
                             >
@@ -348,7 +347,7 @@ export function SiteStructureVisualization({ domain, className = '' }: SiteStruc
             {!isAnalyzing && nodes.length === 0 && (
               <Card className="bg-muted/50 border-dashed">
                 <CardContent className="flex flex-col items-center justify-center py-10">
-                  <FileTree className="h-10 w-10 text-muted-foreground mb-3" />
+                  <FolderTree className="h-10 w-10 text-muted-foreground mb-3" />
                   <p className="text-center text-muted-foreground mb-4">
                     Введите домен и запустите анализ, чтобы визуализировать структуру сайта и рассчитать внутренний PageRank
                   </p>
