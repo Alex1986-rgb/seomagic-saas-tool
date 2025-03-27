@@ -1,15 +1,18 @@
 
-import React, { useState } from 'react';
+import React from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Link, useLocation } from 'react-router-dom';
-import { ChevronDown, ChevronRight } from 'lucide-react';
-import { RESOURCE_ITEMS, COMPANY_ITEMS } from './navConstants';
-import NavbarDesktopAuth from './NavbarDesktopAuth';
-import { ThemeSwitcher } from '../ThemeSwitcher';
+import { UserCircle, Home, LogOut } from 'lucide-react';
+import { ThemeSwitcher } from '@/components/ThemeSwitcher';
+import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast";
 
 interface NavbarMobileProps {
   isOpen: boolean;
-  navItems: { name: string; path: string }[];
+  navItems: Array<{
+    name: string;
+    href: string;
+  }>;
   isLoggedIn: boolean;
   isAdmin: boolean;
   toggleAuth: () => void;
@@ -20,134 +23,97 @@ const NavbarMobile: React.FC<NavbarMobileProps> = ({
   navItems,
   isLoggedIn,
   isAdmin,
-  toggleAuth,
+  toggleAuth
 }) => {
-  const location = useLocation();
-  const [resourceOpen, setResourceOpen] = useState(false);
-  const [companyOpen, setCompanyOpen] = useState(false);
+  const navigate = useNavigate();
+  const { toast } = useToast();
 
-  const variants = {
-    open: { opacity: 1, height: 'auto' },
-    closed: { opacity: 0, height: 0 }
-  };
-
-  const handleResourceToggle = () => {
-    setResourceOpen(!resourceOpen);
-    setCompanyOpen(false);
-  };
-
-  const handleCompanyToggle = () => {
-    setCompanyOpen(!companyOpen);
-    setResourceOpen(false);
+  const handleLogout = () => {
+    toggleAuth();
+    navigate('/');
+    toast({
+      title: "Выход выполнен успешно",
+      description: "Вы вышли из своего аккаунта",
+    });
   };
 
   return (
     <motion.div
-      initial="closed"
-      animate="open"
-      exit="closed"
-      variants={{
-        open: { opacity: 1, height: 'auto' },
-        closed: { opacity: 0, height: 0 }
-      }}
+      className="md:hidden fixed top-16 inset-x-0 bg-background/90 backdrop-blur-md shadow-lg z-40 border-t border-border"
+      initial={{ opacity: 0, height: 0 }}
+      animate={{ opacity: 1, height: 'auto' }}
+      exit={{ opacity: 0, height: 0 }}
       transition={{ duration: 0.3 }}
-      className="md:hidden bg-background/95 backdrop-blur-lg border-t border-border"
     >
-      <div className="flex flex-col p-6 space-y-4">
-        {navItems.map((item) => (
-          <Link
-            key={item.path}
-            to={item.path}
-            className={`py-2 text-lg ${
-              location.pathname === item.path
-                ? 'text-primary font-medium'
-                : 'text-foreground'
-            }`}
-          >
-            {item.name}
-          </Link>
-        ))}
-        
-        {/* Ресурсы выпадающий раздел */}
-        <div className="border-t border-border pt-4">
-          <button 
-            onClick={handleResourceToggle}
-            className="flex justify-between items-center w-full py-2 text-lg"
-          >
-            <span>Ресурсы</span>
-            {resourceOpen ? 
-              <ChevronDown className="h-5 w-5" /> : 
-              <ChevronRight className="h-5 w-5" />
-            }
-          </button>
-          
-          <motion.div
-            initial="closed"
-            animate={resourceOpen ? "open" : "closed"}
-            variants={variants}
-            className="overflow-hidden"
-          >
-            <div className="pl-4 py-2 space-y-3">
-              {RESOURCE_ITEMS.map((item) => (
+      <div className="pt-5 pb-7 px-6 flex flex-col gap-4">
+        <nav className="grid gap-2">
+          {navItems.map((item) => (
+            <Link
+              key={item.name}
+              to={item.href}
+              className="flex items-center px-3 py-2 text-lg transition-colors rounded-md hover:bg-accent"
+            >
+              {item.name}
+            </Link>
+          ))}
+        </nav>
+
+        <div className="h-px w-full bg-border my-2" />
+
+        <div className="flex flex-col gap-3">
+          {isLoggedIn ? (
+            <>
+              <Link
+                to="/profile"
+                className="flex items-center gap-2 px-3 py-2 transition-colors rounded-md hover:bg-accent"
+              >
+                <UserCircle className="h-5 w-5" />
+                <span>Личный кабинет</span>
+              </Link>
+
+              <Link
+                to="/dashboard"
+                className="flex items-center gap-2 px-3 py-2 transition-colors rounded-md hover:bg-accent"
+              >
+                <Home className="h-5 w-5" />
+                <span>Панель управления</span>
+              </Link>
+
+              {isAdmin && (
                 <Link
-                  key={item.path}
-                  to={item.path}
-                  className={`block py-1 ${
-                    location.pathname === item.path
-                      ? 'text-primary font-medium'
-                      : 'text-muted-foreground'
-                  }`}
+                  to="/admin"
+                  className="flex items-center gap-2 px-3 py-2 transition-colors rounded-md hover:bg-accent"
                 >
-                  {item.name}
+                  <span className="h-5 w-5">👑</span>
+                  <span>Админ панель</span>
                 </Link>
-              ))}
-            </div>
-          </motion.div>
+              )}
+
+              <Button
+                variant="destructive"
+                className="mt-2 w-full justify-start gap-2"
+                onClick={handleLogout}
+              >
+                <LogOut className="h-5 w-5" />
+                <span>Выйти</span>
+              </Button>
+            </>
+          ) : (
+            <>
+              <Button variant="outline" asChild className="w-full justify-center">
+                <Link to="/auth">Войти</Link>
+              </Button>
+              <Button asChild className="w-full justify-center">
+                <Link to="/auth?tab=register">Регистрация</Link>
+              </Button>
+            </>
+          )}
         </div>
-        
-        {/* Компания выпадающий раздел */}
-        <div className="border-t border-border pt-4">
-          <button 
-            onClick={handleCompanyToggle}
-            className="flex justify-between items-center w-full py-2 text-lg"
-          >
-            <span>Компания</span>
-            {companyOpen ? 
-              <ChevronDown className="h-5 w-5" /> : 
-              <ChevronRight className="h-5 w-5" />
-            }
-          </button>
-          
-          <motion.div
-            initial="closed"
-            animate={companyOpen ? "open" : "closed"}
-            variants={variants}
-            className="overflow-hidden"
-          >
-            <div className="pl-4 py-2 space-y-3">
-              {COMPANY_ITEMS.map((item) => (
-                <Link
-                  key={item.path}
-                  to={item.path}
-                  className={`block py-1 ${
-                    location.pathname === item.path
-                      ? 'text-primary font-medium'
-                      : 'text-muted-foreground'
-                  }`}
-                >
-                  {item.name}
-                </Link>
-              ))}
-            </div>
-          </motion.div>
-        </div>
-        
-        <div className="border-t border-border pt-4 flex justify-between items-center">
-          <NavbarDesktopAuth 
-            isLoggedIn={isLoggedIn}
-            isAdmin={isAdmin}
-            toggleAuth={toggleAuth}
-          />
+
+        <div className="h-px w-full bg-border my-2" />
+
+        <div className="flex justify-between items-center">
+          <span className="text-sm text-muted-foreground">Тема:</span>
           <ThemeSwitcher />
         </div>
       </div>
