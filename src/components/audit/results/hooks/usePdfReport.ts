@@ -1,7 +1,7 @@
 
 import { useToast } from "@/hooks/use-toast";
-import { AuditData } from '@/types/audit';
-import { generatePdfReport } from '@/utils/pdf';
+import { AuditData, AuditHistoryItem } from '@/types/audit';
+import { generateAuditPdf, generateHistoryPDF } from '@/utils/pdf';
 import { OptimizationItem } from '../components/optimization';
 
 export const usePdfReport = () => {
@@ -32,7 +32,7 @@ export const usePdfReport = () => {
     });
     
     try {
-      const pdfBlob = await generatePdfReport({
+      const pdfBlob = await generateAuditPdf({
         auditData,
         url,
         recommendations: recommendations || undefined,
@@ -64,6 +64,8 @@ export const usePdfReport = () => {
         title: "Готово!",
         description: "PDF отчет успешно создан и скачан",
       });
+      
+      return pdfBlob;
     } catch (error) {
       console.error('Ошибка при создании PDF отчета:', error);
       toast({
@@ -71,8 +73,65 @@ export const usePdfReport = () => {
         description: "Не удалось создать PDF отчет",
         variant: "destructive",
       });
+      return null;
+    }
+  };
+  
+  const generateHistoryReportFile = async (historyItems: AuditHistoryItem[], url: string) => {
+    if (!historyItems || historyItems.length === 0) {
+      toast({
+        title: "Недостаточно данных",
+        description: "Для формирования отчета необходима история аудитов",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    toast({
+      title: "Создание отчета истории",
+      description: "Пожалуйста, подождите...",
+    });
+    
+    try {
+      let domain;
+      try {
+        domain = new URL(url.startsWith('http') ? url : `https://${url}`).hostname;
+      } catch (error) {
+        domain = url.replace(/[^a-zA-Z0-9]/g, '_');
+      }
+      
+      const pdfBlob = await generateHistoryPDF(historyItems, domain);
+      
+      if (!pdfBlob) throw new Error("Не удалось создать PDF");
+      
+      const downloadUrl = window.URL.createObjectURL(pdfBlob);
+      const a = document.createElement('a');
+      a.href = downloadUrl;
+      a.download = `seo_history_${domain}_${new Date().toISOString().split('T')[0]}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(downloadUrl);
+      document.body.removeChild(a);
+      
+      toast({
+        title: "Готово!",
+        description: "Отчет по истории аудитов успешно создан и скачан",
+      });
+      
+      return pdfBlob;
+    } catch (error) {
+      console.error('Ошибка при создании отчета истории:', error);
+      toast({
+        title: "Ошибка",
+        description: "Не удалось создать отчет истории аудитов",
+        variant: "destructive",
+      });
+      return null;
     }
   };
 
-  return { generatePdfReportFile };
+  return { 
+    generatePdfReportFile,
+    generateHistoryReportFile
+  };
 };

@@ -1,103 +1,152 @@
 
 import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 import { AuditHistoryItem } from '@/types/audit';
-import { generateHistoryChartImage, addPaginationFooters } from './helpers';
+import { addPaginationFooters, getCategoryStatus } from './helpers';
 
-/**
- * Generates a PDF with audit history data
- */
-export const generateHistoryPDF = async (historyItems: AuditHistoryItem[], url: string, chartContainer?: HTMLElement): Promise<void> => {
-  try {
-    const pdf = new jsPDF('p', 'mm', 'a4');
-    const pageWidth = pdf.internal.pageSize.getWidth();
-    const margin = 10;
-    
-    // Add header with logo and title
-    pdf.setFillColor(245, 245, 245);
-    pdf.rect(0, 0, pageWidth, 30, 'F');
-    
-    pdf.setFont('helvetica', 'bold');
-    pdf.setFontSize(20);
-    pdf.setTextColor(44, 62, 80);
-    pdf.text('История SEO аудитов', pageWidth / 2, 15, { align: 'center' });
-    
-    // Add URL and general info
-    pdf.setFont('helvetica', 'normal');
-    pdf.setFontSize(12);
-    pdf.setTextColor(100, 100, 100);
-    pdf.text(`URL: ${url}`, margin, 40);
-    pdf.text(`Всего аудитов: ${historyItems.length}`, margin, 47);
-    pdf.text(`Отчет создан: ${new Date().toLocaleDateString('ru-RU')}`, margin, 54);
-    
-    // Add chart image if available
-    let yPos = 65;
-    if (chartContainer) {
-      try {
-        const chartImage = await generateHistoryChartImage(chartContainer);
-        pdf.addImage(chartImage, 'PNG', margin, yPos, pageWidth - margin * 2, 60);
-        yPos += 70;
-      } catch (error) {
-        console.error('Ошибка генерации изображения графика:', error);
-        yPos += 10;
-      }
-    }
-    
-    // Add history data table
-    await addHistoryTable(pdf, historyItems, yPos, margin);
-    
-    // Add pagination footers
-    addPaginationFooters(pdf, margin);
-    
-    // Save the PDF
-    pdf.save(`SEO_История_${url.replace(/[^a-zA-Z0-9]/g, '_')}.pdf`);
-    
-    return Promise.resolve();
-  } catch (error) {
-    console.error('Ошибка создания PDF истории:', error);
-    return Promise.reject(error);
-  }
-};
-
-/**
- * Adds history data table to the PDF
- */
-async function addHistoryTable(pdf: jsPDF, historyItems: AuditHistoryItem[], yPos: number, margin: number): Promise<void> {
-  pdf.setFontSize(14);
-  pdf.setTextColor(44, 62, 80);
-  pdf.text('История изменений', margin, yPos);
-  yPos += 5;
+export const generateHistoryPDF = async (historyItems: AuditHistoryItem[], domain: string): Promise<Blob> => {
+  const doc = new jsPDF({
+    orientation: 'portrait',
+    unit: 'mm',
+    format: 'a4'
+  });
   
-  const sortedItems = [...historyItems].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  // Заголовок отчета
+  doc.setFillColor(56, 189, 248);
+  doc.rect(0, 0, 210, 30, 'F');
   
-  const historyData = sortedItems.map((item, index, arr) => {
-    const prevItem = index < arr.length - 1 ? arr[index + 1] : null;
-    const diff = prevItem ? item.score - prevItem.score : 0;
-    const diffText = diff !== 0 ? (diff > 0 ? `+${diff}` : diff.toString()) : '0';
+  doc.setFontSize(24);
+  doc.setTextColor(255, 255, 255);
+  doc.text('История SEO аудитов', 15, 15);
+  
+  doc.setFontSize(14);
+  doc.text(`Сайт: ${domain}`, 15, 22);
+  
+  doc.setTextColor(0, 0, 0);
+  doc.setFontSize(12);
+  doc.text(`Создано: ${new Date().toLocaleDateString('ru-RU')}`, 15, 40);
+  
+  // Таблица с историей аудитов
+  const tableData = historyItems.map(item => {
+    const date = new Date(item.date).toLocaleDateString('ru-RU', {
+      year: 'numeric', 
+      month: 'long', 
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
     
     return [
-      new Date(item.date).toLocaleDateString('ru-RU', { 
-        day: '2-digit', 
-        month: '2-digit', 
-        year: '2-digit',
-        hour: '2-digit', 
-        minute: '2-digit'
-      }),
-      `${item.score}/100`,
-      diffText,
-      `${item.issues?.critical || 0}`,
-      `${item.issues?.important || 0}`,
-      `${item.issues?.opportunities || 0}`
+      date,
+      item.score,
+      item.issues ? `${item.issues.critical + item.issues.important + item.issues.opportunities}` : 'Н/Д',
+      item.pageCount || 'Н/Д',
+      item.details?.seo?.score || 'Н/Д',
+      item.details?.performance?.score || 'Н/Д'
     ];
   });
   
-  const autoTable = await import('jspdf-autotable');
-  autoTable.default(pdf, {
-    startY: yPos,
-    head: [['Дата', 'Оценка', 'Изменение', 'Критич.', 'Важные', 'Возмож.']],
-    body: historyData,
+  autoTable(doc, {
+    startY: 50,
+    head: [['Дата', 'Общий балл', 'Проблемы', 'Страницы', 'SEO', 'Performance']],
+    body: tableData,
     theme: 'grid',
-    headStyles: { fillColor: [52, 73, 94], textColor: 255 },
-    alternateRowStyles: { fillColor: [240, 240, 240] },
-    margin: { left: margin, right: margin }
+    headStyles: { fillColor: [56, 189, 248], textColor: 255, fontStyle: 'bold' },
+    styles: { fontSize: 10 },
+    columnStyles: {
+      0: { cellWidth: 45 },
+      1: { cellWidth: 25, halign: 'center' },
+      2: { cellWidth: 25, halign: 'center' },
+      3: { cellWidth: 25, halign: 'center' },
+      4: { cellWidth: 25, halign: 'center' },
+      5: { cellWidth: 25, halign: 'center' }
+    }
   });
-}
+  
+  // Таблица с динамикой баллов
+  if (historyItems.length > 1) {
+    doc.addPage();
+    
+    doc.setFillColor(56, 189, 248);
+    doc.rect(0, 0, 210, 20, 'F');
+    doc.setFontSize(18);
+    doc.setTextColor(255, 255, 255);
+    doc.text('Динамика изменений', 15, 15);
+    
+    doc.setTextColor(0, 0, 0);
+    doc.setFontSize(14);
+    doc.text('Прогресс показателей по аудитам', 15, 30);
+    
+    const progressData = [];
+    
+    for (let i = 0; i < historyItems.length - 1; i++) {
+      const current = historyItems[i];
+      const previous = historyItems[i+1];
+      
+      const dateCurrent = new Date(current.date).toLocaleDateString('ru-RU', {
+        month: 'short', 
+        day: 'numeric'
+      });
+      
+      const datePrevious = new Date(previous.date).toLocaleDateString('ru-RU', {
+        month: 'short', 
+        day: 'numeric'
+      });
+      
+      const scoreDiff = current.score - previous.score;
+      const seoDiff = (current.details?.seo?.score || 0) - (previous.details?.seo?.score || 0);
+      const perfDiff = (current.details?.performance?.score || 0) - (previous.details?.performance?.score || 0);
+      
+      progressData.push([
+        `${datePrevious} → ${dateCurrent}`,
+        current.score,
+        scoreDiff >= 0 ? `+${scoreDiff}` : scoreDiff,
+        current.details?.seo?.score || 'Н/Д',
+        seoDiff >= 0 ? `+${seoDiff}` : seoDiff,
+        current.details?.performance?.score || 'Н/Д',
+        perfDiff >= 0 ? `+${perfDiff}` : perfDiff
+      ]);
+    }
+    
+    autoTable(doc, {
+      startY: 40,
+      head: [['Период', 'Общий балл', 'Изменение', 'SEO', 'Изменение', 'Производительность', 'Изменение']],
+      body: progressData,
+      theme: 'grid',
+      headStyles: { fillColor: [56, 189, 248], textColor: 255, fontStyle: 'bold' },
+      styles: { fontSize: 9 },
+      columnStyles: {
+        0: { cellWidth: 30 },
+        2: { halign: 'center' },
+        4: { halign: 'center' },
+        6: { halign: 'center' }
+      }
+    });
+    
+    // Рекомендации
+    const yPosition = (doc as any).lastAutoTable.finalY + 15;
+    doc.setFontSize(14);
+    doc.text('Рекомендации', 15, yPosition);
+    
+    const recommendations = [
+      'Регулярно выполняйте аудит сайта для отслеживания прогресса',
+      'Обращайте внимание на критические ошибки в первую очередь',
+      'Исправляйте технические проблемы для повышения производительности',
+      'Оптимизируйте метатеги и контент для улучшения SEO-показателей',
+      'Используйте историю аудитов для анализа эффективности внесенных изменений'
+    ];
+    
+    let recY = yPosition + 10;
+    recommendations.forEach(rec => {
+      doc.setFontSize(11);
+      doc.text(`• ${rec}`, 20, recY);
+      recY += 7;
+    });
+  }
+  
+  // Добавляем нумерацию страниц
+  addPaginationFooters(doc, 15);
+  
+  // Возвращаем PDF как Blob
+  return doc.output('blob');
+};
