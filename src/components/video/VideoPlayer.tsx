@@ -1,14 +1,18 @@
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { toast } from 'sonner';
 import VideoControls from './VideoControls';
 import AnimatedVideoPlaceholder from './AnimatedVideoPlaceholder';
+import { Play, Loader2 } from 'lucide-react';
+import { Button } from '../ui/button';
+import { motion } from 'framer-motion';
 
 const VideoPlayer: React.FC = () => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(true);
   const [progress, setProgress] = useState(0);
   const [isRealVideo, setIsRealVideo] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const videoRef = useRef<HTMLVideoElement>(null);
 
   // Проверяем, загрузилось ли реальное видео
@@ -17,6 +21,7 @@ const VideoPlayer: React.FC = () => {
       videoRef.current.addEventListener('error', () => {
         console.error("Видео не загружено или произошла ошибка");
         setIsRealVideo(false);
+        setIsLoading(false);
       });
       
       videoRef.current.addEventListener('loadeddata', () => {
@@ -24,18 +29,31 @@ const VideoPlayer: React.FC = () => {
         if (videoRef.current && videoRef.current.videoWidth > 0) {
           console.log("Реальное видео загружено");
           setIsRealVideo(true);
+          setIsLoading(false);
         }
       });
     }
   };
 
-  React.useEffect(() => {
+  useEffect(() => {
     checkVideoAvailability();
+    
+    // Set timeout to ensure we don't wait too long for video to load
+    const timer = setTimeout(() => {
+      if (isLoading) {
+        setIsLoading(false);
+      }
+    }, 3000);
+    
+    return () => clearTimeout(timer);
   }, []);
 
   const togglePlay = () => {
     if (!isRealVideo) {
-      toast.info("Демонстрационный режим активирован");
+      toast.info("Демонстрационный режим активирован", {
+        icon: "🎬",
+        position: "top-center",
+      });
       setIsPlaying(!isPlaying);
       return;
     }
@@ -46,7 +64,9 @@ const VideoPlayer: React.FC = () => {
       } else {
         videoRef.current.play().catch(error => {
           console.error("Error playing video:", error);
-          toast.error("Не удалось воспроизвести видео");
+          toast.error("Не удалось воспроизвести видео", {
+            icon: "⚠️"
+          });
         });
       }
       setIsPlaying(!isPlaying);
@@ -55,7 +75,9 @@ const VideoPlayer: React.FC = () => {
 
   const toggleMute = () => {
     if (!isRealVideo) {
-      toast.info("В демо-режиме звук отключен");
+      toast.info("В демо-режиме звук отключен", {
+        icon: "🔇"
+      });
       return;
     }
     
@@ -67,7 +89,9 @@ const VideoPlayer: React.FC = () => {
 
   const toggleFullscreen = () => {
     if (!isRealVideo) {
-      toast.info("Полноэкранный режим доступен только для реального видео");
+      toast.info("Полноэкранный режим доступен только для реального видео", {
+        icon: "🖥️"
+      });
       return;
     }
     
@@ -91,21 +115,38 @@ const VideoPlayer: React.FC = () => {
   };
 
   const handleDownload = () => {
-    toast.info("Для скачивания требуется реальное видео");
+    toast.info("Для скачивания требуется реальное видео", {
+      icon: "📥"
+    });
   };
 
   return (
-    <div className="aspect-video relative overflow-hidden border border-primary/20 bg-black rounded-xl video-container">
+    <div className="aspect-video relative overflow-hidden border border-primary/20 bg-gradient-to-b from-black to-[#1a1a2e] rounded-xl video-container shadow-xl">
+      {/* Loading state */}
+      {isLoading && (
+        <div className="absolute inset-0 flex items-center justify-center z-20 bg-black/80">
+          <div className="flex flex-col items-center">
+            <Loader2 className="h-12 w-12 text-primary animate-spin" />
+            <p className="text-white mt-4">Загрузка видео...</p>
+          </div>
+        </div>
+      )}
+
       {/* Video Overlay when paused */}
-      {!isPlaying && (
-        <div className="absolute inset-0 bg-black/40 flex items-center justify-center z-10 video-overlay opacity-100">
+      {!isPlaying && !isLoading && (
+        <motion.div 
+          className="absolute inset-0 bg-black/60 flex items-center justify-center z-10 video-overlay" 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.3 }}
+        >
           <Button 
             onClick={togglePlay}
-            className="w-16 h-16 rounded-full bg-primary hover:bg-primary/90 text-white shadow-lg"
+            className="w-20 h-20 rounded-full bg-primary hover:bg-primary/90 text-white shadow-lg hover:scale-105 transition-all duration-300"
           >
-            <Play className="w-6 h-6" />
+            <Play className="w-8 h-8 ml-1" />
           </Button>
-        </div>
+        </motion.div>
       )}
 
       {/* Показываем анимированный плейсхолдер или настоящее видео */}
@@ -124,17 +165,20 @@ const VideoPlayer: React.FC = () => {
           Ваш браузер не поддерживает видео
         </video>
       ) : (
-        <div className={isPlaying ? "block" : "hidden"}>
+        <div className={isPlaying || isLoading ? "block" : "hidden"}>
           <AnimatedVideoPlaceholder />
         </div>
       )}
 
       {/* Video Progress Bar */}
-      <div className="absolute bottom-14 left-0 w-full h-1.5 bg-gray-800/60 z-20">
-        <div 
-          className="h-full bg-gradient-to-r from-primary/80 to-primary"
+      <div className="absolute bottom-14 left-0 w-full h-2 bg-gray-800/60 z-20 overflow-hidden rounded-full mx-auto px-1">
+        <motion.div 
+          className="h-full bg-gradient-to-r from-primary/80 via-primary to-primary/90 rounded-full"
           style={{ width: `${progress}%` }}
-        ></div>
+          initial={{ width: "0%" }}
+          animate={{ width: `${progress}%` }}
+          transition={{ duration: 0.1 }}
+        />
       </div>
 
       {/* Video Controls */}
@@ -149,8 +193,5 @@ const VideoPlayer: React.FC = () => {
     </div>
   );
 };
-
-import { Play } from 'lucide-react';
-import { Button } from '../ui/button';
 
 export default VideoPlayer;
