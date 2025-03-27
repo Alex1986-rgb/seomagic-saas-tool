@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Button } from "@/components/ui/button";
-import { Linkedin, Twitter, Facebook } from 'lucide-react';
+import { Linkedin, Twitter, Facebook, MessageCircle, Share } from 'lucide-react';
 
 interface SocialShareButtonsProps {
   url: string;
@@ -23,6 +23,16 @@ const SocialShareButtons: React.FC<SocialShareButtonsProps> = ({ url, title, sum
   const handleLinkedInShare = () => {
     const linkedinUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}&title=${encodeURIComponent(title)}&summary=${encodeURIComponent(summary)}`;
     window.open(linkedinUrl, '_blank', 'width=600,height=400');
+  };
+  
+  const handleTelegramShare = () => {
+    const telegramUrl = `https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(title)}`;
+    window.open(telegramUrl, '_blank', 'width=600,height=400');
+  };
+  
+  const handleWhatsAppShare = () => {
+    const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(title + ' ' + url)}`;
+    window.open(whatsappUrl, '_blank', 'width=600,height=400');
   };
   
   return (
@@ -55,6 +65,26 @@ const SocialShareButtons: React.FC<SocialShareButtonsProps> = ({ url, title, sum
         aria-label="Поделиться в LinkedIn"
       >
         <Linkedin className="h-4 w-4" />
+      </Button>
+      
+      <Button 
+        variant="outline" 
+        size="icon" 
+        className="rounded-full" 
+        onClick={handleTelegramShare}
+        aria-label="Поделиться в Telegram"
+      >
+        <MessageCircle className="h-4 w-4" />
+      </Button>
+      
+      <Button 
+        variant="outline" 
+        size="icon" 
+        className="rounded-full" 
+        onClick={handleWhatsAppShare}
+        aria-label="Поделиться в WhatsApp"
+      >
+        <Share className="h-4 w-4" />
       </Button>
     </>
   );

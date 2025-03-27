@@ -1,6 +1,4 @@
 
-import { generateAuditPdf } from './auditPdf';
-import { generateHistoryPDF } from './historyPdf';
-
-export const generatePdfReport = generateAuditPdf;
-export { generateAuditPdf, generateHistoryPDF };
+// Re-export all PDF-related utilities
+export * from './reportGenerator';
+export * from './pdfStyles';
