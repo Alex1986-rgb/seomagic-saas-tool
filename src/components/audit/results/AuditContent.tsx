@@ -17,6 +17,7 @@ interface AuditContentProps {
   historyData: AuditHistoryData | null;
   url: string;
   onSelectAudit: (auditId: string) => void;
+  urls?: string[];
 }
 
 const AuditContent: React.FC<AuditContentProps> = ({ 
@@ -24,7 +25,8 @@ const AuditContent: React.FC<AuditContentProps> = ({
   recommendations, 
   historyData, 
   url,
-  onSelectAudit 
+  onSelectAudit,
+  urls
 }) => {
   // Sample data for growth visualization
   const growthData = {
@@ -119,6 +121,7 @@ const AuditContent: React.FC<AuditContentProps> = ({
           auditData={auditData}
           url={url}
           historyItems={historyData?.items}
+          urls={urls}
         />, 
         0.45
       )}

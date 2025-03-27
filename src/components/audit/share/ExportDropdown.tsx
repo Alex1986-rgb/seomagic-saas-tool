@@ -15,19 +15,22 @@ import {
   ExportJSON, 
   ExportHistory, 
   ExportHistoryPDF,
-  ExportHTML
+  ExportHTML,
+  ExportSitemap
 } from './export-actions';
 
 interface ExportDropdownProps {
   auditData?: AuditData;
   url: string;
   historyItems?: AuditHistoryItem[];
+  urls?: string[];
 }
 
 const ExportDropdown: React.FC<ExportDropdownProps> = ({ 
   auditData, 
   url,
-  historyItems 
+  historyItems,
+  urls
 }) => {
   const [isExporting, setIsExporting] = React.useState<string | null>(null);
   
@@ -60,6 +63,14 @@ const ExportDropdown: React.FC<ExportDropdownProps> = ({
         <ExportHTML
           auditData={auditData}
           url={url}
+          isExporting={isExporting}
+          setIsExporting={setIsExporting}
+        />
+        
+        <ExportSitemap
+          auditData={auditData}
+          url={url}
+          urls={urls}
           isExporting={isExporting}
           setIsExporting={setIsExporting}
         />
