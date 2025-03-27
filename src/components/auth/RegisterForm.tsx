@@ -1,13 +1,12 @@
 
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState } from 'react';
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
-import { User, Mail, Lock } from "lucide-react";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
+import { User, Mail, Lock } from "lucide-react";
 import { registerSchema, type RegisterFormValues } from './validationSchemas';
 
 type RegisterFormProps = {
@@ -15,11 +14,9 @@ type RegisterFormProps = {
 };
 
 const RegisterForm: React.FC<RegisterFormProps> = ({ onSuccess }) => {
-  const [isLoading, setIsLoading] = React.useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
-  const navigate = useNavigate();
 
-  // Initialize registration form
   const form = useForm<RegisterFormValues>({
     resolver: zodResolver(registerSchema),
     defaultValues: {
@@ -35,19 +32,14 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSuccess }) => {
     // Simulate registration request
     setTimeout(() => {
       setIsLoading(false);
-      // Save registration state to localStorage
-      localStorage.setItem('isRegistered', 'true');
       
       toast({
         title: "Регистрация успешна",
-        description: "Ваш аккаунт был успешно создан. Теперь вы можете войти в систему.",
+        description: "Ваш аккаунт успешно создан",
       });
       
       if (onSuccess) {
         onSuccess();
-      } else {
-        // Redirect to login tab
-        navigate('/auth');
       }
     }, 1500);
   };
@@ -75,7 +67,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSuccess }) => {
             </FormItem>
           )}
         />
-
+        
         <FormField
           control={form.control}
           name="email"
@@ -120,7 +112,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSuccess }) => {
         />
 
         <Button type="submit" className="w-full" disabled={isLoading}>
-          {isLoading ? 'Регистрация...' : 'Создать аккаунт'}
+          {isLoading ? 'Регистрация...' : 'Зарегистрироваться'}
         </Button>
       </form>
     </Form>
