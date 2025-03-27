@@ -11,7 +11,7 @@ import {
 import { RESOURCE_ITEMS, COMPANY_ITEMS } from './navConstants';
 
 interface NavbarDesktopLinksProps {
-  navItems: { name: string; path: string }[];
+  navItems: { label: string; href: string; admin?: boolean }[];
 }
 
 const NavbarDesktopLinks: React.FC<NavbarDesktopLinksProps> = ({ navItems }) => {
@@ -23,15 +23,15 @@ const NavbarDesktopLinks: React.FC<NavbarDesktopLinksProps> = ({ navItems }) => 
     <div className="hidden md:flex items-center space-x-3 lg:space-x-6">
       {navItems.map((item) => (
         <Link
-          key={item.path}
-          to={item.path}
+          key={item.href}
+          to={item.href}
           className={`text-sm lg:text-base hover:text-primary transition-colors ${
-            location.pathname === item.path
+            location.pathname === item.href
               ? 'text-primary font-medium'
               : 'text-foreground'
           }`}
         >
-          {item.name}
+          {item.label}
         </Link>
       ))}
       
@@ -43,16 +43,16 @@ const NavbarDesktopLinks: React.FC<NavbarDesktopLinksProps> = ({ navItems }) => 
         </DropdownMenuTrigger>
         <DropdownMenuContent className="bg-popover text-popover-foreground z-50">
           {RESOURCE_ITEMS.map((item) => (
-            <DropdownMenuItem key={item.path} asChild>
+            <DropdownMenuItem key={item.href} asChild>
               <Link 
-                to={item.path}
+                to={item.href}
                 className={`w-full px-4 py-2 text-sm ${
-                  location.pathname === item.path
+                  location.pathname === item.href
                     ? 'text-primary font-medium'
                     : 'text-foreground'
                 }`}
               >
-                {item.name}
+                {item.label}
               </Link>
             </DropdownMenuItem>
           ))}
@@ -67,16 +67,16 @@ const NavbarDesktopLinks: React.FC<NavbarDesktopLinksProps> = ({ navItems }) => 
         </DropdownMenuTrigger>
         <DropdownMenuContent className="bg-popover text-popover-foreground z-50">
           {COMPANY_ITEMS.map((item) => (
-            <DropdownMenuItem key={item.path} asChild>
+            <DropdownMenuItem key={item.href} asChild>
               <Link 
-                to={item.path}
+                to={item.href}
                 className={`w-full px-4 py-2 text-sm ${
-                  location.pathname === item.path
+                  location.pathname === item.href
                     ? 'text-primary font-medium'
                     : 'text-foreground'
                 }`}
               >
-                {item.name}
+                {item.label}
               </Link>
             </DropdownMenuItem>
           ))}
