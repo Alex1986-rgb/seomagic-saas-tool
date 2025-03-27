@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Activity, BarChart2, ExternalLink, Globe, Search, TrendingUp, Users, PieChart, FileText, Clock } from 'lucide-react';
+import { Activity, BarChart2, ExternalLink, Globe, Search, TrendingUp, Users, PieChart, FileText, Clock, Settings as SettingsIcon } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import DashboardLayout from '@/components/dashboard/DashboardLayout';
 import { Badge } from "@/components/ui/badge";
