@@ -1,13 +1,19 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { FileSearch, FileText, Download, ClipboardCopy, CheckCircle, Server } from 'lucide-react';
+import { FileSearch, FileText, Download, ClipboardCopy, CheckCircle, Server, FilePlus } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import ExportDeepCrawlPdf from './ExportDeepCrawlPdf';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface CrawlResultsProps {
   pageCount: number;
@@ -35,7 +41,7 @@ export const CrawlResults: React.FC<CrawlResultsProps> = ({
   duplicatePages = []
 }) => {
   const { toast } = useToast();
-  const [copiedUrl, setCopiedUrl] = React.useState<string | null>(null);
+  const [copiedUrl, setCopiedUrl] = useState<string | null>(null);
 
   // Calculate some basic SEO metrics
   const topLevelPages = urls.filter(u => (u.match(/\//g) || []).length <= 3).length;
@@ -176,15 +182,50 @@ export const CrawlResults: React.FC<CrawlResultsProps> = ({
           </Button>
         )}
         
-        <ExportDeepCrawlPdf
-          domain={domain}
-          urls={urls}
-          pageCount={pageCount}
-          pageTypes={pageTypes}
-          depthData={depthData}
-          brokenLinks={brokenLinks}
-          duplicatePages={duplicatePages}
-        />
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" size="sm" className="gap-2">
+              <FilePlus className="h-4 w-4" />
+              <span>PDF отчет</span>
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem asChild>
+              <div className="cursor-pointer">
+                <ExportDeepCrawlPdf
+                  domain={domain}
+                  urls={urls}
+                  pageCount={pageCount}
+                  pageTypes={pageTypes}
+                  depthData={depthData}
+                  brokenLinks={brokenLinks}
+                  duplicatePages={duplicatePages}
+                  enhancedStyling={false}
+                  includeFullDetails={false}
+                />
+              </div>
+            </DropdownMenuItem>
+            <DropdownMenuItem asChild>
+              <div className="cursor-pointer">
+                <ExportDeepCrawlPdf
+                  domain={domain}
+                  urls={urls}
+                  pageCount={pageCount}
+                  pageTypes={pageTypes}
+                  depthData={depthData}
+                  brokenLinks={brokenLinks}
+                  duplicatePages={duplicatePages}
+                  enhancedStyling={true}
+                  includeFullDetails={true}
+                  variant="ghost"
+                  className="w-full justify-start px-2"
+                >
+                  <span>Расширенный PDF отчет</span>
+                </ExportDeepCrawlPdf>
+              </div>
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
         
         {onDownloadReport && (
           <Button 

@@ -55,7 +55,9 @@ const ExportDeepCrawlPdf: React.FC<ExportDeepCrawlPdfProps> = ({
         pageTypes,
         depthData,
         brokenLinks,
-        duplicatePages
+        duplicatePages,
+        includeFullDetails: true, // Добавляем параметр для генерации полного отчета
+        enhancedStyling: true // Добавляем параметр для улучшенных стилей
       });
       
       if (!pdfBlob) throw new Error("Не удалось создать PDF");
@@ -64,7 +66,7 @@ const ExportDeepCrawlPdf: React.FC<ExportDeepCrawlPdfProps> = ({
       const url = window.URL.createObjectURL(pdfBlob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `deep-scan-${domain.replace(/[^a-zA-Z0-9]/g, '-')}-${new Date().toISOString().split('T')[0]}.pdf`;
+      a.download = `detailed-audit-${domain.replace(/[^a-zA-Z0-9]/g, '-')}-${new Date().toISOString().split('T')[0]}.pdf`;
       document.body.appendChild(a);
       a.click();
       window.URL.revokeObjectURL(url);
@@ -72,7 +74,7 @@ const ExportDeepCrawlPdf: React.FC<ExportDeepCrawlPdfProps> = ({
       
       toast({
         title: "Отчет сохранен",
-        description: "Детальный PDF отчет успешно скачан",
+        description: "Полный PDF отчет успешно скачан",
       });
     } catch (error) {
       console.error('Ошибка при создании PDF:', error);
@@ -103,7 +105,7 @@ const ExportDeepCrawlPdf: React.FC<ExportDeepCrawlPdfProps> = ({
       ) : (
         <>
           <FileText className="h-4 w-4" />
-          <span>Скачать детальный PDF отчет</span>
+          <span>Скачать полный PDF отчет</span>
         </>
       )}
     </Button>
