@@ -79,6 +79,8 @@ export function useCrawlState(url: string) {
     updateProgress,
     completeCrawl,
     setDomain,
-    setCrawler
+    setCrawler,
+    setCrawlStage,  // Export the setCrawlStage function
+    setError
   };
 }
