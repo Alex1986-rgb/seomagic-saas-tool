@@ -18,17 +18,11 @@ const NavbarMobileToggle: React.FC<NavbarMobileToggleProps> = ({ isOpen, setIsOp
     <div className="flex items-center md:hidden gap-2">
       <Button
         variant="ghost"
-        className="px-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-primary"
+        className="px-2"
         onClick={handleToggle}
         aria-label={isOpen ? "Закрыть меню" : "Открыть меню"}
-        aria-expanded={isOpen}
-        aria-controls="mobile-menu"
       >
-        {isOpen ? (
-          <X className="h-6 w-6 transition-transform duration-200 ease-in-out" aria-hidden="true" />
-        ) : (
-          <Menu className="h-6 w-6 transition-transform duration-200 ease-in-out" aria-hidden="true" />
-        )}
+        {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
       </Button>
     </div>
   );

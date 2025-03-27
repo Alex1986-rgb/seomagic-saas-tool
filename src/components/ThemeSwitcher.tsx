@@ -1,5 +1,5 @@
 
-import React, { memo, useCallback } from "react";
+import React, { memo } from "react";
 import { Moon, Sun, Laptop } from "lucide-react";
 import { useTheme } from "@/contexts/ThemeContext";
 import { Button } from "@/components/ui/button";
@@ -12,34 +12,25 @@ import {
 
 export const ThemeSwitcher = memo(function ThemeSwitcher() {
   const { theme, setTheme } = useTheme();
-  
-  const handleSetTheme = useCallback((newTheme: string) => {
-    setTheme(newTheme);
-  }, [setTheme]);
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button 
-          variant="ghost" 
-          size="icon" 
-          aria-label="Изменить тему"
-          className="focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-primary"
-        >
+        <Button variant="ghost" size="icon" aria-label="Изменить тему">
           <ThemeSwitcherIcon theme={theme} />
           <span className="sr-only">Переключить тему</span>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        <DropdownMenuItem onClick={() => handleSetTheme("light")}>
+        <DropdownMenuItem onClick={() => setTheme("light")}>
           <Sun className="h-4 w-4 mr-2" />
           <span>Светлая</span>
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => handleSetTheme("dark")}>
+        <DropdownMenuItem onClick={() => setTheme("dark")}>
           <Moon className="h-4 w-4 mr-2" />
           <span>Тёмная</span>
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => handleSetTheme("system")}>
+        <DropdownMenuItem onClick={() => setTheme("system")}>
           <Laptop className="h-4 w-4 mr-2" />
           <span>Системная</span>
         </DropdownMenuItem>
@@ -67,8 +58,5 @@ const ThemeSwitcherIcon = memo(function ThemeSwitcherIcon({ theme }: { theme: st
   // Дефолт
   return <Sun className="h-5 w-5" />;
 });
-
-// Добавляем displayName для отладки
-ThemeSwitcherIcon.displayName = 'ThemeSwitcherIcon';
 
 export { ThemeSwitcherIcon };

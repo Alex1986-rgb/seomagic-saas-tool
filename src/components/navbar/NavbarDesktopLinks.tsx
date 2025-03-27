@@ -7,8 +7,6 @@ interface NavbarDesktopLinksProps {
   navItems: Array<{
     name: string;
     href: string;
-    description?: string;
-    keywords?: string;
   }>;
 }
 
@@ -30,8 +28,6 @@ const NavbarDesktopLinks: React.FC<NavbarDesktopLinksProps> = ({ navItems }) => 
                 : 'text-foreground hover:bg-accent/50'
             }`}
             aria-current={isActive ? 'page' : undefined}
-            title={item.description || item.name}
-            aria-label={item.description || item.name}
           >
             <motion.span
               whileHover={{ y: -2 }}
