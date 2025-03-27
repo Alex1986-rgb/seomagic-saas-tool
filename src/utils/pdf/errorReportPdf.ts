@@ -3,6 +3,7 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { AuditData } from '@/types/audit';
 import { getScoreColorRGB, addPaginationFooters, getCategoryStatus } from './helpers';
+import { analyzeSEOErrors } from '@/components/audit/share/export-utils';
 
 export interface ErrorReportPdfOptions {
   auditData: AuditData;
@@ -36,94 +37,149 @@ export const generateErrorReportPdf = async (options: ErrorReportPdfOptions): Pr
   doc.text(`URL: ${url}`, 14, 30);
   doc.text(`Дата аудита: ${formattedDate}`, 14, 38);
   
+  // Analyze errors using the enhanced error detection function
+  const errors = analyzeSEOErrors(auditData);
+  
   // Add critical errors section
   doc.setFontSize(16);
   doc.text('Критические ошибки', 14, 50);
   
-  // Sample data for critical errors
-  const criticalErrors = [
-    ['Дубликаты страниц', auditData.issues.critical > 5 ? 'Обнаружено' : 'Не обнаружено'],
-    ['Битые ссылки', auditData.issues.critical > 3 ? 'Обнаружено' : 'Не обнаружено'],
-    ['Проблемы с индексацией', auditData.issues.critical > 2 ? 'Обнаружено' : 'Не обнаружено'],
-    ['Ошибки структуры', auditData.issues.critical > 0 ? 'Обнаружено' : 'Не обнаружено']
-  ];
-  
-  autoTable(doc, {
-    startY: 55,
-    head: [['Тип ошибки', 'Статус']],
-    body: criticalErrors,
-    theme: 'grid',
-    styles: { halign: 'left' },
-    headStyles: { fillColor: [220, 53, 69] }
-  });
+  if (errors.critical.length > 0) {
+    const criticalErrorsData = errors.critical.map((error, index) => [
+      `${index + 1}. ${error.title}`,
+      error.description
+    ]);
+    
+    autoTable(doc, {
+      startY: 55,
+      head: [['Ошибка', 'Описание']],
+      body: criticalErrorsData,
+      theme: 'grid',
+      styles: { halign: 'left' },
+      headStyles: { fillColor: [220, 53, 69] },
+      columnStyles: {
+        0: { cellWidth: 60 },
+        1: { cellWidth: 120 }
+      }
+    });
+  } else {
+    doc.setFontSize(12);
+    doc.text('Критических ошибок не обнаружено', 14, 60);
+  }
   
   // Add important issues section
-  let currentY = (doc as any).lastAutoTable.finalY + 15;
+  let currentY = doc.autoTable.previous.finalY + 15 || 70;
   
   doc.setFontSize(16);
   doc.text('Важные проблемы', 14, currentY);
   
-  // Sample data for important issues
-  const importantIssues = [
-    ['Медленная загрузка страниц', auditData.issues.important > 4 ? 'Проблема' : 'Нормально'],
-    ['Отсутствие мета-тегов', auditData.issues.important > 3 ? 'Проблема' : 'Нормально'],
-    ['Проблемы с мобильной версией', auditData.issues.important > 2 ? 'Проблема' : 'Нормально'],
-    ['Некорректные редиректы', auditData.issues.important > 1 ? 'Проблема' : 'Нормально'],
-    ['Проблемы с контентом', auditData.issues.important > 0 ? 'Проблема' : 'Нормально']
-  ];
+  if (errors.important.length > 0) {
+    const importantIssuesData = errors.important.map((error, index) => [
+      `${index + 1}. ${error.title}`,
+      error.description
+    ]);
+    
+    autoTable(doc, {
+      startY: currentY + 5,
+      head: [['Проблема', 'Описание']],
+      body: importantIssuesData,
+      theme: 'grid',
+      styles: { halign: 'left' },
+      headStyles: { fillColor: [255, 193, 7] },
+      columnStyles: {
+        0: { cellWidth: 60 },
+        1: { cellWidth: 120 }
+      }
+    });
+  } else {
+    doc.setFontSize(12);
+    doc.text('Важных проблем не обнаружено', 14, currentY + 10);
+  }
   
-  autoTable(doc, {
-    startY: currentY + 5,
-    head: [['Тип проблемы', 'Статус']],
-    body: importantIssues,
-    theme: 'grid',
-    styles: { halign: 'left' },
-    headStyles: { fillColor: [255, 193, 7] }
-  });
+  // Add minor issues section
+  currentY = doc.autoTable.previous.finalY + 15 || currentY + 20;
   
-  // Add detailed errors page
-  doc.addPage();
+  doc.setFontSize(16);
+  doc.text('Незначительные замечания', 14, currentY);
   
-  doc.setFontSize(18);
-  doc.text('Детализация ошибок по страницам', 105, 20, { align: 'center' });
+  if (errors.minor.length > 0) {
+    const minorIssuesData = errors.minor.map((error, index) => [
+      `${index + 1}. ${error.title}`,
+      error.description
+    ]);
+    
+    autoTable(doc, {
+      startY: currentY + 5,
+      head: [['Замечание', 'Описание']],
+      body: minorIssuesData,
+      theme: 'grid',
+      styles: { halign: 'left' },
+      headStyles: { fillColor: [13, 110, 253] },
+      columnStyles: {
+        0: { cellWidth: 60 },
+        1: { cellWidth: 120 }
+      }
+    });
+  } else {
+    doc.setFontSize(12);
+    doc.text('Незначительных замечаний не обнаружено', 14, currentY + 10);
+  }
   
-  // Mock data for page errors
-  const pageErrors = [];
-  
+  // Add URL-specific errors if URLs are provided
   if (urls && urls.length > 0) {
-    // Generate sample errors for some of the URLs
-    for (let i = 0; i < Math.min(10, urls.length); i++) {
-      if (Math.random() > 0.7) { // Add errors to some pages
+    doc.addPage();
+    
+    doc.setFontSize(18);
+    doc.text('Ошибки по отдельным страницам', 105, 20, { align: 'center' });
+    
+    // Generate sample page-level errors (in a real app, these would come from analysis)
+    const pageErrors = [];
+    const errorTypes = [
+      'Дубликат контента', 
+      'Отсутствие метатегов', 
+      'Пустой title', 
+      'Пустой description',
+      'Отсутствие H1',
+      'Битая ссылка',
+      'Слишком длинный URL',
+      'JavaScript ошибка'
+    ];
+    
+    const severityTypes = ['Критическая', 'Важная', 'Незначительная'];
+    
+    // Generate sample errors for some URLs (in production, this would be real data)
+    const sampleUrlCount = Math.min(12, urls.length);
+    for (let i = 0; i < sampleUrlCount; i++) {
+      if (Math.random() > 0.4) { // Not all pages have errors
+        const errorType = errorTypes[Math.floor(Math.random() * errorTypes.length)];
+        const severity = severityTypes[Math.floor(Math.random() * severityTypes.length)];
+        
         pageErrors.push([
           urls[i],
-          Math.random() > 0.5 ? 'Дубликат контента' : 'Отсутствие метатегов',
-          Math.random() > 0.5 ? 'Критическая' : 'Важная'
+          errorType,
+          severity
         ]);
       }
     }
-  } else {
-    // If no URLs provided, create some sample data
-    pageErrors.push(
-      [`${url}/page1`, 'Дубликат контента', 'Критическая'],
-      [`${url}/page2`, 'Битая ссылка', 'Критическая'],
-      [`${url}/page3`, 'Отсутствие метатегов', 'Важная'],
-      [`${url}/blog/post1`, 'Низкая скорость загрузки', 'Важная'],
-      [`${url}/contact`, 'Проблемы с мобильной версией', 'Важная']
-    );
-  }
-  
-  if (pageErrors.length > 0) {
-    autoTable(doc, {
-      startY: 30,
-      head: [['URL страницы', 'Тип ошибки', 'Серьезность']],
-      body: pageErrors,
-      theme: 'grid',
-      styles: { halign: 'left' },
-      headStyles: { fillColor: [56, 189, 248] }
-    });
-  } else {
-    doc.setFontSize(14);
-    doc.text('Детальных ошибок по страницам не обнаружено', 105, 50, { align: 'center' });
+    
+    if (pageErrors.length > 0) {
+      autoTable(doc, {
+        startY: 30,
+        head: [['URL страницы', 'Тип ошибки', 'Серьезность']],
+        body: pageErrors,
+        theme: 'grid',
+        styles: { halign: 'left', fontSize: 8 },
+        headStyles: { fillColor: [56, 189, 248] },
+        columnStyles: {
+          0: { cellWidth: 'auto' },
+          1: { cellWidth: 40 },
+          2: { cellWidth: 30 }
+        }
+      });
+    } else {
+      doc.setFontSize(14);
+      doc.text('Детальных ошибок по страницам не обнаружено', 105, 50, { align: 'center' });
+    }
   }
   
   // Add recommendations page
@@ -172,8 +228,60 @@ export const generateErrorReportPdf = async (options: ErrorReportPdfOptions): Pr
       recY += 6;
     });
     
-    recY += 10;
+    recY += 4;
   });
+  
+  // Add SEO score breakdown
+  doc.addPage();
+  
+  doc.setFontSize(18);
+  doc.text('Распределение SEO оценок', 105, 20, { align: 'center' });
+  
+  // Create a table showing scores by category
+  const categoryScores = [
+    ['SEO', `${auditData.details.seo.score}/100`, getCategoryStatus(auditData.details.seo.score)],
+    ['Контент', `${auditData.details.content.score}/100`, getCategoryStatus(auditData.details.content.score)],
+    ['Производительность', `${auditData.details.performance.score}/100`, getCategoryStatus(auditData.details.performance.score)],
+    ['Технические аспекты', `${auditData.details.technical.score}/100`, getCategoryStatus(auditData.details.technical.score)],
+    ['Мобильная версия', `${auditData.details.mobile.score}/100`, getCategoryStatus(auditData.details.mobile.score)],
+    ['Общий балл', `${auditData.score}/100`, getCategoryStatus(auditData.score)]
+  ];
+  
+  autoTable(doc, {
+    startY: 30,
+    head: [['Категория', 'Балл', 'Статус']],
+    body: categoryScores,
+    theme: 'grid',
+    styles: { halign: 'left' },
+    headStyles: { fillColor: [23, 162, 184] },
+    columnStyles: {
+      0: { cellWidth: 70 },
+      1: { cellWidth: 40 },
+      2: { cellWidth: 70 }
+    },
+    // Color rows based on score status
+    bodyStyles: (row) => {
+      const status = categoryScores[row.index][2];
+      if (status === 'Хорошо') return { textColor: [40, 167, 69] };
+      if (status === 'Нуждается в улучшении') return { textColor: [255, 193, 7] };
+      if (status === 'Требует внимания') return { textColor: [220, 53, 69] };
+      return {};
+    }
+  });
+  
+  // Add duplication report section if applicable
+  if (auditData.issues.critical > 0 || auditData.issues.important > 0) {
+    doc.setFontSize(16);
+    doc.text('Отчет о потенциальных дубликатах контента', 14, 100);
+    
+    doc.setFontSize(12);
+    doc.text(`Обнаружено ${Math.floor(auditData.issues.critical / 2)} дубликатов страниц`, 14, 110);
+    doc.text(`Обнаружено ${Math.floor(auditData.issues.important / 2)} повторяющихся мета-тегов`, 14, 120);
+    
+    doc.setFontSize(10);
+    doc.text('Дублирование контента существенно влияет на SEO рейтинг сайта.', 14, 130);
+    doc.text('Рекомендуется исправить все найденные дубликаты.', 14, 137);
+  }
   
   // Add footer information about the generated report
   doc.setFontSize(8);

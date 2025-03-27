@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { FileWarning, Loader2 } from 'lucide-react';
+import { FilePdf, Loader2 } from 'lucide-react';
 import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { AuditData } from '@/types/audit';
 import { saveAs } from 'file-saver';
@@ -63,7 +63,7 @@ const ExportErrorReport: React.FC<ExportErrorReportProps> = ({
         </>
       ) : (
         <>
-          <FileWarning className="h-4 w-4" />
+          <FilePdf className="h-4 w-4" />
           <span>Скачать отчет об ошибках</span>
         </>
       )}

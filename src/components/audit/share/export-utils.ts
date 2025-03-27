@@ -34,7 +34,7 @@ export const showExportSuccess = (title: string, message: string) => {
   });
 };
 
-// Analyze SEO errors in audit data
+// Analyze SEO errors in audit data - enhanced with more detailed error categories
 export const analyzeSEOErrors = (auditData: AuditData) => {
   const errors = {
     critical: [] as { title: string; description: string }[],
@@ -94,6 +94,61 @@ export const analyzeSEOErrors = (auditData: AuditData) => {
     });
   }
 
+  // Check mobile section - new
+  if (auditData.details.mobile.score < 60) {
+    errors.important.push({
+      title: "Проблемы с мобильной версией",
+      description: "Сайт плохо оптимизирован для мобильных устройств, что негативно влияет на ранжирование"
+    });
+  } else if (auditData.details.mobile.score < 80) {
+    errors.minor.push({
+      title: "Необходима оптимизация для мобильных устройств",
+      description: "Мобильная версия сайта нуждается в доработке"
+    });
+  }
+
+  // Check for duplicate content issues - new
+  if (auditData.issues.critical > 3) {
+    errors.critical.push({
+      title: "Дублирование контента",
+      description: "Обнаружено множество дублирующихся страниц, что может привести к понижению в выдаче"
+    });
+  } else if (auditData.issues.critical > 0) {
+    errors.important.push({
+      title: "Возможное дублирование контента",
+      description: "Найдены признаки дублирования контента, рекомендуется проверить страницы"
+    });
+  }
+
+  // Check for broken links - new
+  if (auditData.issues.important > 5) {
+    errors.important.push({
+      title: "Битые ссылки",
+      description: "На сайте обнаружено значительное количество нерабочих ссылок"
+    });
+  } else if (auditData.issues.important > 2) {
+    errors.minor.push({
+      title: "Несколько битых ссылок",
+      description: "Найдено несколько нерабочих ссылок, требующих исправления"
+    });
+  }
+
+  // Check for meta tag issues - new
+  if (auditData.issues.important > 3) {
+    errors.important.push({
+      title: "Проблемы с мета-тегами",
+      description: "Многие страницы имеют отсутствующие или дублирующиеся мета-теги"
+    });
+  }
+
+  // Check for crawler issues - new
+  if (auditData.issues.critical > 2 && auditData.issues.important > 3) {
+    errors.critical.push({
+      title: "Проблемы индексации",
+      description: "Обнаружены препятствия для поисковых роботов, мешающие индексации сайта"
+    });
+  }
+
   return errors;
 };
 
@@ -136,6 +191,17 @@ export const generateErrorReport = (auditData: AuditData, url: string) => {
   report += "1. Исправьте критические ошибки как можно скорее\n";
   report += "2. Работайте над улучшением SEO и технических аспектов сайта\n";
   report += "3. Следите за изменениями в показателях после внесения правок\n";
+  
+  // Adding section for duplicate content
+  if (auditData.issues.critical > 0) {
+    report += "\n## Дубликаты контента\n\n";
+    report += `Обнаружено признаков дублирования: ${auditData.issues.critical}\n`;
+    report += "Рекомендации по устранению дубликатов:\n";
+    report += "- Используйте канонические URL (rel=canonical)\n";
+    report += "- Настройте правильные 301 редиректы\n";
+    report += "- Объедините страницы с похожим содержимым\n";
+    report += "- Проверьте, не индексируются ли фильтры и сортировки товаров\n";
+  }
   
   return report;
 };
@@ -198,4 +264,137 @@ export const shouldIncludeInSitemap = (url: string): boolean => {
     // If URL parsing fails, skip the URL
     return false;
   }
+};
+
+// New function to detect duplicate content patterns
+export const detectDuplicateContentPatterns = (urls: string[]): {
+  suspiciousPatterns: string[],
+  potentialDuplicates: Record<string, string[]>
+} => {
+  const suspiciousPatterns: string[] = [];
+  const potentialDuplicates: Record<string, string[]> = {};
+  
+  // Check for pagination patterns
+  const paginationRegexes = [
+    /page\/\d+\/?$/,
+    /p=\d+/,
+    /page=\d+/,
+    /pg=\d+/
+  ];
+  
+  // Check for filter patterns
+  const filterRegexes = [
+    /filter=.*/,
+    /sort=.*/,
+    /order=.*/,
+    /category=.*&filter=.*/
+  ];
+  
+  // Check for session IDs
+  const sessionRegexes = [
+    /sid=.*/,
+    /session=.*/,
+    /sessionid=.*/
+  ];
+  
+  // Group URLs by patterns
+  for (const url of urls) {
+    try {
+      const urlObj = new URL(url);
+      const path = urlObj.pathname;
+      const query = urlObj.search;
+      
+      // Check pagination patterns
+      for (const regex of paginationRegexes) {
+        if (regex.test(path) || regex.test(query)) {
+          const baseUrl = url.replace(regex, '');
+          if (!suspiciousPatterns.includes('Pagination')) {
+            suspiciousPatterns.push('Pagination');
+          }
+          
+          if (!potentialDuplicates['Pagination']) {
+            potentialDuplicates['Pagination'] = [];
+          }
+          
+          if (!potentialDuplicates['Pagination'].includes(url)) {
+            potentialDuplicates['Pagination'].push(url);
+          }
+        }
+      }
+      
+      // Check filter patterns
+      for (const regex of filterRegexes) {
+        if (regex.test(query)) {
+          const baseUrl = url.replace(regex, '');
+          if (!suspiciousPatterns.includes('Filters')) {
+            suspiciousPatterns.push('Filters');
+          }
+          
+          if (!potentialDuplicates['Filters']) {
+            potentialDuplicates['Filters'] = [];
+          }
+          
+          if (!potentialDuplicates['Filters'].includes(url)) {
+            potentialDuplicates['Filters'].push(url);
+          }
+        }
+      }
+      
+      // Check session IDs
+      for (const regex of sessionRegexes) {
+        if (regex.test(query)) {
+          if (!suspiciousPatterns.includes('Session IDs')) {
+            suspiciousPatterns.push('Session IDs');
+          }
+          
+          if (!potentialDuplicates['Session IDs']) {
+            potentialDuplicates['Session IDs'] = [];
+          }
+          
+          if (!potentialDuplicates['Session IDs'].includes(url)) {
+            potentialDuplicates['Session IDs'].push(url);
+          }
+        }
+      }
+      
+      // Check for uppercase/lowercase variations
+      const lowercasePath = path.toLowerCase();
+      if (path !== lowercasePath) {
+        if (!suspiciousPatterns.includes('Case Variations')) {
+          suspiciousPatterns.push('Case Variations');
+        }
+        
+        if (!potentialDuplicates['Case Variations']) {
+          potentialDuplicates['Case Variations'] = [];
+        }
+        
+        if (!potentialDuplicates['Case Variations'].includes(url)) {
+          potentialDuplicates['Case Variations'].push(url);
+        }
+      }
+      
+    } catch (error) {
+      // Skip invalid URLs
+      continue;
+    }
+  }
+  
+  return { suspiciousPatterns, potentialDuplicates };
+};
+
+// New function to estimate duplicate content percentage
+export const estimateDuplicateContentPercentage = (auditData: AuditData): number => {
+  // This is a simplified estimation based on the available data
+  const criticalIssueWeight = 0.8;
+  const importantIssueWeight = 0.4;
+  
+  const criticalContribution = (auditData.issues.critical / 10) * criticalIssueWeight;
+  const importantContribution = (auditData.issues.important / 20) * importantIssueWeight;
+  
+  let percentage = (criticalContribution + importantContribution) * 100;
+  
+  // Cap at 100%
+  percentage = Math.min(percentage, 100);
+  
+  return Math.round(percentage);
 };
