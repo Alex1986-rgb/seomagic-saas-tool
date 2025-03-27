@@ -1,12 +1,15 @@
-
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { LineChart, BarChart2, CheckCircle, ArrowRight, Star, Pause, Play, Volume2 } from 'lucide-react';
 import { Button } from '../ui/button';
 
-const AnimatedVideoPlaceholder: React.FC = () => {
+interface AnimatedVideoPlaceholderProps {
+  isPlaying: boolean;
+}
+
+const AnimatedVideoPlaceholder: React.FC<AnimatedVideoPlaceholderProps> = ({ isPlaying }) => {
   const [currentSlide, setCurrentSlide] = useState(0);
-  const [isPaused, setIsPaused] = useState(false);
+  const [isPaused, setIsPaused] = useState(!isPlaying);
   
   const slides = [
     {
@@ -40,6 +43,10 @@ const AnimatedVideoPlaceholder: React.FC = () => {
       color: "#9b87f5"
     }
   ];
+  
+  useEffect(() => {
+    setIsPaused(!isPlaying);
+  }, [isPlaying]);
   
   useEffect(() => {
     let interval: NodeJS.Timeout;
