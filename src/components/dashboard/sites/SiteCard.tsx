@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { Button } from "@/components/ui/button";
+import { withErrorBoundary } from '@/components/ErrorBoundary';
 
 interface SiteCardProps {
   url: string;
@@ -9,7 +10,7 @@ interface SiteCardProps {
 }
 
 export const SiteCard: React.FC<SiteCardProps> = ({ url, lastOptimized, score }) => (
-  <div className="neo-card p-6">
+  <div className="neo-card p-6 hover:shadow-md transition-shadow duration-200">
     <div className="flex justify-between items-start mb-4">
       <div>
         <h3 className="font-medium">{url}</h3>
@@ -36,3 +37,6 @@ export const SiteCard: React.FC<SiteCardProps> = ({ url, lastOptimized, score })
     </div>
   </div>
 );
+
+// Export with error boundary for better fault tolerance
+export default withErrorBoundary(SiteCard);

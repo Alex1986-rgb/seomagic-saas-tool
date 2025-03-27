@@ -1,127 +1,117 @@
 
 import React from 'react';
+import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { Calendar, FileSpreadsheet, Activity, Search, TrendingUp } from 'lucide-react';
+import { RefreshCw } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { InfoCard } from './InfoCard';
-import { SiteListItem } from '../sites/SiteListItem';
+import { SparkAreaChart } from '@/components/charts/SparkAreaChart';
+import { Activity, ArrowUpRight, Users, LineChart } from 'lucide-react';
+import { mockAudits } from '@/data/mockData';
 
 interface DashboardOverviewProps {
-  onStartNewAudit: () => void;
-  onAddSite: () => void;
-  onCreateReport: () => void;
+  onOpenNotifications: () => void;
 }
 
-const DashboardOverview: React.FC<DashboardOverviewProps> = ({ 
-  onStartNewAudit, 
-  onAddSite, 
-  onCreateReport 
-}) => {
+export const DashboardOverview: React.FC<DashboardOverviewProps> = ({ onOpenNotifications }) => {
   const navigate = useNavigate();
+  
+  const navigateToAudit = () => {
+    navigate('/audit');
+  };
   
   return (
     <div className="space-y-8">
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-xl font-semibold">Обзор SEO-активности</h2>
-        <div className="flex gap-2">
-          <Button variant="outline" className="gap-2">
-            <Calendar size={16} className="mr-2" />
-            За месяц
-          </Button>
-          <Button className="gap-2" onClick={onCreateReport}>
-            <FileSpreadsheet size={16} className="mr-2" />
-            Экспорт
-          </Button>
-        </div>
+        <h2 className="text-xl font-semibold">Обзор</h2>
       </div>
       
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <InfoCard 
-          title="Проверки позиций" 
-          value="42" 
-          change={"+12%"} 
-          icon={<Activity className="h-5 w-5 text-blue-500" />}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <InfoCard
+          title="Активные сканирования"
+          value="12"
+          change="+2.5% с прошлого месяца"
+          icon={<Activity className="h-5 w-5" />}
         />
-        <InfoCard 
-          title="Новые аудиты" 
-          value="7" 
-          change={"-3%"} 
-          icon={<Search className="h-5 w-5 text-amber-500" />}
-          isNegative
+        <InfoCard
+          title="Оптимизированные сайты"
+          value="8"
+          change="+4 новых сайта"
+          icon={<ArrowUpRight className="h-5 w-5" />}
         />
-        <InfoCard 
-          title="Средняя позиция" 
-          value="14.3" 
-          change={"+2 позиции"} 
-          icon={<TrendingUp className="h-5 w-5 text-green-500" />}
+        <InfoCard
+          title="Общее количество сайтов"
+          value="24"
+          change="+3 новых сайта"
+          icon={<Users className="h-5 w-5" />}
+        />
+        <InfoCard
+          title="Средний рост позиций"
+          value="+14.2%"
+          change="+2.4% с прошлого месяца"
+          icon={<LineChart className="h-5 w-5" />}
         />
       </div>
       
-      <div className="neo-card p-6">
-        <h3 className="text-lg font-semibold mb-4">График позиций сайта</h3>
-        <div className="h-80 bg-muted/20 rounded-lg flex items-center justify-center">
-          <p className="text-muted-foreground">График изменения позиций в течение времени</p>
-        </div>
-      </div>
-      
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="neo-card p-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <motion.div
+          className="neo-card p-5"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+        >
           <div className="flex justify-between items-center mb-4">
-            <h3 className="text-lg font-semibold">Последние аудиты</h3>
-            <Button variant="outline" size="sm" onClick={onStartNewAudit}>
-              Новый аудит
+            <h3 className="font-medium">Последние аудиты</h3>
+            <Button variant="outline" size="sm" className="flex items-center gap-2">
+              <RefreshCw className="h-4 w-4" />
+              <span>Обновить</span>
             </Button>
           </div>
           
-          {mockAudits.slice(0, 2).map((audit) => (
-            <div key={audit.id} className="flex justify-between items-center py-3 border-b border-border-secondary last:border-0">
-              <div>
-                <h4 className="font-medium">{audit.url}</h4>
-                <div className="text-sm text-muted-foreground">
-                  {new Date(audit.date).toLocaleDateString()}
+          <div className="space-y-4">
+            {mockAudits.slice(0, 4).map((audit) => (
+              <div key={audit.id} className="flex justify-between items-center py-2 border-b border-border-secondary last:border-0">
+                <div>
+                  <h4 className="font-medium">{audit.url}</h4>
+                  <p className="text-xs text-muted-foreground">{new Date(audit.date).toLocaleDateString()}</p>
+                </div>
+                <div className={`text-lg font-semibold ${
+                  audit.score >= 80 ? 'text-green-500' : 
+                  audit.score >= 60 ? 'text-amber-500' : 'text-destructive'
+                }`}>
+                  {audit.score}/100
                 </div>
               </div>
-              <div className={`text-lg font-semibold ${
-                audit.score >= 80 ? 'text-green-500' : 
-                audit.score >= 60 ? 'text-amber-500' : 'text-destructive'
-              }`}>
-                {audit.status === 'processing' ? 
-                  <RefreshCw size={18} className="animate-spin" /> :
-                  `${audit.score}/100`
-                }
-              </div>
-            </div>
-          ))}
-          <div className="mt-4">
-            <Button variant="link" className="p-0" onClick={() => navigate('/audits')}>
-              Посмотреть все аудиты →
-            </Button>
+            ))}
           </div>
-        </div>
+          
+          <Button variant="link" className="mt-2 w-full" onClick={navigateToAudit}>
+            Посмотреть все аудиты
+          </Button>
+        </motion.div>
         
-        <div className="neo-card p-6">
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="text-lg font-semibold">Сайты для оптимизации</h3>
-            <Button variant="outline" size="sm" onClick={onAddSite}>
-              Добавить сайт
-            </Button>
+        <motion.div
+          className="neo-card p-5"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+        >
+          <div className="flex justify-between items-start mb-4">
+            <div>
+              <h3 className="font-medium">Тренд SEO оценок</h3>
+              <p className="text-sm text-muted-foreground">За последний месяц</p>
+            </div>
+            <div className="text-right">
+              <div className="text-2xl font-bold">76.8</div>
+              <div className="text-xs text-green-500">+12.4%</div>
+            </div>
           </div>
           
-          <div className="space-y-3">
-            <SiteListItem url="example.com" score={82} status="optimized" />
-            <SiteListItem url="company-blog.net" score={76} status="in-progress" />
-            <SiteListItem url="online-store.com" score={65} status="needs-attention" />
+          <div className="h-56">
+            <SparkAreaChart />
           </div>
-          
-          <div className="mt-4">
-            <Button variant="link" className="p-0" onClick={() => navigate('/sites')}>
-              Все сайты →
-            </Button>
-          </div>
-        </div>
+        </motion.div>
       </div>
     </div>
   );
 };
-
-export default DashboardOverview;
