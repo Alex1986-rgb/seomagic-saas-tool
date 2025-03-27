@@ -98,6 +98,7 @@ export function useCrawlState(url: string) {
     // State setters
     setDomain,
     setCrawler,
+    setCrawlStage, // Adding this to expose it to consumers
     
     // Actions
     resetState,
