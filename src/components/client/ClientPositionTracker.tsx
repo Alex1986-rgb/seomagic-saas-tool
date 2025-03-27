@@ -26,7 +26,7 @@ import {
   RankingDistribution
 } from '@/components/position-tracker/analytics';
 import { getPositionHistory } from '@/services/position/positionHistory';
-import { PositionData } from '@/services/position/positionTracker';
+import { PositionData, checkPositions } from '@/services/position/positionTracker';
 import { useToast } from "@/hooks/use-toast";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 
@@ -73,6 +73,52 @@ const ClientPositionTracker: React.FC = () => {
       } успешно размещен`,
     });
     setOrderDialogOpen(false);
+
+    // If it's a position check, simulate starting a check
+    if (orderType === 'position') {
+      runPositionCheck();
+    }
+  };
+
+  const runPositionCheck = async () => {
+    setIsLoading(true);
+    toast({
+      title: "Проверка позиций запущена",
+      description: "Процесс проверки позиций сайта начат, это может занять несколько минут",
+    });
+
+    try {
+      // Sample data for testing
+      const testData = {
+        domain: "example.com",
+        keywords: ["SEO оптимизация", "продвижение сайта", "анализ сайта", "проверка позиций", "аудит сайта"],
+        searchEngine: "all",
+        region: "Москва",
+        depth: 100,
+        scanFrequency: "once"
+      };
+
+      // Run the check
+      const result = await checkPositions(testData);
+      
+      // Reload history to show the new check
+      const updatedHistory = await getPositionHistory();
+      setHistory(updatedHistory);
+      
+      toast({
+        title: "Проверка позиций завершена",
+        description: "Результаты проверки позиций сайта доступны в разделе отчетов",
+      });
+    } catch (error) {
+      console.error('Error checking positions:', error);
+      toast({
+        title: "Ошибка проверки позиций",
+        description: "Не удалось выполнить проверку позиций",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -86,11 +132,21 @@ const ClientPositionTracker: React.FC = () => {
         </div>
         
         <div className="flex gap-3">
-          <Button variant="outline" className="flex items-center gap-2">
+          <Button 
+            variant="outline" 
+            className="flex items-center gap-2"
+            onClick={() => toast({
+              title: "История проверок",
+              description: "Открыт список предыдущих проверок позиций",
+            })}
+          >
             <History className="h-4 w-4" />
             <span>История проверок</span>
           </Button>
-          <Button className="flex items-center gap-2" onClick={() => handleOrder('position')}>
+          <Button 
+            className="flex items-center gap-2" 
+            onClick={() => handleOrder('position')}
+          >
             <Search className="h-4 w-4" />
             <span>Проверить позиции</span>
           </Button>
@@ -293,7 +349,14 @@ const ClientPositionTracker: React.FC = () => {
             <p className="text-muted-foreground max-w-md mx-auto mb-6">
               Получите доступ к подробным отчетам о позициях сайта, динамике по времени и сравнение с конкурентами
             </p>
-            <Button size="lg" className="gap-2">
+            <Button 
+              size="lg" 
+              className="gap-2"
+              onClick={() => toast({
+                title: "Переход на PRO тариф",
+                description: "Открыта страница выбора PRO тарифа с расширенными возможностями",
+              })}
+            >
               <span>Перейти на PRO тариф</span>
               <ArrowRight className="h-4 w-4" />
             </Button>
