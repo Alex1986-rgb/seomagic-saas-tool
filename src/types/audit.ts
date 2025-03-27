@@ -1,3 +1,4 @@
+
 export interface AuditItemData {
   id: string;
   title: string;
@@ -50,6 +51,8 @@ export interface AuditHistoryItem {
   date: string;
   score: number;
   url?: string;
+  changes?: number; // Added the missing changes property
+  categoryScores?: Record<string, number>; // Added the missing categoryScores property
   issues?: {
     critical: number;
     important: number;

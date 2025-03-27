@@ -41,4 +41,3 @@ export interface AuditHistoryItem {
   changes?: number;
   categoryScores?: Record<string, number>;
 }
-
