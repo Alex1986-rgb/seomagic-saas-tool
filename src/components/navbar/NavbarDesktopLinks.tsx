@@ -1,5 +1,5 @@
 
-import React, { memo } from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 
@@ -31,5 +31,4 @@ const NavbarDesktopLinks: React.FC<NavbarDesktopLinksProps> = ({ navItems }) => 
   );
 };
 
-// Memoize component to prevent unnecessary rerenders
-export default memo(NavbarDesktopLinks);
+export default NavbarDesktopLinks;

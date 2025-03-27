@@ -1,6 +1,6 @@
 
-import React, { memo } from 'react';
-import { Menu, X } from 'lucide-react';
+import React from 'react';
+import { Menu } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 
 interface NavbarMobileToggleProps {
@@ -17,11 +17,10 @@ const NavbarMobileToggle: React.FC<NavbarMobileToggleProps> = ({ isOpen, setIsOp
         onClick={() => setIsOpen(!isOpen)}
         aria-label={isOpen ? "Close menu" : "Open menu"}
       >
-        {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+        <Menu className="h-6 w-6" />
       </Button>
     </div>
   );
 };
 
-// Memoize component to prevent unnecessary rerenders
-export default memo(NavbarMobileToggle);
+export default NavbarMobileToggle;
