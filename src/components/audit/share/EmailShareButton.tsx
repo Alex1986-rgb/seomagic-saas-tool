@@ -2,6 +2,7 @@
 import React from 'react';
 import { Mail } from 'lucide-react';
 import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast";
 
 interface EmailShareButtonProps {
   url: string;
@@ -10,9 +11,25 @@ interface EmailShareButtonProps {
 }
 
 const EmailShareButton: React.FC<EmailShareButtonProps> = ({ url, subject, body }) => {
+  const { toast } = useToast();
+  
   const handleEmailShare = () => {
-    const mailtoUrl = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body + '\n\n' + url)}`;
-    window.location.href = mailtoUrl;
+    try {
+      const mailtoUrl = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body + '\n\n' + url)}`;
+      window.location.href = mailtoUrl;
+      
+      toast({
+        title: "Открывается приложение почты",
+        description: "Подготовлено письмо с результатами аудита",
+      });
+    } catch (error) {
+      console.error('Ошибка при отправке по email:', error);
+      toast({
+        title: "Ошибка",
+        description: "Не удалось открыть почтовое приложение",
+        variant: "destructive"
+      });
+    }
   };
   
   return (

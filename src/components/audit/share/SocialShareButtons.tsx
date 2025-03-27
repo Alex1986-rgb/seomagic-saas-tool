@@ -32,6 +32,7 @@ const SocialShareButtons: React.FC<SocialShareButtonsProps> = ({ url, title, sum
         size="icon" 
         className="rounded-full" 
         onClick={handleTwitterShare}
+        aria-label="Поделиться в Twitter"
       >
         <Twitter className="h-4 w-4" />
       </Button>
@@ -41,6 +42,7 @@ const SocialShareButtons: React.FC<SocialShareButtonsProps> = ({ url, title, sum
         size="icon" 
         className="rounded-full" 
         onClick={handleFacebookShare}
+        aria-label="Поделиться в Facebook"
       >
         <Facebook className="h-4 w-4" />
       </Button>
@@ -50,6 +52,7 @@ const SocialShareButtons: React.FC<SocialShareButtonsProps> = ({ url, title, sum
         size="icon" 
         className="rounded-full" 
         onClick={handleLinkedInShare}
+        aria-label="Поделиться в LinkedIn"
       >
         <Linkedin className="h-4 w-4" />
       </Button>

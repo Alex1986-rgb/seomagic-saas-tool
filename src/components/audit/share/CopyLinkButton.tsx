@@ -12,16 +12,25 @@ const CopyLinkButton: React.FC<CopyLinkButtonProps> = ({ url }) => {
   const [copied, setCopied] = useState(false);
   const { toast } = useToast();
   
-  const handleCopy = () => {
-    navigator.clipboard.writeText(url);
-    setCopied(true);
-    
-    toast({
-      title: "Ссылка скопирована",
-      description: "Ссылка скопирована в буфер обмена",
-    });
-    
-    setTimeout(() => setCopied(false), 2000);
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(url);
+      setCopied(true);
+      
+      toast({
+        title: "Ссылка скопирована",
+        description: "Ссылка скопирована в буфер обмена",
+      });
+      
+      setTimeout(() => setCopied(false), 2000);
+    } catch (error) {
+      console.error('Ошибка при копировании ссылки:', error);
+      toast({
+        title: "Ошибка копирования",
+        description: "Не удалось скопировать ссылку. Пожалуйста, попробуйте вручную.",
+        variant: "destructive"
+      });
+    }
   };
   
   return (
