@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Download, FileText, FileJson, Loader2 } from 'lucide-react';
 import { Button } from "@/components/ui/button";
@@ -128,6 +129,42 @@ const ExportDropdown: React.FC<ExportDropdownProps> = ({
       setIsExporting(null);
     }
   };
+
+  const handleExportHistoryPDF = async () => {
+    if (!historyItems || historyItems.length === 0) {
+      toast({
+        title: "Ошибка",
+        description: "Нет данных истории для экспорта в PDF",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    try {
+      setIsExporting('historyPdf');
+      
+      const domain = cleanUrl(url);
+      const pdfBlob = await generateHistoryPDF(historyItems, domain);
+      
+      if (!pdfBlob) throw new Error("Не удалось создать PDF истории");
+      
+      saveAs(pdfBlob, `audit-history-${domain}-${formatDate(new Date().toISOString())}.pdf`);
+      
+      toast({
+        title: "PDF истории экспортирован",
+        description: "История аудитов успешно сохранена в PDF",
+      });
+    } catch (error) {
+      console.error('Ошибка при экспорте PDF истории:', error);
+      toast({
+        title: "Ошибка экспорта",
+        description: "Не удалось сохранить историю в PDF. Пожалуйста, попробуйте еще раз.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsExporting(null);
+    }
+  };
   
   const cleanUrl = (url: string): string => {
     return url.replace(/https?:\/\//, '').replace(/[^a-zA-Z0-9]/g, '-');
@@ -187,23 +224,43 @@ const ExportDropdown: React.FC<ExportDropdownProps> = ({
         </DropdownMenuItem>
         
         {historyItems && historyItems.length > 0 && (
-          <DropdownMenuItem 
-            onClick={handleExportHistory}
-            disabled={isExporting !== null}
-            className="flex items-center gap-2"
-          >
-            {isExporting === 'history' ? (
-              <>
-                <Loader2 className="h-4 w-4 animate-spin" />
-                <span>Подготовка истории...</span>
-              </>
-            ) : (
-              <>
-                <FileJson className="h-4 w-4" />
-              <span>Экспорт истории аудитов</span>
-            </>
-            )}
-          </DropdownMenuItem>
+          <>
+            <DropdownMenuItem 
+              onClick={handleExportHistory}
+              disabled={isExporting !== null}
+              className="flex items-center gap-2"
+            >
+              {isExporting === 'history' ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <span>Подготовка истории JSON...</span>
+                </>
+              ) : (
+                <>
+                  <FileJson className="h-4 w-4" />
+                  <span>Экспорт истории аудитов (JSON)</span>
+                </>
+              )}
+            </DropdownMenuItem>
+            
+            <DropdownMenuItem 
+              onClick={handleExportHistoryPDF}
+              disabled={isExporting !== null}
+              className="flex items-center gap-2"
+            >
+              {isExporting === 'historyPdf' ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <span>Подготовка PDF истории...</span>
+                </>
+              ) : (
+                <>
+                  <FileText className="h-4 w-4" />
+                  <span>Экспорт истории аудитов (PDF)</span>
+                </>
+              )}
+            </DropdownMenuItem>
+          </>
         )}
       </DropdownMenuContent>
     </DropdownMenu>
