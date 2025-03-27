@@ -13,6 +13,7 @@ import Auth from "./pages/Auth";
 import AdminPanel from "./pages/AdminPanel";
 import ClientProfile from "./pages/ClientProfile";
 import Pricing from "./pages/Pricing";
+import PositionPricing from "./pages/PositionPricing";
 import About from "./pages/About";
 import PositionTracker from "./pages/PositionTracker";
 import NotFound from "./pages/NotFound";
@@ -35,6 +36,7 @@ const App = () => (
               <Route path="/admin" element={<AdminPanel />} />
               <Route path="/profile" element={<ClientProfile />} />
               <Route path="/pricing" element={<Pricing />} />
+              <Route path="/position-pricing" element={<PositionPricing />} />
               <Route path="/about" element={<About />} />
               <Route path="/position-tracker" element={<PositionTracker />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

@@ -3,6 +3,7 @@ import React from 'react';
 import { Check } from 'lucide-react';
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Link } from "react-router-dom";
 
 interface Plan {
   name: string;
@@ -24,21 +25,31 @@ const SubscriptionPlans: React.FC<SubscriptionPlansProps> = ({ plans, onPlanSele
     
     // Добавляем функции проверки позиций в зависимости от плана
     if (plan.name === 'Бесплатно') {
-      enhancedFeatures.push('Проверка позиций (до 5 ключевых слов)');
+      enhancedFeatures.push('Проверка позиций (до 10 ключевых слов)');
+      enhancedFeatures.push('Еженедельное обновление');
+      enhancedFeatures.push('1 регион на выбор');
     } else if (plan.name === 'Базовый') {
-      enhancedFeatures.push('Проверка позиций (до 50 ключевых слов)');
-      enhancedFeatures.push('История проверок (7 дней)');
+      enhancedFeatures.push('Проверка позиций (до 100 ключевых слов)');
+      enhancedFeatures.push('Обновление 3 раза в неделю');
+      enhancedFeatures.push('3 региона на выбор');
+      enhancedFeatures.push('История позиций 30 дней');
+      enhancedFeatures.push('Экспорт отчетов');
     } else if (plan.name === 'Про') {
       enhancedFeatures.push('Проверка позиций (до 500 ключевых слов)');
-      enhancedFeatures.push('История проверок (90 дней)');
-      enhancedFeatures.push('Регулярные проверки позиций');
-      enhancedFeatures.push('Экспорт отчетов');
+      enhancedFeatures.push('Ежедневное обновление');
+      enhancedFeatures.push('10 регионов на выбор');
+      enhancedFeatures.push('История позиций 90 дней');
+      enhancedFeatures.push('Экспорт и автоматические отчеты');
+      enhancedFeatures.push('Уведомления об изменениях');
+      enhancedFeatures.push('API доступ');
     } else if (plan.name === 'Агентство') {
       enhancedFeatures.push('Неограниченная проверка позиций');
-      enhancedFeatures.push('Полная история проверок');
-      enhancedFeatures.push('Регулярные проверки с уведомлениями');
-      enhancedFeatures.push('Отчеты и экспорт данных');
-      enhancedFeatures.push('API доступ к данным позиций');
+      enhancedFeatures.push('Настраиваемая частота обновления');
+      enhancedFeatures.push('Все регионы');
+      enhancedFeatures.push('Полная история позиций');
+      enhancedFeatures.push('Расширенная аналитика');
+      enhancedFeatures.push('Расширенный API доступ');
+      enhancedFeatures.push('White label отчеты');
     }
     
     return {
@@ -49,7 +60,14 @@ const SubscriptionPlans: React.FC<SubscriptionPlansProps> = ({ plans, onPlanSele
   
   return (
     <div>
-      <h2 className="text-xl font-semibold mb-4">Доступные планы</h2>
+      <h2 className="text-xl font-semibold mb-2">Доступные планы</h2>
+      <p className="text-muted-foreground mb-6">
+        Выберите план, который подходит для ваших задач. Все планы включают как SEO-аудит, 
+        так и мониторинг позиций. Для более детальной настройки мониторинга позиций посетите 
+        <Link to="/position-pricing" className="text-primary hover:underline ml-1">
+          страницу тарифов мониторинга
+        </Link>.
+      </p>
       
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {enhancedPlans.map((plan) => (

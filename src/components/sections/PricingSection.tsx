@@ -97,15 +97,24 @@ const PricingSection: React.FC = () => (
       
       <div className="text-center mt-12">
         <p className="text-muted-foreground mb-4">
-          Нужно больше? У нас есть индивидуальные решения для крупных проектов
+          Нужно больше? У нас есть специальные тарифы для мониторинга позиций и индивидуальные решения для крупных проектов
         </p>
-        <a 
-          href="/pricing" 
-          className="text-primary hover:text-primary/80 font-medium inline-flex items-center"
-        >
-          Узнать подробнее
-          <ArrowRight className="ml-1 h-4 w-4" />
-        </a>
+        <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <a 
+            href="/pricing" 
+            className="text-primary hover:text-primary/80 font-medium inline-flex items-center"
+          >
+            Все тарифы SEO-аудита
+            <ArrowRight className="ml-1 h-4 w-4" />
+          </a>
+          <a 
+            href="/position-pricing" 
+            className="text-primary hover:text-primary/80 font-medium inline-flex items-center"
+          >
+            Тарифы мониторинга позиций
+            <ArrowRight className="ml-1 h-4 w-4" />
+          </a>
+        </div>
       </div>
     </div>
   </section>

@@ -15,10 +15,12 @@ import {
   Trash, 
   RefreshCw,
   DollarSign,
-  Tag
+  Tag,
+  Search
 } from 'lucide-react';
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
+import PositionPricingSettings from './PositionPricingSettings';
 
 const AdminSettings: React.FC = () => {
   const [emailNotifications, setEmailNotifications] = useState(true);
@@ -67,6 +69,10 @@ const AdminSettings: React.FC = () => {
           <TabsTrigger value="pricing" className="flex items-center gap-2">
             <Tag className="h-4 w-4" />
             <span>Цены оптимизации</span>
+          </TabsTrigger>
+          <TabsTrigger value="position-pricing" className="flex items-center gap-2">
+            <Search className="h-4 w-4" />
+            <span>Цены мониторинга</span>
           </TabsTrigger>
           <TabsTrigger value="email" className="flex items-center gap-2">
             <Mail className="h-4 w-4" />
@@ -348,6 +354,10 @@ const AdminSettings: React.FC = () => {
               </Button>
             </div>
           </div>
+        </TabsContent>
+        
+        <TabsContent value="position-pricing">
+          <PositionPricingSettings />
         </TabsContent>
         
         <TabsContent value="email">

@@ -4,12 +4,12 @@ import { Search, Users, Download, ArrowDown, ArrowUp, History, FileText, Webhook
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { getPositionHistory } from '@/services/position/positionHistory';
-import { exportHistoryToExcel } from '@/services/position/exportService';
-import { useToast } from "@/hooks/use-toast";
-import { PositionData, KeywordPosition } from '@/services/position/positionTracker';
+import { Badge } from "@/components/ui/badge";
+import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { SiteStructureVisualization } from '../position-tracker/SiteStructureVisualization';
 import { 
   BrokenLinksAnalyzer, 
   DuplicatesDetector,
