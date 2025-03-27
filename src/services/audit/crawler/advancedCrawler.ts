@@ -9,6 +9,7 @@ import * as cheerio from 'cheerio';
 import { urlCache } from '../linkExtraction';
 import { DeepCrawler } from '../deepCrawler';
 import JSZip from 'jszip';
+import { saveAs } from 'file-saver';
 
 // Rate limiting and request management
 interface RequestManager {

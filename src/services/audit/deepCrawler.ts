@@ -21,12 +21,12 @@ interface CrawlResult {
 }
 
 export class DeepCrawler {
-  private visited = new Set<string>();
-  private queue: { url: string; depth: number }[] = [];
-  private domain: string;
-  private baseUrl: string;
-  private options: DeepCrawlerOptions;
-  private productPatterns: RegExp[] = [
+  protected visited = new Set<string>();
+  protected queue: { url: string; depth: number }[] = [];
+  protected domain: string;
+  protected baseUrl: string;
+  protected options: DeepCrawlerOptions;
+  protected productPatterns: RegExp[] = [
     /\/product\//i, /\/products\//i, /\/item\//i, /\/items\//i,
     /\/catalog\//i, /\/collection\//i, /\/goods\//i,
     /\/tovary?\//i, /\/mebel\//i, /\/furniture\//i
@@ -242,7 +242,7 @@ export class DeepCrawler {
     };
   }
   
-  private async processUrl(url: string, depth: number): Promise<void> {
+  protected async processUrl(url: string, depth: number): Promise<void> {
     try {
       const response = await axios.get(url, { 
         timeout: 15000,
