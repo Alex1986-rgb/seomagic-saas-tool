@@ -13,7 +13,7 @@ interface DeepCrawlButtonProps {
   onCrawlComplete: (pageCount: number) => void;
 }
 
-const DeepCrawlButton: React.FC<DeepCrawlButtonProps> = ({ url, onCrawlComplete }) => {
+export const DeepCrawlButton: React.FC<DeepCrawlButtonProps> = ({ url, onCrawlComplete }) => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [progress, setProgress] = useState(0);
   const [currentUrl, setCurrentUrl] = useState('');
@@ -56,5 +56,3 @@ const DeepCrawlButton: React.FC<DeepCrawlButtonProps> = ({ url, onCrawlComplete 
     </>
   );
 };
-
-export default DeepCrawlButton;
