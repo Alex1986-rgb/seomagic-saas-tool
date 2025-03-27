@@ -1,5 +1,4 @@
 
-// This is a placeholder for a real video file.
-// In a real application, this would be an actual mp4 video file.
-// For the purposes of this demo, we'll pretend this text content is a valid video.
-// The user needs to replace this with an actual video file.
+// This is a binary video file that needs to be uploaded manually.
+// The user needs to upload a real MP4 video showing the platform's complete process and features.
+// The file should be uploaded to this location: public/video/seo-demo.mp4
