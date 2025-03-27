@@ -10,13 +10,19 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { getPositionHistory } from '@/services/position/positionHistory';
 import { useToast } from "@/hooks/use-toast";
+import { PositionData } from '@/services/position/positionTracker';
+
+interface ChartData {
+  chartData: any[];
+  keywords: string[];
+}
 
 export const PositionTrackerHistory = () => {
-  const [history, setHistory] = useState([]);
+  const [history, setHistory] = useState<PositionData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedDomain, setSelectedDomain] = useState('all');
   const [selectedDate, setSelectedDate] = useState('all');
-  const [expandedItem, setExpandedItem] = useState(null);
+  const [expandedItem, setExpandedItem] = useState<number | null>(null);
   const { toast } = useToast();
 
   const domains = [...new Set(history.map(item => item.domain))];
@@ -33,7 +39,7 @@ export const PositionTrackerHistory = () => {
     } catch (error) {
       toast({
         title: "Ошибка загрузки истории",
-        description: error.message || "Не удалось загрузить историю проверок",
+        description: error instanceof Error ? error.message : "Не удалось загрузить историю проверок",
         variant: "destructive",
       });
     } finally {
@@ -47,7 +53,7 @@ export const PositionTrackerHistory = () => {
     }
     
     if (selectedDate !== 'all') {
-      const itemDate = new Date(item.date).toISOString().split('T')[0];
+      const itemDate = new Date(item.date || item.timestamp).toISOString().split('T')[0];
       const filterDate = new Date();
       
       if (selectedDate === 'today') {
@@ -55,22 +61,22 @@ export const PositionTrackerHistory = () => {
       } else if (selectedDate === 'week') {
         const weekAgo = new Date();
         weekAgo.setDate(filterDate.getDate() - 7);
-        return new Date(item.date) >= weekAgo;
+        return new Date(item.date || item.timestamp) >= weekAgo;
       } else if (selectedDate === 'month') {
         const monthAgo = new Date();
         monthAgo.setMonth(filterDate.getMonth() - 1);
-        return new Date(item.date) >= monthAgo;
+        return new Date(item.date || item.timestamp) >= monthAgo;
       }
     }
     
     return true;
   });
 
-  const toggleExpand = (index) => {
+  const toggleExpand = (index: number) => {
     setExpandedItem(expandedItem === index ? null : index);
   };
 
-  const getPositionTrend = (current, previous) => {
+  const getPositionTrend = (current: number, previous: number | null) => {
     if (!previous || previous === 0) return 'neutral';
     if (current === 0) return 'down';
     if (current < previous) return 'up';
@@ -78,7 +84,7 @@ export const PositionTrackerHistory = () => {
     return 'neutral';
   };
   
-  const formatDate = (dateString) => {
+  const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return new Intl.DateTimeFormat('ru-RU', {
       day: '2-digit',
@@ -90,14 +96,14 @@ export const PositionTrackerHistory = () => {
   };
 
   // Подготовка данных для графика динамики позиций
-  const prepareChartData = (historyRecord) => {
-    if (!historyRecord || !historyRecord.previousResults) return [];
+  const prepareChartData = (historyRecord?: PositionData): ChartData => {
+    if (!historyRecord || !historyRecord.previousResults) return { chartData: [], keywords: [] };
     
     // Собираем историю позиций для каждого ключевого слова
-    const keywordHistory = {};
+    const keywordHistory: Record<string, { date: Date; position: number }[]> = {};
     
     // Текущие данные
-    const currentDate = new Date(historyRecord.date);
+    const currentDate = new Date(historyRecord.date || historyRecord.timestamp);
     
     historyRecord.keywords.forEach(item => {
       if (!keywordHistory[item.keyword]) {
@@ -112,7 +118,7 @@ export const PositionTrackerHistory = () => {
     
     // Добавляем предыдущие результаты
     historyRecord.previousResults.forEach(prevResult => {
-      const prevDate = new Date(prevResult.date);
+      const prevDate = new Date(prevResult.date || prevResult.timestamp);
       
       prevResult.keywords.forEach(item => {
         if (!keywordHistory[item.keyword]) {
@@ -128,7 +134,7 @@ export const PositionTrackerHistory = () => {
     
     // Для каждого ключевого слова сортируем историю по дате
     Object.keys(keywordHistory).forEach(keyword => {
-      keywordHistory[keyword].sort((a, b) => a.date - b.date);
+      keywordHistory[keyword].sort((a, b) => a.date.getTime() - b.date.getTime());
     });
     
     // Выбираем топ-5 ключевых слов для графика
@@ -141,8 +147,8 @@ export const PositionTrackerHistory = () => {
       .slice(0, 5);
     
     // Формируем данные для графика
-    const chartData = [];
-    const allDates = new Set();
+    const chartData: any[] = [];
+    const allDates = new Set<string>();
     
     // Собираем все уникальные даты
     Object.values(keywordHistory).forEach(history => {
@@ -156,7 +162,7 @@ export const PositionTrackerHistory = () => {
     
     // Создаем точки данных для каждой даты
     sortedDates.forEach(dateStr => {
-      const dataPoint = { date: dateStr };
+      const dataPoint: Record<string, any> = { date: dateStr };
       
       topKeywords.forEach(keyword => {
         const historyPoints = keywordHistory[keyword];

@@ -10,9 +10,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { getPositionHistory } from '@/services/position/positionHistory';
 import { exportHistoryToExcel } from '@/services/position/exportService';
 import { useToast } from "@/hooks/use-toast";
+import { PositionData, KeywordPosition } from '@/services/position/positionTracker';
 
 const AdminPositions = () => {
-  const [history, setHistory] = useState([]);
+  const [history, setHistory] = useState<PositionData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
 
@@ -39,7 +40,7 @@ const AdminPositions = () => {
 
   // Подготовка данных для аналитики
   const getTopDomains = () => {
-    const domains = {};
+    const domains: Record<string, number> = {};
     history.forEach(item => {
       if (!domains[item.domain]) {
         domains[item.domain] = 0;
@@ -54,12 +55,12 @@ const AdminPositions = () => {
   };
 
   const getSearchEngineDistribution = () => {
-    const engines = { google: 0, yandex: 0, mailru: 0 };
+    const engines: Record<string, number> = { google: 0, yandex: 0, mailru: 0 };
     let total = 0;
     
     history.forEach(item => {
       item.keywords.forEach(keyword => {
-        engines[keyword.searchEngine]++;
+        engines[keyword.searchEngine as keyof typeof engines]++;
         total++;
       });
     });
@@ -67,12 +68,12 @@ const AdminPositions = () => {
     return Object.entries(engines).map(([engine, count]) => ({
       engine: engine === 'google' ? 'Google' : engine === 'yandex' ? 'Яндекс' : 'Mail.ru',
       count,
-      percentage: Math.round(count / total * 100)
+      percentage: Math.round((count / total) * 100)
     }));
   };
 
   const getTotalChecksByDay = () => {
-    const checksByDay = {};
+    const checksByDay: Record<string, number> = {};
     
     // Группировка проверок по дням
     history.forEach(item => {
@@ -112,11 +113,11 @@ const AdminPositions = () => {
     });
     
     return [
-      { name: 'ТОП 3', value: topPositions.top3, percentage: Math.round(topPositions.top3 / total * 100) },
-      { name: 'ТОП 4-10', value: topPositions.top10, percentage: Math.round(topPositions.top10 / total * 100) },
-      { name: 'ТОП 11-30', value: topPositions.top30, percentage: Math.round(topPositions.top30 / total * 100) },
-      { name: 'Ниже 30', value: topPositions.beyond, percentage: Math.round(topPositions.beyond / total * 100) },
-      { name: 'Не найдено', value: topPositions.notFound, percentage: Math.round(topPositions.notFound / total * 100) },
+      { name: 'ТОП 3', value: topPositions.top3, percentage: Math.round((topPositions.top3 / total) * 100) },
+      { name: 'ТОП 4-10', value: topPositions.top10, percentage: Math.round((topPositions.top10 / total) * 100) },
+      { name: 'ТОП 11-30', value: topPositions.top30, percentage: Math.round((topPositions.top30 / total) * 100) },
+      { name: 'Ниже 30', value: topPositions.beyond, percentage: Math.round((topPositions.beyond / total) * 100) },
+      { name: 'Не найдено', value: topPositions.notFound, percentage: Math.round((topPositions.notFound / total) * 100) },
     ];
   };
 
@@ -128,9 +129,10 @@ const AdminPositions = () => {
         description: "История проверок успешно экспортирована в Excel",
       });
     } catch (error) {
+      console.error('Ошибка экспорта:', error);
       toast({
         title: "Ошибка экспорта",
-        description: error.message || "Не удалось экспортировать данные",
+        description: error instanceof Error ? error.message : "Не удалось экспортировать данные",
         variant: "destructive",
       });
     }
