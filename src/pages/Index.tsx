@@ -1,15 +1,24 @@
 
-import React from 'react';
+import React, { lazy, Suspense } from 'react';
 import { motion } from 'framer-motion';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useNavigate } from 'react-router-dom';
 import { Search, ArrowRight, BarChart, PieChart, Zap, CheckCircle, Sparkles } from 'lucide-react';
-import VideoDemo from '../components/VideoDemo';
 import HeroSection from '../components/hero/HeroSection';
-import PositionTrackerFeature from '../components/position-tracker/PositionTrackerFeature';
-import FeatureSection from '../components/features';
 import CTASection from '../components/sections/CTASection';
+
+// Lazy loaded components for performance optimization
+const VideoDemo = lazy(() => import('../components/VideoDemo'));
+const PositionTrackerFeature = lazy(() => import('../components/position-tracker/PositionTrackerFeature'));
+const FeatureSection = lazy(() => import('../components/features'));
+
+// Loading fallback component
+const LoadingFallback = () => (
+  <div className="w-full py-16 flex items-center justify-center">
+    <div className="spinner-gradient"></div>
+  </div>
+);
 
 const Index: React.FC = () => {
   const navigate = useNavigate();
@@ -66,7 +75,9 @@ const Index: React.FC = () => {
             transition={{ duration: 0.7 }}
             viewport={{ once: true }}
           >
-            <VideoDemo />
+            <Suspense fallback={<LoadingFallback />}>
+              <VideoDemo />
+            </Suspense>
           </motion.div>
         </div>
       </section>
@@ -163,10 +174,14 @@ const Index: React.FC = () => {
       </section>
       
       {/* Position Tracker Feature */}
-      <PositionTrackerFeature />
+      <Suspense fallback={<LoadingFallback />}>
+        <PositionTrackerFeature />
+      </Suspense>
       
       {/* Detailed Features Section - Comprehensive feature list */}
-      <FeatureSection />
+      <Suspense fallback={<LoadingFallback />}>
+        <FeatureSection />
+      </Suspense>
       
       {/* Call to Action Section */}
       <CTASection />
