@@ -60,7 +60,7 @@ function App() {
                 <Route path="/terms" element={<Layout><Terms /></Layout>} />
                 <Route path="/profile" element={<Layout><ClientProfile /></Layout>} />
                 <Route path="/auth" element={<Auth />} />
-                {/* Перенаправление с неизвестных маршрутов на главную */}
+                {/* Redirect unknown routes to home */}
                 <Route path="*" element={<Navigate to="/" replace />} />
               </Routes>
             </Suspense>
