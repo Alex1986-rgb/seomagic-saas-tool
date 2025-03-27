@@ -153,6 +153,7 @@ export class DeepCrawler {
     const urls: string[] = [];
     const $ = cheerio.load(sitemapXml, { xmlMode: true });
     
+    // Extract URLs from the sitemap
     $('url > loc').each((_, element) => {
       const url = $(element).text().trim();
       if (url) {
@@ -160,19 +161,25 @@ export class DeepCrawler {
       }
     });
     
-    // Also check for sitemap index and process those
-    $('sitemap > loc').each(async (_, element) => {
+    // Fixed: Collect nested sitemap URLs first, then process them sequentially
+    const nestedSitemapUrls: string[] = [];
+    $('sitemap > loc').each((_, element) => {
       const sitemapUrl = $(element).text().trim();
       if (sitemapUrl) {
-        try {
-          const response = await axios.get(sitemapUrl, { timeout: 8000 });
-          const nestedUrls = await this.extractUrlsFromSitemap(response.data);
-          urls.push(...nestedUrls);
-        } catch (error) {
-          console.error(`Error processing nested sitemap ${sitemapUrl}:`, error);
-        }
+        nestedSitemapUrls.push(sitemapUrl);
       }
     });
+    
+    // Process nested sitemaps sequentially
+    for (const sitemapUrl of nestedSitemapUrls) {
+      try {
+        const response = await axios.get(sitemapUrl, { timeout: 8000 });
+        const nestedUrls = await this.extractUrlsFromSitemap(response.data);
+        urls.push(...nestedUrls);
+      } catch (error) {
+        console.error(`Error processing nested sitemap ${sitemapUrl}:`, error);
+      }
+    }
     
     return urls;
   }
