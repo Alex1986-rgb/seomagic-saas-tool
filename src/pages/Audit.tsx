@@ -6,17 +6,21 @@ import SeoAuditResults from '@/components/SeoAuditResults';
 import UrlForm from '@/components/url-form';
 import { useToast } from "@/hooks/use-toast";
 import { motion } from 'framer-motion';
-import { Rocket, Target, AlertTriangle } from 'lucide-react';
+import { Rocket, Target, AlertTriangle, Microscope } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { SimpleSitemapCreatorTool } from '@/components/audit/deep-crawl';
+import { 
+  SimpleSitemapCreatorTool,
+  AdvancedAnalysisTools
+} from '@/components/audit/deep-crawl';
 
 const Audit: React.FC = () => {
   const [searchParams] = useSearchParams();
   const [url, setUrl] = useState<string>('');
   const [error, setError] = useState<string | null>(null);
-  const [showSitemapCreator, setShowSitemapCreator] = useState(false);
+  const [showAdvancedTools, setShowAdvancedTools] = useState(false);
+  const [scannedUrls, setScannedUrls] = useState<string[]>([]);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -42,6 +46,18 @@ const Audit: React.FC = () => {
 
   const handleClearError = () => {
     setError(null);
+  };
+
+  // Функция для обновления списка URL после сканирования
+  const handleUrlsScanned = (urls: string[]) => {
+    setScannedUrls(urls);
+    if (urls.length > 0) {
+      toast({
+        title: "Сканирование завершено",
+        description: `Обнаружено ${urls.length} URL на сайте`,
+      });
+      setShowAdvancedTools(true);
+    }
   };
 
   return (
@@ -113,26 +129,56 @@ const Audit: React.FC = () => {
           </>
         )}
         
-        <motion.div 
-          className="max-w-2xl mx-auto mt-12"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.5, delay: 0.3 }}
-        >
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-semibold">Дополнительные инструменты</h2>
-            <Button 
-              variant="ghost" 
-              onClick={() => setShowSitemapCreator(!showSitemapCreator)}
-            >
-              {showSitemapCreator ? 'Скрыть' : 'Показать'}
-            </Button>
-          </div>
-          
-          {showSitemapCreator && (
-            <SimpleSitemapCreatorTool initialUrl={url} />
-          )}
-        </motion.div>
+        {url && (
+          <motion.div 
+            className="mt-12"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.5, delay: 0.3 }}
+          >
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <Microscope className="h-5 w-5 text-primary" />
+                <h2 className="text-xl font-semibold">Продвинутый технический анализ</h2>
+              </div>
+              <Button 
+                variant={showAdvancedTools ? "default" : "outline"} 
+                onClick={() => setShowAdvancedTools(!showAdvancedTools)}
+              >
+                {showAdvancedTools ? 'Скрыть' : 'Показать'}
+              </Button>
+            </div>
+            
+            {showAdvancedTools && (
+              <div className="space-y-6">
+                {scannedUrls.length === 0 ? (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.3 }}
+                    className="mb-6"
+                  >
+                    <SimpleSitemapCreatorTool 
+                      initialUrl={url} 
+                      onUrlsScanned={handleUrlsScanned} 
+                    />
+                  </motion.div>
+                ) : (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    <AdvancedAnalysisTools 
+                      domain={url.replace(/^https?:\/\//, '')} 
+                      urls={scannedUrls} 
+                    />
+                  </motion.div>
+                )}
+              </div>
+            )}
+          </motion.div>
+        )}
       </div>
     </Layout>
   );
