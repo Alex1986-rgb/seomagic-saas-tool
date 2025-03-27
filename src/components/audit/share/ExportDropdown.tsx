@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Download, FileText, FileJson, Loader2 } from 'lucide-react';
 import { Button } from "@/components/ui/button";
@@ -12,7 +11,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useToast } from "@/hooks/use-toast";
 import { AuditData, AuditHistoryItem } from '@/types/audit';
-import { generatePDFReport, generateHistoryPDF } from '@/utils/pdf';
+import { generateAuditPdf, generateHistoryPDF } from '@/utils/pdf';
 import { saveAs } from 'file-saver';
 
 interface ExportDropdownProps {
@@ -44,7 +43,7 @@ const ExportDropdown: React.FC<ExportDropdownProps> = ({
       setIsExporting('pdf');
       
       // Создание PDF на основе данных аудита
-      const pdfBlob = await generatePDFReport(auditData, url);
+      const pdfBlob = await generateAuditPdf({auditData, url});
       
       if (!pdfBlob) throw new Error("Не удалось создать PDF");
       
@@ -209,8 +208,8 @@ const ExportDropdown: React.FC<ExportDropdownProps> = ({
             ) : (
               <>
                 <FileJson className="h-4 w-4" />
-                <span>Экспорт истории аудитов</span>
-              </>
+              <span>Экспорт истории аудитов</span>
+            </>
             )}
           </DropdownMenuItem>
         )}

@@ -31,11 +31,12 @@ export const formatDateString = (dateStr: string): string => {
   });
 };
 
-// Возвращает цвет для оценки
-export const getScoreColor = (score: number): [number, number, number] => {
+// Возвращает цвет для оценки (переименовано для устранения конфликта)
+export const getScoreColorRGB = (score: number): [number, number, number] => {
   if (score >= 90) return [74, 222, 128]; // зеленый
   if (score >= 70) return [134, 239, 172]; // светло-зеленый
   if (score >= 50) return [250, 204, 21];  // желтый
   if (score >= 30) return [251, 146, 60];  // оранжевый
   return [239, 68, 68]; // красный
 };
+
