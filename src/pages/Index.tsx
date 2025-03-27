@@ -29,10 +29,32 @@ const Index: React.FC = () => {
       {/* Hero Section */}
       <HeroSection />
       
-      {/* Features Section */}
+      {/* Video Demo Section - Moved up to show how it works early */}
+      <section className="py-20">
+        <div className="container mx-auto">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold mb-4">Как это работает</h2>
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+              Посмотрите короткое видео о том, как наша платформа проводит аудит и оптимизацию сайтов
+            </p>
+          </div>
+          
+          <motion.div
+            className="max-w-4xl mx-auto"
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            transition={{ duration: 0.7 }}
+            viewport={{ once: true }}
+          >
+            <VideoDemo />
+          </motion.div>
+        </div>
+      </section>
+      
+      {/* Core Features Section */}
       <section className="py-20 bg-muted/30">
         <div className="container mx-auto">
-          <h2 className="text-3xl font-bold text-center mb-16">Возможности платформы</h2>
+          <h2 className="text-3xl font-bold text-center mb-16">Основные возможности</h2>
           
           <div className="grid md:grid-cols-3 gap-8">
             <motion.div 
@@ -86,38 +108,16 @@ const Index: React.FC = () => {
         </div>
       </section>
       
-      {/* Demo Video Section */}
-      <section className="py-20">
-        <div className="container mx-auto">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold mb-4">Как это работает</h2>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Посмотрите короткое видео о том, как наша платформа проводит аудит и оптимизацию сайтов
-            </p>
-          </div>
-          
-          <motion.div
-            className="max-w-4xl mx-auto"
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            transition={{ duration: 0.7 }}
-            viewport={{ once: true }}
-          >
-            <VideoDemo />
-          </motion.div>
-        </div>
-      </section>
-      
-      {/* All features section */}
-      <FeatureSection />
-      
-      {/* Position Tracker Feature */}
+      {/* Position Tracker Feature - Highlighted special feature */}
       <PositionTrackerFeature />
       
-      {/* Call to Action Section */}
+      {/* Detailed Features Section */}
+      <FeatureSection />
+      
+      {/* Call to Action Section - First CTA */}
       <CTASection />
       
-      {/* Final CTA Section */}
+      {/* Final CTA Section - Strong final push */}
       <section className="py-20 bg-primary text-primary-foreground">
         <div className="container mx-auto text-center">
           <motion.div
