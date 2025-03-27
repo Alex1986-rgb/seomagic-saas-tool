@@ -1,15 +1,14 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { motion } from 'framer-motion';
-import { Link, useLocation } from 'react-router-dom';
-import { ChevronDown, ChevronRight } from 'lucide-react';
-import { RESOURCE_ITEMS, COMPANY_ITEMS } from './navConstants';
-import NavbarDesktopAuth from './NavbarDesktopAuth';
-import { ThemeSwitcher } from '../ThemeSwitcher';
+import { Link, useNavigate } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
+import { User, LogOut, LogIn, UserPlus } from 'lucide-react';
+import ThemeSwitcher from '../ThemeSwitcher';
 
 interface NavbarMobileProps {
   isOpen: boolean;
-  navItems: { name: string; path: string }[];
+  navItems: Array<{ label: string; href: string; admin?: boolean }>;
   isLoggedIn: boolean;
   isAdmin: boolean;
   toggleAuth: () => void;
@@ -20,135 +19,115 @@ const NavbarMobile: React.FC<NavbarMobileProps> = ({
   navItems,
   isLoggedIn,
   isAdmin,
-  toggleAuth,
+  toggleAuth
 }) => {
-  const location = useLocation();
-  const [resourceOpen, setResourceOpen] = useState(false);
-  const [companyOpen, setCompanyOpen] = useState(false);
-
-  const variants = {
-    open: { opacity: 1, height: 'auto' },
-    closed: { opacity: 0, height: 0 }
+  const navigate = useNavigate();
+  
+  // Animation variants
+  const containerVariants = {
+    hidden: { opacity: 0, y: -20 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        staggerChildren: 0.1
+      }
+    },
+    exit: {
+      opacity: 0,
+      y: -20,
+      transition: {
+        staggerChildren: 0.05,
+        staggerDirection: -1
+      }
+    }
   };
-
-  const handleResourceToggle = () => {
-    setResourceOpen(!resourceOpen);
-    setCompanyOpen(false);
-  };
-
-  const handleCompanyToggle = () => {
-    setCompanyOpen(!companyOpen);
-    setResourceOpen(false);
+  
+  const itemVariants = {
+    hidden: { opacity: 0, y: -20 },
+    visible: { opacity: 1, y: 0 },
+    exit: { opacity: 0, y: -20 }
   };
 
   return (
     <motion.div
-      initial="closed"
-      animate="open"
-      exit="closed"
-      variants={{
-        open: { opacity: 1, height: 'auto' },
-        closed: { opacity: 0, height: 0 }
-      }}
-      transition={{ duration: 0.3 }}
-      className="md:hidden bg-background/95 backdrop-blur-lg border-t border-border"
+      className="w-full border-t"
+      initial="hidden"
+      animate="visible"
+      exit="exit"
+      variants={containerVariants}
     >
-      <div className="flex flex-col p-6 space-y-4">
-        {navItems.map((item) => (
-          <Link
-            key={item.path}
-            to={item.path}
-            className={`py-2 text-lg ${
-              location.pathname === item.path
-                ? 'text-primary font-medium'
-                : 'text-foreground'
-            }`}
-          >
-            {item.name}
-          </Link>
-        ))}
-        
-        {/* Ресурсы выпадающий раздел */}
-        <div className="border-t border-border pt-4">
-          <button 
-            onClick={handleResourceToggle}
-            className="flex justify-between items-center w-full py-2 text-lg"
-          >
-            <span>Ресурсы</span>
-            {resourceOpen ? 
-              <ChevronDown className="h-5 w-5" /> : 
-              <ChevronRight className="h-5 w-5" />
-            }
-          </button>
+      <div className="container mx-auto px-4 py-4">
+        <div className="grid gap-4">
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="text-sm font-medium text-muted-foreground">Навигация</h3>
+            <ThemeSwitcher />
+          </div>
           
-          <motion.div
-            initial="closed"
-            animate={resourceOpen ? "open" : "closed"}
-            variants={variants}
-            className="overflow-hidden"
-          >
-            <div className="pl-4 py-2 space-y-3">
-              {RESOURCE_ITEMS.map((item) => (
-                <Link
-                  key={item.path}
-                  to={item.path}
-                  className={`block py-1 ${
-                    location.pathname === item.path
-                      ? 'text-primary font-medium'
-                      : 'text-muted-foreground'
-                  }`}
+          {navItems
+            .filter(item => !item.admin || (item.admin && isAdmin))
+            .map((item, index) => (
+              <motion.div key={index} variants={itemVariants}>
+                <Link 
+                  to={item.href}
+                  className="flex items-center px-3 py-2 text-base font-medium rounded-md hover:bg-accent"
                 >
-                  {item.name}
+                  {item.label}
                 </Link>
-              ))}
-            </div>
-          </motion.div>
-        </div>
-        
-        {/* Компания выпадающий раздел */}
-        <div className="border-t border-border pt-4">
-          <button 
-            onClick={handleCompanyToggle}
-            className="flex justify-between items-center w-full py-2 text-lg"
-          >
-            <span>Компания</span>
-            {companyOpen ? 
-              <ChevronDown className="h-5 w-5" /> : 
-              <ChevronRight className="h-5 w-5" />
-            }
-          </button>
+              </motion.div>
+            ))}
+            
+          <div className="h-px bg-border my-2" />
           
-          <motion.div
-            initial="closed"
-            animate={companyOpen ? "open" : "closed"}
-            variants={variants}
-            className="overflow-hidden"
-          >
-            <div className="pl-4 py-2 space-y-3">
-              {COMPANY_ITEMS.map((item) => (
-                <Link
-                  key={item.path}
-                  to={item.path}
-                  className={`block py-1 ${
-                    location.pathname === item.path
-                      ? 'text-primary font-medium'
-                      : 'text-muted-foreground'
-                  }`}
+          {isLoggedIn ? (
+            <>
+              <motion.div variants={itemVariants}>
+                <Button
+                  variant="ghost"
+                  className="w-full justify-start gap-2 font-normal"
+                  onClick={() => navigate('/profile')}
                 >
-                  {item.name}
-                </Link>
-              ))}
-            </div>
-          </motion.div>
-        </div>
-        
-        <div className="border-t border-border pt-4 flex justify-between items-center">
-          <NavbarDesktopAuth 
-            isLoggedIn={isLoggedIn}
-            isAdmin={isAdmin}
-            toggleAuth={toggleAuth}
-          />
-          <ThemeSwitcher />
+                  <User size={18} />
+                  <span>Мой профиль</span>
+                </Button>
+              </motion.div>
+              
+              <motion.div variants={itemVariants}>
+                <Button
+                  variant="ghost"
+                  className="w-full justify-start gap-2 font-normal"
+                  onClick={toggleAuth}
+                >
+                  <LogOut size={18} />
+                  <span>Выйти</span>
+                </Button>
+              </motion.div>
+            </>
+          ) : (
+            <>
+              <motion.div variants={itemVariants}>
+                <Button
+                  variant="ghost"
+                  className="w-full justify-start gap-2 font-normal"
+                  onClick={() => navigate('/auth')}
+                >
+                  <LogIn size={18} />
+                  <span>Войти</span>
+                </Button>
+              </motion.div>
+              
+              <motion.div variants={itemVariants}>
+                <Button
+                  variant="default"
+                  className="w-full justify-start gap-2 font-normal"
+                  onClick={() => navigate('/auth?tab=register')}
+                >
+                  <UserPlus size={18} />
+                  <span>Регистрация</span>
+                </Button>
+              </motion.div>
+            </>
+          )}
         </div>
       </div>
     </motion.div>

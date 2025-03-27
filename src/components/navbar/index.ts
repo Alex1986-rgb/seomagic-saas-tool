@@ -1,2 +1,3 @@
 
-export { default } from './index.tsx';
+import { default as Navbar } from './Navbar';
+export default Navbar;

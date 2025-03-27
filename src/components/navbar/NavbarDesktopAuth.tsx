@@ -1,16 +1,9 @@
 
 import React from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { UserCircle, ChevronDown } from 'lucide-react';
-import { ThemeSwitcher } from '@/components/ThemeSwitcher';
-import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { useToast } from "@/hooks/use-toast";
+import { useNavigate } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
+import { User } from 'lucide-react';
+import ThemeSwitcher from '@/components/ThemeSwitcher';
 
 interface NavbarDesktopAuthProps {
   isLoggedIn: boolean;
@@ -18,66 +11,47 @@ interface NavbarDesktopAuthProps {
   toggleAuth: () => void;
 }
 
-const NavbarDesktopAuth: React.FC<NavbarDesktopAuthProps> = ({ 
-  isLoggedIn, 
-  isAdmin, 
-  toggleAuth 
-}) => {
+const NavbarDesktopAuth: React.FC<NavbarDesktopAuthProps> = ({ isLoggedIn, isAdmin, toggleAuth }) => {
   const navigate = useNavigate();
-  const { toast } = useToast();
-  
-  const handleLogout = () => {
-    toggleAuth();
-    navigate('/');
-    toast({
-      title: "Выход выполнен успешно",
-      description: "Вы вышли из своего аккаунта",
-    });
-  };
   
   return (
-    <div className="hidden md:flex items-center space-x-4">
-      <ThemeSwitcher />
-      
+    <div className="hidden md:flex items-center gap-4">
       {isLoggedIn ? (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="gap-2">
-              <UserCircle className="h-5 w-5" />
-              <span>Мой аккаунт</span>
-              <ChevronDown className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem asChild>
-              <Link to="/profile" className="cursor-pointer">Личный кабинет</Link>
-            </DropdownMenuItem>
-            <DropdownMenuItem asChild>
-              <Link to="/dashboard" className="cursor-pointer">Панель управления</Link>
-            </DropdownMenuItem>
-            {isAdmin && (
-              <DropdownMenuItem asChild>
-                <Link to="/admin" className="cursor-pointer">Админ панель</Link>
-              </DropdownMenuItem>
-            )}
-            <DropdownMenuItem 
-              onClick={handleLogout}
-              className="cursor-pointer text-red-500"
-            >
-              Выйти
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => navigate('/profile')}
+          >
+            <User className="h-5 w-5 mr-2" />
+            Профиль
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={toggleAuth}
+          >
+            Выйти
+          </Button>
+        </>
       ) : (
         <>
-          <Button variant="ghost" asChild>
-            <Link to="/auth">Войти</Link>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => navigate('/auth')}
+          >
+            Войти
           </Button>
-          <Button asChild>
-            <Link to="/auth?tab=register">Регистрация</Link>
+          <Button
+            size="sm"
+            onClick={() => navigate('/auth?tab=register')}
+          >
+            Регистрация
           </Button>
         </>
       )}
+      <ThemeSwitcher />
     </div>
   );
 };
