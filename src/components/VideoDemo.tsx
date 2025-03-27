@@ -188,8 +188,10 @@ const VideoDemo: React.FC = () => {
                 </div>
                 <h3 className="text-xl font-bold">Полный SEO-аудит за 60 секунд</h3>
               </div>
-              <Button className="gap-2">
-                Получить свой аудит <ArrowRight className="w-4 h-4" />
+              <Button className="gap-2" asChild>
+                <a href="/demo">
+                  Попробовать бесплатно <ArrowRight className="w-4 h-4" />
+                </a>
               </Button>
             </div>
             

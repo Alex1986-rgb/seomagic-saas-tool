@@ -16,6 +16,7 @@ import Pricing from "./pages/Pricing";
 import PositionPricing from "./pages/PositionPricing";
 import About from "./pages/About";
 import PositionTracker from "./pages/PositionTracker";
+import Demo from "./pages/Demo";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -39,6 +40,7 @@ const App = () => (
               <Route path="/position-pricing" element={<PositionPricing />} />
               <Route path="/about" element={<About />} />
               <Route path="/position-tracker" element={<PositionTracker />} />
+              <Route path="/demo" element={<Demo />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
