@@ -2,13 +2,13 @@
 import { ErrorReportPdfOptions } from './types';
 import { analyzeErrors } from './analyzer';
 import { 
-  renderCriticalErrorsSection, 
-  renderImportantIssuesSection,
-  renderMinorIssuesSection,
-  renderPageErrorsSection,
-  renderRecommendationsSection,
-  renderScoresSection,
-  renderExecutiveSummarySection
+  addCriticalErrorsSection, 
+  addMajorErrorsSection,
+  addMinorErrorsSection,
+  addErrorDetailsSection,
+  addRecommendationsSection,
+  addErrorSummarySection,
+  addReportHeaderSection
 } from './sections';
 import jsPDF from 'jspdf';
 import { addPaginationFooters } from '../helpers';
@@ -41,37 +41,59 @@ export const generateErrorReportPdf = async (options: ErrorReportPdfOptions): Pr
   // Analyze errors
   const errors = analyzeErrors(auditData, urls);
   
+  // Convert analyzed errors to the expected format for the section functions
+  const errorReportData: ErrorReportData = {
+    critical: errors.critical.map(e => ({
+      name: e.title,
+      description: e.description,
+      urls: e.url ? [e.url] : [],
+      solution: e.solution
+    })),
+    major: errors.important.map(e => ({
+      name: e.title,
+      description: e.description,
+      urls: e.url ? [e.url] : [],
+      solution: e.solution
+    })),
+    minor: errors.minor.map(e => ({
+      name: e.title,
+      description: e.description,
+      urls: e.url ? [e.url] : [],
+      solution: e.solution
+    }))
+  };
+  
   // Executive summary
-  let currentY = renderExecutiveSummarySection(doc, errors, auditData, url);
+  let currentY = addReportHeaderSection(doc, 'Детальный отчет об ошибках', url, formattedDate, auditData.pageCount || 0);
+  
+  // Add summary section
+  currentY = addErrorSummarySection(doc, errorReportData, currentY);
   
   // Add spacing between sections
   currentY += 15;
   
   // Critical errors section
-  currentY = renderCriticalErrorsSection(doc, errors, currentY);
+  currentY = addCriticalErrorsSection(doc, errorReportData.critical, currentY);
   
   // Add spacing between sections
   currentY += 15;
   
   // Important issues section
-  currentY = renderImportantIssuesSection(doc, errors, currentY);
+  currentY = addMajorErrorsSection(doc, errorReportData.major, currentY);
   
   // Add spacing between sections
   currentY += 15;
   
   // Minor issues section
-  currentY = renderMinorIssuesSection(doc, errors, currentY);
+  currentY = addMinorErrorsSection(doc, errorReportData.minor, currentY);
   
   // Page-specific errors section if detailed mode is enabled
   if (detailed && urls && urls.length > 0) {
-    renderPageErrorsSection(doc, errors);
+    currentY = addErrorDetailsSection(doc, errorReportData, currentY);
   }
   
   // Recommendations section
-  renderRecommendationsSection(doc);
-  
-  // SEO scores section
-  renderScoresSection(doc, auditData);
+  currentY = addRecommendationsSection(doc, errorReportData, currentY);
   
   // Add footer information about the generated report
   doc.setFontSize(8);
@@ -85,3 +107,17 @@ export const generateErrorReportPdf = async (options: ErrorReportPdfOptions): Pr
   // Convert the document to a Blob and return it
   return doc.output('blob');
 };
+
+// Define ErrorReportData interface locally to resolve the import issue
+interface ErrorReportData {
+  critical: ErrorTypeData[];
+  major: ErrorTypeData[];
+  minor: ErrorTypeData[];
+}
+
+interface ErrorTypeData {
+  name: string;
+  description: string;
+  urls: string[];
+  solution?: string;
+}

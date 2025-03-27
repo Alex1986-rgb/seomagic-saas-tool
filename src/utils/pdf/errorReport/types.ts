@@ -30,3 +30,16 @@ export interface ErrorReportSection {
   errors: AnalyzedError[];
   color: [number, number, number];
 }
+
+export interface ErrorReportData {
+  critical: ErrorTypeData[];
+  major: ErrorTypeData[];
+  minor: ErrorTypeData[];
+}
+
+export interface ErrorTypeData {
+  name: string;
+  description: string;
+  urls: string[];
+  solution?: string;
+}

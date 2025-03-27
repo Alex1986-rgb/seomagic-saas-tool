@@ -62,6 +62,7 @@ export const generateHistoryPDF = async (historyItems: AuditHistoryItem[], domai
     formatDateString(item.date),
     String(item.score),
     getScoreStatus(item.score),
+    // Handle case when 'changes' is undefined
     item.changes !== undefined ? (item.changes > 0 ? `+${item.changes}` : String(item.changes)) : 'N/A'
   ]);
   

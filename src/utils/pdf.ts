@@ -2,6 +2,8 @@
 // Re-export all PDF export utilities
 export * from './pdf/deepCrawlPdf';
 export * from './pdf/errorReport';
+export * from './pdf/historyPdf';
+export * from './pdf/auditPdf';
 export * from './pdf/helpers';
 export * from './pdf/styles/colors';
 export * from './pdf/styles/fonts';
