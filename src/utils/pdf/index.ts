@@ -3,6 +3,7 @@
 export * from './reportGenerator';
 export * from './auditPdf';
 export * from './historyPdf';
+export * from './errorReportPdf';
 // Explicitly re-export from helpers to avoid conflict with pdfStyles
 export { 
   addPaginationFooters,

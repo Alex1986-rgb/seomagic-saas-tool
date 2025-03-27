@@ -16,7 +16,8 @@ import {
   ExportHistory, 
   ExportHistoryPDF,
   ExportHTML,
-  ExportSitemap
+  ExportSitemap,
+  ExportErrorReport
 } from './export-actions';
 
 interface ExportDropdownProps {
@@ -49,6 +50,14 @@ const ExportDropdown: React.FC<ExportDropdownProps> = ({
         <ExportPDF
           auditData={auditData}
           url={url}
+          isExporting={isExporting}
+          setIsExporting={setIsExporting}
+        />
+        
+        <ExportErrorReport
+          auditData={auditData}
+          url={url}
+          urls={urls}
           isExporting={isExporting}
           setIsExporting={setIsExporting}
         />
