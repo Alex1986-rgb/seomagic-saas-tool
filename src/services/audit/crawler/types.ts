@@ -1,4 +1,3 @@
-
 /**
  * Shared types for the crawler system
  */
@@ -60,4 +59,16 @@ export interface CrawlSummary {
 export interface SiteStructureAnalysis {
   levels: Record<number, number>;
   pathCounts: Record<string, number>;
+}
+
+export interface DeepCrawlerOptions {
+  maxPages: number;
+  maxDepth: number;
+  followExternalLinks: boolean;
+  onProgress: (pagesScanned: number, totalEstimated: number, currentUrl: string) => void;
+}
+
+export interface CrawlResult {
+  urls: string[];
+  pageCount: number;
 }
