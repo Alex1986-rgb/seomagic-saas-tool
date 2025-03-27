@@ -1,5 +1,5 @@
 
-import React, { memo } from "react";
+import React from "react";
 import { Moon, Sun } from "lucide-react";
 import { useTheme } from "@/contexts/ThemeContext";
 import { Button } from "@/components/ui/button";
@@ -10,14 +10,14 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-export const ThemeSwitcher = memo(function ThemeSwitcher() {
+export function ThemeSwitcher() {
   const { theme, setTheme } = useTheme();
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" size="icon">
-          <ThemeSwitcherIcon theme={theme} />
+          <ThemeSwitcherIcon />
           <span className="sr-only">Toggle theme</span>
         </Button>
       </DropdownMenuTrigger>
@@ -37,10 +37,11 @@ export const ThemeSwitcher = memo(function ThemeSwitcher() {
       </DropdownMenuContent>
     </DropdownMenu>
   );
-});
+}
 
-// Separate the icon component to optimize rendering
-const ThemeSwitcherIcon = memo(function ThemeSwitcherIcon({ theme }: { theme: string }) {
+export function ThemeSwitcherIcon() {
+  const { theme } = useTheme();
+  
   if (theme === "dark") {
     return <Moon className="h-5 w-5" />;
   }
@@ -49,7 +50,8 @@ const ThemeSwitcherIcon = memo(function ThemeSwitcherIcon({ theme }: { theme: st
     return <Sun className="h-5 w-5" />;
   }
   
-  // For system theme, check client-side only
+  // For system theme, we need to check if the window object is available
+  // since this component might be rendered on the server
   if (typeof window !== 'undefined') {
     const isDarkMode = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
     return isDarkMode ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5" />;
@@ -57,6 +59,4 @@ const ThemeSwitcherIcon = memo(function ThemeSwitcherIcon({ theme }: { theme: st
   
   // Default fallback
   return <Sun className="h-5 w-5" />;
-});
-
-export { ThemeSwitcherIcon };
+}
