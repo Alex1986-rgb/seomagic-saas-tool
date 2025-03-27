@@ -9,6 +9,7 @@ import GrowthAnimation from '@/components/growth/GrowthAnimation';
 import PricingSection from '@/components/sections/PricingSection';
 import TestimonialsSection from '@/components/sections/TestimonialsSection';
 import CTASection from '@/components/sections/CTASection';
+import PositionTrackerFeature from '@/components/position-tracker/PositionTrackerFeature';
 
 const Index: React.FC = () => {
   return (
@@ -18,6 +19,9 @@ const Index: React.FC = () => {
       
       {/* Video Demo Section */}
       <VideoDemo />
+      
+      {/* Position Tracker Feature Section */}
+      <PositionTrackerFeature />
       
       {/* Growth Animation Section */}
       <GrowthAnimation />

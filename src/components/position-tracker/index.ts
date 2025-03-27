@@ -8,3 +8,4 @@ export { BrokenLinksAnalyzer } from './BrokenLinksAnalyzer';
 export { DuplicatesDetector } from './DuplicatesDetector';
 export { ContentUniquenessChecker } from './ContentUniquenessChecker';
 export { PageRankCalculator } from './PageRankCalculator';
+export { default as PositionTrackerFeature } from './PositionTrackerFeature';

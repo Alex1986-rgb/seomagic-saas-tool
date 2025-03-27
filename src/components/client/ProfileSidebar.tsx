@@ -1,7 +1,9 @@
 
 import React from 'react';
-import { User, Settings, CreditCard, FileText, Bell, History, BarChart } from 'lucide-react';
+import { User, Settings, CreditCard, FileText, Bell, History, BarChart, Globe } from 'lucide-react';
 import ProfileNavButton from './ProfileNavButton';
+import { Link } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
 
 interface ProfileSidebarProps {
   activeTab: string;
@@ -18,6 +20,15 @@ const ProfileSidebar: React.FC<ProfileSidebarProps> = ({ activeTab, onTabChange 
         <h3 className="text-xl font-semibold">Иван Петров</h3>
         <p className="text-muted-foreground">Pro план</p>
         <p className="text-sm text-muted-foreground mt-1">Участник с Мая 2023</p>
+        
+        <div className="mt-4">
+          <Link to="/position-tracker">
+            <Button variant="outline" size="sm" className="w-full flex items-center gap-2">
+              <Globe className="h-4 w-4" />
+              <span>Анализ позиций сайта</span>
+            </Button>
+          </Link>
+        </div>
       </div>
       
       <nav className="neo-card p-4 space-y-1">
