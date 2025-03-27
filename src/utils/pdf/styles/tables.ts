@@ -22,7 +22,7 @@ export const pdfTableStyles = {
     },
     footStyles: {
       fillColor: [243, 244, 246],
-      textColor: pdfColors.dark,
+      textColor: pdfColors.darkGray,
       fontStyle: 'bold',
     },
   },

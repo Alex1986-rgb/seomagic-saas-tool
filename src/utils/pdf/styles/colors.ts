@@ -6,6 +6,7 @@
 export const pdfColors = {
   primary: [56, 189, 248] as [number, number, number], // sky blue
   secondary: [139, 92, 246] as [number, number, number], // purple
+  tertiary: [168, 85, 247] as [number, number, number], // purple-500
   error: [239, 68, 68] as [number, number, number], // red
   warning: [251, 146, 60] as [number, number, number], // orange
   success: [74, 222, 128] as [number, number, number], // green
@@ -15,6 +16,8 @@ export const pdfColors = {
   darkGray: [51, 65, 85] as [number, number, number], // dark slate
   black: [15, 23, 42] as [number, number, number], // slate black
   white: [255, 255, 255] as [number, number, number], // white
+  dark: [15, 23, 42] as [number, number, number], // same as black
+  light: [248, 250, 252] as [number, number, number], // light background
 };
 
 /**
@@ -27,3 +30,8 @@ export const getScoreColorRGB = (score: number): [number, number, number] => {
   if (score >= 30) return pdfColors.warning;
   return pdfColors.error;
 };
+
+/**
+ * Alternative name for getScoreColorRGB to avoid confusion with helper function
+ */
+export const getMetricColor = getScoreColorRGB;

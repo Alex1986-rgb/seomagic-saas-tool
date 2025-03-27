@@ -1,4 +1,3 @@
-
 export interface AuditItemData {
   id: string;
   title: string;
@@ -8,6 +7,7 @@ export interface AuditItemData {
   value?: number | string;
   trend?: 'up' | 'down' | 'neutral';
   helpText?: string;
+  solution?: string; // Add solution property
 }
 
 export interface AuditCategoryData {
