@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { UserCircle, Home, LogOut } from 'lucide-react';
 import { ThemeSwitcher } from '@/components/ThemeSwitcher';
@@ -26,6 +26,7 @@ const NavbarMobile: React.FC<NavbarMobileProps> = ({
   toggleAuth
 }) => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { toast } = useToast();
 
   const handleLogout = () => {
@@ -36,6 +37,9 @@ const NavbarMobile: React.FC<NavbarMobileProps> = ({
       description: "Вы вышли из своего аккаунта",
     });
   };
+
+  // Проверяем, находимся ли мы на главной странице
+  const isHomePage = location.pathname === '/';
 
   return (
     <motion.div
@@ -71,15 +75,17 @@ const NavbarMobile: React.FC<NavbarMobileProps> = ({
                 <span>Личный кабинет</span>
               </Link>
 
-              <Link
-                to="/dashboard"
-                className="flex items-center gap-2 px-3 py-2 transition-colors rounded-md hover:bg-accent"
-              >
-                <Home className="h-5 w-5" />
-                <span>Панель управления</span>
-              </Link>
+              {!isHomePage && (
+                <Link
+                  to="/dashboard"
+                  className="flex items-center gap-2 px-3 py-2 transition-colors rounded-md hover:bg-accent"
+                >
+                  <Home className="h-5 w-5" />
+                  <span>Панель управления</span>
+                </Link>
+              )}
 
-              {isAdmin && (
+              {isAdmin && !isHomePage && (
                 <Link
                   to="/admin"
                   className="flex items-center gap-2 px-3 py-2 transition-colors rounded-md hover:bg-accent"

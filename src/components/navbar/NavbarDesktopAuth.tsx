@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { UserCircle, ChevronDown } from 'lucide-react';
 import { ThemeSwitcher } from '@/components/ThemeSwitcher';
 import { Button } from "@/components/ui/button";
@@ -24,7 +24,11 @@ const NavbarDesktopAuth: React.FC<NavbarDesktopAuthProps> = ({
   toggleAuth 
 }) => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { toast } = useToast();
+  
+  // Проверяем, находимся ли мы на главной странице
+  const isHomePage = location.pathname === '/';
   
   const handleLogout = () => {
     toggleAuth();
@@ -52,10 +56,12 @@ const NavbarDesktopAuth: React.FC<NavbarDesktopAuthProps> = ({
             <DropdownMenuItem asChild>
               <Link to="/profile" className="cursor-pointer">Личный кабинет</Link>
             </DropdownMenuItem>
-            <DropdownMenuItem asChild>
-              <Link to="/dashboard" className="cursor-pointer">Панель управления</Link>
-            </DropdownMenuItem>
-            {isAdmin && (
+            {!isHomePage && (
+              <DropdownMenuItem asChild>
+                <Link to="/dashboard" className="cursor-pointer">Панель управления</Link>
+              </DropdownMenuItem>
+            )}
+            {isAdmin && !isHomePage && (
               <DropdownMenuItem asChild>
                 <Link to="/admin" className="cursor-pointer">Админ панель</Link>
               </DropdownMenuItem>
