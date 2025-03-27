@@ -1,5 +1,5 @@
 
-import React, { createContext, useContext, useEffect, useState } from "react";
+import React, { createContext, useContext, useEffect, useState, useMemo } from "react";
 
 type Theme = "dark" | "light" | "system";
 
@@ -45,19 +45,37 @@ export function ThemeProvider({
         ? "dark"
         : "light";
       root.classList.add(systemTheme);
-      return;
+      
+      // Add listener for system theme changes
+      const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
+      const handleChange = () => {
+        const newTheme = mediaQuery.matches ? "dark" : "light";
+        root.classList.remove("light", "dark");
+        root.classList.add(newTheme);
+      };
+      
+      mediaQuery.addEventListener("change", handleChange);
+      return () => mediaQuery.removeEventListener("change", handleChange);
+    } else {
+      root.classList.add(theme);
     }
-
-    root.classList.add(theme);
   }, [theme]);
 
-  const value = {
-    theme,
-    setTheme: (theme: Theme) => {
+  // Store theme in localStorage when it changes
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
       localStorage.setItem(storageKey, theme);
-      setTheme(theme);
-    },
-  };
+    }
+  }, [theme, storageKey]);
+
+  // Memoize context value to prevent unnecessary renders
+  const value = useMemo(
+    () => ({
+      theme,
+      setTheme: (newTheme: Theme) => setTheme(newTheme),
+    }),
+    [theme]
+  );
 
   return (
     <ThemeProviderContext.Provider value={value} {...props}>
