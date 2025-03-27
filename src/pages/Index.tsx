@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { useNavigate } from 'react-router-dom';
 import { Search, ArrowRight, BarChart, PieChart, Zap, CheckCircle } from 'lucide-react';
 import VideoDemo from '../components/VideoDemo';
+import HeroSection from '../components/hero/HeroSection';
 
 const Index: React.FC = () => {
   const navigate = useNavigate();
@@ -23,63 +24,7 @@ const Index: React.FC = () => {
   return (
     <div className="flex flex-col min-h-[calc(100vh-4rem)]">
       {/* Hero Section */}
-      <section className="py-20 px-4 md:px-6 lg:py-28">
-        <div className="container mx-auto max-w-5xl">
-          <div className="flex flex-col items-center text-center space-y-8">
-            <motion.h1 
-              className="text-4xl md:text-6xl font-bold tracking-tight"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
-            >
-              Умный SEO аудит с <span className="text-primary">автоматической оптимизацией</span>
-            </motion.h1>
-            
-            <motion.p 
-              className="text-lg md:text-xl text-muted-foreground max-w-3xl"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.1 }}
-            >
-              Мгновенный анализ вашего сайта с использованием искусственного интеллекта. 
-              Получите рекомендации и автоматически примените оптимизации для улучшения поисковой выдачи.
-            </motion.p>
-            
-            <motion.form 
-              onSubmit={handleSubmit}
-              className="w-full max-w-lg flex gap-2"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.2 }}
-            >
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                <Input
-                  type="text"
-                  placeholder="Введите URL вашего сайта"
-                  className="pl-10 h-12"
-                  value={url}
-                  onChange={(e) => setUrl(e.target.value)}
-                />
-              </div>
-              <Button type="submit" size="lg">
-                Аудит сайта
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </Button>
-            </motion.form>
-            
-            <motion.div
-              className="flex items-center gap-2 text-sm text-muted-foreground"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.5, delay: 0.3 }}
-            >
-              <CheckCircle className="h-4 w-4 text-primary" />
-              Бесплатный базовый аудит
-            </motion.div>
-          </div>
-        </div>
-      </section>
+      <HeroSection />
       
       {/* Features Section */}
       <section className="py-20 bg-muted/30">
