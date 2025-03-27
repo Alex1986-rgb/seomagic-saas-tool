@@ -11,7 +11,7 @@ interface NavbarMobileProps {
   isOpen: boolean;
   navItems: Array<{
     name: string;
-    href: string;
+    path: string;
   }>;
   isLoggedIn: boolean;
   isAdmin: boolean;
@@ -49,8 +49,8 @@ const NavbarMobile: React.FC<NavbarMobileProps> = ({
         <nav className="grid gap-2">
           {navItems.map((item) => (
             <Link
-              key={item.name}
-              to={item.href}
+              key={item.path}
+              to={item.path}
               className="flex items-center px-3 py-2 text-lg transition-colors rounded-md hover:bg-accent"
             >
               {item.name}
