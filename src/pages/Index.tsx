@@ -1,6 +1,5 @@
 
 import React from 'react';
-import Layout from '@/components/Layout';
 import HeroSection from '@/components/hero';
 import VideoDemo from '@/components/VideoDemo';
 import FeatureSection from '@/components/features';
@@ -13,7 +12,7 @@ import PositionTrackerFeature from '@/components/position-tracker/PositionTracke
 
 const Index: React.FC = () => {
   return (
-    <Layout>
+    <>
       {/* Hero Section */}
       <HeroSection />
       
@@ -40,7 +39,7 @@ const Index: React.FC = () => {
       
       {/* CTA Section */}
       <CTASection />
-    </Layout>
+    </>
   );
 };
 

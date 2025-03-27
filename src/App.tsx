@@ -14,6 +14,7 @@ import About from './pages/About';
 import PositionTracker from './pages/PositionTracker';
 import Demo from './pages/Demo';
 import Index from './pages/Index';
+import ClientProfile from './pages/ClientProfile';
 
 // Lazy load non-critical pages for better performance
 const SiteAudit = React.lazy(() => import('./pages/SiteAudit'));
@@ -56,6 +57,7 @@ function App() {
                 <Route path="/contact" element={<Layout><Contact /></Layout>} />
                 <Route path="/privacy" element={<Layout><Privacy /></Layout>} />
                 <Route path="/terms" element={<Layout><Terms /></Layout>} />
+                <Route path="/profile" element={<Layout><ClientProfile /></Layout>} />
               </Routes>
             </Suspense>
           </Router>
