@@ -1,3 +1,4 @@
+
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { addPaginationFooters } from './helpers';
@@ -814,3 +815,198 @@ function analyzeCommonPaths(urls: string[]): { path: string; count: number }[] {
       const path = parsedUrl.pathname;
       
       // Skip empty paths
+      if (!path || path === '/') {
+        return;
+      }
+      
+      // Count occurrences of each path
+      if (pathCounts[path]) {
+        pathCounts[path]++;
+      } else {
+        pathCounts[path] = 1;
+      }
+    } catch (error) {
+      // Skip invalid URLs
+      console.error('Invalid URL:', url);
+    }
+  });
+  
+  // Convert to array and sort by count (descending)
+  const pathArray = Object.entries(pathCounts).map(([path, count]) => ({ path, count }));
+  return pathArray.sort((a, b) => b.count - a.count);
+}
+
+/**
+ * Get SEO recommendations based on site analysis
+ */
+function getSeoRecommendations(
+  brokenLinksCount: number,
+  duplicatesCount: number,
+  totalUrls: number,
+  depthData: { level: number; count: number }[] = []
+): Array<{
+  title: string;
+  description: string;
+  priority: 'high' | 'medium' | 'low';
+}> {
+  const recommendations: Array<{
+    title: string;
+    description: string;
+    priority: 'high' | 'medium' | 'low';
+  }> = [];
+  
+  // Add recommendations based on broken links
+  if (brokenLinksCount > 0) {
+    recommendations.push({
+      title: 'Исправление битых ссылок',
+      description: `Обнаружено ${brokenLinksCount} битых ссылок. Необходимо исправить или удалить эти ссылки, так как они негативно влияют на пользовательский опыт и SEO.`,
+      priority: brokenLinksCount > 10 ? 'high' : 'medium'
+    });
+  }
+  
+  // Add recommendations based on duplicates
+  if (duplicatesCount > 0) {
+    recommendations.push({
+      title: 'Устранение дубликатов страниц',
+      description: `Обнаружено ${duplicatesCount} групп дублированных страниц. Рекомендуется использовать каноникализацию или редиректы для консолидации контента.`,
+      priority: duplicatesCount > 5 ? 'high' : 'medium'
+    });
+  }
+  
+  // Check for deep site structure
+  const hasDeepStructure = depthData.some(item => item.level > 3 && item.count > 5);
+  if (hasDeepStructure) {
+    recommendations.push({
+      title: 'Оптимизация глубины вложенности',
+      description: 'На сайте обнаружены страницы с глубокой вложенностью (более 3 уровней). Рекомендуется улучшить структуру сайта и уменьшить глубину вложенности для улучшения индексации.', 
+      priority: 'medium'
+    });
+  }
+  
+  // Add general recommendations
+  recommendations.push({
+    title: 'Создание или обновление XML Sitemap',
+    description: 'Регулярно обновляйте XML карту сайта и отправляйте её в поисковые системы для более эффективной индексации.',
+    priority: 'medium'
+  });
+  
+  recommendations.push({
+    title: 'Оптимизация robots.txt',
+    description: 'Проверьте и оптимизируйте файл robots.txt для правильного управления индексацией страниц поисковыми роботами.',
+    priority: 'medium'
+  });
+  
+  recommendations.push({
+    title: 'Использование SSL-сертификата',
+    description: 'Если сайт еще не использует HTTPS, рекомендуется установить SSL-сертификат для повышения безопасности и улучшения ранжирования.',
+    priority: 'high'
+  });
+  
+  recommendations.push({
+    title: 'Оптимизация URL-адресов',
+    description: 'Создавайте дружественные для пользователей и поисковых систем URL-адреса. Используйте ключевые слова в URL и избегайте параметров, где это возможно.',
+    priority: 'low'
+  });
+  
+  recommendations.push({
+    title: 'Улучшение мета-тегов',
+    description: 'Проверьте и оптимизируйте мета-теги title и description на всех страницах. Они должны быть уникальными и содержать ключевые слова.',
+    priority: 'medium'
+  });
+  
+  recommendations.push({
+    title: 'Оптимизация скорости загрузки',
+    description: 'Улучшите время загрузки страниц путем оптимизации изображений, использования кэширования и минификации CSS/JavaScript.',
+    priority: 'high'
+  });
+  
+  return recommendations;
+}
+
+/**
+ * Get text representation of recommendation priority
+ */
+function getRecommendationPriorityText(priority: string): string {
+  switch (priority) {
+    case 'high':
+      return 'Высокий';
+    case 'medium':
+      return 'Средний';
+    case 'low':
+      return 'Низкий';
+    default:
+      return 'Средний';
+  }
+}
+
+/**
+ * Get color for recommendation priority
+ */
+function getRecommendationPriorityColor(priority: string): number[] {
+  switch (priority) {
+    case 'high':
+      return pdfColors.error;
+    case 'medium':
+      return pdfColors.warning;
+    case 'low':
+      return pdfColors.success;
+    default:
+      return pdfColors.info;
+  }
+}
+
+/**
+ * Apply color for recommendation priority
+ */
+function applyRecommendationPriorityColor(doc: jsPDF, priority: string): void {
+  const color = getRecommendationPriorityColor(priority);
+  doc.setTextColor(color[0], color[1], color[2]);
+}
+
+/**
+ * Get site summary based on analysis
+ */
+function getSiteSummary(
+  score: number,
+  brokenLinksCount: number,
+  duplicatesCount: number,
+  totalUrls: number
+): string {
+  let summary = '';
+  
+  if (score >= 90) {
+    summary = `Ваш сайт в отличном состоянии с общей оценкой ${score}/100. `;
+  } else if (score >= 70) {
+    summary = `Ваш сайт в хорошем состоянии с общей оценкой ${score}/100, но есть возможности для улучшения. `;
+  } else if (score >= 50) {
+    summary = `Ваш сайт имеет среднюю оценку ${score}/100 и требует улучшений. `;
+  } else {
+    summary = `Ваш сайт имеет низкую оценку ${score}/100 и требует значительной оптимизации. `;
+  }
+  
+  // Add issues summary
+  if (brokenLinksCount > 0 || duplicatesCount > 0) {
+    summary += 'Основные проблемы: ';
+    
+    if (brokenLinksCount > 0) {
+      summary += `${brokenLinksCount} битых ссылок`;
+    }
+    
+    if (brokenLinksCount > 0 && duplicatesCount > 0) {
+      summary += ' и ';
+    }
+    
+    if (duplicatesCount > 0) {
+      summary += `${duplicatesCount} групп дубликатов страниц`;
+    }
+    
+    summary += '. ';
+  } else {
+    summary += 'Не обнаружено серьезных проблем. ';
+  }
+  
+  // Add recommendations
+  summary += 'Следуя рекомендациям из этого отчета, вы сможете улучшить SEO-показатели вашего сайта и повысить видимость в поисковых системах.';
+  
+  return summary;
+}
