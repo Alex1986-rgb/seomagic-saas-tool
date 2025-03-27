@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { BarChart, FileSearch, Download, Clock, ScrollText } from 'lucide-react';
 import { Button } from "@/components/ui/button";
@@ -8,10 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { PageNode, SiteStructure, analyzeSiteStructure } from '@/services/audit/siteAnalysis';
 import { useToast } from "@/hooks/use-toast";
-import { ResponsiveContainer, Tooltip, ForceGraph } from 'recharts';
-
-// Примечание: ForceGraph не существует в Recharts,
-// здесь для демонстрации, на практике нужен D3.js или другая библиотека
+import { ResponsiveContainer } from 'recharts';
 
 interface SiteStructureAnalysisProps {
   domain: string;
@@ -56,10 +52,8 @@ const SiteStructureAnalysis = ({ domain, urls }: SiteStructureAnalysisProps) => 
   };
 
   useEffect(() => {
-    // В реальном приложении здесь будет код для отрисовки графика с D3.js
     if (showResults && siteStructure && graphRef.current) {
       console.log('Рисуем граф структуры сайта:', siteStructure);
-      // Здесь был бы код для отрисовки графа
     }
   }, [showResults, siteStructure]);
 
@@ -101,7 +95,6 @@ const SiteStructureAnalysis = ({ domain, urls }: SiteStructureAnalysisProps) => 
     
     for (const node of siteStructure.nodes) {
       sitemap += `  <url>\n    <loc>${node.url}</loc>\n`;
-      // Добавляем приоритет на основе pageRank
       const priority = Math.max(0.1, Math.min(1.0, node.pageRank / 100)).toFixed(1);
       sitemap += `    <priority>${priority}</priority>\n`;
       sitemap += `  </url>\n`;

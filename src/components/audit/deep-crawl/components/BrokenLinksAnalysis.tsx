@@ -1,7 +1,6 @@
-
 import React, { useEffect, useState } from 'react';
-import { Motion, AnimatePresence } from 'framer-motion';
-import { LinkOff, CornerDownRight, AlertTriangle, ExternalLink, Download } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Link2Off, CornerDownRight, AlertTriangle, ExternalLink, Download } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -88,7 +87,7 @@ const BrokenLinksAnalysis = ({ domain, urls }: BrokenLinksAnalysisProps) => {
     <Card className="shadow-md">
       <CardHeader className="pb-3">
         <div className="flex items-center gap-2">
-          <LinkOff className="h-5 w-5 text-destructive" />
+          <Link2Off className="h-5 w-5 text-destructive" />
           <CardTitle className="text-lg">Поиск битых ссылок и редиректов</CardTitle>
         </div>
         <CardDescription>
@@ -238,7 +237,7 @@ const BrokenLinksAnalysis = ({ domain, urls }: BrokenLinksAnalysisProps) => {
                   Выявляет неработающие ссылки и перенаправления на вашем сайте, помогая улучшить пользовательский опыт и SEO
                 </p>
                 <Button onClick={startAnalysis} className="gap-2">
-                  <LinkOff className="h-4 w-4" />
+                  <Link2Off className="h-4 w-4" />
                   Начать проверку ссылок
                 </Button>
               </div>
