@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useToast } from "@/hooks/use-toast";
 import { AuditData, AuditHistoryItem } from '@/types/audit';
+import { generatePDFReport, generateHistoryPDF } from '@/utils/pdf';
 import { saveAs } from 'file-saver';
 
 interface ExportDropdownProps {
@@ -42,11 +43,11 @@ const ExportDropdown: React.FC<ExportDropdownProps> = ({
     try {
       setIsExporting('pdf');
       
-      // Имитация подготовки PDF (в реальном проекте здесь должен быть код для создания PDF)
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      // Создание PDF на основе данных аудита
+      const pdfBlob = await generatePDFReport(auditData, url);
       
-      // Создаем примитивный PDF для демонстрации
-      const pdfBlob = new Blob(['PDF data would be here'], { type: 'application/pdf' });
+      if (!pdfBlob) throw new Error("Не удалось создать PDF");
+      
       saveAs(pdfBlob, `audit-${cleanUrl(url)}-${formatDate(auditData.date)}.pdf`);
       
       toast({

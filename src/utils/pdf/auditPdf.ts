@@ -37,60 +37,24 @@ export const generateAuditPdf = async (options: GenerateAuditPdfOptions): Promis
   const formattedDate = new Date(date).toLocaleDateString('ru-RU', {
     year: 'numeric',
     month: 'long',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit'
+    day: 'numeric'
   });
   
-  // Добавляем основную информацию
-  addHeader(doc, url, formattedDate);
-  addSummaryInfo(doc, auditData);
+  // Добавляем заголовок
+  doc.setFontSize(22);
+  doc.text('SEO Аудит', 105, 20, { align: 'center' });
   
-  // Добавляем статистику сайта
-  let currentY = addSiteStatistics(doc, auditData, pageStats);
-  
-  // Добавляем анализ проблем
-  currentY = addIssuesAnalysis(doc, recommendations, currentY);
-  
-  // Добавляем калькуляцию стоимости оптимизации
-  if (optimizationCost && optimizationItems) {
-    addOptimizationCostPage(doc, auditData, optimizationCost, optimizationItems);
-  }
-  
-  // Добавляем рекомендации
-  addRecommendationsPage(doc, recommendations);
-  
-  // Добавляем контактную информацию
-  addContactInfo(doc);
-  
-  // Возвращаем PDF как Blob
-  return doc.output('blob');
-};
-
-// Добавляет заголовок и общую информацию в PDF
-function addHeader(doc: jsPDF, url: string, formattedDate: string): void {
-  doc.setFillColor(56, 189, 248);
-  doc.rect(0, 0, 210, 30, 'F');
-  
-  doc.setFontSize(24);
-  doc.setTextColor(255, 255, 255);
-  doc.text('SEO Аудит', 15, 15);
-  
-  doc.setFontSize(14);
-  doc.text(`Сайт: ${url}`, 15, 22);
-  
-  doc.setTextColor(0, 0, 0);
+  // Добавляем информацию о сайте
   doc.setFontSize(12);
-  doc.text(`Дата аудита: ${formattedDate}`, 15, 40);
-}
-
-// Добавляет сводную информацию об аудите
-function addSummaryInfo(doc: jsPDF, auditData: AuditData): void {
-  doc.text(`Общая SEO оценка: ${auditData.score}/100`, 15, 48);
+  doc.text(`URL: ${url}`, 14, 30);
+  doc.text(`Дата аудита: ${formattedDate}`, 14, 38);
+  
+  // Добавляем основную информацию
+  doc.text(`Общая SEO оценка: ${auditData.score}/100`, 14, 46);
   
   // Рисуем цветной индикатор оценки
-  const scoreColor = auditData.score >= 80 ? '#4ade80' : auditData.score >= 60 ? '#facc15' : '#ef4444';
-  doc.setFillColor(scoreColor.replace('#', '0x'));
+  const scoreColor = auditData.score >= 80 ? [74, 222, 128] : auditData.score >= 60 ? [250, 204, 21] : [239, 68, 68];
+  doc.setFillColor(scoreColor[0], scoreColor[1], scoreColor[2]);
   doc.circle(170, 44, 8, 'F');
   doc.setTextColor(255, 255, 255);
   doc.setFontSize(12);
@@ -98,12 +62,10 @@ function addSummaryInfo(doc: jsPDF, auditData: AuditData): void {
   
   // Возвращаемся к основному цвету текста
   doc.setTextColor(0, 0, 0);
-}
-
-// Добавляет статистику сайта
-function addSiteStatistics(doc: jsPDF, auditData: AuditData, pageStats?: any): number {
+  
+  // Добавляем статистику сайта
   doc.setFontSize(16);
-  doc.text('Статистика сайта', 15, 60);
+  doc.text('Статистика сайта', 14, 60);
   
   // Расчет общего количества проблем
   const totalIssues = auditData.issues.critical + auditData.issues.important + auditData.issues.opportunities;
@@ -117,9 +79,8 @@ function addSiteStatistics(doc: jsPDF, auditData: AuditData, pageStats?: any): n
     ['Незначительные проблемы', auditData.issues.opportunities.toString()]
   ];
   
-  let tableYPosition = 65;
   autoTable(doc, {
-    startY: tableYPosition,
+    startY: 65,
     head: [['Параметр', 'Значение']],
     body: statsData,
     theme: 'grid',
@@ -128,12 +89,12 @@ function addSiteStatistics(doc: jsPDF, auditData: AuditData, pageStats?: any): n
   });
   
   // Get the Y position after the table
-  tableYPosition = (doc as any).lastAutoTable.finalY + 15;
+  let currentY = (doc as any).lastAutoTable.finalY + 15;
   
   // Добавляем детали распределения страниц по типам, если доступно
   if (pageStats && pageStats.subpages) {
     doc.setFontSize(16);
-    doc.text('Распределение страниц', 15, tableYPosition);
+    doc.text('Распределение страниц', 14, currentY);
     
     const pageTypesData = Object.entries(pageStats.subpages).map(([type, count]) => [
       type.charAt(0).toUpperCase() + type.slice(1),
@@ -141,7 +102,7 @@ function addSiteStatistics(doc: jsPDF, auditData: AuditData, pageStats?: any): n
     ]);
     
     autoTable(doc, {
-      startY: tableYPosition + 5,
+      startY: currentY + 5,
       head: [['Тип страницы', 'Количество']],
       body: pageTypesData,
       theme: 'grid',
@@ -150,159 +111,138 @@ function addSiteStatistics(doc: jsPDF, auditData: AuditData, pageStats?: any): n
     });
     
     // Update Y position
-    tableYPosition = (doc as any).lastAutoTable.finalY + 15;
+    currentY = (doc as any).lastAutoTable.finalY + 15;
   }
   
-  return tableYPosition;
-}
-
-// Добавляет анализ проблем
-function addIssuesAnalysis(doc: jsPDF, recommendations: any, yPosition: number): number {
+  // Добавляем категории аудита
   doc.setFontSize(16);
-  doc.text('Анализ обнаруженных проблем', 15, yPosition);
+  doc.text('Категории аудита', 14, currentY);
   
-  if (recommendations) {
-    const recommendationsData = Object.entries(recommendations).map(([category, categoryData]: [string, any]) => [
-      category,
-      categoryData.issues?.length || 0,
-      categoryData.score
-    ]);
-    
-    autoTable(doc, {
-      startY: yPosition + 5,
-      head: [['Категория', 'Количество проблем', 'Оценка']],
-      body: recommendationsData,
-      theme: 'grid',
-      styles: { halign: 'left' },
-      headStyles: { fillColor: [56, 189, 248] }
-    });
-    
-    return (doc as any).lastAutoTable.finalY + 15;
-  }
+  const categories = [
+    ['SEO', auditData.details?.seo?.score || 0],
+    ['Производительность', auditData.details?.performance?.score || 0],
+    ['Контент', auditData.details?.content?.score || 0],
+    ['Технические аспекты', auditData.details?.technical?.score || 0]
+  ];
   
-  return yPosition + 10;
-}
-
-// Добавляет страницу с калькуляцией стоимости оптимизации
-function addOptimizationCostPage(
-  doc: jsPDF, 
-  auditData: AuditData, 
-  optimizationCost: number, 
-  optimizationItems: OptimizationItem[]
-): void {
-  doc.addPage();
-  
-  doc.setFillColor(56, 189, 248);
-  doc.rect(0, 0, 210, 20, 'F');
-  doc.setFontSize(18);
-  doc.setTextColor(255, 255, 255);
-  doc.text('Стоимость оптимизации', 15, 15);
-  
-  doc.setTextColor(0, 0, 0);
-  doc.setFontSize(12);
-  doc.text(`Общая стоимость: ${new Intl.NumberFormat('ru-RU').format(optimizationCost)} ₽`, 15, 30);
-  doc.text(`Количество страниц: ${auditData.pageCount}`, 15, 38);
-  doc.text(`Стоимость за страницу: 50 ₽`, 15, 46);
-  
-  doc.setFontSize(14);
-  doc.text('Детализация стоимости:', 15, 54);
-  
-  const costDetailsData = optimizationItems.map(item => [
-    item.type,
-    item.count.toString(),
-    `${new Intl.NumberFormat('ru-RU').format(item.pricePerUnit)} ₽`,
-    `${new Intl.NumberFormat('ru-RU').format(item.totalPrice)} ₽`
-  ]);
-  
-  let costTableY = 58;
   autoTable(doc, {
-    startY: costTableY,
-    head: [['Тип оптимизации', 'Количество', 'Цена за единицу', 'Итого']],
-    body: costDetailsData,
+    startY: currentY + 5,
+    head: [['Категория', 'Оценка']],
+    body: categories,
     theme: 'grid',
     styles: { halign: 'left' },
     headStyles: { fillColor: [56, 189, 248] }
   });
   
-  // Добавляем перечень что включено
-  let includesY = (doc as any).lastAutoTable.finalY + 15;
-  doc.setFontSize(14);
-  doc.text('Оптимизация включает:', 15, includesY);
-  
-  const includedItems = [
-    'Оптимизация всех мета-тегов',
-    'Исправление проблем с изображениями',
-    'Оптимизация контента для SEO',
-    'Улучшение скорости загрузки',
-    'Исправление технических проблем',
-    'Удаление дублей и создание уникального контента',
-    'Исправление URL (замена подчеркиваний на дефисы)'
-  ];
-  
-  let yPos = includesY + 5;
-  includedItems.forEach(item => {
-    doc.setFontSize(12);
-    doc.text(`• ${item}`, 20, yPos);
-    yPos += 8;
-  });
-}
-
-// Добавляет страницу с рекомендациями
-function addRecommendationsPage(doc: jsPDF, recommendations: any): void {
-  doc.addPage();
-  
-  doc.setFillColor(56, 189, 248);
-  doc.rect(0, 0, 210, 20, 'F');
-  doc.setFontSize(18);
-  doc.setTextColor(255, 255, 255);
-  doc.text('Рекомендации по оптимизации', 15, 15);
-  
-  doc.setTextColor(0, 0, 0);
-  let recPosition = 30;
-  
+  // Добавляем рекомендации, если они есть
   if (recommendations) {
+    doc.addPage();
+    
+    doc.setFontSize(18);
+    doc.text('Рекомендации по оптимизации', 105, 20, { align: 'center' });
+    
+    let recY = 40;
+    
     Object.entries(recommendations).forEach(([category, categoryData]: [string, any], index) => {
       // Проверяем, нужно ли добавить новую страницу
-      if (recPosition > 250) {
+      if (recY > 250) {
         doc.addPage();
-        recPosition = 30;
+        recY = 40;
       }
       
       doc.setFontSize(14);
-      doc.text(`${index + 1}. ${category} (Оценка: ${categoryData.score}/100)`, 15, recPosition);
-      recPosition += 10;
+      doc.text(`${index + 1}. ${category}`, 14, recY);
+      recY += 10;
       
       if (categoryData.issues && categoryData.issues.length > 0) {
         categoryData.issues.slice(0, 5).forEach((issue: any, issueIndex: number) => {
+          // Добавляем проблему
           doc.setFontSize(12);
-          doc.text(`${index + 1}.${issueIndex + 1}. ${issue.title}`, 20, recPosition);
-          recPosition += 7;
+          doc.setFont(undefined, 'bold');
+          doc.text(`${index + 1}.${issueIndex + 1}. ${issue.title}`, 20, recY);
+          recY += 7;
           
+          // Добавляем описание проблемы
           doc.setFontSize(10);
-          const descriptionLines = doc.splitTextToSize(issue.description, 170);
-          descriptionLines.forEach((line: string) => {
-            doc.text(line, 25, recPosition);
-            recPosition += 5;
-          });
+          doc.setFont(undefined, 'normal');
           
-          recPosition += 5;
+          if (issue.description) {
+            const descriptionLines = doc.splitTextToSize(issue.description, 170);
+            descriptionLines.forEach((line: string) => {
+              doc.text(line, 25, recY);
+              recY += 5;
+            });
+          }
+          
+          recY += 5;
         });
       } else {
         doc.setFontSize(12);
-        doc.text('Нет обнаруженных проблем в этой категории', 20, recPosition);
-        recPosition += 10;
+        doc.text('Нет обнаруженных проблем в этой категории', 20, recY);
+        recY += 10;
       }
       
-      recPosition += 5;
+      recY += 5;
     });
-  } else {
-    doc.text('Нет доступных рекомендаций', 15, recPosition);
   }
-}
-
-// Добавляет контактную информацию
-function addContactInfo(doc: jsPDF): void {
-  doc.setFontSize(10);
-  doc.text('SEO Market - профессиональная оптимизация сайтов', 15, 280);
-  doc.text('Контакты: support@seomarket.ru | +7 (XXX) XXX-XX-XX', 15, 285);
-}
+  
+  // Добавляем отчет о стоимости оптимизации, если данные доступны
+  if (optimizationCost && optimizationItems) {
+    doc.addPage();
+    
+    doc.setFontSize(18);
+    doc.text('Стоимость оптимизации', 105, 20, { align: 'center' });
+    
+    doc.setFontSize(12);
+    doc.text(`Общая стоимость: ${new Intl.NumberFormat('ru-RU').format(optimizationCost)} ₽`, 14, 40);
+    doc.text(`Количество страниц: ${auditData.pageCount}`, 14, 48);
+    
+    doc.setFontSize(14);
+    doc.text('Детализация стоимости:', 14, 60);
+    
+    const costDetailsData = optimizationItems.map(item => [
+      item.type,
+      item.count.toString(),
+      `${new Intl.NumberFormat('ru-RU').format(item.pricePerUnit)} ₽`,
+      `${new Intl.NumberFormat('ru-RU').format(item.totalPrice)} ₽`
+    ]);
+    
+    autoTable(doc, {
+      startY: 65,
+      head: [['Тип оптимизации', 'Количество', 'Цена за единицу', 'Итого']],
+      body: costDetailsData,
+      theme: 'grid',
+      styles: { halign: 'left' },
+      headStyles: { fillColor: [56, 189, 248] }
+    });
+    
+    // Добавляем список что включено
+    const includesY = (doc as any).lastAutoTable.finalY + 15;
+    doc.setFontSize(14);
+    doc.text('Оптимизация включает:', 14, includesY);
+    
+    const includedItems = [
+      'Оптимизация всех мета-тегов',
+      'Исправление проблем с изображениями',
+      'Улучшение скорости загрузки',
+      'Исправление технических проблем',
+      'Оптимизация контента для SEO'
+    ];
+    
+    let yPos = includesY + 10;
+    includedItems.forEach(item => {
+      doc.setFontSize(12);
+      doc.text(`• ${item}`, 20, yPos);
+      yPos += 8;
+    });
+  }
+  
+  // Добавляем информацию о сгенерированном отчете
+  doc.setFontSize(8);
+  const lastPage = doc.getNumberOfPages();
+  doc.setPage(lastPage);
+  doc.text(`Отчет сгенерирован: ${new Date().toLocaleString('ru-RU')}`, 14, 285);
+  
+  // Преобразуем документ в Blob и возвращаем
+  return doc.output('blob');
+};
