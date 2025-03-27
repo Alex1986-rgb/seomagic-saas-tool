@@ -1,7 +1,9 @@
 
+import { LucideIcon } from 'lucide-react';
+
 export interface SlideData {
   title: string;
-  icon: React.ReactNode;
+  icon: LucideIcon;
   content: string;
   color: string;
 }

@@ -12,6 +12,7 @@ const slideVariants = {
 
 const Slide: React.FC<SlideProps> = ({ slideData, currentSlide, slideIndex }) => {
   const isActive = currentSlide === slideIndex;
+  const Icon = slideData.icon;
   
   if (!isActive) return null;
   
@@ -25,7 +26,7 @@ const Slide: React.FC<SlideProps> = ({ slideData, currentSlide, slideIndex }) =>
       className="absolute inset-0 flex flex-col items-center justify-center p-8"
     >
       <div className="mb-4 transform hover:scale-110 transition-transform duration-300">
-        {slideData.icon}
+        <Icon className="w-14 h-14" style={{ color: slideData.color }} />
       </div>
       <h3 className="text-2xl font-bold text-white mb-3">{slideData.title}</h3>
       <p className="text-white/80 mb-6 max-w-md">{slideData.content}</p>

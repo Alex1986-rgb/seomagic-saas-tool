@@ -8,6 +8,8 @@ interface CircularChartProps {
 }
 
 const CircularChart: React.FC<CircularChartProps> = ({ slideData }) => {
+  const Icon = slideData.icon;
+
   return (
     <motion.div 
       className="h-28 mt-6 flex items-center justify-center"
@@ -36,7 +38,7 @@ const CircularChart: React.FC<CircularChartProps> = ({ slideData }) => {
           className="h-16 w-16 rounded-full flex items-center justify-center"
           style={{ backgroundColor: slideData.color }}
         >
-          {slideData.icon}
+          <Icon className="w-14 h-14 text-white" />
         </motion.div>
       </div>
     </motion.div>
