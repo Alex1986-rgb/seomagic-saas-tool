@@ -4,6 +4,7 @@ import { Search, Calendar, Link, ExternalLink, Download, Filter, FileText } from
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { useNavigate } from 'react-router-dom';
 
 // Мок-данные аудитов пользователя
 const mockUserAudits = [
@@ -45,8 +46,13 @@ const mockUserAudits = [
   },
 ];
 
-const ClientAudits: React.FC = () => {
+interface ClientAuditsProps {
+  onStartNewAudit?: () => void;
+}
+
+const ClientAudits: React.FC<ClientAuditsProps> = ({ onStartNewAudit }) => {
   const [searchTerm, setSearchTerm] = useState('');
+  const navigate = useNavigate();
   
   // Фильтрация аудитов
   const filteredAudits = mockUserAudits.filter(audit => 
@@ -60,11 +66,19 @@ const ClientAudits: React.FC = () => {
     return 'text-red-500';
   };
 
+  const handleNewAudit = () => {
+    if (onStartNewAudit) {
+      onStartNewAudit();
+    } else {
+      navigate('/audit');
+    }
+  };
+
   return (
     <div>
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-xl font-semibold">Ваши SEO аудиты</h2>
-        <Button className="gap-2">
+        <Button className="gap-2" onClick={handleNewAudit}>
           <FileText className="h-4 w-4" />
           <span>Новый аудит</span>
         </Button>
@@ -103,7 +117,7 @@ const ClientAudits: React.FC = () => {
             <p className="text-muted-foreground mb-6">
               У вас пока нет SEO аудитов. Начните с анализа вашего сайта.
             </p>
-            <Button>
+            <Button onClick={handleNewAudit}>
               Запустить новый аудит
             </Button>
           </div>

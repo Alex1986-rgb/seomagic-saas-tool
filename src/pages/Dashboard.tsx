@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { 
   Calendar, 
   Clock, 
@@ -13,12 +14,21 @@ import {
   LayoutDashboard,
   Activity,
   FileSpreadsheet,
-  Bell,
+  Bell as BellIcon,
   Lock,
   Link
 } from 'lucide-react';
 import Layout from '@/components/Layout';
 import ClientPositionTracker from '@/components/client/ClientPositionTracker';
+import ClientAudits from '@/components/client/ClientAudits';
+import ClientReports from '@/components/client/ClientReports';
+import ClientNotifications from '@/components/client/ClientNotifications';
+import ClientSettings from '@/components/client/ClientSettings';
+import { useToast } from "@/hooks/use-toast";
+import DeepCrawlButton from '@/components/audit/deep-crawl/DeepCrawlButton';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import UrlForm from '@/components/url-form/UrlForm';
 
 const mockAudits = [
   {
@@ -52,7 +62,42 @@ const mockAudits = [
 ];
 
 const Dashboard: React.FC = () => {
-  const [activeTab, setActiveTab] = useState('positions');
+  const [activeTab, setActiveTab] = useState('dashboard');
+  const [isNewAuditDialogOpen, setIsNewAuditDialogOpen] = useState(false);
+  const [isNotificationsSettingsOpen, setIsNotificationsSettingsOpen] = useState(false);
+  const navigate = useNavigate();
+  const { toast } = useToast();
+
+  const handleDeepCrawlComplete = (pageCount: number) => {
+    toast({
+      title: "Глубокий аудит завершен",
+      description: `Обнаружено ${pageCount} страниц на сайте`,
+    });
+  };
+
+  const handleStartNewAudit = () => {
+    setIsNewAuditDialogOpen(true);
+  };
+
+  const handleAddSite = () => {
+    navigate('/add-site');
+    toast({
+      title: "Добавление сайта",
+      description: "Открыта форма добавления нового сайта для оптимизации",
+    });
+  };
+
+  const handleCreateReport = () => {
+    navigate('/reports/create');
+    toast({
+      title: "Создание отчета",
+      description: "Открыта форма создания нового отчета",
+    });
+  };
+
+  const handleNotificationSettings = () => {
+    setIsNotificationsSettingsOpen(true);
+  };
 
   return (
     <Layout>
@@ -105,7 +150,7 @@ const Dashboard: React.FC = () => {
                 </NavButton>
                 <NavButton 
                   active={activeTab === 'notifications'} 
-                  icon={<Bell size={18} />} 
+                  icon={<BellIcon size={18} />} 
                   onClick={() => setActiveTab('notifications')}
                 >
                   Уведомления
@@ -129,7 +174,11 @@ const Dashboard: React.FC = () => {
             
             <div className="md:col-span-3">
               {activeTab === 'dashboard' && (
-                <DashboardOverview />
+                <DashboardOverview 
+                  onStartNewAudit={handleStartNewAudit}
+                  onAddSite={handleAddSite}
+                  onCreateReport={handleCreateReport}
+                />
               )}
             
               {activeTab === 'positions' && (
@@ -137,31 +186,17 @@ const Dashboard: React.FC = () => {
               )}
             
               {activeTab === 'audits' && (
-                <>
-                  <div className="flex justify-between items-center mb-6">
-                    <h2 className="text-xl font-semibold">Недавние аудиты</h2>
-                    <button className="bg-primary text-white px-4 py-2 rounded-full text-sm flex items-center">
-                      <Search size={16} className="mr-2" />
-                      Новый аудит
-                    </button>
-                  </div>
-                  
-                  <div className="space-y-4">
-                    {mockAudits.map((audit) => (
-                      <AuditCard key={audit.id} audit={audit} />
-                    ))}
-                  </div>
-                </>
+                <ClientAudits onStartNewAudit={handleStartNewAudit} />
               )}
               
               {activeTab === 'sites' && (
                 <div className="space-y-6">
                   <div className="flex justify-between items-center mb-6">
                     <h2 className="text-xl font-semibold">Оптимизированные сайты</h2>
-                    <button className="bg-primary text-white px-4 py-2 rounded-full text-sm flex items-center">
+                    <Button className="gap-2" onClick={handleAddSite}>
                       <Globe size={16} className="mr-2" />
                       Добавить сайт
-                    </button>
+                    </Button>
                   </div>
                   
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -190,87 +225,21 @@ const Dashboard: React.FC = () => {
               )}
               
               {activeTab === 'reports' && (
-                <div className="space-y-6">
-                  <div className="flex justify-between items-center mb-6">
-                    <h2 className="text-xl font-semibold">Отчеты</h2>
-                    <button className="bg-primary text-white px-4 py-2 rounded-full text-sm flex items-center">
-                      <FileText size={16} className="mr-2" />
-                      Создать отчет
-                    </button>
-                  </div>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <ReportCard 
-                      title="Ежемесячный отчет" 
-                      date="2023-10-01" 
-                      type="PDF" 
-                    />
-                    <ReportCard 
-                      title="Сравнительный анализ" 
-                      date="2023-09-15" 
-                      type="Excel" 
-                    />
-                    <ReportCard 
-                      title="Аналитика ключевых слов" 
-                      date="2023-09-10" 
-                      type="PDF" 
-                    />
-                    <ReportCard 
-                      title="Технический аудит" 
-                      date="2023-09-05" 
-                      type="HTML" 
-                    />
-                  </div>
-                </div>
+                <ClientReports />
               )}
               
               {activeTab === 'notifications' && (
-                <div className="space-y-6">
-                  <div className="flex justify-between items-center mb-6">
-                    <h2 className="text-xl font-semibold">Уведомления</h2>
-                    <button className="bg-secondary text-foreground px-4 py-2 rounded-full text-sm flex items-center">
-                      <Settings size={16} className="mr-2" />
-                      Настройки уведомлений
-                    </button>
-                  </div>
-                  
-                  <div className="space-y-4">
-                    <NotificationCard 
-                      title="Проверка позиций завершена" 
-                      description="Проверка позиций для сайта example.com успешно завершена" 
-                      time="10 минут назад"
-                      type="info"
-                    />
-                    <NotificationCard 
-                      title="Улучшение позиций" 
-                      description="Ключевое слово 'SEO оптимизация' поднялось на 5 позиций" 
-                      time="3 часа назад"
-                      type="success"
-                    />
-                    <NotificationCard 
-                      title="Аудит сайта" 
-                      description="Аудит сайта company-blog.net завершен, найдено 12 проблем" 
-                      time="Вчера, 18:45"
-                      type="warning"
-                    />
-                    <NotificationCard 
-                      title="Срок подписки" 
-                      description="Ваша подписка 'Бизнес' истекает через 5 дней" 
-                      time="2 дня назад"
-                      type="error"
-                    />
-                  </div>
-                </div>
+                <ClientNotifications />
               )}
               
               {activeTab === 'account' && (
                 <div className="space-y-6">
                   <div className="flex justify-between items-center mb-6">
                     <h2 className="text-xl font-semibold">Информация об аккаунте</h2>
-                    <button className="bg-secondary text-foreground px-4 py-2 rounded-full text-sm flex items-center">
+                    <Button className="gap-2" onClick={() => setActiveTab('settings')}>
                       <Settings size={16} className="mr-2" />
                       Редактировать
-                    </button>
+                    </Button>
                   </div>
                   
                   <div className="neo-card p-6">
@@ -302,45 +271,50 @@ const Dashboard: React.FC = () => {
                         <p className="font-medium">5 марта 2023</p>
                       </div>
                     </div>
+
+                    <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <Button variant="outline" className="gap-2">
+                        <Lock className="h-4 w-4" />
+                        Изменить пароль
+                      </Button>
+                      <Button variant="outline" className="gap-2">
+                        <User className="h-4 w-4" />
+                        Редактировать профиль
+                      </Button>
+                    </div>
                   </div>
                 </div>
               )}
               
               {activeTab === 'settings' && (
-                <div className="space-y-6">
-                  <div className="mb-6">
-                    <h2 className="text-xl font-semibold">Настройки</h2>
-                    <p className="text-muted-foreground">Управление настройками аккаунта и системы</p>
-                  </div>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <SettingsCard 
-                      title="Профиль" 
-                      description="Управление личной информацией" 
-                      icon={<User className="h-6 w-6" />} 
-                    />
-                    <SettingsCard 
-                      title="Уведомления" 
-                      description="Настройка оповещений и сообщений" 
-                      icon={<Bell className="h-6 w-6" />} 
-                    />
-                    <SettingsCard 
-                      title="Безопасность" 
-                      description="Изменение пароля и настройки безопасности" 
-                      icon={<Lock className="h-6 w-6" />} 
-                    />
-                    <SettingsCard 
-                      title="Интеграции" 
-                      description="Подключение внешних сервисов" 
-                      icon={<Link className="h-6 w-6" />} 
-                    />
-                  </div>
-                </div>
+                <ClientSettings />
               )}
             </div>
           </div>
         </div>
       </div>
+
+      <Dialog open={isNewAuditDialogOpen} onOpenChange={setIsNewAuditDialogOpen}>
+        <DialogContent className="max-w-3xl">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-semibold">Новый SEO аудит</DialogTitle>
+          </DialogHeader>
+          <div className="pt-4">
+            <UrlForm />
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={isNotificationsSettingsOpen} onOpenChange={setIsNotificationsSettingsOpen}>
+        <DialogContent className="max-w-xl">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-semibold">Настройки уведомлений</DialogTitle>
+          </DialogHeader>
+          <div className="pt-4">
+            <ClientNotifications />
+          </div>
+        </DialogContent>
+      </Dialog>
     </Layout>
   );
 };
@@ -434,12 +408,14 @@ const SiteCard: React.FC<{ url: string; lastOptimized: string; score: number }> 
       </div>
     </div>
     <div className="flex gap-2">
-      <button className="bg-secondary text-foreground px-3 py-1.5 rounded-full text-xs">
+      <Button variant="outline" size="sm">
         Аналитика
-      </button>
-      <button className="bg-secondary text-foreground px-3 py-1.5 rounded-full text-xs">
-        Оптимизироват��
-      </button>
+      </Button>
+      <Button variant="outline" size="sm" asChild>
+        <a href={`/audit?url=${encodeURIComponent(url)}`}>
+          Оптимизировать
+        </a>
+      </Button>
     </div>
   </div>
 );
@@ -460,12 +436,12 @@ const ReportCard: React.FC<{ title: string; date: string; type: string }> = ({
       </div>
     </div>
     <div className="flex gap-2">
-      <button className="bg-secondary text-foreground px-3 py-1.5 rounded-full text-xs">
+      <Button variant="outline" size="sm">
         Просмотр
-      </button>
-      <button className="bg-secondary text-foreground px-3 py-1.5 rounded-full text-xs">
+      </Button>
+      <Button variant="outline" size="sm">
         Скачать
-      </button>
+      </Button>
     </div>
   </div>
 );
@@ -490,20 +466,30 @@ const SettingsCard: React.FC<{
   </div>
 );
 
-const DashboardOverview = () => {
+interface DashboardOverviewProps {
+  onStartNewAudit: () => void;
+  onAddSite: () => void;
+  onCreateReport: () => void;
+}
+
+const DashboardOverview: React.FC<DashboardOverviewProps> = ({ 
+  onStartNewAudit, 
+  onAddSite, 
+  onCreateReport 
+}) => {
   return (
     <div className="space-y-8">
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-xl font-semibold">Обзор SEO-активности</h2>
         <div className="flex gap-2">
-          <button className="bg-secondary text-foreground px-4 py-2 rounded-full text-sm flex items-center">
+          <Button variant="outline" className="gap-2">
             <Calendar size={16} className="mr-2" />
             За месяц
-          </button>
-          <button className="bg-primary text-white px-4 py-2 rounded-full text-sm flex items-center">
+          </Button>
+          <Button className="gap-2" onClick={onCreateReport}>
             <FileSpreadsheet size={16} className="mr-2" />
             Экспорт
-          </button>
+          </Button>
         </div>
       </div>
       
@@ -538,7 +524,13 @@ const DashboardOverview = () => {
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="neo-card p-6">
-          <h3 className="text-lg font-semibold mb-4">Последние аудиты</h3>
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="text-lg font-semibold">Последние аудиты</h3>
+            <Button variant="outline" size="sm" onClick={onStartNewAudit}>
+              Новый аудит
+            </Button>
+          </div>
+          
           {mockAudits.slice(0, 2).map((audit) => (
             <div key={audit.id} className="flex justify-between items-center py-3 border-b border-border-secondary last:border-0">
               <div>
@@ -559,34 +551,30 @@ const DashboardOverview = () => {
             </div>
           ))}
           <div className="mt-4">
-            <a href="#" className="text-primary text-sm hover:underline">Посмотреть все аудиты →</a>
+            <Button variant="link" className="p-0" onClick={() => navigate('/audits')}>
+              Посмотреть все аудиты →
+            </Button>
           </div>
         </div>
         
         <div className="neo-card p-6">
-          <h3 className="text-lg font-semibold mb-4">Активность</h3>
-          <div className="space-y-4">
-            <ActivityItem 
-              icon={<TrendingUp className="h-4 w-4" />} 
-              title="Проверка позиций" 
-              description="Проверены позиции для сайта example.com" 
-              time="2 часа назад"
-            />
-            <ActivityItem 
-              icon={<Search className="h-4 w-4" />} 
-              title="Новый аудит" 
-              description="Запущен аудит для company-blog.net" 
-              time="Вчера"
-            />
-            <ActivityItem 
-              icon={<FileText className="h-4 w-4" />} 
-              title="Отчет сгенерирован" 
-              description="Создан отчет по аудиту для e-store.example" 
-              time="3 дня назад"
-            />
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="text-lg font-semibold">Сайты для оптимизации</h3>
+            <Button variant="outline" size="sm" onClick={onAddSite}>
+              Добавить сайт
+            </Button>
           </div>
+          
+          <div className="space-y-3">
+            <SiteListItem url="example.com" score={82} status="optimized" />
+            <SiteListItem url="company-blog.net" score={76} status="in-progress" />
+            <SiteListItem url="online-store.com" score={65} status="needs-attention" />
+          </div>
+          
           <div className="mt-4">
-            <a href="#" className="text-primary text-sm hover:underline">Вся активность →</a>
+            <Button variant="link" className="p-0" onClick={() => navigate('/sites')}>
+              Все сайты →
+            </Button>
           </div>
         </div>
       </div>
@@ -605,6 +593,38 @@ const InfoCard = ({ title, value, change, icon, isNegative = false }) => {
       </div>
       <h3 className="text-sm text-muted-foreground">{title}</h3>
       <div className="text-2xl font-bold mt-1">{value}</div>
+    </div>
+  );
+};
+
+const SiteListItem = ({ url, score, status }) => {
+  const getStatusBadge = () => {
+    switch(status) {
+      case 'optimized':
+        return <span className="text-xs bg-green-500/20 text-green-600 px-2 py-0.5 rounded-full">Оптимизирован</span>;
+      case 'in-progress':
+        return <span className="text-xs bg-blue-500/20 text-blue-600 px-2 py-0.5 rounded-full">В процессе</span>;
+      case 'needs-attention':
+        return <span className="text-xs bg-amber-500/20 text-amber-600 px-2 py-0.5 rounded-full">Требует внимания</span>;
+      default:
+        return null;
+    }
+  };
+  
+  return (
+    <div className="flex justify-between items-center py-2 border-b border-border-secondary last:border-0">
+      <div>
+        <div className="flex items-center gap-2">
+          <h4 className="font-medium">{url}</h4>
+          {getStatusBadge()}
+        </div>
+      </div>
+      <div className={`text-lg font-semibold ${
+        score >= 80 ? 'text-green-500' : 
+        score >= 60 ? 'text-amber-500' : 'text-destructive'
+      }`}>
+        {score}/100
+      </div>
     </div>
   );
 };

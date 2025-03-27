@@ -13,9 +13,21 @@ interface StatCardProps {
     isUp: boolean;
   } | string;
   trendType?: 'up' | 'down';
+  percentage?: number;
+  status?: string;
 }
 
-export function StatCard({ title, value, icon, footer, description, trend, trendType }: StatCardProps) {
+export function StatCard({ 
+  title, 
+  value, 
+  icon, 
+  footer, 
+  description, 
+  trend, 
+  trendType,
+  percentage,
+  status 
+}: StatCardProps) {
   // Handle different trend formats
   const renderTrend = () => {
     if (!trend) return null;
@@ -61,6 +73,19 @@ export function StatCard({ title, value, icon, footer, description, trend, trend
         
         {footer && (
           <p className="text-xs text-muted-foreground mt-1">{footer}</p>
+        )}
+        
+        {status && (
+          <p className="text-sm font-medium mt-1">{status}</p>
+        )}
+        
+        {percentage !== undefined && (
+          <div className="mt-2 w-full bg-muted rounded-full h-1.5">
+            <div
+              className="bg-primary h-1.5 rounded-full"
+              style={{ width: `${percentage}%` }}
+            ></div>
+          </div>
         )}
       </CardContent>
     </Card>

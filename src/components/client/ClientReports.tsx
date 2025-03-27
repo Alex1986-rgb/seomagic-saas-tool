@@ -4,6 +4,7 @@ import { FileText, Download, Search, Calendar, Eye, CheckCircle, XCircle } from 
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { useToast } from "@/hooks/use-toast";
 
 // Мок-данные отчетов пользователя
 const mockReports = [
@@ -54,11 +55,17 @@ const mockReports = [
   },
 ];
 
-const ClientReports: React.FC = () => {
+interface ClientReportsProps {
+  onCreateReport?: () => void;
+}
+
+const ClientReports: React.FC<ClientReportsProps> = ({ onCreateReport }) => {
   const [searchTerm, setSearchTerm] = useState('');
+  const [reports, setReports] = useState(mockReports);
+  const { toast } = useToast();
   
   // Фильтрация отчетов
-  const filteredReports = mockReports.filter(report => 
+  const filteredReports = reports.filter(report => 
     report.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
     report.url.toLowerCase().includes(searchTerm.toLowerCase())
   );
@@ -81,14 +88,48 @@ const ClientReports: React.FC = () => {
     }
   };
 
+  const handleDownloadReport = (reportId) => {
+    // Имитация загрузки отчета
+    toast({
+      title: "Загрузка отчета",
+      description: "Отчет скачивается...",
+    });
+
+    // Обновляем состояние, отмечая отчет как скачанный
+    setReports(prevReports => 
+      prevReports.map(report => 
+        report.id === reportId 
+          ? { ...report, downloaded: true } 
+          : report
+      )
+    );
+  };
+
+  const handleCreateReport = () => {
+    if (onCreateReport) {
+      onCreateReport();
+    } else {
+      toast({
+        title: "Создание отчета",
+        description: "Открыта форма создания нового отчета",
+      });
+    }
+  };
+
   return (
     <div>
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-xl font-semibold">Отчеты и документы</h2>
-        <Button variant="outline" className="gap-2">
-          <Calendar className="h-4 w-4" />
-          <span>Фильтр по дате</span>
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" className="gap-2">
+            <Calendar className="h-4 w-4" />
+            <span>Фильтр по дате</span>
+          </Button>
+          <Button className="gap-2" onClick={handleCreateReport}>
+            <FileText className="h-4 w-4" />
+            <span>Создать отчет</span>
+          </Button>
+        </div>
       </div>
       
       <div className="mb-6">
@@ -108,9 +149,12 @@ const ClientReports: React.FC = () => {
           <div className="col-span-2 text-center py-8">
             <FileText className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
             <h3 className="text-xl font-medium mb-2">Нет отчетов</h3>
-            <p className="text-muted-foreground">
+            <p className="text-muted-foreground mb-6">
               У вас пока нет сохраненных отчетов.
             </p>
+            <Button onClick={handleCreateReport}>
+              Создать отчет
+            </Button>
           </div>
         ) : (
           filteredReports.map(report => (
@@ -138,6 +182,7 @@ const ClientReports: React.FC = () => {
                 variant={report.downloaded ? "ghost" : "default"} 
                 size="sm"
                 className="ml-2"
+                onClick={() => handleDownloadReport(report.id)}
               >
                 <Download className="h-4 w-4" />
               </Button>
