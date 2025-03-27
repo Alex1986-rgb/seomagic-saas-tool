@@ -9,7 +9,7 @@ import HeroSection from '../components/hero/HeroSection';
 import CTASection from '../components/sections/CTASection';
 
 // Lazy loaded components for performance optimization
-const VideoDemo = lazy(() => import('../components/VideoDemo'));
+const VideoDemo = lazy(() => import('../components/video'));
 const PositionTrackerFeature = lazy(() => import('../components/position-tracker/PositionTrackerFeature'));
 const FeatureSection = lazy(() => import('../components/features'));
 
