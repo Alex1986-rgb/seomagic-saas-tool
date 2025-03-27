@@ -23,6 +23,11 @@ const AuditShareResults: React.FC<AuditShareResultsProps> = ({
   historyItems,
   urls
 }) => {
+  // Prepare share data
+  const shareUrl = `${window.location.origin}/audit?url=${encodeURIComponent(url)}`;
+  const shareTitle = `Результаты SEO аудита для ${url}`;
+  const shareSummary = `Общий балл: ${auditData.score}/100. Проверено: ${new Date(auditData.date).toLocaleDateString()}.`;
+  
   return (
     <Card className="neo-card mb-6">
       <CardHeader className="pb-3">
@@ -43,9 +48,17 @@ const AuditShareResults: React.FC<AuditShareResultsProps> = ({
             historyItems={historyItems}
             urls={urls} 
           />
-          <CopyLinkButton auditId={auditId} />
-          <EmailShareButton auditId={auditId} url={url} />
-          <SocialShareButtons auditId={auditId} url={url} />
+          <CopyLinkButton url={shareUrl} />
+          <EmailShareButton 
+            url={shareUrl} 
+            subject={shareTitle}
+            body={shareSummary}
+          />
+          <SocialShareButtons 
+            url={shareUrl} 
+            title={shareTitle}
+            summary={shareSummary}
+          />
         </div>
       </CardContent>
     </Card>
