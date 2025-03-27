@@ -1,11 +1,12 @@
 
 import React from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { User, Settings, CreditCard, FileText } from 'lucide-react';
+import { User, Settings, CreditCard, FileText, BarChart } from 'lucide-react';
 import ClientAudits from './ClientAudits';
 import ClientSettings from './ClientSettings';
 import ClientSubscription from './ClientSubscription';
 import ClientReports from './ClientReports';
+import ClientPositionTracker from './ClientPositionTracker';
 
 interface ProfileContentProps {
   activeTab: string;
@@ -25,6 +26,10 @@ const ProfileContent: React.FC<ProfileContentProps> = ({ activeTab, onTabChange 
             <FileText className="h-4 w-4" />
             <span>История аудитов</span>
           </TabsTrigger>
+          <TabsTrigger value="positions" className="flex items-center gap-2">
+            <BarChart className="h-4 w-4" />
+            <span>Позиции сайта</span>
+          </TabsTrigger>
           <TabsTrigger value="reports" className="flex items-center gap-2">
             <FileText className="h-4 w-4" />
             <span>Отчеты</span>
@@ -42,6 +47,10 @@ const ProfileContent: React.FC<ProfileContentProps> = ({ activeTab, onTabChange 
         <div className="neo-card p-6">
           <TabsContent value="audits">
             <ClientAudits />
+          </TabsContent>
+          
+          <TabsContent value="positions">
+            <ClientPositionTracker />
           </TabsContent>
           
           <TabsContent value="reports">

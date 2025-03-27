@@ -40,11 +40,11 @@ const ProfileSidebar: React.FC<ProfileSidebarProps> = ({ activeTab, onTabChange 
           История аудитов
         </ProfileNavButton>
         <ProfileNavButton 
-          active={activeTab === 'statistics'} 
+          active={activeTab === 'positions'} 
           icon={<BarChart size={18} />} 
-          onClick={() => onTabChange('statistics')}
+          onClick={() => onTabChange('positions')}
         >
-          Статистика
+          Позиции сайта
         </ProfileNavButton>
         <ProfileNavButton 
           active={activeTab === 'reports'} 
