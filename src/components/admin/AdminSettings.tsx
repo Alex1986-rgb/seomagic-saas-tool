@@ -8,7 +8,10 @@ import {
   Bell, 
   Lock, 
   Tag,
-  Search
+  Search,
+  Settings as SettingsIcon,
+  Layout,
+  Palette
 } from 'lucide-react';
 import GeneralSettings from './settings/GeneralSettings';
 import PaymentSettings from './settings/PaymentSettings';
@@ -16,6 +19,7 @@ import PricingSettings from './settings/PricingSettings';
 import PositionPricingSettings from './PositionPricingSettings';
 import EmailSettings from './settings/EmailSettings';
 import SecuritySettings from './settings/SecuritySettings';
+import SiteManagementSettings from './settings/SiteManagementSettings';
 
 const AdminSettings: React.FC = () => {
   return (
@@ -23,8 +27,12 @@ const AdminSettings: React.FC = () => {
       <Tabs defaultValue="general">
         <TabsList className="mb-6">
           <TabsTrigger value="general" className="flex items-center gap-2">
-            <Globe className="h-4 w-4" />
+            <SettingsIcon className="h-4 w-4" />
             <span>Общие</span>
+          </TabsTrigger>
+          <TabsTrigger value="site" className="flex items-center gap-2">
+            <Layout className="h-4 w-4" />
+            <span>Управление сайтом</span>
           </TabsTrigger>
           <TabsTrigger value="payment" className="flex items-center gap-2">
             <CreditCard className="h-4 w-4" />
@@ -50,6 +58,10 @@ const AdminSettings: React.FC = () => {
         
         <TabsContent value="general">
           <GeneralSettings />
+        </TabsContent>
+        
+        <TabsContent value="site">
+          <SiteManagementSettings />
         </TabsContent>
         
         <TabsContent value="payment">

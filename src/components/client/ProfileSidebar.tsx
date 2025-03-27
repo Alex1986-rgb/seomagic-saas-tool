@@ -4,6 +4,7 @@ import { User, Settings, CreditCard, FileText, Bell, History, BarChart, Globe } 
 import ProfileNavButton from './ProfileNavButton';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 
 interface ProfileSidebarProps {
   activeTab: string;
@@ -49,6 +50,7 @@ const ProfileSidebar: React.FC<ProfileSidebarProps> = ({ activeTab, onTabChange 
           active={activeTab === 'positions'} 
           icon={<BarChart size={18} />} 
           onClick={() => onTabChange('positions')}
+          badge={<Badge className="ml-2 bg-primary text-xs">Новое</Badge>}
         >
           Позиции сайта
         </ProfileNavButton>
@@ -70,6 +72,7 @@ const ProfileSidebar: React.FC<ProfileSidebarProps> = ({ activeTab, onTabChange 
           active={activeTab === 'notifications'} 
           icon={<Bell size={18} />} 
           onClick={() => onTabChange('notifications')}
+          badge={<Badge className="ml-2 bg-red-500 text-xs">3</Badge>}
         >
           Уведомления
         </ProfileNavButton>
