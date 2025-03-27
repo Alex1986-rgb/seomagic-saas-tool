@@ -1,0 +1,23 @@
+
+import React from 'react';
+import { motion } from 'framer-motion';
+
+interface StatsCardProps {
+  value: string | number;
+  label: string;
+}
+
+const StatsCard: React.FC<StatsCardProps> = ({ value, label }) => {
+  return (
+    <motion.div 
+      className="bg-muted/30 p-4 rounded-lg border flex flex-col items-center justify-center"
+      whileHover={{ scale: 1.03 }}
+      transition={{ duration: 0.2 }}
+    >
+      <div className="text-3xl font-bold text-primary">{value}</div>
+      <div className="text-sm text-muted-foreground">{label}</div>
+    </motion.div>
+  );
+};
+
+export default StatsCard;
