@@ -10,11 +10,13 @@ import { Rocket, Target, AlertTriangle } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { SimpleSitemapCreatorTool } from '@/components/audit/deep-crawl';
 
 const Audit: React.FC = () => {
   const [searchParams] = useSearchParams();
   const [url, setUrl] = useState<string>('');
   const [error, setError] = useState<string | null>(null);
+  const [showSitemapCreator, setShowSitemapCreator] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -110,6 +112,27 @@ const Audit: React.FC = () => {
             <SeoAuditResults url={url} />
           </>
         )}
+        
+        <motion.div 
+          className="max-w-2xl mx-auto mt-12"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.5, delay: 0.3 }}
+        >
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-semibold">Дополнительные инструменты</h2>
+            <Button 
+              variant="ghost" 
+              onClick={() => setShowSitemapCreator(!showSitemapCreator)}
+            >
+              {showSitemapCreator ? 'Скрыть' : 'Показать'}
+            </Button>
+          </div>
+          
+          {showSitemapCreator && (
+            <SimpleSitemapCreatorTool initialUrl={url} />
+          )}
+        </motion.div>
       </div>
     </Layout>
   );

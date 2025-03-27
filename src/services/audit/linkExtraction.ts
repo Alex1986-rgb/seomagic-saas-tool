@@ -5,7 +5,6 @@
 
 import axios from 'axios';
 import * as cheerio from 'cheerio';
-import { parseSitemap } from 'sitemap-parser';
 
 /**
  * Extracts links from a webpage
@@ -33,8 +32,17 @@ export async function extractLinks(url: string): Promise<string[]> {
  */
 export async function parseSitemapUrls(sitemapUrl: string): Promise<string[]> {
   try {
-    const urls = await parseSitemap(sitemapUrl);
-    return urls.map(item => item.url);
+    // Directly fetch the sitemap and parse it manually since sitemap-parser has issues
+    const response = await axios.get(sitemapUrl, { timeout: 10000 });
+    const $ = cheerio.load(response.data, { xmlMode: true });
+    
+    const urls: string[] = [];
+    $('url > loc').each((_, element) => {
+      const url = $(element).text();
+      if (url) urls.push(url);
+    });
+    
+    return urls;
   } catch (error) {
     console.error(`Error parsing sitemap ${sitemapUrl}:`, error);
     return [];
