@@ -11,6 +11,7 @@ import AuditHeader from './components/AuditHeader';
 import AuditScanning from './components/AuditScanning';
 import AuditRefreshing from './components/AuditRefreshing';
 import { OptimizationCost } from './components/optimization';
+import { DeepCrawlButton } from '../deep-crawl';
 import ContentOptimizationPrompt from './components/ContentOptimizationPrompt';
 
 interface AuditResultsContainerProps {
@@ -48,6 +49,12 @@ const AuditResultsContainer: React.FC<AuditResultsContainerProps> = ({ url }) =>
 
   const handleDeepScan = () => {
     loadAuditData(false, true);
+  };
+
+  const handleUpdatePageCount = (pageCount: number) => {
+    if (auditData) {
+      auditData.pageCount = pageCount;
+    }
   };
 
   const handleSelectHistoricalAudit = (auditId: string) => {
@@ -106,12 +113,21 @@ const AuditResultsContainer: React.FC<AuditResultsContainerProps> = ({ url }) =>
         )}
         
         {auditData.pageCount && (
-          <PageCountDisplay 
-            pageCount={auditData.pageCount} 
-            isScanning={false}
-            pageStats={pageStats}
-            onDownloadSitemap={sitemap ? downloadSitemap : undefined}
-          />
+          <div className="relative">
+            <PageCountDisplay 
+              pageCount={auditData.pageCount} 
+              isScanning={false}
+              pageStats={pageStats}
+              onDownloadSitemap={sitemap ? downloadSitemap : undefined}
+            />
+            
+            <div className="absolute top-4 right-4">
+              <DeepCrawlButton 
+                url={url} 
+                onCrawlComplete={handleUpdatePageCount} 
+              />
+            </div>
+          </div>
         )}
         
         {optimizationCost && (
