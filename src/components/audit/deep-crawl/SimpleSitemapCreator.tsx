@@ -1,20 +1,25 @@
 
 import React, { useState } from 'react';
-import { useSimpleSitemapCreator } from './hooks/useSimpleSitemapCreator';
+import { motion } from 'framer-motion';
+import { Rocket, FileSearch, Map, AlertTriangle, Download, Package, FileCode2, FileJson } from 'lucide-react';
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { FileDown, Globe, ExternalLink, Loader2, StopCircle } from 'lucide-react';
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
+import { useSimpleSitemapCreator } from './hooks/useSimpleSitemapCreator';
+import { useToast } from "@/hooks/use-toast";
 
 interface SimpleSitemapCreatorProps {
   initialUrl?: string;
 }
 
-export const SimpleSitemapCreatorTool: React.FC<SimpleSitemapCreatorProps> = ({ initialUrl = '' }) => {
+export const SimpleSitemapCreator: React.FC<SimpleSitemapCreatorProps> = ({ initialUrl = '' }) => {
   const [url, setUrl] = useState(initialUrl);
+  const { toast } = useToast();
+  
   const {
     isScanning,
     progress,
@@ -30,170 +35,179 @@ export const SimpleSitemapCreatorTool: React.FC<SimpleSitemapCreatorProps> = ({ 
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (url) {
-      scanWebsite(url);
+    
+    if (!url.trim()) {
+      toast({
+        title: "Ошибка",
+        description: "Пожалуйста, введите URL сайта",
+        variant: "destructive",
+      });
+      return;
     }
+    
+    scanWebsite(url);
+  };
+
+  const handleDownload = (format: 'xml' | 'html' | 'package') => {
+    downloadSitemap(format);
   };
 
   return (
-    <Card className="w-full">
+    <Card className="border-primary/20 bg-card/50 w-full">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <Globe className="h-5 w-5 text-primary" />
-          Simple Sitemap Creator
+          <Map className="h-5 w-5 text-primary" />
+          Генератор карты сайта
         </CardTitle>
         <CardDescription>
-          Инструмент для создания карты сайта в форматах XML и HTML
+          Сканирование сайта и генерация HTML и XML карт сайта
         </CardDescription>
       </CardHeader>
       
       <CardContent>
-        <form onSubmit={handleSubmit} className="mb-6">
-          <div className="flex gap-2">
-            <Input
-              type="text"
-              placeholder="Введите URL сайта (например, example.com)"
-              value={url}
-              onChange={(e) => setUrl(e.target.value)}
-              disabled={isScanning}
-              className="flex-1"
-            />
-            {isScanning ? (
-              <Button 
-                variant="destructive" 
-                type="button" 
-                onClick={stopScanning}
-                className="whitespace-nowrap"
-              >
-                <StopCircle className="h-4 w-4 mr-2" />
-                Остановить
-              </Button>
-            ) : (
-              <Button 
-                type="submit" 
-                disabled={!url}
-                className="whitespace-nowrap"
-              >
-                <Globe className="h-4 w-4 mr-2" />
-                Сканировать
-              </Button>
-            )}
+        <form onSubmit={handleSubmit} className="space-y-4 mb-4">
+          <div className="flex flex-col sm:flex-row gap-2">
+            <div className="flex-1">
+              <Input
+                type="text"
+                placeholder="Введите URL сайта (например, example.com)"
+                value={url}
+                onChange={(e) => setUrl(e.target.value)}
+                disabled={isScanning}
+                className="w-full"
+              />
+            </div>
+            <div>
+              {isScanning ? (
+                <Button 
+                  type="button" 
+                  variant="destructive" 
+                  onClick={stopScanning}
+                >
+                  Остановить
+                </Button>
+              ) : (
+                <Button type="submit" className="w-full sm:w-auto">
+                  Сканировать
+                </Button>
+              )}
+            </div>
           </div>
         </form>
         
         {isScanning && (
-          <div className="mb-6">
-            <div className="flex justify-between mb-2">
-              <span className="text-sm text-muted-foreground">Сканирование...</span>
-              <span className="text-sm font-medium">{progress}%</span>
+          <motion.div 
+            className="space-y-4 mb-4"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+          >
+            <div className="flex justify-between items-center text-sm">
+              <span>Прогресс: {progress}%</span>
+              <span>Найдено URL: {urlsScanned}</span>
             </div>
-            <Progress value={progress} className="h-2 mb-2" />
+            
+            <Progress value={progress} className="h-2" />
+            
             <div className="text-sm text-muted-foreground truncate">
-              {currentUrl && (
-                <span>Текущий URL: {currentUrl}</span>
-              )}
+              Сканирование: {currentUrl}
             </div>
-            <div className="text-sm font-medium mt-1">
-              Найдено URL: {urlsScanned}
-            </div>
-          </div>
+          </motion.div>
         )}
         
         {error && (
-          <Alert variant="destructive" className="mb-6">
-            <AlertTitle>Ошибка</AlertTitle>
-            <AlertDescription>{error}</AlertDescription>
+          <Alert variant="destructive" className="mb-4">
+            <AlertTriangle className="h-4 w-4" />
+            <AlertDescription className="ml-2">{error}</AlertDescription>
           </Alert>
         )}
         
-        {!isScanning && discoveredUrls.length > 0 && (
-          <div>
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-medium">Результаты сканирования</h3>
-              <span className="text-sm bg-secondary text-secondary-foreground px-2 py-1 rounded">
-                Найдено URL: {discoveredUrls.length}
-              </span>
+        {discoveredUrls.length > 0 && (
+          <motion.div 
+            className="space-y-4"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+          >
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="text-md font-medium">Найдено {discoveredUrls.length} URL на {domain}</h3>
+              
+              <div className="flex gap-2">
+                <Button 
+                  size="sm" 
+                  variant="outline" 
+                  onClick={() => handleDownload('xml')}
+                  className="flex gap-1 items-center"
+                >
+                  <FileCode2 className="h-3.5 w-3.5" />
+                  <span>XML</span>
+                </Button>
+                <Button 
+                  size="sm" 
+                  variant="outline" 
+                  onClick={() => handleDownload('html')}
+                  className="flex gap-1 items-center"
+                >
+                  <FileSearch className="h-3.5 w-3.5" />
+                  <span>HTML</span>
+                </Button>
+                <Button 
+                  size="sm" 
+                  variant="outline" 
+                  onClick={() => handleDownload('package')}
+                  className="flex gap-1 items-center"
+                >
+                  <Package className="h-3.5 w-3.5" />
+                  <span>Пакет</span>
+                </Button>
+              </div>
             </div>
             
-            <Tabs defaultValue="download">
-              <TabsList className="mb-4">
-                <TabsTrigger value="download">Скачать</TabsTrigger>
-                <TabsTrigger value="preview">Просмотр</TabsTrigger>
-              </TabsList>
-              
-              <TabsContent value="download" className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                  <Button
-                    variant="outline"
-                    onClick={() => downloadSitemap('xml')}
-                    className="flex items-center justify-center gap-2"
-                  >
-                    <FileDown className="h-4 w-4" />
-                    XML Sitemap
-                  </Button>
-                  
-                  <Button
-                    variant="outline"
-                    onClick={() => downloadSitemap('html')}
-                    className="flex items-center justify-center gap-2"
-                  >
-                    <FileDown className="h-4 w-4" />
-                    HTML Sitemap
-                  </Button>
-                  
-                  <Button
-                    variant="default"
-                    onClick={() => downloadSitemap('package')}
-                    className="flex items-center justify-center gap-2"
-                  >
-                    <FileDown className="h-4 w-4" />
-                    Полный пакет
-                  </Button>
-                </div>
-              </TabsContent>
-              
-              <TabsContent value="preview">
-                <div className="border rounded-md p-4 max-h-60 overflow-y-auto">
-                  <h4 className="font-medium mb-2">Найденные URL:</h4>
-                  <ul className="space-y-1 text-sm">
-                    {discoveredUrls.slice(0, 100).map((url, index) => (
-                      <li key={index} className="truncate">
-                        <a 
-                          href={url} 
-                          target="_blank" 
-                          rel="noopener noreferrer"
-                          className="text-blue-500 hover:underline flex items-center"
-                        >
-                          {url}
-                          <ExternalLink className="h-3 w-3 ml-1 inline-block" />
-                        </a>
-                      </li>
-                    ))}
-                    {discoveredUrls.length > 100 && (
-                      <li className="text-muted-foreground italic">
-                        ...и еще {discoveredUrls.length - 100} URL
-                      </li>
-                    )}
-                  </ul>
-                </div>
-              </TabsContent>
-            </Tabs>
-          </div>
+            <div className="h-60 overflow-y-auto border rounded-md p-2 bg-background/50">
+              <Tabs defaultValue="list">
+                <TabsList className="grid grid-cols-2 mb-2">
+                  <TabsTrigger value="list">Список URL</TabsTrigger>
+                  <TabsTrigger value="summary">Структура</TabsTrigger>
+                </TabsList>
+                
+                <TabsContent value="list" className="space-y-1">
+                  {discoveredUrls.map((url, index) => (
+                    <div key={index} className="text-xs truncate p-1 hover:bg-muted rounded">
+                      {url}
+                    </div>
+                  ))}
+                </TabsContent>
+                
+                <TabsContent value="summary">
+                  <div className="text-sm space-y-2">
+                    <div>
+                      <Badge>Домен</Badge> {domain}
+                    </div>
+                    <div>
+                      <Badge>Общее количество URL</Badge> {discoveredUrls.length}
+                    </div>
+                    <div>
+                      <Badge>Страницы верхнего уровня</Badge> {discoveredUrls.filter(u => (u.match(/\//g) || []).length <= 3).length}
+                    </div>
+                    <div>
+                      <Badge>Вложенные страницы</Badge> {discoveredUrls.filter(u => (u.match(/\//g) || []).length > 3).length}
+                    </div>
+                    <div>
+                      <Badge>Потенциальные продуктовые страницы</Badge> {discoveredUrls.filter(u => u.includes('product') || u.includes('tovar') || u.includes('item')).length}
+                    </div>
+                  </div>
+                </TabsContent>
+              </Tabs>
+            </div>
+          </motion.div>
         )}
       </CardContent>
       
-      <CardFooter className="flex justify-between border-t pt-6">
-        <div className="text-sm text-muted-foreground">
-          {domain ? `Сайт: ${domain}` : 'Введите URL сайта для сканирования'}
+      <CardFooter className="flex justify-end border-t pt-4">
+        <div className="text-xs text-muted-foreground">
+          Simple Sitemap Creator v1.0
         </div>
-        
-        {isScanning && (
-          <div className="flex items-center text-sm text-muted-foreground">
-            <Loader2 className="h-3 w-3 mr-2 animate-spin" />
-            Сканирование...
-          </div>
-        )}
       </CardFooter>
     </Card>
   );
 };
+
+export const SimpleSitemapCreatorTool = SimpleSitemapCreator;

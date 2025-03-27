@@ -1,34 +1,31 @@
 
 import { useState } from 'react';
-import { useToast } from "@/hooks/use-toast";
-import { AdvancedCrawler } from '@/services/audit/crawler/advancedCrawler';
+
+export type CrawlStage = 'idle' | 'starting' | 'crawling' | 'analyzing' | 'completed' | 'error';
 
 export function useCrawlState(url: string) {
   const [progress, setProgress] = useState(0);
   const [currentUrl, setCurrentUrl] = useState('');
   const [pagesScanned, setPagesScanned] = useState(0);
   const [estimatedPages, setEstimatedPages] = useState(0);
-  const [crawlStage, setCrawlStage] = useState('initializing');
+  const [crawlStage, setCrawlStage] = useState<CrawlStage>('idle');
   const [isCompleted, setIsCompleted] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [domain, setDomain] = useState<string>('');
+  const [domain, setDomain] = useState('');
   const [scannedUrls, setScannedUrls] = useState<string[]>([]);
-  const [crawler, setCrawler] = useState<AdvancedCrawler | null>(null);
-  const { toast } = useToast();
+  const [crawler, setCrawler] = useState<any>(null);
 
-  // Reset state function
   const resetState = () => {
     setProgress(0);
-    setPagesScanned(0);
-    setEstimatedPages(100000);
     setCurrentUrl('');
-    setCrawlStage('initializing');
-    setError(null);
+    setPagesScanned(0);
+    setEstimatedPages(0);
+    setCrawlStage('idle');
     setIsCompleted(false);
+    setError(null);
     setScannedUrls([]);
   };
 
-  // Update progress function
   const updateProgress = (
     pagesScanned: number, 
     totalEstimated: number, 
@@ -36,54 +33,38 @@ export function useCrawlState(url: string) {
     maxPages: number
   ) => {
     setPagesScanned(pagesScanned);
-    setEstimatedPages(totalEstimated);
     setCurrentUrl(currentUrl);
     
-    const progressPercent = Math.min(
-      Math.floor((pagesScanned / Math.min(totalEstimated, maxPages)) * 100),
-      99
-    );
-    setProgress(progressPercent);
+    // Limit the estimated total to maxPages
+    const limitedEstimate = Math.min(totalEstimated, maxPages);
+    setEstimatedPages(limitedEstimate);
     
-    // Update crawl stage based on progress
-    if (progressPercent < 20) {
-      setCrawlStage('exploring');
-    } else if (progressPercent < 50) {
-      setCrawlStage('discovery');
-    } else if (progressPercent < 80) {
-      setCrawlStage('indexing');
+    // Calculate progress (limit to 99% until completed)
+    const calculatedProgress = Math.round((pagesScanned / limitedEstimate) * 100);
+    setProgress(Math.min(calculatedProgress, 99));
+    
+    // Update state
+    if (progress < 5) {
+      setCrawlStage('starting');
     } else {
-      setCrawlStage('finalizing');
+      setCrawlStage('crawling');
     }
   };
 
-  // Complete crawl function
   const completeCrawl = (success: boolean, result?: { urls: string[], pageCount: number }) => {
     if (success && result) {
-      setScannedUrls(result.urls);
-      setCrawlStage('completed');
       setProgress(100);
+      setCrawlStage('completed');
       setIsCompleted(true);
-      
-      toast({
-        title: "Сканирование завершено",
-        description: `Найдено ${result.pageCount.toLocaleString('ru-RU')} страниц на сайте`,
-      });
+      setPagesScanned(result.pageCount);
+      setScannedUrls(result.urls);
     } else {
-      setError('Произошла ошибка при сканировании сайта');
       setCrawlStage('error');
-      setIsCompleted(true);
-      
-      toast({
-        title: "Ошибка сканирования",
-        description: "Произошла ошибка при сканировании сайта",
-        variant: "destructive",
-      });
+      setError('Не удалось завершить сканирование сайта');
     }
   };
 
   return {
-    // State
     progress,
     currentUrl,
     pagesScanned,
@@ -94,15 +75,10 @@ export function useCrawlState(url: string) {
     domain,
     scannedUrls,
     crawler,
-    
-    // State setters
-    setDomain,
-    setCrawler,
-    setCrawlStage, // Adding this to expose it to consumers
-    
-    // Actions
     resetState,
     updateProgress,
-    completeCrawl
+    completeCrawl,
+    setDomain,
+    setCrawler
   };
 }

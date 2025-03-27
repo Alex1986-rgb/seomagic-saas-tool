@@ -1,159 +1,134 @@
 
-/**
- * Simple Sitemap Creator
- * A lightweight module for generating HTML and XML sitemaps
- * Inspired by the open-source Simple Sitemap Creator project
- */
-
-import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
 import axios from 'axios';
 import * as cheerio from 'cheerio';
+import JSZip from 'jszip';
 
-export interface SitemapOptions {
-  maxPages?: number;
-  maxDepth?: number;
-  includeStylesheet?: boolean;
-  excludePatterns?: string[];
-  includeLastMod?: boolean;
-  changefreq?: string;
-  priority?: number;
+interface SitemapOptions {
+  maxPages: number;
+  maxDepth: number;
+  includeStylesheet: boolean;
 }
 
 export class SimpleSitemapCreator {
   private visited = new Set<string>();
   private queue: { url: string; depth: number }[] = [];
-  private domain: string = '';
-  private baseUrl: string = '';
+  private domain = '';
+  private baseUrl = '';
   private options: SitemapOptions;
-  private excludeRegexes: RegExp[] = [];
-  private abortController: AbortController | null = null;
-  private isRunning: boolean = false;
+  private shouldStop = false;
+  private productPatterns: RegExp[] = [
+    /\/(product|products|item|items|tovar|tovary|good|goods|produkt|produkty)/i,
+    /\/(catalog|katalog)\/.*\/(.*)\/?$/i,
+    /\/p\/[a-z0-9-]+\/?$/i,
+    /\/category\/.*\/[a-z0-9-]+\/?$/i
+  ];
 
-  constructor(options: SitemapOptions = {}) {
+  constructor(options?: Partial<SitemapOptions>) {
     this.options = {
-      maxPages: options.maxPages || 1000,
-      maxDepth: options.maxDepth || 10,
-      includeStylesheet: options.includeStylesheet !== false,
-      excludePatterns: options.excludePatterns || ['\\.jpg$', '\\.jpeg$', '\\.png$', '\\.gif$', '\\.pdf$', '\\.zip$'],
-      includeLastMod: options.includeLastMod !== false,
-      changefreq: options.changefreq || 'monthly',
-      priority: options.priority || 0.5,
+      maxPages: options?.maxPages ?? 500,
+      maxDepth: options?.maxDepth ?? 5,
+      includeStylesheet: options?.includeStylesheet ?? true
     };
-
-    this.excludeRegexes = (this.options.excludePatterns || []).map(pattern => new RegExp(pattern, 'i'));
   }
 
-  public async crawl(url: string, onProgress?: (scanned: number, total: number, currentUrl: string) => void): Promise<string[]> {
-    if (this.isRunning) {
-      this.stop();
-    }
-
-    this.isRunning = true;
-    this.abortController = new AbortController();
+  async crawl(
+    url: string,
+    progressCallback?: (scanned: number, total: number, currentUrl: string) => void
+  ): Promise<string[]> {
+    this.shouldStop = false;
     this.visited.clear();
-    this.queue = [];
-
+    
+    // Normalize URL
+    this.baseUrl = url.startsWith('http') ? url : `https://${url}`;
+    
     try {
-      // Normalize the URL
-      if (!url.startsWith('http')) {
-        url = 'https://' + url;
-      }
-
-      const urlObj = new URL(url);
+      const urlObj = new URL(this.baseUrl);
       this.domain = urlObj.hostname;
-      this.baseUrl = urlObj.origin;
-      
-      // Start with the base URL
-      this.queue.push({ url: this.baseUrl, depth: 0 });
-
-      // Process the queue
-      while (this.queue.length > 0 && this.visited.size < this.options.maxPages! && this.isRunning) {
-        const { url: currentUrl, depth } = this.queue.shift()!;
-        
-        if (this.visited.has(currentUrl) || depth > this.options.maxDepth!) {
-          continue;
-        }
-        
-        this.visited.add(currentUrl);
-        
-        if (onProgress) {
-          onProgress(this.visited.size, this.options.maxPages!, currentUrl);
-        }
-
-        // Skip if the URL matches exclude patterns
-        if (this.shouldExcludeUrl(currentUrl)) {
-          continue;
-        }
-
-        try {
-          const links = await this.extractLinks(currentUrl);
-          
-          for (const link of links) {
-            if (!this.visited.has(link)) {
-              this.queue.push({ url: link, depth: depth + 1 });
-            }
-          }
-        } catch (error) {
-          console.error(`Error processing ${currentUrl}:`, error);
-        }
-      }
-
-      return Array.from(this.visited);
-    } finally {
-      this.isRunning = false;
-      this.abortController = null;
-    }
-  }
-
-  public stop(): void {
-    this.isRunning = false;
-    if (this.abortController) {
-      this.abortController.abort();
-    }
-  }
-
-  private shouldExcludeUrl(url: string): boolean {
-    return this.excludeRegexes.some(regex => regex.test(url));
-  }
-
-  private async extractLinks(url: string): Promise<string[]> {
-    try {
-      const response = await axios.get(url, {
-        timeout: 5000,
-        signal: this.abortController?.signal
-      });
-      
-      const $ = cheerio.load(response.data);
-      const links: string[] = [];
-      
-      $('a').each((_, element) => {
-        const href = $(element).attr('href');
-        if (!href) return;
-        
-        try {
-          // Handle relative URLs
-          const absoluteUrl = new URL(href, url).href;
-          const linkUrlObj = new URL(absoluteUrl);
-          
-          // Only include links from the same domain
-          if (linkUrlObj.hostname === this.domain) {
-            // Remove hash and query parameters for cleaner sitemap
-            linkUrlObj.hash = '';
-            links.push(linkUrlObj.href);
-          }
-        } catch (e) {
-          // Skip invalid URLs
-        }
-      });
-      
-      return links;
     } catch (error) {
-      return [];
+      throw new Error('Invalid URL');
     }
+    
+    this.queue = [{ url: this.baseUrl, depth: 0 }];
+    
+    // Start crawling
+    while (this.queue.length > 0 && this.visited.size < this.options.maxPages && !this.shouldStop) {
+      const { url: currentUrl, depth } = this.queue.shift()!;
+      
+      if (this.visited.has(currentUrl) || depth > this.options.maxDepth) {
+        continue;
+      }
+      
+      this.visited.add(currentUrl);
+      
+      if (progressCallback) {
+        progressCallback(this.visited.size, this.options.maxPages, currentUrl);
+      }
+      
+      try {
+        // Fetch the page
+        const response = await axios.get(currentUrl, { timeout: 15000 });
+        const $ = cheerio.load(response.data);
+        
+        // Extract links
+        $('a').each((_, element) => {
+          const href = $(element).attr('href');
+          if (!href) return;
+          
+          try {
+            // Normalize URL
+            let fullUrl = href;
+            if (href.startsWith('/')) {
+              fullUrl = new URL(href, this.baseUrl).toString();
+            } else if (!href.startsWith('http')) {
+              fullUrl = new URL(href, currentUrl).toString();
+            }
+            
+            // Skip non-HTTP(S) URLs
+            if (!fullUrl.startsWith('http')) return;
+            
+            // Skip URLs that don't belong to this domain
+            const urlObj = new URL(fullUrl);
+            if (urlObj.hostname !== this.domain) return;
+            
+            // Skip anchor links and query strings to reduce duplication
+            const cleanUrl = fullUrl.split('#')[0];
+            
+            // Skip page resource files
+            if (/\.(jpg|jpeg|png|gif|svg|webp|css|js|pdf|zip|rar|gz|tar|mp4|mp3|webm|ogg|avi|mov|wmv|doc|docx|xls|xlsx|ppt|pptx)$/i.test(cleanUrl)) {
+              return;
+            }
+            
+            // Prioritize product links
+            const isProductLink = this.productPatterns.some(pattern => pattern.test(cleanUrl));
+            
+            if (isProductLink) {
+              this.queue.unshift({ url: cleanUrl, depth: depth + 1 });
+            } else {
+              this.queue.push({ url: cleanUrl, depth: depth + 1 });
+            }
+          } catch (error) {
+            // Skip invalid URLs
+          }
+        });
+        
+        // Delay to avoid overloading the server
+        await new Promise(resolve => setTimeout(resolve, 300));
+        
+      } catch (error) {
+        console.warn(`Error fetching ${currentUrl}:`, error);
+      }
+    }
+    
+    // Convert set to array and return
+    return Array.from(this.visited);
   }
 
-  public generateXmlSitemap(urls: string[]): string {
+  stop() {
+    this.shouldStop = true;
+  }
+
+  generateSitemapXml(urls: string[]): string {
     let xml = '<?xml version="1.0" encoding="UTF-8"?>\n';
     
     if (this.options.includeStylesheet) {
@@ -162,17 +137,19 @@ export class SimpleSitemapCreator {
     
     xml += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n';
     
-    // Add each URL to the sitemap
     for (const url of urls) {
       xml += '  <url>\n';
       xml += `    <loc>${this.escapeXml(url)}</loc>\n`;
       
-      if (this.options.includeLastMod) {
-        xml += `    <lastmod>${new Date().toISOString().split('T')[0]}</lastmod>\n`;
-      }
+      // Add default values
+      xml += '    <lastmod>' + new Date().toISOString().split('T')[0] + '</lastmod>\n';
+      xml += '    <changefreq>monthly</changefreq>\n';
       
-      xml += `    <changefreq>${this.options.changefreq}</changefreq>\n`;
-      xml += `    <priority>${this.options.priority}</priority>\n`;
+      // Add priority based on URL structure
+      const depth = (url.match(/\//g) || []).length - 2;
+      const priority = Math.max(0.1, 1.0 - depth * 0.2).toFixed(1);
+      xml += `    <priority>${priority}</priority>\n`;
+      
       xml += '  </url>\n';
     }
     
@@ -180,85 +157,205 @@ export class SimpleSitemapCreator {
     return xml;
   }
 
-  public generateHtmlSitemap(urls: string[]): string {
-    // Group URLs by path segments for better organization
-    const urlsByPath: Record<string, string[]> = {};
+  generateSitemapHtml(urls: string[]): string {
+    const date = new Date().toLocaleDateString('ru-RU');
     
-    for (const url of urls) {
-      try {
-        const urlObj = new URL(url);
-        const path = urlObj.pathname.split('/').filter(Boolean)[0] || 'root';
-        
-        if (!urlsByPath[path]) {
-          urlsByPath[path] = [];
-        }
-        
-        urlsByPath[path].push(url);
-      } catch (e) {
-        // Skip invalid URLs
-      }
-    }
-
-    // Generate the HTML
     let html = `<!DOCTYPE html>
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Карта сайта для ${this.domain}</title>
+  <title>Карта сайта ${this.domain}</title>
   <style>
-    body { font-family: Arial, sans-serif; max-width: 1200px; margin: 0 auto; padding: 20px; line-height: 1.6; }
-    h1 { color: #333; border-bottom: 1px solid #eee; padding-bottom: 10px; }
-    h2 { color: #0066cc; margin-top: 30px; }
-    a { color: #0066cc; text-decoration: none; }
-    a:hover { text-decoration: underline; }
-    .path-section { margin-bottom: 40px; }
-    .url-list { list-style: none; padding-left: 0; }
-    .url-list li { margin-bottom: 8px; padding-left: 20px; position: relative; }
-    .url-list li:before { content: "•"; color: #0066cc; position: absolute; left: 0; }
-    .summary { background: #f8f8f8; padding: 15px; border-radius: 5px; margin-bottom: 30px; }
-    .timestamp { font-size: 0.8em; color: #666; margin-top: 5px; }
+    body { font-family: Arial, sans-serif; margin: 0; padding: 20px; line-height: 1.6; }
+    h1 { color: #333; margin-bottom: 20px; }
+    .container { max-width: 1200px; margin: 0 auto; }
+    .info { background-color: #f5f5f5; padding: 15px; border-radius: 5px; margin-bottom: 20px; }
+    .sitemap { margin-bottom: 20px; }
+    .sitemap a { color: #0066cc; text-decoration: none; display: block; padding: 5px 0; border-bottom: 1px solid #eee; }
+    .sitemap a:hover { color: #004499; background-color: #f9f9f9; }
+    .footer { font-size: 12px; color: #777; margin-top: 30px; text-align: center; }
   </style>
 </head>
 <body>
-  <h1>Карта сайта для ${this.domain}</h1>
-  
-  <div class="summary">
-    <p>Всего URL: <strong>${urls.length}</strong></p>
-    <p>Дата создания: <strong>${new Date().toLocaleDateString('ru-RU')}</strong></p>
-    <div class="timestamp">Создано с помощью Simple Sitemap Creator</div>
-  </div>
-`;
-
-    // Sort paths alphabetically
-    const sortedPaths = Object.keys(urlsByPath).sort();
+  <div class="container">
+    <h1>Карта сайта ${this.domain}</h1>
     
-    for (const path of sortedPaths) {
-      const pathUrls = urlsByPath[path];
-      
-      html += `  <div class="path-section">
-    <h2>${path === 'root' ? 'Корневые страницы' : path}</h2>
-    <ul class="url-list">
-`;
-      
-      // Sort URLs within each path
-      pathUrls.sort();
-      
-      for (const url of pathUrls) {
+    <div class="info">
+      <p><strong>Всего URL:</strong> ${urls.length}</p>
+      <p><strong>Дата создания:</strong> ${date}</p>
+    </div>
+    
+    <div class="sitemap">`;
+    
+    // Group URLs by directory structure
+    const urlsByCategory: Record<string, string[]> = {};
+    for (const url of urls) {
+      try {
         const urlObj = new URL(url);
-        const displayPath = urlObj.pathname || '/';
-        html += `      <li><a href="${this.escapeHtml(url)}" target="_blank">${this.escapeHtml(displayPath)}</a></li>\n`;
+        const path = urlObj.pathname;
+        const parts = path.split('/').filter(Boolean);
+        
+        const category = parts.length > 0 ? parts[0] : 'Главная';
+        
+        if (!urlsByCategory[category]) {
+          urlsByCategory[category] = [];
+        }
+        
+        urlsByCategory[category].push(url);
+      } catch (e) {
+        // Skip invalid URLs
       }
-      
-      html += `    </ul>
-  </div>
-`;
     }
     
-    html += `</body>
+    // Add URLs to HTML grouped by category
+    for (const [category, categoryUrls] of Object.entries(urlsByCategory)) {
+      html += `      <h2>${category}</h2>\n`;
+      
+      for (const url of categoryUrls) {
+        try {
+          const urlObj = new URL(url);
+          const displayUrl = url.replace(/^https?:\/\//, '');
+          html += `      <a href="${this.escapeHtml(url)}">${this.escapeHtml(displayUrl)}</a>\n`;
+        } catch (e) {
+          // Skip invalid URLs
+        }
+      }
+    }
+    
+    html += `    </div>
+    
+    <div class="footer">
+      <p>Сгенерировано с помощью Simple Sitemap Creator</p>
+    </div>
+  </div>
+</body>
 </html>`;
 
     return html;
+  }
+
+  generateXslStylesheet(): string {
+    return `<?xml version="1.0" encoding="UTF-8"?>
+<xsl:stylesheet version="2.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:sitemap="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <xsl:output method="html" doctype-system="about:legacy-compat" encoding="UTF-8" indent="yes" />
+  <xsl:template match="/">
+    <html lang="ru">
+      <head>
+        <title>Карта сайта XML - ${this.domain}</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <style>
+          body { font-family: Arial, sans-serif; font-size: 14px; color: #333; }
+          h1 { color: #0066cc; font-size: 24px; margin: 20px 0; }
+          table { border-collapse: collapse; width: 100%; margin: 20px 0; }
+          th { background-color: #0066cc; color: white; text-align: left; padding: 10px; }
+          td { padding: 10px; border-bottom: 1px solid #ddd; }
+          tr:nth-child(even) { background-color: #f2f2f2; }
+          tr:hover { background-color: #e6e6e6; }
+          .url { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 500px; }
+          .high { color: green; }
+          .medium { color: orange; }
+          .low { color: red; }
+          @media (max-width: 768px) {
+            table { font-size: 12px; }
+            th, td { padding: 5px; }
+          }
+        </style>
+      </head>
+      <body>
+        <h1>Карта сайта XML - ${this.domain}</h1>
+        <p>Этот файл содержит <xsl:value-of select="count(sitemap:urlset/sitemap:url)" /> URL.</p>
+        <table>
+          <tr>
+            <th style="width:70%">URL</th>
+            <th>Последнее изменение</th>
+            <th>Частота изменений</th>
+            <th>Приоритет</th>
+          </tr>
+          <xsl:for-each select="sitemap:urlset/sitemap:url">
+            <tr>
+              <td class="url">
+                <a href="{sitemap:loc}"><xsl:value-of select="sitemap:loc" /></a>
+              </td>
+              <td><xsl:value-of select="sitemap:lastmod" /></td>
+              <td><xsl:value-of select="sitemap:changefreq" /></td>
+              <td>
+                <xsl:choose>
+                  <xsl:when test="number(sitemap:priority) >= 0.7">
+                    <span class="high"><xsl:value-of select="sitemap:priority" /></span>
+                  </xsl:when>
+                  <xsl:when test="number(sitemap:priority) >= 0.4">
+                    <span class="medium"><xsl:value-of select="sitemap:priority" /></span>
+                  </xsl:when>
+                  <xsl:otherwise>
+                    <span class="low"><xsl:value-of select="sitemap:priority" /></span>
+                  </xsl:otherwise>
+                </xsl:choose>
+              </td>
+            </tr>
+          </xsl:for-each>
+        </table>
+      </body>
+    </html>
+  </xsl:template>
+</xsl:stylesheet>`;
+  }
+
+  async downloadSitemap(urls: string[], format: 'xml' | 'html' | 'package' = 'xml') {
+    if (urls.length === 0) {
+      throw new Error('No URLs to download');
+    }
+    
+    if (format === 'package') {
+      await this.downloadSitemapPackage(urls);
+    } else {
+      // Generate the sitemap
+      const content = format === 'xml' 
+        ? this.generateSitemapXml(urls)
+        : this.generateSitemapHtml(urls);
+      
+      // Create a blob and download
+      const blob = new Blob([content], { type: format === 'xml' ? 'application/xml' : 'text/html' });
+      saveAs(blob, `sitemap_${this.domain}.${format}`);
+    }
+  }
+
+  async downloadSitemapPackage(urls: string[]) {
+    const zip = new JSZip();
+    
+    // Add XML sitemap
+    const xmlContent = this.generateSitemapXml(urls);
+    zip.file('sitemap.xml', xmlContent);
+    
+    // Add HTML sitemap
+    const htmlContent = this.generateSitemapHtml(urls);
+    zip.file('sitemap.html', htmlContent);
+    
+    // Add XSL stylesheet
+    const xslContent = this.generateXslStylesheet();
+    zip.file('sitemap.xsl', xslContent);
+    
+    // Add a README
+    const readme = `Sitemap Package for ${this.domain}
+Generated on ${new Date().toLocaleDateString()}
+
+Files included:
+- sitemap.xml: XML sitemap in standard format
+- sitemap.html: HTML sitemap for user-friendly browsing
+- sitemap.xsl: Stylesheet for rendering the XML sitemap in a browser
+
+Total URLs: ${urls.length}
+
+Created with Simple Sitemap Creator
+`;
+    zip.file('README.txt', readme);
+    
+    // Add URL list as a plain text file
+    zip.file('urls.txt', urls.join('\n'));
+    
+    // Generate and download the ZIP file
+    const content = await zip.generateAsync({ type: 'blob' });
+    saveAs(content, `sitemap_package_${this.domain}.zip`);
   }
 
   private escapeXml(unsafe: string): string {
@@ -277,135 +374,5 @@ export class SimpleSitemapCreator {
       .replace(/>/g, '&gt;')
       .replace(/"/g, '&quot;')
       .replace(/'/g, '&#039;');
-  }
-
-  public async generateSitemapPackage(urls: string[]): Promise<Blob> {
-    const zip = new JSZip();
-    
-    // Add XML sitemap
-    const xmlSitemap = this.generateXmlSitemap(urls);
-    zip.file('sitemap.xml', xmlSitemap);
-    
-    // Add HTML sitemap
-    const htmlSitemap = this.generateHtmlSitemap(urls);
-    zip.file('sitemap.html', htmlSitemap);
-    
-    // Add XSLT stylesheet for XML sitemap
-    const xslStylesheet = this.generateXslStylesheet();
-    zip.file('sitemap.xsl', xslStylesheet);
-    
-    // Add README
-    const readme = `# Карта сайта для ${this.domain}
-
-Этот архив содержит карту сайта в разных форматах:
-
-- sitemap.xml: XML-формат для поисковых систем
-- sitemap.html: HTML-формат для просмотра в браузере
-- sitemap.xsl: Таблица стилей для XML-карты сайта
-
-Сгенерировано: ${new Date().toISOString()}
-Всего URL: ${urls.length}
-
-## Инструкции по использованию
-
-- Загрузите sitemap.xml в корень вашего сайта
-- Добавьте URL карты сайта в Google Search Console
-- Ссылку на HTML-карту сайта можно разместить в футере сайта для удобства пользователей
-`;
-    
-    zip.file('README.md', readme);
-    
-    return await zip.generateAsync({ type: 'blob' });
-  }
-
-  private generateXslStylesheet(): string {
-    return `<?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet version="2.0" 
-  xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
-  xmlns:sitemap="http://www.sitemaps.org/schemas/sitemap/0.9">
-  
-  <xsl:template match="/">
-    <html lang="ru">
-      <head>
-        <title>Карта сайта XML для <xsl:value-of select="sitemap:urlset/sitemap:url[1]/sitemap:loc"/></title>
-        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-        <style>
-          body { font-family: Arial, sans-serif; font-size: 14px; color: #333; }
-          table { border-collapse: collapse; width: 100%; margin: 20px 0; }
-          th { background-color: #4CAF50; color: white; text-align: left; padding: 8px; }
-          td { border: 1px solid #ddd; padding: 8px; }
-          tr:nth-child(even) { background-color: #f2f2f2; }
-          h1 { color: #4CAF50; }
-          a { color: #0066cc; text-decoration: none; }
-          a:hover { text-decoration: underline; }
-          .summary { width: 100%; margin: 10px 0; border-spacing: 0; }
-          .summary th { background: #f2f2f2; padding: 5px; }
-          .summary td { padding: 5px; }
-        </style>
-      </head>
-      <body>
-        <h1>XML Карта сайта</h1>
-        <p>Эта XML карта сайта создана для передачи данных в поисковые системы.</p>
-        
-        <table class="summary">
-          <tr>
-            <th>URL:</th>
-            <td><xsl:value-of select="sitemap:urlset/sitemap:url[1]/sitemap:loc"/></td>
-          </tr>
-          <tr>
-            <th>Кол-во URL:</th>
-            <td><xsl:value-of select="count(sitemap:urlset/sitemap:url)"/></td>
-          </tr>
-          <tr>
-            <th>Дата создания:</th>
-            <td><xsl:value-of select="format-date(current-date(),'[D01].[M01].[Y0001]')"/></td>
-          </tr>
-        </table>
-        
-        <table>
-          <tr>
-            <th>URL</th>
-            <th>Частота изменений</th>
-            <th>Приоритет</th>
-            <th>Последнее изменение</th>
-          </tr>
-          <xsl:for-each select="sitemap:urlset/sitemap:url">
-            <tr>
-              <td>
-                <a href="{sitemap:loc}"><xsl:value-of select="sitemap:loc"/></a>
-              </td>
-              <td><xsl:value-of select="sitemap:changefreq"/></td>
-              <td><xsl:value-of select="sitemap:priority"/></td>
-              <td><xsl:value-of select="sitemap:lastmod"/></td>
-            </tr>
-          </xsl:for-each>
-        </table>
-      </body>
-    </html>
-  </xsl:template>
-</xsl:stylesheet>`;
-  }
-
-  public downloadSitemap(urls: string[], format: 'xml' | 'html' | 'package' = 'xml'): void {
-    let blob: Blob;
-    let filename: string;
-    
-    switch (format) {
-      case 'xml':
-        blob = new Blob([this.generateXmlSitemap(urls)], { type: 'text/xml' });
-        filename = `sitemap_${this.domain}.xml`;
-        break;
-      case 'html':
-        blob = new Blob([this.generateHtmlSitemap(urls)], { type: 'text/html' });
-        filename = `sitemap_${this.domain}.html`;
-        break;
-      case 'package':
-        this.generateSitemapPackage(urls).then(packageBlob => {
-          saveAs(packageBlob, `sitemap_package_${this.domain}.zip`);
-        });
-        return;
-    }
-    
-    saveAs(blob, filename);
   }
 }

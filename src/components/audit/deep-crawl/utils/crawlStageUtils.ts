@@ -1,59 +1,46 @@
 
-interface StageInfo {
-  title: string;
-  info: string;
-}
+export type CrawlStage = 'idle' | 'starting' | 'crawling' | 'analyzing' | 'completed' | 'error';
 
-export function getStageTitleAndInfo(
-  crawlStage: string, 
-  error: string | null, 
+export const getStageTitleAndInfo = (
+  stage: CrawlStage,
+  error: string | null,
   pagesScanned: number
-): StageInfo {
-  switch (crawlStage) {
-    case 'initializing':
+): { title: string; info: string } => {
+  switch (stage) {
+    case 'idle':
       return {
-        title: 'Инициализация сканирования',
-        info: 'Подготовка к глубокому сканированию сайта...'
+        title: 'Глубокое сканирование',
+        info: 'Подготовка к сканированию сайта...'
       };
     case 'starting':
       return {
-        title: 'Запуск сканирования',
-        info: 'Анализ главной страницы и карты сайта...'
+        title: 'Сканирование запущено',
+        info: 'Инициализация сканера и проверка доступности сайта...'
       };
-    case 'exploring':
+    case 'crawling':
       return {
-        title: 'Исследование структуры',
-        info: 'Анализ основных разделов и каталогов...'
+        title: 'Сканирование в процессе',
+        info: 'Обнаружение и анализ страниц. Это может занять некоторое время в зависимости от размера сайта.'
       };
-    case 'discovery':
+    case 'analyzing':
       return {
-        title: 'Обнаружение страниц',
-        info: 'Поиск всех доступных страниц по ссылкам...'
-      };
-    case 'indexing':
-      return {
-        title: 'Индексация контента',
-        info: 'Обработка найденных страниц и контента...'
-      };
-    case 'finalizing':
-      return {
-        title: 'Завершение сканирования',
-        info: 'Сбор итоговой информации и создание карты сайта...'
+        title: 'Анализ данных',
+        info: 'Обработка собранных данных и формирование отчета...'
       };
     case 'completed':
       return {
         title: 'Сканирование завершено',
-        info: `Найдено ${pagesScanned.toLocaleString('ru-RU')} страниц на сайте`
+        info: `Успешно просканировано ${pagesScanned.toLocaleString('ru-RU')} страниц. Вы можете скачать карту сайта или полный отчет.`
       };
     case 'error':
       return {
         title: 'Ошибка сканирования',
-        info: error || 'Произошла ошибка при сканировании сайта'
+        info: error || 'Произошла ошибка при сканировании сайта. Пожалуйста, попробуйте еще раз.'
       };
     default:
       return {
-        title: 'Сканирование',
-        info: 'Обработка сайта...'
+        title: 'Глубокое сканирование',
+        info: 'Подготовка к сканированию сайта...'
       };
   }
-}
+};

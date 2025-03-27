@@ -1,130 +1,196 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { motion } from 'framer-motion';
-import { BarChart2, Map, Download } from 'lucide-react';
-import { 
-  Card, 
-  CardContent, 
-  CardDescription, 
-  CardHeader, 
-  CardTitle 
-} from "@/components/ui/card";
+import { FileSearch, FileText, Download, ClipboardCopy, CheckCircle, Server } from 'lucide-react';
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { FileSearch } from 'lucide-react';
-import { 
-  CrawlSummaryTab, 
-  CrawlStructureTab, 
-  CrawlExportTab 
-} from './components/results';
+import { Badge } from "@/components/ui/badge";
+import { useToast } from "@/hooks/use-toast";
 
 interface CrawlResultsProps {
   pageCount: number;
   domain: string;
   urls: string[];
-  onDownloadSitemap: () => void;
-  onDownloadReport: () => void;
-  onDownloadAllData: () => void;
+  onDownloadSitemap?: () => void;
+  onDownloadReport?: () => void;
+  onDownloadAllData?: () => void;
 }
 
-const CrawlResults: React.FC<CrawlResultsProps> = ({
+export const CrawlResults: React.FC<CrawlResultsProps> = ({
   pageCount,
   domain,
   urls,
   onDownloadSitemap,
   onDownloadReport,
-  onDownloadAllData
+  onDownloadAllData,
 }) => {
-  const [activeTab, setActiveTab] = useState('summary');
-  
-  // Calculate URL statistics
-  const urlStats = React.useMemo(() => {
-    // Count URLs by directory patterns
-    const directoryCount: Record<string, number> = {};
+  const { toast } = useToast();
+  const [copiedUrl, setCopiedUrl] = React.useState<string | null>(null);
+
+  // Calculate some basic SEO metrics
+  const topLevelPages = urls.filter(u => (u.match(/\//g) || []).length <= 3).length;
+  const deepPages = urls.filter(u => (u.match(/\//g) || []).length > 3).length;
+  const potentialProductPages = urls.filter(u => 
+    u.includes('product') || 
+    u.includes('tovar') || 
+    u.includes('item') || 
+    u.includes('catalog/')
+  ).length;
+
+  const handleCopyUrl = (url: string) => {
+    navigator.clipboard.writeText(url);
+    setCopiedUrl(url);
     
-    urls.forEach(url => {
-      try {
-        const urlObj = new URL(url);
-        const path = urlObj.pathname;
-        
-        // Skip URLs from other domains
-        if (urlObj.hostname !== domain) return;
-        
-        // Count by first directory
-        const firstDir = path.split('/')[1] || 'root';
-        directoryCount[firstDir] = (directoryCount[firstDir] || 0) + 1;
-      } catch (e) {
-        // Skip invalid URLs
-      }
+    toast({
+      title: "URL скопирован",
+      description: "URL успешно скопирован в буфер обмена",
     });
     
-    return {
-      directoryCount,
-      maxPagesInDirectory: Math.max(...Object.values(directoryCount)) || 0
-    };
-  }, [urls, domain]);
-  
+    setTimeout(() => {
+      setCopiedUrl(null);
+    }, 2000);
+  };
+
   return (
-    <Card className="w-full">
-      <CardHeader>
-        <CardTitle className="flex items-center justify-between">
-          <div className="flex items-center">
-            <FileSearch className="h-5 w-5 mr-2 text-primary" />
-            <span>Результаты сканирования</span>
-          </div>
-          <div className="text-sm font-normal text-muted-foreground">
-            {new Date().toLocaleDateString('ru-RU')}
-          </div>
-        </CardTitle>
-        <CardDescription>
-          Найдено {pageCount.toLocaleString('ru-RU')} страниц на сайте {domain}
-        </CardDescription>
-      </CardHeader>
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className="space-y-4"
+    >
+      <div className="flex items-center justify-between mb-2">
+        <div className="flex items-center gap-2">
+          <FileSearch className="h-5 w-5 text-primary" />
+          <h2 className="text-lg font-medium">Результаты сканирования</h2>
+        </div>
+        
+        <Badge variant="outline" className="font-normal">
+          {pageCount} страниц
+        </Badge>
+      </div>
       
-      <CardContent>
-        <Tabs defaultValue="summary" value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid grid-cols-3 mb-4">
-            <TabsTrigger value="summary" className="flex items-center gap-1.5">
-              <BarChart2 className="h-4 w-4" />
-              <span>Итоги</span>
-            </TabsTrigger>
-            <TabsTrigger value="structure" className="flex items-center gap-1.5">
-              <Map className="h-4 w-4" />
-              <span>Структура</span>
-            </TabsTrigger>
-            <TabsTrigger value="export" className="flex items-center gap-1.5">
-              <Download className="h-4 w-4" />
-              <span>Экспорт</span>
-            </TabsTrigger>
-          </TabsList>
-          
-          <TabsContent value="summary" className="mt-2">
-            <CrawlSummaryTab 
-              pageCount={pageCount}
-              directoryCount={Object.keys(urlStats.directoryCount).length}
-              maxPagesInDirectory={urlStats.maxPagesInDirectory}
-              domain={domain}
-              onDownloadSitemap={onDownloadSitemap}
-            />
-          </TabsContent>
-          
-          <TabsContent value="structure" className="mt-2">
-            <CrawlStructureTab 
-              directoryCount={urlStats.directoryCount}
-              pageCount={pageCount}
-              urls={urls}
-              onDownloadReport={onDownloadReport}
-            />
-          </TabsContent>
-          
-          <TabsContent value="export" className="mt-2">
-            <CrawlExportTab 
-              onDownloadSitemap={onDownloadSitemap}
-              onDownloadAllData={onDownloadAllData}
-            />
-          </TabsContent>
-        </Tabs>
-      </CardContent>
-    </Card>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
+        <Card className="bg-primary/10">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium">Страницы</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{pageCount}</div>
+          </CardContent>
+        </Card>
+        
+        <Card className="bg-primary/10">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium">Вложенность до 3 уровней</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{topLevelPages}</div>
+          </CardContent>
+        </Card>
+        
+        <Card className="bg-primary/10">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium">Потенциальные товары</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{potentialProductPages}</div>
+          </CardContent>
+        </Card>
+      </div>
+      
+      <Tabs defaultValue="urls" className="space-y-4">
+        <TabsList className="grid grid-cols-2">
+          <TabsTrigger value="urls">URL (до 100)</TabsTrigger>
+          <TabsTrigger value="seo">SEO Рекомендации</TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="urls" className="space-y-4">
+          <div className="h-60 overflow-y-auto border rounded-md p-2 bg-background/50">
+            {urls.slice(0, 100).map((url, index) => (
+              <div key={index} className="flex justify-between text-xs truncate p-1 hover:bg-muted rounded group">
+                <div className="truncate">{url}</div>
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  className="h-5 w-5 opacity-0 group-hover:opacity-100"
+                  onClick={() => handleCopyUrl(url)}
+                >
+                  {copiedUrl === url ? (
+                    <CheckCircle className="h-3 w-3 text-green-500" />
+                  ) : (
+                    <ClipboardCopy className="h-3 w-3" />
+                  )}
+                </Button>
+              </div>
+            ))}
+            {urls.length > 100 && (
+              <div className="text-xs text-muted-foreground text-center mt-2">
+                Показано первые 100 URL из {urls.length}
+              </div>
+            )}
+          </div>
+        </TabsContent>
+        
+        <TabsContent value="seo" className="space-y-4">
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium">Автоматические рекомендации</CardTitle>
+              <CardDescription>
+                На основе структуры найденных URL
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="text-sm space-y-2">
+              <p>✅ Обнаружено {pageCount} уникальных URL</p>
+              <p>{topLevelPages > pageCount * 0.3 ? '✅' : '⚠️'} {topLevelPages} страниц имеют оптимальную вложенность</p>
+              <p>{deepPages > pageCount * 0.7 ? '⚠️' : '✅'} {deepPages} страниц имеют глубокую вложенность</p>
+              <p>{potentialProductPages > 0 ? '✅' : '⚠️'} Найдено {potentialProductPages} потенциальных товарных страниц</p>
+              <p>💡 Рекомендуется проверить карту сайта вручную и убедиться, что все важные страницы присутствуют</p>
+              <p>💡 На основе результатов сканирования создайте sitemap.xml и добавьте его в Google Search Console</p>
+            </CardContent>
+            <CardFooter className="text-xs text-muted-foreground">
+              Для полного SEO аудита запустите глубокое сканирование контента
+            </CardFooter>
+          </Card>
+        </TabsContent>
+      </Tabs>
+      
+      <div className="flex justify-end space-x-2 mt-4">
+        {onDownloadSitemap && (
+          <Button 
+            onClick={onDownloadSitemap}
+            size="sm"
+            variant="outline"
+            className="gap-2"
+          >
+            <FileText className="h-4 w-4" />
+            Скачать Sitemap
+          </Button>
+        )}
+        
+        {onDownloadReport && (
+          <Button 
+            onClick={onDownloadReport}
+            size="sm"
+            variant="outline"
+            className="gap-2"
+          >
+            <Download className="h-4 w-4" />
+            Скачать отчет
+          </Button>
+        )}
+        
+        {onDownloadAllData && (
+          <Button 
+            onClick={onDownloadAllData}
+            size="sm"
+            className="gap-2"
+          >
+            <Server className="h-4 w-4" />
+            Скачать все данные
+          </Button>
+        )}
+      </div>
+    </motion.div>
   );
 };
 

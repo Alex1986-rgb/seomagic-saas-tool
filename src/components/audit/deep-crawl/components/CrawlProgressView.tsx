@@ -1,11 +1,9 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { 
-  Loader2, Database, Map, FileSearch, 
-  CheckCircle, AlertCircle 
-} from 'lucide-react';
+import { AlertTriangle } from 'lucide-react';
 import { Progress } from "@/components/ui/progress";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface CrawlProgressViewProps {
   progress: number;
@@ -25,58 +23,50 @@ const CrawlProgressView: React.FC<CrawlProgressViewProps> = ({
   info
 }) => {
   return (
-    <div className="py-4 px-2">
-      <div className="mb-4">
-        <div className="flex justify-between items-center text-sm mb-2">
-          <span>{info}</span>
-          <span className="font-medium">{progress}%</span>
+    <motion.div 
+      className="space-y-4"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.3 }}
+    >
+      <div className="space-y-2">
+        <div className="flex items-center justify-between text-sm">
+          <span className="font-medium">Прогресс сканирования:</span>
+          <span>{progress}%</span>
+        </div>
+        <Progress value={progress} className="h-2" />
+      </div>
+      
+      <div className="grid grid-cols-2 gap-4">
+        <div className="bg-muted/50 p-3 rounded-md">
+          <div className="text-xs text-muted-foreground">Просканировано страниц</div>
+          <div className="text-2xl font-semibold mt-1">{pagesScanned.toLocaleString('ru-RU')}</div>
         </div>
         
-        <Progress value={progress} className="h-2"/>
-        
-        <div className="flex justify-between text-xs text-muted-foreground mt-1">
-          <span>Обработано: {pagesScanned.toLocaleString('ru-RU')}</span>
-          <span>Оценка: ~{estimatedPages.toLocaleString('ru-RU')}</span>
+        <div className="bg-muted/50 p-3 rounded-md">
+          <div className="text-xs text-muted-foreground">Примерно всего страниц</div>
+          <div className="text-2xl font-semibold mt-1">{estimatedPages.toLocaleString('ru-RU')}</div>
         </div>
       </div>
       
-      {currentUrl && (
-        <div className="mt-3 overflow-hidden">
-          <p className="text-xs text-muted-foreground mb-1">Текущая страница:</p>
-          <div className="bg-muted/30 rounded p-1.5 text-xs truncate overflow-hidden">
-            {currentUrl}
-          </div>
+      <div className="space-y-1">
+        <div className="text-xs text-muted-foreground">Текущий URL:</div>
+        <div className="text-sm font-mono bg-muted p-2 rounded-md overflow-x-auto whitespace-nowrap">
+          {currentUrl || 'Подготовка к сканированию...'}
         </div>
-      )}
+      </div>
       
-      <div className="mt-4 grid grid-cols-4 gap-2">
-        {[
-          { icon: <Database className="h-4 w-4" />, text: "Анализ данных", done: progress >= 25 },
-          { icon: <Map className="h-4 w-4" />, text: "Сбор ссылок", done: progress >= 50 },
-          { icon: <FileSearch className="h-4 w-4" />, text: "Индексация", done: progress >= 75 },
-          { icon: <CheckCircle className="h-4 w-4" />, text: "Завершение", done: progress >= 100 }
-        ].map((stage, index) => (
-          <div key={index} className="flex flex-col items-center">
-            <div className={`p-2 rounded-full ${stage.done ? 'bg-primary/20 text-primary' : 'bg-muted text-muted-foreground'}`}>
-              {stage.done ? <CheckCircle className="h-4 w-4" /> : stage.icon}
-            </div>
-            <span className="text-xs mt-1 text-center">{stage.text}</span>
-          </div>
-        ))}
+      <div className="text-sm text-muted-foreground">
+        {info}
       </div>
       
       {error && (
-        <div className="mt-4 p-3 bg-destructive/10 border border-destructive/30 rounded-md">
-          <div className="flex items-start">
-            <AlertCircle className="h-5 w-5 text-destructive mr-2 mt-0.5 flex-shrink-0" />
-            <div>
-              <p className="text-sm font-medium text-destructive">Ошибка сканирования</p>
-              <p className="text-xs mt-1 text-destructive/80">{error}</p>
-            </div>
-          </div>
-        </div>
+        <Alert variant="destructive">
+          <AlertTriangle className="h-4 w-4" />
+          <AlertDescription className="ml-2">{error}</AlertDescription>
+        </Alert>
       )}
-    </div>
+    </motion.div>
   );
 };
 
