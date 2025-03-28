@@ -2,14 +2,21 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { ChevronRight } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
 
 interface FeatureCardProps {
   icon: React.ReactNode;
   title: string;
   description: string;
+  link?: string;
 }
 
-const FeatureCard: React.FC<FeatureCardProps> = ({ icon, title, description }) => {
+const FeatureCard: React.FC<FeatureCardProps> = ({ icon, title, description, link }) => {
+  // Create a URL-friendly slug from the title
+  const slug = title.toLowerCase().replace(/\s+/g, '-');
+  const pageLink = link || `/features/${slug}`;
+  
   return (
     <motion.div 
       initial={{ opacity: 0, y: 20 }}
@@ -23,10 +30,13 @@ const FeatureCard: React.FC<FeatureCardProps> = ({ icon, title, description }) =
       <h3 className="text-xl font-semibold mb-3 relative z-10">{title}</h3>
       <p className="text-muted-foreground relative z-10">{description}</p>
       
-      {/* Indicator for "More details" on hover */}
-      <div className="absolute bottom-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center text-sm text-primary font-medium gap-1">
-        <span>Подробнее</span>
-        <ChevronRight size={14} className="group-hover:translate-x-1 transition-transform duration-200" />
+      <div className="mt-6 relative z-10">
+        <Link to={pageLink}>
+          <Button variant="link" className="p-0 h-auto text-primary flex items-center gap-1 hover:gap-2 transition-all">
+            <span>Подробнее</span>
+            <ChevronRight size={16} className="group-hover:translate-x-1 transition-transform duration-200" />
+          </Button>
+        </Link>
       </div>
       
       {/* Decorative background */}

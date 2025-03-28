@@ -31,6 +31,9 @@ const Contact = React.lazy(() => import('./pages/Contact'));
 const Privacy = React.lazy(() => import('./pages/Privacy'));
 const Terms = React.lazy(() => import('./pages/Terms'));
 
+// Feature page imports
+const FeaturePageTemplate = React.lazy(() => import('./pages/features/FeaturePageTemplate'));
+
 function App() {
   return (
     <HelmetProvider>
@@ -64,6 +67,19 @@ function App() {
                 <Route path="/terms" element={<Layout><Terms /></Layout>} />
                 <Route path="/profile" element={<Layout><ClientProfile /></Layout>} />
                 <Route path="/auth" element={<Auth />} />
+                
+                {/* Feature pages */}
+                <Route path="/optimization" element={<Layout><FeaturePageTemplate featureId="optimization" /></Layout>} />
+                <Route path="/speed-optimization" element={<Layout><FeaturePageTemplate featureId="speed-optimization" /></Layout>} />
+                <Route path="/competitor-analysis" element={<Layout><FeaturePageTemplate featureId="competitor-analysis" /></Layout>} />
+                <Route path="/growth-analytics" element={<Layout><FeaturePageTemplate featureId="growth-analytics" /></Layout>} />
+                <Route path="/custom-reports" element={<Layout><FeaturePageTemplate featureId="custom-reports" /></Layout>} />
+                <Route path="/automated-checks" element={<Layout><FeaturePageTemplate featureId="automated-checks" /></Layout>} />
+                <Route path="/markup-validation" element={<Layout><FeaturePageTemplate featureId="markup-validation" /></Layout>} />
+                <Route path="/security" element={<Layout><FeaturePageTemplate featureId="security" /></Layout>} />
+                <Route path="/recommendations" element={<Layout><FeaturePageTemplate featureId="recommendations" /></Layout>} />
+                <Route path="/expert-support" element={<Layout><FeaturePageTemplate featureId="expert-support" /></Layout>} />
+                
                 {/* Redirect unknown routes to home */}
                 <Route path="*" element={<Navigate to="/" replace />} />
               </Routes>
