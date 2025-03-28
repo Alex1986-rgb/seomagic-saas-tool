@@ -31,7 +31,7 @@ const Contact = React.lazy(() => import('./pages/Contact'));
 const Privacy = React.lazy(() => import('./pages/Privacy'));
 const Terms = React.lazy(() => import('./pages/Terms'));
 
-// Feature page imports
+// Feature page import
 const FeaturePageTemplate = React.lazy(() => import('./pages/features/FeaturePageTemplate'));
 
 function App() {
