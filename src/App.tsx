@@ -16,6 +16,7 @@ import Demo from './pages/Demo';
 import Index from './pages/Index';
 import ClientProfile from './pages/ClientProfile';
 import Auth from './pages/Auth';
+import Features from './pages/Features';
 
 // Lazy load non-critical pages for better performance
 const SiteAudit = React.lazy(() => import('./pages/SiteAudit'));
@@ -54,6 +55,7 @@ function App() {
                 <Route path="/settings" element={<Layout><Settings /></Layout>} />
                 <Route path="/admin" element={<Layout><AdminPanel /></Layout>} />
                 <Route path="/pricing" element={<Layout><Pricing /></Layout>} />
+                <Route path="/features" element={<Layout><Features /></Layout>} />
                 
                 {/* Fix duplicate footer/navbar issue for these pages */}
                 <Route path="/demo" element={<Demo />} />

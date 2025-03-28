@@ -1,430 +1,187 @@
 
-import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { 
-  Search, BarChart2, Globe, Zap, 
-  PieChart, LineChart, Settings, AlarmClock, 
-  Check, Lock, ArrowUpRight, Award,
-  LucideIcon
-} from 'lucide-react';
+import React, { useMemo } from 'react';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { ArrowLeft, ChevronRight, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-
-interface FeatureContent {
-  id: string;
-  title: string;
-  description: string;
-  icon: LucideIcon;
-  content: React.ReactNode;
-  benefits: string[];
-  useCases: string[];
-}
-
-const features: FeatureContent[] = [
-  {
-    id: 'audit',
-    title: 'Глубокий SEO-аудит',
-    description: 'Автоматический анализ более 100 факторов ранжирования и выявление всех технических ошибок вашего сайта.',
-    icon: Search,
-    content: (
-      <div>
-        <p className="mb-4">Наш глубокий SEO-аудит анализирует более 100 факторов ранжирования для выявления всех технических ошибок вашего сайта. Мы проверяем все аспекты SEO, включая метатеги, скорость загрузки, мобильную адаптивность, структуру URL, внутренние ссылки и многое другое.</p>
-        <p className="mb-4">После сканирования вы получаете полный отчет о состоянии вашего сайта с детальными рекомендациями по устранению найденных проблем.</p>
-      </div>
-    ),
-    benefits: [
-      'Полный анализ технических факторов SEO',
-      'Выявление ошибок, мешающих ранжированию',
-      'Детальный отчет с приоритизацией задач',
-      'Сравнение с предыдущими аудитами для отслеживания прогресса',
-      'Автоматическое определение критических проблем'
-    ],
-    useCases: [
-      'Регулярный мониторинг технического состояния сайта',
-      'Подготовка к редизайну или миграции сайта',
-      'Анализ причин падения позиций в поисковых системах',
-      'Проверка работы внедренных SEO-улучшений',
-      'Оценка конкурентоспособности сайта'
-    ]
-  },
-  {
-    id: 'position-tracker',
-    title: 'Мониторинг позиций',
-    description: 'Отслеживание позиций вашего сайта по ключевым запросам в поисковых системах в режиме реального времени.',
-    icon: BarChart2,
-    content: (
-      <div>
-        <p className="mb-4">Наш инструмент мониторинга позиций позволяет отслеживать положение вашего сайта в поисковых системах по важным для вас ключевым словам. Вы можете следить за динамикой и реагировать на изменения в режиме реального времени.</p>
-        <p className="mb-4">Создавайте группы запросов, настраивайте частоту проверок и получайте уведомления о значительных изменениях в рейтингах.</p>
-      </div>
-    ),
-    benefits: [
-      'Отслеживание позиций в различных поисковых системах',
-      'Анализ динамики позиций во времени',
-      'Группировка ключевых слов для удобного анализа',
-      'Автоматические уведомления об изменениях позиций',
-      'Экспорт данных для составления отчетов'
-    ],
-    useCases: [
-      'Измерение эффективности SEO-стратегии',
-      'Отслеживание влияния внесенных изменений на сайте',
-      'Мониторинг позиций конкурентов',
-      'Выявление сезонных тенденций в рейтингах',
-      'Определение наиболее перспективных ключевых слов'
-    ]
-  },
-  {
-    id: 'optimization',
-    title: 'Автоматическая оптимизация',
-    description: 'Интеллектуальные алгоритмы автоматически исправляют обнаруженные проблемы и улучшают SEO-показатели сайта.',
-    icon: Globe,
-    content: (
-      <div>
-        <p className="mb-4">Наша система автоматической оптимизации не только находит проблемы, но и предлагает решения по их устранению. В некоторых случаях она может автоматически исправить распространенные ошибки, экономя ваше время.</p>
-        <p className="mb-4">Интеллектуальные алгоритмы анализируют специфику вашего сайта и предлагают наиболее эффективные решения для улучшения SEO-показателей.</p>
-      </div>
-    ),
-    benefits: [
-      'Автоматическое исправление распространенных ошибок',
-      'Рекомендации по оптимизации контента',
-      'Улучшение скорости загрузки страниц',
-      'Оптимизация структуры сайта',
-      'Исправление неоптимальных метатегов'
-    ],
-    useCases: [
-      'Автоматизация рутинных задач SEO',
-      'Быстрое реагирование на технические проблемы',
-      'Оптимизация сайтов с большим количеством страниц',
-      'Исправление ошибок после миграции или обновления сайта',
-      'Поддержание сайта в актуальном состоянии'
-    ]
-  },
-  {
-    id: 'speed-optimization',
-    title: 'Ускорение загрузки',
-    description: 'Анализ и оптимизация скорости загрузки страниц для улучшения пользовательского опыта и ранжирования.',
-    icon: Zap,
-    content: (
-      <div>
-        <p className="mb-4">Скорость загрузки страниц является одним из ключевых факторов ранжирования и влияет на пользовательский опыт. Наш инструмент выявляет элементы, замедляющие ваш сайт, и предлагает конкретные меры по его ускорению.</p>
-        <p className="mb-4">Мы анализируем размер файлов, количество запросов, время до интерактивности и другие метрики производительности, чтобы обеспечить максимальную скорость работы сайта.</p>
-      </div>
-    ),
-    benefits: [
-      'Улучшение Core Web Vitals и других показателей скорости',
-      'Повышение конверсии за счет лучшего пользовательского опыта',
-      'Улучшение позиций в поисковой выдаче',
-      'Оптимизация изображений и других медиафайлов',
-      'Рекомендации по настройке кеширования'
-    ],
-    useCases: [
-      'Оптимизация крупных e-commerce сайтов',
-      'Улучшение пользовательского опыта на мобильных устройствах',
-      'Подготовка сайта к периодам пиковой нагрузки',
-      'Устранение проблем с высоким показателем отказов',
-      'Соответствие современным техническим требованиям поисковых систем'
-    ]
-  },
-  {
-    id: 'competitor-analysis',
-    title: 'Анализ конкурентов',
-    description: 'Сравнение вашего сайта с конкурентами и выявление их сильных сторон для улучшения вашей стратегии.',
-    icon: PieChart,
-    content: (
-      <div>
-        <p className="mb-4">Наш инструмент анализа конкурентов позволяет сравнить ваш сайт с сайтами конкурентов, чтобы выявить их сильные стороны и найти возможности для улучшения вашей SEO-стратегии.</p>
-        <p className="mb-4">Мы анализируем ключевые слова, по которым ранжируются конкуренты, структуру их сайтов, профили обратных ссылок и другие факторы, влияющие на их успех в поисковой выдаче.</p>
-      </div>
-    ),
-    benefits: [
-      'Выявление ключевых слов, приносящих трафик конкурентам',
-      'Анализ структуры и контента успешных сайтов в вашей нише',
-      'Исследование стратегий ссылочного продвижения',
-      'Сравнение технических параметров сайтов',
-      'Обнаружение пробелов в вашей SEO-стратегии'
-    ],
-    useCases: [
-      'Разработка новой SEO-стратегии',
-      'Поиск новых возможностей для привлечения трафика',
-      'Анализ причин успеха конкурентов',
-      'Определение уникальных преимуществ для выделения среди конкурентов',
-      'Бенчмаркинг эффективности SEO-кампаний'
-    ]
-  },
-  {
-    id: 'growth-analytics',
-    title: 'Аналитика роста',
-    description: 'Наглядная визуализация роста трафика и улучшения позиций с течением времени.',
-    icon: LineChart,
-    content: (
-      <div>
-        <p className="mb-4">Наш инструмент аналитики роста предоставляет наглядную визуализацию изменений трафика и позиций вашего сайта с течением времени. Это позволяет оценить эффективность ваших SEO-усилий и корректировать стратегию.</p>
-        <p className="mb-4">Мы собираем данные из различных источников и представляем их в виде информативных графиков и диаграмм, помогающих быстро оценить динамику развития сайта.</p>
-      </div>
-    ),
-    benefits: [
-      'Наглядное представление результатов SEO-работы',
-      'Отслеживание корреляции между внесенными изменениями и ростом показателей',
-      'Прогнозирование будущего роста на основе текущих тенденций',
-      'Анализ сезонности и других факторов, влияющих на трафик',
-      'Определение наиболее перспективных направлений развития'
-    ],
-    useCases: [
-      'Демонстрация результатов SEO-работы клиентам или руководству',
-      'Оценка возврата инвестиций в SEO',
-      'Сравнение эффективности различных каналов привлечения трафика',
-      'Выявление аномалий и проблем в динамике роста',
-      'Стратегическое планирование развития сайта'
-    ]
-  },
-  {
-    id: 'custom-reports',
-    title: 'Настраиваемые отчеты',
-    description: 'Создание персонализированных отчетов для клиентов и руководства с фокусом на нужных метриках.',
-    icon: Settings,
-    content: (
-      <div>
-        <p className="mb-4">Наша система позволяет создавать персонализированные отчеты, фокусирующиеся на тех метриках, которые наиболее важны для вас или ваших клиентов. Вы можете настроить содержание, формат и периодичность отчетов.</p>
-        <p className="mb-4">Отчеты могут включать в себя данные о позициях, трафике, технических аспектах, конверсиях и других важных показателях эффективности вашего сайта.</p>
-      </div>
-    ),
-    benefits: [
-      'Создание отчетов, адаптированных под потребности конкретного бизнеса',
-      'Автоматическая генерация и отправка отчетов по расписанию',
-      'Интеграция данных из различных источников в единый отчет',
-      'Простая для понимания визуализация сложных данных',
-      'Возможность экспорта в различные форматы (PDF, Excel, Google Docs)'
-    ],
-    useCases: [
-      'Регулярная отчетность для клиентов SEO-агентств',
-      'Подготовка материалов для встреч с руководством',
-      'Анализ эффективности различных SEO-мероприятий',
-      'Демонстрация возврата инвестиций в SEO',
-      'Обоснование необходимости дополнительных ресурсов для SEO'
-    ]
-  },
-  {
-    id: 'automated-checks',
-    title: 'Автоматические проверки',
-    description: 'Регулярные автоматические проверки сайта на появление новых ошибок и проблем с оповещениями.',
-    icon: AlarmClock,
-    content: (
-      <div>
-        <p className="mb-4">Наша система регулярно проверяет ваш сайт на появление новых ошибок и проблем, которые могут негативно повлиять на его ранжирование. При обнаружении проблем вы получаете оповещения и рекомендации по их устранению.</p>
-        <p className="mb-4">Частоту и глубину проверок можно настраивать в зависимости от ваших потребностей и особенностей сайта.</p>
-      </div>
-    ),
-    benefits: [
-      'Раннее обнаружение технических проблем до их влияния на рейтинги',
-      'Мониторинг доступности сайта и времени отклика серверов',
-      'Отслеживание изменений в структуре сайта',
-      'Проверка корректности работы редиректов и кодов ответа сервера',
-      'Настраиваемые уведомления о критических проблемах'
-    ],
-    useCases: [
-      'Поддержание технического здоровья сайта',
-      'Мониторинг сайта после внесения значительных изменений',
-      'Контроль работы сайта после обновления CMS или плагинов',
-      'Оперативное реагирование на технические сбои',
-      'Регулярные проверки для сайтов с динамическим контентом'
-    ]
-  },
-  {
-    id: 'markup-validation',
-    title: 'Валидация разметки',
-    description: 'Проверка корректности HTML, JSON-LD и микроразметки для правильного отображения в поиске.',
-    icon: Check,
-    content: (
-      <div>
-        <p className="mb-4">Наш инструмент проверяет корректность HTML-кода, JSON-LD и микроразметки Schema.org на вашем сайте. Это обеспечивает правильное отображение расширенных сниппетов в результатах поиска и улучшает видимость вашего сайта.</p>
-        <p className="mb-4">Мы выявляем ошибки и предупреждения в разметке, помогаем их исправить и проверяем соответствие рекомендациям поисковых систем.</p>
-      </div>
-    ),
-    benefits: [
-      'Улучшение отображения сайта в результатах поиска',
-      'Повышение CTR за счет расширенных сниппетов',
-      'Выявление и исправление ошибок в структурированных данных',
-      'Подготовка разметки для голосового поиска',
-      'Оптимизация под особые типы контента (товары, рецепты, события и т.д.)'
-    ],
-    useCases: [
-      'Оптимизация интернет-магазинов для улучшения представления товаров в поиске',
-      'Подготовка сайтов с событиями для корректного отображения в Google Events',
-      'Разметка контента для быстрого получения избранных сниппетов',
-      'Проверка соответствия сайта последним требованиям к структурированным данным',
-      'Улучшение представления бизнеса в локальном поиске'
-    ]
-  },
-  {
-    id: 'security',
-    title: 'Безопасность сайта',
-    description: 'Проверка на наличие уязвимостей, вредоносного кода и проблем с SSL-сертификатами.',
-    icon: Lock,
-    content: (
-      <div>
-        <p className="mb-4">Наш инструмент проверяет сайт на наличие уязвимостей, вредоносного кода и проблем с SSL-сертификатами. Безопасность сайта важна не только для защиты данных, но и для SEO, так как поисковые системы отдают предпочтение безопасным ресурсам.</p>
-        <p className="mb-4">Мы анализируем конфигурацию сервера, проверяем настройки HTTPS, сканируем на наличие вредоносного кода и выявляем потенциальные проблемы безопасности.</p>
-      </div>
-    ),
-    benefits: [
-      'Обнаружение вредоносного кода, влияющего на репутацию сайта',
-      'Проверка корректности настройки HTTPS и SSL-сертификатов',
-      'Выявление уязвимостей в CMS и плагинах',
-      'Мониторинг безопасности форм и пользовательского ввода',
-      'Рекомендации по усилению защиты сайта'
-    ],
-    useCases: [
-      'Регулярные проверки безопасности e-commerce сайтов',
-      'Мониторинг сайтов с пользовательским контентом',
-      'Проверка после взлома или атаки на сайт',
-      'Подготовка к сертификации безопасности',
-      'Выполнение требований GDPR и других нормативов по защите данных'
-    ]
-  },
-  {
-    id: 'recommendations',
-    title: 'Рекомендации по улучшению',
-    description: 'Детальные рекомендации по улучшению контента, структуры и технических аспектов сайта.',
-    icon: ArrowUpRight,
-    content: (
-      <div>
-        <p className="mb-4">На основе анализа вашего сайта мы предоставляем детальные рекомендации по улучшению контента, структуры и технических аспектов. Все рекомендации приоритизированы по важности и потенциальному влиянию на ранжирование.</p>
-        <p className="mb-4">Каждая рекомендация сопровождается объяснением проблемы, ее влияния на SEO и конкретными шагами по ее устранению.</p>
-      </div>
-    ),
-    benefits: [
-      'Персонализированные рекомендации, учитывающие специфику вашего сайта',
-      'Приоритизация задач для максимальной эффективности работы',
-      'Практические инструкции по внедрению рекомендаций',
-      'Объяснение SEO-принципов и лучших практик',
-      'Обновление рекомендаций при изменении алгоритмов поисковых систем'
-    ],
-    useCases: [
-      'Разработка стратегии SEO-оптимизации',
-      'Обучение команды SEO-специалистов',
-      'Планирование работ по улучшению сайта',
-      'Восстановление позиций после алгоритмических санкций',
-      'Подготовка к редизайну или миграции сайта'
-    ]
-  },
-  {
-    id: 'expert-support',
-    title: 'Экспертная поддержка',
-    description: 'Доступ к команде SEO-экспертов, готовых помочь с интерпретацией данных и стратегией.',
-    icon: Award,
-    content: (
-      <div>
-        <p className="mb-4">Помимо автоматических инструментов, мы предоставляем доступ к команде SEO-экспертов, готовых помочь с интерпретацией данных, разработкой стратегии и решением сложных проблем. Наши специалисты имеют многолетний опыт работы с различными типами сайтов и отраслей.</p>
-        <p className="mb-4">Мы помогаем не только выявить проблемы, но и найти наиболее эффективные решения с учетом особенностей вашего бизнеса и целевой аудитории.</p>
-      </div>
-    ),
-    benefits: [
-      'Консультации опытных SEO-специалистов',
-      'Помощь в интерпретации сложных данных анализа',
-      'Разработка индивидуальной SEO-стратегии',
-      'Поддержка при внедрении технических изменений',
-      'Обучение вашей команды SEO-практикам'
-    ],
-    useCases: [
-      'Разработка комплексной стратегии продвижения',
-      'Решение нестандартных SEO-задач',
-      'Оптимизация сайтов в высококонкурентных нишах',
-      'Анализ и устранение причин падения трафика',
-      'Обучение и консультирование внутренней команды'
-    ]
-  }
-];
+import { Card, CardContent } from '@/components/ui/card';
+import { featuresData } from '@/components/features/featuresData';
+import { AspectRatio } from '@/components/ui/aspect-ratio';
+import { Badge } from '@/components/ui/badge';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 const FeaturePageTemplate: React.FC = () => {
-  const navigate = useNavigate();
   const { featureId } = useParams<{ featureId: string }>();
-  const [feature, setFeature] = useState<FeatureContent | null>(null);
-
-  useEffect(() => {
-    // Find the feature that matches the ID from the URL
-    const currentFeature = features.find(f => f.id === featureId);
-    
-    if (currentFeature) {
-      setFeature(currentFeature);
-    } else {
-      // If no matching feature is found, redirect to home
-      navigate('/');
-    }
-  }, [featureId, navigate]);
-
-  if (!feature) {
-    return <div className="container mx-auto px-4 py-20 text-center">Загрузка...</div>;
+  const navigate = useNavigate();
+  
+  // Находим данные о функции по ID из URL
+  const featureData = useMemo(() => {
+    return featuresData.find(
+      feature => feature.title.toLowerCase().replace(/\s+/g, '-') === featureId
+    );
+  }, [featureId]);
+  
+  // Если функция не найдена, показываем сообщение и ссылку на страницу со всеми функциями
+  if (!featureData) {
+    return (
+      <div className="container mx-auto px-4 py-16 md:py-24">
+        <Alert variant="destructive" className="mb-8">
+          <Info className="h-4 w-4 mr-2" />
+          <AlertDescription>
+            Запрашиваемая функция не найдена. Возможно, URL введен неверно или функция была перемещена.
+          </AlertDescription>
+        </Alert>
+        
+        <div className="text-center">
+          <h1 className="text-3xl font-bold mb-8">Функция не найдена</h1>
+          <Button onClick={() => navigate('/features')}>
+            Вернуться к списку функций
+          </Button>
+        </div>
+      </div>
+    );
   }
-
-  const IconComponent = feature.icon;
-
+  
+  // Получаем компонент иконки из данных о функции
+  const IconComponent = featureData.icon;
+  
+  // Находим связанные функции из той же категории
+  const relatedFeatures = useMemo(() => {
+    if (!featureData.category) return [];
+    
+    return featuresData
+      .filter(feature => 
+        feature.category === featureData.category && 
+        feature.title !== featureData.title
+      )
+      .slice(0, 3);
+  }, [featureData]);
+  
   return (
-    <div className="container mx-auto px-4 py-20">
-      <motion.div
+    <div className="container mx-auto px-4 py-16 md:py-24">
+      {/* Навигация */}
+      <div className="mb-8">
+        <Link to="/features" className="flex items-center text-muted-foreground hover:text-foreground transition-colors">
+          <ArrowLeft size={16} className="mr-2" />
+          <span>Все функции</span>
+        </Link>
+      </div>
+      
+      {/* Шапка функции */}
+      <motion.div 
+        className="mb-16"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="max-w-4xl mx-auto"
       >
-        <div className="flex items-center justify-center mb-6">
-          <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center mb-6">
-            <IconComponent className="w-10 h-10 text-primary" />
+        <div className="flex items-center gap-4 mb-4">
+          <div className="p-4 rounded-full bg-primary/10">
+            <IconComponent className="h-8 w-8 text-primary" />
           </div>
+          {featureData.category && (
+            <Badge variant="secondary" className="text-xs">
+              {featureData.category}
+            </Badge>
+          )}
         </div>
         
-        <h1 className="text-3xl md:text-4xl font-bold text-center mb-4">{feature.title}</h1>
-        <p className="text-lg text-muted-foreground text-center mb-10">{feature.description}</p>
-        
-        <div className="prose dark:prose-invert max-w-none mb-12">
-          {feature.content}
-        </div>
-        
-        <div className="grid md:grid-cols-2 gap-8 mb-12">
-          <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-            className="bg-card p-6 rounded-lg border"
-          >
-            <h3 className="text-xl font-semibold mb-4">Преимущества</h3>
-            <ul className="space-y-2">
-              {feature.benefits.map((benefit, index) => (
-                <li key={index} className="flex items-start">
-                  <Check className="w-5 h-5 text-primary mt-0.5 mr-2 flex-shrink-0" />
-                  <span>{benefit}</span>
-                </li>
-              ))}
-            </ul>
-          </motion.div>
-          
-          <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5, delay: 0.4 }}
-            className="bg-card p-6 rounded-lg border"
-          >
-            <h3 className="text-xl font-semibold mb-4">Примеры использования</h3>
-            <ul className="space-y-2">
-              {feature.useCases.map((useCase, index) => (
-                <li key={index} className="flex items-start">
-                  <ArrowUpRight className="w-5 h-5 text-primary mt-0.5 mr-2 flex-shrink-0" />
-                  <span>{useCase}</span>
-                </li>
-              ))}
-            </ul>
-          </motion.div>
-        </div>
-        
-        <div className="flex flex-col items-center justify-center mt-10">
-          <p className="text-lg mb-4">Готовы улучшить SEO-показатели вашего сайта?</p>
-          <div className="flex flex-wrap gap-4 justify-center">
-            <Button size="lg" className="px-8">Начать бесплатно</Button>
-            <Button size="lg" variant="outline" className="px-8" onClick={() => navigate('/pricing')}>
-              Посмотреть тарифы
-            </Button>
-          </div>
-        </div>
+        <h1 className="text-4xl md:text-5xl font-bold mb-6">{featureData.title}</h1>
+        <p className="text-xl text-muted-foreground max-w-3xl">
+          {featureData.description}
+        </p>
       </motion.div>
+      
+      {/* Основное содержимое */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 mb-16">
+        <motion.div 
+          className="lg:col-span-2"
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.5, delay: 0.2 }}
+        >
+          <Card className="overflow-hidden">
+            <AspectRatio ratio={16 / 9} className="bg-muted">
+              <div className="flex items-center justify-center h-full bg-muted text-muted-foreground">
+                <IconComponent className="h-16 w-16 opacity-20" />
+              </div>
+            </AspectRatio>
+            <CardContent className="p-6">
+              <h2 className="text-2xl font-semibold mb-4">Как работает {featureData.title}</h2>
+              <p className="text-muted-foreground">
+                Детальное описание функции {featureData.title} будет добавлено в ближайшее время. 
+                Эта функция предоставляет пользователям мощные инструменты для оптимизации и анализа их веб-сайтов, 
+                помогая достичь лучших результатов в поисковых системах.
+              </p>
+            </CardContent>
+          </Card>
+        </motion.div>
+        
+        <motion.div
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.5, delay: 0.3 }}
+        >
+          <Card>
+            <CardContent className="p-6">
+              <h3 className="text-xl font-semibold mb-4">Преимущества</h3>
+              <ul className="space-y-3">
+                <li className="flex items-start">
+                  <ChevronRight size={16} className="mt-1 mr-2 text-primary" />
+                  <span>Улучшение позиций в поисковых системах</span>
+                </li>
+                <li className="flex items-start">
+                  <ChevronRight size={16} className="mt-1 mr-2 text-primary" />
+                  <span>Экономия времени на ручной оптимизации</span>
+                </li>
+                <li className="flex items-start">
+                  <ChevronRight size={16} className="mt-1 mr-2 text-primary" />
+                  <span>Автоматизация рутинных процессов</span>
+                </li>
+                <li className="flex items-start">
+                  <ChevronRight size={16} className="mt-1 mr-2 text-primary" />
+                  <span>Профессиональная аналитика и отчеты</span>
+                </li>
+              </ul>
+              
+              <Button className="w-full mt-6">Попробовать бесплатно</Button>
+            </CardContent>
+          </Card>
+        </motion.div>
+      </div>
+      
+      {/* Связанные функции */}
+      {relatedFeatures.length > 0 && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.4 }}
+        >
+          <h2 className="text-2xl font-semibold mb-6">Похожие функции</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {relatedFeatures.map((feature, index) => (
+              <Card key={index} className="hover:shadow-md transition-shadow">
+                <CardContent className="p-6">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="p-2 rounded-full bg-primary/10">
+                      <feature.icon className="h-5 w-5 text-primary" />
+                    </div>
+                    <h3 className="font-medium">{feature.title}</h3>
+                  </div>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    {feature.description}
+                  </p>
+                  <Link to={feature.link || `/features/${feature.title.toLowerCase().replace(/\s+/g, '-')}`}>
+                    <Button variant="link" className="p-0 h-auto text-primary">
+                      Подробнее
+                      <ChevronRight size={14} className="ml-1" />
+                    </Button>
+                  </Link>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </motion.div>
+      )}
     </div>
   );
 };
