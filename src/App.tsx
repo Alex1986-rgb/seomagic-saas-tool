@@ -34,6 +34,7 @@ const Terms = React.lazy(() => import('./pages/Terms'));
 
 // Feature page import
 const FeaturePageTemplate = React.lazy(() => import('./pages/features/FeaturePageTemplate'));
+const FeatureDetail = React.lazy(() => import('./pages/features/FeatureDetail'));
 
 function App() {
   return (
@@ -70,8 +71,8 @@ function App() {
                 <Route path="/profile" element={<Layout><ClientProfile /></Layout>} />
                 <Route path="/auth" element={<Auth />} />
                 
-                {/* Feature pages - using the :featureId parameter instead of hardcoding */}
-                <Route path="/features/:featureId" element={<Layout><FeaturePageTemplate /></Layout>} />
+                {/* Feature pages - можно использовать как старый вариант, так и новый FeatureDetail */}
+                <Route path="/features/:featureId" element={<Layout><FeatureDetail /></Layout>} />
                 
                 {/* Redirect unknown routes to home */}
                 <Route path="*" element={<Navigate to="/" replace />} />

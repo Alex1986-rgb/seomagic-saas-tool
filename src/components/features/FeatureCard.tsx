@@ -7,34 +7,36 @@ import { Button } from '@/components/ui/button';
 import { FeatureCardProps } from './types';
 
 const FeatureCard: React.FC<FeatureCardProps> = ({ icon, title, description, link }) => {
-  // If no link is provided, create one based on the title
+  // Если не предоставлена ссылка, создаем на основе заголовка
   const pageLink = link || `/features/${title.toLowerCase().replace(/\s+/g, '-')}`;
+  
+  const itemVariant = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { opacity: 1, y: 0 }
+  };
   
   return (
     <motion.div 
-      initial={{ opacity: 0, y: 20 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "-50px" }}
-      transition={{ duration: 0.5 }}
-      whileHover={{ y: -5, scale: 1.02 }}
-      className="glass-panel p-6 h-full relative overflow-hidden group"
+      variants={itemVariant}
+      transition={{ duration: 0.4 }}
+      whileHover={{ y: -5, boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.1)" }}
+      className="glass-panel p-4 rounded-lg h-full flex flex-col justify-between group relative overflow-hidden"
     >
-      <div className="mb-5 p-3 bg-primary/10 rounded-full inline-block relative z-10">{icon}</div>
-      <h3 className="text-xl font-semibold mb-3 relative z-10">{title}</h3>
-      <p className="text-muted-foreground relative z-10">{description}</p>
-      
-      <div className="mt-6 relative z-10">
-        <Link to={pageLink}>
-          <Button variant="link" className="p-0 h-auto text-primary flex items-center gap-1 hover:gap-2 transition-all">
-            <span>Подробнее</span>
-            <ChevronRight size={16} className="transition-transform duration-200" />
-          </Button>
-        </Link>
+      <div>
+        <div className="mb-3 p-2 bg-primary/10 rounded-full inline-block">{icon}</div>
+        <h3 className="text-lg font-medium mb-2">{title}</h3>
+        <p className="text-sm text-muted-foreground line-clamp-2">{description}</p>
       </div>
       
-      {/* Decorative elements */}
+      <Link to={pageLink} className="mt-3 inline-block">
+        <Button variant="link" className="p-0 h-auto text-primary flex items-center gap-1 hover:gap-2 transition-all">
+          <span>Подробнее</span>
+          <ChevronRight size={16} className="transition-transform duration-200" />
+        </Button>
+      </Link>
+      
+      {/* Декоративные элементы */}
       <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-      <div className="absolute -bottom-24 -right-24 w-48 h-48 bg-primary/5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
     </motion.div>
   );
 };

@@ -2,7 +2,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { FeatureCategoryProps } from './types';
-import FeatureCard from './FeatureCard';
+import FeatureGrid from './FeatureGrid';
 
 const FeatureCategorySection: React.FC<FeatureCategoryProps> = ({ title, features }) => {
   return (
@@ -24,17 +24,7 @@ const FeatureCategorySection: React.FC<FeatureCategoryProps> = ({ title, feature
         <span className="absolute -bottom-1 left-0 w-1/3 h-[2px] bg-primary/60 rounded-full"></span>
       </motion.h3>
       
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
-        {features.map((feature, index) => (
-          <FeatureCard
-            key={`${title}-${index}`}
-            icon={feature.icon}
-            title={feature.title}
-            description={feature.description}
-            link={feature.link}
-          />
-        ))}
-      </div>
+      <FeatureGrid features={features} />
     </motion.div>
   );
 };
