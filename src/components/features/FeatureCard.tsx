@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { FeatureCardProps } from './types';
 
 const FeatureCard: React.FC<FeatureCardProps> = ({ icon, title, description, link }) => {
-  // Если ссылка не указана, создадим ее на основе названия
+  // If no link is provided, create one based on the title
   const pageLink = link || `/features/${title.toLowerCase().replace(/\s+/g, '-')}`;
   
   return (
@@ -32,7 +32,7 @@ const FeatureCard: React.FC<FeatureCardProps> = ({ icon, title, description, lin
         </Link>
       </div>
       
-      {/* Декоративные элементы */}
+      {/* Decorative elements */}
       <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
       <div className="absolute -bottom-24 -right-24 w-48 h-48 bg-primary/5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
     </motion.div>

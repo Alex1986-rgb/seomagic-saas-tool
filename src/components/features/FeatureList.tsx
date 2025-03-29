@@ -1,19 +1,27 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import FeatureCategory from './FeatureCategory';
 import { getFeaturesByCategory, featuresData } from './featuresData';
+import FeatureCategorySection from './FeatureCategorySection';
+import FeatureCard from './FeatureCard';
 
 const FeatureList: React.FC = () => {
   const categorizedFeatures = getFeaturesByCategory();
   const categories = Object.keys(categorizedFeatures);
 
+  // Animation settings that can be reused
+  const containerAnimation = {
+    initial: { opacity: 0 },
+    animate: { opacity: 1 },
+    transition: { duration: 0.5, staggerChildren: 0.1 }
+  };
+
   return (
     <div className="space-y-16">
       {categories.length > 0 ? (
-        // Если есть категории, показываем их
-        categories.map((category, index) => (
-          <FeatureCategory 
+        // If there are categories, show them
+        categories.map((category) => (
+          <FeatureCategorySection 
             key={category} 
             title={category}
             features={categorizedFeatures[category].map(feature => ({
@@ -25,27 +33,21 @@ const FeatureList: React.FC = () => {
           />
         ))
       ) : (
-        // Если категорий нет, показываем все функции в одной сетке
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+        // If there are no categories, show all features in a single grid
+        <motion.div 
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8"
+          {...containerAnimation}
+        >
           {featuresData.map((feature, index) => (
-            <motion.div
-              key={index}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: index * 0.1 }}
-            >
-              {React.createElement(FeatureCategory, {
-                title: '',
-                features: [{
-                  icon: <feature.icon className="w-6 h-6 text-primary" />,
-                  title: feature.title,
-                  description: feature.description,
-                  link: feature.link
-                }]
-              })}
-            </motion.div>
+            <FeatureCard
+              key={`feature-${index}`}
+              icon={<feature.icon className="w-6 h-6 text-primary" />}
+              title={feature.title}
+              description={feature.description}
+              link={feature.link}
+            />
           ))}
-        </div>
+        </motion.div>
       )}
     </div>
   );
