@@ -27,7 +27,7 @@ const FeatureCard: React.FC<FeatureCardProps> = ({ icon, title, description, lin
         <Link to={pageLink}>
           <Button variant="link" className="p-0 h-auto text-primary flex items-center gap-1 hover:gap-2 transition-all">
             <span>Подробнее</span>
-            <ChevronRight size={16} className="group-hover:translate-x-1 transition-transform duration-200" />
+            <ChevronRight size={16} className="transition-transform duration-200" />
           </Button>
         </Link>
       </div>

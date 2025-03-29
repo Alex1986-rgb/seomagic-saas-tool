@@ -24,13 +24,7 @@ const FeatureCategorySection: React.FC<FeatureCategoryProps> = ({ title, feature
         <span className="absolute -bottom-1 left-0 w-1/3 h-[2px] bg-primary/60 rounded-full"></span>
       </motion.h3>
       
-      <motion.div 
-        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8"
-        initial={{ opacity: 0 }}
-        whileInView={{ opacity: 1 }}
-        viewport={{ once: true }}
-        transition={{ duration: 0.5, staggerChildren: 0.1 }}
-      >
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
         {features.map((feature, index) => (
           <FeatureCard
             key={`${title}-${index}`}
@@ -40,7 +34,7 @@ const FeatureCategorySection: React.FC<FeatureCategoryProps> = ({ title, feature
             link={feature.link}
           />
         ))}
-      </motion.div>
+      </div>
     </motion.div>
   );
 };
