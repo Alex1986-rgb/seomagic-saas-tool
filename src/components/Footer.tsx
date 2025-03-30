@@ -50,9 +50,14 @@ const Footer: React.FC = () => {
         </div>
         
         <div className="border-t border-border mt-12 pt-8 flex flex-col md:flex-row justify-between items-center">
-          <p className="text-sm text-muted-foreground">
-            &copy; {new Date().getFullYear()} SeoMarket. Все права защищены.
-          </p>
+          <div className="flex flex-col">
+            <p className="text-sm text-muted-foreground mb-2">
+              &copy; {new Date().getFullYear()} SeoMarket. Все права защищены.
+            </p>
+            <p className="text-xs text-muted-foreground">
+              Разработчик и веб-дизайнер: Kyrlan Alexandr
+            </p>
+          </div>
           <div className="flex space-x-6 mt-4 md:mt-0">
             <SocialLink href="#" aria-label="Twitter">
               <svg
