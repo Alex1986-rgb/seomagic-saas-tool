@@ -13,6 +13,7 @@ const FeatureCategorySection: React.FC<FeatureCategoryProps> = ({ title, feature
       viewport={{ once: true }}
       transition={{ duration: 0.5 }}
       layout
+      key={`feature-category-${title || 'main'}`}
     >
       <AnimatePresence mode="wait">
         {title && (
@@ -23,6 +24,7 @@ const FeatureCategorySection: React.FC<FeatureCategoryProps> = ({ title, feature
             viewport={{ once: true }}
             transition={{ duration: 0.5 }}
             key={`title-${title}`}
+            layoutId={`category-title-${title.replace(/\s+/g, '-')}`}
           >
             {title}
             <span className="absolute -bottom-1 left-0 w-1/3 h-[2px] bg-primary/60 rounded-full"></span>

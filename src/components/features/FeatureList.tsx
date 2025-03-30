@@ -14,6 +14,7 @@ const FeatureList: React.FC = () => {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.5 }}
+        key="feature-list-container"
       >
         <FeatureGrid 
           features={allFeatures.map(feature => ({
