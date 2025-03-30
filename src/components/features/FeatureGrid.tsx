@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { FeatureGridProps } from './types';
 import FeatureCard from './FeatureCard';
 
@@ -17,27 +17,25 @@ const FeatureGrid: React.FC<FeatureGridProps> = ({ features }) => {
   };
   
   return (
-    <AnimatePresence mode="wait">
-      <motion.div 
-        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5"
-        variants={containerVariants}
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true }}
-        layout
-        key="feature-grid-container"
-      >
-        {features.map((feature, index) => (
-          <FeatureCard
-            key={`feature-${feature.title}-${index}`}
-            icon={feature.icon}
-            title={feature.title}
-            description={feature.description}
-            link={feature.link}
-          />
-        ))}
-      </motion.div>
-    </AnimatePresence>
+    <motion.div 
+      className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5"
+      variants={containerVariants}
+      initial="hidden"
+      whileInView="visible"
+      viewport={{ once: true }}
+      layout="position"
+      key="feature-grid-container"
+    >
+      {features.map((feature, index) => (
+        <FeatureCard
+          key={`feature-${feature.title.replace(/\s+/g, '-')}-${index}`}
+          icon={feature.icon}
+          title={feature.title}
+          description={feature.description}
+          link={feature.link}
+        />
+      ))}
+    </motion.div>
   );
 };
 

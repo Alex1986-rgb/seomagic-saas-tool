@@ -18,7 +18,8 @@ const FeatureCard: React.FC<FeatureCardProps> = ({ icon, title, description, lin
       transition: { 
         type: "spring",
         stiffness: 100,
-        damping: 15
+        damping: 15,
+        duration: 0.4
       }
     }
   };
