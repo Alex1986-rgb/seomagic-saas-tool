@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { FeatureCategoryProps } from './types';
 import FeatureGrid from './FeatureGrid';
 
@@ -12,19 +12,23 @@ const FeatureCategorySection: React.FC<FeatureCategoryProps> = ({ title, feature
       whileInView={{ opacity: 1 }}
       viewport={{ once: true }}
       transition={{ duration: 0.5 }}
+      layout
     >
-      {title && (
-        <motion.h3 
-          className="text-2xl font-semibold mb-6 text-foreground/90 relative inline-block"
-          initial={{ opacity: 0, x: -20 }}
-          whileInView={{ opacity: 1, x: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.5 }}
-        >
-          {title}
-          <span className="absolute -bottom-1 left-0 w-1/3 h-[2px] bg-primary/60 rounded-full"></span>
-        </motion.h3>
-      )}
+      <AnimatePresence mode="wait">
+        {title && (
+          <motion.h3 
+            className="text-2xl font-semibold mb-6 text-foreground/90 relative inline-block"
+            initial={{ opacity: 0, x: -20 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5 }}
+            key={`title-${title}`}
+          >
+            {title}
+            <span className="absolute -bottom-1 left-0 w-1/3 h-[2px] bg-primary/60 rounded-full"></span>
+          </motion.h3>
+        )}
+      </AnimatePresence>
       
       <FeatureGrid features={features} />
     </motion.div>

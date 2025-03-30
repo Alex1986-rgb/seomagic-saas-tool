@@ -21,6 +21,7 @@ const FeatureCard: React.FC<FeatureCardProps> = ({ icon, title, description, lin
       transition={{ duration: 0.4 }}
       whileHover={{ y: -5, boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.1)" }}
       className="glass-panel p-4 rounded-lg h-full flex flex-col justify-between group relative overflow-hidden"
+      layoutId={`feature-card-${title}`}
     >
       <div>
         <div className="mb-3 p-2 bg-primary/10 rounded-full inline-block">{icon}</div>
@@ -29,7 +30,10 @@ const FeatureCard: React.FC<FeatureCardProps> = ({ icon, title, description, lin
       </div>
       
       <Link to={pageLink} className="mt-3 inline-block">
-        <Button variant="link" className="p-0 h-auto text-primary flex items-center gap-1 hover:gap-2 transition-all">
+        <Button 
+          variant="link" 
+          className="p-0 h-auto text-primary flex items-center gap-1 hover:gap-2 transition-all"
+        >
           <span>Подробнее</span>
           <ChevronRight size={16} className="transition-transform duration-200" />
         </Button>

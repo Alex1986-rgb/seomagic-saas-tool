@@ -23,6 +23,7 @@ const FeatureGrid: React.FC<FeatureGridProps> = ({ features }) => {
       initial="hidden"
       whileInView="visible"
       viewport={{ once: true }}
+      layout
     >
       {features.map((feature, index) => (
         <FeatureCard
