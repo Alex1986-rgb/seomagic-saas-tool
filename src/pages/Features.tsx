@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Search } from 'lucide-react';
 import FeatureGrid from '@/components/features/FeatureGrid';
+import { Feature } from '@/components/features/types';
 
 const Features: React.FC = () => {
   const categorizedFeatures = getFeaturesByCategory();
@@ -15,29 +16,13 @@ const Features: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState<string>('');
   
   // Функция для фильтрации функций по поисковому запросу
-  const filterFeatures = () => {
+  const filterFeatures = (): Feature[] => {
     if (activeCategory === 'all' && !searchQuery) {
       // Возвращаем все функции
-      return Object.values(categorizedFeatures).flat().map(feature => {
-        const Icon = feature.icon;
-        return {
-          icon: <Icon className="w-6 h-6 text-primary" />,
-          title: feature.title,
-          description: feature.description,
-          link: feature.link || `/features/${feature.title.toLowerCase().replace(/\s+/g, '-')}`
-        };
-      });
+      return Object.values(categorizedFeatures).flat();
     } else if (activeCategory !== 'all' && !searchQuery) {
       // Возвращаем функции только выбранной категории
-      return categorizedFeatures[activeCategory].map(feature => {
-        const Icon = feature.icon;
-        return {
-          icon: <Icon className="w-6 h-6 text-primary" />,
-          title: feature.title,
-          description: feature.description,
-          link: feature.link || `/features/${feature.title.toLowerCase().replace(/\s+/g, '-')}`
-        };
-      });
+      return categorizedFeatures[activeCategory];
     } else {
       // Фильтруем функции по поисковому запросу
       let featuresToSearch = activeCategory === 'all' 
@@ -48,16 +33,7 @@ const Features: React.FC = () => {
         .filter(feature => 
           feature.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
           feature.description.toLowerCase().includes(searchQuery.toLowerCase())
-        )
-        .map(feature => {
-          const Icon = feature.icon;
-          return {
-            icon: <Icon className="w-6 h-6 text-primary" />,
-            title: feature.title,
-            description: feature.description,
-            link: feature.link || `/features/${feature.title.toLowerCase().replace(/\s+/g, '-')}`
-          };
-        });
+        );
     }
   };
   

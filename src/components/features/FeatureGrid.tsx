@@ -31,12 +31,13 @@ const FeatureGrid: React.FC<FeatureGridProps> = ({ features }) => {
         {features.map((feature, index) => {
           // Create a stable, unique identifier for each feature
           const featureId = `feature-${feature.title.replace(/\s+/g, '-').toLowerCase()}-${index}`;
+          const Icon = feature.icon;
           
           return (
             <FeatureCard
               key={featureId}
               layoutId={featureId}
-              icon={feature.icon}
+              icon={<Icon className="w-6 h-6 text-primary" />}
               title={feature.title}
               description={feature.description}
               link={feature.link}
