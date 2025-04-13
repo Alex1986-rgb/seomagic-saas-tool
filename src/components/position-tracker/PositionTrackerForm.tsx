@@ -81,11 +81,16 @@ export const PositionTrackerForm = ({ onSearchComplete }) => {
     
     setIsLoading(true);
     try {
-      // Подготавливаем данные для отправки
+      // Подготавливаем данные для отправки с явным указанием domain как обязательного поля
       const searchData = {
-        ...values,
-        keywords,
-        timestamp: new Date().toISOString(),
+        domain: values.domain, // Explicitly include the domain field
+        searchEngine: values.searchEngine,
+        region: values.region,
+        depth: values.depth,
+        scanFrequency: values.scanFrequency,
+        keywords: keywords,
+        useProxy: values.useProxy,
+        timestamp: new Date().toISOString()
       };
       
       // Вызываем сервис проверки позиций

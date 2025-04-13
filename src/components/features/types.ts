@@ -9,6 +9,16 @@ export interface Feature {
   category?: string;
 }
 
+export interface FeatureData {
+  icon: ReactNode;
+  title: string;
+  description: string;
+  link?: string;
+  category?: string;
+  content?: string;
+  benefits?: string[];
+}
+
 export interface FeatureGridProps {
   features: Feature[];
 }

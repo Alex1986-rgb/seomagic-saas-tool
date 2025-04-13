@@ -1,4 +1,3 @@
-
 import { getHistoricalData } from './positionHistory';
 
 // Интерфейсы для типизации
@@ -28,6 +27,8 @@ export interface PositionCheckParams {
   region?: string;
   depth: number;
   scanFrequency: string;
+  useProxy?: boolean;
+  timestamp?: string;
 }
 
 // Моковые данные для демонстрации
@@ -61,7 +62,7 @@ export const checkPositions = async (data: PositionCheckParams): Promise<Positio
   await new Promise(resolve => setTimeout(resolve, 2000));
   
   // Получаем данные из параметров
-  const { domain, keywords, searchEngine, region, depth, scanFrequency } = data;
+  const { domain, keywords, searchEngine, region, depth, scanFrequency, useProxy, timestamp } = data;
   
   let allResults: KeywordPosition[] = [];
   
@@ -84,7 +85,7 @@ export const checkPositions = async (data: PositionCheckParams): Promise<Positio
   // Формируем результирующий объект
   const result: PositionData = {
     domain,
-    timestamp: new Date().toISOString(),
+    timestamp: timestamp || new Date().toISOString(),
     date: new Date().toISOString(),
     keywords: allResults,
     searchEngine,
