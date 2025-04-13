@@ -107,6 +107,9 @@ const Footer: React.FC = () => {
           </div>
         </div>
       </div>
+      <div className="bg-background/80 text-center py-2 text-xs text-muted-foreground">
+        Разработчик и веб-дизайнер: Kyrlan Alexandr
+      </div>
     </footer>
   );
 };

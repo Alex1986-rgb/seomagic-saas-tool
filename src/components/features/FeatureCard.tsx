@@ -6,7 +6,13 @@ import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { FeatureCardProps } from './types';
 
-const FeatureCard: React.FC<FeatureCardProps> = ({ icon, title, description, link }) => {
+const FeatureCard: React.FC<FeatureCardProps> = ({ 
+  icon, 
+  title, 
+  description, 
+  link,
+  layoutId 
+}) => {
   // If no link is provided, create one based on the title
   const pageLink = link || `/features/${title.toLowerCase().replace(/\s+/g, '-')}`;
   
@@ -27,7 +33,7 @@ const FeatureCard: React.FC<FeatureCardProps> = ({ icon, title, description, lin
   return (
     <motion.div 
       variants={itemVariant}
-      layoutId={`feature-card-${title.replace(/\s+/g, '-')}`}
+      layoutId={layoutId}
       className="glass-panel p-4 rounded-lg h-full flex flex-col justify-between group relative overflow-hidden"
       whileHover={{ 
         y: -5, 
@@ -54,7 +60,7 @@ const FeatureCard: React.FC<FeatureCardProps> = ({ icon, title, description, lin
       {/* Decorative elements */}
       <motion.div 
         className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" 
-        layoutId={`feature-card-bg-${title.replace(/\s+/g, '-')}`}
+        layoutId={`${layoutId}-bg`}
       />
     </motion.div>
   );

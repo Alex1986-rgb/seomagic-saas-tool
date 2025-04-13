@@ -21,6 +21,15 @@ export interface PositionData {
   previousResults?: PositionData[];
 }
 
+export interface PositionCheckParams {
+  domain: string;
+  keywords: string[];
+  searchEngine: string;
+  region?: string;
+  depth: number;
+  scanFrequency: string;
+}
+
 // Моковые данные для демонстрации
 const mockSearchResults = (domain: string, keywords: string[], searchEngine: string, depth: number) => {
   // Имитируем проверку позиций в поисковой системе
@@ -47,7 +56,7 @@ const mockSearchResults = (domain: string, keywords: string[], searchEngine: str
 };
 
 // Функция проверки позиций
-export const checkPositions = async (data: any): Promise<PositionData> => {
+export const checkPositions = async (data: PositionCheckParams): Promise<PositionData> => {
   // Эмулируем задержку, как будто выполняется реальный запрос
   await new Promise(resolve => setTimeout(resolve, 2000));
   

@@ -1,11 +1,20 @@
 
-import React, { useState } from 'react';
+import React, { useState, lazy, Suspense } from 'react';
 import { motion } from 'framer-motion';
 import { VideoIcon, Star, ArrowRight, BarChart2, Music, Monitor } from 'lucide-react';
-import VideoPlayer from './VideoPlayer';
-import VideoInfo from './VideoInfo';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+
+// Lazy loaded components
+const VideoPlayer = lazy(() => import('./VideoPlayer'));
+const VideoInfo = lazy(() => import('./VideoInfo'));
+
+// Loading component
+const LoadingPlaceholder = () => (
+  <div className="w-full h-full aspect-video bg-black flex items-center justify-center">
+    <div className="spinner-gradient"></div>
+  </div>
+);
 
 const VideoDemo: React.FC = () => {
   const [audioEnabled, setAudioEnabled] = useState(false);
@@ -94,8 +103,10 @@ const VideoDemo: React.FC = () => {
                   </Button>
                 </div>
                 
-                <VideoPlayer audioEnabled={audioEnabled} />
-                <VideoInfo />
+                <Suspense fallback={<LoadingPlaceholder />}>
+                  <VideoPlayer audioEnabled={audioEnabled} />
+                  <VideoInfo />
+                </Suspense>
                 
                 {/* Декоративные элементы */}
                 <div className="absolute top-5 left-5 text-primary/80">
