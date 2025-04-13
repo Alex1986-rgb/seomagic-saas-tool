@@ -21,15 +21,18 @@ const FeatureCategory: React.FC<FeatureCategoryProps> = ({ title, features }) =>
       )}
       
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
-        {features.map((feature, index) => (
-          <FeatureCard
-            key={`${title || 'feature'}-${index}`}
-            icon={feature.icon}
-            title={feature.title}
-            description={feature.description}
-            link={feature.link}
-          />
-        ))}
+        {features.map((feature, index) => {
+          const Icon = feature.icon;
+          return (
+            <FeatureCard
+              key={`${title || 'feature'}-${index}`}
+              icon={<Icon className="h-6 w-6 text-primary" />}
+              title={feature.title}
+              description={feature.description}
+              link={feature.link}
+            />
+          );
+        })}
       </div>
     </div>
   );
