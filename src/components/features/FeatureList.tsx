@@ -16,12 +16,15 @@ const FeatureList: React.FC = () => {
       key="feature-list-container"
     >
       <FeatureGrid 
-        features={allFeatures.map(feature => ({
-          icon: <feature.icon className="w-6 h-6 text-primary" />,
-          title: feature.title,
-          description: feature.description,
-          link: feature.link || `/features/${feature.title.toLowerCase().replace(/\s+/g, '-')}`
-        }))}
+        features={allFeatures.map(feature => {
+          const Icon = feature.icon;
+          return {
+            icon: <Icon className="w-6 h-6 text-primary" />,
+            title: feature.title,
+            description: feature.description,
+            link: feature.link || `/features/${feature.title.toLowerCase().replace(/\s+/g, '-')}`
+          };
+        })}
       />
     </motion.div>
   );

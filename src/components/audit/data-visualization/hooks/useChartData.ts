@@ -21,7 +21,7 @@ export const useChartData = ({ data, isAnimating, showAfter }: UseChartDataProps
   useEffect(() => {
     // Prepare initial data (before values)
     const initialData = data.map((item) => ({
-      name: item.category, // Using 'category' property instead of 'name'
+      name: item.category, // Using 'category' property as the name for chart
       before: isAnimating ? item.before : 0,
       amt: item.before
     }));
@@ -31,7 +31,7 @@ export const useChartData = ({ data, isAnimating, showAfter }: UseChartDataProps
     // Add 'after' values when animation reaches that stage
     if (showAfter) {
       const completeData = data.map((item) => ({
-        name: item.category, // Using 'category' property instead of 'name'
+        name: item.category, // Using 'category' property as the name for chart
         before: item.before,
         after: item.after,
         amt: Math.max(item.before, item.after)

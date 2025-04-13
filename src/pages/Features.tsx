@@ -18,20 +18,26 @@ const Features: React.FC = () => {
   const filterFeatures = () => {
     if (activeCategory === 'all' && !searchQuery) {
       // Возвращаем все функции
-      return Object.values(categorizedFeatures).flat().map(feature => ({
-        icon: <feature.icon className="w-6 h-6 text-primary" />,
-        title: feature.title,
-        description: feature.description,
-        link: feature.link || `/features/${feature.title.toLowerCase().replace(/\s+/g, '-')}`
-      }));
+      return Object.values(categorizedFeatures).flat().map(feature => {
+        const Icon = feature.icon;
+        return {
+          icon: <Icon className="w-6 h-6 text-primary" />,
+          title: feature.title,
+          description: feature.description,
+          link: feature.link || `/features/${feature.title.toLowerCase().replace(/\s+/g, '-')}`
+        };
+      });
     } else if (activeCategory !== 'all' && !searchQuery) {
       // Возвращаем функции только выбранной категории
-      return categorizedFeatures[activeCategory].map(feature => ({
-        icon: <feature.icon className="w-6 h-6 text-primary" />,
-        title: feature.title,
-        description: feature.description,
-        link: feature.link || `/features/${feature.title.toLowerCase().replace(/\s+/g, '-')}`
-      }));
+      return categorizedFeatures[activeCategory].map(feature => {
+        const Icon = feature.icon;
+        return {
+          icon: <Icon className="w-6 h-6 text-primary" />,
+          title: feature.title,
+          description: feature.description,
+          link: feature.link || `/features/${feature.title.toLowerCase().replace(/\s+/g, '-')}`
+        };
+      });
     } else {
       // Фильтруем функции по поисковому запросу
       let featuresToSearch = activeCategory === 'all' 
@@ -43,12 +49,15 @@ const Features: React.FC = () => {
           feature.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
           feature.description.toLowerCase().includes(searchQuery.toLowerCase())
         )
-        .map(feature => ({
-          icon: <feature.icon className="w-6 h-6 text-primary" />,
-          title: feature.title,
-          description: feature.description,
-          link: feature.link || `/features/${feature.title.toLowerCase().replace(/\s+/g, '-')}`
-        }));
+        .map(feature => {
+          const Icon = feature.icon;
+          return {
+            icon: <Icon className="w-6 h-6 text-primary" />,
+            title: feature.title,
+            description: feature.description,
+            link: feature.link || `/features/${feature.title.toLowerCase().replace(/\s+/g, '-')}`
+          };
+        });
     }
   };
   
