@@ -2,7 +2,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
-import NetworkStatus from './components/NetworkStatus';
 import './index.css';
 
 // Add preconnect links for external resources
@@ -22,10 +21,10 @@ preconnectLinks.forEach(link => {
 });
 
 // Initialize the app with React 18's createRoot
-ReactDOM.createRoot(document.getElementById('root')!).render(
+const root = ReactDOM.createRoot(document.getElementById('root')!);
+root.render(
   <React.StrictMode>
     <App />
-    <NetworkStatus />
   </React.StrictMode>
 );
 
