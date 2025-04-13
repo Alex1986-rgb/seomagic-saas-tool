@@ -17,7 +17,6 @@ import Index from './pages/Index';
 import ClientProfile from './pages/ClientProfile';
 import Auth from './pages/Auth';
 import Features from './pages/Features';
-import NotFound from './pages/NotFound';
 
 // Lazy load non-critical pages for better performance
 const SiteAudit = React.lazy(() => import('./pages/SiteAudit'));
@@ -40,10 +39,10 @@ const FeatureDetail = React.lazy(() => import('./pages/features/FeatureDetail'))
 function App() {
   return (
     <HelmetProvider>
+      <SEO />
       <AppErrorBoundary>
         <ThemeProvider>
           <Router>
-            <SEO />
             <Suspense fallback={<LoadingSpinner />}>
               <Routes>
                 {/* Make sure the Index page is the default route */}
@@ -72,15 +71,15 @@ function App() {
                 <Route path="/profile" element={<Layout><ClientProfile /></Layout>} />
                 <Route path="/auth" element={<Auth />} />
                 
-                {/* Feature pages */}
+                {/* Feature pages - можно использовать как старый вариант, так и новый FeatureDetail */}
                 <Route path="/features/:featureId" element={<Layout><FeatureDetail /></Layout>} />
                 
-                {/* Not Found route - should be last */}
-                <Route path="*" element={<NotFound />} />
+                {/* Redirect unknown routes to home */}
+                <Route path="*" element={<Navigate to="/" replace />} />
               </Routes>
             </Suspense>
-            <Toaster />
           </Router>
+          <Toaster />
         </ThemeProvider>
       </AppErrorBoundary>
     </HelmetProvider>
