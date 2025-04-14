@@ -21,7 +21,7 @@ const SeoAuditResults: React.FC<SeoAuditResultsProps> = ({ url }) => {
       return;
     }
 
-    // Small delay to ensure proper initialization
+    // Небольшая задержка для обеспечения корректной инициализации
     const timer = setTimeout(() => {
       setIsReady(true);
     }, 100);

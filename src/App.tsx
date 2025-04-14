@@ -18,7 +18,6 @@ import ClientProfile from './pages/ClientProfile';
 import Auth from './pages/Auth';
 import Features from './pages/Features';
 import NotFound from './pages/NotFound';
-import Audit from './pages/Audit';
 
 // Lazy load non-critical pages for better performance
 const SiteAudit = React.lazy(() => import('./pages/SiteAudit'));
@@ -48,10 +47,9 @@ function App() {
             <Suspense fallback={<LoadingSpinner />}>
               <Routes>
                 {/* Make sure the Index page is the default route */}
-                <Route path="/" element={<Index />} />
+                <Route path="/" element={<Layout><Index /></Layout>} />
                 <Route path="/dashboard" element={<Layout><Dashboard /></Layout>} />
-                <Route path="/audit" element={<Audit />} />
-                <Route path="/site-audit" element={<SiteAudit />} />
+                <Route path="/audit" element={<Layout><SiteAudit /></Layout>} />
                 <Route path="/positions" element={<Layout><PositionTracking /></Layout>} />
                 <Route path="/position-tracker" element={<Layout><PositionTracker /></Layout>} />
                 <Route path="/history" element={<Layout><AuditHistory /></Layout>} />
