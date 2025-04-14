@@ -47,15 +47,18 @@ const FeatureCard: React.FC<FeatureCardProps> = ({
         <p className="text-sm text-muted-foreground line-clamp-2">{description}</p>
       </div>
       
-      <Link to={pageLink} className="mt-3 inline-block w-full">
+      <div className="mt-3 w-full">
         <Button 
           variant="link" 
           className="p-0 h-auto text-primary flex items-center gap-1 hover:gap-2 transition-all"
+          asChild
         >
-          <span>Подробнее</span>
-          <ChevronRight size={16} className="transition-transform duration-200" />
+          <Link to={pageLink}>
+            <span>Подробнее</span>
+            <ChevronRight size={16} className="transition-transform duration-200" />
+          </Link>
         </Button>
-      </Link>
+      </div>
       
       {/* Decorative elements */}
       <motion.div 
