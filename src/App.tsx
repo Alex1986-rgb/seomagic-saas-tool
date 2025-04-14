@@ -37,12 +37,9 @@ const Terms = React.lazy(() => import('./pages/Terms'));
 const FeaturePageTemplate = React.lazy(() => import('./pages/features/FeaturePageTemplate'));
 const FeatureDetail = React.lazy(() => import('./pages/features/FeatureDetail'));
 
-// Use helmetContext to ensure proper context is passed to all components
-const helmetContext = {};
-
 function App() {
   return (
-    <HelmetProvider context={helmetContext}>
+    <HelmetProvider>
       <AppErrorBoundary>
         <ThemeProvider>
           <Router>
@@ -78,12 +75,12 @@ function App() {
                 {/* Feature pages */}
                 <Route path="/features/:featureId" element={<Layout><FeatureDetail /></Layout>} />
                 
-                {/* 404 Not Found page */}
+                {/* Not Found route - should be last */}
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </Suspense>
+            <Toaster />
           </Router>
-          <Toaster />
         </ThemeProvider>
       </AppErrorBoundary>
     </HelmetProvider>

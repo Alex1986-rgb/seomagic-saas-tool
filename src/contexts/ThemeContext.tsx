@@ -27,16 +27,17 @@ export function ThemeProvider({
   storageKey = 'vite-ui-theme',
   ...props
 }: ThemeProviderProps) {
-  // Check if we're in a browser environment before using useState with localStorage
-  const isBrowser = typeof window !== 'undefined';
-  
+  // Get the initial theme from localStorage if available
   const [theme, setTheme] = useState<Theme>(() => {
-    if (!isBrowser) return defaultTheme;
-    return (localStorage.getItem(storageKey) as Theme) || defaultTheme;
+    if (typeof window !== 'undefined') {
+      const savedTheme = localStorage.getItem(storageKey) as Theme;
+      return savedTheme || defaultTheme;
+    }
+    return defaultTheme;
   });
 
   useEffect(() => {
-    if (!isBrowser) return;
+    if (typeof window === 'undefined') return;
     
     const root = window.document.documentElement;
     root.classList.remove('light', 'dark');
@@ -52,15 +53,15 @@ export function ThemeProvider({
     }
 
     root.classList.add(theme);
-  }, [theme, isBrowser]);
+  }, [theme]);
 
   const value = {
     theme,
-    setTheme: (theme: Theme) => {
-      if (isBrowser) {
-        localStorage.setItem(storageKey, theme);
+    setTheme: (newTheme: Theme) => {
+      if (typeof window !== 'undefined') {
+        localStorage.setItem(storageKey, newTheme);
       }
-      setTheme(theme);
+      setTheme(newTheme);
     },
   };
 
