@@ -17,6 +17,7 @@ import Index from './pages/Index';
 import ClientProfile from './pages/ClientProfile';
 import Auth from './pages/Auth';
 import Features from './pages/Features';
+import NotFound from './pages/NotFound';
 
 // Lazy load non-critical pages for better performance
 const SiteAudit = React.lazy(() => import('./pages/SiteAudit'));
@@ -36,13 +37,16 @@ const Terms = React.lazy(() => import('./pages/Terms'));
 const FeaturePageTemplate = React.lazy(() => import('./pages/features/FeaturePageTemplate'));
 const FeatureDetail = React.lazy(() => import('./pages/features/FeatureDetail'));
 
+// Use helmetContext to ensure proper context is passed to all components
+const helmetContext = {};
+
 function App() {
   return (
-    <HelmetProvider>
-      <SEO />
+    <HelmetProvider context={helmetContext}>
       <AppErrorBoundary>
         <ThemeProvider>
           <Router>
+            <SEO />
             <Suspense fallback={<LoadingSpinner />}>
               <Routes>
                 {/* Make sure the Index page is the default route */}
@@ -71,11 +75,11 @@ function App() {
                 <Route path="/profile" element={<Layout><ClientProfile /></Layout>} />
                 <Route path="/auth" element={<Auth />} />
                 
-                {/* Feature pages - можно использовать как старый вариант, так и новый FeatureDetail */}
+                {/* Feature pages */}
                 <Route path="/features/:featureId" element={<Layout><FeatureDetail /></Layout>} />
                 
-                {/* Redirect unknown routes to home */}
-                <Route path="*" element={<Navigate to="/" replace />} />
+                {/* 404 Not Found page */}
+                <Route path="*" element={<NotFound />} />
               </Routes>
             </Suspense>
           </Router>

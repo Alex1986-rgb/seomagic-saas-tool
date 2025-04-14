@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 
 interface SEOProps {
@@ -17,7 +17,16 @@ export const SEO: React.FC<SEOProps> = ({
   canonicalUrl,
   ogImage = '/images/og-image.jpg'
 }) => {
-  const siteUrl = window.location.origin;
+  const [siteUrl, setSiteUrl] = useState('');
+  
+  useEffect(() => {
+    // Only access window in useEffect to ensure we're in browser environment
+    setSiteUrl(window.location.origin);
+  }, []);
+  
+  // Don't render anything during SSR or before client initialization
+  if (!siteUrl) return null;
+  
   const fullCanonicalUrl = canonicalUrl ? `${siteUrl}${canonicalUrl}` : window.location.href;
   
   return (
