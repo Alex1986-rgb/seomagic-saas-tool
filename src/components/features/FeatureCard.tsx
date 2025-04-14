@@ -13,7 +13,7 @@ const FeatureCard: React.FC<FeatureCardProps> = ({
   link,
   layoutId 
 }) => {
-  // If no link is provided, create one based on the title
+  // Если не предоставлена ссылка, создаем ее на основе заголовка
   const pageLink = link || `/features/${title.toLowerCase().replace(/\s+/g, '-')}`;
   
   const itemVariant = {
