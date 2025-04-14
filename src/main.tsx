@@ -21,14 +21,6 @@ preconnectLinks.forEach(link => {
   document.head.appendChild(linkEl);
 });
 
-// Create root element if it doesn't exist
-const rootElement = document.getElementById('root');
-if (!rootElement) {
-  const newRoot = document.createElement('div');
-  newRoot.id = 'root';
-  document.body.appendChild(newRoot);
-}
-
 // Initialize the app with React 18's createRoot
 const root = ReactDOM.createRoot(document.getElementById('root')!);
 
