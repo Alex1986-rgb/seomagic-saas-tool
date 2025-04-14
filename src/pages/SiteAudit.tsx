@@ -35,30 +35,32 @@ const SiteAudit: React.FC = () => {
     }
     
     // Завершаем загрузку в любом случае
-    setTimeout(() => setIsLoading(false), 500);
+    setIsLoading(false);
   }, [searchParams, toast]);
 
   return (
-    <div className="container mx-auto px-4 md:px-6 pt-24 md:pt-32 pb-12 md:pb-20">
-      <div className="max-w-6xl mx-auto">
-        <h1 className="text-2xl md:text-4xl font-bold mb-2 md:mb-4">SEO Аудит сайта</h1>
-        <p className="text-base md:text-lg text-muted-foreground mb-6 md:mb-8">
-          Полный анализ и рекомендации по оптимизации вашего сайта
-        </p>
-        
-        {isLoading ? (
-          <div className="flex justify-center items-center min-h-[300px]">
-            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
-          </div>
-        ) : error ? (
-          <div className="p-4 bg-destructive/10 text-destructive rounded-md">
-            {error}
-          </div>
-        ) : (
-          <SeoAuditResults url={url} />
-        )}
+    <Layout>
+      <div className="container mx-auto px-4 md:px-6 pt-24 md:pt-32 pb-12 md:pb-20">
+        <div className="max-w-6xl mx-auto">
+          <h1 className="text-2xl md:text-4xl font-bold mb-2 md:mb-4">SEO Аудит сайта</h1>
+          <p className="text-base md:text-lg text-muted-foreground mb-6 md:mb-8">
+            Полный анализ и рекомендации по оптимизации вашего сайта
+          </p>
+          
+          {isLoading ? (
+            <div className="flex justify-center items-center min-h-[300px]">
+              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+            </div>
+          ) : error ? (
+            <div className="p-4 bg-destructive/10 text-destructive rounded-md">
+              {error}
+            </div>
+          ) : (
+            <SeoAuditResults url={url} />
+          )}
+        </div>
       </div>
-    </div>
+    </Layout>
   );
 };
 
