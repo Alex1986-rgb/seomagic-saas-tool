@@ -19,7 +19,7 @@ const SiteAudit: React.FC = () => {
       try {
         // Validate URL format
         const formattedUrl = urlParam.startsWith('http') ? urlParam : `https://${urlParam}`;
-        new URL(formattedUrl);
+        new URL(formattedUrl); // This will throw if URL is invalid
         setUrl(urlParam);
         setError(null);
       } catch (err) {
@@ -31,10 +31,10 @@ const SiteAudit: React.FC = () => {
         });
       }
     } else {
-      setUrl('example.com'); // Демо-URL если параметр не предоставлен
+      setUrl('example.com'); // Demo URL if parameter not provided
     }
     
-    // Завершаем загрузку в любом случае
+    // Complete loading in any case
     setIsLoading(false);
   }, [searchParams, toast]);
 
