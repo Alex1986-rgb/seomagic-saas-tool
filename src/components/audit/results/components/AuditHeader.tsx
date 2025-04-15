@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Button } from "@/components/ui/button";
-import { RefreshCw, Download, Scan, Text } from 'lucide-react';
+import { RefreshCw, Download, Scan, Text, FileJson } from 'lucide-react';
 
 interface AuditHeaderProps {
   onRefresh: () => void;
@@ -9,6 +9,7 @@ interface AuditHeaderProps {
   isRefreshing: boolean;
   onDownloadSitemap?: () => void;
   onTogglePrompt?: () => void;
+  onExportJSON?: () => void;
   showPrompt?: boolean;
 }
 
@@ -18,11 +19,12 @@ const AuditHeader: React.FC<AuditHeaderProps> = ({
   isRefreshing, 
   onDownloadSitemap,
   onTogglePrompt,
+  onExportJSON,
   showPrompt = false
 }) => {
   return (
     <div className="flex flex-wrap gap-2 justify-between items-center mb-4">
-      <div className="flex gap-2">
+      <div className="flex flex-wrap gap-2">
         <Button 
           onClick={onRefresh} 
           variant="outline" 
@@ -51,6 +53,17 @@ const AuditHeader: React.FC<AuditHeaderProps> = ({
           >
             <Text className="h-4 w-4" />
             <span>{showPrompt ? 'Скрыть промпт' : 'Оптимизация контента'}</span>
+          </Button>
+        )}
+        
+        {onExportJSON && (
+          <Button 
+            onClick={onExportJSON} 
+            variant="outline" 
+            className="gap-2"
+          >
+            <FileJson className="h-4 w-4" />
+            <span>Экспорт JSON</span>
           </Button>
         )}
       </div>

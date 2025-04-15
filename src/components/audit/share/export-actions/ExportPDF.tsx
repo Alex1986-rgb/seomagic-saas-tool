@@ -1,66 +1,75 @@
 
 import React from 'react';
-import { FileText, Loader2 } from 'lucide-react';
+import { FileText } from 'lucide-react';
 import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
-import { AuditData } from '@/types/audit';
+import { useToast } from "@/hooks/use-toast";
 import { generateAuditPdf } from '@/utils/pdf/auditPdf';
-import { saveAs } from 'file-saver';
-import { cleanUrl, formatDate, showExportError, showExportSuccess } from '../export-utils';
+import { AuditData } from '@/types/audit';
+import { seoApiService } from '@/api/seoApiService';
 
 interface ExportPDFProps {
   auditData?: AuditData;
   url: string;
   isExporting: string | null;
-  setIsExporting: (state: string | null) => void;
+  setIsExporting: (value: string | null) => void;
+  taskId?: string | null;
 }
 
 const ExportPDF: React.FC<ExportPDFProps> = ({ 
   auditData, 
-  url,
-  isExporting,
-  setIsExporting
+  url, 
+  isExporting, 
+  setIsExporting,
+  taskId
 }) => {
+  const { toast } = useToast();
+  
   const handleExportPDF = async () => {
-    if (!auditData) {
-      showExportError();
-      return;
-    }
+    setIsExporting('pdf');
     
     try {
-      setIsExporting('pdf');
-      
-      const pdfBlob = await generateAuditPdf({auditData, url});
-      
-      if (!pdfBlob) throw new Error("Не удалось создать PDF");
-      
-      saveAs(pdfBlob, `audit-${cleanUrl(url)}-${formatDate(auditData.date)}.pdf`);
-      
-      showExportSuccess("PDF экспортирован", "Отчет успешно сохранен в формате PDF");
+      if (taskId) {
+        // Use backend API
+        await seoApiService.downloadReport(taskId);
+        
+        toast({
+          title: "PDF сохранен",
+          description: "PDF-отчет успешно сохранен",
+        });
+      } else if (auditData) {
+        // Use frontend implementation
+        await generateAuditPdf({ auditData, url });
+        
+        toast({
+          title: "PDF сохранен",
+          description: "PDF-отчет успешно сохранен на ваше устройство",
+        });
+      } else {
+        toast({
+          title: "Недостаточно данных",
+          description: "Для экспорта в PDF необходимы полные данные аудита",
+          variant: "destructive"
+        });
+      }
     } catch (error) {
-      console.error('Ошибка при экспорте PDF:', error);
-      showExportError("Не удалось сохранить PDF. Пожалуйста, попробуйте еще раз.");
+      console.error('Error generating PDF:', error);
+      toast({
+        title: "Ошибка экспорта",
+        description: "Произошла ошибка при создании PDF. Пожалуйста, попробуйте еще раз.",
+        variant: "destructive"
+      });
     } finally {
       setIsExporting(null);
     }
   };
-
+  
   return (
     <DropdownMenuItem 
       onClick={handleExportPDF}
-      disabled={isExporting !== null || !auditData}
-      className="flex items-center gap-2"
+      disabled={isExporting !== null}
     >
-      {isExporting === 'pdf' ? (
-        <>
-          <Loader2 className="h-4 w-4 animate-spin" />
-          <span>Подготовка PDF...</span>
-        </>
-      ) : (
-        <>
-          <FileText className="h-4 w-4" />
-          <span>Скачать PDF отчет</span>
-        </>
-      )}
+      <FileText className="mr-2 h-4 w-4" />
+      <span>{isExporting === 'pdf' ? 'Экспортируется...' : 'Экспорт PDF'}</span>
     </DropdownMenuItem>
   );
 };

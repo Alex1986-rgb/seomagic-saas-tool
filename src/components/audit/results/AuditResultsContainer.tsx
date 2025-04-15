@@ -37,10 +37,13 @@ const AuditResultsContainer: React.FC<AuditResultsContainerProps> = ({ url }) =>
     optimizationItems,
     isOptimized,
     contentPrompt,
+    taskId,
     loadAuditData,
     downloadSitemap,
     downloadOptimizedSite,
     generatePdfReportFile,
+    exportJSONData,
+    optimizeSiteContent,
     setContentOptimizationPrompt
   } = useAuditData(url);
 
@@ -71,6 +74,10 @@ const AuditResultsContainer: React.FC<AuditResultsContainerProps> = ({ url }) =>
 
   const toggleContentPrompt = () => {
     setShowPrompt(!showPrompt);
+  };
+
+  const handleOptimize = () => {
+    optimizeSiteContent();
   };
 
   if (isLoading) {
@@ -109,13 +116,15 @@ const AuditResultsContainer: React.FC<AuditResultsContainerProps> = ({ url }) =>
           isRefreshing={isRefreshing}
           onDownloadSitemap={sitemap ? downloadSitemap : undefined}
           onTogglePrompt={toggleContentPrompt}
+          onExportJSON={exportJSONData}
           showPrompt={showPrompt}
         />
         
         {showPrompt && (
           <ContentOptimizationPrompt 
             prompt={contentPrompt} 
-            setPrompt={setContentOptimizationPrompt} 
+            setPrompt={setContentOptimizationPrompt}
+            onOptimize={handleOptimize}
             className="mb-4"
           />
         )}
@@ -166,6 +175,7 @@ const AuditResultsContainer: React.FC<AuditResultsContainerProps> = ({ url }) =>
           historyData={historyData}
           url={url}
           onSelectAudit={handleSelectHistoricalAudit}
+          taskId={taskId}
         />
       </motion.div>
     </AnimatePresence>

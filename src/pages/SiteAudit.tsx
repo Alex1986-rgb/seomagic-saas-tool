@@ -14,6 +14,7 @@ const SiteAudit: React.FC = () => {
 
   useEffect(() => {
     const urlParam = searchParams.get('url');
+    const taskIdParam = searchParams.get('task_id');
     
     if (urlParam) {
       try {
@@ -22,6 +23,11 @@ const SiteAudit: React.FC = () => {
         new URL(formattedUrl);
         setUrl(urlParam);
         setError(null);
+        
+        // If task_id is present, store it in localStorage for this url
+        if (taskIdParam) {
+          localStorage.setItem(`task_id_${urlParam}`, taskIdParam);
+        }
       } catch (err) {
         setError("Предоставленный URL некорректен. Пожалуйста, попробуйте снова.");
         toast({

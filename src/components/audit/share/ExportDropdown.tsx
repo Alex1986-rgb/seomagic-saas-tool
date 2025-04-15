@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Download } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { 
@@ -25,15 +25,17 @@ interface ExportDropdownProps {
   url: string;
   historyItems?: AuditHistoryItem[];
   urls?: string[];
+  taskId?: string | null;
 }
 
 const ExportDropdown: React.FC<ExportDropdownProps> = ({ 
   auditData, 
   url,
   historyItems,
-  urls
+  urls,
+  taskId
 }) => {
-  const [isExporting, setIsExporting] = React.useState<string | null>(null);
+  const [isExporting, setIsExporting] = useState<string | null>(null);
   
   return (
     <DropdownMenu>
@@ -52,6 +54,7 @@ const ExportDropdown: React.FC<ExportDropdownProps> = ({
           url={url}
           isExporting={isExporting}
           setIsExporting={setIsExporting}
+          taskId={taskId}
         />
         
         <ExportErrorReport
@@ -60,6 +63,7 @@ const ExportDropdown: React.FC<ExportDropdownProps> = ({
           urls={urls}
           isExporting={isExporting}
           setIsExporting={setIsExporting}
+          taskId={taskId}
         />
         
         <ExportJSON
@@ -67,6 +71,7 @@ const ExportDropdown: React.FC<ExportDropdownProps> = ({
           url={url}
           isExporting={isExporting}
           setIsExporting={setIsExporting}
+          taskId={taskId}
         />
         
         <ExportHTML
@@ -74,6 +79,7 @@ const ExportDropdown: React.FC<ExportDropdownProps> = ({
           url={url}
           isExporting={isExporting}
           setIsExporting={setIsExporting}
+          taskId={taskId}
         />
         
         <ExportSitemap
@@ -82,6 +88,7 @@ const ExportDropdown: React.FC<ExportDropdownProps> = ({
           urls={urls}
           isExporting={isExporting}
           setIsExporting={setIsExporting}
+          taskId={taskId}
         />
         
         <DropdownMenuSeparator />
@@ -93,6 +100,7 @@ const ExportDropdown: React.FC<ExportDropdownProps> = ({
           url={url}
           isExporting={isExporting}
           setIsExporting={setIsExporting}
+          taskId={taskId}
         />
         
         <ExportHistoryPDF
@@ -100,6 +108,7 @@ const ExportDropdown: React.FC<ExportDropdownProps> = ({
           url={url}
           isExporting={isExporting}
           setIsExporting={setIsExporting}
+          taskId={taskId}
         />
       </DropdownMenuContent>
     </DropdownMenu>
