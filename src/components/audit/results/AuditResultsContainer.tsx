@@ -49,7 +49,7 @@ const AuditResultsContainer: React.FC<AuditResultsContainerProps> = ({ url }) =>
 
   useEffect(() => {
     if (!isInitialized && url) {
-      loadAuditData();
+      loadAuditData(false);
       setIsInitialized(true);
     }
   }, [url, isInitialized, loadAuditData]);
@@ -102,7 +102,7 @@ const AuditResultsContainer: React.FC<AuditResultsContainerProps> = ({ url }) =>
   }
 
   if (error) {
-    return <AuditError error={error} onRetry={() => loadAuditData()} />;
+    return <AuditError error={error} onRetry={() => loadAuditData(false)} />;
   }
 
   if (!auditData || !recommendations) {

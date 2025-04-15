@@ -3,7 +3,7 @@
  * Functions for calculating optimization metrics and costs
  */
 
-import { OptimizationItem } from '@/components/audit/results/components/optimization';
+import { OptimizationItem } from '@/components/audit/results/components/optimization/CostDetailsTable';
 import { PageContent } from './content';
 
 export interface PageStatistics {
@@ -56,7 +56,9 @@ export const calculateOptimizationMetrics = (
     count: totalPagesCount,
     pricePerUnit: basePagePrice,
     totalPrice: basePagesCost,
-    description: 'Базовая оптимизация страниц включает общий технический аудит, проверку структуры и основные улучшения SEO'
+    description: 'Базовая оптимизация страниц включает общий технический аудит, проверку структуры и основные улучшения SEO',
+    name: 'Базовая оптимизация страниц',
+    price: basePagesCost
   });
   totalCost += basePagesCost;
   
@@ -101,7 +103,9 @@ export const calculateOptimizationMetrics = (
         count: missingMetaDescriptionCount,
         pricePerUnit: pricePerMissingMetaDescription,
         totalPrice: metaDescriptionCost,
-        description: 'Создание или улучшение мета-тегов description для лучшего отображения в поисковой выдаче'
+        description: 'Создание или улучшение мета-тегов description для лучшего отображения в поисковой выдаче',
+        name: 'Оптимизация мета-описаний',
+        price: metaDescriptionCost
       });
       totalCost += metaDescriptionCost;
     }
@@ -113,7 +117,9 @@ export const calculateOptimizationMetrics = (
         count: missingMetaKeywordsCount,
         pricePerUnit: pricePerMissingMetaKeywords,
         totalPrice: metaKeywordsCost,
-        description: 'Добавление или улучшение мета-тегов keywords с релевантными ключевыми словами'
+        description: 'Добавление или улучшение мета-тегов keywords с релевантными ключевыми словами',
+        name: 'Оптимизация ключевых слов',
+        price: metaKeywordsCost
       });
       totalCost += metaKeywordsCost;
     }
@@ -125,7 +131,9 @@ export const calculateOptimizationMetrics = (
         count: missingAltTagsCount,
         pricePerUnit: pricePerMissingAltTag,
         totalPrice: altTagsCost,
-        description: 'Добавление атрибутов alt к изображениям для улучшения SEO и доступности'
+        description: 'Добавление атрибутов alt к изображениям для улучшения SEO и доступности',
+        name: 'Оптимизация alt-тегов',
+        price: altTagsCost
       });
       totalCost += altTagsCost;
     }
@@ -137,7 +145,9 @@ export const calculateOptimizationMetrics = (
         count: underscoreUrlCount,
         pricePerUnit: pricePerUnderscoreUrl,
         totalPrice: urlCost,
-        description: 'Замена подчеркиваний (_) на дефисы (-) в URL для лучшей SEO-оптимизации'
+        description: 'Замена подчеркиваний (_) на дефисы (-) в URL для лучшей SEO-оптимизации',
+        name: 'Оптимизация URL',
+        price: urlCost
       });
       totalCost += urlCost;
     }
@@ -149,7 +159,9 @@ export const calculateOptimizationMetrics = (
         count: duplicateContentCount,
         pricePerUnit: pricePerDuplicateContent,
         totalPrice: duplicateContentCost,
-        description: 'Создание уникального контента для страниц с дублирующимся содержимым'
+        description: 'Создание уникального контента для страниц с дублирующимся содержимым',
+        name: 'Исправление дублей',
+        price: duplicateContentCost
       });
       totalCost += duplicateContentCost;
     }
@@ -161,7 +173,9 @@ export const calculateOptimizationMetrics = (
         count: contentToRewriteCount,
         pricePerUnit: pricePerContentRewrite,
         totalPrice: contentRewriteCost,
-        description: 'Улучшение и SEO-оптимизация существующего контента согласно лучшим практикам'
+        description: 'Улучшение и SEO-оптимизация существующего контента согласно лучшим практикам',
+        name: 'Оптимизация контента',
+        price: contentRewriteCost
       });
       totalCost += contentRewriteCost;
     }
@@ -185,7 +199,9 @@ export const calculateOptimizationMetrics = (
       count: 1,
       pricePerUnit: -discountAmount,
       totalPrice: -discountAmount,
-      description: `Скидка ${discountPercent}% от общей стоимости за большое количество страниц (${totalPagesCount})`
+      description: `Скидка ${discountPercent}% от общей стоимости за большое количество страниц (${totalPagesCount})`,
+      name: `Скидка ${discountPercent}%`,
+      price: -discountAmount
     });
   }
   

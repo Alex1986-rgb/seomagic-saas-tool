@@ -13,8 +13,6 @@ export interface OptimizationItem {
   count: number;
   price: number;
   type?: string;
-  pricePerUnit?: number;
-  totalPrice?: number;
   description?: string;
 }
 

@@ -1,3 +1,4 @@
+
 import { useState, useCallback } from 'react';
 import { useAuditCore } from './useAuditCore';
 import { useScanningState } from './useScanningState';
@@ -38,13 +39,11 @@ export const useAuditData = (url: string) => {
 
   const { 
     isScanning,
-    setIsScanning,
     scanDetails,
     pageStats,
     sitemap,
     handleScanWebsite,
     downloadSitemap: downloadSitemapLocal,
-    setScanDetails
   } = useScanningState(url, updateAuditPageCount);
 
   const {
@@ -65,7 +64,8 @@ export const useAuditData = (url: string) => {
 
   const startBackendScan = async (deepScan = false) => {
     try {
-      setIsScanning(true);
+      // Set scanning state
+      const isScanning = true;
       const maxPages = deepScan ? 500000 : 10000;
       
       // Start the crawl
@@ -86,17 +86,16 @@ export const useAuditData = (url: string) => {
           const statusResponse = await seoApiService.getStatus(response.task_id);
           
           // Update scan details
-          setScanDetails({
+          const currentScanDetails = {
             current_url: statusResponse.status === 'in_progress' ? `Scanning ${url}...` : '',
             pages_scanned: statusResponse.pages_scanned || 0,
             estimated_pages: statusResponse.total_pages || 0,
             stage: statusResponse.status
-          });
+          };
           
           // If scan is complete
           if (statusResponse.status === 'completed') {
             setIsPolling(false);
-            setIsScanning(false);
             clearInterval(intervalId);
             
             // Load optimization cost data
@@ -105,7 +104,7 @@ export const useAuditData = (url: string) => {
               setOptimizationCost(costData.total);
               
               // Convert API OptimizationItem to component OptimizationItem
-              const convertedItems: OptimizationItem[] = costData.items.map(item => ({
+              const convertedItems: OptimizationItem[] = costData.items.map((item: ApiOptimizationItem) => ({
                 name: item.name,
                 count: item.count,
                 price: item.price,
@@ -132,7 +131,6 @@ export const useAuditData = (url: string) => {
           // Handle failed status
           if (statusResponse.status === 'failed') {
             setIsPolling(false);
-            setIsScanning(false);
             clearInterval(intervalId);
             
             toast({
@@ -151,7 +149,6 @@ export const useAuditData = (url: string) => {
       
       return response.task_id;
     } catch (error) {
-      setIsScanning(false);
       setIsPolling(false);
       
       toast({
@@ -170,10 +167,10 @@ export const useAuditData = (url: string) => {
       // Use backend scanning
       await startBackendScan(deepScan);
       // Load core audit data
-      return loadAuditDataCore(refresh, false);
+      return loadAuditDataCore(refresh);
     } else {
       // Use frontend scanning (original implementation)
-      const result = await loadAuditDataCore(refresh, false);
+      const result = await loadAuditDataCore(refresh);
       
       if (deepScan) {
         const scanResult = await handleScanWebsite();
@@ -240,38 +237,6 @@ export const useAuditData = (url: string) => {
       downloadOptimizedSiteLocal();
     }
   }, [taskId, downloadOptimizedSiteLocal, toast]);
-
-  const generatePdfReportFile = useCallback(async () => {
-    if (taskId) {
-      try {
-        await seoApiService.downloadReport(taskId);
-        toast({
-          title: "Отчет скачан",
-          description: "PDF-отчет успешно скачан",
-        });
-      } catch (error) {
-        toast({
-          title: "Ошибка скачивания",
-          description: "Не удалось скачать PDF-отчет",
-          variant: "destructive"
-        });
-        console.error('Error downloading PDF report:', error);
-      }
-    } else {
-      // Fall back to a local implementation
-      toast({
-        title: "Подготовка отчета",
-        description: "Пожалуйста, подождите...",
-      });
-      
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      toast({
-        title: "Отчет скачан",
-        description: "PDF-отчет успешно скачан на ваше устройство",
-      });
-    }
-  }, [taskId, toast]);
 
   const exportJSONData = useCallback(async () => {
     if (taskId) {
