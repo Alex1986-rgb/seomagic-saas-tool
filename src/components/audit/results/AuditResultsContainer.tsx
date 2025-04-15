@@ -49,7 +49,7 @@ const AuditResultsContainer: React.FC<AuditResultsContainerProps> = ({ url }) =>
 
   useEffect(() => {
     if (!isInitialized && url) {
-      // Explicitly pass false as the refresh parameter
+      // Pass both refresh and deep scan parameters
       loadAuditData(false, false);
       setIsInitialized(true);
     }
