@@ -1,4 +1,3 @@
-
 import { useState, useCallback } from 'react';
 import { useAuditCore } from './useAuditCore';
 import { useScanningState } from './useScanningState';
@@ -6,7 +5,8 @@ import { useOptimization } from './useOptimization';
 import { AuditData } from '@/types/audit';
 import { seoApiService } from '@/api/seoApiService';
 import { useToast } from "@/hooks/use-toast";
-import { OptimizationItem } from '@/types/api';
+import { OptimizationItem as ApiOptimizationItem } from '@/types/api';
+import { OptimizationItem } from '../components/optimization/CostDetailsTable';
 
 export const useAuditData = (url: string) => {
   const { toast } = useToast();
@@ -59,11 +59,9 @@ export const useAuditData = (url: string) => {
     setOptimizationItems,
     setPagesContent,
     downloadOptimizedSite: downloadOptimizedSiteLocal,
-    setContentOptimizationPrompt
+    setContentOptimizationPrompt,
+    generatePdfReportFile
   } = useOptimization(url);
-
-  // Define the generatePdfReportFile function
-  const { generatePdfReportFile: generatePdfReport } = useOptimization(url);
 
   const startBackendScan = async (deepScan = false) => {
     try {
@@ -111,10 +109,10 @@ export const useAuditData = (url: string) => {
                 name: item.name,
                 count: item.count,
                 price: item.price,
-                type: 'service',
+                type: item.type || 'service',
                 pricePerUnit: item.price / item.count,
                 totalPrice: item.price,
-                description: item.name
+                description: item.description || item.name
               }));
               
               setOptimizationItems(convertedItems);

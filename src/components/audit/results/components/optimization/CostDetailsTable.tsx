@@ -22,6 +22,8 @@ export interface OptimizationItem {
   pricePerUnit: number;
   totalPrice: number;
   description: string;
+  name: string;
+  price: number;
 }
 
 interface CostDetailsTableProps {

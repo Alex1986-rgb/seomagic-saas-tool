@@ -90,7 +90,15 @@ const AuditResultsContainer: React.FC<AuditResultsContainerProps> = ({ url }) =>
   }
 
   if (isScanning) {
-    return <AuditScanning url={url} scanDetails={scanDetails} onDownloadSitemap={downloadSitemap} />;
+    return <AuditScanning 
+      url={url} 
+      scanDetails={{
+        pagesScanned: scanDetails.pages_scanned,
+        totalPages: scanDetails.estimated_pages,
+        currentUrl: scanDetails.current_url
+      }} 
+      onDownloadSitemap={downloadSitemap} 
+    />;
   }
 
   if (error) {
