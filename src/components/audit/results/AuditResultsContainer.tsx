@@ -80,6 +80,11 @@ const AuditResultsContainer: React.FC<AuditResultsContainerProps> = ({ url }) =>
     optimizeSiteContent();
   };
 
+  // Handler for PDF report generation
+  const handleGeneratePdfReport = () => {
+    generatePdfReportFile();
+  };
+
   if (isLoading) {
     return <AuditLoading progress={loadingProgress} />;
   }
@@ -155,7 +160,7 @@ const AuditResultsContainer: React.FC<AuditResultsContainerProps> = ({ url }) =>
             onDownloadOptimized={downloadOptimizedSite}
             isOptimized={isOptimized}
             optimizationItems={optimizationItems}
-            onGeneratePdfReport={generatePdfReportFile}
+            onGeneratePdfReport={handleGeneratePdfReport}
             className="mb-4"
           />
         )}

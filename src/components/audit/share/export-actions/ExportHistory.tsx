@@ -11,13 +11,15 @@ interface ExportHistoryProps {
   url: string;
   isExporting: string | null;
   setIsExporting: (state: string | null) => void;
+  taskId?: string | null;
 }
 
 const ExportHistory: React.FC<ExportHistoryProps> = ({ 
   historyItems, 
   url,
   isExporting,
-  setIsExporting
+  setIsExporting,
+  taskId
 }) => {
   const handleExportHistory = async () => {
     if (!historyItems || historyItems.length === 0) {

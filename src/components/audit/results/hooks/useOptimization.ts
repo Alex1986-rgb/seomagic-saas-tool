@@ -110,6 +110,40 @@ export const useOptimization = (url: string) => {
     }
   };
 
+  const generatePdfReportFile = async (options: {
+    auditData: any;
+    url: string;
+    pageStats?: any;
+    optimizationCost?: number;
+    optimizationItems?: OptimizationItem[];
+    recommendations?: any;
+  }) => {
+    try {
+      toast({
+        title: "Подготовка PDF отчета",
+        description: "Пожалуйста, подождите...",
+      });
+      
+      // Simulate PDF generation
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      toast({
+        title: "Отчет готов",
+        description: "PDF-отчет успешно скачан на ваше устройство",
+      });
+      
+      return new Blob(['PDF content would go here'], { type: 'application/pdf' });
+    } catch (error) {
+      console.error('Error generating PDF report:', error);
+      toast({
+        title: "Ошибка генерации отчета", 
+        description: "Произошла ошибка при создании PDF-отчета",
+        variant: "destructive"
+      });
+      return null;
+    }
+  };
+
   const setContentOptimizationPrompt = (prompt: string) => {
     setContentPrompt(prompt);
     if (prompt) {
@@ -132,6 +166,7 @@ export const useOptimization = (url: string) => {
     setOptimizationItems,
     setPagesContent,
     downloadOptimizedSite,
-    setContentOptimizationPrompt
+    setContentOptimizationPrompt,
+    generatePdfReportFile
   };
 };

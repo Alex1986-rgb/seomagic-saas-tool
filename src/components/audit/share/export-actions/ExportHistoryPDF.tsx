@@ -12,13 +12,15 @@ interface ExportHistoryPDFProps {
   url: string;
   isExporting: string | null;
   setIsExporting: (state: string | null) => void;
+  taskId?: string | null;
 }
 
 const ExportHistoryPDF: React.FC<ExportHistoryPDFProps> = ({ 
   historyItems, 
   url,
   isExporting,
-  setIsExporting
+  setIsExporting,
+  taskId
 }) => {
   const handleExportHistoryPDF = async () => {
     if (!historyItems || historyItems.length === 0) {

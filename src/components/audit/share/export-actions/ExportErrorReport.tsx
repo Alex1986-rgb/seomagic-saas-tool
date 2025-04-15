@@ -6,6 +6,7 @@ import { AuditData } from '@/types/audit';
 import { saveAs } from 'file-saver';
 import { cleanUrl, formatDate, showExportError, showExportSuccess } from '../export-utils';
 import { generateErrorReportPdf } from '@/utils/pdf/errorReport';
+import { seoApiService } from '@/api/seoApiService';
 
 interface ExportErrorReportProps {
   auditData?: AuditData;
@@ -13,6 +14,7 @@ interface ExportErrorReportProps {
   urls?: string[];
   isExporting: string | null;
   setIsExporting: (state: string | null) => void;
+  taskId?: string | null;
 }
 
 const ExportErrorReport: React.FC<ExportErrorReportProps> = ({ 
@@ -20,9 +22,31 @@ const ExportErrorReport: React.FC<ExportErrorReportProps> = ({
   url,
   urls,
   isExporting,
-  setIsExporting
+  setIsExporting,
+  taskId
 }) => {
   const handleExportErrorReport = async (detailed: boolean = false) => {
+    if (taskId) {
+      try {
+        setIsExporting('error-report');
+        
+        // Use backend API to generate the report
+        await seoApiService.downloadReport(taskId, detailed ? 'detailed' : 'errors');
+        
+        showExportSuccess(
+          detailed ? "Детальный отчет экспортирован" : "Отчет об ошибках экспортирован", 
+          "Отчет успешно сохранен в формате PDF"
+        );
+      } catch (error) {
+        console.error('Ошибка при экспорте отчета об ошибках:', error);
+        showExportError("Не удалось сохранить отчет. Пожалуйста, попробуйте еще раз.");
+      } finally {
+        setIsExporting(null);
+      }
+      return;
+    }
+    
+    // Frontend implementation for when backend is not available
     if (!auditData) {
       showExportError();
       return;

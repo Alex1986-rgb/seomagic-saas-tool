@@ -86,14 +86,26 @@ export const seoApiService = {
   },
   
   // Download PDF report
-  downloadReport: async (taskId: string): Promise<void> => {
+  downloadReport: async (taskId: string, reportType: 'full' | 'errors' | 'detailed' = 'full'): Promise<void> => {
     try {
-      const response = await apiClient.get(`/results/${taskId}/report.pdf`, {
+      const endpoint = reportType === 'full' 
+        ? `/results/${taskId}/report.pdf`
+        : reportType === 'errors'
+          ? `/results/${taskId}/errors-report.pdf`
+          : `/results/${taskId}/detailed-report.pdf`;
+          
+      const response = await apiClient.get(endpoint, {
         responseType: 'blob'
       });
       
+      const filename = reportType === 'full' 
+        ? 'seo-report.pdf'
+        : reportType === 'errors'
+          ? 'errors-report.pdf'
+          : 'detailed-report.pdf';
+      
       const blob = new Blob([response.data], { type: 'application/pdf' });
-      saveAs(blob, 'seo-report.pdf');
+      saveAs(blob, filename);
     } catch (error) {
       console.error('Error downloading PDF report:', error);
       throw error;

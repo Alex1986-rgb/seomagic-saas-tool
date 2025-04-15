@@ -5,33 +5,46 @@ import { Linkedin, Twitter, Facebook, MessageCircle, Share } from 'lucide-react'
 
 interface SocialShareButtonsProps {
   url: string;
-  title: string;
-  summary: string;
+  title?: string;
+  summary?: string;
+  auditId?: string;
+  shareUrl?: string;
 }
 
-const SocialShareButtons: React.FC<SocialShareButtonsProps> = ({ url, title, summary }) => {
+const SocialShareButtons: React.FC<SocialShareButtonsProps> = ({ 
+  url, 
+  title = `SEO аудит для ${url}`,
+  summary = `Результаты SEO аудита для ${url}`,
+  shareUrl,
+  auditId
+}) => {
   const handleTwitterShare = () => {
-    const twitterUrl = `https://twitter.com/intent/tweet?url=${encodeURIComponent(url)}&text=${encodeURIComponent(title)}`;
+    const shareLink = shareUrl || url;
+    const twitterUrl = `https://twitter.com/intent/tweet?url=${encodeURIComponent(shareLink)}&text=${encodeURIComponent(title)}`;
     window.open(twitterUrl, '_blank', 'width=600,height=400');
   };
   
   const handleFacebookShare = () => {
-    const facebookUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`;
+    const shareLink = shareUrl || url;
+    const facebookUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareLink)}`;
     window.open(facebookUrl, '_blank', 'width=600,height=400');
   };
   
   const handleLinkedInShare = () => {
-    const linkedinUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}&title=${encodeURIComponent(title)}&summary=${encodeURIComponent(summary)}`;
+    const shareLink = shareUrl || url;
+    const linkedinUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareLink)}&title=${encodeURIComponent(title)}&summary=${encodeURIComponent(summary)}`;
     window.open(linkedinUrl, '_blank', 'width=600,height=400');
   };
   
   const handleTelegramShare = () => {
-    const telegramUrl = `https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(title)}`;
+    const shareLink = shareUrl || url;
+    const telegramUrl = `https://t.me/share/url?url=${encodeURIComponent(shareLink)}&text=${encodeURIComponent(title)}`;
     window.open(telegramUrl, '_blank', 'width=600,height=400');
   };
   
   const handleWhatsAppShare = () => {
-    const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(title + ' ' + url)}`;
+    const shareLink = shareUrl || url;
+    const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(title + ' ' + shareLink)}`;
     window.open(whatsappUrl, '_blank', 'width=600,height=400');
   };
   
