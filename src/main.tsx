@@ -7,9 +7,12 @@ import './index.css';
 // Add preconnect links for external resources
 const preconnectLinks = [
   { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
-  { rel: 'preconnect', href: 'https://fonts.gstatic.com', crossOrigin: 'anonymous' }
+  { rel: 'preconnect', href: 'https://fonts.gstatic.com', crossOrigin: 'anonymous' },
+  { rel: 'dns-prefetch', href: 'https://fonts.googleapis.com' },
+  { rel: 'dns-prefetch', href: 'https://fonts.gstatic.com' }
 ];
 
+// Добавляем DNS prefetch и preconnect для ускорения загрузки
 preconnectLinks.forEach(link => {
   const linkEl = document.createElement('link');
   linkEl.rel = link.rel;
@@ -17,6 +20,20 @@ preconnectLinks.forEach(link => {
   if (link.crossOrigin) {
     linkEl.crossOrigin = link.crossOrigin;
   }
+  document.head.appendChild(linkEl);
+});
+
+// Добавляем preload для критических ресурсов
+const preloadCriticalResources = [
+  { href: '/images/placeholder.jpg', as: 'image' },
+  { href: '/index.css', as: 'style' }
+];
+
+preloadCriticalResources.forEach(resource => {
+  const linkEl = document.createElement('link');
+  linkEl.rel = 'preload';
+  linkEl.href = resource.href;
+  linkEl.as = resource.as;
   document.head.appendChild(linkEl);
 });
 
@@ -28,7 +45,7 @@ root.render(
   </React.StrictMode>
 );
 
-// Register service worker for better offline experience
+// Регистрируем service worker после загрузки всего приложения для более быстрого старта
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('/service-worker.js')

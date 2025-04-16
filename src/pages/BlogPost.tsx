@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from 'react';
+
+import React, { useEffect, useState, useMemo } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Button } from "@/components/ui/button";
@@ -26,52 +27,66 @@ const BlogPost: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [relatedPosts, setRelatedPosts] = useState<BlogPost[]>([]);
 
-  useEffect(() => {
-    // In a real app, we would fetch from an API
-    // Here we're using mock data
-    if (id) {
-      const foundPost = mockBlogPosts.find(p => p.id.toString() === id);
-      
-      if (foundPost && 
-          'date' in foundPost && 
-          'author' in foundPost && 
-          'category' in foundPost && 
-          'image' in foundPost && 
-          'tags' in foundPost) {
-        // Make sure the post has all required fields before setting it
-        setPost(foundPost as BlogPost);
-        
-        // Find related posts with same tags
-        const related = mockBlogPosts
-          .filter(p => 
-            p.id.toString() !== id && 
-            'tags' in p && 
-            p.tags && 
-            'tags' in foundPost && 
-            foundPost.tags && 
-            p.tags.some(tag => foundPost.tags.includes(tag))
-          )
-          .filter(p => 
-            'date' in p && 
-            'author' in p && 
-            'category' in p && 
-            'image' in p && 
-            'tags' in p
-          )
-          .slice(0, 3);
-        
-        setRelatedPosts(related as BlogPost[]);
-      }
-      
-      setLoading(false);
+  // Используем useMemo для кэширования фильтрации постов
+  const postData = useMemo(() => {
+    if (!id) return { post: null, related: [] };
+
+    // Находим текущий пост
+    const foundPost = mockBlogPosts.find(p => p.id.toString() === id) as any;
+    
+    if (!foundPost) return { post: null, related: [] };
+
+    // Проверяем, что у поста есть все необходимые поля
+    if (!('date' in foundPost && 
+        'author' in foundPost && 
+        'category' in foundPost && 
+        'image' in foundPost && 
+        'tags' in foundPost)) {
+      return { post: null, related: [] };
     }
+
+    const validPost = foundPost as BlogPost;
+    
+    // Находим похожие посты (с общими тегами)
+    const related = mockBlogPosts
+      .filter(p => 
+        p.id.toString() !== id && 
+        'tags' in p && 
+        p.tags && 
+        p.tags.some(tag => validPost.tags.includes(tag))
+      )
+      .filter(p => 
+        'date' in p && 
+        'author' in p && 
+        'category' in p && 
+        'image' in p && 
+        'tags' in p
+      )
+      .slice(0, 3) as BlogPost[];
+    
+    return { post: validPost, related };
   }, [id]);
 
+  useEffect(() => {
+    if (postData.post) {
+      setPost(postData.post);
+      setRelatedPosts(postData.related);
+    }
+    setLoading(false);
+  }, [postData]);
+
+  // Ускоряем загрузку, добавляя transition состояние
   if (loading) {
     return (
-      <div className="container mx-auto px-4 py-32">
-        <div className="flex items-center justify-center h-64">
-          <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-primary"></div>
+      <div className="container mx-auto px-4 py-20">
+        <div className="max-w-4xl mx-auto">
+          <div className="h-[400px] bg-gray-200 animate-pulse rounded-lg mb-8"></div>
+          <div className="space-y-4">
+            <div className="h-8 bg-gray-200 animate-pulse rounded w-3/4"></div>
+            <div className="h-4 bg-gray-200 animate-pulse rounded"></div>
+            <div className="h-4 bg-gray-200 animate-pulse rounded"></div>
+            <div className="h-4 bg-gray-200 animate-pulse rounded w-4/5"></div>
+          </div>
         </div>
       </div>
     );
