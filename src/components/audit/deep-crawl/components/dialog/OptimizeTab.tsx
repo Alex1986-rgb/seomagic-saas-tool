@@ -1,9 +1,8 @@
+
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Bot, Loader2, DownloadCloud } from 'lucide-react';
-import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
+import PromptSelector from './optimize/PromptSelector';
+import OptimizeActions from './optimize/OptimizeActions';
 
 interface OptimizeTabProps {
   seoPrompt: string;
@@ -39,68 +38,21 @@ const OptimizeTab: React.FC<OptimizeTabProps> = ({
       animate={{ opacity: 1 }}
       transition={{ duration: 0.3 }}
     >
-      <div className="space-y-3">
-        <div className="mb-2">
-          <h3 className="text-sm font-medium mb-1">Выберите шаблон для SEO оптимизации</h3>
-          <Select onValueChange={onPromptTemplateChange} value={selectedPromptTemplate}>
-            <SelectTrigger>
-              <SelectValue placeholder="Выберите шаблон" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="">Выберите шаблон</SelectItem>
-              {promptTemplates.map(template => (
-                <SelectItem key={template.id} value={template.id}>
-                  {template.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-        
-        <div>
-          <h3 className="text-sm font-medium mb-1">Опишите, как должен быть оптимизирован сайт</h3>
-          <Textarea 
-            placeholder="Например: Оптимизируй все тексты для SEO, добавь ключевые слова, улучши мета-теги и заголовки..."
-            className="min-h-[100px]"
-            value={seoPrompt}
-            onChange={(e) => onSeoPromptChange(e.target.value)}
-          />
-        </div>
-        
-        <Button 
-          onClick={onOptimize}
-          disabled={!seoPrompt.trim() || isOptimizing}
-          className="w-full gap-2"
-        >
-          {isOptimizing ? (
-            <>
-              <Loader2 className="h-4 w-4 animate-spin" />
-              Оптимизация...
-            </>
-          ) : (
-            <>
-              <Bot className="h-4 w-4" />
-              Оптимизировать сайт с помощью ИИ
-            </>
-          )}
-        </Button>
-        
-        {isOptimizing && (
-          <div className="text-xs text-muted-foreground text-center animate-pulse">
-            Оптимизация сайта с помощью ИИ. Это может занять несколько минут...
-          </div>
-        )}
-        
-        <Button 
-          onClick={onDownloadOptimized}
-          disabled={isOptimizing || !isCompleted}
-          variant="outline"
-          className="w-full gap-2"
-        >
-          <DownloadCloud className="h-4 w-4" />
-          Скачать оптимизированную версию сайта
-        </Button>
-      </div>
+      <PromptSelector 
+        seoPrompt={seoPrompt}
+        selectedPromptTemplate={selectedPromptTemplate}
+        promptTemplates={promptTemplates}
+        onSeoPromptChange={onSeoPromptChange}
+        onPromptTemplateChange={onPromptTemplateChange}
+      />
+      
+      <OptimizeActions 
+        seoPrompt={seoPrompt}
+        isOptimizing={isOptimizing}
+        isCompleted={isCompleted}
+        onOptimize={onOptimize}
+        onDownloadOptimized={onDownloadOptimized}
+      />
     </motion.div>
   );
 };
