@@ -1,6 +1,9 @@
 
-// Use primitive types instead of complex JSON references to avoid type recursion
-export type JsonValue = string | number | boolean | null | { [key: string]: JsonValue } | JsonValue[];
+// Simple types without self-references to avoid deep type instantiation
+export type JsonPrimitive = string | number | boolean | null;
+export type JsonArray = Array<JsonValue>;
+export type JsonObject = { [key: string]: JsonValue };
+export type JsonValue = JsonPrimitive | JsonObject | JsonArray;
 
 // Core analytics data structure
 export interface AnalyticsData {

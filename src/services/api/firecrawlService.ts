@@ -6,6 +6,10 @@ import { crawlStatusService } from './crawlStatusService';
 import { analyticsService } from './analyticsService';
 
 export const firecrawlService = {
+  // API key management methods (forwarded from apiKeyManager)
+  getApiKey: apiKeyManager.getApiKey,
+  setApiKey: apiKeyManager.setApiKey,
+
   async startMassiveCrawl(
     projectId: string, 
     url: string, 
