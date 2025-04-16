@@ -4,10 +4,10 @@ import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowLeft } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-import { IconType } from '@/components/features/types';
+import { LucideIcon } from 'lucide-react';
 
 interface FeatureHeaderProps {
-  icon: IconType;
+  icon: LucideIcon;
   title: string;
   description: string;
   category?: string;
