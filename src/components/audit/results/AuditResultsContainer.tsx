@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import AuditSummary from '@/components/AuditSummary';
@@ -49,7 +48,6 @@ const AuditResultsContainer: React.FC<AuditResultsContainerProps> = ({ url }) =>
 
   useEffect(() => {
     if (!isInitialized && url) {
-      // Explicitly pass false for both refresh and deep scan parameters
       loadAuditData(false, false);
       setIsInitialized(true);
     }
@@ -103,7 +101,7 @@ const AuditResultsContainer: React.FC<AuditResultsContainerProps> = ({ url }) =>
   }
 
   if (error) {
-    return <AuditError error={error} onRetry={() => loadAuditData(false)} />;
+    return <AuditError error={error} onRetry={() => loadAuditData(false, false)} />;
   }
 
   if (!auditData || !recommendations) {
