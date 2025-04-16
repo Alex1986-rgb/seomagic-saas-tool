@@ -1,57 +1,50 @@
 
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useToast } from "@/hooks/use-toast";
 import { useAuth } from '@/hooks/useAuth';
+import { useNavigate } from 'react-router-dom';
 
 const LoginForm = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const { signIn } = useAuth();
-  const { toast } = useToast();
   const navigate = useNavigate();
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-
-    try {
-      await signIn(email, password);
-      toast({
-        title: "Успешный вход",
-        description: "Добро пожаловать!",
-      });
+    
+    const { error } = await signIn(email, password);
+    
+    setIsLoading(false);
+    if (!error) {
       navigate('/dashboard');
-    } catch (error) {
-      toast({
-        title: "Ошибка входа",
-        description: error instanceof Error ? error.message : "Проверьте введенные данные",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
     }
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4 mt-4">
+    <form onSubmit={handleSubmit} className="space-y-4">
       <div className="space-y-2">
         <Label htmlFor="email">Email</Label>
         <Input
           id="email"
           type="email"
-          placeholder="mail@example.com"
+          placeholder="example@mail.com"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
         />
       </div>
       <div className="space-y-2">
-        <Label htmlFor="password">Пароль</Label>
+        <div className="flex items-center justify-between">
+          <Label htmlFor="password">Пароль</Label>
+          <a href="#" className="text-sm text-primary hover:underline">
+            Забыли пароль?
+          </a>
+        </div>
         <Input
           id="password"
           type="password"
@@ -61,7 +54,7 @@ const LoginForm = () => {
         />
       </div>
       <Button type="submit" className="w-full" disabled={isLoading}>
-        {isLoading ? "Вход..." : "Войти"}
+        {isLoading ? 'Вход...' : 'Войти'}
       </Button>
     </form>
   );

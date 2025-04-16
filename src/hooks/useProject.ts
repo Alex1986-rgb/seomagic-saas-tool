@@ -1,90 +1,98 @@
 
-import { useState, useCallback } from 'react';
-import { projectService } from '@/services/projectService';
-import { useToast } from './use-toast';
-import type { Database } from "@/integrations/supabase/types";
+import { useState, useEffect } from 'react';
+import { useToast } from "@/hooks/use-toast";
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from './useAuth';
 
-type Project = Database['public']['Tables']['projects']['Row'];
+interface Project {
+  id: string;
+  name: string;
+  url: string;
+  created_at: string;
+  settings: any;
+}
 
-export function useProject(initialProject?: Project) {
-  const [project, setProject] = useState<Project | null>(initialProject || null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+export const useProject = () => {
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [project, setProject] = useState<Project | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
+  const { user } = useAuth();
 
-  const loadProject = useCallback(async (id: string) => {
+  // Загрузка проектов пользователя
+  const fetchProjects = async () => {
+    if (!user) {
+      setProjects([]);
+      setIsLoading(false);
+      return;
+    }
+
     setIsLoading(true);
-    setError(null);
     try {
-      const data = await projectService.getProject(id);
-      setProject(data);
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to load project';
-      setError(message);
+      const { data, error } = await supabase
+        .from('projects')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      setProjects(data || []);
+      
+      // Если есть проекты и не выбран текущий - выбираем первый
+      if (data && data.length > 0 && !project) {
+        setProject(data[0]);
+      }
+    } catch (error: any) {
+      console.error('Error fetching projects:', error);
       toast({
-        title: "Error",
-        description: message,
+        title: "Ошибка загрузки проектов",
+        description: error.message || "Не удалось загрузить проекты",
         variant: "destructive",
       });
     } finally {
       setIsLoading(false);
     }
-  }, [toast]);
+  };
 
-  const createProject = useCallback(async (name: string, url: string) => {
-    setIsLoading(true);
-    setError(null);
-    try {
-      const data = await projectService.createProject(name, url);
-      setProject(data);
-      toast({
-        title: "Success",
-        description: "Project created successfully",
-      });
-      return data;
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to create project';
-      setError(message);
-      toast({
-        title: "Error",
-        description: message,
-        variant: "destructive",
-      });
-      throw err;
-    } finally {
-      setIsLoading(false);
+  // Выбор проекта по ID
+  const selectProject = (projectId: string) => {
+    const selectedProject = projects.find(p => p.id === projectId);
+    if (selectedProject) {
+      setProject(selectedProject);
+      localStorage.setItem('selectedProjectId', projectId);
     }
-  }, [toast]);
+  };
 
-  const updateProject = useCallback(async (id: string, updates: Partial<Project>) => {
-    setIsLoading(true);
-    setError(null);
-    try {
-      const data = await projectService.updateProject(id, updates);
-      setProject(data);
-      toast({
-        title: "Success",
-        description: "Project updated successfully",
-      });
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to update project';
-      setError(message);
-      toast({
-        title: "Error",
-        description: message,
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
+  // Загрузка проектов при изменении пользователя
+  useEffect(() => {
+    fetchProjects();
+  }, [user]);
+
+  // Восстановление выбранного проекта из localStorage
+  useEffect(() => {
+    if (projects.length > 0) {
+      const savedProjectId = localStorage.getItem('selectedProjectId');
+      if (savedProjectId) {
+        const savedProject = projects.find(p => p.id === savedProjectId);
+        if (savedProject) {
+          setProject(savedProject);
+        } else {
+          // Если сохраненного проекта нет, выбираем первый
+          setProject(projects[0]);
+        }
+      } else {
+        // Если нет сохраненного ID, выбираем первый проект
+        setProject(projects[0]);
+      }
     }
-  }, [toast]);
+  }, [projects]);
 
   return {
+    projects,
     project,
     isLoading,
-    error,
-    loadProject,
-    createProject,
-    updateProject,
+    selectProject,
+    fetchProjects
   };
-}
+};
