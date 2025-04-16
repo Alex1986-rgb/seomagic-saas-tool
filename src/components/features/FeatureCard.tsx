@@ -60,8 +60,11 @@ const FeatureCard: React.FC<FeatureCardProps> = ({
         </Button>
       </div>
       
-      {/* Decorative background effect */}
-      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+      {/* Decorative elements */}
+      <motion.div 
+        className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" 
+        layoutId={`${layoutId}-bg`}
+      />
     </motion.div>
   );
 };

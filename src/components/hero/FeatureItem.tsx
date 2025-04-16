@@ -1,17 +1,13 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Link } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import { ChevronRight } from 'lucide-react';
 
 interface FeatureItemProps {
   icon: React.ReactNode;
   text: string;
-  link: string;
 }
 
-const FeatureItem: React.FC<FeatureItemProps> = ({ icon, text, link }) => {
+const FeatureItem: React.FC<FeatureItemProps> = ({ icon, text }) => {
   return (
     <motion.div 
       whileHover={{ y: -5, boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.1)" }}
@@ -22,13 +18,7 @@ const FeatureItem: React.FC<FeatureItemProps> = ({ icon, text, link }) => {
         <div className="p-3 bg-primary/10 text-primary rounded-full relative z-10">
           {icon}
         </div>
-        <p className="text-sm md:text-base font-medium text-center relative z-10 mb-2">{text}</p>
-        
-        <Button variant="link" className="text-primary" asChild>
-          <Link to={link}>
-            Подробнее <ChevronRight className="h-4 w-4 ml-1" />
-          </Link>
-        </Button>
+        <p className="text-sm md:text-base font-medium text-center relative z-10">{text}</p>
         
         {/* Анимация фона при наведении */}
         <div className="absolute inset-0 bg-gradient-to-tr from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
