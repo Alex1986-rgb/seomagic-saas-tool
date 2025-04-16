@@ -1,3 +1,3 @@
 
-export * from './firecrawlService';
+export * from './firecrawl';
 export * from './utils';
