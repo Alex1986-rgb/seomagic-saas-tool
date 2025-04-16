@@ -1,4 +1,3 @@
-
 import React, { Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { HelmetProvider } from 'react-helmet-async';
@@ -72,7 +71,8 @@ function App() {
                 <Route path="/profile" element={<Layout><ClientProfile /></Layout>} />
                 <Route path="/auth" element={<Auth />} />
                 
-                {/* Feature pages */}
+                {/* Features routes */}
+                <Route path="/features" element={<Layout><Features /></Layout>} />
                 <Route path="/features/:featureId" element={<Layout><FeatureDetail /></Layout>} />
                 
                 {/* Not Found route - should be last */}

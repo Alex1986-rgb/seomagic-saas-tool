@@ -13,7 +13,7 @@ const FeatureCard: React.FC<FeatureCardProps> = ({
   link,
   layoutId 
 }) => {
-  // If no link is provided, create one from the title
+  // Generate a link from the title if none provided
   const pageLink = link || `/features/${title.toLowerCase().replace(/\s+/g, '-')}`;
   
   const itemVariant = {
@@ -60,7 +60,6 @@ const FeatureCard: React.FC<FeatureCardProps> = ({
         </Button>
       </div>
       
-      {/* Decorative elements */}
       <motion.div 
         className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" 
         layoutId={`${layoutId}-bg`}
