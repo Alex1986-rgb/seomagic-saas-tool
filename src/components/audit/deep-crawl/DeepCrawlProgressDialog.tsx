@@ -13,6 +13,7 @@ import {
   DialogHeader,
   DialogFooter
 } from './components/dialog';
+import { EstimateTab } from './components/dialog/EstimateTab';
 
 interface DeepCrawlProgressDialogProps {
   open: boolean;
@@ -96,6 +97,13 @@ export const DeepCrawlProgressDialog: React.FC<DeepCrawlProgressDialogProps> = (
     }
   };
 
+  const handleDownloadEstimate = () => {
+    toast({
+      title: "Смета скачана",
+      description: "Файл со сметой загружен успешно",
+    });
+  };
+
   // Получаем информацию о текущем этапе
   const { title, info } = getStageTitleAndInfo(crawlStage, error, pagesScanned);
 
@@ -105,9 +113,10 @@ export const DeepCrawlProgressDialog: React.FC<DeepCrawlProgressDialogProps> = (
         <DialogHeader title={title} />
         
         <Tabs value={activeTab} onValueChange={setActiveTab} className="mt-2">
-          <TabsList className="grid grid-cols-3">
+          <TabsList className="grid grid-cols-4">
             <TabsTrigger value="progress">Прогресс</TabsTrigger>
             <TabsTrigger value="results" disabled={!isCompleted}>Результаты</TabsTrigger>
+            <TabsTrigger value="estimate" disabled={!isCompleted}>Смета</TabsTrigger>
             <TabsTrigger value="optimize" disabled={!isCompleted}>Оптимизация</TabsTrigger>
           </TabsList>
           
@@ -132,6 +141,15 @@ export const DeepCrawlProgressDialog: React.FC<DeepCrawlProgressDialogProps> = (
               onDownloadSitemap={downloadSitemap}
               onDownloadReport={downloadReport}
               onDownloadAllData={downloadAllData}
+            />
+          </TabsContent>
+          
+          <TabsContent value="estimate">
+            <EstimateTab 
+              isCompleted={isCompleted}
+              pagesScanned={pagesScanned}
+              onGenerateReport={downloadReport}
+              onDownloadEstimate={handleDownloadEstimate}
             />
           </TabsContent>
           
