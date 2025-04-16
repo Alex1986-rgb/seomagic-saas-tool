@@ -16,7 +16,7 @@ interface CrawlData {
   loadTime: string;
 }
 
-export async function generateDeepCrawlPdf(data: any): Promise<void> {
+export async function generateDeepCrawlPdf(data: any): Promise<Blob> {
   const doc = new jsPDF();
   let currentY = formatHeader(doc, 'Deep Crawl Report', 'Site Structure Analysis');
 
@@ -27,9 +27,8 @@ export async function generateDeepCrawlPdf(data: any): Promise<void> {
   // Add pagination
   addPaginationFooters(doc);
 
-  // Save the PDF
-  const dateStr = new Date().toISOString().split('T')[0];
-  doc.save(`deep-crawl-report-${dateStr}.pdf`);
+  // Convert to Blob and return
+  return doc.output('blob');
 }
 
 async function addCrawlSummarySection(doc: jsPDF, data: any, startY: number): Promise<number> {
