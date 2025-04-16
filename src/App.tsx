@@ -1,4 +1,3 @@
-
 import React, { Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { HelmetProvider } from 'react-helmet-async';
@@ -73,8 +72,27 @@ function App() {
                 <Route path="/auth" element={<Auth />} />
                 
                 {/* Feature pages */}
-                <Route path="/features/:featureId" element={<Layout><FeatureDetail /></Layout>} />
-                
+                <Route path="/features/seo-analysis" element={<Layout><FeatureDetail /></Layout>} />
+                <Route path="/features/pdf-reports" element={<Layout><FeatureDetail /></Layout>} />
+                <Route path="/features/auto-fix" element={<Layout><FeatureDetail /></Layout>} />
+                <Route path="/features/optimized-copy" element={<Layout><FeatureDetail /></Layout>} />
+                <Route path="/features/analytics" element={<Layout><FeatureDetail /></Layout>} />
+                <Route path="/features/quick-optimization" element={<Layout><FeatureDetail /></Layout>} />
+                <Route path="/features/position-tracking" element={<Layout><FeatureDetail /></Layout>} />
+                <Route path="/features/link-analysis" element={<Layout><FeatureDetail /></Layout>} />
+                <Route path="/features/site-security" element={<Layout><FeatureDetail /></Layout>} />
+                <Route path="/features/error-detection" element={<Layout><FeatureDetail /></Layout>} />
+                <Route path="/features/data-structure" element={<Layout><FeatureDetail /></Layout>} />
+                <Route path="/features/ai-recommendations" element={<Layout><FeatureDetail /></Layout>} />
+                <Route path="/features/load-speed" element={<Layout><FeatureDetail /></Layout>} />
+                <Route path="/features/technical-seo" element={<Layout><FeatureDetail /></Layout>} />
+                <Route path="/features/competitor-analysis" element={<Layout><FeatureDetail /></Layout>} />
+                <Route path="/features/email-reports" element={<Layout><FeatureDetail /></Layout>} />
+                <Route path="/features/mobile-optimization" element={<Layout><FeatureDetail /></Layout>} />
+                <Route path="/features/integrations" element={<Layout><FeatureDetail /></Layout>} />
+                <Route path="/features/settings" element={<Layout><FeatureDetail /></Layout>} />
+                <Route path="/features/site-certification" element={<Layout><FeatureDetail /></Layout>} />
+
                 {/* Not Found route - should be last */}
                 <Route path="*" element={<NotFound />} />
               </Routes>
