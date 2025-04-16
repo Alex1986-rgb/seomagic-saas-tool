@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import AuditSummary from '@/components/AuditSummary';
@@ -76,7 +77,7 @@ const AuditResultsContainer: React.FC<AuditResultsContainerProps> = ({ url }) =>
   };
 
   const handleOptimize = () => {
-    optimizeSiteContent();
+    optimizeSiteContent(contentPrompt); // Добавляем аргумент
   };
 
   // Handler for PDF report generation
@@ -113,7 +114,7 @@ const AuditResultsContainer: React.FC<AuditResultsContainerProps> = ({ url }) =>
   }
 
   return (
-    <AnimatePresence>
+    <AnimatePresence mode="sync">
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}

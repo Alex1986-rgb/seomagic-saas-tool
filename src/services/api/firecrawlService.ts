@@ -59,7 +59,7 @@ export const firecrawlService = {
       
       // Начинаем симуляцию сканирования
       setTimeout(() => {
-        this.simulateCrawlProgress(task.id);
+        firecrawlService.simulateCrawlProgress(task.id);
       }, 1000);
       
       return task;
@@ -79,9 +79,9 @@ export const firecrawlService = {
       
       if (!task) {
         // Пробуем получить из localStorage
-        const storedTask = localStorage.getItem(`crawl_task_${taskId}`);
-        if (storedTask) {
-          return JSON.parse(storedTask);
+        const storedTaskJson = localStorage.getItem(`crawl_task_${taskId}`);
+        if (storedTaskJson) {
+          return JSON.parse(storedTaskJson);
         }
         throw new Error('Task not found');
       }
@@ -99,7 +99,7 @@ export const firecrawlService = {
   downloadSitemap: async (taskId: string): Promise<void> => {
     try {
       // Получаем задачу
-      const task = await this.getStatus(taskId);
+      const task = await firecrawlService.getStatus(taskId);
       
       if (task.status !== 'completed') {
         throw new Error('Task is not completed yet');
@@ -107,7 +107,7 @@ export const firecrawlService = {
       
       // Генерируем XML карты сайта
       const urls = task.urls || [];
-      const xml = this.generateSitemapXml(task.domain, urls);
+      const xml = firecrawlService.generateSitemapXml(task.domain, urls);
       
       // Создаем и скачиваем файл
       const blob = new Blob([xml], { type: 'application/xml' });
@@ -124,7 +124,7 @@ export const firecrawlService = {
   downloadReport: async (taskId: string, reportType: 'full' | 'errors' = 'full'): Promise<void> => {
     try {
       // Получаем задачу
-      const task = await this.getStatus(taskId);
+      const task = await firecrawlService.getStatus(taskId);
       
       if (task.status !== 'completed') {
         throw new Error('Task is not completed yet');
@@ -152,6 +152,7 @@ export const firecrawlService = {
     if (taskIndex === -1) return;
     
     const task = crawlTasks[taskIndex];
+    if (!task) return;
     
     // Обновляем статус
     task.status = 'in_progress';
@@ -172,6 +173,10 @@ export const firecrawlService = {
       }
       
       const updatedTask = crawlTasks[updatedTaskIndex];
+      if (!updatedTask) {
+        clearInterval(interval);
+        return;
+      }
       
       // Увеличиваем прогресс
       const step = Math.floor(Math.random() * 10) + 1;
@@ -263,9 +268,12 @@ export const firecrawlService = {
     // Проверяем каждую задачу
     for (const key of taskKeys) {
       try {
-        const task = JSON.parse(localStorage.getItem(key) || '{}');
-        if (task.url === url) {
-          return task.id;
+        const taskJson = localStorage.getItem(key);
+        if (taskJson) {
+          const task = JSON.parse(taskJson);
+          if (task.url === url) {
+            return task.id;
+          }
         }
       } catch (e) {
         console.error('Error parsing task:', e);
