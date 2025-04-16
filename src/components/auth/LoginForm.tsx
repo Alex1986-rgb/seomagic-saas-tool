@@ -1,111 +1,69 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { Mail, Lock } from "lucide-react";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { loginSchema, type LoginFormValues } from './validationSchemas';
+import { useAuth } from '@/hooks/useAuth';
 
-type LoginFormProps = {
-  onSuccess?: () => void;
-};
-
-const LoginForm: React.FC<LoginFormProps> = ({ onSuccess }) => {
-  const [isLoading, setIsLoading] = React.useState(false);
+const LoginForm = () => {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const { signIn } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
 
-  // Initialize login form
-  const form = useForm<LoginFormValues>({
-    resolver: zodResolver(loginSchema),
-    defaultValues: {
-      email: "",
-      password: "",
-    },
-  });
-
-  const handleLogin = async (values: LoginFormValues) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
     setIsLoading(true);
-    
-    // Simulate authorization request
-    setTimeout(() => {
-      setIsLoading(false);
-      // Save authentication state to localStorage
-      localStorage.setItem('isLoggedIn', 'true');
-      
+
+    try {
+      await signIn(email, password);
       toast({
-        title: "Авторизация успешна",
-        description: "Добро пожаловать в личный кабинет SeoMarket",
+        title: "Успешный вход",
+        description: "Добро пожаловать!",
       });
-      
-      if (onSuccess) {
-        onSuccess();
-      } else {
-        navigate('/dashboard');
-      }
-    }, 1500);
+      navigate('/dashboard');
+    } catch (error) {
+      toast({
+        title: "Ошибка входа",
+        description: error instanceof Error ? error.message : "Проверьте введенные данные",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(handleLogin)} className="space-y-4">
-        <FormField
-          control={form.control}
-          name="email"
-          render={({ field }) => (
-            <FormItem className="space-y-2">
-              <FormLabel>Email</FormLabel>
-              <div className="relative">
-                <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                <FormControl>
-                  <Input
-                    placeholder="mail@example.com"
-                    type="email"
-                    className="pl-10"
-                    {...field}
-                  />
-                </FormControl>
-              </div>
-              <FormMessage />
-            </FormItem>
-          )}
+    <form onSubmit={handleSubmit} className="space-y-4 mt-4">
+      <div className="space-y-2">
+        <Label htmlFor="email">Email</Label>
+        <Input
+          id="email"
+          type="email"
+          placeholder="mail@example.com"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
         />
-
-        <FormField
-          control={form.control}
-          name="password"
-          render={({ field }) => (
-            <FormItem className="space-y-2">
-              <div className="flex items-center justify-between">
-                <FormLabel>Пароль</FormLabel>
-                <a href="#" className="text-sm text-primary hover:underline">
-                  Забыли пароль?
-                </a>
-              </div>
-              <div className="relative">
-                <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                <FormControl>
-                  <Input
-                    type="password"
-                    className="pl-10"
-                    {...field}
-                  />
-                </FormControl>
-              </div>
-              <FormMessage />
-            </FormItem>
-          )}
+      </div>
+      <div className="space-y-2">
+        <Label htmlFor="password">Пароль</Label>
+        <Input
+          id="password"
+          type="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          required
         />
-
-        <Button type="submit" className="w-full" disabled={isLoading}>
-          {isLoading ? 'Вход...' : 'Войти'}
-        </Button>
-      </form>
-    </Form>
+      </div>
+      <Button type="submit" className="w-full" disabled={isLoading}>
+        {isLoading ? "Вход..." : "Войти"}
+      </Button>
+    </form>
   );
 };
 

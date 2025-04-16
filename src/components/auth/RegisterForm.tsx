@@ -1,121 +1,90 @@
 
 import React, { useState } from 'react';
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
+import { useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { User, Mail, Lock } from "lucide-react";
-import { registerSchema, type RegisterFormValues } from './validationSchemas';
+import { useAuth } from '@/hooks/useAuth';
 
-type RegisterFormProps = {
-  onSuccess?: () => void;
-};
-
-const RegisterForm: React.FC<RegisterFormProps> = ({ onSuccess }) => {
+const RegisterForm = () => {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const { signUp } = useAuth();
   const { toast } = useToast();
+  const navigate = useNavigate();
 
-  const form = useForm<RegisterFormValues>({
-    resolver: zodResolver(registerSchema),
-    defaultValues: {
-      name: "",
-      email: "",
-      password: "",
-    },
-  });
-
-  const handleRegister = async (values: RegisterFormValues) => {
-    setIsLoading(true);
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
     
-    // Simulate registration request
-    setTimeout(() => {
-      setIsLoading(false);
-      
+    if (password !== confirmPassword) {
+      toast({
+        title: "Ошибка",
+        description: "Пароли не совпадают",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      await signUp(email, password);
       toast({
         title: "Регистрация успешна",
-        description: "Ваш аккаунт успешно создан",
+        description: "Аккаунт успешно создан",
       });
-      
-      if (onSuccess) {
-        onSuccess();
-      }
-    }, 1500);
+      navigate('/dashboard');
+    } catch (error) {
+      toast({
+        title: "Ошибка регистрации",
+        description: error instanceof Error ? error.message : "Не удалось создать аккаунт",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(handleRegister)} className="space-y-4">
-        <FormField
-          control={form.control}
-          name="name"
-          render={({ field }) => (
-            <FormItem className="space-y-2">
-              <FormLabel>Имя</FormLabel>
-              <div className="relative">
-                <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                <FormControl>
-                  <Input
-                    placeholder="Иван Иванов"
-                    className="pl-10"
-                    {...field}
-                  />
-                </FormControl>
-              </div>
-              <FormMessage />
-            </FormItem>
-          )}
+    <form onSubmit={handleSubmit} className="space-y-4 mt-4">
+      <div className="space-y-2">
+        <Label htmlFor="email">Email</Label>
+        <Input
+          id="email"
+          type="email"
+          placeholder="mail@example.com"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
         />
-        
-        <FormField
-          control={form.control}
-          name="email"
-          render={({ field }) => (
-            <FormItem className="space-y-2">
-              <FormLabel>Email</FormLabel>
-              <div className="relative">
-                <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                <FormControl>
-                  <Input
-                    placeholder="mail@example.com"
-                    type="email"
-                    className="pl-10"
-                    {...field}
-                  />
-                </FormControl>
-              </div>
-              <FormMessage />
-            </FormItem>
-          )}
+      </div>
+      <div className="space-y-2">
+        <Label htmlFor="password">Пароль</Label>
+        <Input
+          id="password"
+          type="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          required
         />
-
-        <FormField
-          control={form.control}
-          name="password"
-          render={({ field }) => (
-            <FormItem className="space-y-2">
-              <FormLabel>Пароль</FormLabel>
-              <div className="relative">
-                <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                <FormControl>
-                  <Input
-                    type="password"
-                    className="pl-10"
-                    {...field}
-                  />
-                </FormControl>
-              </div>
-              <FormMessage />
-            </FormItem>
-          )}
+      </div>
+      <div className="space-y-2">
+        <Label htmlFor="confirmPassword">Подтвердите пароль</Label>
+        <Input
+          id="confirmPassword"
+          type="password"
+          value={confirmPassword}
+          onChange={(e) => setConfirmPassword(e.target.value)}
+          required
         />
-
-        <Button type="submit" className="w-full" disabled={isLoading}>
-          {isLoading ? 'Регистрация...' : 'Зарегистрироваться'}
-        </Button>
-      </form>
-    </Form>
+      </div>
+      <Button type="submit" className="w-full" disabled={isLoading}>
+        {isLoading ? "Регистрация..." : "Зарегистрироваться"}
+      </Button>
+    </form>
   );
 };
 
