@@ -83,7 +83,15 @@ const AuditResultsContainer: React.FC<AuditResultsContainerProps> = ({ url }) =>
 
   // Handler for PDF report generation
   const handleGeneratePdfReport = () => {
-    generatePdfReportFile();
+    // Pass the required data to generatePdfReportFile
+    generatePdfReportFile({
+      auditData,
+      url,
+      pageStats,
+      optimizationCost,
+      optimizationItems,
+      recommendations
+    });
   };
 
   if (isLoading) {
