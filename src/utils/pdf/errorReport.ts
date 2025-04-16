@@ -51,18 +51,18 @@ export const generateErrorReportPdf = async (
   });
 
   // Add title
-  doc.setTextColor(...pdfColors.dark);
+  doc.setTextColor(pdfColors.dark[0], pdfColors.dark[1], pdfColors.dark[2]);
   applyHeadingStyle(doc, 1);
   doc.text(title, 105, 20, { align: 'center' });
 
   // Add subtitle
   applyHeadingStyle(doc, 3);
-  doc.setTextColor(...pdfColors.muted);
+  doc.setTextColor(pdfColors.muted[0], pdfColors.muted[1], pdfColors.muted[2]);
   doc.text(subtitle, 105, 30, { align: 'center' });
 
   // Add report generation date
   applyBodyStyle(doc, true);
-  doc.setTextColor(...pdfColors.muted);
+  doc.setTextColor(pdfColors.muted[0], pdfColors.muted[1], pdfColors.muted[2]);
   doc.text(
     `Дата создания: ${new Date().toLocaleDateString('ru-RU')}`,
     105,
@@ -72,7 +72,7 @@ export const generateErrorReportPdf = async (
 
   // Add error summary
   applyHeadingStyle(doc, 2);
-  doc.setTextColor(...pdfColors.dark);
+  doc.setTextColor(pdfColors.dark[0], pdfColors.dark[1], pdfColors.dark[2]);
   doc.text('Сводка ошибок', 14, 50);
 
   // Error summary table
@@ -95,7 +95,17 @@ export const generateErrorReportPdf = async (
     startY: 55,
     head: [['Тип ошибки', 'Количество', 'Процент']],
     body: summaryData,
-    ...pdfTableStyles.default
+    headStyles: {
+      fillColor: pdfColors.primary as [number, number, number],
+      textColor: [255, 255, 255],
+      fontStyle: 'bold'
+    },
+    bodyStyles: {
+      textColor: [0, 0, 0]
+    },
+    alternateRowStyles: {
+      fillColor: [241, 245, 249]
+    }
   });
 
   // Group errors if requested
@@ -131,7 +141,6 @@ export const generateErrorReportPdf = async (
     startY: currentY + 5,
     head: [['Тип', 'URL', 'Сообщение', 'Код', 'Время']],
     body: tableData,
-    ...pdfTableStyles.default,
     styles: {
       overflow: 'linebreak',
       cellWidth: 'wrap',
@@ -143,6 +152,17 @@ export const generateErrorReportPdf = async (
       2: { cellWidth: 60 },
       3: { cellWidth: 15 },
       4: { cellWidth: 30 }
+    },
+    headStyles: {
+      fillColor: pdfColors.primary as [number, number, number],
+      textColor: [255, 255, 255],
+      fontStyle: 'bold'
+    },
+    bodyStyles: {
+      textColor: [0, 0, 0]
+    },
+    alternateRowStyles: {
+      fillColor: [241, 245, 249]
     }
   });
 
@@ -202,7 +222,6 @@ export const generateErrorReportPdf = async (
         startY: stacktraceY + 5,
         head: [['Тип ошибки', 'Стек вызовов']],
         body: stackTraceData,
-        ...pdfTableStyles.default,
         styles: {
           overflow: 'linebreak',
           cellWidth: 'wrap',
@@ -211,6 +230,17 @@ export const generateErrorReportPdf = async (
         columnStyles: {
           0: { cellWidth: 40 },
           1: { cellWidth: 140 }
+        },
+        headStyles: {
+          fillColor: pdfColors.primary as [number, number, number],
+          textColor: [255, 255, 255],
+          fontStyle: 'bold'
+        },
+        bodyStyles: {
+          textColor: [0, 0, 0]
+        },
+        alternateRowStyles: {
+          fillColor: [241, 245, 249]
         }
       });
     }
@@ -240,11 +270,21 @@ export const generateErrorReportPdf = async (
         startY: 25,
         head: [['Тип ошибки', 'Браузер', 'Устройство', 'User-Agent']],
         body: browserData,
-        ...pdfTableStyles.default,
         styles: {
           overflow: 'linebreak',
           cellWidth: 'wrap',
           fontSize: 8
+        },
+        headStyles: {
+          fillColor: pdfColors.primary as [number, number, number],
+          textColor: [255, 255, 255],
+          fontStyle: 'bold'
+        },
+        bodyStyles: {
+          textColor: [0, 0, 0]
+        },
+        alternateRowStyles: {
+          fillColor: [241, 245, 249]
         }
       });
     } else {
@@ -264,11 +304,21 @@ export const generateErrorReportPdf = async (
         startY: browserY + 5,
         head: [['Тип ошибки', 'Браузер', 'Устройство', 'User-Agent']],
         body: browserData,
-        ...pdfTableStyles.default,
         styles: {
           overflow: 'linebreak',
           cellWidth: 'wrap',
           fontSize: 8
+        },
+        headStyles: {
+          fillColor: pdfColors.primary as [number, number, number],
+          textColor: [255, 255, 255],
+          fontStyle: 'bold'
+        },
+        bodyStyles: {
+          textColor: [0, 0, 0]
+        },
+        alternateRowStyles: {
+          fillColor: [241, 245, 249]
         }
       });
     }

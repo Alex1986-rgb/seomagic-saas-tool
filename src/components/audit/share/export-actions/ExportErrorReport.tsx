@@ -64,9 +64,14 @@ const ExportErrorReport: React.FC<ExportErrorReportProps> = ({
           .forEach(item => {
             errors.push({
               url: url,
-              type: 'Технический',
-              description: item.description || item.title,
-              severity: item.status === 'error' ? 'high' : 'medium'
+              errorType: 'Технический',
+              errorMessage: item.description || item.title,
+              statusCode: 0,
+              timestamp: new Date().toISOString(),
+              stackTrace: '',
+              browser: '',
+              device: '',
+              userAgent: ''
             });
           });
       }
@@ -77,9 +82,14 @@ const ExportErrorReport: React.FC<ExportErrorReportProps> = ({
           .forEach(item => {
             errors.push({
               url: url,
-              type: 'SEO',
-              description: item.description || item.title,
-              severity: item.status === 'error' ? 'high' : 'medium'
+              errorType: 'SEO',
+              errorMessage: item.description || item.title,
+              statusCode: 0,
+              timestamp: new Date().toISOString(),
+              stackTrace: '',
+              browser: '',
+              device: '',
+              userAgent: ''
             });
           });
       }
@@ -90,9 +100,14 @@ const ExportErrorReport: React.FC<ExportErrorReportProps> = ({
           .forEach(item => {
             errors.push({
               url: url,
-              type: 'Контент',
-              description: item.description || item.title,
-              severity: item.status === 'error' ? 'high' : 'medium'
+              errorType: 'Контент',
+              errorMessage: item.description || item.title,
+              statusCode: 0,
+              timestamp: new Date().toISOString(),
+              stackTrace: '',
+              browser: '',
+              device: '',
+              userAgent: ''
             });
           });
       }
@@ -103,23 +118,8 @@ const ExportErrorReport: React.FC<ExportErrorReportProps> = ({
         return;
       }
       
-      const pdfBlob = await generateErrorReportPdf({
-        domain: url,
-        errors: errors,
-        scanDate: auditData.date,
-        url,
-        urls,
-        detailed,
-        auditData
-      });
-      
-      if (!pdfBlob) throw new Error("Не удалось создать PDF");
-      
-      const filename = detailed 
-        ? `detailed-error-report-${cleanUrl(url)}-${formatDate(auditData.date)}.pdf`
-        : `error-report-${cleanUrl(url)}-${formatDate(auditData.date)}.pdf`;
-      
-      saveAs(pdfBlob, filename);
+      // Call generateErrorReportPdf with the proper parameters
+      await generateErrorReportPdf(errors);
       
       showExportSuccess(
         detailed ? "Детальный отчет экспортирован" : "Отчет об ошибках экспортирован", 
