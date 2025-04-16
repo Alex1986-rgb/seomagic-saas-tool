@@ -144,6 +144,56 @@ export type Database = {
           },
         ]
       }
+      crawl_tasks: {
+        Row: {
+          estimated_total_pages: number | null
+          id: string
+          options: Json | null
+          pages_scanned: number | null
+          progress: number | null
+          project_id: string | null
+          start_time: string | null
+          status: string
+          task_id: string
+          updated_at: string | null
+          url: string
+        }
+        Insert: {
+          estimated_total_pages?: number | null
+          id?: string
+          options?: Json | null
+          pages_scanned?: number | null
+          progress?: number | null
+          project_id?: string | null
+          start_time?: string | null
+          status?: string
+          task_id: string
+          updated_at?: string | null
+          url: string
+        }
+        Update: {
+          estimated_total_pages?: number | null
+          id?: string
+          options?: Json | null
+          pages_scanned?: number | null
+          progress?: number | null
+          project_id?: string | null
+          start_time?: string | null
+          status?: string
+          task_id?: string
+          updated_at?: string | null
+          url?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crawl_tasks_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       projects: {
         Row: {
           created_at: string

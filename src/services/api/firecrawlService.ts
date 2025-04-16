@@ -1,8 +1,30 @@
-
 /**
  * Сервис для масштабного сканирования сайтов через Firecrawl API
  */
 import { supabase } from '@/integrations/supabase/client';
+
+// Define types for tables to fix TypeScript issues
+type AnalyticsRow = {
+  id: string;
+  project_id: string;
+  url: string;
+  score: number;
+  pages_scanned: number;
+  created_at: string;
+};
+
+type CrawlTasksRow = {
+  id: string;
+  task_id: string;
+  project_id: string;
+  url: string;
+  status: string;
+  progress: number;
+  pages_scanned: number;
+  estimated_total_pages: number;
+  start_time: string;
+  updated_at: string;
+};
 
 // Настройки для масштабного сканирования
 export interface MassiveCrawlOptions {
@@ -70,7 +92,7 @@ export const firecrawlService = {
         status: 'pending',
         options: crawlOptions,
         start_time: new Date().toISOString()
-      });
+      } as CrawlTasksRow);
       
       // Запускаем периодическую проверку статуса
       this.startStatusPolling(taskId, projectId);
