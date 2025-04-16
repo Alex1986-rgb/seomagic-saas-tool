@@ -63,6 +63,20 @@ export interface CrawlStatus {
   lastUpdated: string;
 }
 
+// Define a fixed type for the insert operation to avoid deep recursion
+type CrawlTaskInsert = {
+  project_id: string | null;
+  url: string;
+  task_id: string;
+  status: 'pending' | 'processing' | 'completed' | 'failed';
+  progress?: number | null;
+  pages_scanned?: number | null;
+  estimated_total_pages?: number | null;
+  options?: Json | null;
+  start_time?: string | null;
+  updated_at?: string | null;
+};
+
 export const firecrawlService = {
   /**
    * Запуск масштабного сканирования сайта
@@ -101,18 +115,20 @@ export const firecrawlService = {
       const taskId = `task_${Date.now()}`;
       
       // Сохраняем информацию о задаче в базу данных
-      await supabase.from('crawl_tasks').insert({
+      const insertData: CrawlTaskInsert = {
         project_id: projectId,
         url,
         task_id: taskId,
-        status: 'pending' as const,
+        status: 'pending',
         progress: 0,
         pages_scanned: 0,
         estimated_total_pages: 0,
         options: crawlOptions,
         start_time: new Date().toISOString(),
         updated_at: new Date().toISOString()
-      });
+      };
+      
+      await supabase.from('crawl_tasks').insert(insertData);
       
       // Запускаем периодическую проверку статуса
       this.startStatusPolling(taskId, projectId);
@@ -270,14 +286,17 @@ export const firecrawlService = {
           progress = 100;
           clearInterval(interval);
           
-          // Обновляем статус задачи на "completed"
-          await supabase.from('crawl_tasks').update({
+          // Create update data with explicit type
+          const taskUpdateData = {
             status: 'completed' as const,
             progress: 100,
             pages_scanned: pagesScanned,
             estimated_total_pages: pagesScanned,
             updated_at: new Date().toISOString()
-          }).eq('task_id', taskId);
+          };
+          
+          // Обновляем статус задачи на "completed"
+          await supabase.from('crawl_tasks').update(taskUpdateData).eq('task_id', taskId);
           
           // Генерируем фиктивные результаты
           const mockUrls = Array.from({ length: 100 }, (_, i) => 
@@ -310,14 +329,17 @@ export const firecrawlService = {
           
           console.log(`Задача ${taskId} успешно завершена`);
         } else {
-          // Обновляем статус задачи
-          await supabase.from('crawl_tasks').update({
+          // Create update data with explicit type
+          const taskUpdateData = {
             status: 'processing' as const,
             progress: Math.floor(progress),
             pages_scanned: pagesScanned,
             estimated_total_pages: Math.floor(pagesScanned * 1.5),
             updated_at: new Date().toISOString()
-          }).eq('task_id', taskId);
+          };
+          
+          // Обновляем статус задачи
+          await supabase.from('crawl_tasks').update(taskUpdateData).eq('task_id', taskId);
         }
       } catch (error) {
         console.error('Ошибка обновления статуса:', error);
