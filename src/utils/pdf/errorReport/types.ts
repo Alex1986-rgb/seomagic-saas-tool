@@ -1,34 +1,44 @@
-
 import { AuditData } from '@/types/audit';
+import jsPDF from 'jspdf';
 
-export interface ErrorReportPdfOptions {
-  auditData: AuditData;
+export interface ErrorData {
   url: string;
-  urls?: string[];
-  includeScreenshots?: boolean;
-  detailed?: boolean;
+  errorType: string;
+  errorMessage: string;
+  statusCode?: number;
+  timestamp: string;
+  stackTrace?: string;
+  browser?: string;
+  device?: string;
+  userAgent?: string;
 }
 
-export interface AnalyzedError {
-  title: string;
-  description: string;
-  impact?: 'high' | 'medium' | 'low';
-  category?: string;
-  solution?: string;
-  url?: string;
-}
-
-export interface AnalyzedErrors {
-  critical: AnalyzedError[];
-  important: AnalyzedError[];
-  minor: AnalyzedError[];
-  byPage?: Record<string, AnalyzedError[]>;
+export interface ErrorReportOptions {
+  includeStackTrace?: boolean;
+  includeBrowserInfo?: boolean;
+  includeUserAgent?: boolean;
+  title?: string;
+  subtitle?: string;
+  groupByType?: boolean;
 }
 
 export interface ErrorReportSection {
   title: string;
-  errors: AnalyzedError[];
+  errors: ErrorData[];
   color: [number, number, number];
+}
+
+export interface ErrorGroupData {
+  type: string;
+  count: number;
+  percentage: string;
+  errors: ErrorData[];
+}
+
+export interface ErrorReportContext {
+  doc: jsPDF;
+  currentY: number;
+  options: ErrorReportOptions;
 }
 
 export interface ErrorReportData {
@@ -40,6 +50,6 @@ export interface ErrorReportData {
 export interface ErrorTypeData {
   name: string;
   description: string;
-  urls: string[];
   solution?: string;
+  urls: string[];
 }

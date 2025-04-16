@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import AuditSummary from '@/components/AuditSummary';
@@ -49,14 +48,13 @@ const AuditResultsContainer: React.FC<AuditResultsContainerProps> = ({ url }) =>
 
   useEffect(() => {
     if (!isInitialized && url) {
-      // Pass both refresh and deep scan parameters
-      loadAuditData(false, false);
+      loadAuditData(false, false).catch(console.error);
       setIsInitialized(true);
     }
   }, [url, isInitialized, loadAuditData]);
 
   const handleRefreshAudit = () => {
-    loadAuditData(true);
+    loadAuditData(true, false);
   };
 
   const handleDeepScan = () => {
@@ -70,7 +68,7 @@ const AuditResultsContainer: React.FC<AuditResultsContainerProps> = ({ url }) =>
   };
 
   const handleSelectHistoricalAudit = (auditId: string) => {
-    // This can be moved to a separate function or context in a future refactoring
+    console.log('Selecting historical audit:', auditId);
   };
 
   const toggleContentPrompt = () => {
@@ -81,9 +79,7 @@ const AuditResultsContainer: React.FC<AuditResultsContainerProps> = ({ url }) =>
     optimizeSiteContent();
   };
 
-  // Handler for PDF report generation
   const handleGeneratePdfReport = () => {
-    // Pass the required data to generatePdfReportFile
     generatePdfReportFile({
       auditData,
       url,
@@ -111,7 +107,7 @@ const AuditResultsContainer: React.FC<AuditResultsContainerProps> = ({ url }) =>
   }
 
   if (error) {
-    return <AuditError error={error} onRetry={() => loadAuditData(false)} />;
+    return <AuditError error={error} onRetry={() => loadAuditData(false, false)} />;
   }
 
   if (!auditData || !recommendations) {
@@ -123,7 +119,7 @@ const AuditResultsContainer: React.FC<AuditResultsContainerProps> = ({ url }) =>
   }
 
   return (
-    <AnimatePresence>
+    <AnimatePresence mode="sync">
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}

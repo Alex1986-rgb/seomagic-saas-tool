@@ -1,51 +1,36 @@
 
-import React, { useEffect } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import React from 'react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { LoginForm, RegisterForm, SocialAuth } from "@/components/auth";
-import AuthContainer from "@/components/auth/AuthContainer";
+import LoginForm from '@/components/auth/LoginForm';
+import RegisterForm from '@/components/auth/RegisterForm';
 
-const Auth: React.FC = () => {
-  const [searchParams] = useSearchParams();
-  const defaultTab = searchParams.get('tab') === 'register' ? 'register' : 'login';
-  const navigate = useNavigate();
-
-  // Set focus on container when component mounts
-  useEffect(() => {
-    document.getElementById('auth-container')?.focus();
-  }, []);
-
-  const handleLoginSuccess = () => {
-    navigate('/dashboard');
-  };
-
-  const handleRegisterSuccess = () => {
-    // Just switch to login tab
-    navigate('/auth');
-  };
-
+const Auth = () => {
   return (
-    <AuthContainer
-      title="Доступ к SeoMarket"
-      description="Войдите или создайте аккаунт для доступа к расширенным возможностям"
-    >
-      <Tabs defaultValue={defaultTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-2 mb-6">
-          <TabsTrigger value="login">Вход</TabsTrigger>
-          <TabsTrigger value="register">Регистрация</TabsTrigger>
-        </TabsList>
-        
-        <TabsContent value="login">
-          <LoginForm onSuccess={handleLoginSuccess} />
-        </TabsContent>
-        
-        <TabsContent value="register">
-          <RegisterForm onSuccess={handleRegisterSuccess} />
-        </TabsContent>
-      </Tabs>
-
-      <SocialAuth />
-    </AuthContainer>
+    <div className="min-h-screen flex items-center justify-center bg-background px-4">
+      <Card className="w-full max-w-md">
+        <CardHeader className="space-y-1">
+          <CardTitle className="text-2xl">Добро пожаловать</CardTitle>
+          <CardDescription>
+            Войдите в аккаунт или создайте новый
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Tabs defaultValue="login" className="w-full">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="login">Вход</TabsTrigger>
+              <TabsTrigger value="register">Регистрация</TabsTrigger>
+            </TabsList>
+            <TabsContent value="login">
+              <LoginForm />
+            </TabsContent>
+            <TabsContent value="register">
+              <RegisterForm />
+            </TabsContent>
+          </Tabs>
+        </CardContent>
+      </Card>
+    </div>
   );
 };
 
