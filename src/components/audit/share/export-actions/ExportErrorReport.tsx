@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { FileDown, Loader2, ChevronsDownUp } from 'lucide-react';
 import { DropdownMenuItem, DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger, DropdownMenuPortal } from "@/components/ui/dropdown-menu";
@@ -30,7 +29,6 @@ const ExportErrorReport: React.FC<ExportErrorReportProps> = ({
       try {
         setIsExporting('error-report');
         
-        // Use backend API to generate the report
         await seoApiService.downloadReport(taskId, detailed ? 'detailed' : 'errors');
         
         showExportSuccess(
@@ -46,7 +44,6 @@ const ExportErrorReport: React.FC<ExportErrorReportProps> = ({
       return;
     }
     
-    // Frontend implementation for when backend is not available
     if (!auditData) {
       showExportError();
       return;
@@ -55,7 +52,6 @@ const ExportErrorReport: React.FC<ExportErrorReportProps> = ({
     try {
       setIsExporting('error-report');
       
-      // Create errors array from audit data
       const errors = [];
       
       if (auditData?.details?.technical?.items) {
@@ -118,8 +114,12 @@ const ExportErrorReport: React.FC<ExportErrorReportProps> = ({
         return;
       }
       
-      // Call generateErrorReportPdf with the proper parameters
-      await generateErrorReportPdf(errors);
+      await generateErrorReportPdf(errors, {
+        includeStackTrace: detailed,
+        includeBrowserInfo: true,
+        includeUserAgent: detailed,
+        groupByType: true
+      });
       
       showExportSuccess(
         detailed ? "Детальный отчет экспортирован" : "Отчет об ошибках экспортирован", 
