@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { FileText, Loader2 } from 'lucide-react';
 import { Button } from "@/components/ui/button";
@@ -40,7 +41,7 @@ const ExportDeepCrawlPdf: React.FC<ExportDeepCrawlPdfProps> = ({
   const [isExporting, setIsExporting] = useState(false);
   const { toast } = useToast();
   
-  const handleExport = async () => {
+  const handleExport = async (): Promise<boolean> => {
     if (isExporting) return false;
     
     try {
