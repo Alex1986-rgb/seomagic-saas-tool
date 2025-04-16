@@ -2,10 +2,12 @@
 import jsPDF from 'jspdf';
 import { ErrorData, ErrorReportOptions } from './types';
 import { analyzeErrors } from './analyzer';
-import { addSummarySection } from './sections/summary';
-import { addErrorDetailsSection } from './sections/details';
-import { addStackTraceSection } from './sections/stacktrace';
-import { addBrowserInfoSection } from './sections/browserInfo';
+import { 
+  addSummarySection,
+  addErrorDetailsSection,
+  addStackTraceSection,
+  addBrowserInfoSection 
+} from './sections';
 import { addPaginationFooters } from '../helpers/pagination';
 import { formatHeader } from './utils';
 
