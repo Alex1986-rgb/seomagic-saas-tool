@@ -1,7 +1,7 @@
 
 // Simple types without self-references to avoid deep type instantiation
 export type JsonPrimitive = string | number | boolean | null;
-export type JsonArray = Array<JsonValue>;
+export type JsonArray = JsonValue[];
 export type JsonObject = { [key: string]: JsonValue };
 export type JsonValue = JsonPrimitive | JsonObject | JsonArray;
 

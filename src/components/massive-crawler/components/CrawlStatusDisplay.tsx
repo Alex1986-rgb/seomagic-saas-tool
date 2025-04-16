@@ -14,7 +14,7 @@ export const CrawlStatusDisplay = ({ status }: CrawlStatusDisplayProps) => {
     const variants = {
       pending: 'secondary',
       processing: 'default',
-      completed: 'success',
+      completed: 'outline',  // Changed from 'success' to 'outline' to match available variants
       failed: 'destructive'
     } as const;
     
