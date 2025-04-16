@@ -15,6 +15,9 @@ export const registerSchema = z.object({
   termsAccepted: z.boolean().refine(val => val === true, {
     message: "Необходимо принять условия использования",
   }),
+}).refine((data) => data.password === data.confirmPassword, {
+  message: "Пароли не совпадают",
+  path: ["confirmPassword"],
 });
 
 // Define types for form values
