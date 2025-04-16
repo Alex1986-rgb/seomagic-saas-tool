@@ -1,15 +1,7 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { Button } from "@/components/ui/button";
-import { 
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { useToast } from "@/hooks/use-toast";
-import { Download, FileDown, BookOpen, Settings } from 'lucide-react';
-import MassiveCrawler from '@/components/massive-crawler/MassiveCrawler';
+import { FileDown, FileText, Download } from 'lucide-react';
 
 interface CrawlResultsActionsProps {
   domain: string;
@@ -36,59 +28,28 @@ export const CrawlResultsActions: React.FC<CrawlResultsActionsProps> = ({
   onDownloadReport,
   onDownloadAllData
 }) => {
-  const { toast } = useToast();
-  const [showMassiveCrawlDialog, setShowMassiveCrawlDialog] = useState(false);
-
-  const handleMassiveCrawlComplete = (pagesScanned: number) => {
-    toast({
-      title: "Масштабное сканирование завершено",
-      description: `Просканировано ${pagesScanned.toLocaleString('ru-RU')} страниц сайта ${domain}`,
-    });
-    setShowMassiveCrawlDialog(false);
-  };
-
   return (
-    <>
-      <div className="flex flex-wrap gap-2 mt-4">
-        <Button variant="outline" size="sm" className="gap-2" onClick={onDownloadSitemap}>
-          <FileDown className="h-4 w-4" />
-          <span>Скачать Sitemap</span>
+    <div className="flex flex-wrap items-center gap-2 justify-end mt-4">
+      {onDownloadSitemap && (
+        <Button variant="outline" size="sm" onClick={onDownloadSitemap} className="gap-1">
+          <FileDown className="h-3 w-3" />
+          <span>Sitemap</span>
         </Button>
-        
-        <Button variant="outline" size="sm" className="gap-2" onClick={onDownloadReport}>
-          <BookOpen className="h-4 w-4" />
-          <span>Отчет о сканировании</span>
-        </Button>
-        
-        <Button variant="outline" size="sm" className="gap-2" onClick={onDownloadAllData}>
-          <Download className="h-4 w-4" />
-          <span>Экспорт данных</span>
-        </Button>
-        
-        <Button 
-          variant="default" 
-          size="sm" 
-          className="gap-2 ml-auto" 
-          onClick={() => setShowMassiveCrawlDialog(true)}
-        >
-          <Settings className="h-4 w-4" />
-          <span>Масштабное сканирование</span>
-        </Button>
-      </div>
+      )}
 
-      <Dialog open={showMassiveCrawlDialog} onOpenChange={setShowMassiveCrawlDialog}>
-        <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Масштабное сканирование</DialogTitle>
-          </DialogHeader>
-          
-          <MassiveCrawler 
-            projectId={"00000000-0000-0000-0000-000000000000"} // Здесь должен быть фактический ID проекта
-            url={`https://${domain}`}
-            onComplete={handleMassiveCrawlComplete}
-          />
-        </DialogContent>
-      </Dialog>
-    </>
+      {onDownloadReport && (
+        <Button variant="outline" size="sm" onClick={onDownloadReport} className="gap-1">
+          <FileText className="h-3 w-3" />
+          <span>Отчет</span>
+        </Button>
+      )}
+
+      {onDownloadAllData && (
+        <Button size="sm" onClick={onDownloadAllData} className="gap-1">
+          <Download className="h-3 w-3" />
+          <span>Скачать все данные</span>
+        </Button>
+      )}
+    </div>
   );
 };

@@ -2,6 +2,7 @@
  * Сервис для масштабного сканирования сайтов через Firecrawl API
  */
 import { supabase } from '@/integrations/supabase/client';
+import { Json } from '@/integrations/supabase/types';
 
 // Define types for tables to fix TypeScript issues
 type AnalyticsRow = {
@@ -9,21 +10,35 @@ type AnalyticsRow = {
   project_id: string;
   url: string;
   score: number;
-  pages_scanned: number;
-  created_at: string;
+  pages_scanned: number | null;
+  positions_tracked: number | null;
+  active_users: number | null;
+  trends: Json | null;
+  distribution: Json | null;
+  created_at: string | null;
 };
 
 type CrawlTasksRow = {
   id: string;
   task_id: string;
-  project_id: string;
+  project_id: string | null;
   url: string;
-  status: string;
-  progress: number;
-  pages_scanned: number;
-  estimated_total_pages: number;
-  start_time: string;
-  updated_at: string;
+  status: 'pending' | 'processing' | 'completed' | 'failed';
+  progress: number | null;
+  pages_scanned: number | null;
+  estimated_total_pages: number | null;
+  options: Json | null;
+  start_time: string | null;
+  updated_at: string | null;
+};
+
+type CrawlResultsRow = {
+  id: string;
+  task_id: string;
+  project_id: string | null;
+  urls: string[];
+  page_count: number;
+  created_at: string;
 };
 
 // Настройки для масштабного сканирования
@@ -89,10 +104,14 @@ export const firecrawlService = {
         project_id: projectId,
         url,
         task_id: taskId,
-        status: 'pending',
+        status: 'pending' as const,
+        progress: 0,
+        pages_scanned: 0,
+        estimated_total_pages: 0,
         options: crawlOptions,
-        start_time: new Date().toISOString()
-      } as CrawlTasksRow);
+        start_time: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      });
       
       // Запускаем периодическую проверку статуса
       this.startStatusPolling(taskId, projectId);
@@ -122,12 +141,12 @@ export const firecrawlService = {
       
       return {
         taskId,
-        status: taskData.status,
+        status: taskData.status as 'pending' | 'processing' | 'completed' | 'failed',
         progress: taskData.progress || 0,
         pagesScanned: taskData.pages_scanned || 0,
         estimatedTotalPages: taskData.estimated_total_pages || 0,
-        startTime: taskData.start_time,
-        lastUpdated: taskData.updated_at
+        startTime: taskData.start_time || new Date().toISOString(),
+        lastUpdated: taskData.updated_at || new Date().toISOString()
       };
     } catch (error) {
       console.error('Ошибка проверки статуса:', error);
@@ -252,7 +271,7 @@ export const firecrawlService = {
           
           // Обновляем статус задачи на "completed"
           await supabase.from('crawl_tasks').update({
-            status: 'completed',
+            status: 'completed' as const,
             progress: 100,
             pages_scanned: pagesScanned,
             estimated_total_pages: pagesScanned,
@@ -274,8 +293,10 @@ export const firecrawlService = {
           });
           
           // Обновляем аналитику проекта
+          const websiteUrl = await this.getUrlFromTaskId(taskId);
           await supabase.from('analytics').insert({
             project_id: projectId,
+            url: websiteUrl || 'example.com', // Ensure we always have a URL value
             score: Math.floor(Math.random() * 30) + 70,
             pages_scanned: pagesScanned,
             positions_tracked: Math.floor(pagesScanned * 0.8),
@@ -288,7 +309,7 @@ export const firecrawlService = {
         } else {
           // Обновляем статус задачи
           await supabase.from('crawl_tasks').update({
-            status: 'processing',
+            status: 'processing' as const,
             progress: Math.floor(progress),
             pages_scanned: pagesScanned,
             estimated_total_pages: Math.floor(pagesScanned * 1.5),
@@ -300,6 +321,28 @@ export const firecrawlService = {
         clearInterval(interval);
       }
     }, 3000);
+  },
+  
+  /**
+   * Получить URL сайта из task_id
+   */
+  async getUrlFromTaskId(taskId: string): Promise<string | null> {
+    try {
+      const { data, error } = await supabase
+        .from('crawl_tasks')
+        .select('url')
+        .eq('task_id', taskId)
+        .single();
+        
+      if (error || !data) {
+        return null;
+      }
+      
+      return data.url;
+    } catch (error) {
+      console.error('Ошибка получения URL из taskId:', error);
+      return null;
+    }
   },
   
   /**
