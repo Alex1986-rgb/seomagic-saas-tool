@@ -3,7 +3,8 @@ import { useState, useCallback } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import { AuditData } from '@/types/audit';
 import { OptimizationItem } from '../components/optimization/CostDetailsTable';
-import { useAuditAPI } from './useAuditAPI';
+import { useScanAPI } from './useScanAPI';
+import { useOptimizationAPI } from './useOptimizationAPI';
 
 export const useScanManager = (
   url: string, 
@@ -22,9 +23,12 @@ export const useScanManager = (
   const { 
     taskId,
     startBackendScan,
-    setupPolling,
+    setupPolling
+  } = useScanAPI(url);
+
+  const {
     loadOptimizationCost
-  } = useAuditAPI(url);
+  } = useOptimizationAPI(taskId);
 
   const startScan = async (deepScan: boolean) => {
     const newTaskId = await startBackendScan(deepScan);

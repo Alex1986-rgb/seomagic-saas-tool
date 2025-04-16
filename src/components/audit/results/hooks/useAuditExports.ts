@@ -1,15 +1,23 @@
 
 import { useCallback } from 'react';
-import { useAuditAPI } from './useAuditAPI';
+import { useDownloadAPI } from './useDownloadAPI';
+import { useOptimizationAPI } from './useOptimizationAPI';
+import { useScanAPI } from './useScanAPI';
 
 export const useAuditExports = (url: string) => {
   const {
-    taskId,
+    taskId
+  } = useScanAPI(url);
+  
+  const {
     downloadSitemap: apiDownloadSitemap,
     downloadOptimizedSite: apiDownloadOptimizedSite,
-    exportJSONData: apiExportJSONData,
+    exportJSONData: apiExportJSONData
+  } = useDownloadAPI(url, taskId);
+
+  const {
     optimizeSiteContent: apiOptimizeSiteContent
-  } = useAuditAPI(url);
+  } = useOptimizationAPI(taskId);
 
   const downloadSitemap = useCallback((localDownloadFn: () => void) => {
     if (taskId) {
