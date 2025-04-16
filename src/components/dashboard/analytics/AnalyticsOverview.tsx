@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { LineChart, BarChart2, TrendingUp, Users } from 'lucide-react';
 import { 
@@ -13,42 +13,74 @@ import {
   BarChart,
   Bar
 } from 'recharts';
+import { useAnalyticsData } from '@/hooks/useAnalyticsData';
+import { Skeleton } from "@/components/ui/skeleton";
 
-const mockData = [
-  { name: '1 Апр', value: 65 },
-  { name: '8 Апр', value: 72 },
-  { name: '15 Апр', value: 68 },
-  { name: '22 Апр', value: 78 },
-  { name: '29 Апр', value: 82 },
-  { name: '6 Мая', value: 85 },
-  { name: '13 Мая', value: 89 },
-];
+interface AnalyticsOverviewProps {
+  projectId: string;
+}
 
-export const AnalyticsOverview = () => {
+export const AnalyticsOverview = ({ projectId }: AnalyticsOverviewProps) => {
+  const { data, isLoading, fetchAnalyticsData } = useAnalyticsData();
+
+  useEffect(() => {
+    if (projectId) {
+      fetchAnalyticsData(projectId);
+    }
+  }, [projectId, fetchAnalyticsData]);
+
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          {[...Array(4)].map((_, i) => (
+            <Skeleton key={i} className="h-[120px]" />
+          ))}
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <Skeleton className="h-[300px]" />
+          <Skeleton className="h-[300px]" />
+        </div>
+      </div>
+    );
+  }
+
+  if (!data) {
+    return (
+      <Card>
+        <CardContent className="py-6">
+          <p className="text-center text-muted-foreground">
+            Нет доступных данных аналитики
+          </p>
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
           title="Общий рейтинг SEO"
-          value="82/100"
+          value={`${data.seoScore}/100`}
           increase="+12%"
           icon={<TrendingUp className="h-4 w-4" />}
         />
         <StatCard
           title="Проверенные страницы"
-          value="1,284"
+          value={data.pagesScanned.toLocaleString()}
           increase="+8%"
           icon={<BarChart2 className="h-4 w-4" />}
         />
         <StatCard
           title="Отслеживаемые позиции"
-          value="348"
+          value={data.positionsTracked.toLocaleString()}
           increase="+24%"
           icon={<LineChart className="h-4 w-4" />}
         />
         <StatCard
           title="Активные пользователи"
-          value="2,842"
+          value={data.activeUsers.toLocaleString()}
           increase="+18%"
           icon={<Users className="h-4 w-4" />}
         />
@@ -61,7 +93,7 @@ export const AnalyticsOverview = () => {
           </CardHeader>
           <CardContent className="h-[300px]">
             <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={mockData}>
+              <AreaChart data={data.trends}>
                 <defs>
                   <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.8}/>
@@ -90,13 +122,7 @@ export const AnalyticsOverview = () => {
           </CardHeader>
           <CardContent className="h-[300px]">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={[
-                { category: '90-100', count: 25 },
-                { category: '80-89', count: 42 },
-                { category: '70-79', count: 30 },
-                { category: '60-69', count: 15 },
-                { category: '0-59', count: 8 },
-              ]}>
+              <BarChart data={data.distribution}>
                 <CartesianGrid strokeDasharray="3 3" opacity={0.1} />
                 <XAxis dataKey="category" />
                 <YAxis />

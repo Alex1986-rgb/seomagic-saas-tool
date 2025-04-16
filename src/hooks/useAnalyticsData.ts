@@ -1,6 +1,7 @@
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 export interface AnalyticsData {
   seoScore: number;
@@ -22,35 +23,29 @@ export const useAnalyticsData = () => {
   const [data, setData] = useState<AnalyticsData | null>(null);
   const { toast } = useToast();
 
-  const fetchAnalyticsData = async () => {
+  const fetchAnalyticsData = useCallback(async (projectId?: string) => {
     try {
       setIsLoading(true);
-      // In the future, this will fetch real data from Supabase
-      // For now, we'll use mock data
-      const mockData: AnalyticsData = {
-        seoScore: 82,
-        pagesScanned: 1284,
-        positionsTracked: 348,
-        activeUsers: 2842,
-        trends: [
-          { name: '1 Апр', value: 65 },
-          { name: '8 Апр', value: 72 },
-          { name: '15 Апр', value: 68 },
-          { name: '22 Апр', value: 78 },
-          { name: '29 Апр', value: 82 },
-          { name: '6 Мая', value: 85 },
-          { name: '13 Мая', value: 89 },
-        ],
-        distribution: [
-          { category: '90-100', count: 25 },
-          { category: '80-89', count: 42 },
-          { category: '70-79', count: 30 },
-          { category: '60-69', count: 15 },
-          { category: '0-59', count: 8 },
-        ]
-      };
-      
-      setData(mockData);
+      const { data: analyticsData, error } = await supabase
+        .from('analytics')
+        .select('*')
+        .eq('project_id', projectId)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .single();
+
+      if (error) throw error;
+
+      if (analyticsData) {
+        setData({
+          seoScore: analyticsData.seo_score,
+          pagesScanned: analyticsData.pages_scanned,
+          positionsTracked: analyticsData.positions_tracked,
+          activeUsers: analyticsData.active_users,
+          trends: analyticsData.trends || [],
+          distribution: analyticsData.distribution || []
+        });
+      }
     } catch (error) {
       console.error('Error fetching analytics data:', error);
       toast({
@@ -61,7 +56,7 @@ export const useAnalyticsData = () => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [toast]);
 
   return {
     isLoading,
