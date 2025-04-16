@@ -1,3 +1,4 @@
+
 /**
  * Сервис для масштабного сканирования сайтов через Firecrawl API
  */
@@ -7,7 +8,7 @@ import { Json } from '@/integrations/supabase/types';
 // Define types for tables to fix TypeScript issues
 type AnalyticsRow = {
   id: string;
-  project_id: string;
+  project_id: string | null;
   url: string;
   score: number;
   pages_scanned: number | null;
@@ -294,16 +295,18 @@ export const firecrawlService = {
           
           // Обновляем аналитику проекта
           const websiteUrl = await this.getUrlFromTaskId(taskId);
-          await supabase.from('analytics').insert({
-            project_id: projectId,
-            url: websiteUrl || 'example.com', // Ensure we always have a URL value
-            score: Math.floor(Math.random() * 30) + 70,
-            pages_scanned: pagesScanned,
-            positions_tracked: Math.floor(pagesScanned * 0.8),
-            active_users: Math.floor(Math.random() * 1000) + 500,
-            trends: this.generateMockTrends(),
-            distribution: this.generateMockDistribution(pagesScanned)
-          });
+          if (websiteUrl) {
+            await supabase.from('analytics').insert({
+              project_id: projectId,
+              url: websiteUrl,
+              score: Math.floor(Math.random() * 30) + 70,
+              pages_scanned: pagesScanned,
+              positions_tracked: Math.floor(pagesScanned * 0.8),
+              active_users: Math.floor(Math.random() * 1000) + 500,
+              trends: this.generateMockTrends(),
+              distribution: this.generateMockDistribution(pagesScanned)
+            });
+          }
           
           console.log(`Задача ${taskId} успешно завершена`);
         } else {
