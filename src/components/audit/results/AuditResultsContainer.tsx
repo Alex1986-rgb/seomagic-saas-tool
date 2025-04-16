@@ -68,7 +68,6 @@ const AuditResultsContainer: React.FC<AuditResultsContainerProps> = ({ url }) =>
   };
 
   const handleSelectHistoricalAudit = (auditId: string) => {
-    // Implementation for historical audit selection
     console.log('Selecting historical audit:', auditId);
   };
 
@@ -80,7 +79,6 @@ const AuditResultsContainer: React.FC<AuditResultsContainerProps> = ({ url }) =>
     optimizeSiteContent();
   };
 
-  // Handler for PDF report generation
   const handleGeneratePdfReport = () => {
     generatePdfReportFile();
   };

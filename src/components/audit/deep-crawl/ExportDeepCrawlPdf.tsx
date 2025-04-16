@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { FileText, Loader2 } from 'lucide-react';
 import { Button } from "@/components/ui/button";
@@ -82,6 +83,8 @@ const ExportDeepCrawlPdf: React.FC<ExportDeepCrawlPdfProps> = ({
         title: "Отчет сохранен",
         description: "Полный PDF отчет успешно скачан",
       });
+
+      return true; // Return true to indicate success
     } catch (error) {
       console.error('Ошибка при создании PDF:', error);
       
@@ -90,6 +93,8 @@ const ExportDeepCrawlPdf: React.FC<ExportDeepCrawlPdfProps> = ({
         description: "Не удалось создать PDF отчет. Пожалуйста, попробуйте еще раз.",
         variant: "destructive",
       });
+
+      return false; // Return false to indicate failure
     } finally {
       setIsExporting(false);
     }
