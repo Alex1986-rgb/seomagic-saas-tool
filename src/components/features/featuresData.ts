@@ -80,3 +80,4 @@ export const getFeaturesByCategory = () => {
 export const getAllFeatures = () => {
   return featuresData;
 };
+
