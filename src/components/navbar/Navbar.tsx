@@ -10,6 +10,7 @@ import NavbarMobileToggle from './NavbarMobileToggle';
 import NavbarMobile from './NavbarMobile';
 import DebugControls from './DebugControls';
 import { NAV_ITEMS } from './navConstants';
+import { useAuth } from '@/contexts/AuthContext';
 
 const Navbar: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -17,73 +18,21 @@ const Navbar: React.FC = () => {
   const isMobile = useMediaQuery('(max-width: 768px)');
   const location = useLocation();
   const navigate = useNavigate();
+  const { user, logoutUser, toggleAdmin } = useAuth();
 
-  // Authentication state
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [isAdmin, setIsAdmin] = useState(false);
-
-  // Check authentication status when the component loads
-  useEffect(() => {
-    const checkAuthStatus = () => {
-      const loggedIn = localStorage.getItem('isLoggedIn') === 'true';
-      const admin = localStorage.getItem('isAdmin') === 'true';
-      
-      setIsLoggedIn(loggedIn);
-      setIsAdmin(admin);
-    };
-    
-    checkAuthStatus();
-    
-    // Add a listener to update the state when localStorage changes
-    window.addEventListener('storage', checkAuthStatus);
-    
-    return () => {
-      window.removeEventListener('storage', checkAuthStatus);
-    };
-  }, []);
-
-  // Toggle for login/logout
-  const toggleAuth = () => {
-    if (isLoggedIn) {
-      localStorage.removeItem('isLoggedIn');
-      localStorage.removeItem('isAdmin');
-      setIsLoggedIn(false);
-      setIsAdmin(false);
-      
-      // Navigate to home page when logging out
-      navigate('/');
-    } else {
-      localStorage.setItem('isLoggedIn', 'true');
-      setIsLoggedIn(true);
-    }
-    
-    // Generate a storage event to update the state in other components
-    window.dispatchEvent(new Event('storage'));
-  };
-
-  // Toggle for admin rights
-  const toggleAdmin = () => {
-    const newAdminState = !isAdmin;
-    localStorage.setItem('isAdmin', newAdminState.toString());
-    setIsAdmin(newAdminState);
-    
-    // Generate a storage event to update the state in other components
-    window.dispatchEvent(new Event('storage'));
-  };
-
-  // Close the menu when the route changes
+  // Закрываем меню при изменении маршрута
   useEffect(() => {
     setIsOpen(false);
   }, [location]);
 
-  // Change navbar style on scroll
+  // Изменяем стиль навбара при прокрутке
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 10);
     };
 
     window.addEventListener('scroll', handleScroll);
-    handleScroll(); // Call immediately to initialize the state
+    handleScroll(); // Вызываем сразу для инициализации состояния
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
@@ -102,43 +51,39 @@ const Navbar: React.FC = () => {
     >
       <div className="container mx-auto px-4 md:px-6">
         <div className="flex justify-between items-center h-16">
-          {/* Logo */}
+          {/* Логотип */}
           <NavbarLogo />
 
-          {/* Desktop Navigation */}
+          {/* Десктопная навигация */}
           <NavbarDesktopLinks navItems={NAV_ITEMS} />
 
-          {/* Desktop Auth Buttons and Theme Switcher */}
-          <NavbarDesktopAuth 
-            isLoggedIn={isLoggedIn}
-            isAdmin={isAdmin}
-            toggleAuth={toggleAuth}
-          />
+          {/* Десктопные кнопки авторизации и переключатель темы */}
+          <NavbarDesktopAuth />
 
-          {/* Mobile Toggle */}
+          {/* Мобильный переключатель */}
           <NavbarMobileToggle isOpen={isOpen} setIsOpen={setIsOpen} />
         </div>
       </div>
 
-      {/* Mobile Menu */}
+      {/* Мобильное меню */}
       <AnimatePresence>
         {isOpen && isMobile && (
           <NavbarMobile 
             isOpen={isOpen}
             navItems={NAV_ITEMS}
-            isLoggedIn={isLoggedIn}
-            isAdmin={isAdmin}
-            toggleAuth={toggleAuth}
+            isLoggedIn={user.isLoggedIn}
+            isAdmin={user.isAdmin}
+            toggleAuth={logoutUser}
           />
         )}
       </AnimatePresence>
 
-      {/* Debug Controls - hide in production */}
+      {/* Отладочные элементы управления - скрываем в продакшене */}
       {process.env.NODE_ENV !== 'production' && (
         <DebugControls 
-          isLoggedIn={isLoggedIn}
-          isAdmin={isAdmin}
-          toggleAuth={toggleAuth}
+          isLoggedIn={user.isLoggedIn}
+          isAdmin={user.isAdmin}
+          toggleAuth={logoutUser}
           toggleAdmin={toggleAdmin}
         />
       )}

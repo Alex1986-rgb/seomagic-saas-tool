@@ -4,20 +4,22 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { LoginForm, RegisterForm, SocialAuth } from "@/components/auth";
 import AuthContainer from "@/components/auth/AuthContainer";
+import { useAuth } from '@/contexts/AuthContext';
 
 const Auth: React.FC = () => {
   const [searchParams] = useSearchParams();
   const defaultTab = searchParams.get('tab') === 'register' ? 'register' : 'login';
   const navigate = useNavigate();
+  const { user } = useAuth();
 
-  // Check if user is already logged in
+  // Перенаправляем на дашборд, если пользователь уже авторизован
   useEffect(() => {
-    if (localStorage.getItem('isLoggedIn') === 'true') {
+    if (user.isLoggedIn) {
       navigate('/dashboard');
     }
-  }, [navigate]);
+  }, [user.isLoggedIn, navigate]);
 
-  // Set focus on container when component mounts
+  // Устанавливаем фокус на контейнер при монтировании компонента
   useEffect(() => {
     document.getElementById('auth-container')?.focus();
   }, []);
@@ -27,7 +29,7 @@ const Auth: React.FC = () => {
   };
 
   const handleRegisterSuccess = () => {
-    // Just switch to login tab
+    // Просто переключаемся на вкладку входа
     navigate('/auth');
   };
 

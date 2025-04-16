@@ -1,118 +1,101 @@
 
-import React, { useState } from 'react';
-import { useForm } from "react-hook-form";
+import React from 'react';
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useToast } from "@/hooks/use-toast";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { User, Mail, Lock } from "lucide-react";
-import { registerSchema, type RegisterFormValues } from './validationSchemas';
+import { Checkbox } from "@/components/ui/checkbox";
+import { registerFormSchema } from './validationSchemas';
+import { useAuth } from '@/contexts/AuthContext';
 
-type RegisterFormProps = {
-  onSuccess?: () => void;
-};
+interface RegisterFormProps {
+  onSuccess: () => void;
+}
 
 const RegisterForm: React.FC<RegisterFormProps> = ({ onSuccess }) => {
-  const [isLoading, setIsLoading] = useState(false);
-  const { toast } = useToast();
-
-  const form = useForm<RegisterFormValues>({
-    resolver: zodResolver(registerSchema),
+  const { register } = useAuth();
+  
+  const form = useForm<z.infer<typeof registerFormSchema>>({
+    resolver: zodResolver(registerFormSchema),
     defaultValues: {
-      name: "",
       email: "",
       password: "",
+      confirmPassword: "",
+      termsAccepted: false,
     },
   });
 
-  const handleRegister = async (values: RegisterFormValues) => {
-    setIsLoading(true);
-    
-    // Simulate registration request
-    setTimeout(() => {
-      setIsLoading(false);
-      
-      toast({
-        title: "Регистрация успешна",
-        description: "Ваш аккаунт успешно создан",
-      });
-      
-      if (onSuccess) {
-        onSuccess();
-      }
-    }, 1500);
+  const onSubmit = async (values: z.infer<typeof registerFormSchema>) => {
+    await register(values.email, values.password);
+    onSuccess();
   };
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(handleRegister)} className="space-y-4">
-        <FormField
-          control={form.control}
-          name="name"
-          render={({ field }) => (
-            <FormItem className="space-y-2">
-              <FormLabel>Имя</FormLabel>
-              <div className="relative">
-                <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                <FormControl>
-                  <Input
-                    placeholder="Иван Иванов"
-                    className="pl-10"
-                    {...field}
-                  />
-                </FormControl>
-              </div>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
         <FormField
           control={form.control}
           name="email"
           render={({ field }) => (
-            <FormItem className="space-y-2">
+            <FormItem>
               <FormLabel>Email</FormLabel>
-              <div className="relative">
-                <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                <FormControl>
-                  <Input
-                    placeholder="mail@example.com"
-                    type="email"
-                    className="pl-10"
-                    {...field}
-                  />
-                </FormControl>
-              </div>
+              <FormControl>
+                <Input placeholder="mail@example.com" {...field} />
+              </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
-
         <FormField
           control={form.control}
           name="password"
           render={({ field }) => (
-            <FormItem className="space-y-2">
+            <FormItem>
               <FormLabel>Пароль</FormLabel>
-              <div className="relative">
-                <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                <FormControl>
-                  <Input
-                    type="password"
-                    className="pl-10"
-                    {...field}
-                  />
-                </FormControl>
-              </div>
+              <FormControl>
+                <Input type="password" placeholder="●●●●●●●●" {...field} />
+              </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
-
-        <Button type="submit" className="w-full" disabled={isLoading}>
-          {isLoading ? 'Регистрация...' : 'Зарегистрироваться'}
+        <FormField
+          control={form.control}
+          name="confirmPassword"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Подтвердите пароль</FormLabel>
+              <FormControl>
+                <Input type="password" placeholder="●●●●●●●●" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="termsAccepted"
+          render={({ field }) => (
+            <FormItem className="flex flex-row items-start space-x-3 space-y-0 p-2">
+              <FormControl>
+                <Checkbox
+                  checked={field.value}
+                  onCheckedChange={field.onChange}
+                />
+              </FormControl>
+              <div className="space-y-1 leading-none">
+                <FormLabel>
+                  Я принимаю условия использования и политику конфиденциальности
+                </FormLabel>
+                <FormMessage />
+              </div>
+            </FormItem>
+          )}
+        />
+        <Button type="submit" className="w-full" disabled={form.formState.isSubmitting}>
+          {form.formState.isSubmitting ? "Регистрация..." : "Зарегистрироваться"}
         </Button>
       </form>
     </Form>

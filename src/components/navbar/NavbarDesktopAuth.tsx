@@ -4,19 +4,15 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { User } from 'lucide-react';
 import ThemeSwitcher from '@/components/ThemeSwitcher';
+import { useAuth } from '@/contexts/AuthContext';
 
-interface NavbarDesktopAuthProps {
-  isLoggedIn: boolean;
-  isAdmin: boolean;
-  toggleAuth: () => void;
-}
-
-const NavbarDesktopAuth: React.FC<NavbarDesktopAuthProps> = ({ isLoggedIn, isAdmin, toggleAuth }) => {
+const NavbarDesktopAuth: React.FC = () => {
   const navigate = useNavigate();
+  const { user, logoutUser } = useAuth();
   
   return (
     <div className="hidden md:flex items-center gap-4">
-      {isLoggedIn ? (
+      {user.isLoggedIn ? (
         <>
           <Button
             variant="ghost"
@@ -29,7 +25,7 @@ const NavbarDesktopAuth: React.FC<NavbarDesktopAuthProps> = ({ isLoggedIn, isAdm
           <Button
             variant="outline"
             size="sm"
-            onClick={toggleAuth}
+            onClick={logoutUser}
           >
             Выйти
           </Button>
