@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import type { Database } from "@/integrations/supabase/types";
 
@@ -8,9 +7,16 @@ type CrawlResult = Database['public']['Tables']['crawl_results']['Row'];
 
 export const projectService = {
   async createProject(name: string, url: string) {
+    const user = await supabase.auth.getUser();
+    if (!user.data.user) throw new Error('User not authenticated');
+
     const { data, error } = await supabase
       .from('projects')
-      .insert([{ name, url }])
+      .insert({
+        name,
+        url,
+        user_id: user.data.user.id
+      })
       .select()
       .single();
       

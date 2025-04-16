@@ -48,7 +48,7 @@ const AuditResultsContainer: React.FC<AuditResultsContainerProps> = ({ url }) =>
 
   useEffect(() => {
     if (!isInitialized && url) {
-      loadAuditData(false).catch(console.error);
+      loadAuditData(false, false).catch(console.error);
       setIsInitialized(true);
     }
   }, [url, isInitialized, loadAuditData]);
