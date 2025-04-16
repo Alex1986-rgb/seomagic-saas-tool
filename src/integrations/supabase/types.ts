@@ -9,6 +9,59 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      analytics: {
+        Row: {
+          active_users: number | null
+          created_at: string | null
+          distribution: Json | null
+          id: string
+          pages_scanned: number | null
+          positions_tracked: number | null
+          project_id: string | null
+          scan_details: Json | null
+          scan_timestamp: string | null
+          score: number
+          trends: Json | null
+          url: string
+        }
+        Insert: {
+          active_users?: number | null
+          created_at?: string | null
+          distribution?: Json | null
+          id?: string
+          pages_scanned?: number | null
+          positions_tracked?: number | null
+          project_id?: string | null
+          scan_details?: Json | null
+          scan_timestamp?: string | null
+          score: number
+          trends?: Json | null
+          url: string
+        }
+        Update: {
+          active_users?: number | null
+          created_at?: string | null
+          distribution?: Json | null
+          id?: string
+          pages_scanned?: number | null
+          positions_tracked?: number | null
+          project_id?: string | null
+          scan_details?: Json | null
+          scan_timestamp?: string | null
+          score?: number
+          trends?: Json | null
+          url?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "analytics_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       audits: {
         Row: {
           created_at: string

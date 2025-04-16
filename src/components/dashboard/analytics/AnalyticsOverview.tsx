@@ -1,18 +1,7 @@
-
 import React, { useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { LineChart, BarChart2, TrendingUp, Users } from 'lucide-react';
-import { 
-  AreaChart, 
-  Area, 
-  XAxis, 
-  YAxis, 
-  CartesianGrid, 
-  Tooltip, 
-  ResponsiveContainer,
-  BarChart,
-  Bar
-} from 'recharts';
+import { LineChart, BarChart2, TrendingUp, Users, RefreshCw } from 'lucide-react';
+import { Button } from "@/components/ui/button";
 import { useAnalyticsData } from '@/hooks/useAnalyticsData';
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -28,6 +17,12 @@ export const AnalyticsOverview = ({ projectId }: AnalyticsOverviewProps) => {
       fetchAnalyticsData(projectId);
     }
   }, [projectId, fetchAnalyticsData]);
+
+  const handleRefresh = () => {
+    if (projectId) {
+      fetchAnalyticsData(projectId);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -59,6 +54,20 @@ export const AnalyticsOverview = ({ projectId }: AnalyticsOverviewProps) => {
 
   return (
     <div className="space-y-6">
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-xl font-semibold">Аналитика проекта</h2>
+        <Button 
+          variant="outline" 
+          size="sm" 
+          onClick={handleRefresh}
+          disabled={isLoading}
+          className="gap-2"
+        >
+          <RefreshCw className="h-4 w-4" />
+          Обновить анализ
+        </Button>
+      </div>
+
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
           title="Общий рейтинг SEO"
