@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import AuditSummary from '@/components/AuditSummary';
@@ -76,7 +77,8 @@ const AuditResultsContainer: React.FC<AuditResultsContainerProps> = ({ url }) =>
   };
 
   const handleOptimize = () => {
-    optimizeSiteContent();
+    // Fix: Pass the contentPrompt parameter to optimizeSiteContent
+    optimizeSiteContent(contentPrompt);
   };
 
   // Handler for PDF report generation

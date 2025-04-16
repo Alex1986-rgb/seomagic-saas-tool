@@ -68,3 +68,5 @@ export const CrawlResultsActions: React.FC<CrawlResultsActionsProps> = ({
     </div>
   );
 };
+
+// The component is already exported above, so no default export is needed

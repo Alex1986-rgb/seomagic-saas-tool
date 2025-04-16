@@ -1,7 +1,10 @@
 
-export { default as CrawlResultsTabs } from './CrawlResultsTabs';
-export { default as CrawlUrlsTab } from './CrawlUrlsTab';
-export { default as CrawlSeoRecommendationsTab } from './CrawlSeoRecommendationsTab';
-export { default as CrawlStatsCards } from './CrawlStatsCards';
-export { CrawlResultsActions } from './CrawlResultsActions';
-export { default as StatsCard } from './StatsCard';
+export * from './CrawlResultsActions';
+export * from './CrawlExportTab';
+export * from './CrawlResultsTabs';
+export * from './CrawlSeoRecommendationsTab';
+export * from './CrawlStatsCards';
+export * from './CrawlStructureTab';
+export * from './CrawlSummaryTab';
+export * from './CrawlUrlsTab';
+export * from './StatsCard';

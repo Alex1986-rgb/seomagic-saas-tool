@@ -1,3 +1,4 @@
+
 import { v4 as uuidv4 } from 'uuid';
 import { saveAs } from 'file-saver';
 
@@ -295,5 +296,5 @@ export const firecrawlService = {
   }
 };
 
-// Экспортируем типы для использования в других файлах
-export type { CrawlTask, CrawlTaskData };
+// Fix: Remove these duplicate type exports since they're already exported above
+// export type { CrawlTask, CrawlTaskData };
