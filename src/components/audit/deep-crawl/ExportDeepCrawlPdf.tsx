@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { FileText, Loader2 } from 'lucide-react';
 import { Button } from "@/components/ui/button";
@@ -66,8 +65,7 @@ const ExportDeepCrawlPdf: React.FC<ExportDeepCrawlPdfProps> = ({
         enhancedStyling
       });
       
-      // Only proceed if we have a PDF blob
-      if (pdfBlob instanceof Blob) {
+      if (pdfBlob) {
         const url = window.URL.createObjectURL(pdfBlob);
         const a = document.createElement('a');
         a.href = url;
