@@ -1,6 +1,6 @@
 
 import { supabase } from '@/integrations/supabase/client';
-import type { CrawlResultData } from './types/firecrawl';
+import type { CrawlResultData, Json } from './types/firecrawl';
 
 export const crawlStatusService = {
   async getUrlFromTaskId(taskId: string): Promise<string | null> {
@@ -45,7 +45,11 @@ export const crawlStatusService = {
       project_id: projectId,
       urls,
       page_count: pagesScanned,
-      created_at: new Date().toISOString()
+      created_at: new Date().toISOString(),
+      page_types: {} as Json,
+      depth_data: {} as Json,
+      broken_links: [] as Json,
+      duplicate_pages: [] as Json
     };
     
     await supabase.from('crawl_results').insert(crawlResultData);

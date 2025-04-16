@@ -5,6 +5,9 @@ export type JsonArray = JsonValue[];
 export type JsonObject = { [key: string]: JsonValue };
 export type JsonValue = JsonPrimitive | JsonObject | JsonArray;
 
+// Supabase compatible JSON type for database operations
+export type Json = JsonValue;
+
 // Core analytics data structure
 export interface AnalyticsData {
   id?: string;
@@ -14,8 +17,8 @@ export interface AnalyticsData {
   pages_scanned?: number | null;
   positions_tracked?: number | null;
   active_users?: number | null;
-  trends?: unknown;  // Changed from JsonValue to unknown to break potential recursion
-  distribution?: unknown;  // Changed from JsonValue to unknown to break potential recursion
+  trends?: Json;
+  distribution?: Json;
   created_at?: string | null;
 }
 
@@ -29,7 +32,7 @@ export interface CrawlTaskData {
   progress?: number | null;
   pages_scanned?: number | null;
   estimated_total_pages?: number | null;
-  options?: unknown;  // Changed from JsonValue to unknown to break potential recursion
+  options?: Json;
   start_time?: string | null;
   updated_at?: string | null;
 }
@@ -42,10 +45,10 @@ export interface CrawlResultData {
   urls: string[];
   page_count: number;
   created_at?: string;
-  page_types?: unknown;  // Changed from JsonValue to unknown to break potential recursion
-  depth_data?: unknown;  // Changed from JsonValue to unknown to break potential recursion
-  broken_links?: unknown;  // Changed from JsonValue to unknown to break potential recursion
-  duplicate_pages?: unknown;  // Changed from JsonValue to unknown to break potential recursion
+  page_types?: Json;
+  depth_data?: Json;
+  broken_links?: Json;
+  duplicate_pages?: Json;
 }
 
 // Configuration options

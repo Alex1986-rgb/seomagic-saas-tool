@@ -1,6 +1,6 @@
 
 import { supabase } from '@/integrations/supabase/client';
-import type { MassiveCrawlOptions, CrawlTaskData, CrawlStatus } from './types/firecrawl';
+import type { MassiveCrawlOptions, CrawlTaskData, CrawlStatus, Json } from './types/firecrawl';
 import { apiKeyManager } from './utils/apiKeyManager';
 import { crawlStatusService } from './crawlStatusService';
 import { analyticsService } from './analyticsService';
@@ -43,7 +43,7 @@ export const firecrawlService = {
         progress: 0,
         pages_scanned: 0,
         estimated_total_pages: 0,
-        options: crawlOptions,
+        options: crawlOptions as Json,
         start_time: new Date().toISOString(),
         updated_at: new Date().toISOString()
       };

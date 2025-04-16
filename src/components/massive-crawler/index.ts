@@ -1,3 +1,4 @@
 
-export * from './MassiveCrawlConfig';
-export * from './MassiveCrawlStatus';
+export { MassiveCrawler } from './MassiveCrawler';
+export { MassiveCrawlConfig } from './MassiveCrawlConfig';
+export { MassiveCrawlStatus } from './MassiveCrawlStatus';

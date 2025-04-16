@@ -3,7 +3,7 @@ import React from 'react';
 import { Progress } from "@/components/ui/progress";
 import { Clock, RefreshCw, Loader2 } from 'lucide-react';
 import { Badge } from "@/components/ui/badge";
-import type { CrawlStatus } from '@/services/api/firecrawlService';
+import type { CrawlStatus } from '@/services/api/types/firecrawl';
 
 interface CrawlStatusDisplayProps {
   status: CrawlStatus;
@@ -14,7 +14,7 @@ export const CrawlStatusDisplay = ({ status }: CrawlStatusDisplayProps) => {
     const variants = {
       pending: 'secondary',
       processing: 'default',
-      completed: 'outline',  // Changed from 'success' to 'outline' to match available variants
+      completed: 'outline',
       failed: 'destructive'
     } as const;
     
