@@ -1,15 +1,44 @@
 
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { Github } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 const SocialAuth: React.FC = () => {
   const { toast } = useToast();
+  const navigate = useNavigate();
   
-  const handleSocialLogin = (provider: string) => {
+  const handleGoogleLogin = () => {
+    // Simulate Google OAuth authentication for demo purposes
+    // In a real implementation, this would redirect to Google OAuth
     toast({
-      title: `${provider} авторизация`,
+      title: "Выполняется вход через Google",
+      description: "Пожалуйста, подождите...",
+    });
+    
+    // Simulate authentication delay
+    setTimeout(() => {
+      // Save authentication state to localStorage (same as email/password flow)
+      localStorage.setItem('isLoggedIn', 'true');
+      
+      // Dispatch storage event to update state in other components
+      window.dispatchEvent(new Event('storage'));
+      
+      // Success notification
+      toast({
+        title: "Вход через Google выполнен успешно",
+        description: "Добро пожаловать в личный кабинет SeoMarket",
+      });
+      
+      // Navigate to dashboard
+      navigate('/dashboard');
+    }, 1500);
+  };
+  
+  const handleGithubLogin = () => {
+    toast({
+      title: "GitHub авторизация",
       description: "Эта функциональность еще в разработке",
     });
   };
@@ -31,7 +60,7 @@ const SocialAuth: React.FC = () => {
         <Button 
           variant="outline" 
           className="w-full" 
-          onClick={() => handleSocialLogin('Google')}
+          onClick={handleGoogleLogin}
         >
           <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
             <path
@@ -57,7 +86,7 @@ const SocialAuth: React.FC = () => {
         <Button 
           variant="outline" 
           className="w-full"
-          onClick={() => handleSocialLogin('GitHub')}
+          onClick={handleGithubLogin}
         >
           <Github className="mr-2 h-4 w-4" />
           GitHub

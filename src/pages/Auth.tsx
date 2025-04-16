@@ -10,6 +10,13 @@ const Auth: React.FC = () => {
   const defaultTab = searchParams.get('tab') === 'register' ? 'register' : 'login';
   const navigate = useNavigate();
 
+  // Check if user is already logged in
+  useEffect(() => {
+    if (localStorage.getItem('isLoggedIn') === 'true') {
+      navigate('/dashboard');
+    }
+  }, [navigate]);
+
   // Set focus on container when component mounts
   useEffect(() => {
     document.getElementById('auth-container')?.focus();
