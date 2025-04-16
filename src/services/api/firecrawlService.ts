@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import type { MassiveCrawlOptions, CrawlTaskData, CrawlStatus } from './types/firecrawl';
 import { apiKeyManager } from './utils/apiKeyManager';
 import { crawlStatusService } from './crawlStatusService';
+import { analyticsService } from './analyticsService';
 
 export const firecrawlService = {
   async startMassiveCrawl(
@@ -67,7 +68,7 @@ export const firecrawlService = {
       
       return {
         taskId,
-        status: taskData.status,
+        status: taskData.status as 'pending' | 'processing' | 'completed' | 'failed',
         progress: taskData.progress || 0,
         pagesScanned: taskData.pages_scanned || 0,
         estimatedTotalPages: taskData.estimated_total_pages || 0,
@@ -158,7 +159,7 @@ export const firecrawlService = {
           // Update analytics
           const websiteUrl = await crawlStatusService.getUrlFromTaskId(taskId);
           if (websiteUrl) {
-            await crawlStatusService.saveAnalytics(projectId, websiteUrl, pagesScanned);
+            await analyticsService.saveAnalytics(projectId, websiteUrl, pagesScanned);
           }
           
           console.log(`Task ${taskId} completed successfully`);
@@ -173,3 +174,5 @@ export const firecrawlService = {
     }, 3000);
   }
 };
+
+export type { MassiveCrawlOptions, CrawlStatus };

@@ -1,7 +1,6 @@
 
 import { supabase } from '@/integrations/supabase/client';
-import type { CrawlTaskData, CrawlResultData, AnalyticsData } from './types/firecrawl';
-import { mockDataGenerator } from './utils/mockDataGenerator';
+import type { CrawlResultData } from './types/firecrawl';
 
 export const crawlStatusService = {
   async getUrlFromTaskId(taskId: string): Promise<string | null> {
@@ -27,7 +26,7 @@ export const crawlStatusService = {
     taskId: string,
     progress: number,
     pagesScanned: number,
-    status: 'processing' | 'completed' | 'failed'
+    status: 'pending' | 'processing' | 'completed' | 'failed'
   ): Promise<void> {
     const taskUpdateData = {
       status,
@@ -50,20 +49,5 @@ export const crawlStatusService = {
     };
     
     await supabase.from('crawl_results').insert(crawlResultData);
-  },
-
-  async saveAnalytics(projectId: string | undefined, websiteUrl: string, pagesScanned: number): Promise<void> {
-    const analyticsData: AnalyticsData = {
-      project_id: projectId,
-      url: websiteUrl,
-      score: Math.floor(Math.random() * 30) + 70,
-      pages_scanned: pagesScanned,
-      positions_tracked: Math.floor(pagesScanned * 0.8),
-      active_users: Math.floor(Math.random() * 1000) + 500,
-      trends: mockDataGenerator.generateTrends(),
-      distribution: mockDataGenerator.generateDistribution(pagesScanned)
-    };
-    
-    await supabase.from('analytics').insert(analyticsData);
   }
 };
