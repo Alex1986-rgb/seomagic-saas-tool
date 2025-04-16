@@ -3,7 +3,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import EstimateHeader from './estimate/EstimateHeader';
 import EstimateStats from './estimate/EstimateStats';
-import EstimateIssuesList from './estimate/EstimateIssuesList';
+import EstimateIssuesList, { Issue } from './estimate/EstimateIssuesList';
 import EstimateSummary from './estimate/EstimateSummary';
 
 interface EstimateTabProps {
@@ -42,15 +42,15 @@ const EstimateTab: React.FC<EstimateTabProps> = ({
   else timeToFix = '30+ дней';
   
   // Список выявленных проблем
-  const issues = [
-    { name: 'Отсутствующие мета-описания', count: Math.floor(errors * 0.3), severity: 'high' as const },
-    { name: 'Проблемы с заголовками h1', count: Math.floor(errors * 0.25), severity: 'high' as const },
-    { name: 'Неоптимизированные изображения', count: Math.floor(errors * 0.2), severity: 'medium' as const },
-    { name: 'Отсутствующие alt-атрибуты', count: Math.floor(warnings * 0.3), severity: 'medium' as const },
-    { name: 'Некорректные канонические URLs', count: Math.floor(warnings * 0.15), severity: 'medium' as const },
-    { name: 'Битые ссылки', count: Math.floor(errors * 0.1), severity: 'high' as const },
-    { name: 'Дублированный контент', count: Math.floor(warnings * 0.2), severity: 'medium' as const },
-    { name: 'Проблемы со структурой URL', count: Math.floor(warnings * 0.15), severity: 'low' as const },
+  const issues: Issue[] = [
+    { name: 'Отсутствующие мета-описания', count: Math.floor(errors * 0.3), severity: 'high' },
+    { name: 'Проблемы с заголовками h1', count: Math.floor(errors * 0.25), severity: 'high' },
+    { name: 'Неоптимизированные изображения', count: Math.floor(errors * 0.2), severity: 'medium' },
+    { name: 'Отсутствующие alt-атрибуты', count: Math.floor(warnings * 0.3), severity: 'medium' },
+    { name: 'Некорректные канонические URLs', count: Math.floor(warnings * 0.15), severity: 'medium' },
+    { name: 'Битые ссылки', count: Math.floor(errors * 0.1), severity: 'high' },
+    { name: 'Дублированный контент', count: Math.floor(warnings * 0.2), severity: 'medium' },
+    { name: 'Проблемы со структурой URL', count: Math.floor(warnings * 0.15), severity: 'low' },
   ];
   
   if (!isCompleted) {

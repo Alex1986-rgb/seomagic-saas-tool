@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -55,7 +54,6 @@ export const DeepCrawlProgressDialog: React.FC<DeepCrawlProgressDialogProps> = (
 
   useEffect(() => {
     if (open && !isCrawlInitiated) {
-      // Добавляем небольшую задержку перед запуском
       const timer = setTimeout(() => {
         startCrawling();
         setIsCrawlInitiated(true);
@@ -72,7 +70,6 @@ export const DeepCrawlProgressDialog: React.FC<DeepCrawlProgressDialogProps> = (
     if (isCompleted) {
       onClose(pagesScanned);
     } else {
-      // Запрашиваем подтверждение
       if (window.confirm("Вы уверены, что хотите прервать сканирование?")) {
         onClose();
       }
@@ -104,12 +101,11 @@ export const DeepCrawlProgressDialog: React.FC<DeepCrawlProgressDialogProps> = (
     });
   };
 
-  // Получаем информацию о текущем этапе
   const { title, info } = getStageTitleAndInfo(crawlStage, error, pagesScanned);
 
   return (
     <Dialog open={open} onOpenChange={() => handleClose()}>
-      <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto fixed left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[95vw]">
+      <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader title={title} />
         
         <Tabs value={activeTab} onValueChange={setActiveTab} className="mt-2">
@@ -178,4 +174,3 @@ export const DeepCrawlProgressDialog: React.FC<DeepCrawlProgressDialogProps> = (
     </Dialog>
   );
 };
-
