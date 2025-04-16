@@ -17,7 +17,13 @@ export const useVideoPlayer = ({ audioEnabled = false }: UseVideoPlayerProps) =>
   // Use our smaller, focused hooks
   const { isRealVideo, isLoading } = useVideoAvailability({ videoRef });
   
-  const { progress, handleTimeUpdate } = useVideoProgress({ videoRef });
+  const { 
+    progress, 
+    currentTime, 
+    duration, 
+    handleTimeUpdate, 
+    handleSeek 
+  } = useVideoProgress({ videoRef });
   
   const { isMuted } = useAudio({
     audioEnabled,
@@ -44,6 +50,8 @@ export const useVideoPlayer = ({ audioEnabled = false }: UseVideoPlayerProps) =>
     isPlaying,
     isMuted,
     progress,
+    currentTime,
+    duration,
     isRealVideo,
     isLoading,
     videoRef,
@@ -53,6 +61,7 @@ export const useVideoPlayer = ({ audioEnabled = false }: UseVideoPlayerProps) =>
     toggleMute,
     toggleFullscreen,
     handleTimeUpdate,
+    handleSeek,
     handleDownload,
   };
 };
