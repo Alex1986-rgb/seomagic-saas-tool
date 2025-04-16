@@ -55,7 +55,7 @@ const AuditResultsContainer: React.FC<AuditResultsContainerProps> = ({ url }) =>
   }, [url, isInitialized, loadAuditData]);
 
   const handleRefreshAudit = () => {
-    loadAuditData(true);
+    loadAuditData(true, false);
   };
 
   const handleDeepScan = () => {
