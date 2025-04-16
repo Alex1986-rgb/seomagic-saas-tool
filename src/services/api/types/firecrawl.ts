@@ -14,8 +14,8 @@ export interface AnalyticsData {
   pages_scanned?: number | null;
   positions_tracked?: number | null;
   active_users?: number | null;
-  trends?: JsonValue | null;
-  distribution?: JsonValue | null;
+  trends?: unknown;  // Changed from JsonValue to unknown to break potential recursion
+  distribution?: unknown;  // Changed from JsonValue to unknown to break potential recursion
   created_at?: string | null;
 }
 
@@ -29,7 +29,7 @@ export interface CrawlTaskData {
   progress?: number | null;
   pages_scanned?: number | null;
   estimated_total_pages?: number | null;
-  options?: JsonValue | null;
+  options?: unknown;  // Changed from JsonValue to unknown to break potential recursion
   start_time?: string | null;
   updated_at?: string | null;
 }
@@ -42,10 +42,10 @@ export interface CrawlResultData {
   urls: string[];
   page_count: number;
   created_at?: string;
-  page_types?: JsonValue | null;
-  depth_data?: JsonValue | null;
-  broken_links?: JsonValue | null;
-  duplicate_pages?: JsonValue | null;
+  page_types?: unknown;  // Changed from JsonValue to unknown to break potential recursion
+  depth_data?: unknown;  // Changed from JsonValue to unknown to break potential recursion
+  broken_links?: unknown;  // Changed from JsonValue to unknown to break potential recursion
+  duplicate_pages?: unknown;  // Changed from JsonValue to unknown to break potential recursion
 }
 
 // Configuration options
