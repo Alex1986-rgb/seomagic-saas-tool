@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { 
   HomePageContent, 
@@ -105,7 +104,7 @@ export const useContentSettings = () => {
     address: "г. Москва, ул. Примерная, д. 123",
     phone: "+7 (999) 123-45-67",
     email: "info@seomarket.ru",
-    mapEmbed: '<iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2245.1144353506524!2d37.62051067680669!3d55.75375633337604!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x46b54a50b315e573%3A0xa886bf5a3d9b2e68!2z0JzQvtGB0LrQvtCy0YHQutC40Lkg0JrRgNC10LzQu9GM!5e0!3m2!1sru!2sru!4v1649152758930!5m2!1sru!2sru" width="100%" height="400" style="border:0;" allowfullscreen="" loading="lazy"></iframe>',
+    mapEmbed: '<iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2245.1144353506524!2d37.62051067680669!3d55.7537563337604!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x46b54a50b315e573%3A0xa886bf5a3d9b2e68!2z0JzQvtGB0LrQvtCy0YHQutC40Lkg0JrRgNC10LzQu9GM!5e0!3m2!1sru!2sru!4v1649152758930!5m2!1sru!2sru" width="100%" height="400" style="border:0;" allowfullscreen="" loading="lazy"></iframe>',
     formFields: [
       {
         name: "name",
@@ -655,7 +654,7 @@ export const useContentSettings = () => {
           ...notificationSettings.site.notifications,
           {
             title: "Новое уведомление",
-            content: "Текст уведомления",
+            content: "Содержание уведомления",
             type: "info",
             isEnabled: true
           }
@@ -676,9 +675,9 @@ export const useContentSettings = () => {
       }
     });
   };
-
+  
   return {
-    // State
+    // Content states
     homePageContent,
     auditPageContent,
     aboutPageContent,

@@ -5,9 +5,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Trash2, Bell, Mail } from 'lucide-react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Plus, Trash2, Mail, Bell } from 'lucide-react';
 import { NotificationSettings as NotificationSettingsType } from './types';
 
 interface NotificationSettingsProps {
@@ -42,15 +42,15 @@ const NotificationSettings: React.FC<NotificationSettingsProps> = ({
               <Mail className="h-5 w-5" />
               <span>Email уведомления</span>
             </CardTitle>
-            <CardDescription>Настройка email шаблонов для различных событий</CardDescription>
+            <CardDescription>Настройка уведомлений, отправляемых по email</CardDescription>
           </div>
           <div className="flex items-center gap-2">
+            <Label htmlFor="email-enabled">Включить Email уведомления</Label>
             <Switch 
-              id="email-notifications-enabled" 
+              id="email-enabled" 
               checked={notificationSettings.email.enabled}
               onCheckedChange={(checked) => updateEmailSettings('enabled', checked)}
             />
-            <Label htmlFor="email-notifications-enabled">Включено</Label>
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -67,17 +67,16 @@ const NotificationSettings: React.FC<NotificationSettingsProps> = ({
             </Button>
           </div>
           
-          {notificationSettings.email.templates.map((template, index) => (
+          {notificationSettings.email.enabled && notificationSettings.email.templates.map((template, index) => (
             <div key={index} className="p-4 border rounded-md space-y-3">
               <div className="flex items-center justify-between">
-                <h4 className="font-medium">{template.name || `Шаблон #${index + 1}`}</h4>
+                <h4 className="font-medium">{template.name}</h4>
                 <div className="flex items-center gap-4">
                   <div className="flex items-center gap-2">
                     <Switch 
                       id={`template-enabled-${index}`} 
                       checked={template.isEnabled}
                       onCheckedChange={(checked) => updateEmailTemplate(index, 'isEnabled', checked)}
-                      disabled={!notificationSettings.email.enabled}
                     />
                     <Label htmlFor={`template-enabled-${index}`}>Активен</Label>
                   </div>
@@ -86,7 +85,6 @@ const NotificationSettings: React.FC<NotificationSettingsProps> = ({
                     size="sm" 
                     onClick={() => removeEmailTemplate(index)}
                     className="text-destructive hover:text-destructive/90 hover:bg-destructive/10"
-                    disabled={!notificationSettings.email.enabled}
                   >
                     <Trash2 className="h-4 w-4" />
                   </Button>
@@ -99,7 +97,6 @@ const NotificationSettings: React.FC<NotificationSettingsProps> = ({
                   id={`template-name-${index}`} 
                   value={template.name}
                   onChange={(e) => updateEmailTemplate(index, 'name', e.target.value)} 
-                  disabled={!notificationSettings.email.enabled}
                 />
               </div>
               
@@ -109,7 +106,6 @@ const NotificationSettings: React.FC<NotificationSettingsProps> = ({
                   id={`template-subject-${index}`} 
                   value={template.subject}
                   onChange={(e) => updateEmailTemplate(index, 'subject', e.target.value)} 
-                  disabled={!notificationSettings.email.enabled}
                 />
               </div>
               
@@ -117,22 +113,26 @@ const NotificationSettings: React.FC<NotificationSettingsProps> = ({
                 <Label htmlFor={`template-content-${index}`}>Содержание письма</Label>
                 <Textarea 
                   id={`template-content-${index}`} 
-                  rows={6}
+                  rows={4}
                   value={template.content}
                   onChange={(e) => updateEmailTemplate(index, 'content', e.target.value)}
-                  disabled={!notificationSettings.email.enabled}
-                  placeholder="Можно использовать переменные {{имя}}, {{email}}, {{ссылка}} и т.д."
                 />
+                <p className="text-xs text-muted-foreground">
+                  Используйте переменные в формате {{имя_переменной}} для подстановки данных.
+                </p>
               </div>
             </div>
           ))}
           
-          {(notificationSettings.email.templates.length === 0 || !notificationSettings.email.enabled) && (
+          {notificationSettings.email.enabled && notificationSettings.email.templates.length === 0 && (
             <div className="text-center py-8 text-muted-foreground">
-              {!notificationSettings.email.enabled 
-                ? "Email уведомления отключены. Включите их для редактирования шаблонов."
-                : "Нет добавленных email шаблонов. Нажмите 'Добавить шаблон', чтобы создать первый шаблон."
-              }
+              Нет добавленных шаблонов. Нажмите "Добавить шаблон", чтобы создать первый шаблон.
+            </div>
+          )}
+          
+          {!notificationSettings.email.enabled && (
+            <div className="text-center py-8 text-muted-foreground">
+              Email уведомления отключены. Включите их для настройки шаблонов.
             </div>
           )}
         </CardContent>
@@ -145,15 +145,15 @@ const NotificationSettings: React.FC<NotificationSettingsProps> = ({
               <Bell className="h-5 w-5" />
               <span>Уведомления на сайте</span>
             </CardTitle>
-            <CardDescription>Настройка системных уведомлений на сайте</CardDescription>
+            <CardDescription>Настройка уведомлений, отображаемых пользователям на сайте</CardDescription>
           </div>
           <div className="flex items-center gap-2">
+            <Label htmlFor="site-enabled">Включить уведомления на сайте</Label>
             <Switch 
-              id="site-notifications-enabled" 
+              id="site-enabled" 
               checked={notificationSettings.site.enabled}
               onCheckedChange={(checked) => updateSiteSettings('enabled', checked)}
             />
-            <Label htmlFor="site-notifications-enabled">Включено</Label>
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -170,17 +170,16 @@ const NotificationSettings: React.FC<NotificationSettingsProps> = ({
             </Button>
           </div>
           
-          {notificationSettings.site.notifications.map((notification, index) => (
+          {notificationSettings.site.enabled && notificationSettings.site.notifications.map((notification, index) => (
             <div key={index} className="p-4 border rounded-md space-y-3">
               <div className="flex items-center justify-between">
-                <h4 className="font-medium">{notification.title || `Уведомление #${index + 1}`}</h4>
+                <h4 className="font-medium">{notification.title}</h4>
                 <div className="flex items-center gap-4">
                   <div className="flex items-center gap-2">
                     <Switch 
                       id={`notification-enabled-${index}`} 
                       checked={notification.isEnabled}
                       onCheckedChange={(checked) => updateSiteNotification(index, 'isEnabled', checked)}
-                      disabled={!notificationSettings.site.enabled}
                     />
                     <Label htmlFor={`notification-enabled-${index}`}>Активно</Label>
                   </div>
@@ -189,7 +188,6 @@ const NotificationSettings: React.FC<NotificationSettingsProps> = ({
                     size="sm" 
                     onClick={() => removeSiteNotification(index)}
                     className="text-destructive hover:text-destructive/90 hover:bg-destructive/10"
-                    disabled={!notificationSettings.site.enabled}
                   >
                     <Trash2 className="h-4 w-4" />
                   </Button>
@@ -202,18 +200,16 @@ const NotificationSettings: React.FC<NotificationSettingsProps> = ({
                   id={`notification-title-${index}`} 
                   value={notification.title}
                   onChange={(e) => updateSiteNotification(index, 'title', e.target.value)} 
-                  disabled={!notificationSettings.site.enabled}
                 />
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor={`notification-content-${index}`}>Текст уведомления</Label>
+                <Label htmlFor={`notification-content-${index}`}>Содержание</Label>
                 <Textarea 
                   id={`notification-content-${index}`} 
                   rows={3}
                   value={notification.content}
                   onChange={(e) => updateSiteNotification(index, 'content', e.target.value)}
-                  disabled={!notificationSettings.site.enabled}
                 />
               </div>
               
@@ -224,10 +220,9 @@ const NotificationSettings: React.FC<NotificationSettingsProps> = ({
                   onValueChange={(value: 'info' | 'success' | 'warning' | 'error') => 
                     updateSiteNotification(index, 'type', value)
                   }
-                  disabled={!notificationSettings.site.enabled}
                 >
                   <SelectTrigger id={`notification-type-${index}`}>
-                    <SelectValue placeholder="Выберите тип" />
+                    <SelectValue placeholder="Выберите тип уведомления" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="info">Информация</SelectItem>
@@ -240,12 +235,15 @@ const NotificationSettings: React.FC<NotificationSettingsProps> = ({
             </div>
           ))}
           
-          {(notificationSettings.site.notifications.length === 0 || !notificationSettings.site.enabled) && (
+          {notificationSettings.site.enabled && notificationSettings.site.notifications.length === 0 && (
             <div className="text-center py-8 text-muted-foreground">
-              {!notificationSettings.site.enabled 
-                ? "Уведомления на сайте отключены. Включите их для редактирования."
-                : "Нет добавленных уведомлений. Нажмите 'Добавить уведомление', чтобы создать первое уведомление."
-              }
+              Нет добавленных уведомлений. Нажмите "Добавить уведомление", чтобы создать первое уведомление.
+            </div>
+          )}
+          
+          {!notificationSettings.site.enabled && (
+            <div className="text-center py-8 text-muted-foreground">
+              Уведомления на сайте отключены. Включите их для настройки.
             </div>
           )}
         </CardContent>

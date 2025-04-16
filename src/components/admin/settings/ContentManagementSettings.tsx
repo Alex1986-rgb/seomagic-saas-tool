@@ -8,7 +8,12 @@ import {
   User, 
   Mail, 
   Tag, 
-  Bell 
+  Bell,
+  Home,
+  FileText,
+  MapPin,
+  HelpCircle,
+  Settings
 } from 'lucide-react';
 import { 
   HomePageSettings,
@@ -31,7 +36,7 @@ const ContentManagementSettings: React.FC = () => {
       <Tabs defaultValue="homePage">
         <TabsList className="mb-6 flex flex-wrap">
           <TabsTrigger value="homePage" className="flex items-center gap-2">
-            <LayoutTemplate className="h-4 w-4" />
+            <Home className="h-4 w-4" />
             <span>Главная страница</span>
           </TabsTrigger>
           <TabsTrigger value="auditPage" className="flex items-center gap-2">
@@ -51,7 +56,7 @@ const ContentManagementSettings: React.FC = () => {
             <span>Цены</span>
           </TabsTrigger>
           <TabsTrigger value="buttons" className="flex items-center gap-2">
-            <span className="i-lucide-button h-4 w-4"></span>
+            <Settings className="h-4 w-4" />
             <span>Глобальные кнопки</span>
           </TabsTrigger>
           <TabsTrigger value="navigation" className="flex items-center gap-2">

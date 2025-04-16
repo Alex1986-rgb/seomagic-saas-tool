@@ -20,12 +20,14 @@ const Layout: React.FC<LayoutProps> = ({
   hideFooter = false 
 }) => {
   const location = useLocation();
-  const isAuditPage = location.pathname === '/audit';
-
-  // Проверяем, нужно ли скрыть навбар и футер для отдельных страниц
-  // Если страница уже содержит навбар и футер (например, /audit)
-  const shouldHideNavbar = hideNavbar || isAuditPage;
-  const shouldHideFooter = hideFooter || isAuditPage;
+  
+  // Проверяем, содержится ли шапка или подвал в дочерних компонентах
+  // Для этого проверяем путь страницы, на которых шапка и подвал встроены
+  const pagesWithBuiltInNavbar = ['/audit'];
+  const pagesWithBuiltInFooter = ['/audit'];
+  
+  const shouldHideNavbar = hideNavbar || pagesWithBuiltInNavbar.includes(location.pathname);
+  const shouldHideFooter = hideFooter || pagesWithBuiltInFooter.includes(location.pathname);
 
   return (
     <div className={cn("flex flex-col min-h-screen relative", className)}>
