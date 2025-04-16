@@ -9,7 +9,118 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      audits: {
+        Row: {
+          created_at: string
+          id: string
+          issues: Json | null
+          page_count: number | null
+          project_id: string | null
+          recommendations: Json | null
+          scan_details: Json | null
+          score: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          issues?: Json | null
+          page_count?: number | null
+          project_id?: string | null
+          recommendations?: Json | null
+          scan_details?: Json | null
+          score: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          issues?: Json | null
+          page_count?: number | null
+          project_id?: string | null
+          recommendations?: Json | null
+          scan_details?: Json | null
+          score?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "audits_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      crawl_results: {
+        Row: {
+          broken_links: Json | null
+          created_at: string
+          depth_data: Json | null
+          duplicate_pages: Json | null
+          id: string
+          page_types: Json | null
+          project_id: string | null
+          urls: string[] | null
+        }
+        Insert: {
+          broken_links?: Json | null
+          created_at?: string
+          depth_data?: Json | null
+          duplicate_pages?: Json | null
+          id?: string
+          page_types?: Json | null
+          project_id?: string | null
+          urls?: string[] | null
+        }
+        Update: {
+          broken_links?: Json | null
+          created_at?: string
+          depth_data?: Json | null
+          duplicate_pages?: Json | null
+          id?: string
+          page_types?: Json | null
+          project_id?: string | null
+          urls?: string[] | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crawl_results_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      projects: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          settings: Json | null
+          updated_at: string
+          url: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          settings?: Json | null
+          updated_at?: string
+          url: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          settings?: Json | null
+          updated_at?: string
+          url?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
