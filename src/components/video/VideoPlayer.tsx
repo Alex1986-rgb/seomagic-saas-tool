@@ -43,6 +43,8 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
     isPlaying,
     isMuted,
     progress,
+    currentTime,
+    duration,
     isRealVideo,
     videoRef,
     audioRef,
@@ -50,6 +52,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
     toggleMute,
     toggleFullscreen,
     handleTimeUpdate,
+    handleSeek,
     handleDownload,
   } = useVideoPlayer({ audioEnabled });
 
@@ -120,6 +123,9 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
             toggleMute={toggleMute}
             toggleFullscreen={toggleFullscreen}
             handleDownload={handleDownload}
+            currentTime={currentTime}
+            duration={duration}
+            onSeek={handleSeek}
           />
         </>
       )}

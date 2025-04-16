@@ -6,10 +6,17 @@ import { Button } from '../ui/button';
 export interface VideoControlsProps {
   isPlaying: boolean;
   isMuted: boolean;
+  volume?: number;
+  playbackRate?: number;
+  currentTime?: number;
+  duration?: number;
   togglePlay: () => void;
   toggleMute: () => void;
   toggleFullscreen: () => void;
   handleDownload: () => void;
+  onVolumeChange?: (value: number) => void;
+  onPlaybackRateChange?: (value: number) => void;
+  onSeek?: (value: number) => void;
 }
 
 const VideoControls: React.FC<VideoControlsProps> = ({
