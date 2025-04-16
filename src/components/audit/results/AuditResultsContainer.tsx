@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import AuditSummary from '@/components/AuditSummary';
@@ -69,7 +68,8 @@ const AuditResultsContainer: React.FC<AuditResultsContainerProps> = ({ url }) =>
   };
 
   const handleSelectHistoricalAudit = (auditId: string) => {
-    // This can be moved to a separate function or context in a future refactoring
+    // Implementation for historical audit selection
+    console.log('Selecting historical audit:', auditId);
   };
 
   const toggleContentPrompt = () => {
@@ -114,7 +114,7 @@ const AuditResultsContainer: React.FC<AuditResultsContainerProps> = ({ url }) =>
   }
 
   return (
-    <AnimatePresence>
+    <AnimatePresence mode="sync">
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}

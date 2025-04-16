@@ -66,22 +66,24 @@ const ExportDeepCrawlPdf: React.FC<ExportDeepCrawlPdfProps> = ({
         enhancedStyling
       });
       
-      if (!pdfBlob) throw new Error("Не удалось создать PDF");
-      
-      // Create a download link for the PDF
-      const url = window.URL.createObjectURL(pdfBlob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `detailed-audit-${domain.replace(/[^a-zA-Z0-9]/g, '-')}-${new Date().toISOString().split('T')[0]}.pdf`;
-      document.body.appendChild(a);
-      a.click();
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(a);
-      
-      toast({
-        title: "Отчет сохранен",
-        description: "Полный PDF отчет успешно скачан",
-      });
+      // Only proceed if we have a PDF blob
+      if (pdfBlob instanceof Blob) {
+        const url = window.URL.createObjectURL(pdfBlob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `detailed-audit-${domain.replace(/[^a-zA-Z0-9]/g, '-')}-${new Date().toISOString().split('T')[0]}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+        
+        toast({
+          title: "Отчет сохранен",
+          description: "Полный PDF отчет успешно скачан",
+        });
+      } else {
+        throw new Error("Invalid PDF generation result");
+      }
     } catch (error) {
       console.error('Ошибка при создании PDF:', error);
       
