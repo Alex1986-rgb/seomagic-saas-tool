@@ -4,14 +4,21 @@ export * from './recommendations';
 export * from './history';
 export * from './seoDetails';
 export * from './sitemap';
-export * from './content';
-export * from './optimization';
+
+// Selectively export from content and optimization
+export { collectPagesContent, type PageContent } from './content';
+export { calculateOptimizationMetrics } from './optimization';
+
 export * from './optimizedSite';
 
 // Don't re-export PageContent from scanner to avoid ambiguity
-// since it's already exported from content or optimization
-import { scanWebsite, generateSitemap, calculateOptimizationMetrics, createOptimizedSite } from './scanner';
-export { scanWebsite, generateSitemap, calculateOptimizationMetrics, createOptimizedSite };
+import { scanWebsite, generateSitemap, calculateOptimizationMetrics as calculateScannerOptimizationMetrics, createOptimizedSite } from './scanner';
+export { 
+  scanWebsite, 
+  generateSitemap, 
+  calculateScannerOptimizationMetrics, 
+  createOptimizedSite 
+};
 
 import { AuditData } from "@/types/audit";
 import { generateAuditData } from './generators';
