@@ -76,8 +76,7 @@ const AuditResultsContainer: React.FC<AuditResultsContainerProps> = ({ url }) =>
   };
 
   const handleOptimize = () => {
-    // Check the optimizeSiteContent function signature to match the required arguments
-    optimizeSiteContent(contentPrompt);
+    optimizeSiteContent();
   };
 
   // Handler for PDF report generation
