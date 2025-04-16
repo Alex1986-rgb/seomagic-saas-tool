@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
@@ -35,7 +36,7 @@ const Blog: React.FC = () => {
       date: '25 марта 2024',
       author: 'Дмитрий Сидоров',
       category: 'Автоматизация',
-      image: '/images/placeholder.jpg',
+      image: 'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158',
       tags: ['Автоматизация', 'Оптимизация', 'AI в SEO']
     },
     {
@@ -45,7 +46,7 @@ const Blog: React.FC = () => {
       date: '30 марта 2024',
       author: 'Елена Смирнова',
       category: 'Оптимизация скорости',
-      image: '/images/placeholder.jpg',
+      image: 'https://images.unsplash.com/photo-1487058792275-0ad4aaf24ca7',
       tags: ['Скорость загрузки', 'Оптимизация', 'UX']
     },
     {
@@ -55,7 +56,7 @@ const Blog: React.FC = () => {
       date: '2 апреля 2024',
       author: 'Игорь Васильев',
       category: 'Технический SEO',
-      image: '/images/placeholder.jpg',
+      image: 'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5',
       tags: ['Технический SEO', 'Robots.txt', 'Sitemap']
     },
     {
@@ -65,7 +66,7 @@ const Blog: React.FC = () => {
       date: '5 апреля 2024',
       author: 'Анна Козлова',
       category: 'Аналитика',
-      image: '/images/placeholder.jpg',
+      image: 'https://images.unsplash.com/photo-1487887235947-a955ef187fcc',
       tags: ['Прогнозирование', 'Аналитика', 'Стратегия']
     },
     {
@@ -75,7 +76,7 @@ const Blog: React.FC = () => {
       date: '8 апреля 2024',
       author: 'Наталья Морозова',
       category: 'Контент',
-      image: '/images/placeholder.jpg',
+      image: 'https://images.unsplash.com/photo-1488590528505-98d2b5aba04b',
       tags: ['Контент', 'SEO копирайтинг', 'Анализ']
     },
     {
@@ -85,7 +86,7 @@ const Blog: React.FC = () => {
       date: '12 апреля 2024',
       author: 'Павел Соколов',
       category: 'Отчетность',
-      image: '/images/placeholder.jpg',
+      image: 'https://images.unsplash.com/photo-1487058792275-0ad4aaf24ca7',
       tags: ['Отчеты', 'Аналитика', 'PDF']
     }
   ];
