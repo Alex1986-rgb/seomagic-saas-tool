@@ -1,6 +1,6 @@
-
 import React from 'react';
 import { motion } from 'framer-motion';
+import { Link } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -15,7 +15,7 @@ const Blog: React.FC = () => {
       date: '15 марта 2024',
       author: 'Алексей Петров',
       category: 'SEO аудит',
-      image: '/images/placeholder.jpg',
+      image: 'https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d',
       tags: ['SEO аудит', 'Технический анализ', 'Оптимизация']
     },
     {
@@ -25,7 +25,7 @@ const Blog: React.FC = () => {
       date: '20 марта 2024',
       author: 'Мария Иванова',
       category: 'Мониторинг',
-      image: '/images/placeholder.jpg',
+      image: 'https://images.unsplash.com/photo-1461749280684-dccba630e2f6',
       tags: ['Мониторинг позиций', 'SEO метрики', 'Аналитика']
     },
     {
@@ -124,7 +124,7 @@ const Blog: React.FC = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: post.id * 0.1 }}
             >
-              <Card className="h-full flex flex-col neo-card">
+              <Card className="h-full flex flex-col hover:shadow-lg transition-shadow duration-300">
                 <div className="relative overflow-hidden rounded-t-lg">
                   <img 
                     src={post.image} 
@@ -138,7 +138,7 @@ const Blog: React.FC = () => {
                 
                 <CardHeader className="pb-2">
                   <CardTitle className="text-xl line-clamp-2 mb-2 hover:text-primary transition-colors">
-                    <a href={`/blog/${post.id}`}>{post.title}</a>
+                    <Link to={`/blog/${post.id}`}>{post.title}</Link>
                   </CardTitle>
                   <div className="flex flex-wrap items-center text-sm text-muted-foreground gap-x-4 gap-y-1">
                     <div className="flex items-center">
@@ -166,11 +166,11 @@ const Blog: React.FC = () => {
                 
                 <CardFooter>
                   <Button variant="ghost" size="sm" className="w-full justify-start" asChild>
-                    <a href={`/blog/${post.id}`} className="flex items-center">
+                    <Link to={`/blog/${post.id}`} className="flex items-center">
                       <BookOpen className="mr-2 h-4 w-4 text-primary" />
                       <span>Читать статью</span>
                       <ChevronRight className="ml-auto h-4 w-4" />
-                    </a>
+                    </Link>
                   </Button>
                 </CardFooter>
               </Card>
