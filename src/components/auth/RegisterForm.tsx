@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Checkbox } from "@/components/ui/checkbox";
-import { registerSchema } from './validationSchemas';
+import { registerSchema } from './validationSchemas';  // Correct import
 import { useAuth } from '@/contexts/AuthContext';
 
 interface RegisterFormProps {
