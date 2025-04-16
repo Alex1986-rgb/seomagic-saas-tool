@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Save, Edit, LayoutTemplate, Type, Button as ButtonIcon, Link } from 'lucide-react';
+import { Save, Edit, LayoutTemplate, Type, Link, Button as ButtonIcon } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 
 const ContentManagementSettings: React.FC = () => {
