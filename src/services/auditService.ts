@@ -21,3 +21,7 @@ export * from './audit/scanner';
 export * from './audit/sitemap';
 export * from './audit/optimization';
 export * from './audit/optimizedSite';
+
+// Re-export recommendations and history functions
+export { fetchRecommendations } from './audit/recommendations';
+export { fetchAuditHistory } from './audit/history';
