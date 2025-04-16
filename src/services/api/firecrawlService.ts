@@ -5,42 +5,46 @@
 import { supabase } from '@/integrations/supabase/client';
 import { Json } from '@/integrations/supabase/types';
 
-// Define types for tables to fix TypeScript issues
-type AnalyticsRow = {
-  id: string;
-  project_id: string | null;
+// Define basic types for the tables to avoid deep recursion
+interface AnalyticsData {
+  id?: string;
+  project_id?: string | null;
   url: string;
   score: number;
-  pages_scanned: number | null;
-  positions_tracked: number | null;
-  active_users: number | null;
-  trends: Json | null;
-  distribution: Json | null;
-  created_at: string | null;
-};
+  pages_scanned?: number | null;
+  positions_tracked?: number | null;
+  active_users?: number | null;
+  trends?: Json | null;
+  distribution?: Json | null;
+  created_at?: string | null;
+}
 
-type CrawlTasksRow = {
-  id: string;
+interface CrawlTaskData {
+  id?: string;
   task_id: string;
-  project_id: string | null;
+  project_id?: string | null;
   url: string;
   status: 'pending' | 'processing' | 'completed' | 'failed';
-  progress: number | null;
-  pages_scanned: number | null;
-  estimated_total_pages: number | null;
-  options: Json | null;
-  start_time: string | null;
-  updated_at: string | null;
-};
+  progress?: number | null;
+  pages_scanned?: number | null;
+  estimated_total_pages?: number | null;
+  options?: Json | null;
+  start_time?: string | null;
+  updated_at?: string | null;
+}
 
-type CrawlResultsRow = {
-  id: string;
+interface CrawlResultData {
+  id?: string;
   task_id: string;
-  project_id: string | null;
+  project_id?: string | null;
   urls: string[];
   page_count: number;
-  created_at: string;
-};
+  created_at?: string;
+  page_types?: Json | null;
+  depth_data?: Json | null;
+  broken_links?: Json | null;
+  duplicate_pages?: Json | null;
+}
 
 // Настройки для масштабного сканирования
 export interface MassiveCrawlOptions {
@@ -62,20 +66,6 @@ export interface CrawlStatus {
   startTime: string;
   lastUpdated: string;
 }
-
-// Define a fixed type for the insert operation to avoid deep recursion
-type CrawlTaskInsert = {
-  project_id: string | null;
-  url: string;
-  task_id: string;
-  status: 'pending' | 'processing' | 'completed' | 'failed';
-  progress?: number | null;
-  pages_scanned?: number | null;
-  estimated_total_pages?: number | null;
-  options?: Json | null;
-  start_time?: string | null;
-  updated_at?: string | null;
-};
 
 export const firecrawlService = {
   /**
@@ -115,7 +105,7 @@ export const firecrawlService = {
       const taskId = `task_${Date.now()}`;
       
       // Сохраняем информацию о задаче в базу данных
-      const insertData: CrawlTaskInsert = {
+      const insertData: CrawlTaskData = {
         project_id: projectId,
         url,
         task_id: taskId,
@@ -286,7 +276,7 @@ export const firecrawlService = {
           progress = 100;
           clearInterval(interval);
           
-          // Create update data with explicit type
+          // Create update data
           const taskUpdateData = {
             status: 'completed' as const,
             progress: 100,
@@ -304,18 +294,20 @@ export const firecrawlService = {
           );
           
           // Сохраняем результаты в базу данных
-          await supabase.from('crawl_results').insert({
+          const crawlResultData: CrawlResultData = {
             task_id: taskId,
             project_id: projectId,
             urls: mockUrls,
             page_count: pagesScanned,
             created_at: new Date().toISOString()
-          });
+          };
+          
+          await supabase.from('crawl_results').insert(crawlResultData);
           
           // Обновляем аналитику проекта
           const websiteUrl = await this.getUrlFromTaskId(taskId);
           if (websiteUrl) {
-            await supabase.from('analytics').insert({
+            const analyticsData: AnalyticsData = {
               project_id: projectId,
               url: websiteUrl,
               score: Math.floor(Math.random() * 30) + 70,
@@ -324,12 +316,14 @@ export const firecrawlService = {
               active_users: Math.floor(Math.random() * 1000) + 500,
               trends: this.generateMockTrends(),
               distribution: this.generateMockDistribution(pagesScanned)
-            });
+            };
+            
+            await supabase.from('analytics').insert(analyticsData);
           }
           
           console.log(`Задача ${taskId} успешно завершена`);
         } else {
-          // Create update data with explicit type
+          // Create update data
           const taskUpdateData = {
             status: 'processing' as const,
             progress: Math.floor(progress),

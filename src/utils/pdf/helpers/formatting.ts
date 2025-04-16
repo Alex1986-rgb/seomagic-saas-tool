@@ -11,6 +11,18 @@ export const formatDateString = (dateStr: string): string => {
 };
 
 /**
+ * Formats a Date object for display
+ */
+export const formatDate = (date: Date | undefined): string => {
+  if (!date) return 'Н/Д';
+  return date.toLocaleDateString('ru-RU', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  });
+};
+
+/**
  * Gets category status based on score
  */
 export const getCategoryStatus = (score: number): string => {
