@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AuditCategorySection } from './category';
 import { AuditDetailsData } from '@/types/audit';
@@ -9,14 +9,17 @@ interface AuditTabsProps {
 }
 
 const AuditTabs: React.FC<AuditTabsProps> = ({ details }) => {
+  // Use state to track active tab for responsive layouts
+  const [activeTab, setActiveTab] = useState("seo");
+  
   return (
-    <div className="neo-card p-6 mb-8">
-      <Tabs defaultValue="seo">
-        <TabsList className="mb-6 grid grid-cols-2 md:grid-cols-4">
-          <TabsTrigger value="seo">SEO</TabsTrigger>
-          <TabsTrigger value="performance">Производительность</TabsTrigger>
-          <TabsTrigger value="content">Контент</TabsTrigger>
-          <TabsTrigger value="technical">Технические аспекты</TabsTrigger>
+    <div className="neo-card p-4 sm:p-6 mb-6 sm:mb-8">
+      <Tabs defaultValue="seo" value={activeTab} onValueChange={setActiveTab}>
+        <TabsList className="mb-4 sm:mb-6 grid grid-cols-2 md:grid-cols-4 gap-1">
+          <TabsTrigger value="seo" className="text-xs sm:text-sm">SEO</TabsTrigger>
+          <TabsTrigger value="performance" className="text-xs sm:text-sm">Производительность</TabsTrigger>
+          <TabsTrigger value="content" className="text-xs sm:text-sm">Контент</TabsTrigger>
+          <TabsTrigger value="technical" className="text-xs sm:text-sm">Технические аспекты</TabsTrigger>
         </TabsList>
         
         <TabsContent value="seo">

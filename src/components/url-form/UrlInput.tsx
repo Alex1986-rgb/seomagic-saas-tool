@@ -35,7 +35,7 @@ const UrlInput: React.FC<UrlInputProps> = ({
 
   return (
     <motion.div 
-      className={`glass-panel p-2 md:p-3 flex flex-col md:flex-row items-center gap-2 md:gap-3 overflow-hidden transition-all duration-300 ${isFocused ? 'ring-2 ring-primary/50 shadow-lg shadow-primary/10' : ''} ${isValid === true && url ? 'ring-1 ring-green-500/50' : ''} ${isValid === false && url ? 'ring-1 ring-red-500/50' : ''}`}
+      className={`glass-panel p-2 md:p-3 flex flex-col sm:flex-row items-center gap-2 md:gap-3 overflow-hidden transition-all duration-300 ${isFocused ? 'ring-2 ring-primary/50 shadow-lg shadow-primary/10' : ''} ${isValid === true && url ? 'ring-1 ring-green-500/50' : ''} ${isValid === false && url ? 'ring-1 ring-red-500/50' : ''}`}
       whileHover={{ y: -2, boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.15)" }}
       transition={{ duration: 0.2 }}
     >
@@ -48,7 +48,7 @@ const UrlInput: React.FC<UrlInputProps> = ({
               exit={{ scale: 0 }}
               transition={{ duration: 0.2 }}
             >
-              <CheckCircle className="h-4 w-4 md:h-5 md:w-5 text-green-500" />
+              <CheckCircle className="h-4 w-4 md:h-5 md:w-5 text-green-500 flex-shrink-0" />
             </motion.div>
           ) : isValid === false && url ? (
             <motion.div
@@ -57,7 +57,7 @@ const UrlInput: React.FC<UrlInputProps> = ({
               exit={{ scale: 0 }}
               transition={{ duration: 0.2 }}
             >
-              <AlertTriangle className="h-4 w-4 md:h-5 md:w-5 text-red-500" />
+              <AlertTriangle className="h-4 w-4 md:h-5 md:w-5 text-red-500 flex-shrink-0" />
             </motion.div>
           ) : (
             <motion.div
@@ -66,7 +66,7 @@ const UrlInput: React.FC<UrlInputProps> = ({
               exit={{ scale: 0 }}
               transition={{ duration: 0.2 }}
             >
-              <Globe className={`h-4 w-4 md:h-5 md:w-5 ${isFocused ? 'text-primary' : 'text-muted-foreground'} group-hover:text-primary transition-colors duration-200`} />
+              <Globe className={`h-4 w-4 md:h-5 md:w-5 ${isFocused ? 'text-primary' : 'text-muted-foreground'} group-hover:text-primary transition-colors duration-200 flex-shrink-0`} />
             </motion.div>
           )}
         </AnimatePresence>
@@ -91,7 +91,7 @@ const UrlInput: React.FC<UrlInputProps> = ({
         type="submit"
         disabled={isLoading}
         variant="glassmorphic"
-        className="w-full md:w-auto relative overflow-hidden group text-sm md:text-base py-1.5 md:py-2"
+        className="w-full sm:w-auto relative overflow-hidden group text-sm md:text-base py-1.5 md:py-2"
       >
         <span className="absolute inset-0 w-0 bg-white/20 transition-all duration-500 ease-out group-hover:w-full"></span>
         {isLoading ? (

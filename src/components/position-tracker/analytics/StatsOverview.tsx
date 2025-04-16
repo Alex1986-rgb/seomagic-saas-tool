@@ -62,32 +62,32 @@ export function StatsOverview({ history }: StatsOverviewProps) {
   const lastCheckTime = stats.lastCheck ? new Date(stats.lastCheck).toLocaleTimeString() : '-';
   
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
       <StatCard
         title="Среднее положение"
         value={stats.avgPosition || '-'}
-        icon={<TrendingUp className="h-5 w-5 text-blue-500" />}
+        icon={<TrendingUp className="h-4 w-4 sm:h-5 sm:w-5 text-blue-500" />}
         footer={`По ${stats.totalKeywords} ключевым словам`}
       />
       
       <StatCard
         title="Проверенные домены"
         value={stats.totalDomains.size}
-        icon={<Globe className="h-5 w-5 text-emerald-500" />}
+        icon={<Globe className="h-4 w-4 sm:h-5 sm:w-5 text-emerald-500" />}
         footer="Уникальные сайты"
       />
       
       <StatCard
         title="Проверки позиций"
         value={stats.totalSearches}
-        icon={<FileText className="h-5 w-5 text-amber-500" />}
+        icon={<FileText className="h-4 w-4 sm:h-5 sm:w-5 text-amber-500" />}
         footer="Всего выполнено"
       />
       
       <StatCard
         title="Последняя проверка"
         value={lastCheckDate}
-        icon={<Clock className="h-5 w-5 text-purple-500" />}
+        icon={<Clock className="h-4 w-4 sm:h-5 sm:w-5 text-purple-500" />}
         footer={`Время: ${lastCheckTime}`}
       />
     </div>

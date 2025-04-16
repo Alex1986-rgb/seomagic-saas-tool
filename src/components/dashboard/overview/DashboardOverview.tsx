@@ -27,12 +27,12 @@ const DashboardOverview: React.FC<DashboardOverviewProps> = ({
   };
   
   return (
-    <div className="space-y-8">
-      <div className="flex justify-between items-center mb-6">
+    <div className="space-y-6 md:space-y-8">
+      <div className="flex justify-between items-center mb-4 md:mb-6">
         <h2 className="text-xl font-semibold">Обзор</h2>
       </div>
       
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
         <InfoCard
           title="Активные сканирования"
           value="12"
@@ -61,27 +61,27 @@ const DashboardOverview: React.FC<DashboardOverviewProps> = ({
       
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <motion.div
-          className="neo-card p-5"
+          className="neo-card p-4 md:p-5"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
         >
-          <div className="flex justify-between items-center mb-4">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4">
             <h3 className="font-medium">Последние аудиты</h3>
-            <Button variant="outline" size="sm" className="flex items-center gap-2">
+            <Button variant="outline" size="sm" className="flex items-center gap-2 w-full sm:w-auto">
               <RefreshCw className="h-4 w-4" />
               <span>Обновить</span>
             </Button>
           </div>
           
-          <div className="space-y-4">
+          <div className="space-y-3 md:space-y-4 overflow-x-auto">
             {mockAudits.slice(0, 4).map((audit) => (
               <div key={audit.id} className="flex justify-between items-center py-2 border-b border-border-secondary last:border-0">
-                <div>
-                  <h4 className="font-medium">{audit.url}</h4>
+                <div className="truncate pr-2">
+                  <h4 className="font-medium truncate">{audit.url}</h4>
                   <p className="text-xs text-muted-foreground">{new Date(audit.date).toLocaleDateString()}</p>
                 </div>
-                <div className={`text-lg font-semibold ${
+                <div className={`text-lg font-semibold whitespace-nowrap ${
                   audit.score >= 80 ? 'text-green-500' : 
                   audit.score >= 60 ? 'text-amber-500' : 'text-destructive'
                 }`}>
@@ -97,12 +97,12 @@ const DashboardOverview: React.FC<DashboardOverviewProps> = ({
         </motion.div>
         
         <motion.div
-          className="neo-card p-5"
+          className="neo-card p-4 md:p-5"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
         >
-          <div className="flex justify-between items-start mb-4">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4">
             <div>
               <h3 className="font-medium">Тренд SEO оценок</h3>
               <p className="text-sm text-muted-foreground">За последний месяц</p>
@@ -113,7 +113,7 @@ const DashboardOverview: React.FC<DashboardOverviewProps> = ({
             </div>
           </div>
           
-          <div className="h-56">
+          <div className="h-48 md:h-56">
             <SparkAreaChart />
           </div>
         </motion.div>
