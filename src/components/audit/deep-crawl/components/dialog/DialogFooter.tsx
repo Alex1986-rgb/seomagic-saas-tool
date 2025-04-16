@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { ArrowRight, BarChart4, Bot } from 'lucide-react';
 import { DialogFooter as ShadcnDialogFooter } from "@/components/ui/dialog";

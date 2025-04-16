@@ -1,7 +1,7 @@
 
-export { ProgressTab } from './ProgressTab';
-export { ResultsTab } from './ResultsTab';
-export { OptimizeTab } from './OptimizeTab';
-export { DialogHeader } from './DialogHeader';
-export { DialogFooter } from './DialogFooter';
-export { EstimateTab } from './EstimateTab';
+export { default as ProgressTab } from './ProgressTab';
+export { default as ResultsTab } from './ResultsTab';
+export { default as OptimizeTab } from './OptimizeTab';
+export { default as DialogHeader } from './DialogHeader';
+export { default as DialogFooter } from './DialogFooter';
+export { default as EstimateTab } from './EstimateTab';
