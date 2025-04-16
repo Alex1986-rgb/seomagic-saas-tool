@@ -120,7 +120,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
       
       {controls && (
         <>
-          <VideoProgressBar progress={progress} />
+          <VideoProgressBar progress={progress} onSeek={handleSeek} />
           <VideoControls 
             isPlaying={isPlaying}
             isMuted={isMuted}

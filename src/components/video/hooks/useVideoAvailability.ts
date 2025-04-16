@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from 'react';
 
-interface UseVideoAvailabilityProps {
+export interface UseVideoAvailabilityProps {
   videoRef: React.RefObject<HTMLVideoElement>;
 }
 
@@ -9,40 +9,29 @@ export const useVideoAvailability = ({ videoRef }: UseVideoAvailabilityProps) =>
   const [isRealVideo, setIsRealVideo] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   
-  const checkVideoAvailability = () => {
+  useEffect(() => {
     if (videoRef.current) {
-      videoRef.current.addEventListener('error', () => {
-        console.error("Видео не загружено или произошла ошибка");
+      const video = videoRef.current;
+      
+      const handleLoadedMetadata = () => {
+        setIsRealVideo(true);
+        setIsLoading(false);
+      };
+      
+      const handleError = () => {
         setIsRealVideo(false);
         setIsLoading(false);
-      });
+      };
       
-      videoRef.current.addEventListener('loadeddata', () => {
-        // Check if the video has actual content
-        if (videoRef.current && videoRef.current.videoWidth > 0) {
-          console.log("Реальное видео загружено");
-          setIsRealVideo(true);
-          setIsLoading(false);
-        }
-      });
+      video.addEventListener('loadedmetadata', handleLoadedMetadata);
+      video.addEventListener('error', handleError);
+      
+      return () => {
+        video.removeEventListener('loadedmetadata', handleLoadedMetadata);
+        video.removeEventListener('error', handleError);
+      };
     }
-  };
+  }, [videoRef]);
   
-  useEffect(() => {
-    checkVideoAvailability();
-    
-    // Set timeout to ensure we don't wait too long for video to load
-    const timer = setTimeout(() => {
-      if (isLoading) {
-        setIsLoading(false);
-      }
-    }, 3000);
-    
-    return () => clearTimeout(timer);
-  }, []);
-
-  return {
-    isRealVideo,
-    isLoading,
-  };
+  return { isRealVideo, isLoading };
 };

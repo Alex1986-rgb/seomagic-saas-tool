@@ -1,5 +1,5 @@
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useCallback } from 'react';
 import { useVideoControls } from './useVideoControls';
 import { useVideoProgress } from './useVideoProgress';
 import { useVideoAvailability } from './useVideoAvailability';

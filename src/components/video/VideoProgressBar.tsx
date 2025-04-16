@@ -1,19 +1,32 @@
 
 import React from 'react';
-import { motion } from 'framer-motion';
 
 interface VideoProgressBarProps {
   progress: number;
+  onSeek?: (value: number) => void;
 }
 
-const VideoProgressBar: React.FC<VideoProgressBarProps> = ({ progress }) => {
+const VideoProgressBar: React.FC<VideoProgressBarProps> = ({ progress, onSeek }) => {
+  const handleProgressClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!onSeek) return;
+    
+    const progressBar = e.currentTarget;
+    const rect = progressBar.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const width = rect.width;
+    const percentage = (x / width) * 100;
+    
+    onSeek(percentage);
+  };
+  
   return (
-    <div className="absolute bottom-14 left-0 w-full h-2 bg-gray-800/60 z-20 overflow-hidden rounded-full mx-auto px-1">
-      <motion.div 
-        className="h-full bg-gradient-to-r from-primary/80 via-primary to-primary/90 rounded-full"
-        initial={{ width: "0%" }}
-        animate={{ width: `${progress}%` }}
-        transition={{ duration: 0.1 }}
+    <div 
+      className="absolute bottom-12 left-0 right-0 h-1 bg-gray-700 cursor-pointer z-20"
+      onClick={handleProgressClick}
+    >
+      <div 
+        className="h-full bg-primary transition-all"
+        style={{ width: `${progress}%` }}
       />
     </div>
   );
