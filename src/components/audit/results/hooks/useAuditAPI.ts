@@ -3,7 +3,7 @@ import { useState, useCallback } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import { seoApiService } from '@/api/seoApiService';
 import { OptimizationItem } from '../components/optimization/CostDetailsTable';
-import { ApiOptimizationItem } from '@/types/api';
+import { OptimizationItem as ApiOptimizationItem } from '@/types/api'; // Update the import
 
 export const useAuditAPI = (url: string) => {
   const { toast } = useToast();
