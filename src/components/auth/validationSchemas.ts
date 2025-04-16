@@ -9,9 +9,12 @@ export const loginSchema = z.object({
 
 // Registration validation schema
 export const registerSchema = z.object({
-  name: z.string().min(2, { message: "Имя должно содержать минимум 2 символа" }),
   email: z.string().email({ message: "Введите корректный email" }),
   password: z.string().min(6, { message: "Пароль должен содержать минимум 6 символов" }),
+  confirmPassword: z.string().min(6, { message: "Пароль должен содержать минимум 6 символов" }),
+  termsAccepted: z.boolean().refine(val => val === true, {
+    message: "Необходимо принять условия использования",
+  }),
 });
 
 // Define types for form values
