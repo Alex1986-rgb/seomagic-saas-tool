@@ -118,7 +118,7 @@ const NotificationSettings: React.FC<NotificationSettingsProps> = ({
                   onChange={(e) => updateEmailTemplate(index, 'content', e.target.value)}
                 />
                 <p className="text-xs text-muted-foreground">
-                  Используйте переменные в формате {{имя_переменной}} для подстановки данных.
+                  Используйте переменные в формате {"{{"}{"{имя_переменной}"}{"}"} для подстановки данных.
                 </p>
               </div>
             </div>
