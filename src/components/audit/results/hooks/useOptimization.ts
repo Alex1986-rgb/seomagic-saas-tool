@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import { createOptimizedSite } from '@/services/auditService';
@@ -110,7 +109,7 @@ export const useOptimization = (url: string) => {
     }
   };
 
-  const generatePdfReportFile = async (options: {
+  const generatePdfReportFile = async (options?: {
     auditData: any;
     url: string;
     pageStats?: any;

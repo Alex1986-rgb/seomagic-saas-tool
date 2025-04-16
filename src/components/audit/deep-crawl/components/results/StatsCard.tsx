@@ -7,7 +7,7 @@ interface StatsCardProps {
   label: string;
 }
 
-const StatsCard: React.FC<StatsCardProps> = ({ value, label }) => {
+export const StatsCard: React.FC<StatsCardProps> = ({ value, label }) => {
   return (
     <motion.div 
       className="bg-muted/30 p-4 rounded-lg border flex flex-col items-center justify-center"

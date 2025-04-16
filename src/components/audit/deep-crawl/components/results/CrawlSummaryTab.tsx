@@ -2,7 +2,7 @@
 import React from 'react';
 import { Map } from 'lucide-react';
 import { Button } from "@/components/ui/button";
-import { StatsCard } from './index';
+import { StatsCard } from './StatsCard';
 
 interface CrawlSummaryTabProps {
   pageCount: number;
