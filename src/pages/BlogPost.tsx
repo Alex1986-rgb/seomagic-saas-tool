@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -33,15 +32,35 @@ const BlogPost: React.FC = () => {
     if (id) {
       const foundPost = mockBlogPosts.find(p => p.id.toString() === id);
       
-      if (foundPost) {
-        setPost(foundPost);
+      if (foundPost && 
+          'date' in foundPost && 
+          'author' in foundPost && 
+          'category' in foundPost && 
+          'image' in foundPost && 
+          'tags' in foundPost) {
+        // Make sure the post has all required fields before setting it
+        setPost(foundPost as BlogPost);
         
         // Find related posts with same tags
         const related = mockBlogPosts
-          .filter(p => p.id.toString() !== id && p.tags.some(tag => foundPost.tags.includes(tag)))
+          .filter(p => 
+            p.id.toString() !== id && 
+            'tags' in p && 
+            p.tags && 
+            'tags' in foundPost && 
+            foundPost.tags && 
+            p.tags.some(tag => foundPost.tags.includes(tag))
+          )
+          .filter(p => 
+            'date' in p && 
+            'author' in p && 
+            'category' in p && 
+            'image' in p && 
+            'tags' in p
+          )
           .slice(0, 3);
         
-        setRelatedPosts(related);
+        setRelatedPosts(related as BlogPost[]);
       }
       
       setLoading(false);
