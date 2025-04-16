@@ -7,32 +7,6 @@ import jsPDF from 'jspdf';
 import { getScoreColorRGB } from './colors';
 
 /**
- * Draws the header section of a PDF report
- */
-export const drawHeader = (doc: jsPDF, title: string): void => {
-  // Set up styling
-  doc.setFillColor(66, 135, 245);
-  doc.rect(0, 0, doc.internal.pageSize.getWidth(), 30, 'F');
-  
-  // Add title
-  doc.setTextColor(255, 255, 255);
-  doc.setFontSize(20);
-  doc.setFont('helvetica', 'bold');
-  doc.text(title, 14, 20);
-  
-  // Add date
-  const now = new Date();
-  const dateString = now.toLocaleDateString('ru-RU', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric'
-  });
-  
-  doc.setFontSize(10);
-  doc.text(`Дата создания: ${dateString}`, doc.internal.pageSize.getWidth() - 14, 20, { align: 'right' });
-};
-
-/**
  * Draws a gauge for visualizing scores (0-100)
  */
 export function drawGauge(

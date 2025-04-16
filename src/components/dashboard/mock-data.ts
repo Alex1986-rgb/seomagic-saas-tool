@@ -1,129 +1,70 @@
 
-import { formatDate } from '@/lib/utils';
+export const mockAudits = [
+  {
+    id: '1',
+    url: 'https://example.com',
+    date: '2023-09-15T14:30:00Z',
+    score: 67,
+    status: 'completed',
+  },
+  {
+    id: '2',
+    url: 'https://company-blog.net',
+    date: '2023-09-10T09:15:00Z',
+    score: 84,
+    status: 'completed',
+  },
+  {
+    id: '3',
+    url: 'https://e-store.example',
+    date: '2023-09-05T18:45:00Z',
+    score: 42,
+    status: 'completed',
+  },
+  {
+    id: '4',
+    url: 'https://new-project.com',
+    date: '2023-09-01T11:20:00Z',
+    score: null,
+    status: 'processing',
+  },
+];
 
 export const mockUserAudits = [
   {
-    id: "1",
-    project_id: "1",
-    score: 84,
-    page_count: 128,
-    created_at: formatDate(new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)),
-    issues: {
-      critical: 3,
-      major: 7,
-      minor: 15
-    },
-    recommendations: [
-      "Optimize meta descriptions",
-      "Fix broken links",
-      "Improve page loading speed"
-    ],
-    scan_details: {
-      duration: "8 minutes",
-      errors: 5,
-      warnings: 12
-    }
-  },
-  {
-    id: "2",
-    project_id: "1",
+    id: '1',
+    url: 'https://example.com',
     score: 78,
-    page_count: 132,
-    created_at: formatDate(new Date(Date.now() - 15 * 24 * 60 * 60 * 1000)),
-    issues: {
-      critical: 4,
-      major: 9,
-      minor: 18
-    },
-    recommendations: [
-      "Add alt tags to images",
-      "Improve mobile responsiveness",
-      "Optimize headings structure"
-    ],
-    scan_details: {
-      duration: "10 minutes",
-      errors: 7,
-      warnings: 15
-    }
+    date: '2023-06-08T14:30:00Z',
+    status: 'completed',
+    issues: { critical: 3, important: 8, opportunities: 12 },
+    optimized: true,
   },
   {
-    id: "3",
-    project_id: "2",
+    id: '2',
+    url: 'https://mywebsite.ru',
+    score: 45,
+    date: '2023-06-07T09:15:00Z',
+    status: 'completed',
+    issues: { critical: 12, important: 15, opportunities: 7 },
+    optimized: false,
+  },
+  {
+    id: '3',
+    url: 'https://shop.example.com',
     score: 92,
-    page_count: 64,
-    created_at: formatDate(new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)),
-    issues: {
-      critical: 1,
-      major: 4,
-      minor: 9
-    },
-    recommendations: [
-      "Implement schema markup",
-      "Add canonical URLs",
-      "Improve content readability"
-    ],
-    scan_details: {
-      duration: "5 minutes",
-      errors: 2,
-      warnings: 8
-    }
-  }
+    date: '2023-06-06T10:20:00Z',
+    status: 'completed',
+    issues: { critical: 0, important: 4, opportunities: 8 },
+    optimized: true,
+  },
+  {
+    id: '4',
+    url: 'https://blog.mywebsite.ru',
+    score: null,
+    date: '2023-06-08T16:45:00Z',
+    status: 'processing',
+    issues: null,
+    optimized: false,
+  },
 ];
-
-export function generateHistoricalData(baseScore: number, days: number = 30) {
-  const data = [];
-  let score = baseScore - 10;
-  
-  for (let i = days; i >= 0; i--) {
-    // Создаем тренд с постепенным улучшением и случайными колебаниями
-    const change = Math.random() * 3 - 0.5;
-    score = Math.min(Math.max(score + change, 50), 100);
-    
-    data.push({
-      date: new Date(Date.now() - i * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-      score: Math.round(score),
-      issues: Math.round((100 - score) / 2)
-    });
-  }
-  
-  return data;
-}
-
-export function generatePageTypeData(pageCount: number) {
-  return {
-    blog: Math.floor(pageCount * 0.3),
-    product: Math.floor(pageCount * 0.4),
-    category: Math.floor(pageCount * 0.15),
-    static: Math.floor(pageCount * 0.15)
-  };
-}
-
-export function generateMockCrawl(domain: string, pageCount: number = 100) {
-  const urls = [`https://${domain}/`];
-  const pageTypes = ['about', 'contact', 'blog', 'products', 'category', 'faq', 'terms'];
-  
-  // Добавление основных страниц
-  pageTypes.forEach(type => {
-    urls.push(`https://${domain}/${type}`);
-  });
-  
-  // Добавление подстраниц
-  let currentCount = urls.length;
-  while (currentCount < pageCount) {
-    const pageType = pageTypes[Math.floor(Math.random() * pageTypes.length)];
-    const id = Math.floor(Math.random() * 1000);
-    urls.push(`https://${domain}/${pageType}/${pageType}-${id}`);
-    currentCount++;
-  }
-  
-  return {
-    urls,
-    pageCount,
-    brokenLinks: Math.floor(pageCount * 0.05),
-    externalLinks: Math.floor(pageCount * 2.5),
-    performance: {
-      avgLoadTime: (Math.random() * 2 + 1).toFixed(2),
-      avgPageSize: Math.floor(Math.random() * 1000 + 500)
-    }
-  };
-}

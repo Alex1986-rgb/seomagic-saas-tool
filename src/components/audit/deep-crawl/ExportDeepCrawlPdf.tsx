@@ -41,8 +41,8 @@ const ExportDeepCrawlPdf: React.FC<ExportDeepCrawlPdfProps> = ({
   const [isExporting, setIsExporting] = useState(false);
   const { toast } = useToast();
   
-  const handleExport = async (): Promise<boolean> => {
-    if (isExporting) return false;
+  const handleExport = async () => {
+    if (isExporting) return;
     
     try {
       setIsExporting(true);
@@ -66,10 +66,9 @@ const ExportDeepCrawlPdf: React.FC<ExportDeepCrawlPdfProps> = ({
         enhancedStyling
       });
       
-      if (!pdfBlob) {
-        throw new Error("Invalid PDF generation result");
-      }
-
+      if (!pdfBlob) throw new Error("Не удалось создать PDF");
+      
+      // Create a download link for the PDF
       const url = window.URL.createObjectURL(pdfBlob);
       const a = document.createElement('a');
       a.href = url;
@@ -83,8 +82,6 @@ const ExportDeepCrawlPdf: React.FC<ExportDeepCrawlPdfProps> = ({
         title: "Отчет сохранен",
         description: "Полный PDF отчет успешно скачан",
       });
-
-      return true;
     } catch (error) {
       console.error('Ошибка при создании PDF:', error);
       
@@ -93,8 +90,6 @@ const ExportDeepCrawlPdf: React.FC<ExportDeepCrawlPdfProps> = ({
         description: "Не удалось создать PDF отчет. Пожалуйста, попробуйте еще раз.",
         variant: "destructive",
       });
-
-      return false;
     } finally {
       setIsExporting(false);
     }
