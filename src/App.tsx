@@ -1,6 +1,6 @@
 
 import React, { Suspense } from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Outlet } from 'react-router-dom';
 import { Toaster } from "@/components/ui/toaster";
 import Layout from '@/components/Layout';
 import LoadingSpinner from '@/components/LoadingSpinner';
@@ -38,7 +38,7 @@ const AdminPanel = React.lazy(() => import('./pages/AdminPanel'));
 // Loading fallback for lazy-loaded components
 const PageLoader = () => (
   <div className="min-h-screen flex items-center justify-center">
-    <LoadingSpinner size="lg" />
+    <LoadingSpinner className="w-12 h-12" />
   </div>
 );
 
@@ -49,7 +49,11 @@ function App() {
         <AuthProvider>
           <Suspense fallback={<PageLoader />}>
             <Routes>
-              <Route path="/" element={<Layout />}>
+              <Route path="/" element={
+                <Layout>
+                  <Outlet />
+                </Layout>
+              }>
                 <Route index element={<Index />} />
                 <Route path="about" element={<About />} />
                 <Route path="features" element={<Features />} />

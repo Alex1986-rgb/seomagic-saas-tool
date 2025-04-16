@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Checkbox } from "@/components/ui/checkbox";
-import { registerFormSchema } from './validationSchemas';
+import { registerSchema } from './validationSchemas';
 import { useAuth } from '@/contexts/AuthContext';
 
 interface RegisterFormProps {
@@ -17,8 +17,8 @@ interface RegisterFormProps {
 const RegisterForm: React.FC<RegisterFormProps> = ({ onSuccess }) => {
   const { register } = useAuth();
   
-  const form = useForm<z.infer<typeof registerFormSchema>>({
-    resolver: zodResolver(registerFormSchema),
+  const form = useForm<z.infer<typeof registerSchema>>({
+    resolver: zodResolver(registerSchema),
     defaultValues: {
       email: "",
       password: "",
@@ -27,7 +27,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSuccess }) => {
     },
   });
 
-  const onSubmit = async (values: z.infer<typeof registerFormSchema>) => {
+  const onSubmit = async (values: z.infer<typeof registerSchema>) => {
     await register(values.email, values.password);
     onSuccess();
   };
