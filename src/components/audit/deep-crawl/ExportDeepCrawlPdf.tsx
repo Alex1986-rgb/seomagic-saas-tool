@@ -65,23 +65,23 @@ const ExportDeepCrawlPdf: React.FC<ExportDeepCrawlPdfProps> = ({
         enhancedStyling
       });
       
-      if (pdfBlob) {
-        const url = window.URL.createObjectURL(pdfBlob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `detailed-audit-${domain.replace(/[^a-zA-Z0-9]/g, '-')}-${new Date().toISOString().split('T')[0]}.pdf`;
-        document.body.appendChild(a);
-        a.click();
-        window.URL.revokeObjectURL(url);
-        document.body.removeChild(a);
-        
-        toast({
-          title: "Отчет сохранен",
-          description: "Полный PDF отчет успешно скачан",
-        });
-      } else {
+      if (!pdfBlob) {
         throw new Error("Invalid PDF generation result");
       }
+
+      const url = window.URL.createObjectURL(pdfBlob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `detailed-audit-${domain.replace(/[^a-zA-Z0-9]/g, '-')}-${new Date().toISOString().split('T')[0]}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+      
+      toast({
+        title: "Отчет сохранен",
+        description: "Полный PDF отчет успешно скачан",
+      });
     } catch (error) {
       console.error('Ошибка при создании PDF:', error);
       
