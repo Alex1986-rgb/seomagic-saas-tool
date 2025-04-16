@@ -1,5 +1,6 @@
 
 import { AuditData } from '@/types/audit';
+import jsPDF from 'jspdf';
 
 export interface ErrorData {
   url: string;
@@ -24,7 +25,7 @@ export interface ErrorReportOptions {
 
 export interface ErrorReportSection {
   title: string;
-  errors: AnalyzedError[];
+  errors: ErrorData[];
   color: [number, number, number];
 }
 
@@ -40,4 +41,3 @@ export interface ErrorReportContext {
   currentY: number;
   options: ErrorReportOptions;
 }
-
