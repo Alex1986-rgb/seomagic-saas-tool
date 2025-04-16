@@ -97,14 +97,14 @@ export const generateErrorReportPdf = async (
     body: summaryData,
     headStyles: {
       fillColor: pdfColors.primary as [number, number, number],
-      textColor: [255, 255, 255],
+      textColor: [255, 255, 255] as [number, number, number],
       fontStyle: 'bold'
     },
     bodyStyles: {
-      textColor: [0, 0, 0]
+      textColor: [0, 0, 0] as [number, number, number]
     },
     alternateRowStyles: {
-      fillColor: [241, 245, 249]
+      fillColor: [241, 245, 249] as [number, number, number]
     }
   });
 
@@ -155,14 +155,14 @@ export const generateErrorReportPdf = async (
     },
     headStyles: {
       fillColor: pdfColors.primary as [number, number, number],
-      textColor: [255, 255, 255],
+      textColor: [255, 255, 255] as [number, number, number],
       fontStyle: 'bold'
     },
     bodyStyles: {
-      textColor: [0, 0, 0]
+      textColor: [0, 0, 0] as [number, number, number]
     },
     alternateRowStyles: {
-      fillColor: [241, 245, 249]
+      fillColor: [241, 245, 249] as [number, number, number]
     }
   });
 
@@ -233,14 +233,14 @@ export const generateErrorReportPdf = async (
         },
         headStyles: {
           fillColor: pdfColors.primary as [number, number, number],
-          textColor: [255, 255, 255],
+          textColor: [255, 255, 255] as [number, number, number],
           fontStyle: 'bold'
         },
         bodyStyles: {
-          textColor: [0, 0, 0]
+          textColor: [0, 0, 0] as [number, number, number]
         },
         alternateRowStyles: {
-          fillColor: [241, 245, 249]
+          fillColor: [241, 245, 249] as [number, number, number]
         }
       });
     }
@@ -277,14 +277,14 @@ export const generateErrorReportPdf = async (
         },
         headStyles: {
           fillColor: pdfColors.primary as [number, number, number],
-          textColor: [255, 255, 255],
+          textColor: [255, 255, 255] as [number, number, number],
           fontStyle: 'bold'
         },
         bodyStyles: {
-          textColor: [0, 0, 0]
+          textColor: [0, 0, 0] as [number, number, number]
         },
         alternateRowStyles: {
-          fillColor: [241, 245, 249]
+          fillColor: [241, 245, 249] as [number, number, number]
         }
       });
     } else {
@@ -311,14 +311,14 @@ export const generateErrorReportPdf = async (
         },
         headStyles: {
           fillColor: pdfColors.primary as [number, number, number],
-          textColor: [255, 255, 255],
+          textColor: [255, 255, 255] as [number, number, number],
           fontStyle: 'bold'
         },
         bodyStyles: {
-          textColor: [0, 0, 0]
+          textColor: [0, 0, 0] as [number, number, number]
         },
         alternateRowStyles: {
-          fillColor: [241, 245, 249]
+          fillColor: [241, 245, 249] as [number, number, number]
         }
       });
     }
