@@ -1,7 +1,6 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { LineChart } from 'lucide-react';
 import UrlForm from '../url-form';
 import HeroTitle from './HeroTitle';
 import HeroBackground from './HeroBackground';
@@ -50,11 +49,6 @@ const HeroSection: React.FC = () => {
             variants={itemVariants}
             className="w-full"
           >
-            <div className="flex items-center justify-center mb-6">
-              <LineChart className="text-primary mr-2" size={18} />
-              <p className="text-sm font-medium">Увеличьте органический трафик в среднем на 150%</p>
-            </div>
-            
             <FeatureGrid />
           </motion.div>
         </motion.div>

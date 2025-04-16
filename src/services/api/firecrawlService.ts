@@ -1,4 +1,3 @@
-
 import { v4 as uuidv4 } from 'uuid';
 import { saveAs } from 'file-saver';
 
@@ -15,6 +14,18 @@ export interface CrawlTask {
   updated_at: string;
   urls?: string[];
   error?: string;
+}
+
+// Определяем типы для наших задач сканирования
+export interface CrawlTaskData {
+  id: string;
+  url: string;
+  status: string;
+  progress: number;
+  pages_scanned: number;
+  estimated_total_pages: number;
+  start_time: string;
+  updated_at: string;
 }
 
 // Хранилище задач в памяти для демонстрации (в реальном приложении это будет в БД)
@@ -285,4 +296,4 @@ export const firecrawlService = {
 };
 
 // Экспортируем типы для использования в других файлах
-export type { CrawlTask };
+export type { CrawlTask, CrawlTaskData };

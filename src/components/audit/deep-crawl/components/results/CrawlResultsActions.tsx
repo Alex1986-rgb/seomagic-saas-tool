@@ -68,5 +68,3 @@ export const CrawlResultsActions: React.FC<CrawlResultsActionsProps> = ({
     </div>
   );
 };
-
-export default CrawlResultsActions;
