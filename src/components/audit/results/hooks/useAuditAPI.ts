@@ -1,9 +1,8 @@
-
 import { useState, useCallback } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import { seoApiService } from '@/api/seoApiService';
 import { OptimizationItem } from '../components/optimization/CostDetailsTable';
-import { OptimizationItem as ApiOptimizationItem } from '@/types/api'; // Update the import
+import { OptimizationItem as ApiOptimizationItem } from '@/types/api';
 
 export const useAuditAPI = (url: string) => {
   const { toast } = useToast();
@@ -13,17 +12,13 @@ export const useAuditAPI = (url: string) => {
 
   const startBackendScan = async (deepScan = false) => {
     try {
-      // Set scanning state
       const maxPages = deepScan ? 500000 : 10000;
       
-      // Start the crawl
       const response = await seoApiService.startCrawl(url, maxPages);
       setTaskId(response.task_id);
       
-      // Begin polling for updates
       setIsPolling(true);
       
-      // Clear any existing interval
       if (scanPollingInterval) {
         clearInterval(scanPollingInterval);
       }
@@ -49,17 +44,14 @@ export const useAuditAPI = (url: string) => {
     onComplete: (status: any) => void,
     onError: (error: string) => void
   ) => {
-    // Clear any existing interval
     if (scanPollingInterval) {
       clearInterval(scanPollingInterval);
     }
     
-    // Set up polling
     const intervalId = setInterval(async () => {
       try {
         const statusResponse = await seoApiService.getStatus(taskId);
         
-        // Update scan details
         const currentScanDetails = {
           current_url: statusResponse.status === 'in_progress' ? `Scanning ${url}...` : '',
           pages_scanned: statusResponse.pages_scanned || 0,
@@ -69,21 +61,18 @@ export const useAuditAPI = (url: string) => {
         
         onStatusUpdate(currentScanDetails);
         
-        // If scan is complete
         if (statusResponse.status === 'completed') {
           setIsPolling(false);
           clearInterval(intervalId);
           onComplete(statusResponse);
         }
         
-        // Handle failed status
         if (statusResponse.status === 'failed') {
           setIsPolling(false);
           clearInterval(intervalId);
           
           onError(statusResponse.error || "Произошла ошибка при сканировании сайта");
         }
-        
       } catch (error) {
         console.error('Error polling scan status:', error);
       }
@@ -148,7 +137,6 @@ export const useAuditAPI = (url: string) => {
         console.error('Error exporting JSON:', error);
       }
     } else if (auditData) {
-      // Fall back to frontend implementation
       const dataStr = JSON.stringify(auditData, null, 2);
       const dataUri = `data:application/json;charset=utf-8,${encodeURIComponent(dataStr)}`;
       const exportName = `audit_${auditData.id || new Date().getTime()}.json`;
@@ -191,7 +179,6 @@ export const useAuditAPI = (url: string) => {
       const costData = await seoApiService.getOptimizationCost(taskId);
       setOptimizationCost(costData.total);
       
-      // Convert API OptimizationItem to component OptimizationItem
       const convertedItems: OptimizationItem[] = costData.items.map((item: ApiOptimizationItem) => ({
         name: item.name,
         count: item.count,
