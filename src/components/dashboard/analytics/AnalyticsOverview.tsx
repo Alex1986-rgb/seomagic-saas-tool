@@ -1,9 +1,14 @@
+
 import React, { useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { LineChart, BarChart2, TrendingUp, Users, RefreshCw } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { useAnalyticsData } from '@/hooks/useAnalyticsData';
 import { Skeleton } from "@/components/ui/skeleton";
+import { 
+  ResponsiveContainer, AreaChart, Area, CartesianGrid, 
+  XAxis, YAxis, Tooltip, Bar, BarChart 
+} from 'recharts';
 
 interface AnalyticsOverviewProps {
   projectId: string;
@@ -71,7 +76,7 @@ export const AnalyticsOverview = ({ projectId }: AnalyticsOverviewProps) => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
           title="Общий рейтинг SEO"
-          value={`${data.seoScore}/100`}
+          value={`${data.score}/100`}
           increase="+12%"
           icon={<TrendingUp className="h-4 w-4" />}
         />

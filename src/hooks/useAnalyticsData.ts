@@ -33,8 +33,8 @@ export const useAnalyticsData = () => {
           pagesScanned: existingAnalytics.pages_scanned,
           positionsTracked: existingAnalytics.positions_tracked,
           activeUsers: existingAnalytics.active_users,
-          trends: existingAnalytics.trends,
-          distribution: existingAnalytics.distribution
+          trends: Array.isArray(existingAnalytics.trends) ? existingAnalytics.trends : [],
+          distribution: Array.isArray(existingAnalytics.distribution) ? existingAnalytics.distribution : []
         });
       } else {
         // If no analytics exist, fetch the project URL and run analysis

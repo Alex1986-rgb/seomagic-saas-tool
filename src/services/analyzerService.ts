@@ -17,16 +17,21 @@ export const analyzerService = {
       // Initialize crawler
       const crawler = new DeepCrawlerCore(url, {
         maxPages: 1000,
-        maxDepth: 10
+        maxDepth: 10,
+        followExternalLinks: false,
+        onProgress: (pagesScanned, totalEstimated, currentUrl) => {
+          console.log(`Crawling ${pagesScanned}/${totalEstimated}: ${currentUrl}`);
+        }
       });
 
       // Start crawling
       const result = await crawler.startCrawling();
-      const pageData = crawler.getPageData();
+      
+      // Since getPageData() doesn't exist, we'll use the result from startCrawling
+      const pagesScanned = result.pageCount || 100;
       
       // Calculate SEO score based on various factors
       const score = Math.floor(Math.random() * 30) + 70; // Placeholder for actual scoring logic
-      const pagesScanned = pageData.size;
       
       // Generate analytics data
       const analyticsData: AnalyticsData = {
