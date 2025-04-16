@@ -17,6 +17,7 @@ import ClientProfile from './pages/ClientProfile';
 import Auth from './pages/Auth';
 import Features from './pages/Features';
 import NotFound from './pages/NotFound';
+import BlogPost from './pages/BlogPost';
 
 // Lazy load non-critical pages for better performance
 const SiteAudit = React.lazy(() => import('./pages/SiteAudit'));
