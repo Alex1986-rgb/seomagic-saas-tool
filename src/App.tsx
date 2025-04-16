@@ -37,7 +37,7 @@ const AdminPanel = React.lazy(() => import('./pages/AdminPanel'));
 // Loading fallback for lazy-loaded components
 const PageLoader = () => (
   <div className="min-h-screen flex items-center justify-center">
-    <LoadingSpinner size="w-12 h-12" />
+    <LoadingSpinner size="w-12 h-12" fullScreen={false} />
   </div>
 );
 
