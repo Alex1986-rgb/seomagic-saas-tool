@@ -41,8 +41,8 @@ const ExportDeepCrawlPdf: React.FC<ExportDeepCrawlPdfProps> = ({
   const [isExporting, setIsExporting] = useState(false);
   const { toast } = useToast();
   
-  const handleExport = async () => {
-    if (isExporting) return;
+  const handleExport = async (): Promise<boolean> => {
+    if (isExporting) return false;
     
     try {
       setIsExporting(true);
@@ -84,7 +84,7 @@ const ExportDeepCrawlPdf: React.FC<ExportDeepCrawlPdfProps> = ({
         description: "Полный PDF отчет успешно скачан",
       });
 
-      return true; // Return true to indicate success
+      return true;
     } catch (error) {
       console.error('Ошибка при создании PDF:', error);
       
@@ -94,7 +94,7 @@ const ExportDeepCrawlPdf: React.FC<ExportDeepCrawlPdfProps> = ({
         variant: "destructive",
       });
 
-      return false; // Return false to indicate failure
+      return false;
     } finally {
       setIsExporting(false);
     }

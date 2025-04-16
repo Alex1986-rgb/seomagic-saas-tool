@@ -80,7 +80,14 @@ const AuditResultsContainer: React.FC<AuditResultsContainerProps> = ({ url }) =>
   };
 
   const handleGeneratePdfReport = () => {
-    generatePdfReportFile();
+    generatePdfReportFile({
+      auditData,
+      url,
+      pageStats,
+      optimizationCost,
+      optimizationItems,
+      recommendations
+    });
   };
 
   if (isLoading) {
