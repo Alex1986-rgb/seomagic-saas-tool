@@ -48,13 +48,13 @@ const AuditResultsContainer: React.FC<AuditResultsContainerProps> = ({ url }) =>
 
   useEffect(() => {
     if (!isInitialized && url) {
-      loadAuditData(false, false).catch(console.error);
+      loadAuditData(false, false);
       setIsInitialized(true);
     }
   }, [url, isInitialized, loadAuditData]);
 
   const handleRefreshAudit = () => {
-    loadAuditData(true, false);
+    loadAuditData(true);
   };
 
   const handleDeepScan = () => {
@@ -68,7 +68,7 @@ const AuditResultsContainer: React.FC<AuditResultsContainerProps> = ({ url }) =>
   };
 
   const handleSelectHistoricalAudit = (auditId: string) => {
-    console.log('Selecting historical audit:', auditId);
+    // This can be moved to a separate function or context in a future refactoring
   };
 
   const toggleContentPrompt = () => {
@@ -79,15 +79,9 @@ const AuditResultsContainer: React.FC<AuditResultsContainerProps> = ({ url }) =>
     optimizeSiteContent();
   };
 
+  // Handler for PDF report generation
   const handleGeneratePdfReport = () => {
-    generatePdfReportFile({
-      auditData,
-      url,
-      pageStats,
-      optimizationCost,
-      optimizationItems,
-      recommendations
-    });
+    generatePdfReportFile();
   };
 
   if (isLoading) {
@@ -119,7 +113,7 @@ const AuditResultsContainer: React.FC<AuditResultsContainerProps> = ({ url }) =>
   }
 
   return (
-    <AnimatePresence mode="sync">
+    <AnimatePresence>
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}

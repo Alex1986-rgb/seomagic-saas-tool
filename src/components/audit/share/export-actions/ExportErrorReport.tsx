@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { FileDown, Loader2, ChevronsDownUp } from 'lucide-react';
 import { DropdownMenuItem, DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger, DropdownMenuPortal } from "@/components/ui/dropdown-menu";
@@ -29,6 +30,7 @@ const ExportErrorReport: React.FC<ExportErrorReportProps> = ({
       try {
         setIsExporting('error-report');
         
+        // Use backend API to generate the report
         await seoApiService.downloadReport(taskId, detailed ? 'detailed' : 'errors');
         
         showExportSuccess(
@@ -44,6 +46,7 @@ const ExportErrorReport: React.FC<ExportErrorReportProps> = ({
       return;
     }
     
+    // Frontend implementation for when backend is not available
     if (!auditData) {
       showExportError();
       return;
@@ -52,6 +55,7 @@ const ExportErrorReport: React.FC<ExportErrorReportProps> = ({
     try {
       setIsExporting('error-report');
       
+      // Create errors array from audit data
       const errors = [];
       
       if (auditData?.details?.technical?.items) {
@@ -60,14 +64,9 @@ const ExportErrorReport: React.FC<ExportErrorReportProps> = ({
           .forEach(item => {
             errors.push({
               url: url,
-              errorType: 'Технический',
-              errorMessage: item.description || item.title,
-              statusCode: 0,
-              timestamp: new Date().toISOString(),
-              stackTrace: '',
-              browser: '',
-              device: '',
-              userAgent: ''
+              type: 'Технический',
+              description: item.description || item.title,
+              severity: item.status === 'error' ? 'high' : 'medium'
             });
           });
       }
@@ -78,14 +77,9 @@ const ExportErrorReport: React.FC<ExportErrorReportProps> = ({
           .forEach(item => {
             errors.push({
               url: url,
-              errorType: 'SEO',
-              errorMessage: item.description || item.title,
-              statusCode: 0,
-              timestamp: new Date().toISOString(),
-              stackTrace: '',
-              browser: '',
-              device: '',
-              userAgent: ''
+              type: 'SEO',
+              description: item.description || item.title,
+              severity: item.status === 'error' ? 'high' : 'medium'
             });
           });
       }
@@ -96,14 +90,9 @@ const ExportErrorReport: React.FC<ExportErrorReportProps> = ({
           .forEach(item => {
             errors.push({
               url: url,
-              errorType: 'Контент',
-              errorMessage: item.description || item.title,
-              statusCode: 0,
-              timestamp: new Date().toISOString(),
-              stackTrace: '',
-              browser: '',
-              device: '',
-              userAgent: ''
+              type: 'Контент',
+              description: item.description || item.title,
+              severity: item.status === 'error' ? 'high' : 'medium'
             });
           });
       }
@@ -114,12 +103,23 @@ const ExportErrorReport: React.FC<ExportErrorReportProps> = ({
         return;
       }
       
-      await generateErrorReportPdf(errors, {
-        includeStackTrace: detailed,
-        includeBrowserInfo: true,
-        includeUserAgent: detailed,
-        groupByType: true
+      const pdfBlob = await generateErrorReportPdf({
+        domain: url,
+        errors: errors,
+        scanDate: auditData.date,
+        url,
+        urls,
+        detailed,
+        auditData
       });
+      
+      if (!pdfBlob) throw new Error("Не удалось создать PDF");
+      
+      const filename = detailed 
+        ? `detailed-error-report-${cleanUrl(url)}-${formatDate(auditData.date)}.pdf`
+        : `error-report-${cleanUrl(url)}-${formatDate(auditData.date)}.pdf`;
+      
+      saveAs(pdfBlob, filename);
       
       showExportSuccess(
         detailed ? "Детальный отчет экспортирован" : "Отчет об ошибках экспортирован", 

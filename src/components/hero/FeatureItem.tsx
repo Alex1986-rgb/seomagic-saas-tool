@@ -1,34 +1,34 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { LucideIcon } from 'lucide-react';
 
-interface FeatureProps {
-  feature: {
-    name: string;
-    description: string;
-    icon: LucideIcon;
-  };
-  index: number;
+interface FeatureItemProps {
+  icon: React.ReactNode;
+  text: string;
 }
 
-const FeatureItem: React.FC<FeatureProps> = ({ feature, index }) => {
+const FeatureItem: React.FC<FeatureItemProps> = ({ icon, text }) => {
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5, delay: index * 0.1 + 0.3 }}
-      className="group relative backdrop-blur-sm bg-card/60 p-6 rounded-xl shadow-sm border border-primary/5 transition-all duration-300 hover:border-primary/20"
+    <motion.div 
+      whileHover={{ y: -5, boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.1)" }}
+      transition={{ duration: 0.2 }}
+      className="gradient-border group"
     >
-      <dt className="flex flex-col items-center text-center">
-        <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 group-hover:bg-primary/20 transition-colors">
-          <feature.icon className="h-8 w-8 text-primary" aria-hidden="true" />
+      <div className="flex flex-col items-center space-y-3 p-4 rounded-lg relative overflow-hidden">
+        <div className="p-3 bg-primary/10 text-primary rounded-full relative z-10">
+          {icon}
         </div>
-        <p className="text-xl font-semibold mb-3">{feature.name}</p>
-      </dt>
-      <dd className="text-center text-muted-foreground">
-        {feature.description}
-      </dd>
+        <p className="text-sm md:text-base font-medium text-center relative z-10">{text}</p>
+        
+        {/* Анимация фона при наведении */}
+        <div className="absolute inset-0 bg-gradient-to-tr from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+        <motion.div 
+          className="absolute -bottom-10 -right-10 w-20 h-20 bg-primary/5 rounded-full z-0"
+          initial={{ scale: 0 }}
+          whileHover={{ scale: 4 }}
+          transition={{ duration: 0.5 }}
+        />
+      </div>
     </motion.div>
   );
 };

@@ -1,4 +1,3 @@
-
 /**
  * Shared types for the crawler system
  */

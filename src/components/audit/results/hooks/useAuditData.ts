@@ -1,3 +1,4 @@
+
 import { useState, useCallback } from 'react';
 import { useAuditCore } from './useAuditCore';
 import { useScanningState } from './useScanningState';
@@ -7,12 +8,13 @@ import { seoApiService } from '@/api/seoApiService';
 import { useToast } from "@/hooks/use-toast";
 import { OptimizationItem as ApiOptimizationItem } from '@/types/api';
 import { OptimizationItem } from '../components/optimization/CostDetailsTable';
-import { useAuditPolling } from '@/hooks/useAuditPolling';
 
 export const useAuditData = (url: string) => {
   const { toast } = useToast();
   const [taskId, setTaskId] = useState<string | null>(seoApiService.getTaskIdForUrl(url));
-
+  const [isPolling, setIsPolling] = useState<boolean>(false);
+  const [scanPollingInterval, setScanPollingInterval] = useState<NodeJS.Timeout | null>(null);
+  
   const { 
     isLoading,
     loadingProgress,
@@ -60,25 +62,101 @@ export const useAuditData = (url: string) => {
     generatePdfReportFile
   } = useOptimization(url);
 
-  const polling = useAuditPolling(url, (statusResponse) => {
-    if (statusResponse.pages_scanned) {
-      updateAuditPageCount(statusResponse.pages_scanned);
-    }
-  });
-
   const startBackendScan = async (deepScan = false) => {
     try {
+      // Set scanning state
+      const isScanning = true;
       const maxPages = deepScan ? 500000 : 10000;
+      
+      // Start the crawl
       const response = await seoApiService.startCrawl(url, maxPages);
       setTaskId(response.task_id);
-      await polling.startPolling(response.task_id);
+      
+      // Begin polling for updates
+      setIsPolling(true);
+      
+      // Clear any existing interval
+      if (scanPollingInterval) {
+        clearInterval(scanPollingInterval);
+      }
+      
+      // Set up polling
+      const intervalId = setInterval(async () => {
+        try {
+          const statusResponse = await seoApiService.getStatus(response.task_id);
+          
+          // Update scan details
+          const currentScanDetails = {
+            current_url: statusResponse.status === 'in_progress' ? `Scanning ${url}...` : '',
+            pages_scanned: statusResponse.pages_scanned || 0,
+            estimated_pages: statusResponse.total_pages || 0,
+            stage: statusResponse.status
+          };
+          
+          // If scan is complete
+          if (statusResponse.status === 'completed') {
+            setIsPolling(false);
+            clearInterval(intervalId);
+            
+            // Load optimization cost data
+            try {
+              const costData = await seoApiService.getOptimizationCost(response.task_id);
+              setOptimizationCost(costData.total);
+              
+              // Convert API OptimizationItem to component OptimizationItem
+              const convertedItems: OptimizationItem[] = costData.items.map((item: ApiOptimizationItem) => ({
+                name: item.name,
+                count: item.count,
+                price: item.price,
+                type: item.type || 'service',
+                pricePerUnit: item.price / item.count,
+                totalPrice: item.price,
+                description: item.description || item.name
+              }));
+              
+              setOptimizationItems(convertedItems);
+            } catch (error) {
+              console.error('Error loading optimization cost:', error);
+            }
+            
+            // Update audit data with new page count
+            updateAuditPageCount(statusResponse.pages_scanned || 0);
+            
+            toast({
+              title: "Сканирование завершено",
+              description: `Обнаружено ${statusResponse.pages_scanned} страниц на сайте ${url}`,
+            });
+          }
+          
+          // Handle failed status
+          if (statusResponse.status === 'failed') {
+            setIsPolling(false);
+            clearInterval(intervalId);
+            
+            toast({
+              title: "Ошибка сканирования",
+              description: statusResponse.error || "Произошла ошибка при сканировании сайта",
+              variant: "destructive"
+            });
+          }
+          
+        } catch (error) {
+          console.error('Error polling scan status:', error);
+        }
+      }, 2000);
+      
+      setScanPollingInterval(intervalId);
+      
       return response.task_id;
     } catch (error) {
+      setIsPolling(false);
+      
       toast({
         title: "Ошибка запуска сканирования",
         description: "Не удалось запустить сканирование сайта",
         variant: "destructive"
       });
+      
       console.error('Error starting scan:', error);
       return null;
     }
