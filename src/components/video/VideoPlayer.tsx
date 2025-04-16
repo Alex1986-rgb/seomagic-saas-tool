@@ -23,6 +23,10 @@ interface VideoPlayerProps {
   audioEnabled?: boolean;
 }
 
+/**
+ * VideoPlayer - A comprehensive video player component with custom controls,
+ * overlay, loading states, and optional audio track.
+ */
 const VideoPlayer: React.FC<VideoPlayerProps> = ({
   src = '/video/seo-demo.mp4',
   poster = '/img/video-poster.jpg',
@@ -39,6 +43,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
 }) => {
   const [isLoading, setIsLoading] = useState(true);
   
+  // Using a custom hook to centralize video player logic
   const {
     isPlaying,
     isMuted,
