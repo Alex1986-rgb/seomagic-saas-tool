@@ -5,28 +5,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { HomePageContent } from './types';
 
 interface HomePageSettingsProps {
-  homePageContent: {
-    hero: {
-      title: string;
-      subtitle: string;
-      buttonText: string;
-      buttonUrl: string;
-    };
-    features: Array<{
-      title: string;
-      description: string;
-      isVisible: boolean;
-    }>;
-    cta: {
-      title: string;
-      description: string;
-      buttonText: string;
-      buttonUrl: string;
-      isVisible: boolean;
-    }>;
-  };
+  homePageContent: HomePageContent;
   updateHeroField: (field: string, value: string) => void;
   updateFeature: (index: number, field: string, value: string | boolean) => void;
   updateCtaField: (field: string, value: string | boolean) => void;
