@@ -1,65 +1,29 @@
 
 import React from 'react';
 import { PositionData } from '@/services/position/positionTracker';
-import { Card, CardContent } from "@/components/ui/card";
 import { TrendingUp, Globe, FileText, Clock } from 'lucide-react';
 import { StatCard } from './StatCard';
+import { useStatsCalculator } from './useStatsCalculator';
 
 interface StatsOverviewProps {
   history: PositionData[];
 }
 
 export function StatsOverview({ history }: StatsOverviewProps) {
-  // Calculate statistics
-  const getStats = () => {
-    if (!history.length) return { 
-      totalKeywords: 0, 
-      totalSearches: 0, 
-      positionsInTop10: 0, 
-      avgPosition: 0,
-      totalDomains: new Set(),
-      lastCheck: ''
-    };
-    
-    let totalKeywords = 0;
-    let positionsInTop10 = 0;
-    let positionSum = 0;
-    let positionCount = 0;
-    const domainsSet = new Set<string>();
-    
-    history.forEach(item => {
-      domainsSet.add(item.domain);
-      
-      item.keywords.forEach(keyword => {
-        totalKeywords++;
-        
-        if (keyword.position > 0 && keyword.position <= 10) {
-          positionsInTop10++;
-        }
-        
-        if (keyword.position > 0) {
-          positionSum += keyword.position;
-          positionCount++;
-        }
-      });
-    });
-    
-    const avgPosition = positionCount > 0 ? Math.round(positionSum / positionCount) : 0;
-    const lastCheck = history.length > 0 ? history[0].timestamp : '';
-    
-    return {
-      totalKeywords,
-      totalSearches: history.length,
-      positionsInTop10,
-      avgPosition,
-      totalDomains: domainsSet,
-      lastCheck
-    };
+  const { calculateStats } = useStatsCalculator(history);
+  const stats = calculateStats();
+  
+  const formatDate = (dateString: string) => {
+    if (!dateString) return '-';
+    const date = new Date(dateString);
+    return date.toLocaleDateString();
   };
   
-  const stats = getStats();
-  const lastCheckDate = stats.lastCheck ? new Date(stats.lastCheck).toLocaleDateString() : '-';
-  const lastCheckTime = stats.lastCheck ? new Date(stats.lastCheck).toLocaleTimeString() : '-';
+  const formatTime = (dateString: string) => {
+    if (!dateString) return '-';
+    const date = new Date(dateString);
+    return date.toLocaleTimeString();
+  };
   
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
@@ -86,9 +50,9 @@ export function StatsOverview({ history }: StatsOverviewProps) {
       
       <StatCard
         title="Последняя проверка"
-        value={lastCheckDate}
+        value={formatDate(stats.lastCheck)}
         icon={<Clock className="h-4 w-4 sm:h-5 sm:w-5 text-purple-500" />}
-        footer={`Время: ${lastCheckTime}`}
+        footer={`Время: ${formatTime(stats.lastCheck)}`}
       />
     </div>
   );

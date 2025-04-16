@@ -1,28 +1,15 @@
 
-import { useState } from 'react';
-import { useAuditLoader } from './useAuditLoader';
-import { useAuditExports } from './useAuditExports';
-import { useOptimization } from './useOptimization';
-import { OptimizationItem } from '../components/optimization/CostDetailsTable';
+import { useAuditDataProvider } from './useAuditDataProvider';
+import { useAuditActions } from './useAuditActions';
 
 export const useAuditData = (url: string) => {
-  const [contentPrompt, setContentPrompt] = useState<string>('');
-  
   const {
+    contentPrompt,
+    setContentPrompt,
     optimizationCost,
     optimizationItems,
     isOptimized,
-    optimizationScoresData,
-    demoPage,
-    pagesContent,
-    setOptimizationCost,
-    setOptimizationItems,
-    setPagesContent,
-    downloadOptimizedSite: localDownloadOptimizedSite,
-    generatePdfReportFile
-  } = useOptimization(url);
-  
-  const {
+    generatePdfReportFile,
     isLoading,
     loadingProgress,
     auditData,
@@ -37,31 +24,22 @@ export const useAuditData = (url: string) => {
     taskId,
     setIsRefreshing,
     loadAuditData,
-    downloadSitemapLocal
-  } = useAuditLoader(url, setOptimizationCost, setOptimizationItems, setPagesContent);
-  
+    downloadSitemapLocal,
+    localDownloadOptimizedSite
+  } = useAuditDataProvider(url);
+
   const {
     downloadSitemap,
     downloadOptimizedSite,
     exportJSONData,
     optimizeSiteContent
-  } = useAuditExports(url);
-
-  const handleDownloadSitemap = () => {
-    downloadSitemap(downloadSitemapLocal);
-  };
-
-  const handleDownloadOptimizedSite = () => {
-    downloadOptimizedSite(localDownloadOptimizedSite);
-  };
-
-  const handleExportJSONData = () => {
-    exportJSONData(auditData);
-  };
-
-  const handleOptimizeSiteContent = () => {
-    optimizeSiteContent(contentPrompt);
-  };
+  } = useAuditActions(
+    url,
+    contentPrompt,
+    auditData,
+    downloadSitemapLocal,
+    localDownloadOptimizedSite
+  );
 
   const setContentOptimizationPrompt = (prompt: string) => {
     setContentPrompt(prompt);
@@ -89,11 +67,11 @@ export const useAuditData = (url: string) => {
     // Actions
     loadAuditData,
     setIsRefreshing,
-    downloadSitemap: handleDownloadSitemap,
-    downloadOptimizedSite: handleDownloadOptimizedSite,
+    downloadSitemap,
+    downloadOptimizedSite,
     generatePdfReportFile,
-    exportJSONData: handleExportJSONData,
-    optimizeSiteContent: handleOptimizeSiteContent,
+    exportJSONData,
+    optimizeSiteContent,
     setContentOptimizationPrompt
   };
 };

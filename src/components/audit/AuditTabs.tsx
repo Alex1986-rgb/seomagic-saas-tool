@@ -1,26 +1,25 @@
 
 import React, { useState } from 'react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { AuditCategorySection } from './category';
 import { AuditDetailsData } from '@/types/audit';
+import { AuditTabsList } from './AuditTabsList';
 
 interface AuditTabsProps {
   details: AuditDetailsData;
 }
 
 const AuditTabs: React.FC<AuditTabsProps> = ({ details }) => {
-  // Use state to track active tab for responsive layouts
   const [activeTab, setActiveTab] = useState("seo");
+  
+  const handleTabChange = (value: string) => {
+    setActiveTab(value);
+  };
   
   return (
     <div className="neo-card p-4 sm:p-6 mb-6 sm:mb-8">
-      <Tabs defaultValue="seo" value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="mb-4 sm:mb-6 grid grid-cols-2 md:grid-cols-4 gap-1">
-          <TabsTrigger value="seo" className="text-xs sm:text-sm">SEO</TabsTrigger>
-          <TabsTrigger value="performance" className="text-xs sm:text-sm">Производительность</TabsTrigger>
-          <TabsTrigger value="content" className="text-xs sm:text-sm">Контент</TabsTrigger>
-          <TabsTrigger value="technical" className="text-xs sm:text-sm">Технические аспекты</TabsTrigger>
-        </TabsList>
+      <Tabs defaultValue="seo" value={activeTab} onValueChange={handleTabChange}>
+        <AuditTabsList activeTab={activeTab} />
         
         <TabsContent value="seo">
           <AuditCategorySection 
