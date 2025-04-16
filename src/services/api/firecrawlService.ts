@@ -1,8 +1,11 @@
+
 /**
  * Сервис для масштабного сканирования сайтов через Firecrawl API
  */
 import { supabase } from '@/integrations/supabase/client';
-import { Json } from '@/integrations/supabase/types';
+
+// Use primitive types instead of complex JSON references to avoid type recursion
+type JsonValue = string | number | boolean | null | { [key: string]: JsonValue } | JsonValue[];
 
 // Define simpler types to avoid deep recursion
 interface AnalyticsData {
@@ -13,8 +16,8 @@ interface AnalyticsData {
   pages_scanned?: number | null;
   positions_tracked?: number | null;
   active_users?: number | null;
-  trends?: Json | null;
-  distribution?: Json | null;
+  trends?: JsonValue | null;
+  distribution?: JsonValue | null;
   created_at?: string | null;
 }
 
@@ -28,7 +31,7 @@ interface CrawlTaskData {
   progress?: number | null;
   pages_scanned?: number | null;
   estimated_total_pages?: number | null;
-  options?: Json | null;
+  options?: JsonValue | null;
   start_time?: string | null;
   updated_at?: string | null;
 }
@@ -41,10 +44,10 @@ interface CrawlResultData {
   urls: string[];
   page_count: number;
   created_at?: string;
-  page_types?: Json | null;
-  depth_data?: Json | null;
-  broken_links?: Json | null;
-  duplicate_pages?: Json | null;
+  page_types?: JsonValue | null;
+  depth_data?: JsonValue | null;
+  broken_links?: JsonValue | null;
+  duplicate_pages?: JsonValue | null;
 }
 
 // Настройки для масштабного сканирования
