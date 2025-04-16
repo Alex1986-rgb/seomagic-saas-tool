@@ -43,14 +43,14 @@ const EstimateTab: React.FC<EstimateTabProps> = ({
   
   // Список выявленных проблем
   const issues: Issue[] = [
-    { name: 'Отсутствующие мета-описания', count: Math.floor(errors * 0.3), severity: 'high' },
-    { name: 'Проблемы с заголовками h1', count: Math.floor(errors * 0.25), severity: 'high' },
-    { name: 'Неоптимизированные изображения', count: Math.floor(errors * 0.2), severity: 'medium' },
-    { name: 'Отсутствующие alt-атрибуты', count: Math.floor(warnings * 0.3), severity: 'medium' },
-    { name: 'Некорректные канонические URLs', count: Math.floor(warnings * 0.15), severity: 'medium' },
-    { name: 'Битые ссылки', count: Math.floor(errors * 0.1), severity: 'high' },
-    { name: 'Дублированный контент', count: Math.floor(warnings * 0.2), severity: 'medium' },
-    { name: 'Проблемы со структурой URL', count: Math.floor(warnings * 0.15), severity: 'low' },
+    { name: 'Отсутствующие мета-описания', count: Math.floor(errors * 0.3), severity: "high" },
+    { name: 'Проблемы с заголовками h1', count: Math.floor(errors * 0.25), severity: "high" },
+    { name: 'Неоптимизированные изображения', count: Math.floor(errors * 0.2), severity: "medium" },
+    { name: 'Отсутствующие alt-атрибуты', count: Math.floor(warnings * 0.3), severity: "medium" },
+    { name: 'Некорректные канонические URLs', count: Math.floor(warnings * 0.15), severity: "medium" },
+    { name: 'Битые ссылки', count: Math.floor(errors * 0.1), severity: "high" },
+    { name: 'Дублированный контент', count: Math.floor(warnings * 0.2), severity: "medium" },
+    { name: 'Проблемы со структурой URL', count: Math.floor(warnings * 0.15), severity: "low" },
   ];
   
   if (!isCompleted) {

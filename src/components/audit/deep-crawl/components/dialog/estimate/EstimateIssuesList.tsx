@@ -1,39 +1,59 @@
 
 import React from 'react';
-import { Badge } from "@/components/ui/badge";
+import { BarChart } from 'lucide-react';
 
-export interface Issue {
+export type Issue = {
   name: string;
   count: number;
-  severity: 'high' | 'medium' | 'low';
-}
+  severity: "high" | "medium" | "low";
+};
 
 interface EstimateIssuesListProps {
   issues: Issue[];
 }
 
 const EstimateIssuesList: React.FC<EstimateIssuesListProps> = ({ issues }) => {
+  const getSeverityColor = (severity: Issue['severity']) => {
+    switch (severity) {
+      case 'high': return 'text-red-500';
+      case 'medium': return 'text-amber-500';
+      case 'low': return 'text-blue-500';
+      default: return 'text-muted-foreground';
+    }
+  };
+
+  const getSeverityName = (severity: Issue['severity']) => {
+    switch (severity) {
+      case 'high': return 'Критичная';
+      case 'medium': return 'Средняя';
+      case 'low': return 'Низкая';
+      default: return 'Неизвестная';
+    }
+  };
+
   return (
-    <div className="overflow-y-auto max-h-40 pr-2">
-      <h4 className="font-medium mb-2 text-sm">Выявленные проблемы</h4>
-      <ul className="space-y-2">
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <h3 className="text-lg font-medium">Выявленные проблемы</h3>
+        <BarChart className="h-5 w-5 text-muted-foreground" />
+      </div>
+      
+      <div className="space-y-2">
         {issues.map((issue, index) => (
-          <li key={index} className="flex justify-between items-center text-sm border-b border-border pb-1">
-            <span>{issue.name}</span>
-            <div className="flex items-center gap-2">
-              <Badge 
-                variant={
-                  issue.severity === 'high' ? 'destructive' : 
-                  issue.severity === 'medium' ? 'default' : 'outline'
-                }
-                className="text-xs"
-              >
-                {issue.count}
-              </Badge>
+          <div 
+            key={index} 
+            className="p-3 bg-muted/50 rounded-md flex justify-between items-center"
+          >
+            <div className="flex-1">
+              <div className="font-medium">{issue.name}</div>
+              <div className={`text-sm ${getSeverityColor(issue.severity)}`}>
+                {getSeverityName(issue.severity)} проблема
+              </div>
             </div>
-          </li>
+            <div className="text-xl font-bold">{issue.count}</div>
+          </div>
         ))}
-      </ul>
+      </div>
     </div>
   );
 };
