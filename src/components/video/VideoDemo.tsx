@@ -104,8 +104,11 @@ const VideoDemo: React.FC = () => {
                 </div>
                 
                 <Suspense fallback={<LoadingPlaceholder />}>
-                  <VideoPlayer audioEnabled={audioEnabled} />
-                  <VideoInfo />
+                  <VideoPlayer 
+                    audioEnabled={audioEnabled}
+                    title="Полный SEO-аудит за 60 секунд"
+                    description="Посмотрите, как SeoMarket может преобразить ваш сайт и поднять его в поисковой выдаче"
+                  />
                 </Suspense>
                 
                 {/* Декоративные элементы */}

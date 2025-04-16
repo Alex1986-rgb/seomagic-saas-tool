@@ -1,5 +1,5 @@
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import VideoControls from './VideoControls';
 import VideoOverlay from './VideoOverlay';
@@ -7,10 +7,9 @@ import VideoLoading from './VideoLoading';
 import VideoProgressBar from './VideoProgressBar';
 import VideoInfo from './VideoInfo';
 import { useVideoPlayer } from './hooks/useVideoPlayer';
-import { useVideoProgress } from './hooks/useVideoProgress';
 
 interface VideoPlayerProps {
-  src: string;
+  src?: string;
   poster?: string;
   title?: string;
   description?: string;
@@ -21,11 +20,12 @@ interface VideoPlayerProps {
   className?: string;
   overlay?: boolean;
   showInfo?: boolean;
+  audioEnabled?: boolean;
 }
 
 const VideoPlayer: React.FC<VideoPlayerProps> = ({
-  src,
-  poster,
+  src = '/video/seo-demo.mp4',
+  poster = '/img/video-poster.jpg',
   title,
   description,
   autoPlay = false,
@@ -34,23 +34,24 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
   controls = true,
   className = '',
   overlay = true,
-  showInfo = true
+  showInfo = true,
+  audioEnabled = false
 }) => {
-  const videoRef = useRef<HTMLVideoElement>(null);
   const [isLoading, setIsLoading] = useState(true);
   
   const {
     isPlaying,
     isMuted,
-    volume,
-    playbackRate,
+    progress,
+    isRealVideo,
+    videoRef,
+    audioRef,
     togglePlay,
     toggleMute,
-    handleVolumeChange,
-    handlePlaybackRateChange
-  } = useVideoPlayer(videoRef);
-  
-  const { progress, currentTime, duration, handleTimeUpdate, handleSeek } = useVideoProgress(videoRef);
+    toggleFullscreen,
+    handleTimeUpdate,
+    handleDownload,
+  } = useVideoPlayer({ audioEnabled });
 
   // Handle video loading events
   useEffect(() => {
@@ -73,7 +74,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
       video.removeEventListener('waiting', handleWaiting);
       video.removeEventListener('playing', handlePlaying);
     };
-  }, []);
+  }, [videoRef]);
 
   return (
     <motion.div 
@@ -86,7 +87,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
         isPlaying={isPlaying} 
         isLoading={isLoading} 
         togglePlay={togglePlay}
-        audioEnabled={!muted}
+        audioEnabled={audioEnabled}
       />}
       
       <VideoLoading isLoading={isLoading} />
@@ -98,11 +99,16 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
         className="w-full h-full object-cover"
         autoPlay={autoPlay}
         loop={loop}
-        muted={muted}
+        muted={muted || isMuted}
         playsInline
         onClick={togglePlay}
         onTimeUpdate={handleTimeUpdate}
       />
+      
+      {/* Add audio element for separate audio track if needed */}
+      {audioEnabled && (
+        <audio ref={audioRef} src="/audio/background.mp3" loop />
+      )}
       
       {controls && (
         <>
@@ -110,15 +116,10 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
           <VideoControls 
             isPlaying={isPlaying}
             isMuted={isMuted}
-            volume={volume}
-            playbackRate={playbackRate}
-            currentTime={currentTime}
-            duration={duration}
-            onTogglePlay={togglePlay}
-            onToggleMute={toggleMute}
-            onVolumeChange={handleVolumeChange}
-            onPlaybackRateChange={handlePlaybackRateChange}
-            onSeek={handleSeek}
+            togglePlay={togglePlay}
+            toggleMute={toggleMute}
+            toggleFullscreen={toggleFullscreen}
+            handleDownload={handleDownload}
           />
         </>
       )}

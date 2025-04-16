@@ -3,7 +3,7 @@ import React from 'react';
 import { Play, Pause, Volume2, VolumeX, Maximize, Download } from 'lucide-react';
 import { Button } from '../ui/button';
 
-interface VideoControlsProps {
+export interface VideoControlsProps {
   isPlaying: boolean;
   isMuted: boolean;
   togglePlay: () => void;
