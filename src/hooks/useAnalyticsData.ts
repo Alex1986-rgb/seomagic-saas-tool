@@ -28,13 +28,28 @@ export const useAnalyticsData = () => {
         .single();
 
       if (existingAnalytics) {
+        // Convert the JSON data to the expected types
+        const parsedTrends = Array.isArray(existingAnalytics.trends) 
+          ? existingAnalytics.trends.map((item: any) => ({
+              name: String(item.name || ''),
+              value: Number(item.value || 0)
+            }))
+          : [];
+          
+        const parsedDistribution = Array.isArray(existingAnalytics.distribution)
+          ? existingAnalytics.distribution.map((item: any) => ({
+              category: String(item.category || ''),
+              count: Number(item.count || 0)
+            }))
+          : [];
+
         setData({
           score: existingAnalytics.score,
           pagesScanned: existingAnalytics.pages_scanned,
           positionsTracked: existingAnalytics.positions_tracked,
           activeUsers: existingAnalytics.active_users,
-          trends: Array.isArray(existingAnalytics.trends) ? existingAnalytics.trends : [],
-          distribution: Array.isArray(existingAnalytics.distribution) ? existingAnalytics.distribution : []
+          trends: parsedTrends,
+          distribution: parsedDistribution
         });
       } else {
         // If no analytics exist, fetch the project URL and run analysis
