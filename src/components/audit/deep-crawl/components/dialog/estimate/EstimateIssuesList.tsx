@@ -2,7 +2,7 @@
 import React from 'react';
 import { Badge } from "@/components/ui/badge";
 
-interface Issue {
+export interface Issue {
   name: string;
   count: number;
   severity: 'high' | 'medium' | 'low';

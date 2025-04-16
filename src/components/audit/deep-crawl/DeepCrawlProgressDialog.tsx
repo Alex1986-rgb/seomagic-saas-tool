@@ -11,9 +11,9 @@ import {
   ResultsTab, 
   OptimizeTab,
   DialogHeader,
-  DialogFooter
+  DialogFooter,
+  EstimateTab
 } from './components/dialog';
-import { EstimateTab } from './components/dialog/EstimateTab';
 
 interface DeepCrawlProgressDialogProps {
   open: boolean;
