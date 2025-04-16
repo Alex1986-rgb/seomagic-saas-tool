@@ -1,11 +1,10 @@
-
 /**
  * Сервис для масштабного сканирования сайтов через Firecrawl API
  */
 import { supabase } from '@/integrations/supabase/client';
 import { Json } from '@/integrations/supabase/types';
 
-// Define basic types for the tables to avoid deep recursion
+// Define simpler types to avoid deep recursion
 interface AnalyticsData {
   id?: string;
   project_id?: string | null;
@@ -19,6 +18,7 @@ interface AnalyticsData {
   created_at?: string | null;
 }
 
+// Make task data structure simple with no nesting
 interface CrawlTaskData {
   id?: string;
   task_id: string;
@@ -33,6 +33,7 @@ interface CrawlTaskData {
   updated_at?: string | null;
 }
 
+// Keep result data structure simple with primitive types and JSON
 interface CrawlResultData {
   id?: string;
   task_id: string;
