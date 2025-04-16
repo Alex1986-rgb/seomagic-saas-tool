@@ -1,156 +1,291 @@
 
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import { addPaginationFooters } from './helpers/pagination';
+import { applyHeadingStyle, applyBodyStyle } from './styles/fonts';
 import { pdfColors } from './styles/colors';
+import { pdfTableStyles } from './styles/tables';
 
-export interface ErrorReportOptions {
-  domain: string;
-  errors: Array<{
-    url: string;
-    type: string;
-    description: string;
-    severity: 'high' | 'medium' | 'low';
-  }>;
-  scanDate?: string;
-  recommendations?: string[];
-  url?: string;
-  urls?: string[];
-  auditData?: any;
-  detailed?: boolean;
-  includeScreenshots?: boolean;
+interface ErrorData {
+  url: string;
+  errorType: string;
+  errorMessage: string;
+  statusCode?: number;
+  timestamp: string;
+  stackTrace?: string;
+  browser?: string;
+  device?: string;
+  userAgent?: string;
+}
+
+interface ErrorReportOptions {
+  includeStackTrace?: boolean;
+  includeBrowserInfo?: boolean;
+  includeUserAgent?: boolean;
+  title?: string;
+  subtitle?: string;
+  groupByType?: boolean;
 }
 
 /**
- * Generates a PDF report focusing on errors found during an audit
+ * Generates a PDF error report from error data
  */
-export const generateErrorReportPdf = async (options: ErrorReportOptions): Promise<Blob> => {
-  const { domain, errors, scanDate = new Date().toISOString(), recommendations = [], url } = options;
-  
-  // Create new PDF document
+export const generateErrorReportPdf = async (
+  errors: ErrorData[],
+  options: ErrorReportOptions = {}
+): Promise<void> => {
+  const {
+    includeStackTrace = true,
+    includeBrowserInfo = true,
+    includeUserAgent = false,
+    title = 'Отчет об ошибках',
+    subtitle = 'Обнаруженные ошибки и проблемы сайта',
+    groupByType = true
+  } = options;
+
+  // Create PDF document
   const doc = new jsPDF({
     orientation: 'portrait',
     unit: 'mm',
-    format: 'a4'
+    format: 'a4',
   });
+
+  // Add title
+  doc.setTextColor(...pdfColors.dark);
+  applyHeadingStyle(doc, 1);
+  doc.text(title, 105, 20, { align: 'center' });
+
+  // Add subtitle
+  applyHeadingStyle(doc, 3);
+  doc.setTextColor(...pdfColors.muted);
+  doc.text(subtitle, 105, 30, { align: 'center' });
+
+  // Add report generation date
+  applyBodyStyle(doc, true);
+  doc.setTextColor(...pdfColors.muted);
+  doc.text(
+    `Дата создания: ${new Date().toLocaleDateString('ru-RU')}`,
+    105,
+    38,
+    { align: 'center' }
+  );
+
+  // Add error summary
+  applyHeadingStyle(doc, 2);
+  doc.setTextColor(...pdfColors.dark);
+  doc.text('Сводка ошибок', 14, 50);
+
+  // Error summary table
+  let errorTypes: Record<string, number> = {};
   
-  // Format the date
-  const formattedDate = new Date(scanDate).toLocaleDateString('ru-RU', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric'
+  errors.forEach(error => {
+    if (!errorTypes[error.errorType]) {
+      errorTypes[error.errorType] = 0;
+    }
+    errorTypes[error.errorType]++;
   });
-  
-  // Set document title
-  doc.setProperties({
-    title: `Отчет об ошибках для ${domain || url}`,
-    subject: 'Отчет об ошибках аудита сайта',
-    author: 'SEO Analyzer',
-    creator: 'SEO Analyzer Tool'
-  });
-  
-  // Add header
-  doc.setFillColor(pdfColors.error[0], pdfColors.error[1], pdfColors.error[2]); // Red for error report
-  doc.rect(0, 0, 210, 30, 'F');
-  
-  doc.setFontSize(24);
-  doc.setTextColor(255, 255, 255);
-  doc.text('Отчет об ошибках', 15, 15);
-  
-  doc.setFontSize(14);
-  doc.text(`Домен: ${domain || url}`, 15, 22);
-  
-  // Reset text color
-  doc.setTextColor(0, 0, 0);
-  
-  // Add report metadata
-  let yPosition = 40;
-  doc.setFontSize(12);
-  doc.text(`Дата сканирования: ${formattedDate}`, 15, yPosition);
-  yPosition += 8;
-  doc.text(`Найдено ошибок: ${errors.length}`, 15, yPosition);
-  yPosition += 15;
-  
-  // Sort errors by severity
-  const sortedErrors = [...errors].sort((a, b) => {
-    const severityOrder = { high: 0, medium: 1, low: 2 };
-    return severityOrder[a.severity] - severityOrder[b.severity];
-  });
-  
-  // Add errors table
-  doc.setFontSize(16);
-  doc.setFont('helvetica', 'bold');
-  doc.text('Обнаруженные ошибки', 15, yPosition);
-  yPosition += 10;
-  
-  const errorRows = sortedErrors.map(error => [
-    error.type,
-    error.url,
-    error.description,
-    getSeverityText(error.severity)
+
+  const summaryData = Object.entries(errorTypes).map(([type, count]) => [
+    type,
+    count.toString(),
+    ((count / errors.length) * 100).toFixed(1) + '%'
   ]);
-  
+
   autoTable(doc, {
-    startY: yPosition,
-    head: [['Тип', 'URL', 'Описание', 'Важность']],
-    body: errorRows,
-    theme: 'grid',
-    styles: { 
-      overflow: 'linebreak', 
+    startY: 55,
+    head: [['Тип ошибки', 'Количество', 'Процент']],
+    body: summaryData,
+    ...pdfTableStyles.default
+  });
+
+  // Group errors if requested
+  let errorList = errors;
+  
+  if (groupByType) {
+    // Sort by error type
+    errorList = [...errors].sort((a, b) => 
+      a.errorType.localeCompare(b.errorType)
+    );
+  }
+
+  // Add detailed error list
+  const currentY = (doc as any).lastAutoTable.finalY + 15;
+  
+  applyHeadingStyle(doc, 2);
+  doc.text('Детали ошибок', 14, currentY);
+
+  // Generate the detailed error table
+  const tableData = errorList.map(error => {
+    const row = [
+      error.errorType,
+      error.url,
+      error.errorMessage,
+      error.statusCode?.toString() || 'N/A',
+      new Date(error.timestamp).toLocaleString('ru-RU')
+    ];
+    
+    return row;
+  });
+
+  autoTable(doc, {
+    startY: currentY + 5,
+    head: [['Тип', 'URL', 'Сообщение', 'Код', 'Время']],
+    body: tableData,
+    ...pdfTableStyles.default,
+    styles: {
+      overflow: 'linebreak',
       cellWidth: 'wrap',
       fontSize: 8
     },
     columnStyles: {
       0: { cellWidth: 30 },
-      1: { cellWidth: 60 },
-      2: { cellWidth: 80 },
-      3: { cellWidth: 20 }
-    },
-    headStyles: { fillColor: [pdfColors.error[0], pdfColors.error[1], pdfColors.error[2]] }
+      1: { cellWidth: 50 },
+      2: { cellWidth: 60 },
+      3: { cellWidth: 15 },
+      4: { cellWidth: 30 }
+    }
   });
-  
-  // Add recommendations
-  if (recommendations.length > 0) {
-    yPosition = (doc as any).lastAutoTable.finalY + 15;
+
+  // Add stack traces if requested
+  if (includeStackTrace && errors.some(e => e.stackTrace)) {
+    const stacktraceY = (doc as any).lastAutoTable.finalY + 15;
+    
+    // Check if we're getting close to the end of the page
+    if (stacktraceY > 240) {
+      doc.addPage();
+      applyHeadingStyle(doc, 2);
+      doc.text('Стек вызовов', 14, 20);
+      
+      let stackY = 30;
+      
+      errors.forEach((error, index) => {
+        if (error.stackTrace) {
+          // Check if we need a new page
+          if (stackY > 250) {
+            doc.addPage();
+            stackY = 20;
+          }
+          
+          applyHeadingStyle(doc, 4);
+          doc.text(`Ошибка #${index + 1}: ${error.errorType}`, 14, stackY);
+          stackY += 8;
+          
+          applyBodyStyle(doc, true);
+          
+          // Format and add the stack trace text
+          const stackLines = error.stackTrace.split('\n');
+          stackLines.forEach(line => {
+            if (stackY > 270) {
+              doc.addPage();
+              stackY = 20;
+            }
+            
+            doc.text(line, 14, stackY);
+            stackY += 5;
+          });
+          
+          stackY += 10;
+        }
+      });
+    } else {
+      applyHeadingStyle(doc, 2);
+      doc.text('Стек вызовов', 14, stacktraceY);
+      
+      const stackTraceData = errors
+        .filter(e => e.stackTrace)
+        .map(e => [
+          e.errorType,
+          e.stackTrace?.substring(0, 200) + (e.stackTrace && e.stackTrace.length > 200 ? '...' : '')
+        ]);
+        
+      autoTable(doc, {
+        startY: stacktraceY + 5,
+        head: [['Тип ошибки', 'Стек вызовов']],
+        body: stackTraceData,
+        ...pdfTableStyles.default,
+        styles: {
+          overflow: 'linebreak',
+          cellWidth: 'wrap',
+          fontSize: 8
+        },
+        columnStyles: {
+          0: { cellWidth: 40 },
+          1: { cellWidth: 140 }
+        }
+      });
+    }
+  }
+
+  // Add browser info if requested
+  if (includeBrowserInfo && errors.some(e => e.browser || e.device)) {
+    const browserY = (doc as any).lastAutoTable?.finalY + 15 || 200;
     
     // Check if we need a new page
-    if (yPosition > 250) {
+    if (browserY > 260) {
       doc.addPage();
-      yPosition = 30;
-    }
-    
-    doc.setFontSize(16);
-    doc.setFont('helvetica', 'bold');
-    doc.text('Рекомендации по исправлению', 15, yPosition);
-    yPosition += 10;
-    
-    doc.setFontSize(11);
-    doc.setFont('helvetica', 'normal');
-    
-    recommendations.forEach((rec, index) => {
-      doc.text(`${index + 1}. ${rec}`, 15, yPosition);
-      yPosition += 8;
       
-      // Check if we need a new page
-      if (yPosition > 275 && index < recommendations.length - 1) {
-        doc.addPage();
-        yPosition = 30;
-      }
-    });
+      applyHeadingStyle(doc, 2);
+      doc.text('Информация о браузере', 14, 20);
+      
+      const browserData = errors
+        .filter(e => e.browser || e.device)
+        .map(e => [
+          e.errorType,
+          e.browser || 'Неизвестно',
+          e.device || 'Неизвестно',
+          includeUserAgent ? (e.userAgent || 'Неизвестно') : 'Не включено'
+        ]);
+        
+      autoTable(doc, {
+        startY: 25,
+        head: [['Тип ошибки', 'Браузер', 'Устройство', 'User-Agent']],
+        body: browserData,
+        ...pdfTableStyles.default,
+        styles: {
+          overflow: 'linebreak',
+          cellWidth: 'wrap',
+          fontSize: 8
+        }
+      });
+    } else {
+      applyHeadingStyle(doc, 2);
+      doc.text('Информация о браузере', 14, browserY);
+      
+      const browserData = errors
+        .filter(e => e.browser || e.device)
+        .map(e => [
+          e.errorType,
+          e.browser || 'Неизвестно',
+          e.device || 'Неизвестно',
+          includeUserAgent ? (e.userAgent || 'Неизвестно') : 'Не включено'
+        ]);
+        
+      autoTable(doc, {
+        startY: browserY + 5,
+        head: [['Тип ошибки', 'Браузер', 'Устройство', 'User-Agent']],
+        body: browserData,
+        ...pdfTableStyles.default,
+        styles: {
+          overflow: 'linebreak',
+          cellWidth: 'wrap',
+          fontSize: 8
+        }
+      });
+    }
   }
-  
-  // Return the PDF as a blob
-  return doc.output('blob');
+
+  // Add pagination to all pages
+  addPaginationFooters(doc);
+
+  // Save the PDF
+  const dateStr = new Date().toISOString().split('T')[0];
+  doc.save(`error-report-${dateStr}.pdf`);
 };
 
-function getSeverityText(severity: 'high' | 'medium' | 'low'): string {
-  switch (severity) {
-    case 'high':
-      return 'Высокая';
-    case 'medium':
-      return 'Средняя';
-    case 'low':
-      return 'Низкая';
-    default:
-      return 'Средняя';
-  }
-}
+// Export simplified function for convenience
+export const exportErrorReport = async (
+  errors: ErrorData[],
+  options?: ErrorReportOptions
+): Promise<void> => {
+  return generateErrorReportPdf(errors, options);
+};
