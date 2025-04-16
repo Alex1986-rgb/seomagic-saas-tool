@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import AuditSummary from '@/components/AuditSummary';
@@ -79,7 +80,14 @@ const AuditResultsContainer: React.FC<AuditResultsContainerProps> = ({ url }) =>
   };
 
   const handleGeneratePdfReport = () => {
-    generatePdfReportFile();
+    generatePdfReportFile({
+      auditData: auditData,
+      url: url,
+      pageStats: pageStats,
+      optimizationCost: optimizationCost,
+      optimizationItems: optimizationItems,
+      recommendations: recommendations
+    });
   };
 
   if (isLoading) {
