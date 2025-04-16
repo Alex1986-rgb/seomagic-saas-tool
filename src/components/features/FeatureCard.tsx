@@ -13,7 +13,7 @@ const FeatureCard: React.FC<FeatureCardProps> = ({
   link,
   layoutId 
 }) => {
-  // Если не предоставлена ссылка, создаем ее на основе заголовка
+  // If no link is provided, create one from the title
   const pageLink = link || `/features/${title.toLowerCase().replace(/\s+/g, '-')}`;
   
   const itemVariant = {
@@ -55,7 +55,7 @@ const FeatureCard: React.FC<FeatureCardProps> = ({
         >
           <Link to={pageLink}>
             <span>Подробнее</span>
-            <ChevronRight size={16} className="transition-transform duration-200" />
+            <ChevronRight size={16} className="transition-transform group-hover:translate-x-1" />
           </Link>
         </Button>
       </div>
