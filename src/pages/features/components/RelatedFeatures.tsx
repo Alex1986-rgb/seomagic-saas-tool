@@ -5,7 +5,7 @@ import { ChevronRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { FeatureData } from '../types';
+import { FeatureData } from '@/components/features/types';
 
 interface RelatedFeaturesProps {
   features: FeatureData[];
