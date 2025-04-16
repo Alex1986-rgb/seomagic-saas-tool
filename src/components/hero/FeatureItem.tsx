@@ -3,7 +3,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { LucideIcon } from 'lucide-react';
 
-interface FeatureItemProps {
+interface FeatureProps {
   feature: {
     name: string;
     description: string;
@@ -12,22 +12,22 @@ interface FeatureItemProps {
   index: number;
 }
 
-const FeatureItem = ({ feature, index }: FeatureItemProps) => {
+const FeatureItem: React.FC<FeatureProps> = ({ feature, index }) => {
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5, delay: index * 0.1 }}
-      className="flex flex-col"
+      transition={{ duration: 0.5, delay: index * 0.1 + 0.3 }}
+      className="group relative backdrop-blur-sm bg-card/60 p-6 rounded-xl shadow-sm border border-primary/5 transition-all duration-300 hover:border-primary/20"
     >
-      <dt className="flex items-center gap-x-3 text-base font-semibold leading-7">
-        <div className="h-10 w-10 flex items-center justify-center rounded-lg bg-primary">
-          <feature.icon className="h-6 w-6 text-white" aria-hidden="true" />
+      <dt className="flex flex-col items-center text-center">
+        <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 group-hover:bg-primary/20 transition-colors">
+          <feature.icon className="h-8 w-8 text-primary" aria-hidden="true" />
         </div>
-        {feature.name}
+        <p className="text-xl font-semibold mb-3">{feature.name}</p>
       </dt>
-      <dd className="mt-4 flex flex-auto flex-col text-base leading-7 text-muted-foreground">
-        <p className="flex-auto">{feature.description}</p>
+      <dd className="text-center text-muted-foreground">
+        {feature.description}
       </dd>
     </motion.div>
   );
