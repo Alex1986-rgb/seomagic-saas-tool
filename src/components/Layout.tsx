@@ -21,15 +21,19 @@ const Layout: React.FC<LayoutProps> = ({
 }) => {
   const location = useLocation();
   
-  // Проверяем, содержится ли шапка или подвал в дочерних компонентах
-  // Для этого проверяем путь страницы, на которых шапка и подвал встроены
+  // Pages with built-in navigation and footer
   const pagesWithBuiltInNavbar = ['/audit', '/admin'];
   const pagesWithBuiltInFooter = ['/audit', '/admin'];
   
-  const shouldHideNavbar = hideNavbar || pagesWithBuiltInNavbar.includes(location.pathname) || 
-    pagesWithBuiltInNavbar.some(path => location.pathname.startsWith(path));
-  const shouldHideFooter = hideFooter || pagesWithBuiltInFooter.includes(location.pathname) || 
-    pagesWithBuiltInFooter.some(path => location.pathname.startsWith(path));
+  // Check if current path starts with any of the paths in the arrays
+  const isPathIncluded = (path: string, pathArray: string[]) => {
+    return pathArray.some(item => 
+      path === item || path.startsWith(`${item}/`)
+    );
+  };
+  
+  const shouldHideNavbar = hideNavbar || isPathIncluded(location.pathname, pagesWithBuiltInNavbar);
+  const shouldHideFooter = hideFooter || isPathIncluded(location.pathname, pagesWithBuiltInFooter);
 
   return (
     <div className={cn("flex flex-col min-h-screen relative", className)}>

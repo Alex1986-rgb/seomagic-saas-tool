@@ -1,56 +1,73 @@
 
-import React from 'react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import React, { useState } from 'react';
 import { 
   LayoutTemplate, 
   Palette, 
   Globe,
-  Settings
+  Settings,
+  Languages
 } from 'lucide-react';
+import { Card, CardContent } from "@/components/ui/card";
+import TabLayout, { TabItem } from "@/components/ui/tab-layout/TabLayout";
 import NavigationSettings from './content/NavigationSettings';
 import ButtonsSettings from './content/ButtonsSettings';
 import GeneralSiteSettings from './GeneralSiteSettings';
 import ThemeSettings from './ThemeSettings';
+import LocalizationSettings from './LocalizationSettings';
+import SaveContentButton from './content/SaveContentButton';
 
 const SiteManagementSettings: React.FC = () => {
+  const [activeTab, setActiveTab] = useState("general");
+  
+  const tabs: TabItem[] = [
+    {
+      id: "general",
+      label: "Общие настройки",
+      icon: <Settings className="h-4 w-4" />,
+      content: <GeneralSiteSettings />
+    },
+    {
+      id: "navigation",
+      label: "Навигация",
+      icon: <LayoutTemplate className="h-4 w-4" />,
+      content: <NavigationSettings />
+    },
+    {
+      id: "buttons",
+      label: "Кнопки",
+      icon: <Settings className="h-4 w-4" />,
+      content: <ButtonsSettings />
+    },
+    {
+      id: "theme",
+      label: "Тема",
+      icon: <Palette className="h-4 w-4" />,
+      content: <ThemeSettings />
+    },
+    {
+      id: "localization",
+      label: "Локализация",
+      icon: <Languages className="h-4 w-4" />,
+      content: <LocalizationSettings />
+    }
+  ];
+
   return (
     <div className="space-y-6">
-      <Tabs defaultValue="general">
-        <TabsList>
-          <TabsTrigger value="general" className="flex items-center gap-2">
-            <Settings className="h-4 w-4" />
-            <span>Общие настройки</span>
-          </TabsTrigger>
-          <TabsTrigger value="navigation" className="flex items-center gap-2">
-            <LayoutTemplate className="h-4 w-4" />
-            <span>Навигация</span>
-          </TabsTrigger>
-          <TabsTrigger value="buttons" className="flex items-center gap-2">
-            <Settings className="h-4 w-4" />
-            <span>Кнопки</span>
-          </TabsTrigger>
-          <TabsTrigger value="theme" className="flex items-center gap-2">
-            <Palette className="h-4 w-4" />
-            <span>Тема</span>
-          </TabsTrigger>
-        </TabsList>
-        
-        <TabsContent value="general">
-          <GeneralSiteSettings />
-        </TabsContent>
-        
-        <TabsContent value="navigation">
-          <NavigationSettings />
-        </TabsContent>
-        
-        <TabsContent value="buttons">
-          <ButtonsSettings />
-        </TabsContent>
-        
-        <TabsContent value="theme">
-          <ThemeSettings />
-        </TabsContent>
-      </Tabs>
+      <Card className="backdrop-blur-sm bg-card/80 border border-primary/10 shadow-sm">
+        <CardContent className="p-6">
+          <TabLayout
+            tabs={tabs}
+            activeTab={activeTab}
+            onTabChange={setActiveTab}
+            tabsListClassName="mb-6"
+          />
+        </CardContent>
+      </Card>
+      
+      <div className="flex justify-end">
+        <SaveContentButton />
+      </div>
     </div>
   );
 };
