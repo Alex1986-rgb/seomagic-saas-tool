@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { 
   HomePageContent, 
@@ -677,24 +678,16 @@ export const useContentSettings = () => {
   };
   
   return {
-    // Content states
     homePageContent,
-    auditPageContent,
-    aboutPageContent,
-    contactPageContent,
-    pricingContent,
-    notificationSettings,
-    
-    // Home page handlers
     updateHeroField,
     updateFeature,
     updateCtaField,
     
-    // Audit page handlers
+    auditPageContent,
     updateAuditField,
     updateAuditTip,
     
-    // About page handlers
+    aboutPageContent,
     updateAboutField,
     updateSection,
     updateTeamMember,
@@ -703,13 +696,13 @@ export const useContentSettings = () => {
     addTeamMember,
     removeTeamMember,
     
-    // Contact page handlers
+    contactPageContent,
     updateContactField,
     updateFormField,
     addFormField,
     removeFormField,
     
-    // Pricing handlers
+    pricingContent,
     updatePlan,
     updatePlanFeature,
     addPlanFeature,
@@ -720,7 +713,7 @@ export const useContentSettings = () => {
     addComparisonFeature,
     removeComparisonFeature,
     
-    // Notification handlers
+    notificationSettings,
     updateEmailSettings,
     updateEmailTemplate,
     addEmailTemplate,
