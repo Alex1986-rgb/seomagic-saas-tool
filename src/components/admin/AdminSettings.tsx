@@ -16,7 +16,7 @@ import {
   Database,
   Users,
   BarChart,
-  Analytics
+  LineChart
 } from 'lucide-react';
 import { Card, CardContent } from "@/components/ui/card";
 import TabLayout, { TabItem } from "@/components/ui/tab-layout/TabLayout";
@@ -155,7 +155,7 @@ const SystemSettings: React.FC = () => (
           
           <div className="p-4 border rounded-md bg-card hover:bg-accent/5 transition-colors">
             <div className="flex items-center gap-2 mb-2">
-              <Analytics className="h-4 w-4 text-primary" />
+              <LineChart className="h-4 w-4 text-primary" />
               <span className="font-medium">Аналитика</span>
             </div>
             <p className="text-sm text-muted-foreground">Настройки сбора и анализа данных о работе системы.</p>
