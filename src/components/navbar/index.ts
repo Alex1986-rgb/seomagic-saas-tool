@@ -1,2 +1,2 @@
 
-export { default } from './index.tsx';
+export { default } from './Navbar';
