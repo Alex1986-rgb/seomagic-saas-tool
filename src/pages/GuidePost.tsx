@@ -1,3 +1,4 @@
+
 import React from 'react';
 import Layout from '@/components/Layout';
 import { useParams, Link } from 'react-router-dom';
@@ -13,7 +14,7 @@ import {
 } from "@/components/ui/carousel";
 import { ChevronLeft, BookOpen, Clock, FileText } from 'lucide-react';
 
-import { guides } from '@/pages/Guides';
+import { guides } from '@/data/guidesData';
 
 const GuidePost: React.FC = () => {
   const { id } = useParams();
