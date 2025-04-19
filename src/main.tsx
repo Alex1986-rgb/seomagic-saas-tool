@@ -23,20 +23,6 @@ preconnectLinks.forEach(link => {
   document.head.appendChild(linkEl);
 });
 
-// Добавляем preload для критических ресурсов
-const preloadCriticalResources = [
-  { href: '/images/placeholder.jpg', as: 'image' },
-  { href: '/index.css', as: 'style' }
-];
-
-preloadCriticalResources.forEach(resource => {
-  const linkEl = document.createElement('link');
-  linkEl.rel = 'preload';
-  linkEl.href = resource.href;
-  linkEl.as = resource.as;
-  document.head.appendChild(linkEl);
-});
-
 // Initialize the app with React 18's createRoot
 const root = ReactDOM.createRoot(document.getElementById('root')!);
 root.render(
