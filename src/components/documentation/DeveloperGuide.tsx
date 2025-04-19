@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Code, Database, GitBranch, PackageOpen, Server } from 'lucide-react';
@@ -95,7 +94,7 @@ const DeveloperGuide: React.FC = () => {
                     <td className="px-4 py-2">Запуск SEO аудита для указанного URL</td>
                   </tr>
                   <tr>
-                    <td className="px-4 py-2"><code>/api/audit/{auditId}</code></td>
+                    <td className="px-4 py-2"><code>/api/audit/{'{auditId}' as string}</code></td>
                     <td className="px-4 py-2">GET</td>
                     <td className="px-4 py-2">Получение результатов аудита по ID</td>
                   </tr>
@@ -110,7 +109,7 @@ const DeveloperGuide: React.FC = () => {
                     <td className="px-4 py-2">Добавление ключевых слов для отслеживания</td>
                   </tr>
                   <tr>
-                    <td className="px-4 py-2"><code>/api/positions/{websiteId}</code></td>
+                    <td className="px-4 py-2"><code>/api/positions/{'{websiteId}' as string}</code></td>
                     <td className="px-4 py-2">GET</td>
                     <td className="px-4 py-2">Получение отслеживаемых позиций</td>
                   </tr>
