@@ -4,6 +4,9 @@ import Layout from '@/components/Layout';
 import { useParams } from 'react-router-dom';
 import { LazyImage } from '@/components/LazyImage';
 
+// Import the guides data from the Guides page
+import { guides } from '@/pages/Guides';
+
 const GuidePost: React.FC = () => {
   const { id } = useParams();
   

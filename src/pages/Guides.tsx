@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
@@ -8,7 +9,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { BookOpen, ChevronRight, Clock, Filter, FileText, Search } from 'lucide-react';
 import { LazyImage } from '@/components/LazyImage';
 
-const guides = [
+// Export the guides array so it can be imported in other files
+export const guides = [
   {
     id: 1,
     title: 'Полное руководство по аудиту сайта',
