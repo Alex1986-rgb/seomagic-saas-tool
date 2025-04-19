@@ -114,7 +114,7 @@ const SeoOptimizationPanel: React.FC = () => {
           optimizeMetaTags: advancedOptions.optimizeMetaTags,
           optimizeHeadings: advancedOptions.optimizeHeadings,
           optimizeContent: advancedOptions.optimizeContent,
-          optimizeImages: advancedOptions.optimizeImages,
+          optimizeImages: advancedOptions.optimizeImages, // This property needs to be supported in the OptimizationOptions type
           temperature: 0.7,
           language: 'ru', // Default language, could be made configurable
           model: 'gpt-4o', // Using GPT-4o for best results
