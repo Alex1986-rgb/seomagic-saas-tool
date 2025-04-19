@@ -1,10 +1,9 @@
-
 import React from 'react';
 import Layout from '@/components/Layout';
 import { useParams, Link } from 'react-router-dom';
 import { LazyImage } from '@/components/LazyImage';
 import { Button } from "@/components/ui/button";
-import VideoPlayer from '@/components/video';
+import VideoPlayer from '@/components/video/VideoPlayer';
 import { 
   Carousel,
   CarouselContent,
