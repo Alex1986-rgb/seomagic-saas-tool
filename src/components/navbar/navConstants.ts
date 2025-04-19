@@ -1,12 +1,11 @@
 
 const NAV_ITEMS = [
   { label: 'Главная', href: '/' },
-  { label: 'Аудит', href: '/audit' },
-  { label: 'Анализ позиций', href: '/position-tracking' },
+  { label: 'SEO Аудит', href: '/audit' },
+  { label: 'Блог', href: '/blog' },
+  { label: 'О нас', href: '/about' },
   { label: 'Тарифы', href: '/pricing' },
   { label: 'Демо', href: '/demo' },
-  { label: 'О сервисе', href: '/about' },
-  { label: 'Блог', href: '/blog' },
 ];
 
 const CLIENT_ITEMS = [
