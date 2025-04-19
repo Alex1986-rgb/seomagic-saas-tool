@@ -4,7 +4,6 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { Toaster } from "@/components/ui/toaster";
 import { HelmetProvider } from 'react-helmet-async';
 import LoadingSpinner from '@/components/LoadingSpinner';
-import { AuthProvider } from '@/contexts/AuthContext';
 
 // Lazy load pages for better performance
 const HomePage = lazy(() => import('@/pages/Index'));
@@ -33,13 +32,17 @@ const Features = lazy(() => import('@/pages/Features'));
 const Documentation = lazy(() => import('@/pages/Documentation'));
 const NotFound = lazy(() => import('@/pages/NotFound'));
 
+// Import the AuthProvider from contexts
+import { AuthProvider } from '@/contexts/AuthContext';
+
 function App() {
   console.log("App component rendering");
   
   return (
-    <AuthProvider>
-      <HelmetProvider>
-        <Router>
+    <HelmetProvider>
+      <Router>
+        {/* Move AuthProvider inside Router */}
+        <AuthProvider>
           <Suspense fallback={<LoadingSpinner />}>
             <Routes>
               <Route path="/" element={<HomePage />} />
@@ -71,9 +74,9 @@ function App() {
             </Routes>
           </Suspense>
           <Toaster />
-        </Router>
-      </HelmetProvider>
-    </AuthProvider>
+        </AuthProvider>
+      </Router>
+    </HelmetProvider>
   );
 }
 
