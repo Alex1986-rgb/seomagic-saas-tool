@@ -6,12 +6,10 @@ import {
   NavigationMenu,
   NavigationMenuContent,
   NavigationMenuItem,
-  NavigationMenuLink,
   NavigationMenuList,
   NavigationMenuTrigger,
   navigationMenuTriggerStyle
 } from "@/components/ui/navigation-menu";
-import { ChevronDown } from 'lucide-react';
 import { RESOURCE_ITEMS, COMPANY_ITEMS } from './navConstants';
 
 interface NavbarDesktopLinksProps {
@@ -56,18 +54,16 @@ const NavbarDesktopLinks: React.FC<NavbarDesktopLinksProps> = ({ navItems }) => 
             <ul className="grid w-[200px] gap-2 p-4">
               {RESOURCE_ITEMS.map((item) => (
                 <li key={item.href}>
-                  <NavigationMenuLink asChild>
-                    <NavLink
-                      to={item.href}
-                      className={({ isActive }) =>
-                        `block select-none space-y-1 rounded-md p-3 hover:bg-accent hover:text-accent-foreground ${
-                          isActive ? 'text-primary' : 'text-muted-foreground'
-                        }`
-                      }
-                    >
-                      <div className="text-sm font-medium">{item.label}</div>
-                    </NavLink>
-                  </NavigationMenuLink>
+                  <NavLink
+                    to={item.href}
+                    className={({ isActive }) =>
+                      `block select-none space-y-1 rounded-md p-3 hover:bg-accent hover:text-accent-foreground ${
+                        isActive ? 'text-primary' : 'text-muted-foreground'
+                      }`
+                    }
+                  >
+                    <div className="text-sm font-medium">{item.label}</div>
+                  </NavLink>
                 </li>
               ))}
             </ul>
@@ -83,18 +79,16 @@ const NavbarDesktopLinks: React.FC<NavbarDesktopLinksProps> = ({ navItems }) => 
             <ul className="grid w-[200px] gap-2 p-4">
               {COMPANY_ITEMS.map((item) => (
                 <li key={item.href}>
-                  <NavigationMenuLink asChild>
-                    <NavLink
-                      to={item.href}
-                      className={({ isActive }) =>
-                        `block select-none space-y-1 rounded-md p-3 hover:bg-accent hover:text-accent-foreground ${
-                          isActive ? 'text-primary' : 'text-muted-foreground'
-                        }`
-                      }
-                    >
-                      <div className="text-sm font-medium">{item.label}</div>
-                    </NavLink>
-                  </NavigationMenuLink>
+                  <NavLink
+                    to={item.href}
+                    className={({ isActive }) =>
+                      `block select-none space-y-1 rounded-md p-3 hover:bg-accent hover:text-accent-foreground ${
+                        isActive ? 'text-primary' : 'text-muted-foreground'
+                      }`
+                    }
+                  >
+                    <div className="text-sm font-medium">{item.label}</div>
+                  </NavLink>
                 </li>
               ))}
             </ul>

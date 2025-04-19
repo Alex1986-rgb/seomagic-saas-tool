@@ -36,6 +36,8 @@ const Navbar: React.FC = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  console.info('NAV_ITEMS loaded:', NAV_ITEMS);
+
   const navbarClass = `fixed top-0 w-full z-50 transition-all duration-500 ${
     isScrolled || isOpen
       ? 'backdrop-blur-lg bg-background/90 shadow-md'
@@ -71,8 +73,8 @@ const Navbar: React.FC = () => {
           <NavbarMobile 
             isOpen={isOpen}
             navItems={NAV_ITEMS}
-            isLoggedIn={user.isLoggedIn}
-            isAdmin={user.isAdmin}
+            isLoggedIn={user?.isLoggedIn}
+            isAdmin={user?.isAdmin}
             toggleAuth={logoutUser}
           />
         )}
@@ -81,8 +83,8 @@ const Navbar: React.FC = () => {
       {/* Отладочные элементы управления - скрываем в продакшене */}
       {process.env.NODE_ENV !== 'production' && (
         <DebugControls 
-          isLoggedIn={user.isLoggedIn}
-          isAdmin={user.isAdmin}
+          isLoggedIn={user?.isLoggedIn}
+          isAdmin={user?.isAdmin}
           toggleAuth={logoutUser}
           toggleAdmin={toggleAdmin}
         />

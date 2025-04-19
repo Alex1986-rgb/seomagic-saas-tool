@@ -37,8 +37,9 @@ const Layout: React.FC<LayoutProps> = ({
 
   return (
     <div className={cn("flex flex-col min-h-screen relative", className)}>
-      <div className="neo-glass fixed inset-0 z-[-1]" />
-      <StarryBackground />
+      <div className="fixed inset-0 z-[-1]">
+        <StarryBackground />
+      </div>
       {!shouldHideNavbar && <Navbar />}
       <main className="flex-grow relative z-10">{children}</main>
       {!shouldHideFooter && <Footer />}

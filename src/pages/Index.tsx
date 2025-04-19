@@ -78,7 +78,9 @@ const Index: React.FC = () => {
               viewport={{ once: true }}
             >
               <Suspense fallback={<LoadingFallback />}>
-                <VideoDemo />
+                <div className="w-full h-[300px] md:h-[450px] bg-secondary/20 flex justify-center items-center text-muted-foreground">
+                  <p>Видео демонстрация загружается...</p>
+                </div>
               </Suspense>
             </motion.div>
           </div>
@@ -177,12 +179,26 @@ const Index: React.FC = () => {
         
         {/* Position Tracker Feature */}
         <Suspense fallback={<LoadingFallback />}>
-          <PositionTrackerFeature />
+          <div className="py-20">
+            <div className="container mx-auto px-4 md:px-6">
+              <h2 className="text-3xl font-bold text-center mb-12">Отслеживание позиций</h2>
+              <div className="neo-card p-8 rounded-lg">
+                <p className="text-center text-muted-foreground">Отслеживание позиций загружается...</p>
+              </div>
+            </div>
+          </div>
         </Suspense>
         
         {/* Detailed Features Section - Comprehensive feature list */}
         <Suspense fallback={<LoadingFallback />}>
-          <FeatureSection />
+          <div className="py-20 bg-muted/20">
+            <div className="container mx-auto px-4 md:px-6">
+              <h2 className="text-3xl font-bold text-center mb-12">Подробные возможности</h2>
+              <div className="neo-card p-8 rounded-lg">
+                <p className="text-center text-muted-foreground">Список возможностей загружается...</p>
+              </div>
+            </div>
+          </div>
         </Suspense>
         
         {/* Call to Action Section */}
