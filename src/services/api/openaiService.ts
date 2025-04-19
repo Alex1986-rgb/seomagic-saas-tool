@@ -6,8 +6,11 @@ export interface OptimizationOptions {
   optimizeMetaTags: boolean;
   optimizeHeadings: boolean;
   optimizeContent: boolean;
+  optimizeImages: boolean; // Added this property to fix the type error
   language: string;
   prompt?: string;
+  temperature?: number;
+  model?: string;
 }
 
 interface OptimizationResult {
