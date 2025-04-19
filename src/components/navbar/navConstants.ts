@@ -1,14 +1,15 @@
 
-export const NAV_ITEMS = [
+const NAV_ITEMS = [
   { label: 'Главная', href: '/' },
-  { label: 'SEO Аудит', href: '/audit' },
+  { label: 'Аудит', href: '/audit' },
+  { label: 'Анализ позиций', href: '/position-tracking' },
+  { label: 'Тарифы', href: '/pricing' },
+  { label: 'Демо', href: '/demo' },
+  { label: 'О сервисе', href: '/about' },
   { label: 'Блог', href: '/blog' },
-  { label: 'О нас', href: '/about' },
-  { label: 'Цены', href: '/pricing' },
-  { label: 'Контакты', href: '/contact' },
 ];
 
-export const CLIENT_ITEMS = [
+const CLIENT_ITEMS = [
   { label: 'Профиль', href: '/profile' },
   { label: 'Отчеты', href: '/reports' },
   { label: 'История аудитов', href: '/audit-history' },
@@ -17,15 +18,17 @@ export const CLIENT_ITEMS = [
   { label: 'Панель', href: '/dashboard' },
 ];
 
-export const RESOURCE_ITEMS = [
+const RESOURCE_ITEMS = [
   { label: 'Блог', href: '/blog' },
   { label: 'Руководства', href: '/guides' },
   { label: 'Поддержка', href: '/support' },
 ];
 
-export const COMPANY_ITEMS = [
+const COMPANY_ITEMS = [
   { label: 'О нас', href: '/about' },
   { label: 'Контакты', href: '/contact' },
   { label: 'Конфиденциальность', href: '/privacy' },
   { label: 'Условия', href: '/terms' },
 ];
+
+export { NAV_ITEMS, CLIENT_ITEMS, RESOURCE_ITEMS, COMPANY_ITEMS };
