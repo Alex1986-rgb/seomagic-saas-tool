@@ -9,7 +9,7 @@ import NavbarDesktopAuth from './NavbarDesktopAuth';
 import NavbarMobileToggle from './NavbarMobileToggle';
 import NavbarMobile from './NavbarMobile';
 import DebugControls from './DebugControls';
-import { NAV_ITEMS, CLIENT_ITEMS, RESOURCE_ITEMS, COMPANY_ITEMS } from './navConstants';
+import { NAV_ITEMS, CLIENT_ITEMS } from './navConstants';
 import { useAuth } from '@/contexts/AuthContext';
 
 const Navbar: React.FC = () => {

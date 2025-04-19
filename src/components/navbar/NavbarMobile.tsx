@@ -2,15 +2,8 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import ThemeSwitcher from '@/components/ThemeSwitcher';
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from '@/components/ui/accordion';
 import { RESOURCE_ITEMS, COMPANY_ITEMS } from './navConstants';
 
 interface NavbarMobileProps {
@@ -87,56 +80,6 @@ const NavbarMobile: React.FC<NavbarMobileProps> = ({
               </motion.div>
             );
           })}
-
-          <motion.div variants={itemVariants}>
-            <Accordion type="single" collapsible className="w-full">
-              <AccordionItem value="resources" className="border-none">
-                <AccordionTrigger className="py-2 text-base font-medium hover:text-primary/80 transition-colors">
-                  Ресурсы
-                </AccordionTrigger>
-                <AccordionContent>
-                  <div className="pl-4 flex flex-col space-y-2">
-                    {RESOURCE_ITEMS.map((item) => (
-                      <Link
-                        key={item.href}
-                        to={item.href}
-                        className={`py-1 ${
-                          location.pathname === item.href
-                            ? 'text-primary font-medium'
-                            : 'text-foreground/80 hover:text-primary/80 transition-colors'
-                        }`}
-                      >
-                        {item.label}
-                      </Link>
-                    ))}
-                  </div>
-                </AccordionContent>
-              </AccordionItem>
-
-              <AccordionItem value="company" className="border-none">
-                <AccordionTrigger className="py-2 text-base font-medium hover:text-primary/80 transition-colors">
-                  Компания
-                </AccordionTrigger>
-                <AccordionContent>
-                  <div className="pl-4 flex flex-col space-y-2">
-                    {COMPANY_ITEMS.map((item) => (
-                      <Link
-                        key={item.href}
-                        to={item.href}
-                        className={`py-1 ${
-                          location.pathname === item.href
-                            ? 'text-primary font-medium'
-                            : 'text-foreground/80 hover:text-primary/80 transition-colors'
-                        }`}
-                      >
-                        {item.label}
-                      </Link>
-                    ))}
-                  </div>
-                </AccordionContent>
-              </AccordionItem>
-            </Accordion>
-          </motion.div>
 
           <motion.hr variants={itemVariants} className="border-t border-border" />
 
