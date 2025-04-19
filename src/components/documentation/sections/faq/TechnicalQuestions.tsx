@@ -11,27 +11,36 @@ const TechnicalQuestions: React.FC = () => {
     <>
       <AccordionItem value="item-3">
         <AccordionTrigger className="text-left text-lg font-medium">
-          Какие ошибки и проблемы может выявить SeoMarket?
+          Какие проблемы выявляет глубокий анализ?
         </AccordionTrigger>
         <AccordionContent className="text-muted-foreground">
-          <p>SeoMarket выявляет широкий спектр SEO-проблем, включая:</p>
+          <p>Глубокий анализ выявляет:</p>
           <ul className="list-disc pl-6 mt-2 space-y-1">
-            <li>Технические проблемы (битые ссылки, ошибки в robots.txt)</li>
-            <li>Проблемы мета-данных (отсутствующие или дублирующиеся title и description)</li>
-            <li>Проблемы контента (тонкий контент, дублированный контент)</li>
-            <li>Проблемы с изображениями (отсутствие атрибутов alt)</li>
+            <li>Технические ошибки (битые ссылки, дубли страниц)</li>
+            <li>Проблемы с контентом (неуникальный текст, thin content)</li>
+            <li>SEO-ошибки (отсутствие мета-тегов, Alt текстов)</li>
+            <li>Проблемы структуры (глубина вложенности, orphaned pages)</li>
+            <li>Ошибки в robots.txt и sitemap.xml</li>
           </ul>
         </AccordionContent>
       </AccordionItem>
 
       <AccordionItem value="item-4">
         <AccordionTrigger className="text-left text-lg font-medium">
-          Может ли SeoMarket автоматически исправить обнаруженные проблемы?
+          Как формируется смета на исправление?
         </AccordionTrigger>
         <AccordionContent className="text-muted-foreground">
           <p>
-            Да, SeoMarket предлагает функцию автоматической оптимизации, которая может исправить 
-            многие обнаруженные проблемы.
+            Смета формируется автоматически на основе:
+          </p>
+          <ul className="list-disc pl-6 mt-2 space-y-1">
+            <li>Количества и типов найденных ошибок</li>
+            <li>Объема работ по их исправлению</li>
+            <li>Сложности необходимых изменений</li>
+            <li>Приоритетности исправлений</li>
+          </ul>
+          <p className="mt-2">
+            После формирования сметы вы можете выбрать, какие ошибки исправить в первую очередь.
           </p>
         </AccordionContent>
       </AccordionItem>

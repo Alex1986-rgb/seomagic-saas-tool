@@ -10,8 +10,8 @@ const ApiDocs: React.FC = () => {
         API и интеграции
       </h3>
       <div className="mt-4 space-y-4">
-        <p>SeoMarket предоставляет следующие API эндпоинты:</p>
-        <table className="min-w-full divide-y divide-gray-300 border border-border">
+        <p>Основные эндпоинты API:</p>
+        <table className="min-w-full divide-y divide-border">
           <thead>
             <tr className="bg-muted/50">
               <th className="px-4 py-2 text-left">Эндпоинт</th>
@@ -21,37 +21,32 @@ const ApiDocs: React.FC = () => {
           </thead>
           <tbody className="divide-y divide-border">
             <tr>
-              <td className="px-4 py-2"><code>/api/audit</code></td>
+              <td className="px-4 py-2"><code>/api/audit/start</code></td>
               <td className="px-4 py-2">POST</td>
-              <td className="px-4 py-2">Запуск SEO аудита для указанного URL</td>
+              <td className="px-4 py-2">Запуск базового аудита</td>
             </tr>
             <tr>
-              <td className="px-4 py-2"><code>/api/audit/{'{auditId}' as string}</code></td>
+              <td className="px-4 py-2"><code>/api/deep-crawl/start</code></td>
+              <td className="px-4 py-2">POST</td>
+              <td className="px-4 py-2">Запуск глубокого анализа</td>
+            </tr>
+            <tr>
+              <td className="px-4 py-2"><code>/api/audit/results/{'{id}'}</code></td>
               <td className="px-4 py-2">GET</td>
-              <td className="px-4 py-2">Получение результатов аудита по ID</td>
+              <td className="px-4 py-2">Получение результатов</td>
             </tr>
             <tr>
-              <td className="px-4 py-2"><code>/api/optimize</code></td>
+              <td className="px-4 py-2"><code>/api/estimate</code></td>
               <td className="px-4 py-2">POST</td>
-              <td className="px-4 py-2">Запуск оптимизации сайта</td>
-            </tr>
-            <tr>
-              <td className="px-4 py-2"><code>/api/positions</code></td>
-              <td className="px-4 py-2">POST</td>
-              <td className="px-4 py-2">Добавление ключевых слов для отслеживания</td>
-            </tr>
-            <tr>
-              <td className="px-4 py-2"><code>/api/positions/{'{websiteId}' as string}</code></td>
-              <td className="px-4 py-2">GET</td>
-              <td className="px-4 py-2">Получение отслеживаемых позиций</td>
+              <td className="px-4 py-2">Расчет сметы</td>
             </tr>
           </tbody>
         </table>
-        <p>Примеры использования API:</p>
+        <p>Пример использования API:</p>
         <pre className="bg-muted p-4 rounded-md text-sm overflow-x-auto">
-{`// Запуск SEO аудита
-const startAudit = async (url) => {
-  const response = await fetch('/api/audit', {
+{`// Запуск глубокого анализа
+const startDeepCrawl = async (url: string) => {
+  const response = await fetch('/api/deep-crawl/start', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

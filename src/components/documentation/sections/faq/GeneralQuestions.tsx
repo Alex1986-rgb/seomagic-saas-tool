@@ -11,26 +11,36 @@ const GeneralQuestions: React.FC = () => {
     <>
       <AccordionItem value="item-1">
         <AccordionTrigger className="text-left text-lg font-medium">
-          Что такое SeoMarket и как он может помочь моему сайту?
+          Что такое глубокий анализ сайта?
         </AccordionTrigger>
         <AccordionContent className="text-muted-foreground">
           <p>
-            SeoMarket — это комплексная платформа для SEO-аудита и оптимизации сайтов. 
-            Наш сервис помогает выявить технические проблемы, недостатки контента и другие факторы, 
-            которые могут негативно влиять на позиции вашего сайта в поисковых системах.
+            Глубокий анализ - это комплексное сканирование всех страниц сайта, которое включает:
           </p>
+          <ul className="list-disc pl-6 mt-2 space-y-1">
+            <li>Проверку структуры сайта</li>
+            <li>Анализ контента на уникальность</li>
+            <li>Поиск битых ссылок</li>
+            <li>Проверку мета-тегов</li>
+            <li>Анализ скорости загрузки</li>
+            <li>Составление подробной сметы на исправление</li>
+          </ul>
         </AccordionContent>
       </AccordionItem>
       
       <AccordionItem value="item-2">
         <AccordionTrigger className="text-left text-lg font-medium">
-          Сколько времени занимает полный SEO-аудит сайта?
+          Сколько времени занимает глубокий анализ?
         </AccordionTrigger>
         <AccordionContent className="text-muted-foreground">
           <p>
-            Время аудита зависит от размера и сложности сайта. Для небольших сайтов (до 100 страниц) 
-            базовый аудит обычно занимает 5-15 минут. Для средних сайтов (100-1000 страниц) — 15-30 минут.
+            Время анализа зависит от размера сайта:
           </p>
+          <ul className="list-disc pl-6 mt-2 space-y-1">
+            <li>До 100 страниц: 5-15 минут</li>
+            <li>100-1000 страниц: 15-30 минут</li>
+            <li>Более 1000 страниц: от 30 минут</li>
+          </ul>
         </AccordionContent>
       </AccordionItem>
     </>
