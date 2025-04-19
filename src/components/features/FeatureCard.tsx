@@ -1,10 +1,9 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { ChevronRight } from 'lucide-react';
-import { Link } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
 import { FeatureCardProps } from './types';
+import { ArrowRight } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 const FeatureCard: React.FC<FeatureCardProps> = ({ 
   icon, 
@@ -13,59 +12,37 @@ const FeatureCard: React.FC<FeatureCardProps> = ({
   link,
   layoutId 
 }) => {
-  // Generate a link from the title if none provided
-  const pageLink = link || `/features/${title.toLowerCase().replace(/\s+/g, '-')}`;
-  
-  const itemVariant = {
-    hidden: { opacity: 0, y: 20 },
-    visible: { 
-      opacity: 1, 
-      y: 0,
-      transition: { 
-        type: "spring",
-        stiffness: 100,
-        damping: 15,
-        duration: 0.4
-      }
-    }
-  };
-  
-  return (
+  const cardContent = (
     <motion.div 
-      variants={itemVariant}
+      className="h-full flex flex-col p-6 bg-card/60 backdrop-blur-sm border border-border rounded-lg hover:border-primary/40 transition-all"
+      whileHover={{ y: -5, boxShadow: '0 10px 30px -15px rgba(0, 0, 0, 0.3)' }}
       layoutId={layoutId}
-      className="glass-panel p-4 rounded-lg h-full flex flex-col justify-between group relative overflow-hidden"
-      whileHover={{ 
-        y: -5, 
-        boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.1)",
-        transition: { type: "spring", stiffness: 300, damping: 20 }
-      }}
     >
-      <div>
-        <div className="mb-3 p-2 bg-primary/10 rounded-full inline-block">{icon}</div>
-        <h3 className="text-lg font-medium mb-2">{title}</h3>
-        <p className="text-sm text-muted-foreground line-clamp-2">{description}</p>
+      <div className="mb-4">
+        {icon}
       </div>
-      
-      <div className="mt-3 w-full">
-        <Button 
-          variant="link" 
-          className="p-0 h-auto text-primary flex items-center gap-1 hover:gap-2 transition-all"
-          asChild
-        >
-          <Link to={pageLink}>
+      <h3 className="text-xl font-semibold mb-2">{title}</h3>
+      <p className="text-muted-foreground text-sm flex-grow mb-4">{description}</p>
+      {link && (
+        <div className="mt-auto">
+          <div className="flex items-center text-primary text-sm font-medium">
             <span>Подробнее</span>
-            <ChevronRight size={16} className="transition-transform group-hover:translate-x-1" />
-          </Link>
-        </Button>
-      </div>
-      
-      <motion.div 
-        className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" 
-        layoutId={`${layoutId}-bg`}
-      />
+            <ArrowRight className="ml-1 h-4 w-4" />
+          </div>
+        </div>
+      )}
     </motion.div>
   );
+  
+  if (link) {
+    return (
+      <Link to={link} className="block h-full">
+        {cardContent}
+      </Link>
+    );
+  }
+  
+  return cardContent;
 };
 
 export default FeatureCard;

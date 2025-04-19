@@ -1,96 +1,106 @@
+import { Check, Search, LineChart, BarChart3, Globe, Code, FileText, Users, Settings, Lock, Bell, Database, Layers, Zap, BarChart2, Star } from 'lucide-react';
+import { Feature, FeatureCategory } from './types';
 
-import { 
-  Search, BarChart2, Globe, Zap, Code, TrendingUp, Sparkles, FileText, Award
-} from 'lucide-react';
-import { FeatureData } from './types';
-
-export const featuresData: FeatureData[] = [
+// SEO Audit Features
+const auditFeatures: Feature[] = [
   {
-    icon: Search,
-    title: "Глубокий SEO-аудит",
-    description: "Автоматический анализ более 100 факторов ранжирования и выявление всех технических ошибок вашего сайта.",
-    link: "/features/seo-audit",
-    category: "Аудит"
+    title: 'Полное сканирование сайта',
+    description: 'Глубокий анализ всех страниц вашего сайта для обнаружения SEO проблем.',
+    icon: Search
   },
   {
-    icon: BarChart2,
-    title: "Мониторинг позиций",
-    description: "Отслеживание позиций вашего сайта по ключевым запросам в поисковых системах в режиме реального времени.",
-    link: "/features/position-tracking",
-    category: "Мониторинг"
+    title: 'Анализ метаданных',
+    description: 'Проверка тегов title, description и других метаданных для оптимизации.',
+    icon: FileText
   },
   {
-    icon: Globe,
-    title: "Автоматическая оптимизация",
-    description: "Интеллектуальные алгоритмы автоматически исправляют обнаруженные проблемы и улучшают SEO-показатели сайта.",
-    link: "/features/auto-optimization",
-    category: "Оптимизация"
+    title: 'Проверка скорости загрузки',
+    description: 'Анализ времени загрузки страниц и рекомендации по увеличению скорости.',
+    icon: Zap
   },
   {
-    icon: Zap,
-    title: "Ускорение загрузки",
-    description: "Анализ и оптимизация скорости загрузки страниц для улучшения пользовательского опыта и ранжирования.",
-    link: "/features/speed-optimization",
-    category: "Оптимизация",
-    content: `
-### Оптимизация скорости загрузки
-
-Наш инструмент анализирует и оптимизирует скорость загрузки страниц вашего сайта для улучшения пользовательского опыта и ранжирования в поисковых системах.
-
-### Что мы оптимизируем:
-
-- Размер и формат изображений
-- Минификация CSS, JavaScript и HTML
-- Кэширование браузера
-- Оптимизация серверных настроек
-- Использование CDN
-- Lazy loading для медиа-контента`
+    title: 'Проверка мобильной версии',
+    description: 'Тестирование адаптивности и удобства использования на мобильных устройствах.',
+    icon: Settings
   },
   {
-    icon: Code,
-    title: "Технический SEO",
-    description: "Глубокий анализ технических аспектов сайта, включая структуру, robots.txt, sitemap и семантическую разметку.",
-    link: "/features/technical-seo",
-    category: "Аудит"
+    title: 'Анализ структуры URL',
+    description: 'Проверка ЧПУ и рекомендации по оптимизации URL-адресов.',
+    icon: Globe
   },
   {
-    icon: TrendingUp,
-    title: "Прогнозирование роста",
-    description: "Аналитика и прогнозирование потенциального роста трафика и улучшения позиций в поисковой выдаче.",
-    link: "/features/growth-prediction",
-    category: "Аналитика"
-  },
-  {
-    icon: Sparkles,
-    title: "Контент-анализ",
-    description: "Оценка качества и семантической relevatности контента, рекомендации по улучшению.",
-    link: "/features/content-analysis",
-    category: "Контент"
-  },
-  {
-    icon: FileText,
-    title: "Генерация отчетов",
-    description: "Автоматическое создание подробных PDF и интерактивных отчетов с визуализацией результатов.",
-    link: "/features/reporting",
-    category: "Аналитика"
+    title: 'Проверка robots.txt и sitemap',
+    description: 'Анализ файлов robots.txt и sitemap.xml для корректной индексации.',
+    icon: Code
   }
 ];
 
-export const getFeaturesByCategory = () => {
-  const categorizedFeatures: Record<string, FeatureData[]> = {};
-  
-  featuresData.forEach(feature => {
-    const category = feature.category || 'Другое';
-    if (!categorizedFeatures[category]) {
-      categorizedFeatures[category] = [];
-    }
-    categorizedFeatures[category].push(feature);
-  });
-  
-  return categorizedFeatures;
-};
+// Position Tracking Features
+const positionTrackingFeatures: Feature[] = [
+  {
+    title: 'Ежедневное отслеживание позиций',
+    description: 'Мониторинг позиций вашего сайта в поисковых системах ежедневно.',
+    icon: LineChart
+  },
+  {
+    title: 'Анализ конкурентов',
+    description: 'Сравнение ваших позиций с конкурентами для определения стратегии.',
+    icon: Users
+  },
+  {
+    title: 'Мониторинг ключевых слов',
+    description: 'Отслеживание изменений позиций по ключевым словам.',
+    icon: BarChart3
+  },
+  {
+    title: 'Уведомления об изменениях',
+    description: 'Получение оповещений при значительном изменении позиций.',
+    icon: Bell
+  },
+  {
+    title: 'История изменений',
+    description: 'Доступ к истории изменений позиций для анализа прогресса.',
+    icon: Database
+  },
+  {
+    title: 'Интеграция с Google Analytics',
+    description: 'Связь данных о позициях с аналитикой трафика.',
+    icon: BarChart2
+  }
+];
 
-export const getAllFeatures = () => {
-  return featuresData;
-};
+// Other Features
+const otherFeatures: Feature[] = [
+  {
+    title: 'Анализ контента',
+    description: 'Проверка уникальности и качества контента на вашем сайте.',
+    icon: FileText
+  },
+  {
+    title: 'Безопасность данных',
+    description: 'Полная конфиденциальность и безопасность ваших данных.',
+    icon: Lock
+  },
+  {
+    title: 'Интеграция с CMS',
+    description: 'Совместимость с популярными CMS-системами.',
+    icon: Layers
+  },
+  {
+    title: 'Отчеты о производительности',
+    description: 'Детальные отчеты о производительности и рейтинге вашего сайта.',
+    icon: Star
+  }
+];
 
+// Feature Categories
+export const featureCategories: FeatureCategory[] = [
+  { title: 'SEO Аудит', features: auditFeatures },
+  { title: 'Отслеживание позиций', features: positionTrackingFeatures },
+  { title: 'Дополнительные возможности', features: otherFeatures }
+];
+
+// Get all features
+export const getAllFeatures = (): Feature[] => {
+  return [...auditFeatures, ...positionTrackingFeatures, ...otherFeatures];
+};

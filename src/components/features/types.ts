@@ -1,24 +1,21 @@
 
-import { ReactNode } from 'react';
 import { LucideIcon } from 'lucide-react';
 
 export interface Feature {
-  icon: LucideIcon;
   title: string;
   description: string;
+  icon: LucideIcon;
   link?: string;
-  category?: string;
 }
 
-export interface FeatureData {
-  icon: LucideIcon;
+export interface FeatureCategory {
   title: string;
-  description: string;
-  link?: string;
-  category?: string;
-  content?: string;
-  benefits?: string[];
-  imageUrl?: string;
+  features: Feature[];
+}
+
+export interface FeatureCategoryProps {
+  title?: string;
+  features: Feature[];
 }
 
 export interface FeatureGridProps {
@@ -26,14 +23,9 @@ export interface FeatureGridProps {
 }
 
 export interface FeatureCardProps {
-  icon: ReactNode;
+  icon: React.ReactNode;
   title: string;
   description: string;
   link?: string;
   layoutId?: string;
-}
-
-export interface FeatureCategoryProps {
-  title?: string;
-  features: Feature[];
 }
