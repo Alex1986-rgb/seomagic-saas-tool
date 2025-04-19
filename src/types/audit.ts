@@ -1,3 +1,4 @@
+
 export interface CrawlOptions {
   maxPages: number;
   maxDepth: number;
@@ -14,13 +15,96 @@ export interface ScanOptions {
   onProgress?: (progress: number, total: number, url: string) => void;
 }
 
+export interface OptimizationOptions {
+  optimizeMetaTags: boolean;
+  optimizeHeadings: boolean;
+  optimizeContent: boolean;
+  optimizeImages: boolean;
+  language: string;
+  prompt?: string;
+  temperature?: number;
+  model?: string;
+}
+
+export interface AuditItemData {
+  id: string;
+  title: string;
+  description: string;
+  status: 'error' | 'warning' | 'good';
+  score: number;
+  previousScore?: number;
+  trend: 'up' | 'down' | 'same';
+  impact: 'high' | 'medium' | 'low';
+  solution?: string;
+  recommendation?: string;
+  affectedUrls?: string[];
+}
+
+export interface CategoryData {
+  score: number;
+  previousScore?: number;
+  items: AuditItemData[];
+  passed: number;
+  warning: number;
+  failed: number;
+}
+
+export interface AuditCategoryData extends CategoryData {
+  id: string;
+  name: string;
+  description: string;
+}
+
+export interface AuditDetailsData {
+  seo: CategoryData;
+  content: CategoryData;
+  performance: CategoryData;
+  technical: CategoryData;
+  mobile: CategoryData; 
+}
+
+export interface IssuesData {
+  critical: number;
+  important: number;
+  minor: number;
+  passed: number;
+}
+
+export interface AuditHistoryItem {
+  id: string;
+  date: string;
+  score: number;
+  pageCount: number;
+  url: string;
+  issues: {
+    critical: number;
+    important: number;
+    opportunities: number;
+  };
+  details?: {
+    seo: { score: number; };
+    performance: { score: number; };
+    content: { score: number; };
+    technical: { score: number; };
+  };
+  changes?: number;
+  categoryScores?: Record<string, number>;
+}
+
+export interface AuditHistoryData {
+  url: string;
+  items: AuditHistoryItem[];
+}
+
 export interface AuditData {
+  id: string;
   url: string;
   title: string;
   score: number;
-  previousScore: number;
+  previousScore?: number;
   pageCount: number;
   date: string;
+  status: 'completed' | 'in-progress' | 'failed';
   issues: {
     critical: string[];
     important: string[];
@@ -54,6 +138,7 @@ export interface AuditData {
     mobile: number;
     tablet: number;
   };
+  details: AuditDetailsData;
 }
 
 export interface RecommendationData {
@@ -68,18 +153,37 @@ export interface RecommendationData {
   status: string;
   details: string;
   resources: string[];
+  critical: string[];
+  important: string[];
+  opportunities: string[];
 }
 
-export interface AuditHistoryData {
+export interface PageData {
   url: string;
-  history: {
-    date: string;
-    score: number;
-    pageCount: number;
-    issues: {
-      critical: number;
-      important: number;
-      opportunities: number;
-    };
+  title: string | null;
+  html: string;
+  content: string;
+  headings: {
+    h1: string[];
+    h2: string[];
+    h3: string[];
+  };
+  metaTags: {
+    description: string | null;
+    keywords: string | null;
+  };
+  links: {
+    internal: string[];
+    external: string[];
+  };
+  images: {
+    url: string;
+    alt: string | null;
+    size?: number;
   }[];
+  issues: {
+    critical: string[];
+    important: string[];
+    opportunities: string[];
+  };
 }

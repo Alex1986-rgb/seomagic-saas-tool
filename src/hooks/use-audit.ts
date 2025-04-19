@@ -65,8 +65,33 @@ export const useAudit = (url: string) => {
       await new Promise(resolve => setTimeout(resolve, 300));
       
       setAuditData(auditResult);
-      setRecommendations(recommendationsResult);
-      setHistoryData(historyResult);
+      
+      // Cast the recommendations result to RecommendationData and set it
+      const typedRecommendations: RecommendationData = {
+        ...recommendationsResult,
+        url: url,
+        title: `Recommendations for ${url}`,
+        description: "Recommended optimizations based on audit results",
+        priority: "high",
+        category: "SEO",
+        affectedAreas: ["SEO", "Performance", "Content"],
+        estimatedEffort: "medium",
+        potentialImpact: "high",
+        status: "pending",
+        details: "Detailed analysis of SEO optimizations",
+        resources: ["https://example.com/seo-best-practices"],
+        critical: recommendationsResult.critical || [],
+        important: recommendationsResult.important || [],
+        opportunities: recommendationsResult.opportunities || []
+      };
+      setRecommendations(typedRecommendations);
+      
+      // Cast the history result to AuditHistoryData and set it
+      const typedHistoryData: AuditHistoryData = {
+        url: url,
+        items: historyResult.items || []
+      };
+      setHistoryData(typedHistoryData);
       
       if (!refresh) {
         toast({

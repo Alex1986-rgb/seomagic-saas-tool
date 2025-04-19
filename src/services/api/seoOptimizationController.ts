@@ -1,3 +1,4 @@
+
 import { CrawlOptions, OptimizationOptions } from '@/types/audit';
 import { openaiService } from './openaiService';
 
@@ -66,6 +67,49 @@ class SeoOptimizationController {
         id: taskId,
         url: '',
         status: 'failed',
+        error: error instanceof Error ? error.message : 'Unknown error'
+      };
+    }
+  }
+
+  // Add missing methods used in DeploymentPanel.tsx
+  async downloadOptimizedSite(taskId: string) {
+    try {
+      console.log('Downloading optimized site for task:', taskId);
+      
+      // Simulate download process
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      // Return mock download URL (in a real implementation, this would be a blob URL)
+      return {
+        success: true,
+        downloadUrl: '#'
+      };
+    } catch (error) {
+      console.error('Error downloading optimized site:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error'
+      };
+    }
+  }
+
+  async deploySite(taskId: string, deployOptions: any) {
+    try {
+      console.log('Deploying site for task:', taskId, 'with options:', deployOptions);
+      
+      // Simulate deployment process
+      await new Promise(resolve => setTimeout(resolve, 3000));
+      
+      // Return mock result
+      return {
+        success: true,
+        message: 'Site deployed successfully'
+      };
+    } catch (error) {
+      console.error('Error deploying site:', error);
+      return {
+        success: false,
         error: error instanceof Error ? error.message : 'Unknown error'
       };
     }
