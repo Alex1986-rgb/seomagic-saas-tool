@@ -1,134 +1,85 @@
-
-export interface AuditItemData {
-  id: string;
-  title: string;
-  description: string;
-  status: 'good' | 'warning' | 'error';
-  details?: string;
-  value?: number | string;
-  trend?: 'up' | 'down' | 'neutral';
-  helpText?: string;
-  solution?: string; // Add solution property
-}
-
-export interface AuditCategoryData {
-  score: number;
-  previousScore?: number;
-  items: AuditItemData[];
-}
-
-export interface AuditDetailsData {
-  seo: AuditCategoryData;
-  performance: AuditCategoryData;
-  content: AuditCategoryData;
-  technical: AuditCategoryData;
-  mobile: AuditCategoryData; // Added mobile category
-}
-
-export interface AuditData {
-  id: string;
-  url: string;
-  date: string;
-  score: number;
-  previousScore?: number;
-  issues: {
-    critical: number;
-    important: number;
-    opportunities: number;
-  };
-  pageCount?: number;
-  details: AuditDetailsData;
-}
-
-export interface RecommendationData {
-  critical: string[];
-  important: string[];
-  opportunities: string[];
-}
-
-export interface AuditHistoryItem {
-  id: string;
-  date: string;
-  score: number;
-  url?: string;
-  changes?: number; // Added the missing changes property
-  categoryScores?: Record<string, number>; // Added the missing categoryScores property
-  issues?: {
-    critical: number;
-    important: number;
-    opportunities: number;
-  };
-  pageCount?: number;
-  details?: {
-    seo?: { score: number };
-    performance?: { score: number };
-    content?: { score: number };
-    technical?: { score: number };
-  };
-}
-
-export interface AuditHistoryData {
-  items: AuditHistoryItem[];
+export interface CrawlOptions {
+  maxPages: number;
+  maxDepth: number;
+  followExternalLinks: boolean;
+  userAgent: string;
+  checkImages: boolean;
+  checkPerformance: boolean;
 }
 
 export interface ScanOptions {
   maxPages: number;
   maxDepth: number;
-  followExternalLinks?: boolean;
-  checkMobile?: boolean;
-  analyzeSEO?: boolean;
-  analyzePerformance?: boolean;
-  onProgress?: (pagesScanned: number, totalPages: number, currentUrl: string) => void;
+  followExternalLinks: boolean;
+  onProgress?: (progress: number, total: number, url: string) => void;
 }
 
-export interface PageScanResult {
+export interface AuditData {
   url: string;
-  statusCode: number;
   title: string;
-  headings: {
-    h1: string[];
-    h2: string[];
-    h3: string[];
+  score: number;
+  previousScore: number;
+  pageCount: number;
+  date: string;
+  issues: {
+    critical: string[];
+    important: string[];
+    opportunities: string[];
   };
-  metaTags: {
-    description?: string;
-    keywords?: string;
-    robots?: string;
-    viewport?: string;
-    ogTitle?: string;
-    ogDescription?: string;
-    ogImage?: string;
-    twitterCard?: string;
+  pageSpeed: {
+    desktop: number;
+    mobile: number;
   };
-  links: {
-    internal: string[];
-    external: string[];
+  mobileFriendliness: number;
+  security: number;
+  technologies: string[];
+  structuredData: string[];
+  contentQuality: number;
+  keywords: string[];
+  competitors: string[];
+  backlinks: number;
+  socialShares: number;
+  traffic: number;
+  organicTraffic: number;
+  paidTraffic: number;
+  bounceRate: number;
+  timeOnSite: number;
+  demographics: {
+    age: string;
+    gender: string;
+    location: string;
   };
-  images: {
-    withAlt: number;
-    withoutAlt: number;
-    totalSize: number;
+  deviceTypes: {
+    desktop: number;
+    mobile: number;
+    tablet: number;
   };
-  performance: {
-    documentSize: number;
-    loadTime?: number;
-    resourceCount: number;
-  };
-  errors: string[];
-  warnings: string[];
 }
 
-export interface WebsiteScanResult {
-  domain: string;
-  pagesScanned: number;
-  startTime: string;
-  endTime: string;
-  pageResults: PageScanResult[];
-  summary: {
-    averageScore: number;
-    criticalIssues: number;
-    majorIssues: number;
-    minorIssues: number;
-    passedChecks: number;
-  };
+export interface RecommendationData {
+  url: string;
+  title: string;
+  description: string;
+  priority: string;
+  category: string;
+  affectedAreas: string[];
+  estimatedEffort: string;
+  potentialImpact: string;
+  status: string;
+  details: string;
+  resources: string[];
+}
+
+export interface AuditHistoryData {
+  url: string;
+  history: {
+    date: string;
+    score: number;
+    pageCount: number;
+    issues: {
+      critical: number;
+      important: number;
+      opportunities: number;
+    };
+  }[];
 }
