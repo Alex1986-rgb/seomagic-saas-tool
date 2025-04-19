@@ -6,6 +6,14 @@ export interface Feature {
   description: string;
   icon: LucideIcon;
   link?: string;
+  category?: string;
+  content?: string;
+  benefits?: string[];
+}
+
+// Adding FeatureData type that was missing
+export interface FeatureData extends Feature {
+  category: string;
 }
 
 export interface FeatureCategory {
