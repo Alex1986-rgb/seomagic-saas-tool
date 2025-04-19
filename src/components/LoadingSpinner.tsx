@@ -1,35 +1,12 @@
 
 import React from 'react';
 
-interface LoadingSpinnerProps {
-  className?: string;
-  size?: string;
-  fullScreen?: boolean;
-}
-
-const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({ 
-  className = "h-14 w-14", 
-  size,
-  fullScreen = true
-}) => {
-  const spinnerElement = (
-    <div 
-      className={`inline-block animate-spin rounded-full border-4 border-solid border-primary border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite] ${className} ${size || ''}`} 
-      role="status"
-    >
-      <span className="!absolute !-m-px !h-px !w-px !overflow-hidden !whitespace-nowrap !border-0 !p-0 ![clip:rect(0,0,0,0)]">Загрузка...</span>
+const LoadingSpinner: React.FC = () => {
+  return (
+    <div className="fixed inset-0 flex items-center justify-center bg-background/50 backdrop-blur-sm z-50">
+      <div className="h-16 w-16 animate-spin rounded-full border-4 border-primary border-t-transparent" />
     </div>
   );
-
-  if (fullScreen) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        {spinnerElement}
-      </div>
-    );
-  }
-
-  return spinnerElement;
 };
 
 export default LoadingSpinner;
