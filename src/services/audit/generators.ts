@@ -1,3 +1,4 @@
+
 import { faker } from '@faker-js/faker';
 import { AuditData, AuditItemData, CategoryData } from '@/types/audit';
 
@@ -73,8 +74,8 @@ export const generateAuditData = (url: string): AuditData => {
     traffic: faker.number.int({ min: 0, max: 10000 }),
     organicTraffic: faker.number.int({ min: 0, max: 8000 }),
     paidTraffic: faker.number.int({ min: 0, max: 2000 }),
-    bounceRate: faker.number.float({ min: 20, max: 80, precision: 0.1 }),
-    timeOnSite: faker.number.float({ min: 30, max: 300, precision: 0.1 }),
+    bounceRate: faker.number.float({ min: 20, max: 80, fractionDigits: 1 }),
+    timeOnSite: faker.number.float({ min: 30, max: 300, fractionDigits: 1 }),
     demographics: {
       age: '25-34',
       gender: 'Mixed',
@@ -143,7 +144,7 @@ const generateIssues = (type: string, count: number): string[] => {
 /**
  * Generate category data for audit details
  */
-const generateCategoryData = (category: string, score: number): CategoryData => {
+const generateCategoryData = (category: string, score: number): AuditCategoryData => {
   const previousScore = faker.number.int({ min: Math.max(0, score - 20), max: Math.min(100, score + 20) });
   const itemsCount = faker.number.int({ min: 5, max: 10 });
   
@@ -155,6 +156,9 @@ const generateCategoryData = (category: string, score: number): CategoryData => 
   const failed = total - passed - warning;
   
   return {
+    id: faker.string.uuid(),
+    name: category,
+    description: `Analysis of ${category.toLowerCase()} aspects of the website`,
     score,
     previousScore,
     items: generateAuditItems(category, itemsCount, { passed, warning, failed }),
@@ -339,10 +343,12 @@ const generateAuditItem = (category: string, status: 'error' | 'warning' | 'good
     status,
     score: status === 'good' ? 100 : status === 'warning' ? 50 : 0,
     previousScore: faker.number.int({ min: 0, max: 100 }),
-    trend: faker.helpers.arrayElement(['up', 'down', 'same']),
+    trend: faker.helpers.arrayElement(['up', 'down', 'neutral']),
     impact,
     solution: status !== 'good' ? `Fix the ${title.toLowerCase()} issue by updating your website.` : undefined,
     recommendation: status !== 'good' ? `We recommend addressing this ${impact} priority issue soon.` : undefined,
-    affectedUrls: status !== 'good' ? ['/page1', '/page2', '/page3'] : undefined
+    affectedUrls: status !== 'good' ? ['/page1', '/page2', '/page3'] : undefined,
+    value: status === 'good' ? 100 : status === 'warning' ? 50 : 0,
+    helpText: status !== 'good' ? 'Click for more information about this issue' : 'This aspect of your site is well optimized'
   };
 };

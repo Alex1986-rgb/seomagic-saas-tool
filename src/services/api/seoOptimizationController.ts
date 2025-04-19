@@ -101,10 +101,11 @@ class SeoOptimizationController {
       // Simulate deployment process
       await new Promise(resolve => setTimeout(resolve, 3000));
       
-      // Return mock result
+      // Return mock result with url property
       return {
         success: true,
-        message: 'Site deployed successfully'
+        message: 'Site deployed successfully',
+        url: `https://optimized-${Date.now()}.example.com`
       };
     } catch (error) {
       console.error('Error deploying site:', error);

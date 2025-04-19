@@ -57,10 +57,10 @@ export const generatePDFReport = async (auditData: AuditData, url: string): Prom
   // Формируем данные для таблицы проблем
   const issuesData = [
     ['Тип', 'Количество'],
-    ['Критические', `${auditData.issues?.critical || 0}`],
-    ['Важные', `${auditData.issues?.important || 0}`],
-    ['Предупреждения', `${auditData.issues?.opportunities || 0}`],
-    ['Информационные', `${auditData.issues?.opportunities || 0}`],
+    ['Критические', `${auditData.issues?.critical.length || 0}`],
+    ['Важные', `${auditData.issues?.important.length || 0}`],
+    ['Предупреждения', `${auditData.issues?.opportunities.length || 0}`],
+    ['Информационные', `${auditData.issues?.opportunities.length || 0}`],
   ];
   
   autoTable(doc, {
@@ -190,14 +190,14 @@ export const generateComparisonReport = async (beforeAudit: AuditData, afterAudi
   // Формируем данные для таблицы сравнения проблем
   const issuesComparisonData = [
     ['Тип проблем', 'До', 'После', 'Изменение'],
-    ['Критические', `${beforeAudit.issues?.critical || 0}`, `${afterAudit.issues?.critical || 0}`, 
-      getIssueChangeText(beforeAudit.issues?.critical || 0, afterAudit.issues?.critical || 0)],
-    ['Важные', `${beforeAudit.issues?.important || 0}`, `${afterAudit.issues?.important || 0}`, 
-      getIssueChangeText(beforeAudit.issues?.important || 0, afterAudit.issues?.important || 0)],
-    ['Предупреждения', `${beforeAudit.issues?.opportunities || 0}`, `${afterAudit.issues?.opportunities || 0}`, 
-      getIssueChangeText(beforeAudit.issues?.opportunities || 0, afterAudit.issues?.opportunities || 0)],
-    ['Информационные', `${beforeAudit.issues?.opportunities || 0}`, `${afterAudit.issues?.opportunities || 0}`, 
-      getIssueChangeText(beforeAudit.issues?.opportunities || 0, afterAudit.issues?.opportunities || 0)],
+    ['Критические', `${beforeAudit.issues?.critical.length || 0}`, `${afterAudit.issues?.critical.length || 0}`, 
+      getIssueChangeText(beforeAudit.issues?.critical.length || 0, afterAudit.issues?.critical.length || 0)],
+    ['Важные', `${beforeAudit.issues?.important.length || 0}`, `${afterAudit.issues?.important.length || 0}`, 
+      getIssueChangeText(beforeAudit.issues?.important.length || 0, afterAudit.issues?.important.length || 0)],
+    ['Предупреждения', `${beforeAudit.issues?.opportunities.length || 0}`, `${afterAudit.issues?.opportunities.length || 0}`, 
+      getIssueChangeText(beforeAudit.issues?.opportunities.length || 0, afterAudit.issues?.opportunities.length || 0)],
+    ['Информационные', `${beforeAudit.issues?.opportunities.length || 0}`, `${afterAudit.issues?.opportunities.length || 0}`, 
+      getIssueChangeText(beforeAudit.issues?.opportunities.length || 0, afterAudit.issues?.opportunities.length || 0)],
   ];
   
   autoTable(doc, {

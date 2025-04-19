@@ -70,15 +70,15 @@ export const generateAuditPdf = async (options: GenerateAuditPdfOptions): Promis
   doc.text('Статистика сайта', 14, 60);
   
   // Расчет общего количества проблем
-  const totalIssues = auditData.issues.critical + auditData.issues.important + auditData.issues.opportunities;
+  const totalIssues = auditData.issues.critical.length + auditData.issues.important.length + auditData.issues.opportunities.length;
   
   // Таблица статистики
   const statsData = [
     ['Проанализировано страниц', auditData.pageCount?.toString() || '0'],
     ['Обнаружено проблем', totalIssues.toString()],
-    ['Критические ошибки', auditData.issues.critical.toString()],
-    ['Средние проблемы', auditData.issues.important.toString()],
-    ['Незначительные проблемы', auditData.issues.opportunities.toString()]
+    ['Критические ошибки', auditData.issues.critical.length.toString()],
+    ['Средние проблемы', auditData.issues.important.length.toString()],
+    ['Незначительные проблемы', auditData.issues.opportunities.length.toString()]
   ];
   
   autoTable(doc, {
@@ -121,10 +121,10 @@ export const generateAuditPdf = async (options: GenerateAuditPdfOptions): Promis
   doc.text('Категории аудита', 14, currentY);
   
   const categories = [
-    ['SEO', auditData.details?.seo?.score || 0],
-    ['Производительность', auditData.details?.performance?.score || 0],
-    ['Контент', auditData.details?.content?.score || 0],
-    ['Технические аспекты', auditData.details?.technical?.score || 0]
+    ['SEO', auditData.details.seo.score || 0],
+    ['Производительность', auditData.details.performance.score || 0],
+    ['Контент', auditData.details.content.score || 0],
+    ['Технические аспекты', auditData.details.technical.score || 0]
   ];
   
   autoTable(doc, {

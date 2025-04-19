@@ -80,19 +80,24 @@ const AuditCategorySection: React.FC<AuditCategorySectionProps> = ({
             exit={{ height: 0, opacity: 0 }}
             transition={{ duration: 0.3 }}
           >
-            {items.map((item) => (
-              <AuditCategoryItem 
-                key={item.id}
-                id={item.id}
-                title={item.title}
-                description={item.description}
-                value={item.value}
-                status={item.status}
-                trend={item.trend}
-                helpText={item.helpText}
-                getTrendIcon={getTrendIcon}
-              />
-            ))}
+            {items.map((item) => {
+              // Convert 'same' to 'neutral' for trend value if needed
+              const normalizedTrend = item.trend === 'same' ? 'neutral' : item.trend;
+              
+              return (
+                <AuditCategoryItem 
+                  key={item.id}
+                  id={item.id}
+                  title={item.title}
+                  description={item.description}
+                  value={item.value}
+                  status={item.status}
+                  trend={normalizedTrend}
+                  helpText={item.helpText}
+                  getTrendIcon={getTrendIcon}
+                />
+              );
+            })}
           </motion.div>
         )}
       </AnimatePresence>

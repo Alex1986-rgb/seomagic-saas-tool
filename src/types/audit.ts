@@ -1,31 +1,4 @@
 
-export interface CrawlOptions {
-  maxPages: number;
-  maxDepth: number;
-  followExternalLinks: boolean;
-  userAgent: string;
-  checkImages: boolean;
-  checkPerformance: boolean;
-}
-
-export interface ScanOptions {
-  maxPages: number;
-  maxDepth: number;
-  followExternalLinks: boolean;
-  onProgress?: (progress: number, total: number, url: string) => void;
-}
-
-export interface OptimizationOptions {
-  optimizeMetaTags: boolean;
-  optimizeHeadings: boolean;
-  optimizeContent: boolean;
-  optimizeImages: boolean;
-  language: string;
-  prompt?: string;
-  temperature?: number;
-  model?: string;
-}
-
 export interface AuditItemData {
   id: string;
   title: string;
@@ -33,11 +6,13 @@ export interface AuditItemData {
   status: 'error' | 'warning' | 'good';
   score: number;
   previousScore?: number;
-  trend: 'up' | 'down' | 'same';
+  trend: 'up' | 'down' | 'neutral';
   impact: 'high' | 'medium' | 'low';
   solution?: string;
   recommendation?: string;
   affectedUrls?: string[];
+  value?: number | string;
+  helpText?: string;
 }
 
 export interface CategoryData {
@@ -49,18 +24,24 @@ export interface CategoryData {
   failed: number;
 }
 
-export interface AuditCategoryData extends CategoryData {
+export interface AuditCategoryData {
   id: string;
   name: string;
   description: string;
+  score: number;
+  previousScore?: number;
+  items: AuditItemData[];
+  passed: number;
+  warning: number;
+  failed: number;
 }
 
 export interface AuditDetailsData {
-  seo: CategoryData;
-  content: CategoryData;
-  performance: CategoryData;
-  technical: CategoryData;
-  mobile: CategoryData; 
+  seo: AuditCategoryData;
+  content: AuditCategoryData;
+  performance: AuditCategoryData;
+  technical: AuditCategoryData;
+  mobile: AuditCategoryData; 
 }
 
 export interface IssuesData {
@@ -186,4 +167,31 @@ export interface PageData {
     important: string[];
     opportunities: string[];
   };
+}
+
+export interface CrawlOptions {
+  maxPages: number;
+  maxDepth: number;
+  followExternalLinks: boolean;
+  userAgent: string;
+  checkImages: boolean;
+  checkPerformance: boolean;
+}
+
+export interface ScanOptions {
+  maxPages: number;
+  maxDepth: number;
+  followExternalLinks: boolean;
+  onProgress?: (progress: number, total: number, url: string) => void;
+}
+
+export interface OptimizationOptions {
+  optimizeMetaTags: boolean;
+  optimizeHeadings: boolean;
+  optimizeContent: boolean;
+  optimizeImages: boolean;
+  language: string;
+  prompt?: string;
+  temperature?: number;
+  model?: string;
 }
