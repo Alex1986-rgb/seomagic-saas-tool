@@ -2,683 +2,393 @@
 import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
-import { Progress } from "@/components/ui/progress";
-import { Slider } from "@/components/ui/slider";
 import { useToast } from "@/hooks/use-toast";
-import { CrawlOptions } from '@/services/api/crawlerService';
-import { OptimizationOptions } from '@/services/api/openaiService';
-import { HostingCredentials } from '@/services/api/hostingService';
-import { seoOptimizationController } from '@/services/api/seoOptimizationController';
-import { openaiService } from '@/services/api/openaiService';
-import { Loader2, Download, Upload, CheckCircle, XCircle, Settings, Wand2, Globe, Server } from 'lucide-react';
+import { seoOptimizationController } from "@/services/api/seoOptimizationController";
+import { openaiService } from "@/services/api/openaiService";
+import { CheckCircle2, ExternalLink, Globe, Key, Loader2, RefreshCw, Search } from "lucide-react";
+import OptimizationProgress from "./OptimizationProgress";
+import DeploymentPanel from "./DeploymentPanel";
 
 const SeoOptimizationPanel: React.FC = () => {
   const { toast } = useToast();
-  
-  // URL and API Key states
-  const [url, setUrl] = useState('');
-  const [openaiKey, setOpenaiKey] = useState('');
-  
-  // Crawl options
-  const [crawlOptions, setCrawlOptions] = useState<CrawlOptions>({
-    maxPages: 100,
-    maxDepth: 5,
-    followExternalLinks: false,
-    checkImages: true,
-    checkPerformance: true
-  });
-  
-  // Optimization options
-  const [optimizationOptions, setOptimizationOptions] = useState<OptimizationOptions>({
-    optimizeMetaTags: true,
-    optimizeHeadings: true,
-    optimizeContent: true,
-    language: 'ru',
-    prompt: ''
-  });
-  
-  // Hosting options
-  const [hostingProvider, setHostingProvider] = useState<'ftp' | 'beget' | 'cpanel'>('ftp');
-  const [hostingCredentials, setHostingCredentials] = useState<Omit<HostingCredentials, 'provider'>>({
-    host: '',
-    username: '',
-    password: '',
-    port: 21,
-    path: '/'
-  });
-  
-  // Task state
+  const [url, setUrl] = useState("");
   const [taskId, setTaskId] = useState<string | null>(null);
-  const [taskStatus, setTaskStatus] = useState<string>('');
-  const [progress, setProgress] = useState(0);
-  const [isProcessing, setIsProcessing] = useState(false);
-  const [isCompleted, setIsCompleted] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isValid, setIsValid] = useState(false);
+  const [openaiKey, setOpenaiKey] = useState("");
+  const [task, setTask] = useState<any>(null);
+  const [advancedOptions, setAdvancedOptions] = useState({
+    maxPages: 10000,
+    followExternalLinks: false,
+    analyzeMobile: true,
+    optimizeImages: true,
+    optimizeHeadings: true,
+    optimizeMetaTags: true,
+    optimizeContent: true,
+    dynamicRendering: false,
+  });
+  const [activeTab, setActiveTab] = useState("crawler");
   
-  // Handle crawl option changes
-  const handleCrawlOptionChange = (key: keyof CrawlOptions, value: any) => {
-    setCrawlOptions(prev => ({
+  // Validate URL format
+  const validateUrl = (input: string) => {
+    try {
+      const urlObject = new URL(input.startsWith('http') ? input : `https://${input}`);
+      setIsValid(true);
+      return urlObject.toString();
+    } catch (e) {
+      setIsValid(false);
+      return false;
+    }
+  };
+  
+  // Handle URL input change
+  const handleUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setUrl(value);
+    validateUrl(value);
+  };
+  
+  // Handle OpenAI API key input change
+  const handleApiKeyChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setOpenaiKey(value);
+    // Store in the service
+    if (value.startsWith("sk-")) {
+      openaiService.setApiKey(value);
+    }
+  };
+  
+  // Toggle advanced option
+  const toggleOption = (option: string) => {
+    setAdvancedOptions(prev => ({
       ...prev,
-      [key]: value
+      [option]: !prev[option as keyof typeof prev]
     }));
   };
   
-  // Handle optimization option changes
-  const handleOptimizationOptionChange = (key: keyof OptimizationOptions, value: any) => {
-    setOptimizationOptions(prev => ({
-      ...prev,
-      [key]: value
-    }));
-  };
-  
-  // Handle hosting credential changes
-  const handleHostingCredentialChange = (key: string, value: any) => {
-    setHostingCredentials(prev => ({
-      ...prev,
-      [key]: value
-    }));
-  };
-  
-  // Start the optimization process
+  // Handle form submission to start optimization
   const handleStartOptimization = async () => {
-    if (!url) {
+    const formattedUrl = validateUrl(url);
+    if (!formattedUrl) {
       toast({
-        title: "URL обязателен",
-        description: "Пожалуйста, введите URL сайта для анализа и оптимизации",
-        variant: "destructive"
+        title: "Некорректный URL",
+        description: "Пожалуйста, введите корректный URL сайта",
+        variant: "destructive",
       });
       return;
     }
     
-    if (!openaiKey) {
+    if (!openaiKey || !openaiKey.startsWith("sk-")) {
       toast({
-        title: "API ключ OpenAI обязателен",
-        description: "Пожалуйста, введите ваш API ключ OpenAI для оптимизации контента",
-        variant: "destructive"
+        title: "Требуется API ключ OpenAI",
+        description: "Пожалуйста, введите корректный API ключ OpenAI",
+        variant: "destructive",
       });
       return;
     }
     
     try {
-      setIsProcessing(true);
-      setIsCompleted(false);
-      setError(null);
-      setProgress(0);
-      setTaskStatus('Инициализация...');
+      setIsLoading(true);
       
-      // Set the OpenAI API key
+      // Store API key in the service
       openaiService.setApiKey(openaiKey);
       
-      // Start the optimization process
+      // Start the optimization task
       const newTaskId = await seoOptimizationController.startOptimization(
-        url,
-        crawlOptions,
-        optimizationOptions
+        formattedUrl,
+        {
+          maxPages: advancedOptions.maxPages,
+          followExternalLinks: advancedOptions.followExternalLinks,
+          userAgent: advancedOptions.analyzeMobile ? 
+            'Mozilla/5.0 (iPhone; CPU iPhone OS 13_2_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0.3 Mobile/15E148 Safari/604.1' : 
+            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+          renderJavaScript: advancedOptions.dynamicRendering,
+        },
+        {
+          optimizeMetaTags: advancedOptions.optimizeMetaTags,
+          optimizeHeadings: advancedOptions.optimizeHeadings,
+          optimizeContent: advancedOptions.optimizeContent,
+          optimizeImages: advancedOptions.optimizeImages,
+          temperature: 0.7,
+          language: 'ru', // Default language, could be made configurable
+          model: 'gpt-4o', // Using GPT-4o for best results
+        }
       );
       
       setTaskId(newTaskId);
+      setActiveTab("progress");
       
-      // Start polling for updates
-      const intervalId = setInterval(async () => {
-        const taskStatus = seoOptimizationController.getTaskStatus(newTaskId);
+      toast({
+        title: "Оптимизация запущена",
+        description: "Начинаем сканирование и оптимизацию сайта",
+      });
+      
+      // Start polling for task status
+      startPolling(newTaskId);
+    } catch (error) {
+      toast({
+        title: "Ошибка запуска оптимизации",
+        description: error instanceof Error ? error.message : "Не удалось запустить оптимизацию",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  
+  // Poll for task status
+  const startPolling = (taskId: string) => {
+    const interval = setInterval(async () => {
+      try {
+        const taskStatus = seoOptimizationController.getTaskStatus(taskId);
         
         if (taskStatus) {
-          setProgress(taskStatus.progress);
+          setTask(taskStatus);
           
-          switch (taskStatus.status) {
-            case 'crawling':
-              setTaskStatus(`Сканирование... (${taskStatus.pagesProcessed}/${taskStatus.totalPages || '?'} страниц)`);
-              break;
-            case 'optimizing':
-              setTaskStatus(`Оптимизация... (${taskStatus.pagesProcessed}/${taskStatus.totalPages} страниц)`);
-              break;
-            case 'generating':
-              setTaskStatus('Генерация оптимизированного сайта...');
-              break;
-            case 'deploying':
-              setTaskStatus('Публикация оптимизированного сайта...');
-              break;
-            case 'completed':
-              setTaskStatus('Оптимизация завершена');
-              setIsProcessing(false);
-              setIsCompleted(true);
-              clearInterval(intervalId);
-              
+          // If task is completed or failed, stop polling
+          if (taskStatus.status === 'completed' || taskStatus.status === 'failed') {
+            clearInterval(interval);
+            
+            if (taskStatus.status === 'completed') {
               toast({
                 title: "Оптимизация завершена",
-                description: `Сайт ${url} успешно оптимизирован!`,
+                description: "Сайт успешно оптимизирован и готов к публикации",
               });
-              break;
-            case 'failed':
-              setTaskStatus('Ошибка оптимизации');
-              setIsProcessing(false);
-              setError(taskStatus.error || 'Неизвестная ошибка');
-              clearInterval(intervalId);
-              
+              setActiveTab("deployment");
+            } else {
               toast({
                 title: "Ошибка оптимизации",
-                description: taskStatus.error || 'Произошла ошибка при оптимизации сайта',
-                variant: "destructive"
+                description: taskStatus.error || "Произошла ошибка при оптимизации сайта",
+                variant: "destructive",
               });
-              break;
+            }
           }
         }
-      }, 1000);
-      
-      return () => clearInterval(intervalId);
-    } catch (error) {
-      setIsProcessing(false);
-      setError(error instanceof Error ? error.message : 'Неизвестная ошибка');
-      
-      toast({
-        title: "Ошибка оптимизации",
-        description: error instanceof Error ? error.message : 'Произошла ошибка при оптимизации сайта',
-        variant: "destructive"
-      });
-    }
-  };
-  
-  // Download the optimized site
-  const handleDownloadSite = async () => {
-    if (!taskId) return;
-    
-    try {
-      await seoOptimizationController.downloadOptimizedSite(taskId);
-      
-      toast({
-        title: "Сайт загружен",
-        description: "Оптимизированный сайт успешно загружен"
-      });
-    } catch (error) {
-      toast({
-        title: "Ошибка загрузки",
-        description: error instanceof Error ? error.message : 'Произошла ошибка при загрузке оптимизированного сайта',
-        variant: "destructive"
-      });
-    }
-  };
-  
-  // Deploy the optimized site
-  const handleDeploySite = async () => {
-    if (!taskId) return;
-    
-    try {
-      setIsProcessing(true);
-      setTaskStatus('Публикация оптимизированного сайта...');
-      
-      const credentials: HostingCredentials = {
-        provider: hostingProvider,
-        ...hostingCredentials
-      };
-      
-      const result = await seoOptimizationController.deploySite(taskId, credentials);
-      
-      setIsProcessing(false);
-      
-      if (result.success) {
-        toast({
-          title: "Сайт опубликован",
-          description: `Оптимизированный сайт успешно опубликован: ${result.url}`
-        });
-      } else {
-        setError(result.error || 'Неизвестная ошибка');
-        
-        toast({
-          title: "Ошибка публикации",
-          description: result.error || 'Произошла ошибка при публикации оптимизированного сайта',
-          variant: "destructive"
-        });
+      } catch (error) {
+        console.error("Error polling task status:", error);
       }
-    } catch (error) {
-      setIsProcessing(false);
-      setError(error instanceof Error ? error.message : 'Неизвестная ошибка');
-      
-      toast({
-        title: "Ошибка публикации",
-        description: error instanceof Error ? error.message : 'Произошла ошибка при публикации оптимизированного сайта',
-        variant: "destructive"
-      });
-    }
+    }, 2000);
+    
+    // Store interval ID to clear it when component unmounts
+    return () => clearInterval(interval);
   };
   
+  // Extract domain from URL
+  const getDomain = (url: string) => {
+    try {
+      return new URL(url.startsWith('http') ? url : `https://${url}`).hostname;
+    } catch (e) {
+      return url;
+    }
+  };
+
   return (
-    <div className="w-full max-w-5xl mx-auto p-6">
-      <Card className="backdrop-blur-sm bg-card/80 border border-primary/10 shadow-sm mb-6">
-        <CardHeader>
-          <CardTitle>SEO аудит и оптимизация сайта</CardTitle>
-          <CardDescription>
-            Автоматическое сканирование, анализ и оптимизация сайта для улучшения SEO показателей
-          </CardDescription>
-        </CardHeader>
+    <div className="space-y-6">
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
+        <TabsList className="grid grid-cols-3">
+          <TabsTrigger value="crawler">
+            <Search className="mr-2 h-4 w-4" />
+            Сканирование
+          </TabsTrigger>
+          <TabsTrigger value="progress" disabled={!taskId}>
+            <RefreshCw className="mr-2 h-4 w-4" />
+            Прогресс
+          </TabsTrigger>
+          <TabsTrigger value="deployment" disabled={!taskId || !task || task.status !== 'completed'}>
+            <Globe className="mr-2 h-4 w-4" />
+            Публикация
+          </TabsTrigger>
+        </TabsList>
         
-        <CardContent>
-          <div className="space-y-6">
-            {/* URL and API Key */}
-            <div className="space-y-4">
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <div className="space-y-2">
-                  <Label htmlFor="website-url">URL сайта</Label>
-                  <Input
-                    id="website-url"
-                    placeholder="example.com"
-                    value={url}
-                    onChange={(e) => setUrl(e.target.value)}
-                    disabled={isProcessing}
+        <TabsContent value="crawler">
+          <Card>
+            <CardHeader>
+              <CardTitle>Сканирование и оптимизация сайта</CardTitle>
+              <CardDescription>
+                Введите URL сайта и API ключ OpenAI для начала процесса SEO оптимизации
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="space-y-2">
+                <Label htmlFor="url">URL сайта</Label>
+                <div className="flex space-x-2">
+                  <Input 
+                    id="url" 
+                    placeholder="example.com" 
+                    value={url} 
+                    onChange={handleUrlChange}
                   />
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="openai-key">OpenAI API ключ</Label>
-                  <Input
-                    id="openai-key"
-                    type="password"
-                    placeholder="sk-..."
-                    value={openaiKey}
-                    onChange={(e) => setOpenaiKey(e.target.value)}
-                    disabled={isProcessing}
-                  />
-                </div>
-              </div>
-            </div>
-            
-            {/* Options Tabs */}
-            <Tabs defaultValue="crawl">
-              <TabsList className="grid grid-cols-3 mb-4">
-                <TabsTrigger value="crawl" disabled={isProcessing}>
-                  <Settings className="h-4 w-4 mr-2" />
-                  Сканирование
-                </TabsTrigger>
-                <TabsTrigger value="optimization" disabled={isProcessing}>
-                  <Wand2 className="h-4 w-4 mr-2" />
-                  Оптимизация
-                </TabsTrigger>
-                <TabsTrigger value="hosting" disabled={isProcessing}>
-                  <Server className="h-4 w-4 mr-2" />
-                  Публикация
-                </TabsTrigger>
-              </TabsList>
-              
-              {/* Crawl Options */}
-              <TabsContent value="crawl" className="space-y-4">
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div className="space-y-0.5">
-                      <Label>Максимальное количество страниц</Label>
-                      <div className="text-sm text-muted-foreground">
-                        {crawlOptions.maxPages} страниц
-                      </div>
-                    </div>
-                    <div className="w-[180px]">
-                      <Slider
-                        value={[crawlOptions.maxPages]}
-                        min={10}
-                        max={500}
-                        step={10}
-                        onValueChange={(value) => handleCrawlOptionChange('maxPages', value[0])}
-                        disabled={isProcessing}
-                      />
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-center justify-between">
-                    <div className="space-y-0.5">
-                      <Label>Максимальная глубина</Label>
-                      <div className="text-sm text-muted-foreground">
-                        {crawlOptions.maxDepth} уровней
-                      </div>
-                    </div>
-                    <div className="w-[180px]">
-                      <Slider
-                        value={[crawlOptions.maxDepth]}
-                        min={1}
-                        max={10}
-                        step={1}
-                        onValueChange={(value) => handleCrawlOptionChange('maxDepth', value[0])}
-                        disabled={isProcessing}
-                      />
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-center space-x-2">
-                    <Switch
-                      id="follow-external"
-                      checked={crawlOptions.followExternalLinks}
-                      onCheckedChange={(checked) => handleCrawlOptionChange('followExternalLinks', checked)}
-                      disabled={isProcessing}
-                    />
-                    <Label htmlFor="follow-external">Следовать по внешним ссылкам</Label>
-                  </div>
-                  
-                  <div className="flex items-center space-x-2">
-                    <Switch
-                      id="check-images"
-                      checked={crawlOptions.checkImages}
-                      onCheckedChange={(checked) => handleCrawlOptionChange('checkImages', checked)}
-                      disabled={isProcessing}
-                    />
-                    <Label htmlFor="check-images">Проверять изображения</Label>
-                  </div>
-                  
-                  <div className="flex items-center space-x-2">
-                    <Switch
-                      id="check-performance"
-                      checked={crawlOptions.checkPerformance}
-                      onCheckedChange={(checked) => handleCrawlOptionChange('checkPerformance', checked)}
-                      disabled={isProcessing}
-                    />
-                    <Label htmlFor="check-performance">Анализировать производительность</Label>
-                  </div>
-                </div>
-              </TabsContent>
-              
-              {/* Optimization Options */}
-              <TabsContent value="optimization" className="space-y-4">
-                <div className="space-y-4">
-                  <div className="flex items-center space-x-2">
-                    <Switch
-                      id="optimize-meta"
-                      checked={optimizationOptions.optimizeMetaTags}
-                      onCheckedChange={(checked) => handleOptimizationOptionChange('optimizeMetaTags', checked)}
-                      disabled={isProcessing}
-                    />
-                    <Label htmlFor="optimize-meta">Оптимизировать мета-теги</Label>
-                  </div>
-                  
-                  <div className="flex items-center space-x-2">
-                    <Switch
-                      id="optimize-headings"
-                      checked={optimizationOptions.optimizeHeadings}
-                      onCheckedChange={(checked) => handleOptimizationOptionChange('optimizeHeadings', checked)}
-                      disabled={isProcessing}
-                    />
-                    <Label htmlFor="optimize-headings">Оптимизировать заголовки</Label>
-                  </div>
-                  
-                  <div className="flex items-center space-x-2">
-                    <Switch
-                      id="optimize-content"
-                      checked={optimizationOptions.optimizeContent}
-                      onCheckedChange={(checked) => handleOptimizationOptionChange('optimizeContent', checked)}
-                      disabled={isProcessing}
-                    />
-                    <Label htmlFor="optimize-content">Оптимизировать контент</Label>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="language">Язык оптимизации</Label>
-                    <select
-                      id="language"
-                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                      value={optimizationOptions.language}
-                      onChange={(e) => handleOptimizationOptionChange('language', e.target.value)}
-                      disabled={isProcessing}
-                    >
-                      <option value="ru">Русский</option>
-                      <option value="en">English</option>
-                      <option value="de">Deutsch</option>
-                      <option value="fr">Français</option>
-                      <option value="es">Español</option>
-                    </select>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="prompt">Дополнительные инструкции для ИИ</Label>
-                    <Textarea
-                      id="prompt"
-                      placeholder="Например: Фокусироваться на ключевых словах для мебельной индустрии, использовать официальный тон и т.д."
-                      value={optimizationOptions.prompt}
-                      onChange={(e) => handleOptimizationOptionChange('prompt', e.target.value)}
-                      disabled={isProcessing}
-                    />
-                  </div>
-                </div>
-              </TabsContent>
-              
-              {/* Hosting Options */}
-              <TabsContent value="hosting" className="space-y-4">
-                <div className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="hosting-provider">Хостинг-провайдер</Label>
-                    <select
-                      id="hosting-provider"
-                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                      value={hostingProvider}
-                      onChange={(e) => setHostingProvider(e.target.value as any)}
-                      disabled={isProcessing}
-                    >
-                      <option value="ftp">FTP</option>
-                      <option value="beget">Beget</option>
-                      <option value="cpanel">cPanel</option>
-                    </select>
-                  </div>
-                  
-                  {hostingProvider === 'ftp' && (
-                    <>
-                      <div className="grid grid-cols-3 gap-4">
-                        <div className="space-y-2">
-                          <Label htmlFor="ftp-host">Хост</Label>
-                          <Input
-                            id="ftp-host"
-                            placeholder="ftp.example.com"
-                            value={hostingCredentials.host}
-                            onChange={(e) => handleHostingCredentialChange('host', e.target.value)}
-                            disabled={isProcessing}
-                          />
-                        </div>
-                        
-                        <div className="space-y-2">
-                          <Label htmlFor="ftp-username">Имя пользователя</Label>
-                          <Input
-                            id="ftp-username"
-                            placeholder="user"
-                            value={hostingCredentials.username}
-                            onChange={(e) => handleHostingCredentialChange('username', e.target.value)}
-                            disabled={isProcessing}
-                          />
-                        </div>
-                        
-                        <div className="space-y-2">
-                          <Label htmlFor="ftp-password">Пароль</Label>
-                          <Input
-                            id="ftp-password"
-                            type="password"
-                            placeholder="********"
-                            value={hostingCredentials.password}
-                            onChange={(e) => handleHostingCredentialChange('password', e.target.value)}
-                            disabled={isProcessing}
-                          />
-                        </div>
-                      </div>
-                      
-                      <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                          <Label htmlFor="ftp-port">Порт</Label>
-                          <Input
-                            id="ftp-port"
-                            type="number"
-                            placeholder="21"
-                            value={hostingCredentials.port?.toString() || '21'}
-                            onChange={(e) => handleHostingCredentialChange('port', parseInt(e.target.value) || 21)}
-                            disabled={isProcessing}
-                          />
-                        </div>
-                        
-                        <div className="space-y-2">
-                          <Label htmlFor="ftp-path">Путь</Label>
-                          <Input
-                            id="ftp-path"
-                            placeholder="/public_html"
-                            value={hostingCredentials.path}
-                            onChange={(e) => handleHostingCredentialChange('path', e.target.value)}
-                            disabled={isProcessing}
-                          />
-                        </div>
-                      </div>
-                    </>
-                  )}
-                  
-                  {hostingProvider === 'beget' && (
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="beget-username">Логин</Label>
-                        <Input
-                          id="beget-username"
-                          placeholder="username"
-                          value={hostingCredentials.username}
-                          onChange={(e) => handleHostingCredentialChange('username', e.target.value)}
-                          disabled={isProcessing}
-                        />
-                      </div>
-                      
-                      <div className="space-y-2">
-                        <Label htmlFor="beget-password">Пароль</Label>
-                        <Input
-                          id="beget-password"
-                          type="password"
-                          placeholder="********"
-                          value={hostingCredentials.password}
-                          onChange={(e) => handleHostingCredentialChange('password', e.target.value)}
-                          disabled={isProcessing}
-                        />
-                      </div>
-                    </div>
-                  )}
-                  
-                  {hostingProvider === 'cpanel' && (
-                    <>
-                      <div className="grid grid-cols-3 gap-4">
-                        <div className="space-y-2">
-                          <Label htmlFor="cpanel-host">Хост</Label>
-                          <Input
-                            id="cpanel-host"
-                            placeholder="example.com"
-                            value={hostingCredentials.host}
-                            onChange={(e) => handleHostingCredentialChange('host', e.target.value)}
-                            disabled={isProcessing}
-                          />
-                        </div>
-                        
-                        <div className="space-y-2">
-                          <Label htmlFor="cpanel-username">Имя пользователя</Label>
-                          <Input
-                            id="cpanel-username"
-                            placeholder="user"
-                            value={hostingCredentials.username}
-                            onChange={(e) => handleHostingCredentialChange('username', e.target.value)}
-                            disabled={isProcessing}
-                          />
-                        </div>
-                        
-                        <div className="space-y-2">
-                          <Label htmlFor="cpanel-password">Пароль</Label>
-                          <Input
-                            id="cpanel-password"
-                            type="password"
-                            placeholder="********"
-                            value={hostingCredentials.password}
-                            onChange={(e) => handleHostingCredentialChange('password', e.target.value)}
-                            disabled={isProcessing}
-                          />
-                        </div>
-                      </div>
-                      
-                      <div className="space-y-2">
-                        <Label htmlFor="cpanel-path">Путь</Label>
-                        <Input
-                          id="cpanel-path"
-                          placeholder="/public_html"
-                          value={hostingCredentials.path}
-                          onChange={(e) => handleHostingCredentialChange('path', e.target.value)}
-                          disabled={isProcessing}
-                        />
-                      </div>
-                    </>
+                  {isValid && url && (
+                    <Button variant="outline" asChild>
+                      <a 
+                        href={url.startsWith('http') ? url : `https://${url}`} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                      >
+                        <ExternalLink className="h-4 w-4" />
+                      </a>
+                    </Button>
                   )}
                 </div>
-              </TabsContent>
-            </Tabs>
-            
-            {/* Progress and Status */}
-            {(isProcessing || isCompleted || error) && (
-              <div className="space-y-4 mt-4">
-                {isProcessing && (
-                  <>
-                    <Progress value={progress} className="h-2" />
-                    <div className="flex items-center text-sm text-muted-foreground">
-                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                      {taskStatus}
-                    </div>
-                  </>
-                )}
-                
-                {isCompleted && !isProcessing && (
-                  <div className="flex items-center text-sm text-green-600">
-                    <CheckCircle className="h-4 w-4 mr-2" />
-                    Оптимизация успешно завершена
-                  </div>
-                )}
-                
-                {error && !isProcessing && (
-                  <div className="flex items-center text-sm text-red-600">
-                    <XCircle className="h-4 w-4 mr-2" />
-                    {error}
-                  </div>
+                {url && !isValid && (
+                  <p className="text-sm text-destructive">Пожалуйста, введите корректный URL</p>
                 )}
               </div>
-            )}
-            
-            {/* Action Buttons */}
-            <div className="flex flex-col sm:flex-row gap-4 pt-4">
-              <Button
-                onClick={handleStartOptimization}
-                disabled={isProcessing || !url || !openaiKey}
-                className="flex-1"
+              
+              <div className="space-y-2">
+                <Label htmlFor="apiKey" className="flex items-center">
+                  <Key className="mr-2 h-4 w-4" />
+                  API ключ OpenAI
+                </Label>
+                <Input 
+                  id="apiKey" 
+                  type="password" 
+                  placeholder="sk-..." 
+                  value={openaiKey} 
+                  onChange={handleApiKeyChange}
+                />
+                {openaiKey && !openaiKey.startsWith("sk-") && (
+                  <p className="text-sm text-destructive">API ключ должен начинаться с "sk-"</p>
+                )}
+              </div>
+              
+              <div className="space-y-4">
+                <h3 className="font-medium">Настройки оптимизации</h3>
+                
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="maxPages" className="flex-1">Максимальное количество страниц</Label>
+                    <Input 
+                      id="maxPages" 
+                      type="number" 
+                      className="w-24" 
+                      value={advancedOptions.maxPages} 
+                      onChange={(e) => setAdvancedOptions(prev => ({ ...prev, maxPages: parseInt(e.target.value) }))}
+                    />
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="flex items-center space-x-2">
+                    <Switch 
+                      id="dynamicRendering" 
+                      checked={advancedOptions.dynamicRendering} 
+                      onCheckedChange={() => toggleOption('dynamicRendering')}
+                    />
+                    <Label htmlFor="dynamicRendering">Обрабатывать JavaScript контент</Label>
+                  </div>
+                  
+                  <div className="flex items-center space-x-2">
+                    <Switch 
+                      id="followExternalLinks" 
+                      checked={advancedOptions.followExternalLinks} 
+                      onCheckedChange={() => toggleOption('followExternalLinks')}
+                    />
+                    <Label htmlFor="followExternalLinks">Следовать по внешним ссылкам</Label>
+                  </div>
+                  
+                  <div className="flex items-center space-x-2">
+                    <Switch 
+                      id="analyzeMobile" 
+                      checked={advancedOptions.analyzeMobile} 
+                      onCheckedChange={() => toggleOption('analyzeMobile')}
+                    />
+                    <Label htmlFor="analyzeMobile">Анализировать мобильную версию</Label>
+                  </div>
+                  
+                  <div className="flex items-center space-x-2">
+                    <Switch 
+                      id="optimizeImages" 
+                      checked={advancedOptions.optimizeImages} 
+                      onCheckedChange={() => toggleOption('optimizeImages')}
+                    />
+                    <Label htmlFor="optimizeImages">Оптимизировать изображения</Label>
+                  </div>
+                  
+                  <div className="flex items-center space-x-2">
+                    <Switch 
+                      id="optimizeHeadings" 
+                      checked={advancedOptions.optimizeHeadings} 
+                      onCheckedChange={() => toggleOption('optimizeHeadings')}
+                    />
+                    <Label htmlFor="optimizeHeadings">Оптимизировать заголовки</Label>
+                  </div>
+                  
+                  <div className="flex items-center space-x-2">
+                    <Switch 
+                      id="optimizeMetaTags" 
+                      checked={advancedOptions.optimizeMetaTags} 
+                      onCheckedChange={() => toggleOption('optimizeMetaTags')}
+                    />
+                    <Label htmlFor="optimizeMetaTags">Оптимизировать мета-теги</Label>
+                  </div>
+                  
+                  <div className="flex items-center space-x-2">
+                    <Switch 
+                      id="optimizeContent" 
+                      checked={advancedOptions.optimizeContent} 
+                      onCheckedChange={() => toggleOption('optimizeContent')}
+                    />
+                    <Label htmlFor="optimizeContent">Оптимизировать контент</Label>
+                  </div>
+                </div>
+              </div>
+              
+              <Button 
+                onClick={handleStartOptimization} 
+                disabled={!isValid || !openaiKey || isLoading}
+                className="w-full"
               >
-                {isProcessing ? (
+                {isLoading ? (
                   <>
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    Оптимизация...
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Запуск...
                   </>
                 ) : (
                   <>
-                    <Wand2 className="h-4 w-4 mr-2" />
+                    <Search className="mr-2 h-4 w-4" />
                     Начать оптимизацию
                   </>
                 )}
               </Button>
-              
-              {isCompleted && (
-                <>
-                  <Button
-                    onClick={handleDownloadSite}
-                    disabled={isProcessing || !isCompleted}
-                    variant="outline"
-                    className="flex-1"
-                  >
-                    <Download className="h-4 w-4 mr-2" />
-                    Скачать оптимизированный сайт
-                  </Button>
-                  
-                  <Button
-                    onClick={handleDeploySite}
-                    disabled={isProcessing || !isCompleted}
-                    variant="outline"
-                    className="flex-1"
-                  >
-                    <Upload className="h-4 w-4 mr-2" />
-                    Опубликовать на хостинге
-                  </Button>
-                </>
-              )}
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+            </CardContent>
+          </Card>
+        </TabsContent>
+        
+        <TabsContent value="progress">
+          {taskId && task && (
+            <OptimizationProgress 
+              task={task} 
+              onComplete={() => setActiveTab("deployment")} 
+            />
+          )}
+        </TabsContent>
+        
+        <TabsContent value="deployment">
+          {taskId && task && task.status === 'completed' && (
+            <DeploymentPanel 
+              taskId={taskId} 
+              domain={getDomain(url)} 
+              isCompleted={task.status === 'completed'} 
+            />
+          )}
+        </TabsContent>
+      </Tabs>
+      
+      {taskId && task && task.status === 'completed' && (
+        <Card className="bg-green-50 dark:bg-green-900/10 border-green-200 dark:border-green-900/50">
+          <CardContent className="pt-6 flex items-center gap-2">
+            <CheckCircle2 className="h-5 w-5 text-green-600 dark:text-green-400" />
+            <p className="font-medium text-green-800 dark:text-green-400">
+              Сайт успешно оптимизирован! Теперь вы можете скачать или опубликовать его.
+            </p>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 };
