@@ -9,7 +9,7 @@ import NavbarDesktopAuth from './NavbarDesktopAuth';
 import NavbarMobileToggle from './NavbarMobileToggle';
 import NavbarMobile from './NavbarMobile';
 import DebugControls from './DebugControls';
-import { NAV_ITEMS } from './navConstants';
+import { NAV_ITEMS, CLIENT_ITEMS, RESOURCE_ITEMS, COMPANY_ITEMS } from './navConstants';
 import { useAuth } from '@/contexts/AuthContext';
 
 const Navbar: React.FC = () => {
@@ -41,6 +41,9 @@ const Navbar: React.FC = () => {
       ? 'backdrop-blur-lg bg-background/90 shadow-md'
       : 'bg-transparent'
   }`;
+  
+  // Логирование для отладки
+  console.log("NAV_ITEMS loaded:", NAV_ITEMS);
 
   return (
     <motion.nav 

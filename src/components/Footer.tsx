@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { RESOURCE_ITEMS, COMPANY_ITEMS } from './navbar/navConstants';
 
 const Footer: React.FC = () => {
   return (
@@ -24,7 +25,7 @@ const Footer: React.FC = () => {
             <ul className="space-y-3">
               <FooterLink to="/features">Возможности</FooterLink>
               <FooterLink to="/pricing">Цены</FooterLink>
-              <FooterLink to="/position-tracker">Анализ позиций</FooterLink>
+              <FooterLink to="/position-tracking">Анализ позиций</FooterLink>
               <FooterLink to="/demo">Демо</FooterLink>
             </ul>
           </div>
@@ -32,19 +33,18 @@ const Footer: React.FC = () => {
           <div>
             <h3 className="font-semibold text-lg mb-4">Ресурсы</h3>
             <ul className="space-y-3">
-              <FooterLink to="/blog">Блог</FooterLink>
-              <FooterLink to="/guides">Руководства</FooterLink>
-              <FooterLink to="/support">Поддержка</FooterLink>
+              {RESOURCE_ITEMS.map((item) => (
+                <FooterLink key={item.href} to={item.href}>{item.label}</FooterLink>
+              ))}
             </ul>
           </div>
           
           <div>
             <h3 className="font-semibold text-lg mb-4">Компания</h3>
             <ul className="space-y-3">
-              <FooterLink to="/about">О нас</FooterLink>
-              <FooterLink to="/contact">Контакты</FooterLink>
-              <FooterLink to="/privacy">Конфиденциальность</FooterLink>
-              <FooterLink to="/terms">Условия</FooterLink>
+              {COMPANY_ITEMS.map((item) => (
+                <FooterLink key={item.href} to={item.href}>{item.label}</FooterLink>
+              ))}
             </ul>
           </div>
         </div>
