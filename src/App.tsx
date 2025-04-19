@@ -33,6 +33,7 @@ const Documentation = lazy(() => import('@/pages/Documentation'));
 const NotFound = lazy(() => import('@/pages/NotFound'));
 const GuidePost = lazy(() => import('@/pages/GuidePost'));
 const IPInfo = lazy(() => import('@/pages/IPInfo'));
+const Partnership = lazy(() => import('@/pages/Partnership'));
 
 // Import the AuthProvider from contexts
 import { AuthProvider } from '@/contexts/AuthContext';
@@ -75,6 +76,7 @@ function App() {
               <Route path="/documentation" element={<Documentation />} />
               <Route path="/documentation/:tab" element={<Documentation />} />
               <Route path="/ip-info" element={<IPInfo />} />
+              <Route path="/partnership" element={<Partnership />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </Suspense>
