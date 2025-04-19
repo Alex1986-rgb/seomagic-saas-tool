@@ -13,10 +13,10 @@ interface NavbarDesktopLinksProps {
 
 const NavbarDesktopLinks: React.FC<NavbarDesktopLinksProps> = ({ navItems }) => {
   return (
-    <NavigationMenu className="hidden md:flex">
-      <NavigationMenuList>
+    <NavigationMenu className="hidden md:flex w-full justify-center">
+      <NavigationMenuList className="flex space-x-4 lg:space-x-6 xl:space-x-8">
         {navItems.map((item) => (
-          <NavigationMenuItem key={item.href}>
+          <NavigationMenuItem key={item.href} className="flex-grow text-center">
             <NavLink
               to={item.href}
               className={({ isActive }) =>
@@ -24,12 +24,13 @@ const NavbarDesktopLinks: React.FC<NavbarDesktopLinksProps> = ({ navItems }) => 
                   isActive 
                     ? 'text-foreground after:absolute after:left-0 after:bottom-0 after:h-0.5 after:w-full after:bg-primary' 
                     : 'text-muted-foreground'
-                } relative px-4 py-2`
+                } relative px-4 py-2 w-full block text-center`
               }
             >
               <motion.div
                 whileHover={{ y: -1 }}
                 whileTap={{ y: 1 }}
+                className="inline-block"
               >
                 {item.label}
               </motion.div>
