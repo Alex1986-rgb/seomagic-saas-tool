@@ -102,11 +102,13 @@ const SeoOptimizationPanel: React.FC = () => {
         formattedUrl,
         {
           maxPages: advancedOptions.maxPages,
+          maxDepth: 5, // Adding missing maxDepth property with a default value of 5
           followExternalLinks: advancedOptions.followExternalLinks,
           userAgent: advancedOptions.analyzeMobile ? 
             'Mozilla/5.0 (iPhone; CPU iPhone OS 13_2_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0.3 Mobile/15E148 Safari/604.1' : 
             'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
           checkImages: advancedOptions.dynamicRendering, // Changed from dynamicRendering to checkImages
+          checkPerformance: true // Adding missing checkPerformance property with default value of true
         },
         {
           optimizeMetaTags: advancedOptions.optimizeMetaTags,
