@@ -2,8 +2,8 @@
 import React, { lazy, Suspense } from 'react';
 import { motion } from 'framer-motion';
 import { Sparkles } from 'lucide-react';
+import VideoPlayer from '../video/VideoPlayer';
 
-const VideoDemo = lazy(() => import('../video'));
 const LoadingFallback = () => (
   <div className="w-full py-16 flex items-center justify-center">
     <div className="spinner-gradient"></div>
@@ -49,8 +49,16 @@ const VideoSection: React.FC = () => {
           viewport={{ once: true }}
         >
           <Suspense fallback={<LoadingFallback />}>
-            <div className="w-full h-[300px] md:h-[450px] bg-secondary/20 flex justify-center items-center text-muted-foreground">
-              <p>Видео демонстрация загружается...</p>
+            <div className="w-full h-[300px] md:h-[450px]">
+              <VideoPlayer 
+                src="/video/seo-demo.mp4"
+                poster="/img/video-poster.jpg"
+                title="SEO Аудит и оптимизация сайта"
+                description="Демонстрация процесса анализа и оптимизации"
+                controls={true}
+                overlay={true}
+                showInfo={true}
+              />
             </div>
           </Suspense>
         </motion.div>
