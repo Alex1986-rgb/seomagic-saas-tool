@@ -24,30 +24,23 @@ const NavbarMobileMenu: React.FC<NavbarMobileMenuProps> = ({
   return (
     <div className="md:hidden border-t py-4">
       <div className="container space-y-4">
-        <nav className="flex flex-col space-y-4">
+        <nav className="flex flex-col space-y-2">
           {NAV_ITEMS.map((item) => (
             <Link 
               key={item.href}
               to={item.href} 
-              className="px-2 py-1 hover:bg-accent rounded-md"
+              className="px-4 py-2 hover:bg-accent rounded-md transition-colors"
             >
               {item.label}
             </Link>
           ))}
         </nav>
         
-        <div className="flex items-center gap-2 pt-2 border-t">
+        <div className="flex items-center gap-2 pt-4 border-t">
           <ThemeSwitcher />
           
           {isLoggedIn ? (
             <div className="flex items-center justify-between w-full">
-              <div className="flex items-center gap-2">
-                <div>
-                  <p className="text-sm font-medium">Пользователь</p>
-                  <p className="text-xs text-muted-foreground">user@example.com</p>
-                </div>
-              </div>
-              
               <Button variant="outline" size="sm" onClick={handleLogout}>
                 Выйти
               </Button>
