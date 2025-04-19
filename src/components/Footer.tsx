@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { RESOURCE_ITEMS, COMPANY_ITEMS } from './navbar/navConstants';
@@ -113,6 +112,8 @@ const Footer: React.FC = () => {
         <Link to="/terms" className="hover:text-foreground">Условия использования</Link>
         <span> · </span>
         <Link to="/privacy" className="hover:text-foreground">Политика конфиденциальности</Link>
+        <span> · </span>
+        <Link to="/ip-info" className="hover:text-foreground">IP-адрес</Link>
       </div>
     </footer>
   );
