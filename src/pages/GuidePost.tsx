@@ -4,6 +4,7 @@ import Layout from '@/components/Layout';
 import { useParams, Link } from 'react-router-dom';
 import { LazyImage } from '@/components/LazyImage';
 import { Button } from "@/components/ui/button";
+import { VideoPlayer } from '@/components/video';
 import { 
   Carousel,
   CarouselContent,
@@ -11,7 +12,7 @@ import {
   CarouselPrevious,
   CarouselNext
 } from "@/components/ui/carousel";
-import { ChevronLeft, BookOpen, Clock } from 'lucide-react';
+import { ChevronLeft, BookOpen, Clock, FileText } from 'lucide-react';
 
 // Import the guides data from the Guides page
 import { guides } from '@/pages/Guides';
@@ -62,6 +63,24 @@ const GuidePost: React.FC = () => {
             
             <h1 className="text-3xl md:text-4xl font-bold mb-6">{guide.title}</h1>
             <p className="text-lg text-muted-foreground mb-8">{guide.description}</p>
+          </div>
+          
+          {/* Video player for guide content */}
+          <div className="mb-10">
+            <div className="bg-card/30 rounded-lg overflow-hidden border border-primary/10">
+              <VideoPlayer 
+                src="/video/seo-demo.mp4"
+                poster={guide.image}
+                title={`Видеоруководство: ${guide.title}`}
+                description="Посмотрите пошаговое объяснение процесса"
+                showInfo={true}
+                className="w-full aspect-video"
+              />
+            </div>
+            <div className="mt-4 flex items-center text-sm text-muted-foreground">
+              <FileText className="h-4 w-4 mr-1" />
+              <span>Рекомендуем просмотреть видео полностью для лучшего понимания</span>
+            </div>
           </div>
 
           {guide.content && guide.content.length > 0 ? (
@@ -125,6 +144,20 @@ const GuidePost: React.FC = () => {
                           src={section.image}
                           alt={section.title}
                           className="w-full"
+                        />
+                      </div>
+                    </div>
+                    
+                    {/* Video for each content section */}
+                    <div className="mt-6 bg-black/5 p-4 rounded-lg">
+                      <h4 className="text-sm uppercase font-medium text-muted-foreground mb-2">Видеоинструкция по разделу</h4>
+                      <div className="rounded-lg overflow-hidden border border-primary/10">
+                        <VideoPlayer
+                          src="/video/seo-demo.mp4" 
+                          poster={section.image}
+                          title={section.title}
+                          showInfo={false}
+                          className="w-full aspect-video"
                         />
                       </div>
                     </div>
