@@ -169,8 +169,9 @@ class SiteGeneratorService {
     
     for (const [url, pageData] of pages.entries()) {
       // Skip non-HTML pages and pages that shouldn't be indexed
-      if (pageData.contentType && !pageData.contentType.includes('html')) continue;
-      if (pageData.noIndex) continue;
+      // Instead of checking contentType and noIndex which don't exist,
+      // use other methods to determine if the page should be in the sitemap
+      if (!pageData.html) continue; // Skip pages without HTML
       
       const lastmod = new Date().toISOString();
       const optimized = optimizedPages.get(url);

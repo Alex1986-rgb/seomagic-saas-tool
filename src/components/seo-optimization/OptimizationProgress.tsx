@@ -1,4 +1,3 @@
-
 import React, { useEffect } from 'react';
 import { Progress } from "@/components/ui/progress";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -153,7 +152,7 @@ const OptimizationProgress: React.FC<OptimizationProgressProps> = ({ task, onCom
       case 'completed':
         return (
           <div className="mt-4">
-            <Alert variant="success" className="bg-green-50 dark:bg-green-900/10 border-green-200 dark:border-green-900/50">
+            <Alert variant="default" className="bg-green-50 dark:bg-green-900/10 border-green-200 dark:border-green-900/50">
               <CheckCircle2 className="h-4 w-4 text-green-600 dark:text-green-400" />
               <AlertTitle>Оптимизация завершена!</AlertTitle>
               <AlertDescription>

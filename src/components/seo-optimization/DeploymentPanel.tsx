@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -160,7 +159,7 @@ const DeploymentPanel: React.FC<DeploymentPanelProps> = ({ taskId, domain, isCom
       
       <CardContent className="space-y-4">
         {!isCompleted ? (
-          <Alert variant="warning">
+          <Alert variant="destructive">
             <AlertCircle className="h-4 w-4" />
             <AlertDescription>
               Дождитесь завершения оптимизации, чтобы опубликовать или скачать сайт.
@@ -256,7 +255,7 @@ const DeploymentPanel: React.FC<DeploymentPanelProps> = ({ taskId, domain, isCom
             )}
             
             {deploymentResult && (
-              <Alert variant={deploymentResult.success ? "success" : "destructive"}>
+              <Alert variant={deploymentResult.success ? "default" : "destructive"}>
                 {deploymentResult.success ? (
                   <CheckCircle2 className="h-4 w-4" />
                 ) : (
