@@ -21,27 +21,23 @@ const Layout: React.FC<LayoutProps> = ({
 }) => {
   const location = useLocation();
   
-  // Только страницы /admin будут иметь встроенную навигацию и подвал
-  const pagesWithBuiltInNavbar = ['/admin'];
-  const pagesWithBuiltInFooter = ['/admin'];
+  // Проверяем, начинается ли текущий путь с /admin
+  const isAdminRoute = location.pathname.startsWith('/admin');
   
-  // Check if current path starts with any of the paths in the arrays
-  const isPathIncluded = (path: string, pathArray: string[]) => {
-    return pathArray.some(item => 
-      path === item || path.startsWith(`${item}/`)
-    );
-  };
-  
-  const shouldHideNavbar = hideNavbar || isPathIncluded(location.pathname, pagesWithBuiltInNavbar);
-  const shouldHideFooter = hideFooter || isPathIncluded(location.pathname, pagesWithBuiltInFooter);
+  // На административных страницах мы скрываем стандартную навигацию и подвал,
+  // так как у них есть своя встроенная навигация
+  const shouldHideNavbar = hideNavbar || isAdminRoute;
+  const shouldHideFooter = hideFooter || isAdminRoute;
 
   // Debug log to track component mounting
   useEffect(() => {
     console.log('Layout mounted, path:', location.pathname);
+    console.log('Navbar visible:', !shouldHideNavbar);
+    console.log('Footer visible:', !shouldHideFooter);
     return () => {
       console.log('Layout unmounted');
     };
-  }, [location.pathname]);
+  }, [location.pathname, shouldHideNavbar, shouldHideFooter]);
 
   return (
     <div className={cn("flex flex-col min-h-screen relative", className)}>

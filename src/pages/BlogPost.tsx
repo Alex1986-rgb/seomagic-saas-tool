@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState, useMemo } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -9,7 +8,6 @@ import { LazyImage } from '@/components/LazyImage';
 import { mockBlogPosts } from '@/data/mockData';
 import Layout from '@/components/Layout';
 
-// Data type for our blog posts
 interface BlogPost {
   id: number;
   title: string;
@@ -28,16 +26,13 @@ const BlogPost: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [relatedPosts, setRelatedPosts] = useState<BlogPost[]>([]);
 
-  // Используем useMemo для кэширования фильтрации постов
   const postData = useMemo(() => {
     if (!id) return { post: null, related: [] };
 
-    // Находим текущий пост
     const foundPost = mockBlogPosts.find(p => p.id.toString() === id) as any;
     
     if (!foundPost) return { post: null, related: [] };
 
-    // Проверяем, что у поста есть все необходимые поля
     if (!('date' in foundPost && 
         'author' in foundPost && 
         'category' in foundPost && 
@@ -48,7 +43,6 @@ const BlogPost: React.FC = () => {
 
     const validPost = foundPost as BlogPost;
     
-    // Находим похожие посты (с общими тегами)
     const related = mockBlogPosts
       .filter(p => 
         p.id.toString() !== id && 
@@ -76,7 +70,6 @@ const BlogPost: React.FC = () => {
     setLoading(false);
   }, [postData]);
 
-  // Ускоряем загрузку, добавляя transition состояние
   if (loading) {
     return (
       <Layout>
@@ -101,7 +94,7 @@ const BlogPost: React.FC = () => {
         <div className="container mx-auto px-4 py-32">
           <div className="max-w-3xl mx-auto text-center">
             <h1 className="text-3xl font-bold mb-6">Статья не найдена</h1>
-            <p className="mb-8">Запрашиваемая статья не существует или была удалена.</p>
+            <p className="mb-8">Запр��шиваемая статья не существует или была удалена.</p>
             <Button asChild>
               <Link to="/blog">Вернуться к блогу</Link>
             </Button>
