@@ -21,9 +21,9 @@ const Layout: React.FC<LayoutProps> = ({
 }) => {
   const location = useLocation();
   
-  // Pages with built-in navigation and footer
-  const pagesWithBuiltInNavbar = ['/audit', '/admin'];
-  const pagesWithBuiltInFooter = ['/audit', '/admin'];
+  // Только страницы /admin будут иметь встроенную навигацию и подвал
+  const pagesWithBuiltInNavbar = ['/admin'];
+  const pagesWithBuiltInFooter = ['/admin'];
   
   // Check if current path starts with any of the paths in the arrays
   const isPathIncluded = (path: string, pathArray: string[]) => {
