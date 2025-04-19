@@ -28,6 +28,8 @@ const Guides = lazy(() => import('@/pages/Guides'));
 const Demo = lazy(() => import('@/pages/Demo'));
 const Privacy = lazy(() => import('@/pages/Privacy'));
 const Terms = lazy(() => import('@/pages/Terms'));
+const Features = lazy(() => import('@/pages/Features'));
+const NotFound = lazy(() => import('@/pages/NotFound'));
 
 function App() {
   return (
@@ -57,6 +59,8 @@ function App() {
             <Route path="/demo" element={<Demo />} />
             <Route path="/privacy" element={<Privacy />} />
             <Route path="/terms" element={<Terms />} />
+            <Route path="/features" element={<Features />} />
+            <Route path="*" element={<NotFound />} />
           </Routes>
         </Suspense>
         <Toaster />

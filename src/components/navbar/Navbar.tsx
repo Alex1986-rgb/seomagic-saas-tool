@@ -41,9 +41,6 @@ const Navbar: React.FC = () => {
       ? 'backdrop-blur-lg bg-background/90 shadow-md'
       : 'bg-transparent'
   }`;
-  
-  // Логирование для отладки
-  console.log("NAV_ITEMS loaded:", NAV_ITEMS);
 
   return (
     <motion.nav 
