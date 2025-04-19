@@ -6,10 +6,10 @@ import { HelmetProvider } from 'react-helmet-async';
 import LoadingSpinner from '@/components/LoadingSpinner';
 
 // Lazy load pages for better performance
-const HomePage = lazy(() => import('@/pages/Home'));
+const HomePage = lazy(() => import('@/pages/Index'));
 const AuditPage = lazy(() => import('@/pages/Audit'));
 const SiteAudit = lazy(() => import('@/pages/SiteAudit'));
-const AdminPage = lazy(() => import('@/pages/Admin'));
+const AdminPage = lazy(() => import('@/pages/AdminPanel'));
 const SeoOptimizationPage = lazy(() => import('@/pages/SeoOptimizationPage'));
 
 function App() {
