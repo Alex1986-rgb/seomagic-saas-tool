@@ -82,7 +82,7 @@ const AuditCategorySection: React.FC<AuditCategorySectionProps> = ({
           >
             {items.map((item) => {
               // Convert 'same' to 'neutral' for trend value if needed
-              const normalizedTrend = item.trend === 'same' ? 'neutral' : item.trend;
+              const normalizedTrend = item.trend === 'same' || item.trend === 'neutral' ? 'neutral' : item.trend;
               
               return (
                 <AuditCategoryItem 

@@ -144,7 +144,7 @@ const generateIssues = (type: string, count: number): string[] => {
 /**
  * Generate category data for audit details
  */
-const generateCategoryData = (category: string, score: number): AuditCategoryData => {
+const generateCategoryData = (category: string, score: number): CategoryData => {
   const previousScore = faker.number.int({ min: Math.max(0, score - 20), max: Math.min(100, score + 20) });
   const itemsCount = faker.number.int({ min: 5, max: 10 });
   
