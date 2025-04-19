@@ -3,7 +3,6 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
 import './index.css';
-import { AppErrorBoundary } from './components/ErrorBoundary';
 
 // Add preconnect links for external resources
 const preconnectLinks = [
@@ -13,7 +12,7 @@ const preconnectLinks = [
   { rel: 'dns-prefetch', href: 'https://fonts.gstatic.com' }
 ];
 
-// Add DNS prefetch and preconnect to speed up loading
+// Добавляем DNS prefetch и preconnect для ускорения загрузки
 preconnectLinks.forEach(link => {
   const linkEl = document.createElement('link');
   linkEl.rel = link.rel;
@@ -28,13 +27,11 @@ preconnectLinks.forEach(link => {
 const root = ReactDOM.createRoot(document.getElementById('root')!);
 root.render(
   <React.StrictMode>
-    <AppErrorBoundary>
-      <App />
-    </AppErrorBoundary>
+    <App />
   </React.StrictMode>
 );
 
-// Register service worker after loading the entire application for faster startup
+// Регистрируем service worker после загрузки всего приложения для более быстрого старта
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('/service-worker.js')
