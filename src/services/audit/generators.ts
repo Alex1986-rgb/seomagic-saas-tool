@@ -1,6 +1,6 @@
 
 import { faker } from '@faker-js/faker';
-import { AuditData, AuditItemData, CategoryData } from '@/types/audit';
+import { AuditData, AuditItemData, CategoryData, AuditCategoryData } from '@/types/audit';
 
 /**
  * Generate random audit data for a URL
@@ -87,11 +87,11 @@ export const generateAuditData = (url: string): AuditData => {
       tablet: faker.number.int({ min: 5, max: 20 })
     },
     details: {
-      seo: generateCategoryData('SEO', seoScore),
-      performance: generateCategoryData('Performance', performanceScore),
-      content: generateCategoryData('Content', contentScore),
-      technical: generateCategoryData('Technical', technicalScore),
-      mobile: generateCategoryData('Mobile', mobileScore)
+      seo: generateAuditCategoryData('SEO', seoScore),
+      performance: generateAuditCategoryData('Performance', performanceScore),
+      content: generateAuditCategoryData('Content', contentScore),
+      technical: generateAuditCategoryData('Technical', technicalScore),
+      mobile: generateAuditCategoryData('Mobile', mobileScore)
     },
     status: 'completed'
   };
@@ -144,7 +144,7 @@ const generateIssues = (type: string, count: number): string[] => {
 /**
  * Generate category data for audit details
  */
-const generateCategoryData = (category: string, score: number): CategoryData => {
+const generateAuditCategoryData = (category: string, score: number): AuditCategoryData => {
   const previousScore = faker.number.int({ min: Math.max(0, score - 20), max: Math.min(100, score + 20) });
   const itemsCount = faker.number.int({ min: 5, max: 10 });
   
