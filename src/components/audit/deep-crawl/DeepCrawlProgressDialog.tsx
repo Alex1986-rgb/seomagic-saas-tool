@@ -106,7 +106,7 @@ export const DeepCrawlProgressDialog: React.FC<DeepCrawlProgressDialogProps> = (
 
   return (
     <Dialog open={open} onOpenChange={() => handleClose()}>
-      <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto fixed top-[10vh] left-1/2 transform -translate-x-1/2 w-[95vw]">
+      <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[95vw] md:w-[80vw] lg:w-[70vw]">
         <DialogHeader title={title} />
         
         <Tabs value={activeTab} onValueChange={setActiveTab} className="mt-2">
