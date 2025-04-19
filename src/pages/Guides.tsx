@@ -1,70 +1,95 @@
-
 import React from 'react';
 import { motion } from 'framer-motion';
+import { Link } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { BookOpen, ChevronRight, Clock, Filter, FileText, Search } from 'lucide-react';
+import { LazyImage } from '@/components/LazyImage';
+
+const guides = [
+  {
+    id: 1,
+    title: 'Полное руководство по аудиту сайта',
+    description: 'Узнайте как проводить полный технический аудит вашего сайта от начала до конца.',
+    category: 'SEO аудит',
+    level: 'Начинающий',
+    duration: '30 минут',
+    image: '/images/placeholder.jpg',
+    content: [
+      {
+        title: 'Подготовка к аудиту',
+        content: 'Перед началом аудита необходимо собрать все необходимые данные о сайте...',
+        image: '/images/placeholder.jpg'
+      },
+      {
+        title: 'Технический анализ',
+        content: 'Проверка robots.txt, XML sitemap, и структуры URL...',
+        image: '/images/placeholder.jpg'
+      }
+    ]
+  },
+  {
+    id: 2,
+    title: 'Как отслеживать позиции сайта в поисковых системах',
+    description: 'Пошаговое руководство по настройке и использованию инструментов для мониторинга позиций.',
+    category: 'Позиции сайта',
+    level: 'Средний',
+    duration: '45 минут',
+    image: '/images/placeholder.jpg',
+    content: [
+      {
+        title: 'Выбор инструментов',
+        content: 'Обзор популярных инструментов для отслеживания позиций...',
+        image: '/images/placeholder.jpg'
+      },
+      {
+        title: 'Настройка отслеживания',
+        content: 'Пошаговая инструкция по настройке отслеживания ключевых слов...',
+        image: '/images/placeholder.jpg'
+      }
+    ]
+  },
+  {
+    id: 3,
+    title: 'Оптимизация мета-тегов для улучшения CTR',
+    description: 'Как создать привлекательные и эффективные title и description для ваших страниц.',
+    category: 'Оптимизация',
+    level: 'Начинающий',
+    duration: '20 минут',
+    image: '/images/placeholder.jpg'
+  },
+  {
+    id: 4,
+    title: 'Углубленный анализ конкурентов',
+    description: 'Методики и инструменты для анализа стратегий ваших конкурентов в поисковой выдаче.',
+    category: 'Конкуренты',
+    level: 'Продвинутый',
+    duration: '60 минут',
+    image: '/images/placeholder.jpg'
+  },
+  {
+    id: 5,
+    title: 'Работа с отчетами и экспорт данных',
+    description: 'Как интерпретировать и эффективно использовать отчеты по SEO аудиту и позициям.',
+    category: 'Отчеты',
+    level: 'Средний',
+    duration: '35 минут',
+    image: '/images/placeholder.jpg'
+  },
+  {
+    id: 6,
+    title: 'Настройка персонализированных уведомлений',
+    description: 'Получайте важные уведомления о изменениях позиций и проблемах на сайте.',
+    category: 'Уведомления',
+    level: 'Начинающий',
+    duration: '15 минут',
+    image: '/images/placeholder.jpg'
+  }
+];
 
 const Guides: React.FC = () => {
-  const guides = [
-    {
-      id: 1,
-      title: 'Полное руководство по аудиту сайта',
-      description: 'Узнайте как проводить полный технический аудит вашего сайта от начала до конца.',
-      category: 'SEO аудит',
-      level: 'Начинающий',
-      duration: '30 минут',
-      image: '/images/placeholder.jpg'
-    },
-    {
-      id: 2,
-      title: 'Как отслеживать позиции сайта в поисковых системах',
-      description: 'Пошаговое руководство по настройке и использованию инструментов для мониторинга позиций.',
-      category: 'Позиции сайта',
-      level: 'Средний',
-      duration: '45 минут',
-      image: '/images/placeholder.jpg'
-    },
-    {
-      id: 3,
-      title: 'Оптимизация мета-тегов для улучшения CTR',
-      description: 'Как создать привлекательные и эффективные title и description для ваших страниц.',
-      category: 'Оптимизация',
-      level: 'Начинающий',
-      duration: '20 минут',
-      image: '/images/placeholder.jpg'
-    },
-    {
-      id: 4,
-      title: 'Углубленный анализ конкурентов',
-      description: 'Методики и инструменты для анализа стратегий ваших конкурентов в поисковой выдаче.',
-      category: 'Конкуренты',
-      level: 'Продвинутый',
-      duration: '60 минут',
-      image: '/images/placeholder.jpg'
-    },
-    {
-      id: 5,
-      title: 'Работа с отчетами и экспорт данных',
-      description: 'Как интерпретировать и эффективно использовать отчеты по SEO аудиту и позициям.',
-      category: 'Отчеты',
-      level: 'Средний',
-      duration: '35 минут',
-      image: '/images/placeholder.jpg'
-    },
-    {
-      id: 6,
-      title: 'Настройка персонализированных уведомлений',
-      description: 'Получайте важные уведомления о изменениях позиций и проблемах на сайте.',
-      category: 'Уведомления',
-      level: 'Начинающий',
-      duration: '15 минут',
-      image: '/images/placeholder.jpg'
-    }
-  ];
-  
   return (
     <div className="container mx-auto px-4 py-32">
       <div className="max-w-6xl mx-auto">
@@ -113,11 +138,11 @@ const Guides: React.FC = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: index * 0.1 }}
             >
-              <Card className="h-full flex flex-col neo-card">
-                <div className="relative h-40 overflow-hidden rounded-t-lg">
-                  <img 
+              <Card className="h-full flex flex-col">
+                <div className="relative h-48 overflow-hidden rounded-t-lg">
+                  <LazyImage 
                     src={guide.image} 
-                    alt={guide.title} 
+                    alt={guide.title}
                     className="w-full h-full object-cover"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-4">
@@ -142,11 +167,11 @@ const Guides: React.FC = () => {
                 
                 <CardFooter className="pt-0">
                   <Button variant="ghost" size="sm" className="w-full justify-start" asChild>
-                    <a href={`/guides/${guide.id}`} className="flex items-center">
+                    <Link to={`/guides/${guide.id}`} className="flex items-center">
                       <FileText className="mr-2 h-4 w-4 text-primary" />
                       <span>Читать руководство</span>
                       <ChevronRight className="ml-auto h-4 w-4" />
-                    </a>
+                    </Link>
                   </Button>
                 </CardFooter>
               </Card>

@@ -1,4 +1,3 @@
-
 import React, { Suspense, lazy } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from "@/components/ui/toaster";
@@ -32,6 +31,7 @@ const Terms = lazy(() => import('@/pages/Terms'));
 const Features = lazy(() => import('@/pages/Features'));
 const Documentation = lazy(() => import('@/pages/Documentation'));
 const NotFound = lazy(() => import('@/pages/NotFound'));
+const GuidePost = lazy(() => import('@/pages/GuidePost'));
 
 // Import the AuthProvider from contexts
 import { AuthProvider } from '@/contexts/AuthContext';
@@ -66,6 +66,7 @@ function App() {
               <Route path="/support" element={<Support />} />
               <Route path="/contact" element={<Contact />} />
               <Route path="/guides" element={<Guides />} />
+              <Route path="/guides/:id" element={<GuidePost />} />
               <Route path="/demo" element={<Demo />} />
               <Route path="/privacy" element={<Privacy />} />
               <Route path="/terms" element={<Terms />} />
