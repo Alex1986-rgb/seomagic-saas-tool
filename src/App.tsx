@@ -12,6 +12,7 @@ const SiteAudit = lazy(() => import('@/pages/SiteAudit'));
 const AdminPage = lazy(() => import('@/pages/AdminPanel'));
 const SeoOptimizationPage = lazy(() => import('@/pages/SeoOptimizationPage'));
 const BlogPage = lazy(() => import('@/pages/Blog'));
+const BlogPostPage = lazy(() => import('@/pages/BlogPost'));
 const ClientProfile = lazy(() => import('@/pages/ClientProfile'));
 const PositionTracking = lazy(() => import('@/pages/PositionTracking'));
 const Reports = lazy(() => import('@/pages/Reports'));
@@ -51,6 +52,7 @@ function App() {
               <Route path="/admin/*" element={<AdminPage />} />
               <Route path="/seo-optimization" element={<SeoOptimizationPage />} />
               <Route path="/blog" element={<BlogPage />} />
+              <Route path="/blog/:id" element={<BlogPostPage />} />
               <Route path="/profile" element={<ClientProfile />} />
               <Route path="/position-tracking" element={<PositionTracking />} />
               <Route path="/reports" element={<Reports />} />
