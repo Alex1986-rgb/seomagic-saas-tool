@@ -1,8 +1,8 @@
-
-import React, { lazy, Suspense } from 'react';
+import React, { useState, Suspense } from 'react';
 import { motion } from 'framer-motion';
 import { Sparkles } from 'lucide-react';
 import VideoPlayer from '../video/VideoPlayer';
+import AnimatedVideoPlaceholder from '../video/placeholders';
 
 const LoadingFallback = () => (
   <div className="w-full py-16 flex items-center justify-center">
@@ -11,6 +11,8 @@ const LoadingFallback = () => (
 );
 
 const VideoSection: React.FC = () => {
+  const [isPlaying, setIsPlaying] = useState(false);
+
   return (
     <section className="py-20 bg-gradient-to-b from-background to-muted/20">
       <div className="container mx-auto px-4 md:px-6">
@@ -49,16 +51,8 @@ const VideoSection: React.FC = () => {
           viewport={{ once: true }}
         >
           <Suspense fallback={<LoadingFallback />}>
-            <div className="w-full h-[300px] md:h-[450px]">
-              <VideoPlayer 
-                src="/video/seo-demo.mp4"
-                poster="/img/video-poster.jpg"
-                title="SEO Аудит и оптимизация сайта"
-                description="Демонстрация процесса анализа и оптимизации"
-                controls={true}
-                overlay={true}
-                showInfo={true}
-              />
+            <div className="w-full aspect-video">
+              <AnimatedVideoPlaceholder isPlaying={isPlaying} />
             </div>
           </Suspense>
         </motion.div>
