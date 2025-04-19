@@ -34,6 +34,8 @@ const Documentation = lazy(() => import('@/pages/Documentation'));
 const NotFound = lazy(() => import('@/pages/NotFound'));
 
 function App() {
+  console.log("App component rendering");
+  
   return (
     <AuthProvider>
       <HelmetProvider>

@@ -34,6 +34,8 @@ const Index: React.FC = () => {
     }
   };
 
+  console.log("Index component rendering");
+
   return (
     <Layout>
       <div className="flex flex-col min-h-[calc(100vh-4rem)]">
