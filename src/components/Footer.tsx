@@ -27,6 +27,7 @@ const Footer: React.FC = () => {
               <FooterLink to="/pricing">Цены</FooterLink>
               <FooterLink to="/position-tracking">Анализ позиций</FooterLink>
               <FooterLink to="/demo">Демо</FooterLink>
+              <FooterLink to="/documentation">Документация</FooterLink>
             </ul>
           </div>
           
@@ -108,7 +109,10 @@ const Footer: React.FC = () => {
         </div>
       </div>
       <div className="bg-background/80 text-center py-2 text-xs text-muted-foreground">
-        Разработчик и веб-дизайнер: Kyrlan Alexandr
+        <span>© {new Date().getFullYear()} SeoMarket. MIT License. </span>
+        <Link to="/terms" className="hover:text-foreground">Условия использования</Link>
+        <span> · </span>
+        <Link to="/privacy" className="hover:text-foreground">Политика конфиденциальности</Link>
       </div>
     </footer>
   );

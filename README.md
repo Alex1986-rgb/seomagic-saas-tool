@@ -1,69 +1,131 @@
-# Welcome to your Lovable project
+
+# SeoMarket - SEO Analysis and Optimization Platform
+
+[![GitHub license](https://img.shields.io/github/license/KyrlanAlanAlexandre/seomarket)](https://github.com/KyrlanAlanAlexandre/seomarket/blob/main/LICENSE)
+[![React](https://img.shields.io/badge/React-v18.3-blue)](https://reactjs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-v5.0-blue)](https://www.typescriptlang.org/)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind-v3.3-blue)](https://tailwindcss.com/)
 
 ## Project info
 
-**URL**: https://lovable.dev/projects/2cab172f-2334-401f-b1a1-db122c2ae2fc
+**URL**: https://seomarket.ru
 
-## How can I edit this code?
+## About the Project
 
-There are several ways of editing your application.
+SeoMarket is a comprehensive platform for professional SEO audit and optimization. The platform provides a range of tools for website analysis, position tracking, and automatic optimization to improve search engine rankings.
 
-**Use Lovable**
+### Key Features
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/2cab172f-2334-401f-b1a1-db122c2ae2fc) and start prompting.
+- 🔍 Complete SEO Audit
+- 🚀 AI-powered optimization
+- 📊 Position tracking
+- 📝 Content analysis
+- 🔗 Link analysis
+- 📱 Mobile optimization
+- 📈 Performance monitoring
 
-Changes made via Lovable will be committed automatically to this repo.
+## Getting Started
 
-**Use your preferred IDE**
+### Prerequisites
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+- Node.js (v16 or higher)
+- npm or yarn
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+### Installation
 
-Follow these steps:
+```bash
+# Clone the repository
+git clone https://github.com/KyrlanAlanAlexandre/seomarket.git
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+# Navigate to the project directory
+cd seomarket
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+# Install dependencies
+npm install
 
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
+# Start the development server
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+## Project Structure
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+```
+src/
+├── components/        # React components
+│   ├── audit/         # SEO audit components
+│   ├── ui/            # UI components
+│   ├── navbar/        # Navigation components
+│   └── ...
+├── pages/             # Application pages
+├── hooks/             # Custom React hooks
+├── contexts/          # React contexts
+├── services/          # API services and business logic
+├── utils/             # Utility functions
+├── types/             # TypeScript types and interfaces
+└── styles/            # CSS styles
+```
 
-**Use GitHub Codespaces**
+## Technologies Used
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+- **Frontend**:
+  - React
+  - TypeScript
+  - Tailwind CSS
+  - Shadcn UI
+  - Framer Motion
+  - Recharts
 
-## What technologies are used for this project?
+- **State Management**:
+  - React Query
+  - React Context API
 
-This project is built with .
+- **Authentication**:
+  - JWT
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+## Contributing
 
-## How can I deploy this project?
+We welcome contributions to SeoMarket! Please read our [Contributing Guidelines](CONTRIBUTING.md) before submitting a pull request.
 
-Simply open [Lovable](https://lovable.dev/projects/2cab172f-2334-401f-b1a1-db122c2ae2fc) and click on Share -> Publish.
+### Development Workflow
 
-## I want to use a custom domain - is that possible?
+1. Fork the repository
+2. Create a feature branch: `git checkout -b feature/my-feature`
+3. Commit your changes: `git commit -m 'Add some feature'`
+4. Push to the branch: `git push origin feature/my-feature`
+5. Submit a pull request
 
-We don't support custom domains (yet). If you want to deploy your project under your own domain then we recommend using Netlify. Visit our docs for more details: [Custom domains](https://docs.lovable.dev/tips-tricks/custom-domain/)
+## Documentation
+
+For detailed documentation, visit:
+
+- [User Guide](https://seomarket.ru/documentation/user-guide)
+- [Developer Guide](https://seomarket.ru/documentation/developer-guide)
+- [API Documentation](https://seomarket.ru/documentation/api)
+
+## Security
+
+Security is a priority for us. If you discover a security vulnerability, please follow our [Security Policy](SECURITY.md) for responsible disclosure.
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## Contact
+
+- Website: [seomarket.ru](https://seomarket.ru)
+- Email: [info@seomarket.ru](mailto:info@seomarket.ru)
+- Twitter: [@seomarket](https://twitter.com/seomarket)
+
+## Acknowledgements
+
+- [React](https://reactjs.org/)
+- [Tailwind CSS](https://tailwindcss.com/)
+- [Shadcn UI](https://ui.shadcn.com/)
+- [Vite](https://vitejs.dev/)
+- [Recharts](https://recharts.org/)
+- [Framer Motion](https://www.framer.com/motion/)
+- All our open-source contributors
+
+---
+
+Developed and designed by Kyrlan Alexandr

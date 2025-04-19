@@ -1,33 +1,34 @@
 
-const NAV_ITEMS = [
-  { label: 'Главная', href: '/' },
-  { label: 'SEO Аудит', href: '/audit' },
-  { label: 'Блог', href: '/blog' },
-  { label: 'О нас', href: '/about' },
-  { label: 'Тарифы', href: '/pricing' },
-  { label: 'Демо', href: '/demo' },
+// Navigation items for the navbar
+export const NAV_ITEMS = [
+  { label: "Аудит", href: "/audit" },
+  { label: "Позиции", href: "/position-tracking" },
+  { label: "Цены", href: "/pricing" },
+  { label: "Возможности", href: "/features" },
 ];
 
-const CLIENT_ITEMS = [
-  { label: 'Профиль', href: '/profile' },
-  { label: 'Отчеты', href: '/reports' },
-  { label: 'История аудитов', href: '/audit-history' },
-  { label: 'Позиции', href: '/position-tracking' },
-  { label: 'Настройки', href: '/settings' },
-  { label: 'Панель', href: '/dashboard' },
+// Resources dropdown items
+export const RESOURCE_ITEMS = [
+  { label: "Блог", href: "/blog" },
+  { label: "Руководства", href: "/guides" },
+  { label: "Документация", href: "/documentation" },
+  { label: "Демо", href: "/demo" },
 ];
 
-const RESOURCE_ITEMS = [
-  { label: 'Блог', href: '/blog' },
-  { label: 'Руководства', href: '/guides' },
-  { label: 'Поддержка', href: '/support' },
+// Company dropdown items
+export const COMPANY_ITEMS = [
+  { label: "О нас", href: "/about" },
+  { label: "Контакты", href: "/contact" },
+  { label: "Поддержка", href: "/support" },
+  { label: "Условия использования", href: "/terms" },
+  { label: "Политика конфиденциальности", href: "/privacy" },
 ];
 
-const COMPANY_ITEMS = [
-  { label: 'О нас', href: '/about' },
-  { label: 'Контакты', href: '/contact' },
-  { label: 'Конфиденциальность', href: '/privacy' },
-  { label: 'Условия', href: '/terms' },
+// Client area items (for logged in users)
+export const CLIENT_ITEMS = [
+  { label: "Панель управления", href: "/dashboard" },
+  { label: "Мои аудиты", href: "/audit-history" },
+  { label: "Отчеты", href: "/reports" },
+  { label: "Настройки", href: "/settings" },
+  { label: "Администратор", href: "/admin", admin: true },
 ];
-
-export { NAV_ITEMS, CLIENT_ITEMS, RESOURCE_ITEMS, COMPANY_ITEMS };

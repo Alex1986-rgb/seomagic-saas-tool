@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import Navbar from './navbar';
 import Footer from './Footer';
 import StarryBackground from './backgrounds/StarryBackground';
@@ -34,6 +34,14 @@ const Layout: React.FC<LayoutProps> = ({
   
   const shouldHideNavbar = hideNavbar || isPathIncluded(location.pathname, pagesWithBuiltInNavbar);
   const shouldHideFooter = hideFooter || isPathIncluded(location.pathname, pagesWithBuiltInFooter);
+
+  // Debug log to track component mounting
+  useEffect(() => {
+    console.log('Layout mounted, path:', location.pathname);
+    return () => {
+      console.log('Layout unmounted');
+    };
+  }, [location.pathname]);
 
   return (
     <div className={cn("flex flex-col min-h-screen relative", className)}>
