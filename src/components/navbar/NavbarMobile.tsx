@@ -93,7 +93,6 @@ const NavbarMobile: React.FC<NavbarMobileProps> = ({
               <AccordionItem value="resources" className="border-none">
                 <AccordionTrigger className="py-2 text-base font-medium hover:text-primary/80 transition-colors">
                   Ресурсы
-                  <ChevronDown className="h-4 w-4 ml-1" />
                 </AccordionTrigger>
                 <AccordionContent>
                   <div className="pl-4 flex flex-col space-y-2">
@@ -117,7 +116,6 @@ const NavbarMobile: React.FC<NavbarMobileProps> = ({
               <AccordionItem value="company" className="border-none">
                 <AccordionTrigger className="py-2 text-base font-medium hover:text-primary/80 transition-colors">
                   Компания
-                  <ChevronDown className="h-4 w-4 ml-1" />
                 </AccordionTrigger>
                 <AccordionContent>
                   <div className="pl-4 flex flex-col space-y-2">
@@ -165,21 +163,23 @@ const NavbarMobile: React.FC<NavbarMobileProps> = ({
                 </>
               ) : (
                 <>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="w-full justify-start hover:bg-primary/10 transition-colors"
-                    onClick={() => window.location.href = '/auth'}
-                  >
-                    Войти
-                  </Button>
-                  <Button
-                    size="sm"
-                    className="w-full justify-start"
-                    onClick={() => window.location.href = '/auth?tab=register'}
-                  >
-                    Регистрация
-                  </Button>
+                  <Link to="/auth">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="w-full justify-start hover:bg-primary/10 transition-colors"
+                    >
+                      Войти
+                    </Button>
+                  </Link>
+                  <Link to="/auth?tab=register">
+                    <Button
+                      size="sm"
+                      className="w-full justify-start"
+                    >
+                      Регистрация
+                    </Button>
+                  </Link>
                 </>
               )}
             </div>

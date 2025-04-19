@@ -8,7 +8,6 @@ import {
   NavigationMenuItem,
   NavigationMenuList,
   NavigationMenuTrigger,
-  navigationMenuTriggerStyle
 } from "@/components/ui/navigation-menu";
 import { RESOURCE_ITEMS, COMPANY_ITEMS } from './navConstants';
 
