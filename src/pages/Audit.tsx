@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import SeoAuditResults from '@/components/SeoAuditResults';
