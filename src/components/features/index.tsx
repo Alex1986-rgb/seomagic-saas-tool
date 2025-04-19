@@ -1,8 +1,8 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { FeatureList } from './FeatureList';
-import { FeatureHeader } from './FeatureHeader';
+import FeatureList from './FeatureList';
+import FeatureHeader from './FeatureHeader';
 
 const Features: React.FC = () => {
   return (
