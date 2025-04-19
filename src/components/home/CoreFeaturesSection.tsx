@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Search, Zap, BarChart } from 'lucide-react';
+import { Search, Zap, BarChart, CheckCircle } from 'lucide-react';
 
 const CoreFeaturesSection: React.FC = () => {
   return (

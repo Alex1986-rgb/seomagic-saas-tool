@@ -1,5 +1,5 @@
 
-import React, { Suspense } from 'react';
+import React, { Suspense, lazy } from 'react';
 const PositionTrackerFeature = lazy(() => import('../position-tracker/PositionTrackerFeature'));
 
 const LoadingFallback = () => (

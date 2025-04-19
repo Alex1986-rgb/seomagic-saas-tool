@@ -1,5 +1,5 @@
 
-import React, { Suspense } from 'react';
+import React, { Suspense, lazy } from 'react';
 const FeatureSection = lazy(() => import('../features'));
 
 const LoadingFallback = () => (
