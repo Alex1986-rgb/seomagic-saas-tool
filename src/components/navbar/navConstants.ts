@@ -15,9 +15,11 @@ const CLIENT_ITEMS = [
   { label: 'История аудитов', href: '/audit-history' },
   { label: 'Позиции', href: '/position-tracking' },
   { label: 'Настройки', href: '/settings' },
+  { label: 'Панель', href: '/dashboard' },
 ];
 
 const RESOURCE_ITEMS = [
+  { label: 'Блог', href: '/blog' },
   { label: 'Руководства', href: '/guides' },
   { label: 'Поддержка', href: '/support' },
 ];

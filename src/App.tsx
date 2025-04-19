@@ -20,6 +20,14 @@ const Settings = lazy(() => import('@/pages/Settings'));
 const About = lazy(() => import('@/pages/About'));
 const Pricing = lazy(() => import('@/pages/Pricing'));
 const PositionPricing = lazy(() => import('@/pages/PositionPricing'));
+const Auth = lazy(() => import('@/pages/Auth'));
+const Dashboard = lazy(() => import('@/pages/Dashboard'));
+const Support = lazy(() => import('@/pages/Support'));
+const Contact = lazy(() => import('@/pages/Contact'));
+const Guides = lazy(() => import('@/pages/Guides'));
+const Demo = lazy(() => import('@/pages/Demo'));
+const Privacy = lazy(() => import('@/pages/Privacy'));
+const Terms = lazy(() => import('@/pages/Terms'));
 
 function App() {
   return (
@@ -41,6 +49,14 @@ function App() {
             <Route path="/about" element={<About />} />
             <Route path="/pricing" element={<Pricing />} />
             <Route path="/position-pricing" element={<PositionPricing />} />
+            <Route path="/auth" element={<Auth />} />
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/support" element={<Support />} />
+            <Route path="/contact" element={<Contact />} />
+            <Route path="/guides" element={<Guides />} />
+            <Route path="/demo" element={<Demo />} />
+            <Route path="/privacy" element={<Privacy />} />
+            <Route path="/terms" element={<Terms />} />
           </Routes>
         </Suspense>
         <Toaster />

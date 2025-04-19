@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -24,11 +24,13 @@ import {
   X
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { NAV_ITEMS, CLIENT_ITEMS, RESOURCE_ITEMS, COMPANY_ITEMS } from './navConstants';
 
 const Navbar: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
+  const location = useLocation();
   
   // Check if user is logged in (simplified for demo)
   const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
@@ -48,6 +50,9 @@ const Navbar: React.FC = () => {
     setIsMenuOpen(!isMenuOpen);
   };
   
+  // Логирование для отладки
+  console.log("NAV_ITEMS в index.tsx:", NAV_ITEMS);
+  
   return (
     <header className="sticky top-0 z-40 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-16 items-center justify-between">
@@ -57,11 +62,19 @@ const Navbar: React.FC = () => {
           </Link>
           
           <nav className="hidden md:flex items-center gap-6 text-sm ml-6">
-            <Link to="/" className="transition-colors hover:text-foreground/80 text-foreground/60">Главная</Link>
-            <Link to="/audit" className="transition-colors hover:text-foreground/80 text-foreground/60">SEO Аудит</Link>
-            <Link to="/positions" className="transition-colors hover:text-foreground/80 text-foreground/60">Позиции</Link>
-            <Link to="/pricing" className="transition-colors hover:text-foreground/80 text-foreground/60">Цены</Link>
-            <Link to="/about" className="transition-colors hover:text-foreground/80 text-foreground/60">О нас</Link>
+            {NAV_ITEMS.map((item) => (
+              <Link
+                key={item.href}
+                to={item.href}
+                className={`transition-colors hover:text-foreground/80 ${
+                  location.pathname === item.href 
+                    ? 'text-foreground font-medium' 
+                    : 'text-foreground/60'
+                }`}
+              >
+                {item.label}
+              </Link>
+            ))}
           </nav>
         </div>
         
@@ -143,21 +156,16 @@ const Navbar: React.FC = () => {
         <div className="md:hidden border-t py-4">
           <div className="container space-y-4">
             <nav className="flex flex-col space-y-4">
-              <Link to="/" className="px-2 py-1 hover:bg-accent rounded-md" onClick={toggleMenu}>
-                Главная
-              </Link>
-              <Link to="/audit" className="px-2 py-1 hover:bg-accent rounded-md" onClick={toggleMenu}>
-                SEO Аудит
-              </Link>
-              <Link to="/positions" className="px-2 py-1 hover:bg-accent rounded-md" onClick={toggleMenu}>
-                Позиции
-              </Link>
-              <Link to="/pricing" className="px-2 py-1 hover:bg-accent rounded-md" onClick={toggleMenu}>
-                Цены
-              </Link>
-              <Link to="/about" className="px-2 py-1 hover:bg-accent rounded-md" onClick={toggleMenu}>
-                О нас
-              </Link>
+              {NAV_ITEMS.map((item) => (
+                <Link 
+                  key={item.href}
+                  to={item.href} 
+                  className="px-2 py-1 hover:bg-accent rounded-md" 
+                  onClick={toggleMenu}
+                >
+                  {item.label}
+                </Link>
+              ))}
             </nav>
             
             <div className="flex items-center gap-2 pt-2 border-t">
