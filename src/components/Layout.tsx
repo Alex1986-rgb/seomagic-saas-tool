@@ -1,6 +1,6 @@
 
 import React from 'react';
-import Navbar from './navbar/Navbar';
+import Navbar from './navbar';
 import Footer from './Footer';
 import StarryBackground from './backgrounds/StarryBackground';
 import { cn } from '@/lib/utils';
