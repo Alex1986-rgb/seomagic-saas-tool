@@ -24,6 +24,8 @@ const HeroSection: React.FC = () => {
     visible: { opacity: 1, y: 0 }
   };
 
+  console.log("HeroSection rendering");
+
   return (
     <section className="pt-20 pb-16 md:pt-32 md:pb-20 overflow-hidden relative">
       <HeroBackground />

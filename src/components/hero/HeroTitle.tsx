@@ -7,6 +7,8 @@ interface HeroTitleProps {
 }
 
 const HeroTitle: React.FC<HeroTitleProps> = ({ itemVariants }) => {
+  console.log("HeroTitle rendering");
+  
   return (
     <>
       <motion.h1 
