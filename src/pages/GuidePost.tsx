@@ -13,13 +13,11 @@ import {
 } from "@/components/ui/carousel";
 import { ChevronLeft, BookOpen, Clock, FileText } from 'lucide-react';
 
-// Import the guides data from the Guides page
 import { guides } from '@/pages/Guides';
 
 const GuidePost: React.FC = () => {
   const { id } = useParams();
   
-  // Find the guide by id from our mock data
   const guide = guides.find(g => g.id === Number(id));
   
   if (!guide) {
@@ -64,11 +62,10 @@ const GuidePost: React.FC = () => {
             <p className="text-lg text-muted-foreground mb-8">{guide.description}</p>
           </div>
           
-          {/* Video player for guide content */}
           <div className="mb-10">
             <div className="bg-card/30 rounded-lg overflow-hidden border border-primary/10">
               <VideoPlayer 
-                src="/video/seo-demo.mp4"
+                src={guide.videoUrl || "/video/seo-demo.mp4"}
                 poster={guide.image}
                 title={`Видеоруководство: ${guide.title}`}
                 description="Посмотрите пошаговое объяснение процесса"
@@ -94,7 +91,10 @@ const GuidePost: React.FC = () => {
                         className="w-full h-full object-cover"
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-6">
-                        <h2 className="text-white text-2xl font-semibold">Обзор руководства</h2>
+                        <div className="text-white">
+                          <h2 className="text-2xl font-semibold mb-2">Обзор руководства</h2>
+                          <p className="text-white/80">{guide.description}</p>
+                        </div>
                       </div>
                     </div>
                   </CarouselItem>
@@ -108,7 +108,10 @@ const GuidePost: React.FC = () => {
                           className="w-full h-full object-cover"
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-6">
-                          <h2 className="text-white text-2xl font-semibold">{section.title}</h2>
+                          <div className="text-white">
+                            <h2 className="text-2xl font-semibold mb-2">{section.title}</h2>
+                            <p className="text-white/80 line-clamp-2">{section.content}</p>
+                          </div>
                         </div>
                       </div>
                     </CarouselItem>
@@ -118,15 +121,7 @@ const GuidePost: React.FC = () => {
                 <CarouselNext className="right-4" />
               </Carousel>
             </div>
-          ) : (
-            <div className="relative w-full h-[400px] mb-12 rounded-lg overflow-hidden">
-              <LazyImage 
-                src={guide.image} 
-                alt={guide.title}
-                className="w-full h-full object-cover"
-              />
-            </div>
-          )}
+          ) : null}
 
           <div className="prose prose-lg max-w-none">
             {guide.content && guide.content.length > 0 ? (
@@ -147,12 +142,11 @@ const GuidePost: React.FC = () => {
                       </div>
                     </div>
                     
-                    {/* Video for each content section */}
                     <div className="mt-6 bg-black/5 p-4 rounded-lg">
                       <h4 className="text-sm uppercase font-medium text-muted-foreground mb-2">Видеоинструкция по разделу</h4>
                       <div className="rounded-lg overflow-hidden border border-primary/10">
                         <VideoPlayer
-                          src="/video/seo-demo.mp4" 
+                          src={section.videoUrl || "/video/seo-demo.mp4"}
                           poster={section.image}
                           title={section.title}
                           showInfo={false}

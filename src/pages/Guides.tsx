@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
@@ -26,47 +25,58 @@ import {
 } from "@/components/ui/carousel";
 import Layout from '@/components/Layout';
 
-// Export the guides array so it can be imported in other files
 export const guides = [
   {
     id: 1,
     title: 'Полное руководство по аудиту сайта',
-    description: 'Узнайте как проводить полный технический аудит вашего сайта от начала до конца.',
+    description: 'Узнайте как проводить полный технический аудит вашего сайта от начала до конца, используя все доступные инструменты для анализа.',
     category: 'SEO аудит',
     level: 'Начинающий',
     duration: '30 минут',
-    image: '/images/placeholder.jpg',
+    image: '/images/audit-guide-cover.jpg',
+    videoUrl: '/video/seo-demo.mp4',
     content: [
       {
-        title: 'Подготовка к аудиту',
-        content: 'Перед началом аудита необходимо собрать все необходимые данные о сайте...',
-        image: '/images/placeholder.jpg'
+        title: 'Подготовка к аудиту сайта',
+        content: 'Перед началом технического аудита необходимо собрать все важные данные о сайте. Это включает в себя анализ текущей структуры сайта, его производительности и основных метрик. На этом этапе мы подготовим все необходимые инструменты и создадим план работы.',
+        image: '/images/audit-preparation.jpg',
+        videoUrl: '/video/seo-demo.mp4'
       },
       {
-        title: 'Технический анализ',
-        content: 'Проверка robots.txt, XML sitemap, и структуры URL...',
-        image: '/images/placeholder.jpg'
+        title: 'Технический анализ структуры',
+        content: 'Проведите глубокий технический анализ вашего сайта. Это включает проверку robots.txt, XML sitemap, анализ структуры URL и внутренней перелинковки. Особое внимание уделите скорости загрузки страниц и mobile-friendly оптимизации. В этом разделе мы рассмотрим каждый аспект технического SEO.',
+        image: '/images/technical-analysis.jpg',
+        videoUrl: '/video/seo-demo.mp4'
+      },
+      {
+        title: 'Оптимизация контента',
+        content: 'Проанализируйте качество контента на вашем сайте. Проверьте уникальность текстов, оптимизацию заголовков и мета-тегов. Используйте специальные инструменты для анализа семантического ядра и релевантности контента поисковым запросам. Важно обратить внимание на структуру текстов и их читабельность.',
+        image: '/images/content-optimization.jpg',
+        videoUrl: '/video/seo-demo.mp4'
       }
     ]
   },
   {
     id: 2,
     title: 'Как отслеживать позиции сайта в поисковых системах',
-    description: 'Пошаговое руководство по настройке и использованию инструментов для мониторинга позиций.',
+    description: 'Пошаговое руководство по настройке и использованию инструментов для мониторинга позиций вашего сайта в поисковой выдаче.',
     category: 'Позиции сайта',
     level: 'Средний',
     duration: '45 минут',
-    image: '/images/placeholder.jpg',
+    image: '/images/position-tracking-cover.jpg',
+    videoUrl: '/video/seo-demo.mp4',
     content: [
       {
-        title: 'Выбор инструментов',
-        content: 'Обзор популярных инструментов для отслеживания позиций...',
-        image: '/images/placeholder.jpg'
+        title: 'Настройка инструментов отслеживания',
+        content: 'Начните с выбора правильных инструментов для мониторинга позиций. Мы рассмотрим популярные сервисы и их особенности. Научимся настраивать регулярные проверки и автоматические уведомления об изменении позиций. Это поможет вам оперативно реагировать на любые изменения в выдаче.',
+        image: '/images/tracking-tools.jpg',
+        videoUrl: '/video/seo-demo.mp4'
       },
       {
-        title: 'Настройка отслеживания',
-        content: 'Пошаговая инструкция по настройке отслеживания ключевых слов...',
-        image: '/images/placeholder.jpg'
+        title: 'Анализ конкурентов',
+        content: 'Изучите, как отслеживать позиции конкурентов и анализировать их стратегии продвижения. Научитесь использовать эти данные для улучшения собственных позиций. Мы покажем, как создавать сравнительные отчеты и выявлять новые возможности для роста.',
+        image: '/images/competitor-analysis.jpg',
+        videoUrl: '/video/seo-demo.mp4'
       }
     ]
   },
@@ -95,7 +105,7 @@ export const guides = [
     id: 4,
     title: 'Углубленный анализ конкурентов',
     description: 'Методики и инструменты для анализа стратегий ваших конкурентов в поисковой выдаче.',
-    category: 'Конкуренты',
+    category: 'Конку��енты',
     level: 'Продвинутый',
     duration: '60 минут',
     image: '/images/placeholder.jpg',
@@ -208,11 +218,9 @@ const Guides: React.FC = () => {
   const [filteredGuides, setFilteredGuides] = useState(guides);
   const [searchQuery, setSearchQuery] = useState('');
 
-  // Filter guides based on active tab and search query
   useEffect(() => {
     let result = [...guides];
     
-    // Filter by level
     if (activeTab !== 'all') {
       const levelMap = {
         'beginner': 'Начинающий',
@@ -223,7 +231,6 @@ const Guides: React.FC = () => {
       result = result.filter(guide => guide.level === levelMap[activeTab]);
     }
     
-    // Filter by search query
     if (searchQuery.trim() !== '') {
       const query = searchQuery.toLowerCase();
       result = result.filter(guide => 
@@ -285,7 +292,7 @@ const Guides: React.FC = () => {
           {filteredGuides.length === 0 ? (
             <div className="text-center py-12">
               <FileText className="w-12 h-12 mx-auto text-muted-foreground opacity-40 mb-4" />
-              <h3 className="text-xl font-medium mb-2">Руководства не найдены</h3>
+              <h3 className="text-xl font-medium mb-2">Руководства не найден��</h3>
               <p className="text-muted-foreground">Попробуйте изменить параметры поиска или фильтрации</p>
               <Button 
                 variant="outline" 
