@@ -96,7 +96,7 @@ const AuditResultsContainer: React.FC<AuditResultsContainerProps> = ({ url }) =>
               onDeepScan={() => loadAuditData(false, true)}
               isRefreshing={isRefreshing}
               onDownloadSitemap={sitemap ? downloadSitemap : undefined}
-              onTogglePrompt={toggleContentPrompt}
+              onTogglePrompt={() => setShowPrompt(!showPrompt)}
               onExportJSON={exportJSONData}
               showPrompt={showPrompt}
             />
@@ -127,7 +127,7 @@ const AuditResultsContainer: React.FC<AuditResultsContainerProps> = ({ url }) =>
                 url={url}
                 pageCount={auditData.pageCount || 0}
                 showPrompt={showPrompt}
-                onTogglePrompt={toggleContentPrompt}
+                onTogglePrompt={() => setShowPrompt(!showPrompt)}
                 onOptimize={optimizeSiteContent}
                 onDownloadOptimizedSite={downloadOptimizedSite}
                 onGeneratePdfReport={generatePdfReportFile}
