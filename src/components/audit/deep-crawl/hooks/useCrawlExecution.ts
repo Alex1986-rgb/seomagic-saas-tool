@@ -125,50 +125,58 @@ export function useCrawlExecution() {
       }
       
       // Validate URL
-      const urlObj = new URL(normalizedUrl);
-      const domain = urlObj.hostname;
-      
-      // Check if this is an external domain to adjust settings
-      const isExternalDomain = !domain.includes('lovableproject.com');
-      
-      // For external domains, adjust maxPages based on the target site
-      let adjustedMaxPages = maxPages;
-      if (isExternalDomain) {
-        // Special case for known large sites like myarredo.ru
-        if (domain.includes('myarredo.ru')) {
-          adjustedMaxPages = 50000; // Allow more pages for known large sites
-          console.log(`Detected large site (${domain}), setting max pages to ${adjustedMaxPages}`);
-        } else {
-          adjustedMaxPages = Math.min(maxPages, 10000);
-        }
+      let urlObj;
+      try {
+        urlObj = new URL(normalizedUrl);
+      } catch (error) {
+        throw new Error('Некорректный URL: ' + normalizedUrl);
       }
       
-      console.log(`Инициализация сканера для ${normalizedUrl} с доменом ${domain} и лимитом ${adjustedMaxPages} страниц`);
+      const domain = urlObj.hostname;
+      console.log(`Инициализируем сканер для домена: ${domain} с URL: ${normalizedUrl}`);
       
-      // Create new scanner with optimized settings for external domains
+      // Check if this is Lovable domain - we should warn but still allow it
+      const isLovableDomain = domain.includes('lovableproject.com') || domain.includes('lovable.app');
+      if (isLovableDomain) {
+        console.warn(`Внимание: Сканирование Lovable домена (${domain}). Это может быть не то, что вы хотите сканировать.`);
+      }
+      
+      // Special case for large known sites like myarredo.ru
+      let adjustedMaxPages = maxPages;
+      if (domain.includes('myarredo.ru')) {
+        adjustedMaxPages = 50000; // Allow more pages for large sites
+        console.log(`Обнаружен крупный сайт (${domain}), увеличиваем лимит до ${adjustedMaxPages} страниц`);
+      }
+            
+      // Create new scanner with appropriate settings
       const crawler = new SimpleSitemapCreator({
         maxPages: adjustedMaxPages,
-        maxDepth: isExternalDomain ? 5 : 3, // Deeper depth for external sites
+        maxDepth: 5, // Set a reasonable depth limit
         includeStylesheet: true,
-        timeout: isExternalDomain ? 10000 : 8000, // Increased timeout for external sites
+        timeout: 10000, // 10 seconds timeout for requests
         followRedirects: true,
-        concurrentRequests: isExternalDomain ? 3 : 5, // Lower concurrency for external sites
-        retryCount: isExternalDomain ? 2 : 1, // More retries for external sites
+        concurrentRequests: 3, // Lower concurrency to avoid overwhelming the server
+        retryCount: 2, // Set retries
         retryDelay: 1000,
-        forceTargetDomain: true // Принудительно сканируем только указанный домен
+        forceTargetDomain: true // Only scan the target domain
       });
       
       // Set base URL explicitly
-      console.log(`Setting base URL to: ${normalizedUrl}`);
       crawler.setBaseUrl(normalizedUrl);
+      console.log(`Base URL set to: ${normalizedUrl}, domain: ${domain}`);
       
       // Create crawl task in Supabase
       recordCrawlTask(normalizedUrl, 'pending');
       
-      return { crawler, domain, maxPages: adjustedMaxPages, normalizedUrl };
+      return { 
+        crawler, 
+        domain, 
+        maxPages: adjustedMaxPages, 
+        normalizedUrl 
+      };
     } catch (error) {
       console.error('Error initializing crawler:', error);
-      throw new Error('Не удалось инициализировать сканирование: неверный URL');
+      throw new Error('Не удалось инициализировать сканирование: ' + (error instanceof Error ? error.message : 'неизвестная ошибка'));
     }
   };
   
@@ -205,9 +213,9 @@ export function useCrawlExecution() {
         }
       };
       
-      // Create Promise with timeout - adjust for external domains
-      const isExternalDomain = crawlerDomain && !crawlerDomain.includes('lovableproject.com');
-      const timeoutDuration = isExternalDomain ? 180000 : 120000; // 3 minutes for external, 2 for internal
+      // Create Promise with timeout
+      const isLovableDomain = crawlerDomain.includes('lovableproject.com') || crawlerDomain.includes('lovable.app');
+      const timeoutDuration = 180000; // 3 minutes timeout
       
       const crawlWithTimeout = Promise.race([
         crawler.crawl(startUrl, progressCallback),

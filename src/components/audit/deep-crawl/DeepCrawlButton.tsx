@@ -32,9 +32,9 @@ const DeepCrawlButton: React.FC<DeepCrawlButtonProps> = ({
       normalizedUrl = `https://${normalizedUrl}`;
     }
     
-    // Make sure we're not using the Lovable project domain
-    if (normalizedUrl.includes('lovableproject.com')) {
-      console.warn("Attempting to scan Lovable project domain, this is likely not intended");
+    // Check if URL is lovable domain and warn, but allow it to continue
+    if (normalizedUrl.includes('lovableproject.com') || normalizedUrl.includes('lovable.app')) {
+      console.warn("Attempting to scan Lovable project domain, this may not be intended");
     }
     
     return normalizedUrl;

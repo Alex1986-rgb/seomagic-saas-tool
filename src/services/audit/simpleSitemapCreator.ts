@@ -13,7 +13,7 @@ export interface SimpleSitemapCreatorOptions {
   retryCount?: number;
   retryDelay?: number;
   concurrentRequests?: number;
-  forceTargetDomain?: boolean; // Добавляем опцию принудительного использования целевого домена
+  forceTargetDomain?: boolean;
 }
 
 export class SimpleSitemapCreator {
@@ -21,6 +21,7 @@ export class SimpleSitemapCreator {
   private sitemapExtractor: SitemapExtractor;
   private baseUrl: string = '';
   private domain: string = '';
+  private isCancelled: boolean = false;
   
   constructor(options: SimpleSitemapCreatorOptions = {}) {
     this.options = {
@@ -32,7 +33,7 @@ export class SimpleSitemapCreator {
       retryCount: 3,
       retryDelay: 1000,
       concurrentRequests: 30,
-      forceTargetDomain: true, // По умолчанию строго придерживаемся целевого домена
+      forceTargetDomain: true,
       ...options
     };
     
@@ -40,21 +41,30 @@ export class SimpleSitemapCreator {
   }
   
   /**
+   * Отменить сканирование
+   */
+  cancel(): void {
+    console.log("SimpleSitemapCreator: Cancelling crawl");
+    this.isCancelled = true;
+  }
+  
+  /**
    * Задать базовый URL для сканирования
    */
   setBaseUrl(url: string): void {
-    this.baseUrl = url && url.trim() !== '' 
-      ? (url.startsWith('http') ? url : `https://${url}`)
-      : '';
+    if (!url || url.trim() === '') {
+      console.error("Cannot set empty baseUrl");
+      return;
+    }
     
-    if (this.baseUrl) {
-      try {
-        const urlObj = new URL(this.baseUrl);
-        this.domain = urlObj.hostname;
-        console.log(`SimpleSitemapCreator: установлен базовый URL ${this.baseUrl} с доменом ${this.domain}`);
-      } catch (error) {
-        console.error('Невозможно извлечь домен из URL:', error);
-      }
+    this.baseUrl = url.startsWith('http') ? url : `https://${url}`;
+    
+    try {
+      const urlObj = new URL(this.baseUrl);
+      this.domain = urlObj.hostname;
+      console.log(`SimpleSitemapCreator: установлен базовый URL ${this.baseUrl} с доменом ${this.domain}`);
+    } catch (error) {
+      console.error('Невозможно извлечь домен из URL:', error);
     }
   }
   
@@ -79,18 +89,28 @@ export class SimpleSitemapCreator {
     url: string, 
     progressCallback?: (scanned: number, total: number, currentUrl: string) => void
   ): Promise<string[]> {
-    // Строго соблюдаем указанный URL
-    const normalizedUrl = url && url.trim() !== '' 
-      ? (url.startsWith('http') ? url : `https://${url}`)
-      : this.baseUrl;
+    this.isCancelled = false;
     
-    if (!normalizedUrl) {
+    // Строго соблюдаем указанный URL
+    let normalizedUrl = '';
+    
+    if (url && url.trim() !== '') {
+      normalizedUrl = url.startsWith('http') ? url : `https://${url}`;
+    } else if (this.baseUrl) {
+      normalizedUrl = this.baseUrl;
+    } else {
       console.error('No URL provided for crawling');
       return [];
     }
     
     // Обновляем baseUrl и domain на случай, если URL изменился
     this.setBaseUrl(normalizedUrl);
+    
+    // Проверяем, что URL и домен установлены
+    if (!this.baseUrl || !this.domain) {
+      console.error('Invalid URL or domain not extracted:', normalizedUrl);
+      return [];
+    }
     
     try {
       console.log(`Начинаем сканирование сайта ${normalizedUrl} (домен: ${this.domain})`);
@@ -100,6 +120,11 @@ export class SimpleSitemapCreator {
       let allUrls: string[] = [];
       
       for (const sitemapUrl of sitemapUrls) {
+        if (this.isCancelled) {
+          console.log("Crawl cancelled during sitemap processing");
+          return [];
+        }
+        
         try {
           console.log(`Found sitemap at ${sitemapUrl}, extracting URLs...`);
           
@@ -147,12 +172,17 @@ export class SimpleSitemapCreator {
         crawlDelay: 300,
         retryCount: this.options.retryCount,
         retryDelay: this.options.retryDelay,
-        // Удаляем свойство domain, так как оно не существует в типе SiteScannerOptions
+        concurrentRequests: this.options.concurrentRequests
       });
       
       // Принудительно ограничиваем сканирование только указанным доменом
       // Это достигается путем фильтрации после получения результатов
       const result = await scanner.scan();
+      
+      if (this.isCancelled) {
+        console.log("Crawl cancelled during scanning");
+        return [];
+      }
       
       // Фильтруем результаты, чтобы оставить только URL для нашего домена
       if (this.options.forceTargetDomain) {
@@ -232,6 +262,10 @@ export class SimpleSitemapCreator {
     
     // Check each potential sitemap location
     for (const path of potentialPaths) {
+      if (this.isCancelled) {
+        return sitemaps;
+      }
+      
       try {
         const response = await axios.head(path, { 
           timeout: this.options.timeout,
@@ -312,6 +346,10 @@ export class SimpleSitemapCreator {
     }
     
     while (retries <= maxRetries) {
+      if (this.isCancelled) {
+        return null;
+      }
+      
       try {
         const response = await axios.get(url, { 
           timeout: this.options.timeout,

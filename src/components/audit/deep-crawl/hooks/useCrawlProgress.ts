@@ -20,11 +20,6 @@ export function useCrawlProgress(urlParam: string) {
       normalizedUrl = normalizedUrl.slice(0, -1);
     }
     
-    // Don't allow scanning Lovable domains
-    if (normalizedUrl && normalizedUrl.includes('lovableproject.com')) {
-      console.warn('Attempted to scan Lovable domain, this is likely not intended');
-    }
-    
     console.log(`useCrawlProgress initialized with URL: ${normalizedUrl}`);
     setUrl(normalizedUrl);
   }, [urlParam]);
@@ -114,21 +109,24 @@ export function useCrawlProgress(urlParam: string) {
         setDomain(urlObj.hostname);
       } catch (e) {
         console.warn("Could not extract domain from URL:", e);
+        setErrorMsg("Некорректный URL");
+        completeCrawl(false);
+        return;
+      }
+      
+      // Check if this is Lovable domain - we should warn but still allow it
+      try {
+        const urlObj = new URL(url);
+        const isLovableDomain = urlObj.hostname.includes('lovableproject.com') || urlObj.hostname.includes('lovable.app');
+        if (isLovableDomain) {
+          console.warn(`Внимание: Сканирование Lovable домена (${urlObj.hostname}). Это может быть не то, что вы хотите сканировать.`);
+        }
+      } catch (e) {
+        console.warn("Could not check if domain is Lovable:", e);
       }
       
       // Создаем несколько таймаутов для отлова зависаний
-      // Check if this is an external domain (not lovableproject.com)
-      let isExternalDomain = true; // Default to true for safety
-      try {
-        const urlObj = new URL(url);
-        // Check if domain contains lovableproject.com
-        isExternalDomain = !urlObj.hostname.includes('lovableproject.com');
-      } catch (e) {
-        console.warn("Could not parse URL to check if external:", e);
-      }
-      
-      // Shorter timeout for external domains to prevent hanging
-      const crawlTimeoutDuration = isExternalDomain ? 120000 : 180000; // 2 minutes for external, 3 for internal
+      const crawlTimeoutDuration = 180000; // 3 minutes for all domains
       
       const crawlTimeoutId = setTimeout(() => {
         console.error(`Crawl timeout for URL: ${url}`);
@@ -149,8 +147,19 @@ export function useCrawlProgress(urlParam: string) {
       // Инициализируем сканер с явным URL
       console.log(`Initializing crawler for URL: ${url}`);
       
-      // Adjust maxPages based on whether this is an external domain
-      const maxPages = isExternalDomain ? 5000 : 10000; // Reduce limits for external domains
+      // Set default max pages
+      let maxPages = 5000;
+      
+      // Special case for known large sites
+      try {
+        const urlObj = new URL(url);
+        if (urlObj.hostname.includes('myarredo.ru')) {
+          maxPages = 50000; // Allow more pages for known large sites
+          console.log(`Detected large site (${urlObj.hostname}), setting max pages to ${maxPages}`);
+        }
+      } catch (e) {
+        console.warn("Could not check if domain is large site:", e);
+      }
       
       const { crawler: newCrawler, domain: newDomain, normalizedUrl } = initializeCrawler({
         url,
