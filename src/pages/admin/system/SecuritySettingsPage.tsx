@@ -11,6 +11,16 @@ const SecuritySettingsPage = () => (
         <SecuritySettings />
       </CardContent>
     </Card>
+    <div className="mt-8 text-sm text-muted-foreground space-y-2">
+      <div><b>Возможности:</b> двухфакторная аутентификация, ограничение по IP, защита от перебора паролей.</div>
+      <ul className="list-disc pl-5">
+        <li>Включение/отключение двухфакторной аутентификации</li>
+        <li>Ограничение доступа по IP</li>
+        <li>Глобальный пароль администратора</li>
+        <li>Защита от перебора паролей</li>
+      </ul>
+      <div>Рекомендуется применять дополнительные меры защиты для критически важных операций.</div>
+    </div>
   </div>
 );
 

@@ -11,6 +11,15 @@ const PerformanceSettingsPage = () => (
         <PerformanceSettings />
       </CardContent>
     </Card>
+    <div className="mt-8 text-sm text-muted-foreground space-y-2">
+      <div><b>Возможности:</b> параметры кеша, лимиты, автоматизация оповещений, оптимизация контента.</div>
+      <ul className="list-disc pl-5">
+        <li>Включение кеширования и сжатия</li>
+        <li>Оптимизация изображений и таймаутов</li>
+        <li>Установка порогов для оповещений</li>
+      </ul>
+      <div>Настроенные уведомления позволят выявлять проблемы производительности заранее.</div>
+    </div>
   </div>
 );
 

@@ -11,6 +11,16 @@ const DatabaseSettingsPage = () => (
         <DatabaseSettings />
       </CardContent>
     </Card>
+    <div className="mt-8 text-sm text-muted-foreground space-y-2">
+      <div><b>Возможности:</b> подключение к PostgreSQL, оптимизация, проверка соединения, параметры доступа.</div>
+      <ul className="list-disc pl-5">
+        <li>Ввод основных параметров (host, порт, пользователь, имя БД)</li>
+        <li>Настройка пароля администратора</li>
+        <li>Пул подключений и кеширование</li>
+        <li>Тестирование подключения</li>
+      </ul>
+      <div className="pt-2">Рекомендация: после изменения не забывайте сохранять настройки.</div>
+    </div>
   </div>
 );
 

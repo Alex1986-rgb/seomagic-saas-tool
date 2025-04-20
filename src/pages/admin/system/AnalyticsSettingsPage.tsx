@@ -11,6 +11,15 @@ const AnalyticsSettingsPage = () => (
         <AnalyticsSettings />
       </CardContent>
     </Card>
+    <div className="mt-8 text-sm text-muted-foreground space-y-2">
+      <div><b>Возможности:</b> интеграция Google Analytics, собственная аналитика, хранение данных.</div>
+      <ul className="list-disc pl-5">
+        <li>Google Analytics, форма для ID</li>
+        <li>Собственный модуль аналитики</li>
+        <li>Выбор типа собираемых данных и срока хранения</li>
+      </ul>
+      <div>Контролируйте виды данных для аналитики по требованиям GDPR.</div>
+    </div>
   </div>
 );
 

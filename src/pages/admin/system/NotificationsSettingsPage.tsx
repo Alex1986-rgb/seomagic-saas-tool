@@ -11,6 +11,15 @@ const NotificationsSettingsPage = () => (
         <NotificationsSettings />
       </CardContent>
     </Card>
+    <div className="mt-8 text-sm text-muted-foreground space-y-2">
+      <div><b>Возможности:</b> email/SMS/Slack уведомления, получатели, виды событий.</div>
+      <ul className="list-disc pl-5">
+        <li>Настройка email уведомлений и получателей</li>
+        <li>Типы уведомлений: ошибки сервера, новые пользователи, лимиты</li>
+        <li>Интеграция с SMS и Slack</li>
+      </ul>
+      <div>Рекомендуется указать резервные контакты для критических событий.</div>
+    </div>
   </div>
 );
 

@@ -11,6 +11,15 @@ const UsersManagementPage = () => (
         <UsersManagement />
       </CardContent>
     </Card>
+    <div className="mt-8 text-sm text-muted-foreground space-y-2">
+      <div><b>Возможности:</b> управление администраторами, права, активация/деактивация.</div>
+      <ul className="list-disc pl-5">
+        <li>Список всех пользователей</li>
+        <li>Редактирование и добавление новых админов</li>
+        <li>Смена ролей и управления доступом</li>
+      </ul>
+      <div>Внимание: администраторы имеют полный доступ к настройкам системы!</div>
+    </div>
   </div>
 );
 
