@@ -121,3 +121,4 @@ export const getSlideData = (): SlideData[] => [
     icon: PieChart
   }
 ];
+
