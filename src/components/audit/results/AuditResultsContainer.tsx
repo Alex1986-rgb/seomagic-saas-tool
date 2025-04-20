@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuditData } from './hooks/useAuditData';
@@ -102,9 +103,12 @@ const AuditResultsContainer: React.FC<AuditResultsContainerProps> = ({ url }) =>
             
             <div className="space-y-6">
               <AuditMain 
+                url={url}
                 auditData={auditData}
                 recommendations={recommendations}
                 historyData={historyData}
+                taskId={taskId || ""}
+                onSelectAudit={handleSelectHistoricalAudit}
               />
               
               <div className="neo-card p-6">
