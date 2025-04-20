@@ -1,6 +1,5 @@
-
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { 
   BarChart, LineChart, PieChart, Search,
@@ -9,6 +8,12 @@ import {
 import { Button } from '@/components/ui/button';
 
 const PositionTrackerFeature: React.FC = () => {
+  const navigate = useNavigate();
+
+  const handlePositionCheck = () => {
+    navigate('/position-tracking');
+  };
+
   return (
     <section className="py-20 bg-gradient-to-b from-background to-secondary/10">
       <div className="container mx-auto px-4 md:px-6">
@@ -70,12 +75,13 @@ const PositionTrackerFeature: React.FC = () => {
             </div>
             
             <div className="mt-8">
-              <Link to="/position-tracker">
-                <Button className="mr-4">
-                  <Globe className="mr-2 h-4 w-4" />
-                  Проверить позиции
-                </Button>
-              </Link>
+              <Button 
+                onClick={handlePositionCheck}
+                className="mr-4"
+              >
+                <Globe className="mr-2 h-4 w-4" />
+                Проверить позиции
+              </Button>
               <Link to="/position-pricing">
                 <Button variant="outline">
                   Тарифы и цены
