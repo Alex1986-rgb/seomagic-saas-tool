@@ -89,7 +89,7 @@ class ContentExtractor {
     saveAs(blob, `${site.domain}-content.json`);
   }
 
-  async exportToHtml(site: ExtractedSite): Promise<void> {
+  async exportToHtml(site: ExtractedSite): Promise<string> {
     const html = `
 <!DOCTYPE html>
 <html>
@@ -142,9 +142,11 @@ class ContentExtractor {
 
     const blob = new Blob([html], { type: 'text/html' });
     saveAs(blob, `${site.domain}-content.html`);
+    
+    return html;
   }
 
-  async exportToMarkdown(site: ExtractedSite): Promise<void> {
+  async exportToMarkdown(site: ExtractedSite): Promise<string> {
     const markdown = `# Content Export - ${site.domain}
 
 Extracted at: ${site.extractedAt}
@@ -177,6 +179,8 @@ ${page.links.external.map(link => `- ${link}`).join('\n')}
 
     const blob = new Blob([markdown], { type: 'text/markdown' });
     saveAs(blob, `${site.domain}-content.md`);
+    
+    return markdown;
   }
 
   async exportAll(site: ExtractedSite): Promise<void> {
@@ -186,13 +190,12 @@ ${page.links.external.map(link => `- ${link}`).join('\n')}
     zip.file('content.json', JSON.stringify(site, null, 2));
 
     // Add HTML export
-    const html = document.createElement('html');
-    html.innerHTML = await this.exportToHtml(site);
-    zip.file('content.html', html.innerHTML);
+    const htmlContent = await this.exportToHtml(site);
+    zip.file('content.html', htmlContent);
 
     // Add Markdown export
-    const markdown = await this.exportToMarkdown(site);
-    zip.file('content.md', markdown);
+    const markdownContent = await this.exportToMarkdown(site);
+    zip.file('content.md', markdownContent);
 
     // Create the zip file
     const blob = await zip.generateAsync({ type: 'blob' });
