@@ -3,7 +3,7 @@
  * Module for generating optimized sites
  */
 
-import { PageContent } from './optimization/types';
+import { PageContent, OptimizationResponse } from './optimization/types';
 import { faker } from '@faker-js/faker';
 
 /**
@@ -12,12 +12,7 @@ import { faker } from '@faker-js/faker';
 export const createOptimizedSite = async (
   domain: string,
   pagesContent: PageContent[]
-): Promise<{
-  blob: Blob;
-  beforeScore: number;
-  afterScore: number;
-  demoPage?: PageContent;
-}> => {
+): Promise<OptimizationResponse> => {
   const optimizedPages = pagesContent.map(page => {
     const optimizedPage = { ...page };
     

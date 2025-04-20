@@ -51,31 +51,27 @@ export const useOptimization = (url: string) => {
         await new Promise(resolve => setTimeout(resolve, 1500));
       }
       
-      const optimizationResult = await createOptimizedSite(hostname, contentToOptimize);
+      const optimizationResult: OptimizationResponse = await createOptimizedSite(hostname, contentToOptimize);
       
-      if ('beforeScore' in optimizationResult && 'afterScore' in optimizationResult) {
-        setOptimizationScoresData({
-          beforeScore: optimizationResult.beforeScore,
-          afterScore: optimizationResult.afterScore
-        });
-      }
+      setOptimizationScoresData({
+        beforeScore: optimizationResult.beforeScore,
+        afterScore: optimizationResult.afterScore
+      });
       
-      if ('demoPage' in optimizationResult && optimizationResult.demoPage) {
+      if (optimizationResult.demoPage) {
         setDemoPage(optimizationResult.demoPage);
       }
       
       setIsOptimized(true);
       
-      if ('blob' in optimizationResult) {
-        const downloadUrl = window.URL.createObjectURL(optimizationResult.blob);
-        const a = document.createElement('a');
-        a.href = downloadUrl;
-        a.download = `optimized_${hostname}.zip`;
-        document.body.appendChild(a);
-        a.click();
-        window.URL.revokeObjectURL(downloadUrl);
-        document.body.removeChild(a);
-      }
+      const downloadUrl = window.URL.createObjectURL(optimizationResult.blob);
+      const a = document.createElement('a');
+      a.href = downloadUrl;
+      a.download = `optimized_${hostname}.zip`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(downloadUrl);
+      document.body.removeChild(a);
       
       toast({
         title: "Готово!",
