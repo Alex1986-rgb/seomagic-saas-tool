@@ -15,6 +15,7 @@ const DeepCrawlButton: React.FC<DeepCrawlButtonProps> = ({
   onCrawlComplete
 }) => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
   const { toast } = useToast();
 
   // Normalize URL - make sure it has http/https prefix
@@ -39,7 +40,7 @@ const DeepCrawlButton: React.FC<DeepCrawlButtonProps> = ({
       toast({
         title: "Предупреждение",
         description: "Вы пытаетесь сканировать домен Lovable. Возможно, это не то, что вы хотели.",
-        variant: "default"  // Changed from 'warning' to 'default' to fix TS error
+        variant: "default"
       });
     }
     
@@ -47,6 +48,8 @@ const DeepCrawlButton: React.FC<DeepCrawlButtonProps> = ({
   };
 
   const handleStartCrawl = () => {
+    if (isProcessing) return;
+    
     if (!url) {
       toast({
         title: "Ошибка",
@@ -56,10 +59,16 @@ const DeepCrawlButton: React.FC<DeepCrawlButtonProps> = ({
       return;
     }
     
+    setIsProcessing(true);
+    
     const normalizedUrl = normalizeUrl(url);
     console.log(`Starting deep scan for: ${normalizedUrl}`);
     
-    setIsDialogOpen(true);
+    // Add small delay before opening dialog to prevent UI glitches
+    setTimeout(() => {
+      setIsDialogOpen(true);
+      setIsProcessing(false);
+    }, 100);
   };
 
   const handleCloseDialog = (pageCount?: number, urls?: string[]) => {
@@ -77,10 +86,10 @@ const DeepCrawlButton: React.FC<DeepCrawlButtonProps> = ({
         variant="outline"
         size="sm"
         className="flex items-center gap-2"
-        disabled={!url}
+        disabled={!url || isProcessing}
       >
         <Database className="h-4 w-4" />
-        <span>Глубокое сканирование</span>
+        <span>{isProcessing ? "Подготовка..." : "Глубокое сканирование"}</span>
       </Button>
 
       <DeepCrawlProgressDialog

@@ -10,6 +10,7 @@ import AuditPageInfo from './components/AuditPageInfo';
 import AuditOptimization from './components/AuditOptimization';
 import PageAnalysisTable from './components/PageAnalysisTable';
 import { useToast } from "@/hooks/use-toast";
+import LoadingSpinner from "@/components/LoadingSpinner";
 
 interface AuditResultsContainerProps {
   url: string;
@@ -18,17 +19,20 @@ interface AuditResultsContainerProps {
 const AuditResultsContainer: React.FC<AuditResultsContainerProps> = ({ url }) => {
   const [showPrompt, setShowPrompt] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [hadError, setHadError] = useState(false);
+  const [timeout, setTimeout] = useState(false);
   const { toast } = useToast();
   const initRef = useRef(false);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   
   const {
-    isLoading,
+    isLoading: isAuditLoading,
     loadingProgress,
     auditData,
     recommendations,
     historyData,
-    error,
+    error: auditError,
     isRefreshing,
     isScanning,
     scanDetails,
@@ -48,15 +52,61 @@ const AuditResultsContainer: React.FC<AuditResultsContainerProps> = ({ url }) =>
     setContentOptimizationPrompt
   } = useAuditData(url);
 
+  // Set a timeout for the audit process
+  useEffect(() => {
+    if (url && !timeout && isInitialized) {
+      // Clear any existing timeout
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+      
+      // Set a new timeout - 3 minutes maximum for audit data loading
+      timeoutRef.current = setTimeout(() => {
+        console.log("Audit data loading timeout triggered after 3 minutes");
+        setTimeout(true);
+        setIsLoading(false);
+        setHadError(true);
+        
+        toast({
+          title: "Превышено время ожидания",
+          description: "Загрузка данных аудита заняла слишком много времени. Пожалуйста, попробуйте снова или используйте другой URL.",
+          variant: "destructive",
+        });
+      }, 180000); // 3 minutes
+    }
+    
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
+  }, [url, timeout, isInitialized, toast]);
+
+  // Update loading state when audit loading changes
+  useEffect(() => {
+    setIsLoading(isAuditLoading);
+  }, [isAuditLoading]);
+
   const initializeAudit = useCallback(() => {
     if (initRef.current) return;
     
     console.log("Initializing audit for URL:", url);
     try {
       initRef.current = true;
-      loadAuditData(false, false).catch(err => {
+      setIsLoading(true);
+      
+      // We don't use deep scan initially to improve loading time
+      loadAuditData(false, false).then(() => {
+        setIsLoading(false);
+        
+        // Clear timeout when successfully loaded
+        if (timeoutRef.current) {
+          clearTimeout(timeoutRef.current);
+        }
+      }).catch(err => {
         console.error("Error loading audit data:", err);
         setHadError(true);
+        setIsLoading(false);
         toast({
           title: "Ошибка загрузки аудита",
           description: "Произошла ошибка при загрузке данных аудита",
@@ -66,6 +116,7 @@ const AuditResultsContainer: React.FC<AuditResultsContainerProps> = ({ url }) =>
     } catch (err) {
       console.error("Exception during audit initialization:", err);
       setHadError(true);
+      setIsLoading(false);
     }
     setIsInitialized(true);
   }, [url, loadAuditData, toast]);
@@ -77,6 +128,9 @@ const AuditResultsContainer: React.FC<AuditResultsContainerProps> = ({ url }) =>
     
     return () => {
       console.log("AuditResultsContainer unmounted");
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
     };
   }, [url, isInitialized, initializeAudit]);
 
@@ -105,13 +159,19 @@ const AuditResultsContainer: React.FC<AuditResultsContainerProps> = ({ url }) =>
     initRef.current = false;
     setIsInitialized(false);
     setHadError(false);
+    setTimeout(false);
     // This will trigger the useEffect to run again
   };
 
-  if (hadError) {
+  if (hadError || timeout) {
     return (
       <div className="p-6 text-center">
-        <p className="text-lg text-red-500 mb-4">Произошла ошибка при загрузке аудита</p>
+        <p className="text-lg text-red-500 mb-4">
+          {timeout 
+            ? "Время ожидания истекло. Возможно, сайт слишком большой или недоступен." 
+            : "Произошла ошибка при загрузке аудита"
+          }
+        </p>
         <button 
           onClick={handleRetry}
           className="px-4 py-2 bg-primary text-white rounded-md"
@@ -120,6 +180,10 @@ const AuditResultsContainer: React.FC<AuditResultsContainerProps> = ({ url }) =>
         </button>
       </div>
     );
+  }
+
+  if (isLoading) {
+    return <LoadingSpinner />;
   }
 
   return (
@@ -131,18 +195,18 @@ const AuditResultsContainer: React.FC<AuditResultsContainerProps> = ({ url }) =>
         className="relative"
       >
         <AuditStatus 
-          isLoading={isLoading}
+          isLoading={isAuditLoading}
           loadingProgress={loadingProgress}
           isScanning={isScanning}
           isRefreshing={isRefreshing}
-          error={error}
+          error={auditError}
           scanDetails={scanDetails}
           url={url}
           onRetry={() => loadAuditData(false, false)}
           onDownloadSitemap={sitemap ? downloadSitemap : undefined}
         />
         
-        {!isLoading && !isScanning && !error && auditData && recommendations && (
+        {!isAuditLoading && !isScanning && !auditError && auditData && recommendations && (
           <>
             <AuditHeader 
               onRefresh={() => loadAuditData(true)}
