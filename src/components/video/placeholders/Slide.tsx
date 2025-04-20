@@ -4,13 +4,10 @@ import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from 'lucide-react';
+import { SlideData } from './types';
 
 interface SlideProps {
-  slideData: {
-    title: string;
-    description: string;
-    blogId: number;
-  };
+  slideData: SlideData;
   currentSlide: number;
   slideIndex: number;
 }
@@ -18,6 +15,7 @@ interface SlideProps {
 const Slide: React.FC<SlideProps> = ({ slideData, currentSlide, slideIndex }) => {
   const navigate = useNavigate();
   const isActive = currentSlide === slideIndex;
+  const Icon = slideData.icon;
 
   const handleClick = () => {
     navigate(`/blog/${slideData.blogId}`);
@@ -33,6 +31,13 @@ const Slide: React.FC<SlideProps> = ({ slideData, currentSlide, slideIndex }) =>
       className="absolute inset-0 flex flex-col items-center justify-center cursor-pointer hover:opacity-95 transition-opacity"
       onClick={handleClick}
     >
+      <div 
+        className="rounded-full p-4 mb-4" 
+        style={{ backgroundColor: `${slideData.color}20` }}
+      >
+        <Icon size={32} style={{ color: slideData.color }} />
+      </div>
+      
       <h3 className="text-xl md:text-2xl font-semibold mb-3 text-white">
         {slideData.title}
       </h3>
@@ -51,4 +56,3 @@ const Slide: React.FC<SlideProps> = ({ slideData, currentSlide, slideIndex }) =>
 };
 
 export default Slide;
-

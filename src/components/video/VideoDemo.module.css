@@ -1,0 +1,56 @@
+
+.videoContainer {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  background-color: #111827;
+  border-radius: 0.5rem;
+  overflow: hidden;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+.videoOverlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(17, 24, 39, 0.8), rgba(17, 24, 39, 0.4));
+  z-index: 10;
+}
+
+.slideIndicators {
+  position: absolute;
+  bottom: 1rem;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 0.5rem;
+  z-index: 20;
+}
+
+.slideIndicator {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 9999px;
+  background-color: rgba(255, 255, 255, 0.5);
+  transition: all 0.3s ease;
+}
+
+.slideIndicatorActive {
+  width: 1rem;
+  background-color: white;
+}
+
+.playPauseButton {
+  position: absolute;
+  bottom: 1rem;
+  right: 1rem;
+  background-color: rgba(0, 0, 0, 0.4);
+  color: white;
+  padding: 0.5rem;
+  border-radius: 9999px;
+  z-index: 20;
+  transition: background-color 0.3s ease;
+}
+
+.playPauseButton:hover {
+  background-color: rgba(0, 0, 0, 0.6);
+}
