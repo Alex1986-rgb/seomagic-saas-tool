@@ -39,7 +39,7 @@ const DeepCrawlButton: React.FC<DeepCrawlButtonProps> = ({
       toast({
         title: "Предупреждение",
         description: "Вы пытаетесь сканировать домен Lovable. Возможно, это не то, что вы хотели.",
-        variant: "warning"
+        variant: "default"  // Changed from 'warning' to 'default' to fix TS error
       });
     }
     
