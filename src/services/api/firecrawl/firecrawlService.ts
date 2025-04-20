@@ -1,4 +1,3 @@
-
 import { saveAs } from 'file-saver';
 import axios from 'axios';
 import * as cheerio from 'cheerio';
@@ -171,7 +170,7 @@ async function handleRegularCrawl(task: CrawlTask, normalizedUrl: string): Promi
   const urlsToScan = [normalizedUrl];
   const scannedUrls = new Set<string>();
   
-  while (urlsToScan.length > 0) {
+  while (urlsToScan.length > 0 && scannedUrls.size < 500000) {  // Увеличиваем лимит до 500000
     const currentUrl = urlsToScan.shift();
     if (!currentUrl || scannedUrls.has(currentUrl)) continue;
     
@@ -205,7 +204,7 @@ async function handleRegularCrawl(task: CrawlTask, normalizedUrl: string): Promi
       
       // Add to scanned URLs
       scannedUrls.add(currentUrl);
-      task.urls.push(currentUrl);
+      task.urls?.push(currentUrl);
       
       // Update progress
       task.pages_scanned = scannedUrls.size;

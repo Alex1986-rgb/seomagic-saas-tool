@@ -16,7 +16,7 @@ export interface OptimizationResult {
 }
 
 class SeoApiService {
-  async startCrawl(url: string, maxPages: number = 100000) {
+  async startCrawl(url: string, maxPages: number = 500000) { // Увеличиваем значение по умолчанию
     try {
       const task = await firecrawlService.startCrawl(url);
       return {
