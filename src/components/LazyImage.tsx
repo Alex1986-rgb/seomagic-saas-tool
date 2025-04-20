@@ -29,6 +29,16 @@ export const LazyImage: React.FC<LazyImageProps> = ({
     setHasError(true);
   };
 
+  // Generate smaller image sizes for responsive loading
+  const generateSrcSet = (src: string) => {
+    if (src.startsWith('data:') || src.startsWith('blob:')) return undefined;
+    
+    return `${src} 300w,
+            ${src} 600w,
+            ${src} 900w,
+            ${src} 1200w`;
+  };
+
   return (
     <div className={`relative overflow-hidden ${className}`}>
       {!isLoaded && !hasError && (
@@ -46,12 +56,14 @@ export const LazyImage: React.FC<LazyImageProps> = ({
         width={width}
         height={height}
         threshold={200}
+        srcSet={generateSrcSet(src)}
+        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
         placeholderSrc="/images/placeholder.jpg"
         onLoad={handleLoad}
         onError={handleError}
         wrapperClassName="w-full h-full"
-        visibleByDefault={false}
-        afterLoad={handleLoad}
+        loading="lazy"
+        decoding="async"
       />
     </div>
   );

@@ -1,6 +1,9 @@
 
 const CACHE_NAME = 'seo-audit-v2';
-const urlsToCache = [
+const STATIC_CACHE = 'static-v2';
+const DYNAMIC_CACHE = 'dynamic-v2';
+
+const STATIC_ASSETS = [
   '/',
   '/index.html',
   '/manifest.json',
@@ -11,85 +14,85 @@ const urlsToCache = [
   '/main.js'
 ];
 
-// Установка service worker и кеширование базовых ресурсов
+// Install event - cache static assets
 self.addEventListener('install', event => {
   event.waitUntil(
-    caches.open(CACHE_NAME)
+    caches.open(STATIC_CACHE)
       .then(cache => {
-        console.log('Opened cache');
-        return cache.addAll(urlsToCache);
+        console.log('Caching static assets');
+        return cache.addAll(STATIC_ASSETS);
       })
   );
 });
 
-// Стратегия кеширования: сначала из кеша, потом из сети с обновлением кеша
-self.addEventListener('fetch', event => {
-  event.respondWith(
-    caches.match(event.request)
-      .then(response => {
-        // Возвращаем из кеша, если найдено
-        if (response) {
-          // Асинхронно обновляем кеш
-          const fetchPromise = fetch(event.request).then(
-            networkResponse => {
-              // Проверяем ответ
-              if (networkResponse && networkResponse.status === 200 && networkResponse.type === 'basic' && !event.request.url.includes('/api/')) {
-                // Клонируем ответ (поток можно использовать только один раз)
-                const responseToCache = networkResponse.clone();
-                caches.open(CACHE_NAME)
-                  .then(cache => {
-                    cache.put(event.request, responseToCache);
-                  });
-              }
-              return networkResponse;
-            }
-          ).catch(() => {
-            // Сетевой запрос не удался, но у нас уже есть кешированный ответ
-            return response;
-          });
-          
-          // Возвращаем кешированный ответ, не дожидаясь обновления
-          return response;
-        }
-
-        // Если нет в кеше, пытаемся получить из сети
-        return fetch(event.request)
-          .then(response => {
-            // Проверка ответа
-            if (!response || response.status !== 200 || response.type !== 'basic' || event.request.url.includes('/api/')) {
-              return response;
-            }
-
-            // Клонируем ответ
-            const responseToCache = response.clone();
-
-            caches.open(CACHE_NAME)
-              .then(cache => {
-                cache.put(event.request, responseToCache);
-              });
-
-            return response;
-          })
-          .catch(error => {
-            console.log('Fetch failed:', error);
-            // Можно здесь вернуть резервный контент для офлайн-режима
-          });
-      })
-  );
-});
-
-// Очистка старых кешей при активации
+// Activate event - clean up old caches
 self.addEventListener('activate', event => {
-  const cacheWhitelist = [CACHE_NAME];
   event.waitUntil(
-    caches.keys().then(cacheNames => {
+    caches.keys().then(keys => {
       return Promise.all(
-        cacheNames.map(cacheName => {
-          if (cacheWhitelist.indexOf(cacheName) === -1) {
-            return caches.delete(cacheName);
-          }
-        })
+        keys.filter(key => 
+          key !== STATIC_CACHE && 
+          key !== DYNAMIC_CACHE
+        ).map(key => caches.delete(key))
       );
     })
   );
+});
+
+// Fetch event - network first, fallback to cache
+self.addEventListener('fetch', event => {
+  // Skip non-GET requests
+  if (event.request.method !== 'GET') return;
+  
+  // Skip API calls and other dynamic content
+  if (event.request.url.includes('/api/') || 
+      event.request.url.includes('chrome-extension') ||
+      event.request.url.includes('socket.io')) {
+    return;
+  }
+
+  event.respondWith(
+    fetch(event.request)
+      .then(response => {
+        // Clone the response
+        const responseClone = response.clone();
+        
+        // Open dynamic cache and store the response
+        caches.open(DYNAMIC_CACHE)
+          .then(cache => {
+            cache.put(event.request, responseClone);
+          });
+          
+        return response;
+      })
+      .catch(() => {
+        // If network fails, try to get from cache
+        return caches.match(event.request)
+          .then(cachedResponse => {
+            if (cachedResponse) {
+              return cachedResponse;
+            }
+            
+            // Return default offline page if nothing is cached
+            if (event.request.mode === 'navigate') {
+              return caches.match('/offline.html');
+            }
+            
+            return new Response('', {
+              status: 408,
+              statusText: 'Request timeout'
+            });
+          });
+      })
+  );
+});
+
+// Background sync for offline support
+self.addEventListener('sync', event => {
+  if (event.tag === 'sync-data') {
+    event.waitUntil(
+      // Implement background sync logic here
+      Promise.resolve()
+    );
+  }
 });
