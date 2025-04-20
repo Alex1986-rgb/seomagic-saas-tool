@@ -96,7 +96,7 @@ const AuditResultsContainer: React.FC<AuditResultsContainerProps> = ({ url }) =>
       setIsLoading(true);
       
       // We don't use deep scan initially to improve loading time
-      loadAuditData(false, false).then(() => {
+      loadAuditData(false).then(() => {
         setIsLoading(false);
         
         // Clear timeout when successfully loaded
@@ -202,7 +202,7 @@ const AuditResultsContainer: React.FC<AuditResultsContainerProps> = ({ url }) =>
           error={auditError}
           scanDetails={scanDetails}
           url={url}
-          onRetry={() => loadAuditData(false, false)}
+          onRetry={() => loadAuditData(false)}
           onDownloadSitemap={sitemap ? downloadSitemap : undefined}
         />
         
