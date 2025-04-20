@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuditData } from './hooks/useAuditData';
 import { usePageAnalysis } from '@/hooks/use-page-analysis';
@@ -20,6 +20,7 @@ const AuditResultsContainer: React.FC<AuditResultsContainerProps> = ({ url }) =>
   const [isInitialized, setIsInitialized] = useState(false);
   const [hadError, setHadError] = useState(false);
   const { toast } = useToast();
+  const initRef = useRef(false);
   
   const {
     isLoading,
@@ -48,8 +49,11 @@ const AuditResultsContainer: React.FC<AuditResultsContainerProps> = ({ url }) =>
   } = useAuditData(url);
 
   const initializeAudit = useCallback(() => {
+    if (initRef.current) return;
+    
     console.log("Initializing audit for URL:", url);
     try {
+      initRef.current = true;
       loadAuditData(false, false).catch(err => {
         console.error("Error loading audit data:", err);
         setHadError(true);
@@ -98,6 +102,7 @@ const AuditResultsContainer: React.FC<AuditResultsContainerProps> = ({ url }) =>
   // If we had an error loading, but the component is still mounted,
   // let's give the user a way to retry
   const handleRetry = () => {
+    initRef.current = false;
     setIsInitialized(false);
     setHadError(false);
     // This will trigger the useEffect to run again
@@ -175,7 +180,7 @@ const AuditResultsContainer: React.FC<AuditResultsContainerProps> = ({ url }) =>
                 url={url}
                 pageCount={auditData.pageCount || 0}
                 showPrompt={showPrompt}
-                onTogglePrompt={() => setShowPrompt(!showPrompt)}
+                onTogglePrompt={toggleContentPrompt}
                 onOptimize={optimizeSiteContent}
                 onDownloadOptimizedSite={downloadOptimizedSite}
                 onGeneratePdfReport={generatePdfReportFile}

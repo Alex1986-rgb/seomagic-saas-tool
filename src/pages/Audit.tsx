@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import SeoAuditResults from '@/components/SeoAuditResults';
 import UrlForm from '@/components/url-form';
@@ -19,17 +19,32 @@ const Audit: React.FC = () => {
   const [scannedUrls, setScannedUrls] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
+  const extractedUrl = useRef(false);
 
   const extractUrlParam = useCallback(() => {
+    if (extractedUrl.current) return;
+    
     setIsLoading(true);
     const urlParam = searchParams.get('url');
     
     if (urlParam) {
       try {
+        // Basic URL validation
+        if (!urlParam.includes('.')) {
+          throw new Error("Invalid URL format");
+        }
+        
         const formattedUrl = urlParam.startsWith('http') ? urlParam : `https://${urlParam}`;
-        new URL(formattedUrl); // Validate URL format
+        // Validate URL format
+        try {
+          new URL(formattedUrl);
+        } catch (e) {
+          throw new Error("Invalid URL format");
+        }
+        
         setUrl(urlParam);
         setError(null);
+        extractedUrl.current = true;
       } catch (err) {
         console.error("URL validation error:", err);
         setError("Предоставленный URL некорректен. Пожалуйста, попробуйте снова.");
@@ -80,13 +95,21 @@ const Audit: React.FC = () => {
       <div className="p-6 text-center">
         <p className="text-lg text-red-500 mb-4">Произошла ошибка при загрузке аудита</p>
         <button 
-          onClick={resetErrorBoundary}
+          onClick={() => {
+            extractedUrl.current = false; // Reset URL extraction
+            resetErrorBoundary();
+          }}
           className="px-4 py-2 bg-primary text-white rounded-md"
         >
           Попробовать снова
         </button>
       </div>
     );
+  };
+
+  const handleResetErrors = () => {
+    extractedUrl.current = false;
+    extractUrlParam();
   };
 
   return (
@@ -125,10 +148,8 @@ const Audit: React.FC = () => {
                 </div>
                 <ErrorBoundary 
                   FallbackComponent={handleErrorFallback}
-                  onReset={() => {
-                    // Reset state when error boundary resets
-                    extractUrlParam();
-                  }}
+                  onReset={handleResetErrors}
+                  resetKeys={[url]}
                 >
                   <SeoAuditResults url={url} />
                 </ErrorBoundary>

@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import AuditResultsContainer from './audit/results/AuditResultsContainer';
 
@@ -11,6 +11,7 @@ const SeoAuditResults: React.FC<SeoAuditResultsProps> = ({ url }) => {
   const [isReady, setIsReady] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
+  const initializeAttempted = useRef(false);
 
   useEffect(() => {
     console.log("SeoAuditResults mounted with URL:", url);
@@ -25,15 +26,20 @@ const SeoAuditResults: React.FC<SeoAuditResultsProps> = ({ url }) => {
       return;
     }
 
-    // Небольшая задержка для обеспечения корректной инициализации
-    const timer = setTimeout(() => {
-      setIsReady(true);
-    }, 100);
+    // Prevent multiple initialization attempts
+    if (!initializeAttempted.current) {
+      initializeAttempted.current = true;
+      
+      // Небольшая задержка для обеспечения корректной инициализации
+      const timer = setTimeout(() => {
+        setIsReady(true);
+      }, 100);
 
-    return () => {
-      console.log("SeoAuditResults unmounted");
-      clearTimeout(timer);
-    };
+      return () => {
+        console.log("SeoAuditResults unmounted");
+        clearTimeout(timer);
+      };
+    }
   }, [url, toast]);
 
   if (!url) {
