@@ -1,7 +1,7 @@
 
 import axios from 'axios';
 import * as cheerio from 'cheerio';
-import { CrawlResult, DeepCrawlerOptions } from './types';
+import { CrawlResult, DeepCrawlerOptions } from '../../api/firecrawl/types';
 import { UrlProcessor } from './urlProcessor';
 import { QueueManager } from './queueManager';
 
@@ -26,7 +26,6 @@ export class DeepCrawlerCore {
     const result: CrawlResult = {
       urls: [],
       metadata: {
-        sitemap: '',
         keywords: [],
         links: { internal: 0, external: 0, broken: 0 }
       },
@@ -56,13 +55,27 @@ export class DeepCrawlerCore {
         const keywords = $('meta[name="keywords"]').attr('content')?.split(',') || [];
         
         // Update keywords in result
-        result.metadata!.keywords = [...new Set([...result.metadata!.keywords, ...keywords])];
+        result.metadata!.keywords = [...new Set([...result.metadata!.keywords || [], ...keywords])];
 
         // Process links
         const links = await this.processLinks($, url);
-        result.metadata!.links.internal += links.internal.length;
-        result.metadata!.links.external += links.external.length;
-        result.brokenLinks?.push(...links.broken);
+        result.metadata!.links!.internal += links.internal.length;
+        result.metadata!.links!.external += links.external.length;
+        
+        // Добавляем в brokenLinks объекты с url и statusCode
+        if (links.broken.length > 0) {
+          if (!result.brokenLinks) {
+            result.brokenLinks = [];
+          }
+          
+          // Преобразуем строки в объекты { url, statusCode }
+          for (const brokenUrl of links.broken) {
+            (result.brokenLinks as { url: string; statusCode: number }[]).push({ 
+              url: brokenUrl, 
+              statusCode: 404 
+            });
+          }
+        }
 
         // Add internal links to queue
         for (const link of links.internal) {
@@ -82,8 +95,17 @@ export class DeepCrawlerCore {
 
       } catch (error) {
         console.error(`Error crawling ${url}:`, error);
-        result.brokenLinks?.push(url);
-        result.metadata!.links.broken++;
+        if (!result.brokenLinks) {
+          result.brokenLinks = [];
+        }
+        
+        // Добавляем в brokenLinks объект с url и statusCode
+        (result.brokenLinks as { url: string; statusCode: number }[]).push({ 
+          url, 
+          statusCode: error instanceof axios.AxiosError && error.response ? error.response.status : 0 
+        });
+        
+        result.metadata!.links!.broken++;
       }
 
       // Check limits

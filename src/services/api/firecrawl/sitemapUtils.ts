@@ -60,9 +60,12 @@ export const downloadSitemap = async (task: CrawlTask): Promise<void> => {
     throw new Error('Task is not completed yet');
   }
   
+  // Используем task.urls или task.results?.urls
+  const urls = task.urls || task.results?.urls || [];
+  const domain = task.domain || new URL(task.url.startsWith('http') ? task.url : `https://${task.url}`).hostname;
+  
   // Generate XML sitemap
-  const urls = task.urls || [];
-  const xml = generateSitemapXml(task.domain, urls);
+  const xml = generateSitemapXml(domain, urls);
   
   // Create and download file
   const blob = new Blob([xml], { type: 'application/xml' });

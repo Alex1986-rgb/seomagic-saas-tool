@@ -44,7 +44,6 @@ export const simulateCrawlProgress = (taskId: string): void => {
       Math.floor((updatedTask.pages_scanned / updatedTask.estimated_total_pages) * 100),
       99
     );
-    updatedTask.updated_at = new Date().toISOString();
     
     // If we've reached 100% or exceeded expected page count
     if (updatedTask.pages_scanned >= updatedTask.estimated_total_pages) {

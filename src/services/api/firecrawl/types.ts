@@ -10,6 +10,11 @@ export interface CrawlTask {
   current_url?: string;
   error?: string;
   results?: CrawlResult;
+  // Добавляем недостающие свойства
+  progress?: number;
+  isLargeSite?: boolean;
+  domain?: string;
+  urls?: string[];
 }
 
 export interface CrawlResult {
@@ -23,7 +28,7 @@ export interface CrawlResult {
       broken: number;
     };
   };
-  brokenLinks?: string[];
+  brokenLinks?: string[] | { url: string; statusCode: number; }[];
 }
 
 export interface DeepCrawlerOptions {
@@ -35,3 +40,6 @@ export interface DeepCrawlerOptions {
     totalUrls: number;
   }) => void;
 }
+
+// Добавим массив для хранения задач сканирования, который используется в crawlSimulator.ts
+export const crawlTasks: CrawlTask[] = [];

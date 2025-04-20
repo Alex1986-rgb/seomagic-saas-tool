@@ -67,9 +67,9 @@ class SeoApiService {
         status: task.status,
         pages_scanned: task.pages_scanned,
         total_pages: task.estimated_total_pages,
-        progress: task.progress,
+        progress: task.progress || 0,
         error: task.error,
-        isLargeSite: task.isLargeSite
+        isLargeSite: task.isLargeSite || false
       };
     } catch (error) {
       console.error('Error getting status:', error);

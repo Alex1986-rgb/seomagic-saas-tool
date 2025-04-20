@@ -94,7 +94,7 @@ export const useMassiveSiteCrawl = () => {
           if (taskStatus.status === 'completed') {
             clearInterval(pollingInterval);
             
-            const urls = taskStatus.urls || [];
+            const urls = taskStatus.urls || (taskStatus.results ? taskStatus.results.urls : []);
             
             setCrawlProgress(prev => ({
               ...prev,
@@ -346,7 +346,7 @@ function calculateOptimizationScore(pageCount: number): number {
 function generateImprovementAreas(pageCount: number): string[] {
   const areas = [
     'Оптимизация метатегов',
-    'Улучшение структуры заголовков',
+    'Улучшение структуры з��головков',
     'Исправление дублирующегося контента',
     'Ускорение загрузки страниц',
     'Оптимизация мобильной версии',
