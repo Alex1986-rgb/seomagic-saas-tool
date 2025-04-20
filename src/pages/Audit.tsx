@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import SeoAuditResults from '@/components/SeoAuditResults';
@@ -11,6 +10,8 @@ import AuditErrorAlert from '@/components/audit/AuditErrorAlert';
 import AuditAdvancedTools from '@/components/audit/AuditAdvancedTools';
 import { ErrorBoundary } from 'react-error-boundary';
 import LoadingSpinner from '@/components/LoadingSpinner';
+import AuditTimeoutMessage from "@/components/audit/AuditTimeoutMessage";
+import AuditLoaderSection from "@/components/audit/AuditLoaderSection";
 
 const Audit: React.FC = () => {
   const [searchParams] = useSearchParams();
@@ -24,15 +25,12 @@ const Audit: React.FC = () => {
   const extractedUrl = useRef(false);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Set a global timeout for the entire audit process
   useEffect(() => {
     if (url && !timeoutOccurred) {
-      // Clear any existing timeout
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current);
       }
       
-      // Set a new timeout - 3 minutes maximum for the entire process
       timeoutRef.current = setTimeout(() => {
         console.log("Global audit timeout triggered after 3 minutes");
         setTimeoutOccurred(true);
@@ -45,9 +43,8 @@ const Audit: React.FC = () => {
           variant: "destructive",
         });
         
-        // Reset extraction flag to allow retrying
         extractedUrl.current = false;
-      }, 180000); // 3 minutes timeout
+      }, 180000);
       
       return () => {
         if (timeoutRef.current) {
@@ -66,13 +63,11 @@ const Audit: React.FC = () => {
     
     if (urlParam) {
       try {
-        // Basic URL validation
         if (!urlParam.includes('.')) {
           throw new Error("Invalid URL format");
         }
         
         const formattedUrl = urlParam.startsWith('http') ? urlParam : `https://${urlParam}`;
-        // Validate URL format
         try {
           new URL(formattedUrl);
         } catch (e) {
@@ -87,7 +82,7 @@ const Audit: React.FC = () => {
         setError("Предоставленный URL некорректен. Пожалуйста, попробуйте снова.");
         toast({
           title: "Некорректный URL",
-          description: "Предоставленный URL некорректен. Пожалуйста, попробуйте снова.",
+          description: "Предоставленный URL некорректен. Пожалуйста, попробуйте с��ова.",
           variant: "destructive",
         });
         setUrl('');
@@ -108,7 +103,6 @@ const Audit: React.FC = () => {
     return () => {
       console.log("Audit component unmounted");
       clearTimeout(timer);
-      // Clear audit timeout if component unmounts
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current);
       }
@@ -138,7 +132,7 @@ const Audit: React.FC = () => {
         <p className="text-lg text-red-500 mb-4">Произошла ошибка при загрузке аудита</p>
         <button 
           onClick={() => {
-            extractedUrl.current = false; // Reset URL extraction
+            extractedUrl.current = false;
             setTimeoutOccurred(false);
             resetErrorBoundary();
           }}
@@ -156,100 +150,36 @@ const Audit: React.FC = () => {
     extractUrlParam();
   };
 
-  // If a timeout occurred, show error instead of loading spinner
   if (timeoutOccurred) {
     return (
       <Layout>
-        <div className="container mx-auto px-4 md:px-6 pt-32 pb-20 relative">
-          <div className="absolute inset-0 bg-gradient-to-b from-secondary/20 to-transparent -z-10" />
-          
-          <AuditHero url={url} />
-          
-          <div className="p-6 text-center">
-            <p className="text-lg text-red-500 mb-4">Время ожидания истекло. Возможно, сайт слишком большой или возникли проблемы с соединением.</p>
-            <button 
-              onClick={() => {
-                extractedUrl.current = false;
-                setTimeoutOccurred(false);
-                extractUrlParam();
-              }}
-              className="px-4 py-2 bg-primary text-white rounded-md"
-            >
-              Попробовать снова
-            </button>
-          </div>
-          
-          {!url && (
-            <motion.div 
-              className="max-w-2xl mx-auto mb-16 elegant-card p-8"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.5, delay: 0.2 }}
-            >
-              <UrlForm />
-            </motion.div>
-          )}
-        </div>
+        <AuditTimeoutMessage 
+          url={url}
+          onRetry={() => {
+            extractedUrl.current = false;
+            setTimeoutOccurred(false);
+            extractUrlParam();
+          }}
+        />
       </Layout>
     );
   }
 
   return (
     <Layout>
-      <div className="container mx-auto px-4 md:px-6 pt-32 pb-20 relative">
-        <div className="absolute inset-0 bg-gradient-to-b from-secondary/20 to-transparent -z-10" />
-        
-        <AuditHero url={url} />
-        
-        <AuditErrorAlert 
-          error={error} 
-          onClearError={handleClearError} 
-        />
-
-        {isLoading ? (
-          <div className="flex justify-center items-center min-h-[200px]">
-            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
-          </div>
-        ) : (
-          <>
-            {!url && (
-              <motion.div 
-                className="max-w-2xl mx-auto mb-16 elegant-card p-8"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 0.5, delay: 0.2 }}
-              >
-                <UrlForm />
-              </motion.div>
-            )}
-
-            {url && (
-              <>
-                <div className="mb-8">
-                  <div className="elegant-divider-alt" />
-                </div>
-                <ErrorBoundary 
-                  FallbackComponent={handleErrorFallback}
-                  onReset={handleResetErrors}
-                  resetKeys={[url]}
-                >
-                  <SeoAuditResults url={url} />
-                </ErrorBoundary>
-              </>
-            )}
-            
-            {url && (
-              <AuditAdvancedTools 
-                url={url}
-                showAdvancedTools={showAdvancedTools}
-                scannedUrls={scannedUrls}
-                onUrlsScanned={handleUrlsScanned}
-                onToggleTools={() => setShowAdvancedTools(!showAdvancedTools)}
-              />
-            )}
-          </>
-        )}
-      </div>
+      <AuditLoaderSection
+        url={url}
+        error={error}
+        isLoading={isLoading}
+        showAdvancedTools={showAdvancedTools}
+        scannedUrls={scannedUrls}
+        handleClearError={handleClearError}
+        handleUrlsScanned={handleUrlsScanned}
+        setShowAdvancedTools={setShowAdvancedTools}
+        extractedUrl={extractedUrl}
+        setTimeoutOccurred={setTimeoutOccurred}
+        extractUrlParam={extractUrlParam}
+      />
     </Layout>
   );
 };
