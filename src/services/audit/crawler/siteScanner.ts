@@ -1,4 +1,3 @@
-
 import axios from 'axios';
 import * as cheerio from 'cheerio';
 import { urlCache } from '../linkExtraction';
@@ -16,6 +15,7 @@ interface SiteScannerOptions {
 interface ScanResult {
   urls: string[];
   pageDetails: Map<string, PageDetail>;
+  pageCount: number;
 }
 
 interface PageDetail {
@@ -59,7 +59,6 @@ export class SiteScanner {
       ...options
     };
     
-    // Initialize the queue with the base URL
     this.queue.push({ url: baseUrl, depth: 0 });
   }
   
@@ -70,25 +69,19 @@ export class SiteScanner {
       await this.loadRobotsTxt();
     }
     
-    // Process the queue until it's empty or we reach the max pages
     while (this.queue.length > 0 && this.visited.size < (this.options.maxPages || 100)) {
-      // Get the next URL from the queue
       const { url, depth } = this.queue.shift()!;
       
-      // Skip if we've already visited this URL
       if (this.visited.has(url)) continue;
       
-      // Skip if this URL is disallowed by robots.txt
       if (this.options.respectRobotsTxt && this.isDisallowedByRobotsTxt(url)) {
         console.log(`Skipping ${url} - disallowed by robots.txt`);
         continue;
       }
       
-      // Process the URL
       try {
         await this.processUrl(url, depth);
         
-        // Report progress
         if (this.options.onProgress) {
           this.options.onProgress(
             this.visited.size,
@@ -97,7 +90,6 @@ export class SiteScanner {
           );
         }
         
-        // Add a small delay to be respectful to the server
         if (this.options.crawlDelay) {
           await new Promise(resolve => setTimeout(resolve, this.options.crawlDelay));
         }
@@ -108,18 +100,16 @@ export class SiteScanner {
     
     console.log(`Scan completed. Visited ${this.visited.size} pages.`);
     
-    // Return the scan results
     return {
       urls: Array.from(this.visited),
-      pageDetails: this.pageDetails
+      pageDetails: this.pageDetails,
+      pageCount: this.visited.size
     };
   }
   
   private async processUrl(url: string, depth: number): Promise<void> {
-    // Skip if we've reached the max depth
     if (depth > (this.options.maxDepth || 3)) return;
     
-    // Mark this URL as visited
     this.visited.add(url);
     urlCache.add(url);
     
@@ -127,28 +117,25 @@ export class SiteScanner {
       const startTime = performance.now();
       const response = await axios.get(url, {
         timeout: this.options.timeout,
-        validateStatus: (status) => status < 500, // Accept all status codes < 500 to process redirects
+        validateStatus: (status) => status < 500,
         headers: {
           'Accept': 'text/html,application/xhtml+xml,application/xml',
           'User-Agent': 'Mozilla/5.0 (compatible; SEOAuditBot/1.0; +https://example.com/bot)',
           'Accept-Language': 'en-US,en;q=0.9',
         },
-        allowAbsoluteUrls: true, // Allow absolute URLs in Node.js
+        allowAbsoluteUrls: true,
       });
       
       const loadTime = performance.now() - startTime;
       const statusCode = response.status;
       
-      // Skip non-HTML content
       const contentType = response.headers['content-type'] || '';
       if (!contentType.includes('text/html') && !contentType.includes('application/xhtml+xml')) {
         return;
       }
       
-      // Parse the HTML
       const $ = cheerio.load(response.data);
       
-      // Extract page details
       const title = $('title').text().trim() || null;
       const metaDescription = $('meta[name="description"]').attr('content') || null;
       const h1Count = $('h1').length;
@@ -156,7 +143,6 @@ export class SiteScanner {
       const text = $('body').text();
       const wordCount = text.split(/\s+/).filter(word => word.length > 0).length;
       
-      // Store page details
       this.pageDetails.set(url, {
         url,
         title,
@@ -168,10 +154,8 @@ export class SiteScanner {
         loadTime
       });
       
-      // Extract links
       const links = this.extractLinks($, url);
       
-      // Add new links to the queue
       for (const link of links) {
         if (!this.visited.has(link) && !this.queue.some(item => item.url === link)) {
           this.queue.push({ url: link, depth: depth + 1 });
@@ -180,7 +164,6 @@ export class SiteScanner {
     } catch (error) {
       console.error(`Error processing URL ${url}:`, error);
       
-      // Store error page details
       this.pageDetails.set(url, {
         url,
         title: null,
@@ -202,11 +185,9 @@ export class SiteScanner {
       if (!href) return;
       
       try {
-        // Resolve relative URLs
         const absoluteUrl = new URL(href, baseUrl).href;
         const urlObj = new URL(absoluteUrl);
         
-        // Skip fragment identifiers and query params if the base URL is the same
         const baseUrlObj = new URL(baseUrl);
         if (urlObj.hostname === baseUrlObj.hostname && 
             urlObj.pathname === baseUrlObj.pathname && 
@@ -214,17 +195,14 @@ export class SiteScanner {
           return;
         }
         
-        // Skip mailto, tel, javascript, etc.
         if (urlObj.protocol !== 'http:' && urlObj.protocol !== 'https:') {
           return;
         }
         
-        // Skip external domains unless configured to follow them
         if (!this.options.followExternalLinks && urlObj.hostname !== this.domain) {
           return;
         }
         
-        // Skip common file extensions
         const skipExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.pdf', '.zip', '.doc', '.docx', '.xls', '.xlsx', '.ppt', '.pptx'];
         if (skipExtensions.some(ext => urlObj.pathname.toLowerCase().endsWith(ext))) {
           return;
@@ -232,7 +210,6 @@ export class SiteScanner {
         
         links.push(absoluteUrl);
       } catch (error) {
-        // Invalid URL, skip
       }
     });
     
@@ -285,18 +262,15 @@ export class SiteScanner {
       
       for (const rule of this.robotsTxtRules) {
         if (rule === '/') {
-          // Disallow all
           return true;
         }
         
         if (rule.endsWith('*')) {
-          // Wildcard match
           const prefix = rule.slice(0, -1);
           if (path.startsWith(prefix)) {
             return true;
           }
         } else {
-          // Exact match
           if (path === rule || path.startsWith(`${rule}/`)) {
             return true;
           }

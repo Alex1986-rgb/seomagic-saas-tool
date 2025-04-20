@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { X, AlertCircle, Check } from 'lucide-react';
 import { 
@@ -56,7 +55,7 @@ export const DeepCrawlProgressDialog: React.FC<DeepCrawlProgressDialogProps> = (
         if (result) {
           toast({
             title: "Сканирование завершено",
-            description: `Обнаружено ${result.pageCount} страниц на сайте ${url}`,
+            description: `Обнаружено ${result.urls.length} страниц на сайте ${url}`,
           });
         }
       };

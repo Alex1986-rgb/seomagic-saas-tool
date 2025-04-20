@@ -40,13 +40,19 @@ export function useCrawlProgress(url: string) {
       
       if (result) {
         // Generate sitemap from results
-        const generatedSitemap = sitemapExport.generateSitemapFile(domain, result.pageCount);
+        const generatedSitemap = sitemapExport.generateSitemapFile(domain, result.urls.length);
         setSitemap(generatedSitemap);
         
-        // Complete the crawl
-        crawlState.completeCrawl(true, result);
+        // Complete the crawl with the correct data structure
+        crawlState.completeCrawl(true, {
+          urls: result.urls,
+          pageCount: result.pageCount || result.urls.length // Fallback to urls length if pageCount doesn't exist
+        });
         
-        return result;
+        return {
+          urls: result.urls,
+          pageCount: result.pageCount || result.urls.length
+        };
       }
       else {
         crawlState.completeCrawl(false);

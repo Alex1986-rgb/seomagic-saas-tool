@@ -55,6 +55,11 @@ export const useSimpleSitemapCreator = () => {
         title: "Карта сайта создана",
         description: `Обнаружено ${discoveredUrls.length} URL на сайте ${url}`,
       });
+      
+      return {
+        urls: discoveredUrls,
+        pageCount: discoveredUrls.length
+      };
     } catch (error) {
       console.error('Error generating sitemap:', error);
       toast({
@@ -62,6 +67,7 @@ export const useSimpleSitemapCreator = () => {
         description: "Произошла ошибка при сканировании сайта и создании карты",
         variant: "destructive",
       });
+      return null;
     } finally {
       setIsGenerating(false);
       setProgress(100);
