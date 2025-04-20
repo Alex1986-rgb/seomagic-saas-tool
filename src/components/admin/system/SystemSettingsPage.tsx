@@ -6,7 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
-// Основные разделы настроек
+// Список разделов системных настроек
 const TILES = [
   {
     icon: <Database className="h-5 w-5 text-primary" />,
@@ -52,7 +52,7 @@ const TILES = [
   }
 ];
 
-// Блок актуальной информации
+// Компонент актуальной информации о системе
 const SystemInfo = () => (
   <div className="bg-muted border rounded-md p-4 flex flex-col md:flex-row md:items-center gap-4 mb-6">
     <Info className="h-6 w-6 text-primary" />
