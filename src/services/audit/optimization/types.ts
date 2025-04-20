@@ -46,7 +46,6 @@ export interface OptimizationMetrics {
   underscoreUrls?: number;
   duplicateContent?: number;
   contentToRewrite?: number;
-  missingMetaTags?: number;
   totalScore: number;
   potentialScoreIncrease: number;
   estimatedCost: number;

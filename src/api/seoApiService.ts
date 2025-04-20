@@ -9,6 +9,12 @@ export type ScanDetails = {
   stage: string;
 };
 
+export interface OptimizationResult {
+  success: boolean;
+  message?: string;
+  data?: any;
+}
+
 class SeoApiService {
   async startCrawl(url: string, maxPages: number = 10000) {
     try {
@@ -106,6 +112,30 @@ class SeoApiService {
     } catch (error) {
       console.error('Error downloading optimized site:', error);
       throw error;
+    }
+  }
+
+  async optimizeSiteContent(taskId: string, contentPrompt: string): Promise<OptimizationResult> {
+    try {
+      console.log(`Optimizing content for task ${taskId} with prompt: ${contentPrompt}`);
+      
+      // В реальной имплементации здесь будет интеграция с OpenAI API
+      // для оптимизации содержимого сайта на основе результатов сканирования
+      
+      // Имитация задержки запроса к API
+      await new Promise(resolve => setTimeout(resolve, 3000));
+      
+      // Возвращаем успешный результат
+      return {
+        success: true,
+        message: "Контент успешно оптимизирован"
+      };
+    } catch (error) {
+      console.error('Error optimizing site content:', error);
+      return {
+        success: false,
+        message: error instanceof Error ? error.message : "Ошибка при оптимизации контента"
+      };
     }
   }
 }

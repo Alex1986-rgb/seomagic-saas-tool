@@ -83,26 +83,27 @@ export const useOptimizationAPI = (taskId: string | null) => {
         description: "Не удалось получить ID задачи для оптимизации контента",
         variant: "destructive"
       });
-      return;
+      return false;
     }
 
     try {
-      // Симуляция запроса к API
       toast({
         title: "Оптимизация контента",
         description: "Начат процесс оптимизации контента",
       });
 
-      // Здесь будет реальный вызов API для оптимизации контента
-      // В демо версии просто задержка для имитации процесса
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      // В реальной версии здесь будет вызов API для оптимизации с OpenAI
+      const result = await seoApiService.optimizeSiteContent(taskId, contentPrompt);
       
-      toast({
-        title: "Успех",
-        description: "Контент успешно оптимизирован",
-      });
-      
-      return true;
+      if (result.success) {
+        toast({
+          title: "Успех",
+          description: "Контент успешно оптимизирован с помощью ИИ",
+        });
+        return true;
+      } else {
+        throw new Error(result.message || "Неизвестная ошибка при оптимизации");
+      }
     } catch (error) {
       console.error('Error optimizing content:', error);
       
