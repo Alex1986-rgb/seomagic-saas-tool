@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Link } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -12,7 +11,6 @@ import {
   Signal,
   Clock,
   HardDrive,
-  Memory,
   Cpu,
   Network,
   TrendingUp,
@@ -100,7 +98,7 @@ const statCards = [
   {
     title: "Использование памяти",
     value: "68%",
-    icon: <Memory className="h-6 w-6 text-purple-500" />,
+    icon: <Server className="h-6 w-6 text-purple-500" />,
     description: "8.2 ГБ / 12 ГБ",
     color: "bg-purple-50",
     trend: { value: 5, icon: <TrendingUp className="h-4 w-4" /> }
@@ -262,9 +260,9 @@ const AdminMonitoringPage: React.FC = () => (
               <div className="rounded-xl bg-white/80 p-3 shadow">
                 {card.icon}
               </div>
-              <div className="text-xs px-2 py-1 rounded-full flex items-center gap-1 
+              <div className={`text-xs px-2 py-1 rounded-full flex items-center gap-1 
                               bg-opacity-20 font-medium
-                              ${card.trend.value > 0 ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}">
+                              ${card.trend.value > 0 ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
                 {card.trend.icon}
                 <span>{card.trend.value > 0 ? '+' : ''}{card.trend.value}%</span>
               </div>
@@ -344,9 +342,13 @@ const AdminMonitoringPage: React.FC = () => (
           <div className="h-80">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart
-                data={[...cpuUsageData, ...memoryUsageData.map(item => ({ ...item, type: 'memory' }))]
-                  .map(item => item.type ? { time: item.time, memory: item.value } : { time: item.time, cpu: item.value })
-                }
+                data={[
+                  ...cpuUsageData.map(item => ({ ...item, category: 'cpu' })),
+                  ...memoryUsageData.map(item => ({ ...item, category: 'memory' }))
+                ].map(item => ({ 
+                  time: item.time, 
+                  [item.category]: item.value 
+                }))}
                 margin={{ top: 20, right: 30, left: 20, bottom: 10 }}
               >
                 <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
