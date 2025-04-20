@@ -9,7 +9,7 @@ interface SlideProps {
   slideData: {
     title: string;
     description: string;
-    blogId?: number;
+    blogId: number;
   };
   currentSlide: number;
   slideIndex: number;
@@ -20,9 +20,7 @@ const Slide: React.FC<SlideProps> = ({ slideData, currentSlide, slideIndex }) =>
   const isActive = currentSlide === slideIndex;
 
   const handleClick = () => {
-    if (slideData.blogId) {
-      navigate(`/blog/${slideData.blogId}`);
-    }
+    navigate(`/blog/${slideData.blogId}`);
   };
 
   if (!isActive) return null;
@@ -40,16 +38,14 @@ const Slide: React.FC<SlideProps> = ({ slideData, currentSlide, slideIndex }) =>
       <p className="text-sm md:text-base text-gray-300 mb-6 max-w-lg text-center">
         {slideData.description}
       </p>
-      {slideData.blogId && (
-        <Button 
-          onClick={handleClick}
-          variant="outline"
-          className="group hover:bg-primary/20"
-        >
-          Подробнее
-          <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
-        </Button>
-      )}
+      <Button 
+        onClick={handleClick}
+        variant="outline"
+        className="group hover:bg-primary/20"
+      >
+        Подробнее
+        <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
+      </Button>
     </motion.div>
   );
 };

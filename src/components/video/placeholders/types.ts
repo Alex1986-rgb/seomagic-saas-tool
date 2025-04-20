@@ -4,9 +4,9 @@ import { LucideIcon } from 'lucide-react';
 export interface SlideData {
   title: string;
   description: string;
-  blogId?: number;
+  blogId: number;
   color: string;
-  icon?: LucideIcon;
+  icon: LucideIcon;
 }
 
 export interface AnimatedVideoPlaceholderProps {
