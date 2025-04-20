@@ -4,14 +4,12 @@ import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from 'lucide-react';
-import { LazyImage } from '@/components/LazyImage';
 
 interface SlideProps {
   slideData: {
     title: string;
     description: string;
     blogId: number;
-    image?: string;
   };
   currentSlide: number;
   slideIndex: number;
@@ -35,16 +33,6 @@ const Slide: React.FC<SlideProps> = ({ slideData, currentSlide, slideIndex }) =>
       className="absolute inset-0 flex flex-col items-center justify-center cursor-pointer hover:opacity-95 transition-opacity"
       onClick={handleClick}
     >
-      {slideData.image && (
-        <div className="relative w-full max-w-xl mb-6 rounded-lg overflow-hidden shadow-xl">
-          <LazyImage
-            src={slideData.image}
-            alt={slideData.title}
-            className="w-full h-48 object-cover"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
-        </div>
-      )}
       <h3 className="text-xl md:text-2xl font-semibold mb-3 text-white">
         {slideData.title}
       </h3>
@@ -63,3 +51,4 @@ const Slide: React.FC<SlideProps> = ({ slideData, currentSlide, slideIndex }) =>
 };
 
 export default Slide;
+
