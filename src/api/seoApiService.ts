@@ -16,7 +16,7 @@ export interface OptimizationResult {
 }
 
 class SeoApiService {
-  async startCrawl(url: string, maxPages: number = 10000) {
+  async startCrawl(url: string, maxPages: number = 100000) {
     try {
       const task = await firecrawlService.startCrawl(url);
       return {
@@ -41,7 +41,8 @@ class SeoApiService {
         pages_scanned: task.pages_scanned,
         total_pages: task.estimated_total_pages,
         progress: task.progress,
-        error: task.error
+        error: task.error,
+        isLargeSite: task.isLargeSite
       };
     } catch (error) {
       console.error('Error getting status:', error);
