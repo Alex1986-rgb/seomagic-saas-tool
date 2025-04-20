@@ -1,83 +1,67 @@
 
 import React from 'react';
 import { Button } from "@/components/ui/button";
-import { RefreshCw, Download, Scan, Text, FileJson } from 'lucide-react';
+import { DownloadIcon, RefreshCcw, Database, BrainCircuit } from 'lucide-react';
+import DeepCrawlButton from '../../deep-crawl/DeepCrawlButton';
+import MassiveCrawlButton from '../../deep-crawl/MassiveCrawlButton';
 
 interface AuditHeaderProps {
   onRefresh: () => void;
   onDeepScan: () => void;
   isRefreshing: boolean;
   onDownloadSitemap?: () => void;
-  onTogglePrompt?: () => void;
-  onExportJSON?: () => void;
-  showPrompt?: boolean;
+  onTogglePrompt: () => void;
+  onExportJSON: () => void;
+  showPrompt: boolean;
 }
 
-const AuditHeader: React.FC<AuditHeaderProps> = ({ 
-  onRefresh, 
-  onDeepScan, 
-  isRefreshing, 
+const AuditHeader: React.FC<AuditHeaderProps> = ({
+  onRefresh,
+  onDeepScan,
+  isRefreshing,
   onDownloadSitemap,
   onTogglePrompt,
   onExportJSON,
-  showPrompt = false
+  showPrompt
 }) => {
   return (
-    <div className="flex flex-wrap gap-2 justify-between items-center mb-4">
-      <div className="flex flex-wrap gap-2">
-        <Button 
-          onClick={onRefresh} 
-          variant="outline" 
-          className="gap-2" 
+    <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center py-4 px-1 mb-4 gap-3 border-b">
+      <div className="flex items-center space-x-2">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={onRefresh}
           disabled={isRefreshing}
         >
-          <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
-          <span>Обновить</span>
+          <RefreshCcw className="h-4 w-4 mr-2" />
+          Обновить аудит
         </Button>
         
-        <Button 
-          onClick={onDeepScan} 
-          variant="outline" 
-          className="gap-2"
-          disabled={isRefreshing}
-        >
-          <Scan className="h-4 w-4" />
-          <span>Глубокий анализ</span>
-        </Button>
-        
-        {onTogglePrompt && (
-          <Button 
-            onClick={onTogglePrompt} 
-            variant={showPrompt ? "default" : "outline"} 
-            className="gap-2"
+        {onDownloadSitemap && (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={onDownloadSitemap}
           >
-            <Text className="h-4 w-4" />
-            <span>{showPrompt ? 'Скрыть промпт' : 'Оптимизация контента'}</span>
+            <DownloadIcon className="h-4 w-4 mr-2" />
+            Скачать Sitemap
           </Button>
         )}
         
-        {onExportJSON && (
-          <Button 
-            onClick={onExportJSON} 
-            variant="outline" 
-            className="gap-2"
-          >
-            <FileJson className="h-4 w-4" />
-            <span>Экспорт JSON</span>
-          </Button>
-        )}
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={onExportJSON}
+        >
+          <DownloadIcon className="h-4 w-4 mr-2" />
+          Экспорт JSON
+        </Button>
       </div>
       
-      {onDownloadSitemap && (
-        <Button 
-          onClick={onDownloadSitemap} 
-          variant="outline" 
-          className="gap-2"
-        >
-          <Download className="h-4 w-4" />
-          <span>Скачать Sitemap</span>
-        </Button>
-      )}
+      <div className="flex items-center space-x-2 self-end lg:self-auto">
+        <DeepCrawlButton url={window.location.hostname} />
+        <MassiveCrawlButton url={window.location.hostname} />
+      </div>
     </div>
   );
 };
