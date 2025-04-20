@@ -1,3 +1,4 @@
+
 import axios from 'axios';
 import { saveAs } from 'file-saver';
 import { SiteScanner } from './crawler/siteScanner';
@@ -143,8 +144,12 @@ export class SimpleSitemapCreator {
         crawlDelay: 300, // Увеличиваем задержку м��жду запросами
         retryCount: this.options.retryCount,
         retryDelay: this.options.retryDelay,
-        domain: this.domain // Явно передаем домен
+        // Удаляем свойство domain, так как оно не существует в типе SiteScannerOptions
       });
+      
+      // Устанавливаем целевой домен в сканере другим способом, если это необходимо
+      // Например, используя отдельный метод или передавая его через другое поддерживаемое свойство
+      // scanner.setTargetDomain(this.domain);  // Если такой метод существует в SiteScanner
       
       const result = await scanner.scan();
       return result.urls;
