@@ -32,7 +32,7 @@ const Slide: React.FC<SlideProps> = ({ slideData, currentSlide, slideIndex }) =>
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
-      className="absolute inset-0 flex flex-col items-center justify-center cursor-pointer"
+      className="absolute inset-0 flex flex-col items-center justify-center cursor-pointer hover:opacity-95 transition-opacity"
       onClick={handleClick}
     >
       {slideData.image && (
@@ -52,15 +52,11 @@ const Slide: React.FC<SlideProps> = ({ slideData, currentSlide, slideIndex }) =>
         {slideData.description}
       </p>
       <Button 
-        onClick={(e) => {
-          e.stopPropagation();
-          handleClick();
-        }}
         variant="outline"
-        className="group hover:bg-primary/20"
+        className="group hover:bg-primary/20 pointer-events-none"
       >
         Подробнее
-        <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
+        <ArrowRight className="ml-2 h-4 w-4" />
       </Button>
     </motion.div>
   );
