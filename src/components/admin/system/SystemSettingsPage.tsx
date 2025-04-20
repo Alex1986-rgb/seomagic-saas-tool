@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Database, Shield, Users, Bell, BarChart2, Activity } from 'lucide-react';
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 const TILES = [
   {
