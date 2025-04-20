@@ -66,7 +66,12 @@ export class QueueManager {
           
           // Сообщаем о прогрессе
           if (onProgress && pagesScanned % 10 === 0) {
-            onProgress(pagesScanned, queue.length + pagesScanned, url);
+            // Use the correct format for the onProgress callback
+            onProgress({
+              pagesScanned,
+              currentUrl: url,
+              totalUrls: queue.length + pagesScanned
+            });
           }
           
           // Обрабатываем URL

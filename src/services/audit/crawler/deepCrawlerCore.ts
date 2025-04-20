@@ -33,6 +33,7 @@ export class DeepCrawlerCore {
     
     const result: CrawlResult = {
       urls: [],
+      pageCount: 0, // Initialize pageCount with 0
       metadata: {
         keywords: [],
         links: { internal: 0, external: 0, broken: 0 }
@@ -85,6 +86,7 @@ export class DeepCrawlerCore {
       
       // Объединяем результаты
       result.urls = crawlResult.urls;
+      result.pageCount = crawlResult.pageCount; // Set the pageCount from crawlResult
       console.log(`Сканирование завершено, найдено ${result.urls.length} страниц`);
       
       return result;
