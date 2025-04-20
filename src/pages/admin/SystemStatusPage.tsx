@@ -1,10 +1,10 @@
 
 import React from 'react';
+import SystemSettingsPage from '@/components/admin/system/SystemSettingsPage';
 
 const SystemStatusPage: React.FC = () => (
-  <div>
-    <h1 className="text-2xl font-bold mb-4">Состояние системы</h1>
-    <p>Здесь будет отображаться информация о текущем состоянии системы.</p>
+  <div className="space-y-6">
+    <SystemSettingsPage />
   </div>
 );
 
