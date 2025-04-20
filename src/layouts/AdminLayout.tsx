@@ -6,7 +6,10 @@ import {
   Globe, 
   Users, 
   Settings, 
-  BarChart
+  BarChart,
+  Server,
+  Bell,
+  Grid3X3
 } from 'lucide-react';
 
 const AdminLayout: React.FC = () => {
@@ -43,6 +46,33 @@ const AdminLayout: React.FC = () => {
               >
                 <Globe className="h-4 w-4" />
                 <span>Анализатор сайтов</span>
+              </Link>
+            </li>
+            <li>
+              <Link 
+                to="/admin/system-status" 
+                className={`flex items-center gap-2 px-3 py-2 rounded-md transition-colors ${isActive('/system-status')}`}
+              >
+                <Server className="h-4 w-4" />
+                <span>Состояние системы</span>
+              </Link>
+            </li>
+            <li>
+              <Link 
+                to="/admin/notifications" 
+                className={`flex items-center gap-2 px-3 py-2 rounded-md transition-colors ${isActive('/notifications')}`}
+              >
+                <Bell className="h-4 w-4" />
+                <span>Уведомления</span>
+              </Link>
+            </li>
+            <li>
+              <Link 
+                to="/admin/monitoring" 
+                className={`flex items-center gap-2 px-3 py-2 rounded-md transition-colors ${isActive('/monitoring')}`}
+              >
+                <Grid3X3 className="h-4 w-4" />
+                <span>Мониторинг</span>
               </Link>
             </li>
             <li>

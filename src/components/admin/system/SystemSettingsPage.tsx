@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Database, Shield, Users, Bell, BarChart2, Activity } from 'lucide-react';
-import { Link, useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 const TILES = [
   {
@@ -43,7 +43,11 @@ const TILES = [
 ];
 
 const SystemSettingsPage: React.FC = () => {
-  const location = useLocation();
+  const navigate = useNavigate();
+
+  const handleTileClick = (path: string) => {
+    navigate(path);
+  };
 
   return (
     <div className="p-6 space-y-6">
@@ -53,23 +57,26 @@ const SystemSettingsPage: React.FC = () => {
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {TILES.map(tile => (
-          <Link 
-            to={tile.to}
+          <div 
             key={tile.label}
+            onClick={() => handleTileClick(tile.to)}
+            className="p-4 border rounded-md bg-card hover:bg-accent/10 transition-colors block group cursor-pointer outline-none 
+              focus:ring-2 focus:ring-primary/70 shadow-sm"
             tabIndex={0}
-            aria-current={location.pathname === tile.to ? "page" : undefined}
-            className={`
-              p-4 border rounded-md bg-card hover:bg-accent/10 transition-colors block group cursor-pointer outline-none 
-              focus:ring-2 focus:ring-primary/70 shadow-sm
-              ${location.pathname === tile.to ? 'border-primary bg-accent/10' : ''}
-            `}
+            role="button"
+            aria-label={`Перейти на страницу ${tile.label}`}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                handleTileClick(tile.to);
+              }
+            }}
           >
             <div className="flex items-center gap-2 mb-1">
               {tile.icon}
               <span className="font-medium text-lg group-hover:text-primary transition-colors">{tile.label}</span>
             </div>
             <div className="text-sm text-muted-foreground">{tile.desc}</div>
-          </Link>
+          </div>
         ))}
       </div>
     </div>

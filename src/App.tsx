@@ -36,6 +36,9 @@ const GuidePost = React.lazy(() => import('@/pages/GuidePost'));
 const IPInfo = React.lazy(() => import('@/pages/IPInfo'));
 const Partnership = React.lazy(() => import('@/pages/Partnership'));
 
+// Lazy load admin routes
+const AdminRoutes = React.lazy(() => import('@/routes/AdminRoutes'));
+
 // Import the AuthProvider from contexts
 import { AuthProvider } from '@/contexts/AuthContext';
 
@@ -69,7 +72,7 @@ function App() {
               <Route path="/" element={<HomePage />} />
               <Route path="/audit" element={<AuditPage />} />
               <Route path="/site-audit" element={<SiteAudit />} />
-              <Route path="/admin/*" element={<AdminPage />} />
+              <Route path="/admin/*" element={<AdminRoutes />} />
               <Route path="/seo-optimization" element={<SeoOptimizationPage />} />
               <Route path="/blog" element={<BlogPage />} />
               <Route path="/blog/:id" element={<BlogPostPage />} />
