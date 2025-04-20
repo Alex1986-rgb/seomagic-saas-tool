@@ -38,10 +38,35 @@ export interface PageContent {
     url: string;
     alt: string | null;
   }[];
+  optimized?: {
+    content: string;
+    meta?: {
+      description?: string;
+      keywords?: string;
+    };
+    score?: number;
+  };
 }
 
 export interface OptimizationResults {
   metrics: OptimizationMetrics;
   costs: OptimizationCosts;
   recommendations: string[];
+}
+
+export interface PageStatistics {
+  totalPages: number;
+  subpages: {
+    [key: string]: number;
+  };
+  levels: {
+    [key: string]: number;
+  };
+}
+
+export interface OptimizationResponse {
+  blob: Blob;
+  beforeScore: number;
+  afterScore: number;
+  demoPage?: PageContent;
 }

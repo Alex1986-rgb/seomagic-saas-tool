@@ -6,13 +6,13 @@ export * from './seoDetails';
 export * from './sitemap';
 
 // Selectively export from content and optimization
-export { collectPagesContent, type PageContent } from './content';
+export { collectPagesContent, type PageContent, optimizePageContent, improveSeoDescription, generateSeoDescription, generateKeywords } from './content';
 export { calculateOptimizationMetrics } from './optimization';
 
 export * from './optimizedSite';
 
 // Don't re-export PageContent from scanner to avoid ambiguity
-import { scanWebsite, generateSitemap, calculateOptimizationMetrics as calculateScannerOptimizationMetrics, createOptimizedSite } from './scanner';
+import { scanWebsite, generateSitemap, calculateScannerOptimizationMetrics, createOptimizedSite } from './scanner';
 export { 
   scanWebsite, 
   generateSitemap, 

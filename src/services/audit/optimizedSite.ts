@@ -3,11 +3,12 @@
  * Module for generating optimized sites
  */
 
-import { PageContent, optimizePageContent, improveSeoDescription, generateSeoDescription, generateKeywords } from './content';
+import { PageContent } from './optimization/types';
+import { optimizePageContent, improveSeoDescription, generateSeoDescription, generateKeywords } from './content';
 import { faker } from '@faker-js/faker';
 
 /**
- * Создает оптимизированную копию сайта и упаковывает в ZIP
+ * Creates an optimized copy of the site and packages it as ZIP
  */
 export const createOptimizedSite = async (
   domain: string,

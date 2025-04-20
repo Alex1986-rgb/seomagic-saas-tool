@@ -3,7 +3,7 @@
  * Page statistics generation functionality
  */
 
-import { PageStatistics } from './optimization';
+import { PageStatistics } from './optimization/types';
 
 /**
  * Generates page statistics based on sample URLs and estimations
@@ -68,12 +68,12 @@ export function generatePageStatistics(
   }
   
   // Normalize counts to match estimated total
-  const totalSampleCount = Object.values(pageStats.subpages).reduce((sum, count) => sum + count, 0);
+  const totalSampleCount = Object.values(pageStats.subpages).reduce((sum, count) => sum + (count as number), 0);
   
   // Apply distribution from sample to full estimate
   if (totalSampleCount > 0) {
     for (const [type, count] of Object.entries(pageStats.subpages)) {
-      const ratio = count / totalSampleCount;
+      const ratio = (count as number) / totalSampleCount;
       pageStats.subpages[type] = Math.round(estimatedPageCount * ratio);
     }
     
@@ -90,7 +90,7 @@ export function generatePageStatistics(
     }
     
     // Adjust total to match estimated page count after rounding
-    const currentTotal = Object.values(pageStats.subpages).reduce((sum, count) => sum + count, 0);
+    const currentTotal = Object.values(pageStats.subpages).reduce((sum, count) => sum + (count as number), 0);
     const diff = estimatedPageCount - currentTotal;
     
     // Apply difference to product pages (usually the most numerous)
@@ -119,16 +119,16 @@ export function generatePageStatistics(
   }
   
   // Normalize levels distribution
-  const totalLevelsCount = Object.values(pageStats.levels).reduce((sum, count) => sum + count, 0);
+  const totalLevelsCount = Object.values(pageStats.levels).reduce((sum, count) => sum + (count as number), 0);
   
   if (totalLevelsCount > 0) {
     for (const [level, count] of Object.entries(pageStats.levels)) {
-      const ratio = count / totalLevelsCount;
+      const ratio = (count as number) / totalLevelsCount;
       pageStats.levels[level] = Math.round(estimatedPageCount * ratio);
     }
     
     // Ensure sum matches total
-    const currentLevelsTotal = Object.values(pageStats.levels).reduce((sum, count) => sum + count, 0);
+    const currentLevelsTotal = Object.values(pageStats.levels).reduce((sum, count) => sum + (count as number), 0);
     const levelsDiff = estimatedPageCount - currentLevelsTotal;
     
     // Distribute difference across levels proportionally
@@ -136,7 +136,7 @@ export function generatePageStatistics(
       const levelKeys = Object.keys(pageStats.levels);
       if (levelKeys.length > 0) {
         const mainLevel = levelKeys[Math.floor(levelKeys.length / 2)];
-        pageStats.levels[mainLevel] += levelsDiff;
+        pageStats.levels[mainLevel] = (pageStats.levels[mainLevel] || 0) + levelsDiff;
       }
     }
   } else {
