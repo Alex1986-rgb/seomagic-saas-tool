@@ -1,53 +1,53 @@
 
-import React, { useState, useCallback } from 'react';
-import { Rocket } from 'lucide-react';
+import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
+import { Database } from 'lucide-react';
 import { DeepCrawlProgressDialog } from './DeepCrawlProgressDialog';
 import { useToast } from "@/hooks/use-toast";
 
 interface DeepCrawlButtonProps {
   url: string;
-  onCrawlComplete: (pageCount: number) => void;
+  onCrawlComplete?: (urls: string[]) => void;
 }
 
-const DeepCrawlButton: React.FC<DeepCrawlButtonProps> = ({ url, onCrawlComplete }) => {
+const DeepCrawlButton: React.FC<DeepCrawlButtonProps> = ({ 
+  url,
+  onCrawlComplete
+}) => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [isProcessing, setIsProcessing] = useState(false);
   const { toast } = useToast();
 
-  const startDeepCrawl = useCallback(() => {
-    if (isProcessing) return;
+  const handleStartCrawl = () => {
+    if (!url) {
+      toast({
+        title: "Ошибка",
+        description: "URL не указан",
+        variant: "destructive"
+      });
+      return;
+    }
     
-    setIsProcessing(true);
-    // Добавляем небольшую задержку для предотвращения двойных кликов
-    setTimeout(() => {
-      setIsDialogOpen(true);
-      setIsProcessing(false);
-    }, 300);
-  }, [isProcessing]);
+    setIsDialogOpen(true);
+  };
 
-  const handleCloseDialog = useCallback((pageCount?: number) => {
+  const handleCloseDialog = (pageCount?: number, urls?: string[]) => {
     setIsDialogOpen(false);
     
-    if (pageCount && pageCount > 0) {
-      onCrawlComplete(pageCount);
-      toast({
-        title: "Глубокое сканирование завершено",
-        description: `Обнаружено ${pageCount.toLocaleString('ru-RU')} страниц на сайте ${url}`,
-      });
+    if (urls && urls.length > 0 && onCrawlComplete) {
+      onCrawlComplete(urls);
     }
-  }, [url, onCrawlComplete, toast]);
+  };
 
   return (
     <>
       <Button
-        onClick={startDeepCrawl}
-        variant="glassmorphic"
+        onClick={handleStartCrawl}
+        variant="outline"
         size="sm"
-        className="flex items-center gap-2 hover-lift"
-        disabled={isProcessing}
+        className="flex items-center gap-2"
+        disabled={!url}
       >
-        <Rocket className="h-4 w-4" />
+        <Database className="h-4 w-4" />
         <span>Глубокое сканирование</span>
       </Button>
 
@@ -55,6 +55,7 @@ const DeepCrawlButton: React.FC<DeepCrawlButtonProps> = ({ url, onCrawlComplete 
         open={isDialogOpen}
         onClose={handleCloseDialog}
         url={url}
+        initialStage="starting"
       />
     </>
   );

@@ -1,394 +1,468 @@
-
-import axios from 'axios';
 import * as cheerio from 'cheerio';
-import { saveAs } from 'file-saver';
+import axios from 'axios';
 import JSZip from 'jszip';
-import { ExtractedPage, ExtractedSite, ExtractionOptions } from './types';
+import { saveAs } from 'file-saver';
 
-class ContentExtractor {
-  /**
-   * Извлекает содержимое одной страницы
-   */
-  async extractPageContent(url: string, options: ExtractionOptions = {}): Promise<ExtractedPage> {
-    try {
-      const response = await axios.get(url, { timeout: 10000 });
-      const $ = cheerio.load(response.data);
-      
-      // Базовые данные о странице
-      const page: ExtractedPage = {
-        url,
-        title: $('title').text(),
-        content: this.extractTextContent($),
-        html: options.includeHtml ? response.data : '',
-        meta: {
-          description: options.includeMetaTags ? $('meta[name="description"]').attr('content') || null : null,
-          keywords: options.includeMetaTags ? $('meta[name="keywords"]').attr('content') || null : null,
-          author: options.includeMetaTags ? $('meta[name="author"]').attr('content') || null : null,
-          robots: options.includeMetaTags ? $('meta[name="robots"]').attr('content') || null : null,
-        },
-        headings: {
-          h1: options.includeHeadings ? $('h1').map((_, el) => $(el).text().trim()).get() : [],
-          h2: options.includeHeadings ? $('h2').map((_, el) => $(el).text().trim()).get() : [],
-          h3: options.includeHeadings ? $('h3').map((_, el) => $(el).text().trim()).get() : [],
-        },
-        links: {
-          internal: [],
-          external: [],
-        },
-        images: [],
-      };
-      
-      // Извлечение ссылок
-      if (options.includeLinks) {
-        const urlObj = new URL(url);
-        const domain = urlObj.hostname;
-        
-        $('a').each((_, el) => {
-          const href = $(el).attr('href');
-          if (!href) return;
-          
-          try {
-            const linkUrl = new URL(href, url);
-            
-            if (linkUrl.hostname === domain) {
-              if (!page.links.internal.includes(linkUrl.href)) {
-                page.links.internal.push(linkUrl.href);
-              }
-            } else {
-              if (!page.links.external.includes(linkUrl.href)) {
-                page.links.external.push(linkUrl.href);
-              }
-            }
-          } catch (e) {
-            // Игнорируем некорректные URL
-          }
-        });
-      }
-      
-      // Извлечение изображений
-      if (options.includeImages) {
-        $('img').each((_, el) => {
-          const src = $(el).attr('src');
-          if (!src) return;
-          
-          try {
-            const imgUrl = new URL(src, url).href;
-            
-            page.images.push({
-              url: imgUrl,
-              alt: $(el).attr('alt') || null,
-              title: $(el).attr('title') || null,
-            });
-          } catch (e) {
-            // Игнорируем некорректные URL
-          }
-        });
-      }
-      
-      return page;
-    } catch (error) {
-      console.error(`Error extracting content from ${url}:`, error);
-      
-      // Возвращаем минимальную информацию при ошибке
-      return {
-        url,
-        title: `Failed to extract: ${url}`,
-        content: '',
-        html: '',
-        meta: { description: null, keywords: null, author: null, robots: null },
-        headings: { h1: [], h2: [], h3: [] },
-        links: { internal: [], external: [] },
-        images: [],
-      };
-    }
-  }
+export interface ExtractionOptions {
+  extractText?: boolean;
+  extractImages?: boolean;
+  extractLinks?: boolean;
+  extractMeta?: boolean;
+  maxPages?: number;
+  timeout?: number;
+  retryCount?: number;
+  retryDelay?: number;
+}
+
+export interface ExtractedContent {
+  url: string;
+  title: string;
+  metaTags: {
+    description?: string;
+    keywords?: string;
+    ogTitle?: string;
+    ogDescription?: string;
+    ogImage?: string;
+  };
+  headings: {
+    h1: string[];
+    h2: string[];
+    h3: string[];
+    h4: string[];
+  };
+  text: string;
+  links: string[];
+  images: {
+    src: string;
+    alt: string;
+  }[];
+  html: string;
+  timestamp: string;
+}
+
+export class ContentExtractor {
+  private options: ExtractionOptions;
+  private extractedContent: Map<string, ExtractedContent> = new Map();
+  private failedUrls: string[] = [];
+  private processedCount: number = 0;
+  private domain: string = '';
   
-  /**
-   * Извлекает чистый текст из HTML
-   */
-  private extractTextContent($: cheerio.CheerioAPI): string {
-    // Удаляем скрипты, стили и комментарии
-    $('script, style, comment').remove();
-    
-    // Извлекаем текст из body
-    const text = $('body').text();
-    
-    // Очищаем текст от лишних пробелов и переносов строк
-    return text
-      .replace(/\s+/g, ' ')
-      .replace(/\n+/g, '\n')
-      .trim();
-  }
-  
-  /**
-   * Извлекает содержимое всего сайта
-   */
-  async extractSiteContent(
-    urls: string[], 
-    domain: string,
-    options: ExtractionOptions = {}
-  ): Promise<ExtractedSite> {
-    const { maxPages = urls.length, onProgress } = options;
-    const pagesToProcess = urls.slice(0, maxPages);
-    const total = pagesToProcess.length;
-    const pages: ExtractedPage[] = [];
-    
-    // Для каждого URL извлекаем контент
-    for (let i = 0; i < pagesToProcess.length; i++) {
-      const url = pagesToProcess[i];
-      
-      try {
-        const page = await this.extractPageContent(url, options);
-        pages.push(page);
-        
-        // Вызываем колбэк прогресса, если он предоставлен
-        if (onProgress) {
-          onProgress(i + 1, total);
-        }
-      } catch (error) {
-        console.error(`Error processing ${url}:`, error);
-      }
-    }
-    
-    return {
-      domain,
-      extractedAt: new Date().toISOString(),
-      pageCount: pages.length,
-      pages,
+  constructor(options: ExtractionOptions = {}) {
+    this.options = {
+      extractText: true,
+      extractImages: true,
+      extractLinks: true,
+      extractMeta: true,
+      maxPages: 1000,
+      timeout: 15000,
+      retryCount: 3,
+      retryDelay: 2000,
+      ...options
     };
   }
   
   /**
-   * Экспорт в JSON формат
+   * Reset the extractor state
    */
-  exportToJson(data: ExtractedSite): string {
-    const json = JSON.stringify(data, null, 2);
-    const blob = new Blob([json], { type: 'application/json' });
-    saveAs(blob, `${data.domain}-content.json`);
-    return json;
+  reset(): void {
+    this.extractedContent.clear();
+    this.failedUrls = [];
+    this.processedCount = 0;
   }
   
   /**
-   * Экспорт в HTML формат
+   * Extract content from a list of URLs
    */
-  exportToHtml(data: ExtractedSite): string {
-    let html = `<!DOCTYPE html>
+  async extractFromUrls(
+    urls: string[], 
+    progressCallback?: (processed: number, total: number, currentUrl: string) => void
+  ): Promise<Map<string, ExtractedContent>> {
+    this.reset();
+    
+    // Try to determine domain from the first URL
+    if (urls.length > 0) {
+      try {
+        const urlObj = new URL(urls[0]);
+        this.domain = urlObj.hostname;
+      } catch (error) {
+        console.error("Invalid URL:", urls[0]);
+      }
+    }
+    
+    // Limit the number of pages to process
+    const urlsToProcess = urls.slice(0, this.options.maxPages);
+    const total = urlsToProcess.length;
+    
+    for (const url of urlsToProcess) {
+      if (progressCallback) {
+        progressCallback(this.processedCount, total, url);
+      }
+      
+      try {
+        const content = await this.extractFromUrl(url);
+        if (content) {
+          this.extractedContent.set(url, content);
+        }
+      } catch (error) {
+        console.error(`Failed to extract content from ${url}:`, error);
+        this.failedUrls.push(url);
+      }
+      
+      this.processedCount++;
+    }
+    
+    return this.extractedContent;
+  }
+  
+  /**
+   * Extract content from a single URL with retry logic
+   */
+  private async extractFromUrl(url: string): Promise<ExtractedContent | null> {
+    let retries = 0;
+    const maxRetries = this.options.retryCount || 3;
+    
+    while (retries <= maxRetries) {
+      try {
+        const response = await axios.get(url, {
+          timeout: this.options.timeout,
+          headers: {
+            'User-Agent': 'Mozilla/5.0 (compatible; ContentExtractor/1.0; +https://example.com/bot)',
+            'Accept': 'text/html,application/xhtml+xml,application/xml',
+            'Accept-Language': 'en-US,en;q=0.9,ru;q=0.8'
+          }
+        });
+        
+        if (response.status === 200 && response.data) {
+          return this.parseContent(url, response.data);
+        }
+        return null;
+      } catch (error) {
+        retries++;
+        if (retries > maxRetries) {
+          throw error;
+        }
+        
+        // Wait before retrying
+        await new Promise(resolve => setTimeout(resolve, this.options.retryDelay));
+      }
+    }
+    
+    return null;
+  }
+  
+  /**
+   * Parse HTML content and extract structured data
+   */
+  private parseContent(url: string, html: string): ExtractedContent {
+    const $ = cheerio.load(html);
+    const now = new Date().toISOString();
+    
+    // Extract title
+    const title = $('title').text().trim() || url;
+    
+    // Extract meta tags
+    const metaTags = {
+      description: $('meta[name="description"]').attr('content') || undefined,
+      keywords: $('meta[name="keywords"]').attr('content') || undefined,
+      ogTitle: $('meta[property="og:title"]').attr('content') || undefined,
+      ogDescription: $('meta[property="og:description"]').attr('content') || undefined,
+      ogImage: $('meta[property="og:image"]').attr('content') || undefined
+    };
+    
+    // Extract headings
+    const headings = {
+      h1: [] as string[],
+      h2: [] as string[],
+      h3: [] as string[],
+      h4: [] as string[]
+    };
+    
+    $('h1').each((_, el) => {
+      headings.h1.push($(el).text().trim());
+    });
+    
+    $('h2').each((_, el) => {
+      headings.h2.push($(el).text().trim());
+    });
+    
+    $('h3').each((_, el) => {
+      headings.h3.push($(el).text().trim());
+    });
+    
+    $('h4').each((_, el) => {
+      headings.h4.push($(el).text().trim());
+    });
+    
+    // Extract main text content
+    const mainContent = $('main, article, #content, .content, .main');
+    let text = '';
+    
+    if (mainContent.length > 0) {
+      // If we found a main content container, use that
+      text = mainContent.text().trim();
+    } else {
+      // Otherwise try to get text from the body, excluding navigation, footer, etc.
+      $('nav, header, footer, script, style, .menu, .navigation, .sidebar, .footer').remove();
+      text = $('body').text().trim();
+    }
+    
+    // Clean up the text
+    text = text.replace(/\s+/g, ' ').trim();
+    
+    // Extract links
+    const links: string[] = [];
+    $('a[href]').each((_, el) => {
+      const href = $(el).attr('href');
+      if (href && !href.startsWith('#') && !href.startsWith('javascript:')) {
+        try {
+          // Convert relative URLs to absolute
+          const absoluteUrl = new URL(href, url).href;
+          links.push(absoluteUrl);
+        } catch (error) {
+          // Skip invalid URLs
+        }
+      }
+    });
+    
+    // Extract images
+    const images: { src: string; alt: string }[] = [];
+    $('img[src]').each((_, el) => {
+      const src = $(el).attr('src');
+      const alt = $(el).attr('alt') || '';
+      
+      if (src) {
+        try {
+          // Convert relative URLs to absolute
+          const absoluteSrc = new URL(src, url).href;
+          images.push({ src: absoluteSrc, alt });
+        } catch (error) {
+          // Skip invalid URLs
+        }
+      }
+    });
+    
+    return {
+      url,
+      title,
+      metaTags,
+      headings,
+      text,
+      links,
+      images,
+      html,
+      timestamp: now
+    };
+  }
+  
+  /**
+   * Get statistics about the extraction
+   */
+  getStats() {
+    return {
+      totalProcessed: this.processedCount,
+      successful: this.extractedContent.size,
+      failed: this.failedUrls.length,
+      failedUrls: this.failedUrls
+    };
+  }
+  
+  /**
+   * Export extracted content to HTML files
+   */
+  exportToHtml(): string {
+    let index = `<!DOCTYPE html>
 <html>
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Контент сайта ${data.domain}</title>
+  <title>Sitemap for ${this.domain}</title>
   <style>
-    body { font-family: Arial, sans-serif; line-height: 1.6; max-width: 1200px; margin: 0 auto; padding: 20px; }
-    h1, h2, h3 { color: #333; }
-    .page { border: 1px solid #ddd; margin-bottom: 30px; padding: 20px; border-radius: 5px; }
-    .meta { background: #f7f7f7; padding: 10px; border-radius: 5px; margin: 15px 0; }
-    .links, .images { margin-top: 15px; }
-    .internal-link, .external-link, .image-item { margin-bottom: 5px; }
+    body { font-family: Arial, sans-serif; line-height: 1.6; margin: 0; padding: 20px; }
+    .container { max-width: 1200px; margin: 0 auto; }
+    h1 { color: #2563eb; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    .page-list { margin-top: 30px; }
+    .page-item { margin-bottom: 10px; }
   </style>
 </head>
 <body>
-  <h1>Контент сайта ${data.domain}</h1>
-  <p>Извлечено: ${new Date(data.extractedAt).toLocaleString()}</p>
-  <p>Всего страниц: ${data.pageCount}</p>
-  
-  <div class="pages">`;
+  <div class="container">
+    <h1>Sitemap for ${this.domain}</h1>
+    <p>Total pages: ${this.extractedContent.size}</p>
+    <div class="page-list">`;
     
-    // Добавляем каждую страницу
-    data.pages.forEach(page => {
-      html += `
-    <div class="page">
-      <h2><a href="${page.url}" target="_blank">${page.title}</a></h2>
-      <p>URL: ${page.url}</p>
-      
-      <div class="meta">
-        <h3>Метаданные</h3>
-        <p>Description: ${page.meta.description || 'Not available'}</p>
-        <p>Keywords: ${page.meta.keywords || 'Not available'}</p>
-        <p>Author: ${page.meta.author || 'Not available'}</p>
-        <p>Robots: ${page.meta.robots || 'Not available'}</p>
-      </div>
-      
-      <div class="headings">
-        <h3>Заголовки</h3>
-        ${page.headings.h1.length ? '<h4>H1</h4><ul>' + page.headings.h1.map(h => `<li>${h}</li>`).join('') + '</ul>' : ''}
-        ${page.headings.h2.length ? '<h4>H2</h4><ul>' + page.headings.h2.map(h => `<li>${h}</li>`).join('') + '</ul>' : ''}
-        ${page.headings.h3.length ? '<h4>H3</h4><ul>' + page.headings.h3.map(h => `<li>${h}</li>`).join('') + '</ul>' : ''}
-      </div>
-      
-      <div class="links">
-        <h3>Ссылки</h3>
-        <h4>Внутренние (${page.links.internal.length})</h4>
-        <ul>
-          ${page.links.internal.map(link => `<li class="internal-link"><a href="${link}" target="_blank">${link}</a></li>`).join('')}
-        </ul>
-        <h4>Внешние (${page.links.external.length})</h4>
-        <ul>
-          ${page.links.external.map(link => `<li class="external-link"><a href="${link}" target="_blank">${link}</a></li>`).join('')}
-        </ul>
-      </div>
-      
-      <div class="images">
-        <h3>Изображения (${page.images.length})</h3>
-        <ul>
-          ${page.images.map(img => `<li class="image-item">
-            <img src="${img.url}" alt="${img.alt || ''}" style="max-width: 200px; max-height: 150px;">
-            <p>URL: ${img.url}</p>
-            <p>Alt: ${img.alt || 'Not available'}</p>
-            <p>Title: ${img.title || 'Not available'}</p>
-          </li>`).join('')}
-        </ul>
-      </div>
-      
-      <div class="content">
-        <h3>Содержимое</h3>
-        <div>${page.content}</div>
-      </div>
-    </div>`;
-    });
+    // Add links to all pages
+    for (const [url, content] of this.extractedContent.entries()) {
+      const pageFilename = this.urlToFilename(url, 'html');
+      index += `
+      <div class="page-item">
+        <a href="${pageFilename}">${content.title}</a> - <span class="url">${url}</span>
+      </div>`;
+    }
     
-    html += `
+    index += `
+    </div>
   </div>
 </body>
 </html>`;
     
-    const blob = new Blob([html], { type: 'text/html' });
-    saveAs(blob, `${data.domain}-content.html`);
-    return html;
+    return index;
   }
   
   /**
-   * Экспорт в Markdown формат
+   * Export extracted content to Markdown files
    */
-  exportToMarkdown(data: ExtractedSite): string {
-    let markdown = `# Контент сайта ${data.domain}\n\n`;
-    markdown += `Извлечено: ${new Date(data.extractedAt).toLocaleString()}\n\n`;
-    markdown += `Всего страниц: ${data.pageCount}\n\n`;
+  exportToMarkdown(): string {
+    let markdown = `# Sitemap for ${this.domain}\n\n`;
+    markdown += `Total pages: ${this.extractedContent.size}\n\n`;
     
-    // Добавляем каждую страницу
-    data.pages.forEach((page, index) => {
-      markdown += `## ${page.title}\n\n`;
-      markdown += `URL: [${page.url}](${page.url})\n\n`;
-      
-      markdown += `### Метаданные\n\n`;
-      markdown += `- Description: ${page.meta.description || 'Not available'}\n`;
-      markdown += `- Keywords: ${page.meta.keywords || 'Not available'}\n`;
-      markdown += `- Author: ${page.meta.author || 'Not available'}\n`;
-      markdown += `- Robots: ${page.meta.robots || 'Not available'}\n\n`;
-      
-      markdown += `### Заголовки\n\n`;
-      if (page.headings.h1.length) {
-        markdown += `#### H1\n\n`;
-        page.headings.h1.forEach(h => markdown += `- ${h}\n`);
-        markdown += `\n`;
-      }
-      if (page.headings.h2.length) {
-        markdown += `#### H2\n\n`;
-        page.headings.h2.forEach(h => markdown += `- ${h}\n`);
-        markdown += `\n`;
-      }
-      if (page.headings.h3.length) {
-        markdown += `#### H3\n\n`;
-        page.headings.h3.forEach(h => markdown += `- ${h}\n`);
-        markdown += `\n`;
-      }
-      
-      markdown += `### Ссылки\n\n`;
-      markdown += `#### Внутренние (${page.links.internal.length})\n\n`;
-      page.links.internal.forEach(link => markdown += `- [${link}](${link})\n`);
-      markdown += `\n`;
-      markdown += `#### Внешние (${page.links.external.length})\n\n`;
-      page.links.external.forEach(link => markdown += `- [${link}](${link})\n`);
-      markdown += `\n`;
-      
-      markdown += `### Изображения (${page.images.length})\n\n`;
-      page.images.forEach(img => {
-        markdown += `- ![${img.alt || ''}](${img.url})\n`;
-        markdown += `  - URL: ${img.url}\n`;
-        markdown += `  - Alt: ${img.alt || 'Not available'}\n`;
-        markdown += `  - Title: ${img.title || 'Not available'}\n`;
-      });
-      markdown += `\n`;
-      
-      markdown += `### Содержимое\n\n`;
-      markdown += `${page.content}\n\n`;
-      
-      // Разделитель между страницами
-      if (index < data.pages.length - 1) {
-        markdown += `---\n\n`;
-      }
-    });
+    // Add links to all pages
+    for (const [url, content] of this.extractedContent.entries()) {
+      markdown += `- [${content.title}](${url})\n`;
+    }
     
-    const blob = new Blob([markdown], { type: 'text/markdown' });
-    saveAs(blob, `${data.domain}-content.md`);
     return markdown;
   }
   
   /**
-   * Экспорт в Sitemap XML формат
+   * Export all content to a ZIP file
    */
-  exportSitemapXml(data: ExtractedSite): string {
-    // Генерируем XML содержимое
+  async exportAll(): Promise<Blob> {
+    const zip = new JSZip();
+    
+    // Add index.html
+    const index = this.exportToHtml();
+    zip.file("index.html", index);
+    
+    // Add sitemap.md
+    const markdown = this.exportToMarkdown();
+    zip.file("sitemap.md", markdown);
+    
+    // Add sitemap.xml
+    const xml = this.generateSitemap();
+    zip.file("sitemap.xml", xml);
+    
+    // Add pages folder
+    const pagesFolder = zip.folder("pages");
+    
+    // Add individual HTML files for each page
+    for (const [url, content] of this.extractedContent.entries()) {
+      const pageFilename = this.urlToFilename(url, 'html');
+      
+      const pageHtml = `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>${content.title}</title>
+  ${content.metaTags.description ? `<meta name="description" content="${content.metaTags.description}">` : ''}
+  ${content.metaTags.keywords ? `<meta name="keywords" content="${content.metaTags.keywords}">` : ''}
+  <style>
+    body { font-family: Arial, sans-serif; line-height: 1.6; margin: 0; padding: 20px; }
+    .container { max-width: 1200px; margin: 0 auto; }
+    h1 { color: #2563eb; }
+    a { color: #2563eb; }
+    .metadata { margin: 20px 0; padding: 15px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 5px; }
+    .metadata h3 { margin-top: 0; }
+    .content { margin-top: 30px; }
+    .back-link { margin-top: 30px; display: block; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>${content.title}</h1>
+    <div class="metadata">
+      <h3>Page Metadata</h3>
+      <p><strong>URL:</strong> ${content.url}</p>
+      <p><strong>Title:</strong> ${content.title}</p>
+      ${content.metaTags.description ? `<p><strong>Description:</strong> ${content.metaTags.description}</p>` : ''}
+      ${content.metaTags.keywords ? `<p><strong>Keywords:</strong> ${content.metaTags.keywords}</p>` : ''}
+    </div>
+    
+    <div class="content">
+      ${content.html}
+    </div>
+    
+    <a href="../index.html" class="back-link">Back to Index</a>
+  </div>
+</body>
+</html>`;
+      
+      pagesFolder?.file(pageFilename, pageHtml);
+    }
+    
+    // Add JSON data of all pages
+    const jsonData = JSON.stringify(Array.from(this.extractedContent.entries()), null, 2);
+    zip.file("data.json", jsonData);
+    
+    return await zip.generateAsync({ type: "blob" });
+  }
+  
+  /**
+   * Generate a sitemap XML file
+   */
+  private generateSitemap(): string {
+    const now = new Date().toISOString().split('T')[0];
+    
     let xml = '<?xml version="1.0" encoding="UTF-8"?>\n';
+    xml += '<?xml-stylesheet type="text/xsl" href="https://www.sitemaps.org/xsl/sitemap.xsl"?>\n';
     xml += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n';
     
-    // Добавляем каждую страницу
-    data.pages.forEach(page => {
+    for (const [url, content] of this.extractedContent.entries()) {
       xml += '  <url>\n';
-      xml += `    <loc>${this.escapeXml(page.url)}</loc>\n`;
-      xml += `    <lastmod>${data.extractedAt.split('T')[0]}</lastmod>\n`;
+      xml += `    <loc>${this.escapeXml(url)}</loc>\n`;
+      xml += `    <lastmod>${now}</lastmod>\n`;
       xml += '    <changefreq>monthly</changefreq>\n';
       xml += '    <priority>0.8</priority>\n';
       xml += '  </url>\n';
-    });
+    }
     
     xml += '</urlset>';
     
-    // Сохраняем в файл
-    const blob = new Blob([xml], { type: 'application/xml' });
-    saveAs(blob, `${data.domain}-sitemap.xml`);
     return xml;
   }
   
   /**
-   * Экспорт всех форматов в ZIP архив
+   * Download the exported content
    */
-  async exportAll(data: ExtractedSite): Promise<void> {
-    // Создаем все форматы
-    const json = this.exportToJson(data);
-    const html = this.exportToHtml(data);
-    const markdown = this.exportToMarkdown(data);
-    const sitemap = this.exportSitemapXml(data);
-    
-    // Создаем ZIP архив
-    const zip = new JSZip();
-    zip.file(`${data.domain}-content.json`, json);
-    zip.file(`${data.domain}-content.html`, html);
-    zip.file(`${data.domain}-content.md`, markdown);
-    zip.file(`${data.domain}-sitemap.xml`, sitemap);
-    
-    // Добавляем README
-    zip.file("README.txt", `Контент сайта ${data.domain}
-Извлечено: ${new Date(data.extractedAt).toLocaleString()}
-Всего страниц: ${data.pageCount}
-
-Содержимое архива:
-- ${data.domain}-content.json - данные в формате JSON
-- ${data.domain}-content.html - данные в формате HTML
-- ${data.domain}-content.md - данные в формате Markdown
-- ${data.domain}-sitemap.xml - карта сайта в формате XML
-`);
-    
-    // Создаем XLSX файл
-    
-    // Генерируем и скачиваем ZIP
-    const blob = await zip.generateAsync({ type: "blob" });
-    saveAs(blob, `${data.domain}-content.zip`);
+  async downloadAll(filename: string = 'site-content.zip'): Promise<void> {
+    const blob = await this.exportAll();
+    saveAs(blob, filename);
   }
   
-  /**
-   * Экранирует специальные символы для XML
-   */
+  // Helper function to convert URL to a valid filename
+  private urlToFilename(url: string, extension: string): string {
+    try {
+      const urlObj = new URL(url);
+      let path = urlObj.pathname;
+      
+      // Handle root path
+      if (path === '/') {
+        return 'index.' + extension;
+      }
+      
+      // Remove leading slash
+      path = path.startsWith('/') ? path.substring(1) : path;
+      
+      // Replace any remaining slashes with underscores
+      path = path.replace(/\//g, '_');
+      
+      // Remove any file extension if present
+      path = path.replace(/\.[^/.]+$/, '');
+      
+      // Add our desired extension
+      path = path + '.' + extension;
+      
+      // Replace any special characters
+      path = path.replace(/[^a-zA-Z0-9_.-]/g, '_');
+      
+      return path;
+    } catch (error) {
+      // Fallback for invalid URLs
+      return 'page_' + Math.random().toString(36).substring(2, 10) + '.' + extension;
+    }
+  }
+  
+  // Helper function to escape XML special characters
   private escapeXml(unsafe: string): string {
     return unsafe
       .replace(/&/g, '&amp;')
@@ -399,4 +473,4 @@ class ContentExtractor {
   }
 }
 
-export const contentExtractor = new ContentExtractor();
+export const contentExtractorService = new ContentExtractor();
