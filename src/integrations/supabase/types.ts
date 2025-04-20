@@ -194,6 +194,91 @@ export type Database = {
           },
         ]
       }
+      keyword_rankings: {
+        Row: {
+          audit_id: string | null
+          created_at: string | null
+          id: string
+          keyword: string
+          position: number | null
+          url: string | null
+        }
+        Insert: {
+          audit_id?: string | null
+          created_at?: string | null
+          id?: string
+          keyword: string
+          position?: number | null
+          url?: string | null
+        }
+        Update: {
+          audit_id?: string | null
+          created_at?: string | null
+          id?: string
+          keyword?: string
+          position?: number | null
+          url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "keyword_rankings_audit_id_fkey"
+            columns: ["audit_id"]
+            isOneToOne: false
+            referencedRelation: "audits"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      page_analysis: {
+        Row: {
+          audit_id: string | null
+          created_at: string | null
+          h1_count: number | null
+          id: string
+          image_count: number | null
+          load_time: number | null
+          meta_description: string | null
+          status_code: number | null
+          title: string | null
+          url: string
+          word_count: number | null
+        }
+        Insert: {
+          audit_id?: string | null
+          created_at?: string | null
+          h1_count?: number | null
+          id?: string
+          image_count?: number | null
+          load_time?: number | null
+          meta_description?: string | null
+          status_code?: number | null
+          title?: string | null
+          url: string
+          word_count?: number | null
+        }
+        Update: {
+          audit_id?: string | null
+          created_at?: string | null
+          h1_count?: number | null
+          id?: string
+          image_count?: number | null
+          load_time?: number | null
+          meta_description?: string | null
+          status_code?: number | null
+          title?: string | null
+          url?: string
+          word_count?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "page_analysis_audit_id_fkey"
+            columns: ["audit_id"]
+            isOneToOne: false
+            referencedRelation: "audits"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       projects: {
         Row: {
           created_at: string

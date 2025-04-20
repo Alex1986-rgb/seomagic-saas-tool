@@ -1,12 +1,13 @@
-
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuditData } from './hooks/useAuditData';
+import { usePageAnalysis } from '@/hooks/use-page-analysis';
 import AuditHeader from './components/AuditHeader';
 import AuditStatus from './components/AuditStatus';
 import AuditMain from './components/AuditMain';
 import AuditPageInfo from './components/AuditPageInfo';
 import AuditOptimization from './components/AuditOptimization';
+import PageAnalysisTable from './components/PageAnalysisTable';
 
 interface AuditResultsContainerProps {
   url: string;
@@ -63,6 +64,10 @@ const AuditResultsContainer: React.FC<AuditResultsContainerProps> = ({ url }) =>
     setShowPrompt(!showPrompt);
   };
 
+  const { data: pageAnalysisData, isLoading: isLoadingAnalysis } = usePageAnalysis(
+    auditData?.id
+  );
+
   return (
     <AnimatePresence mode="sync">
       <motion.div
@@ -95,37 +100,36 @@ const AuditResultsContainer: React.FC<AuditResultsContainerProps> = ({ url }) =>
               showPrompt={showPrompt}
             />
             
-            <AuditOptimization 
-              optimizationCost={optimizationCost}
-              optimizationItems={optimizationItems}
-              isOptimized={isOptimized}
-              contentPrompt={contentPrompt}
-              url={url}
-              pageCount={auditData.pageCount || 0}
-              showPrompt={showPrompt}
-              onTogglePrompt={toggleContentPrompt}
-              onOptimize={optimizeSiteContent}
-              onDownloadOptimizedSite={downloadOptimizedSite}
-              onGeneratePdfReport={generatePdfReportFile}
-              setContentOptimizationPrompt={setContentOptimizationPrompt}
-            />
-            
-            <AuditPageInfo 
-              pageCount={auditData.pageCount}
-              pageStats={pageStats}
-              url={url}
-              onUpdatePageCount={handleUpdatePageCount}
-              onDownloadSitemap={sitemap ? downloadSitemap : undefined}
-            />
-            
-            <AuditMain 
-              url={url}
-              auditData={auditData}
-              recommendations={recommendations}
-              historyData={historyData}
-              taskId={taskId}
-              onSelectAudit={handleSelectHistoricalAudit}
-            />
+            <div className="space-y-6">
+              <AuditMain 
+                auditData={auditData}
+                recommendations={recommendations}
+                historyData={historyData}
+              />
+              
+              <div className="neo-card p-6">
+                <h2 className="text-xl font-semibold mb-4">Анализ страниц</h2>
+                <PageAnalysisTable 
+                  data={pageAnalysisData}
+                  isLoading={isLoadingAnalysis}
+                />
+              </div>
+              
+              <AuditOptimization 
+                optimizationCost={optimizationCost}
+                optimizationItems={optimizationItems}
+                isOptimized={isOptimized}
+                contentPrompt={contentPrompt}
+                url={url}
+                pageCount={auditData.pageCount || 0}
+                showPrompt={showPrompt}
+                onTogglePrompt={toggleContentPrompt}
+                onOptimize={optimizeSiteContent}
+                onDownloadOptimizedSite={downloadOptimizedSite}
+                onGeneratePdfReport={generatePdfReportFile}
+                setContentOptimizationPrompt={setContentOptimizationPrompt}
+              />
+            </div>
           </>
         )}
       </motion.div>
