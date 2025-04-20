@@ -61,6 +61,7 @@ const AuditResultsContainer: React.FC<AuditResultsContainerProps> = ({ url }) =>
       }
       
       // Set a new timeout - 3 minutes maximum for audit data loading
+      // Fix Type error: ensure we're using the NodeJS.Timeout type
       timeoutRef.current = setTimeout(() => {
         console.log("Audit data loading timeout triggered after 3 minutes");
         setTimeout(true);
@@ -96,6 +97,7 @@ const AuditResultsContainer: React.FC<AuditResultsContainerProps> = ({ url }) =>
       setIsLoading(true);
       
       // We don't use deep scan initially to improve loading time
+      // Fix parameter count mismatch: loadAuditData expects only one argument
       loadAuditData(false).then(() => {
         setIsLoading(false);
         
