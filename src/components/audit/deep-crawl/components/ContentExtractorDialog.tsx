@@ -1,25 +1,12 @@
 
 import React, { useState } from 'react';
-import { Database, Download, FileText, Package, X, Check, RefreshCw } from 'lucide-react';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter
-} from "@/components/ui/dialog";
+import { useContentExtractor } from '../hooks/useContentExtractor';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
-import { useToast } from "@/hooks/use-toast";
-import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
-import { 
-  ContentExtractor, 
-  ExtractedContent, 
-  ExtractionOptions 
-} from "@/services/audit/contentExtractor/contentExtractor";
+import { Download, FileJson, FileText, Globe, Loader2 } from 'lucide-react';
+import ContentAnalysisResults from './ContentAnalysisResults';
 
 interface ContentExtractorDialogProps {
   open: boolean;
@@ -34,277 +21,139 @@ export const ContentExtractorDialog: React.FC<ContentExtractorDialogProps> = ({
   urls,
   domain
 }) => {
-  const [isExtracting, setIsExtracting] = useState(false);
-  const [isComplete, setIsComplete] = useState(false);
-  const [currentUrl, setCurrentUrl] = useState('');
-  const [progress, setProgress] = useState(0);
-  const [processedCount, setProcessedCount] = useState(0);
-  const [totalCount, setTotalCount] = useState(0);
-  const [extractedContent, setExtractedContent] = useState<Map<string, ExtractedContent>>(new Map());
-  const [contentExtractor] = useState(() => new ContentExtractor());
-  const [error, setError] = useState<string | null>(null);
-  const [options, setOptions] = useState<ExtractionOptions>({
-    extractText: true,
-    extractImages: true,
-    extractLinks: true,
-    extractMeta: true,
-    maxPages: 500,
-    timeout: 15000,
-    retryCount: 3,
-    retryDelay: 2000
-  });
-  
-  const { toast } = useToast();
+  const [activeTab, setActiveTab] = useState('progress');
+  const { isExtracting, extractedSite, progress, extractContent, exportContent } = useContentExtractor();
 
-  const handleStartExtraction = async () => {
-    if (urls.length === 0) {
-      toast({
-        title: "Нет URL для обработки",
-        description: "Пожалуйста, выполните сканирование сайта",
-        variant: "destructive"
-      });
-      return;
+  // Начать извлечение контента при открытии диалога
+  React.useEffect(() => {
+    if (open && urls.length > 0 && !extractedSite && !isExtracting) {
+      startExtraction();
     }
-    
-    setIsExtracting(true);
-    setIsComplete(false);
-    setProgress(0);
-    setProcessedCount(0);
-    setTotalCount(Math.min(urls.length, options.maxPages || 500));
-    setError(null);
-    
+  }, [open, urls, extractedSite, isExtracting]);
+
+  // Обработчик для запуска извлечения контента
+  const startExtraction = async () => {
     try {
-      const result = await contentExtractor.extractFromUrls(
-        urls,
-        (processed, total, url) => {
-          const progressPercent = (processed / total) * 100;
-          setProgress(progressPercent);
-          setProcessedCount(processed);
-          setCurrentUrl(url);
-        }
-      );
-      
-      setExtractedContent(result);
-      setIsComplete(true);
-      
-      toast({
-        title: "Экстракция завершена",
-        description: `Обработано ${result.size} страниц из ${urls.length}`,
-      });
-    } catch (err) {
-      console.error("Error during content extraction:", err);
-      setError(err instanceof Error ? err.message : "Неизвестная ошибка");
-      
-      toast({
-        title: "Ошибка при экстракции",
-        description: "Произошла ошибка при извлечении контента",
-        variant: "destructive"
-      });
-    } finally {
-      setIsExtracting(false);
-      setProgress(100);
+      await extractContent(urls, domain);
+      setActiveTab('results');
+    } catch (error) {
+      console.error('Ошибка извлечения контента:', error);
     }
   };
 
-  const handleDownloadAll = async () => {
-    try {
-      await contentExtractor.downloadAll(`${domain.replace(/[^a-z0-9]/gi, '-')}-content.zip`);
-      
-      toast({
-        title: "Экспорт завершен",
-        description: "Сайт с контентом успешно экспортирован",
-      });
-    } catch (err) {
-      console.error("Error downloading content:", err);
-      
-      toast({
-        title: "Ошибка экспорта",
-        description: "Не удалось скачать контент",
-        variant: "destructive"
-      });
-    }
-  };
-
-  const handleOptionChange = (key: keyof ExtractionOptions, value: any) => {
-    setOptions(prev => ({
-      ...prev,
-      [key]: value
-    }));
-  };
-  
-  const toggleOption = (key: keyof ExtractionOptions) => {
-    setOptions(prev => ({
-      ...prev,
-      [key]: !prev[key]
-    }));
+  // Обработчик для экспорта контента
+  const handleExport = (format: 'json' | 'html' | 'markdown' | 'sitemap' | 'all') => {
+    exportContent(format);
   };
 
   return (
-    <Dialog open={open} onOpenChange={(isOpen) => {
-      if (!isOpen && !isExtracting) onClose();
-    }}>
-      <DialogContent className="sm:max-w-[550px]">
+    <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
+      <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <Package className="h-5 w-5 text-primary" />
-            Извлечение контента сайта
-          </DialogTitle>
+          <DialogTitle>Анализ контента сайта</DialogTitle>
           <DialogDescription>
-            {domain}
+            Профессиональный анализ и извлечение контента с {urls.length} страниц
           </DialogDescription>
         </DialogHeader>
 
-        <div className="py-4 space-y-5">
-          {!isExtracting && !isComplete && (
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <Label htmlFor="extract-text">Извлекать текст</Label>
-                    <Switch
-                      id="extract-text"
-                      checked={options.extractText}
-                      onCheckedChange={() => toggleOption('extractText')}
-                    />
+        <Tabs value={activeTab} onValueChange={setActiveTab}>
+          <TabsList className="grid grid-cols-2">
+            <TabsTrigger value="progress" disabled={!isExtracting && extractedSite}>
+              Прогресс
+            </TabsTrigger>
+            <TabsTrigger value="results" disabled={!extractedSite}>
+              Результаты
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="progress" className="py-4">
+            {isExtracting ? (
+              <div className="space-y-4">
+                <div className="flex justify-between text-sm mb-1">
+                  <span>Обработано {progress.completed} из {progress.total} страниц</span>
+                  <span>{Math.round((progress.completed / progress.total) * 100)}%</span>
+                </div>
+                <Progress value={(progress.completed / progress.total) * 100} />
+                
+                {progress.currentUrl && (
+                  <div className="text-sm text-muted-foreground break-all">
+                    Обрабатывается: {progress.currentUrl}
                   </div>
-                  
-                  <div className="flex items-center justify-between">
-                    <Label htmlFor="extract-images">Извлекать изображения</Label>
-                    <Switch
-                      id="extract-images"
-                      checked={options.extractImages}
-                      onCheckedChange={() => toggleOption('extractImages')}
-                    />
-                  </div>
+                )}
+                
+                <div className="bg-muted/20 p-4 rounded-md text-sm">
+                  <p className="font-medium mb-2">Что происходит:</p>
+                  <ul className="space-y-1 list-disc list-inside">
+                    <li>Извлечение HTML-кода каждой страницы</li>
+                    <li>Анализ метатегов, заголовков и ссылок</li>
+                    <li>Оценка качества и уникальности контента</li>
+                    <li>Создание структурированного отчета</li>
+                  </ul>
+                </div>
+              </div>
+            ) : progress.isComplete ? (
+              <div className="py-8 text-center">
+                <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-green-100 mb-4">
+                  <Download className="h-6 w-6 text-green-600" />
+                </div>
+                <h3 className="text-xl font-semibold mb-2">Извлечение завершено!</h3>
+                <p className="text-muted-foreground mb-4">
+                  Обработано {progress.completed} страниц. Перейдите во вкладку Результаты для просмотра анализа.
+                </p>
+                <Button onClick={() => setActiveTab('results')}>
+                  Посмотреть результаты
+                </Button>
+              </div>
+            ) : (
+              <div className="py-8 text-center">
+                <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-muted mb-4">
+                  <Loader2 className="h-6 w-6 animate-spin" />
+                </div>
+                <h3 className="text-xl font-semibold mb-2">Подготовка</h3>
+                <p className="text-muted-foreground mb-4">
+                  Инициализация анализа для {urls.length} URL. Пожалуйста, подождите...
+                </p>
+              </div>
+            )}
+          </TabsContent>
+
+          <TabsContent value="results" className="py-4">
+            {extractedSite ? (
+              <div className="space-y-6">
+                <div className="flex flex-wrap gap-2">
+                  <Button variant="outline" size="sm" onClick={() => handleExport('json')}>
+                    <FileJson className="h-4 w-4 mr-2" />
+                    JSON
+                  </Button>
+                  <Button variant="outline" size="sm" onClick={() => handleExport('html')}>
+                    <FileText className="h-4 w-4 mr-2" />
+                    HTML
+                  </Button>
+                  <Button variant="outline" size="sm" onClick={() => handleExport('markdown')}>
+                    <FileText className="h-4 w-4 mr-2" />
+                    Markdown
+                  </Button>
+                  <Button variant="outline" size="sm" onClick={() => handleExport('sitemap')}>
+                    <Globe className="h-4 w-4 mr-2" />
+                    Sitemap XML
+                  </Button>
+                  <Button variant="default" size="sm" onClick={() => handleExport('all')}>
+                    <Download className="h-4 w-4 mr-2" />
+                    Скачать всё
+                  </Button>
                 </div>
                 
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <Label htmlFor="extract-links">Извлекать ссылки</Label>
-                    <Switch
-                      id="extract-links"
-                      checked={options.extractLinks}
-                      onCheckedChange={() => toggleOption('extractLinks')}
-                    />
-                  </div>
-                  
-                  <div className="flex items-center justify-between">
-                    <Label htmlFor="extract-meta">Извлекать метаданные</Label>
-                    <Switch
-                      id="extract-meta"
-                      checked={options.extractMeta}
-                      onCheckedChange={() => toggleOption('extractMeta')}
-                    />
-                  </div>
-                </div>
+                <ContentAnalysisResults site={extractedSite} />
               </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="max-pages">Максимальное количество страниц</Label>
-                <Input
-                  id="max-pages"
-                  type="number"
-                  value={options.maxPages || 500}
-                  onChange={(e) => handleOptionChange('maxPages', parseInt(e.target.value) || 500)}
-                  min={1}
-                  max={10000}
-                />
+            ) : (
+              <div className="py-8 text-center">
+                <p className="text-muted-foreground">
+                  Нет данных для отображения. Сначала извлеките контент.
+                </p>
               </div>
-              
-              <div className="text-sm text-muted-foreground">
-                Доступно {urls.length} URL. Будет обработано не более {options.maxPages} страниц.
-              </div>
-            </div>
-          )}
-          
-          {(isExtracting || isComplete) && (
-            <>
-              <Progress value={progress} className="h-2" />
-              
-              <div className="grid grid-cols-2 gap-4 text-sm">
-                <div>
-                  <div className="text-muted-foreground">Обработано:</div>
-                  <div className="font-medium">{processedCount} из {totalCount}</div>
-                </div>
-                <div>
-                  <div className="text-muted-foreground">Статус:</div>
-                  <div className="font-medium">{isExtracting ? "Обработка..." : "Завершено"}</div>
-                </div>
-              </div>
-              
-              {currentUrl && isExtracting && (
-                <div className="text-xs text-muted-foreground truncate p-2 border border-border rounded-md bg-muted/50">
-                  Текущий URL: {currentUrl}
-                </div>
-              )}
-              
-              {isComplete && extractedContent.size > 0 && (
-                <div className="p-3 bg-green-50 dark:bg-green-950/30 text-green-800 dark:text-green-300 rounded-md text-sm flex items-center gap-2">
-                  <Check className="h-4 w-4 flex-shrink-0" />
-                  Извлечено {extractedContent.size} страниц. Теперь вы можете скачать все данные.
-                </div>
-              )}
-            </>
-          )}
-          
-          {error && (
-            <div className="p-3 bg-red-50 dark:bg-red-950/30 text-red-800 dark:text-red-300 rounded-md text-sm">
-              {error}
-            </div>
-          )}
-        </div>
-
-        <DialogFooter className="flex flex-col sm:flex-row gap-2">
-          {!isExtracting && !isComplete && (
-            <Button 
-              onClick={handleStartExtraction}
-              className="w-full sm:w-auto"
-              disabled={urls.length === 0}
-            >
-              <Database className="h-4 w-4 mr-2" />
-              Начать извлечение
-            </Button>
-          )}
-          
-          {isExtracting && (
-            <Button variant="outline" disabled className="w-full sm:w-auto">
-              <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
-              Извлечение...
-            </Button>
-          )}
-          
-          {isComplete && (
-            <>
-              <Button 
-                onClick={handleDownloadAll}
-                variant="default"
-                className="w-full sm:w-auto"
-              >
-                <Download className="h-4 w-4 mr-2" />
-                Скачать весь контент
-              </Button>
-              
-              <Button 
-                onClick={handleStartExtraction}
-                variant="outline"
-                className="w-full sm:w-auto"
-              >
-                <RefreshCw className="h-4 w-4 mr-2" />
-                Повторить извлечение
-              </Button>
-            </>
-          )}
-          
-          <Button 
-            onClick={onClose}
-            variant="ghost"
-            className="w-full sm:w-auto"
-            disabled={isExtracting}
-          >
-            <X className="h-4 w-4 mr-2" />
-            Закрыть
-          </Button>
-        </DialogFooter>
+            )}
+          </TabsContent>
+        </Tabs>
       </DialogContent>
     </Dialog>
   );

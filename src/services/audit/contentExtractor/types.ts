@@ -1,9 +1,16 @@
 
+export interface ExtractedSite {
+  domain: string;
+  extractedAt: string;
+  pageCount: number;
+  pages: ExtractedPage[];
+}
+
 export interface ExtractedPage {
   url: string;
   title: string;
   content: string;
-  html: string;
+  html: string | null;
   meta: {
     description: string | null;
     keywords: string | null;
@@ -24,6 +31,12 @@ export interface ExtractedPage {
     alt: string | null;
     title: string | null;
   }[];
+  contentAnalysis?: {
+    wordCount: number;
+    readabilityScore: number;
+    keywordDensity: Record<string, number>;
+    duplicateContentRisk: 'low' | 'medium' | 'high';
+  };
 }
 
 export interface ExtractionOptions {
@@ -33,15 +46,11 @@ export interface ExtractionOptions {
   includeHeadings?: boolean;
   includeLinks?: boolean;
   includeImages?: boolean;
-  maxPages?: number;
+  maxConcurrent?: number;
+  timeout?: number;
+  retryCount?: number;
+  retryDelay?: number;
   onProgress?: (completed: number, total: number) => void;
-}
-
-export interface ExtractedSite {
-  domain: string;
-  extractedAt: string;
-  pageCount: number;
-  pages: ExtractedPage[];
 }
 
 export interface ContentExtractionProgress {
@@ -49,4 +58,33 @@ export interface ContentExtractionProgress {
   total: number;
   currentUrl?: string;
   isComplete: boolean;
+}
+
+export interface SiteAnalysisResult {
+  metaTagsQuality: {
+    score: number;
+    issues: string[];
+  };
+  headingsStructure: {
+    score: number;
+    issues: string[];
+  };
+  internalLinking: {
+    score: number;
+    issues: string[];
+  };
+  contentQuality: {
+    averageWordCount: number;
+    readabilityScore: number;
+    issues: string[];
+  };
+  technicalSeo: {
+    score: number;
+    issues: string[];
+  };
+  overall: {
+    score: number;
+    strengths: string[];
+    weaknesses: string[];
+  };
 }
