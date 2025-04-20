@@ -34,6 +34,7 @@ export interface ExtractionOptions {
   includeLinks?: boolean;
   includeImages?: boolean;
   maxPages?: number;
+  onProgress?: (completed: number, total: number) => void;
 }
 
 export interface ExtractedSite {
@@ -41,4 +42,11 @@ export interface ExtractedSite {
   extractedAt: string;
   pageCount: number;
   pages: ExtractedPage[];
+}
+
+export interface ContentExtractionProgress {
+  completed: number;
+  total: number;
+  currentUrl?: string;
+  isComplete: boolean;
 }

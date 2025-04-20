@@ -2,49 +2,66 @@
 import { useState } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import { contentExtractor } from '@/services/audit/contentExtractor/contentExtractor';
-import { ExtractedSite, ExtractionOptions } from '@/services/audit/contentExtractor/types';
+import { ExtractedSite, ExtractionOptions, ContentExtractionProgress } from '@/services/audit/contentExtractor/types';
 
 export const useContentExtractor = () => {
   const [isExtracting, setIsExtracting] = useState(false);
   const [extractedSite, setExtractedSite] = useState<ExtractedSite | null>(null);
+  const [progress, setProgress] = useState<ContentExtractionProgress>({
+    completed: 0,
+    total: 0,
+    isComplete: false
+  });
   const { toast } = useToast();
 
   const extractContent = async (urls: string[], domain: string, options: ExtractionOptions = {}) => {
     setIsExtracting(true);
+    setProgress({
+      completed: 0,
+      total: urls.length,
+      isComplete: false
+    });
     
     try {
-      const pages = [];
-      let completedPages = 0;
-      
-      for (const url of urls) {
-        try {
-          const page = await contentExtractor.extractPageContent(url, options);
-          pages.push(page);
-          completedPages++;
+      // Set default options if not specified
+      const extractionOptions: ExtractionOptions = {
+        includeHtml: true,
+        includeText: true,
+        includeMetaTags: true,
+        includeHeadings: true,
+        includeLinks: true,
+        includeImages: true,
+        ...options,
+        onProgress: (completed, total) => {
+          setProgress({
+            completed,
+            total,
+            currentUrl: urls[completed - 1], // The URL we just completed
+            isComplete: completed === total
+          });
           
-          // Update progress
-          const progress = Math.round((completedPages / urls.length) * 100);
+          // Update progress in toast
+          const progressPercent = Math.round((completed / total) * 100);
           toast({
             title: "Извлечение контента",
-            description: `Обработано ${completedPages} из ${urls.length} страниц (${progress}%)`,
+            description: `Обработано ${completed} из ${total} страниц (${progressPercent}%)`,
+            duration: 3000,
           });
-        } catch (error) {
-          console.error(`Error extracting content from ${url}:`, error);
+          
+          // Also call the user-provided onProgress if it exists
+          if (options.onProgress) {
+            options.onProgress(completed, total);
+          }
         }
-      }
-
-      const site: ExtractedSite = {
-        domain,
-        extractedAt: new Date().toISOString(),
-        pageCount: pages.length,
-        pages
       };
 
+      // Extract content from all pages
+      const site = await contentExtractor.extractSiteContent(urls, domain, extractionOptions);
       setExtractedSite(site);
       
       toast({
         title: "Извлечение завершено",
-        description: `Успешно обработано ${pages.length} страниц`,
+        description: `Успешно обработано ${site.pages.length} страниц`,
       });
 
       return site;
@@ -58,10 +75,11 @@ export const useContentExtractor = () => {
       throw error;
     } finally {
       setIsExtracting(false);
+      setProgress(prev => ({ ...prev, isComplete: true }));
     }
   };
 
-  const exportContent = async (format: 'json' | 'html' | 'markdown' | 'all') => {
+  const exportContent = async (format: 'json' | 'html' | 'markdown' | 'sitemap' | 'all') => {
     if (!extractedSite) {
       toast({
         title: "Ошибка",
@@ -81,6 +99,9 @@ export const useContentExtractor = () => {
           break;
         case 'markdown':
           await contentExtractor.exportToMarkdown(extractedSite);
+          break;
+        case 'sitemap':
+          await contentExtractor.exportSitemapXml(extractedSite);
           break;
         case 'all':
           await contentExtractor.exportAll(extractedSite);
@@ -104,6 +125,7 @@ export const useContentExtractor = () => {
   return {
     isExtracting,
     extractedSite,
+    progress,
     extractContent,
     exportContent
   };

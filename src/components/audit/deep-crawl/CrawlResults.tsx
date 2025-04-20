@@ -1,13 +1,9 @@
 
-import React from 'react';
-import { motion } from 'framer-motion';
-import { FileSearch } from 'lucide-react';
-import { Badge } from "@/components/ui/badge";
-import { 
-  CrawlResultsTabs, 
-  CrawlStatsCards,
-  CrawlResultsActions 
-} from './components/results';
+import React, { useState } from 'react';
+import { CrawlResultsActions } from './components/results/CrawlResultsActions';
+import { Button } from '@/components/ui/button';
+import { FileText, Download, Package } from 'lucide-react';
+import { ContentExtractorDialog } from './components/ContentExtractorDialog';
 
 interface CrawlResultsProps {
   pageCount: number;
@@ -16,58 +12,98 @@ interface CrawlResultsProps {
   onDownloadSitemap?: () => void;
   onDownloadReport?: () => void;
   onDownloadAllData?: () => void;
-  pageTypes?: Record<string, number>;
-  depthData?: { level: number; count: number }[];
-  brokenLinks?: { url: string; statusCode: number }[];
-  duplicatePages?: { url: string; similarUrls: string[] }[];
 }
 
-export const CrawlResults: React.FC<CrawlResultsProps> = ({
+const CrawlResults: React.FC<CrawlResultsProps> = ({
   pageCount,
   domain,
   urls,
   onDownloadSitemap,
   onDownloadReport,
-  onDownloadAllData,
-  pageTypes,
-  depthData,
-  brokenLinks,
-  duplicatePages
+  onDownloadAllData
 }) => {
+  const [isExtractorOpen, setIsExtractorOpen] = useState(false);
+
+  const openContentExtractor = () => {
+    setIsExtractorOpen(true);
+  };
+
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      className="space-y-4"
-    >
-      <div className="flex items-center justify-between mb-2">
-        <div className="flex items-center gap-2">
-          <FileSearch className="h-5 w-5 text-primary" />
-          <h2 className="text-lg font-medium">Результаты сканирования</h2>
+    <div className="space-y-6">
+      <div className="bg-muted/30 p-6 rounded-lg border">
+        <h2 className="text-xl font-medium mb-4">Результаты сканирования</h2>
+        
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+          <div className="bg-background p-4 rounded-lg shadow-sm border">
+            <div className="text-sm text-muted-foreground">Домен</div>
+            <div className="text-lg font-medium">{domain}</div>
+          </div>
+          <div className="bg-background p-4 rounded-lg shadow-sm border">
+            <div className="text-sm text-muted-foreground">Обнаружено страниц</div>
+            <div className="text-lg font-medium">{pageCount.toLocaleString()}</div>
+          </div>
+          <div className="bg-background p-4 rounded-lg shadow-sm border">
+            <div className="text-sm text-muted-foreground">Тип сайта</div>
+            <div className="text-lg font-medium">{pageCount > 10000 ? 'Крупный' : pageCount > 1000 ? 'Средний' : 'Малый'}</div>
+          </div>
         </div>
         
-        <Badge variant="outline" className="font-normal">
-          {pageCount} страниц
-        </Badge>
+        <div className="space-y-4">
+          <div className="flex flex-wrap gap-2">
+            <Button 
+              variant="outline" 
+              size="lg" 
+              onClick={onDownloadSitemap} 
+              className="gap-2"
+            >
+              <Download className="h-4 w-4" />
+              Скачать Sitemap
+            </Button>
+            
+            <Button 
+              variant="outline" 
+              size="lg" 
+              onClick={onDownloadReport} 
+              className="gap-2"
+            >
+              <FileText className="h-4 w-4" />
+              Отчет о сканировании
+            </Button>
+            
+            <Button 
+              variant="default" 
+              size="lg" 
+              onClick={openContentExtractor} 
+              className="gap-2"
+            >
+              <Package className="h-4 w-4" />
+              Извлечь контент и создать карту сайта
+            </Button>
+          </div>
+          
+          <div className="text-sm text-muted-foreground mt-4">
+            Сканирование завершено. Вы можете скачать карту сайта для отправки в Google Search Console
+            или выполнить экстракцию контента для более детального анализа.
+          </div>
+        </div>
       </div>
-      
-      <CrawlStatsCards pageCount={pageCount} urls={urls} />
-      
-      <CrawlResultsTabs urls={urls} pageCount={pageCount} />
       
       <CrawlResultsActions 
         domain={domain}
         pageCount={pageCount}
         urls={urls}
-        pageTypes={pageTypes}
-        depthData={depthData}
-        brokenLinks={brokenLinks}
-        duplicatePages={duplicatePages}
         onDownloadSitemap={onDownloadSitemap}
         onDownloadReport={onDownloadReport}
         onDownloadAllData={onDownloadAllData}
       />
-    </motion.div>
+      
+      <ContentExtractorDialog
+        open={isExtractorOpen}
+        onClose={() => setIsExtractorOpen(false)}
+        urls={urls}
+        domain={domain}
+      />
+    </div>
   );
 };
 
