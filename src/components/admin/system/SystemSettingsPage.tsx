@@ -1,46 +1,72 @@
 
 import React from 'react';
-import { Database, Shield, Users, Bell, BarChart2, Activity } from 'lucide-react';
+import { Database, Shield, Users, Bell, BarChart2, Activity, Info } from 'lucide-react';
 import { useNavigate } from "react-router-dom";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 
+// Основные разделы настроек
 const TILES = [
   {
-    icon: <Database className="h-4 w-4 text-primary" />,
+    icon: <Database className="h-5 w-5 text-primary" />,
     label: "База данных",
-    desc: "Настройки подключения и оптимизации базы данных.",
-    to: "/admin/system/database"
+    desc: "Параметры подключения, мониторинг и оптимизация работы БД.",
+    to: "/admin/system/database",
+    badge: <Badge variant="outline" className="ml-2">В работе</Badge>,
   },
   {
-    icon: <Shield className="h-4 w-4 text-primary" />,
+    icon: <Shield className="h-5 w-5 text-primary" />,
     label: "Безопасность",
-    desc: "Настройки защиты и политики безопасности.",
-    to: "/admin/system/security"
+    desc: "Двухфакторная аутентификация, политики и аудит.",
+    to: "/admin/system/security",
+    badge: undefined,
   },
   {
-    icon: <Users className="h-4 w-4 text-primary" />,
-    label: "Пользователи системы",
-    desc: "Управление администраторами и их правами.",
-    to: "/admin/system/users"
+    icon: <Users className="h-5 w-5 text-primary" />,
+    label: "Пользователи",
+    desc: "Список пользователей, настройка ролей и ограничений.",
+    to: "/admin/system/users",
+    badge: undefined,
   },
   {
-    icon: <Bell className="h-4 w-4 text-primary" />,
-    label: "Системные уведомления",
-    desc: "Настройка системных уведомлений и мониторинга.",
-    to: "/admin/system/notifications"
+    icon: <Bell className="h-5 w-5 text-primary" />,
+    label: "Уведомления",
+    desc: "Системные email и SMS-оповещения, интеграция со Slack.",
+    to: "/admin/system/notifications",
+    badge: undefined,
   },
   {
-    icon: <BarChart2 className="h-4 w-4 text-primary" />,
+    icon: <BarChart2 className="h-5 w-5 text-primary" />,
     label: "Аналитика",
-    desc: "Настройки сбора и анализа данных о работе системы.",
-    to: "/admin/system/analytics"
+    desc: "Google Analytics, сбор пользовательских событий.",
+    to: "/admin/system/analytics",
+    badge: undefined,
   },
   {
-    icon: <Activity className="h-4 w-4 text-primary" />,
+    icon: <Activity className="h-5 w-5 text-primary" />,
     label: "Производительность",
-    desc: "Мониторинг и настройка производительности платформы.",
-    to: "/admin/system/performance"
+    desc: "Мониторинг ресурсов и автоматизация оповещений.",
+    to: "/admin/system/performance",
+    badge: <Badge variant="destructive" className="ml-2">ALERT</Badge>,
   }
 ];
+
+// Блок актуальной информации
+const SystemInfo = () => (
+  <div className="bg-muted border rounded-md p-4 flex flex-col md:flex-row md:items-center gap-4 mb-6">
+    <Info className="h-6 w-6 text-primary" />
+    <div>
+      <div className="text-md font-medium mb-1">Краткая информация о системе:</div>
+      <ul className="list-disc pl-6 text-muted-foreground space-y-1 text-sm">
+        <li>Последний аудит безопасности: <span className="text-foreground font-medium">19.04.2025</span></li>
+        <li>Текущий релиз: <span className="text-primary font-bold">v2.8.1</span></li>
+        <li>Интеграции активны (Slack, Analytica)</li>
+        <li>Зарегистрировано пользователей: <span className="text-foreground font-medium">13</span>, администраторов: <span className="font-medium">3</span></li>
+      </ul>
+    </div>
+  </div>
+);
 
 const SystemSettingsPage: React.FC = () => {
   const navigate = useNavigate();
@@ -50,18 +76,20 @@ const SystemSettingsPage: React.FC = () => {
   };
 
   return (
-    <div className="p-6 space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold mb-1">Системные настройки</h1>
-        <p className="text-muted-foreground mb-6">Настройки сервера, баз данных и производительности.</p>
-      </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div className="p-4 md:p-8 space-y-8 max-w-4xl mx-auto">
+      <h1 className="text-2xl font-bold mb-2">Системные настройки</h1>
+      <p className="text-muted-foreground mb-3 max-w-2xl">
+        Управление инфраструктурой платформы: база данных, безопасность, пользователи, аналитика и мониторинг. Используйте быстрые переходы для настройки модулей — доступ к каждому разделу можно получить ниже.
+      </p>
+
+      <SystemInfo />
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
         {TILES.map(tile => (
-          <div 
+          <Card 
             key={tile.label}
+            className="cursor-pointer group hover:scale-[1.03] transition-transform shadow border"
             onClick={() => handleTileClick(tile.to)}
-            className="p-4 border rounded-md bg-card hover:bg-accent/10 transition-colors block group cursor-pointer outline-none 
-              focus:ring-2 focus:ring-primary/70 shadow-sm"
             tabIndex={0}
             role="button"
             aria-label={`Перейти на страницу ${tile.label}`}
@@ -71,13 +99,28 @@ const SystemSettingsPage: React.FC = () => {
               }
             }}
           >
-            <div className="flex items-center gap-2 mb-1">
-              {tile.icon}
-              <span className="font-medium text-lg group-hover:text-primary transition-colors">{tile.label}</span>
-            </div>
-            <div className="text-sm text-muted-foreground">{tile.desc}</div>
-          </div>
+            <CardContent className="py-5 px-4 flex items-start gap-4">
+              <div className="rounded-lg bg-secondary/80 p-3">{tile.icon}</div>
+              <div className="flex-1 space-y-1">
+                <div className="flex items-center gap-1.5">
+                  <span className="font-bold text-md group-hover:text-primary transition">{tile.label}</span>
+                  {tile.badge}
+                </div>
+                <div className="text-sm text-muted-foreground">{tile.desc}</div>
+              </div>
+            </CardContent>
+          </Card>
         ))}
+      </div>
+
+      <div className="mt-10 text-sm text-muted-foreground space-y-2">
+        <div><b>Возможности:</b> гибкая настройка платформы, мониторинг состояния модулей, расширенные интеграции, история изменений.</div>
+        <ul className="list-disc pl-5">
+          <li>Безопасное хранение данных и резервное копирование</li>
+          <li>Детальное логирование действий</li>
+          <li>Пороговые оповещения и автоматизация событий</li>
+        </ul>
+        <div>Для критических изменений система может потребовать подтверждение администратора.</div>
       </div>
     </div>
   );
