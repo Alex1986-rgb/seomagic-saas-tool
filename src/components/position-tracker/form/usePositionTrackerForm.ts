@@ -8,7 +8,7 @@ import { useToast } from '@/hooks/use-toast';
 // Form validation schema
 const formSchema = z.object({
   domain: z.string().min(1, { message: 'Доменное имя обязательно' }),
-  searchEngine: z.enum(['google', 'yandex', 'all'], {
+  searchEngine: z.enum(['google', 'yandex', 'mailru', 'all'], {
     required_error: 'Выберите поисковую систему',
   }),
   region: z.string().optional(),
@@ -52,7 +52,7 @@ export const usePositionTrackerForm = (onSearchComplete?: Function) => {
       toast({
         title: "Внимание",
         description: "Это ключевое слово уже добавлено",
-        variant: "warning",
+        variant: "default",
       });
       return;
     }
@@ -69,8 +69,9 @@ export const usePositionTrackerForm = (onSearchComplete?: Function) => {
   };
 
   // Handle bulk keywords input
-  const handleBulkKeywords = (text: string) => {
-    if (!text.trim()) {
+  const handleBulkKeywords = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const text = e.target.value.trim();
+    if (!text) {
       toast({
         title: "Ошибка",
         description: "Введите ключевые слова",
@@ -97,13 +98,14 @@ export const usePositionTrackerForm = (onSearchComplete?: Function) => {
       toast({
         title: "Внимание",
         description: "Нет новых ключевых слов для добавления",
-        variant: "warning",
+        variant: "default",
       });
     }
   };
 
   // Handle file upload
-  const handleFileUpload = (file: File) => {
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
     if (!file) return;
 
     const reader = new FileReader();
@@ -131,7 +133,7 @@ export const usePositionTrackerForm = (onSearchComplete?: Function) => {
             toast({
               title: "Предупреждение",
               description: "В файле не найдено новых ключевых слов",
-              variant: "warning",
+              variant: "default",
             });
           }
         } else {
