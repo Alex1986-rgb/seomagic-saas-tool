@@ -31,11 +31,14 @@ export const DeepCrawlProgressDialog: React.FC<DeepCrawlProgressDialogProps> = (
   const { toast } = useToast();
   const [dialogOpen, setDialogOpen] = useState(open);
   const [forceAttempt, setForceAttempt] = useState(0);
+  const [hasStartedCrawling, setHasStartedCrawling] = useState(false);
   
   // Проверяем и нормализуем URL перед использованием
   const normalizedUrl = url && url.trim() !== '' 
     ? (url.startsWith('http') ? url : `https://${url}`)
     : '';
+  
+  console.log("DeepCrawlProgressDialog initialized with URL:", normalizedUrl);
   
   const {
     isLoading,
@@ -51,54 +54,60 @@ export const DeepCrawlProgressDialog: React.FC<DeepCrawlProgressDialogProps> = (
     downloadSitemap,
     downloadAllData,
     downloadReport
-  } = useCrawlProgress(url);
+  } = useCrawlProgress(normalizedUrl);
+
+  // Обработчик для запуска сканирования
+  const initiateScanning = async () => {
+    try {
+      console.log("Starting crawling for URL:", normalizedUrl);
+      if (!hasStartedCrawling) {
+        setHasStartedCrawling(true);
+        const result = await startCrawling();
+        
+        if (result) {
+          console.log("Crawling completed successfully:", result);
+          toast({
+            title: "Сканирование завершено",
+            description: `Обнаружено ${result.urls.length} страниц на сайте ${url}`,
+          });
+        } else {
+          console.error("No result from crawling");
+          toast({
+            title: "Ошибка сканирования",
+            description: "Не удалось получить результаты сканирования. Попробуйте другой сайт или уменьшите глубину сканирования.",
+            variant: "destructive"
+          });
+        }
+      }
+    } catch (error) {
+      console.error("Error during crawling:", error);
+      toast({
+        title: "Ошибка сканирования",
+        description: "Произошла ошибка при сканировании. Попробуйте другой URL.",
+        variant: "destructive"
+      });
+    }
+  };
 
   useEffect(() => {
     setDialogOpen(open);
     
     if (open && normalizedUrl) {
-      // Запускаем сканирование, когда диалог открыт
-      const startScanning = async () => {
-        try {
-          console.log("Starting crawling for URL:", normalizedUrl);
-          const result = await startCrawling();
-          
-          if (result) {
-            console.log("Crawling completed successfully:", result);
-            toast({
-              title: "Сканирование завершено",
-              description: `Обнаружено ${result.urls.length} страниц на сайте ${url}`,
-            });
-          } else {
-            console.error("No result from crawling");
-            // Если результат не получен, показываем уведомление об ошибке
-            toast({
-              title: "Ошибка сканирования",
-              description: "Не удалось получить результаты сканирования. Попробуйте другой сайт или уменьшите глубину сканирования.",
-              variant: "destructive"
-            });
-          }
-        } catch (error) {
-          console.error("Error during crawling:", error);
-          toast({
-            title: "Ошибка сканирования",
-            description: "Произошла ошибка при сканировании. Попробуйте другой URL.",
-            variant: "destructive"
-          });
-        }
-      };
-      
-      startScanning();
+      setHasStartedCrawling(false);
+      // Запускаем сканирование при открытии диалога, если URL корректный
+      initiateScanning();
     }
-  }, [open, normalizedUrl, startCrawling, toast, forceAttempt]);
+  }, [open, normalizedUrl, forceAttempt]);
 
   const handleClose = () => {
     setDialogOpen(false);
+    setHasStartedCrawling(false);
     onClose(pagesScanned, scannedUrls);
   };
 
   const handleRetry = () => {
     // Увеличиваем счетчик попыток, что вызовет перезапуск сканирования в useEffect
+    setHasStartedCrawling(false);
     setForceAttempt(prev => prev + 1);
   };
 
@@ -163,7 +172,7 @@ export const DeepCrawlProgressDialog: React.FC<DeepCrawlProgressDialogProps> = (
             </div>
           )}
           
-          {pagesScanned === 0 && progress > 10 && (
+          {pagesScanned === 0 && progress > 10 && crawlStage !== 'starting' && (
             <div className="text-amber-500 text-sm flex items-center gap-2 p-2 bg-amber-50 dark:bg-amber-950/20 rounded-md">
               <AlertCircle className="h-4 w-4 flex-shrink-0" />
               <span>Сайт не отвечает или блокирует доступ. Попробуйте другой URL.</span>

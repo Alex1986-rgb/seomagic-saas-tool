@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { useCrawlState } from './useCrawlState';
 import { useCrawlExecution } from './useCrawlExecution';
@@ -16,6 +17,8 @@ export function useCrawlProgress(url: string) {
     ? (url.startsWith('http') ? url : `https://${url}`)
     : '';
   
+  console.log('useCrawlProgress initialized with URL:', normalizedUrl);
+  
   // Используем более узконаправленные хуки
   const crawlState = useCrawlState(normalizedUrl);
   const crawlExecution = useCrawlExecution();
@@ -28,6 +31,7 @@ export function useCrawlProgress(url: string) {
     
     if (!normalizedUrl) {
       setError("URL не может быть пустым");
+      crawlState.setCrawlStage('failed');
       crawlState.completeCrawl(false);
       return null;
     }
@@ -39,7 +43,7 @@ export function useCrawlProgress(url: string) {
       crawlState.setCrawlStage('starting');
       
       // Инициализируем сканер
-      const { crawler, domain, maxPages } = crawlExecution.initializeCrawler({
+      const { crawler, domain, maxPages, normalizedUrl: crawlerUrl } = crawlExecution.initializeCrawler({
         url: normalizedUrl,
         onProgress: (pagesScanned, totalEstimated, currentUrl) => {
           crawlState.updateProgress(pagesScanned, totalEstimated, currentUrl, maxPages);
@@ -49,9 +53,12 @@ export function useCrawlProgress(url: string) {
       crawlState.setDomain(domain);
       crawlState.setCrawler(crawler);
       
+      // Переходим в этап сканирования
+      crawlState.setCrawlStage('crawling');
+      
       // Выполняем сканирование
-      console.log('Executing crawler...');
-      const result = await crawlExecution.executeCrawler(crawler);
+      console.log('Executing crawler with URL:', crawlerUrl);
+      const result = await crawlExecution.executeCrawler(crawler, crawlerUrl);
       
       if (result && result.urls && result.urls.length > 0) {
         console.log(`Crawl completed with ${result.urls.length} URLs`);
@@ -74,6 +81,7 @@ export function useCrawlProgress(url: string) {
       else {
         console.error('Crawler execution completed but no URLs were found');
         setError("Не удалось найти страницы на сайте");
+        crawlState.setCrawlStage('failed');
         crawlState.completeCrawl(false);
         return null;
       }
@@ -81,6 +89,7 @@ export function useCrawlProgress(url: string) {
     } catch (error) {
       console.error('Error during deep crawl:', error);
       setError(error instanceof Error ? error.message : "Неизвестная ошибка при сканировании");
+      crawlState.setCrawlStage('failed');
       crawlState.completeCrawl(false);
       return null;
     }

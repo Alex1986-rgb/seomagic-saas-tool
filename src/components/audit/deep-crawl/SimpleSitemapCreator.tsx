@@ -43,6 +43,7 @@ const SimpleSitemapCreator: React.FC<SimpleSitemapCreatorProps> = ({
       return;
     }
     
+    console.log("Opening dialog with URL:", url);
     setIsDialogOpen(true);
   };
 
@@ -50,13 +51,16 @@ const SimpleSitemapCreator: React.FC<SimpleSitemapCreatorProps> = ({
     setIsDialogOpen(false);
     
     if (scannedUrls && scannedUrls.length > 0 && onUrlsScanned) {
+      console.log(`Dialog closed with ${scannedUrls.length} URLs scanned`);
       onUrlsScanned(scannedUrls);
     }
   };
 
   // Update URL when props change
   React.useEffect(() => {
-    setUrl(initialUrl || domain || '');
+    const newUrl = initialUrl || domain || '';
+    console.log("Setting URL from props:", newUrl);
+    setUrl(newUrl);
   }, [initialUrl, domain]);
 
   return (

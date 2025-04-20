@@ -42,22 +42,24 @@ export function useCrawlExecution() {
         followRedirects: true
       });
       
-      return { crawler, domain, maxPages };
+      return { crawler, domain, maxPages, normalizedUrl };
     } catch (error) {
       console.error('Error initializing crawler:', error);
       throw new Error('Не удалось инициализировать сканирование: неверный URL');
     }
   };
   
-  const executeCrawler = async (crawler: SimpleSitemapCreator) => {
+  const executeCrawler = async (crawler: SimpleSitemapCreator, startUrl: string) => {
     try {
       // Выполняем сканирование
       const progressCallback = (scanned: number, total: number, currentUrl: string) => {
         console.log(`Progress: ${scanned}/${total} - ${currentUrl}`);
       };
       
-      // Явно передаем пустую строку для url, так как URL уже инициализирован в crawl
-      const urls = await crawler.crawl('', progressCallback);
+      console.log(`Запуск сканирования с URL: ${startUrl}`);
+      
+      // Передаем нормализованный URL в метод crawl
+      const urls = await crawler.crawl(startUrl, progressCallback);
       
       if (!urls || urls.length === 0) {
         console.error('Не удалось найти URLs на сайте');
