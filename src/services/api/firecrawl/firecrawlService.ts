@@ -95,7 +95,7 @@ export const firecrawlService = {
   /**
    * Download PDF report
    */
-  downloadReport: async (taskId: string, reportType: 'full' | 'errors' = 'full'): Promise<void> => {
+  downloadReport: async (taskId: string, reportType: 'full' | 'errors' | 'detailed' = 'full'): Promise<void> => {
     try {
       // Get task
       const task = await firecrawlService.getStatus(taskId);
