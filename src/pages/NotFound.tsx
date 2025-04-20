@@ -1,27 +1,67 @@
 
 import React from 'react';
-import { Link } from 'react-router-dom';
-import { Helmet } from 'react-helmet-async';
+import { motion } from 'framer-motion';
+import { useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { FileSearch, Home } from 'lucide-react';
+import Layout from '@/components/Layout';
 
 const NotFound: React.FC = () => {
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  React.useEffect(() => {
+    console.error(
+      "404 Error: User attempted to access non-existent route:",
+      location.pathname
+    );
+  }, [location.pathname]);
+
   return (
-    <>
-      <Helmet>
-        <title>404 | Страница не найдена</title>
-      </Helmet>
-      
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center space-y-4">
-          <h1 className="text-4xl font-bold">404</h1>
-          <p className="text-xl text-muted-foreground">Страница не найдена</p>
-          <Button asChild>
-            <Link to="/">Вернуться на главную</Link>
-          </Button>
-        </div>
+    <Layout>
+      <div className="container mx-auto px-4 flex flex-col items-center justify-center min-h-[80vh] text-center">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="max-w-md"
+        >
+          <div className="mb-8 relative">
+            <div className="w-32 h-32 bg-primary/10 rounded-full flex items-center justify-center mx-auto">
+              <FileSearch className="h-16 w-16 text-primary/70" />
+            </div>
+            <div className="absolute -top-3 -right-3 bg-red-500 text-white text-3xl font-bold h-12 w-12 rounded-full flex items-center justify-center">
+              404
+            </div>
+          </div>
+          
+          <h1 className="text-3xl md:text-4xl font-bold mb-4">Страница не найдена</h1>
+          
+          <p className="text-muted-foreground mb-8 max-w-sm mx-auto">
+            Кажется, страница, которую вы ищете, не существует или была перемещена. Проверьте URL или вернитесь на главную.
+          </p>
+          
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Button 
+              onClick={() => navigate(-1)} 
+              variant="outline"
+              className="flex items-center gap-2"
+            >
+              <span>Вернуться назад</span>
+            </Button>
+            
+            <Button 
+              onClick={() => navigate('/')} 
+              className="flex items-center gap-2"
+            >
+              <Home className="h-4 w-4" />
+              <span>На главную</span>
+            </Button>
+          </div>
+        </motion.div>
       </div>
-    </>
+    </Layout>
   );
-}
+};
 
 export default NotFound;
