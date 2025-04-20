@@ -1,4 +1,3 @@
-
 import { useState, useCallback, useEffect } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import { firecrawlService } from '@/services/api/firecrawl';
@@ -21,7 +20,6 @@ interface CrawlResult {
   analysisResults?: any;
 }
 
-// Максимальное количество URL, которые будут обработаны в одной партии
 const BATCH_SIZE = 10000;
 
 export const useMassiveSiteCrawl = () => {
@@ -41,15 +39,13 @@ export const useMassiveSiteCrawl = () => {
   const [result, setResult] = useState<CrawlResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   
-  // Функция для запуска сканирования
-  const startCrawl = useCallback(async (url: string, maxPages: number = 1500000) => {
+  const startCrawl = useCallback(async (url: string, maxPages: number = 15000000) => {
     if (!url) {
       setError('URL не указан');
       return null;
     }
     
     try {
-      // Нормализуем URL
       const normalizedUrl = url.startsWith('http') ? url : `https://${url}`;
       
       setIsScanning(true);
@@ -67,11 +63,15 @@ export const useMassiveSiteCrawl = () => {
       
       console.log(`Starting massive crawl for: ${normalizedUrl} with max pages: ${maxPages}`);
       
-      // Запускаем сканирование с использованием Firecrawl API
+      try {
+        await fetch(normalizedUrl, { method: 'HEAD' });
+      } catch (error) {
+        throw new Error('Сайт недоступен. Проверьте URL и попробуйте снова.');
+      }
+      
       const crawlTask = await firecrawlService.startCrawl(normalizedUrl);
       setTaskId(crawlTask.id);
       
-      // Выполняем поллинг статуса задачи
       const pollingInterval = setInterval(async () => {
         if (isCancelled) {
           clearInterval(pollingInterval);
@@ -81,7 +81,6 @@ export const useMassiveSiteCrawl = () => {
         try {
           const taskStatus = await firecrawlService.getStatus(crawlTask.id);
           
-          // Обновляем прогресс
           setCrawlProgress({
             pagesScanned: taskStatus.pages_scanned || 0,
             totalEstimated: taskStatus.estimated_total_pages || 0,
@@ -92,35 +91,26 @@ export const useMassiveSiteCrawl = () => {
             totalBatches: Math.ceil((taskStatus.estimated_total_pages || maxPages) / BATCH_SIZE)
           });
           
-          // Если сканирование завершено
           if (taskStatus.status === 'completed') {
             clearInterval(pollingInterval);
             
-            // Получаем результаты сканирования
             const urls = taskStatus.urls || [];
             
-            // Генерируем результаты
             setCrawlProgress(prev => ({
               ...prev,
               processingStage: 'analyzing',
               percentage: 75
             }));
             
-            // Генерируем sitemap
             console.log(`Generating sitemap for ${urls.length} URLs`);
             const sitemapXml = generateSitemapXml(urls, new URL(normalizedUrl).hostname);
             
-            // Запускаем анализ сайта (упрощенный для демонстрации)
             setCrawlProgress(prev => ({
               ...prev,
               processingStage: 'optimizing',
               percentage: 90
             }));
             
-            // В реальном приложении здесь бы выполнялся анализ всех страниц
-            // с использованием пакетной обработки
-            
-            // Завершаем процесс
             setCrawlProgress(prev => ({
               ...prev,
               processingStage: 'completed',
@@ -132,7 +122,6 @@ export const useMassiveSiteCrawl = () => {
               sitemapXml,
               pageCount: urls.length,
               analysisResults: {
-                // Здесь будут результаты анализа
                 optimizationScore: calculateOptimizationScore(urls.length),
                 improvementAreas: generateImprovementAreas(urls.length),
                 estimatedOptimizationTime: calculateOptimizationTime(urls.length)
@@ -153,7 +142,6 @@ export const useMassiveSiteCrawl = () => {
             };
           }
           
-          // Если произошла ошибка
           if (taskStatus.status === 'failed') {
             clearInterval(pollingInterval);
             setError(taskStatus.error || 'Произошла ошибка при сканировании сайта');
@@ -173,13 +161,12 @@ export const useMassiveSiteCrawl = () => {
       return true;
     } catch (error) {
       console.error('Error starting crawl:', error);
-      setError('Не удалось запустить сканирование сайта');
+      setError(error instanceof Error ? error.message : 'Не удалось запустить сканирование сайта');
       setIsScanning(false);
       return null;
     }
   }, [toast, isCancelled]);
   
-  // Функция для отмены сканирования
   const cancelCrawl = useCallback(() => {
     setIsCancelled(true);
     setIsScanning(false);
@@ -189,7 +176,6 @@ export const useMassiveSiteCrawl = () => {
     });
   }, [toast]);
   
-  // Функция для скачивания sitemap
   const downloadSitemap = useCallback(() => {
     if (!result?.sitemapXml) {
       toast({
@@ -209,7 +195,6 @@ export const useMassiveSiteCrawl = () => {
     });
   }, [result, toast]);
   
-  // Функция для скачивания отчета
   const downloadReport = useCallback(() => {
     if (!result) {
       toast({
@@ -220,7 +205,6 @@ export const useMassiveSiteCrawl = () => {
       return;
     }
     
-    // Создаем упрощенный отчет в формате JSON
     const reportData = {
       scanDate: new Date().toISOString(),
       domain: new URL(result.urls[0]).hostname,
@@ -238,7 +222,6 @@ export const useMassiveSiteCrawl = () => {
     });
   }, [result, toast]);
   
-  // Функция для создания оптимизированной версии сайта
   const createOptimizedSite = useCallback(async (prompt: string) => {
     if (!result || !prompt) {
       toast({
@@ -254,12 +237,7 @@ export const useMassiveSiteCrawl = () => {
       description: "Создание оптимизированной версии сайта..."
     });
     
-    // Здесь в реальном приложении мы бы вызывали API для оптимизации сайта
-    // На основе результатов сканирования и промпта пользователя
-    
-    // Создаем упрощенный архив для демонстрации
     setTimeout(() => {
-      // Создаем текстовый файл с информацией об оптимизации
       const optimizationInfo = `
 Оптимизация сайта на основе промпта: "${prompt}"
 
@@ -301,7 +279,6 @@ export const useMassiveSiteCrawl = () => {
   };
 };
 
-// Вспомогательные функции
 function mapStatusToStage(status: string): MassiveCrawlProgress['processingStage'] {
   switch (status) {
     case 'pending':
@@ -359,7 +336,6 @@ function escapeXml(unsafe: string): string {
 }
 
 function calculateOptimizationScore(pageCount: number): number {
-  // Упрощенный алгоритм для демонстрации
   if (pageCount < 100) return Math.floor(Math.random() * 30) + 40;
   if (pageCount < 1000) return Math.floor(Math.random() * 25) + 35;
   if (pageCount < 10000) return Math.floor(Math.random() * 20) + 30;
@@ -381,7 +357,6 @@ function generateImprovementAreas(pageCount: number): string[] {
     'Структурированные данные'
   ];
   
-  // Для крупных сайтов добавляем специфические рекомендации
   if (pageCount > 10000) {
     areas.push('Оптимизация индексации для крупного сайта');
     areas.push('Настройка пагинации для поисковых систем');
@@ -390,14 +365,12 @@ function generateImprovementAreas(pageCount: number): string[] {
     areas.push('Разработка стратегии масштабного контента');
   }
   
-  // Выбираем 5-7 случайных областей
   const numberOfAreas = Math.floor(Math.random() * 3) + 5;
   const shuffled = [...areas].sort(() => 0.5 - Math.random());
   return shuffled.slice(0, numberOfAreas);
 }
 
 function calculateOptimizationTime(pageCount: number): string {
-  // Упрощенный расчет времени оптимизации
   let days;
   if (pageCount < 100) days = '3-5 дней';
   else if (pageCount < 1000) days = '7-14 дней';
