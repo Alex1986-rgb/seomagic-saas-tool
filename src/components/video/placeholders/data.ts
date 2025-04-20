@@ -29,7 +29,7 @@ export const getSlideData = (): SlideData[] => [
     blogId: 3,
     color: "#F59E0B",
     icon: Gauge,
-    image: "https://images.unsplash.com/photo-1518770660439-4636190af475"
+    image: "https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d"
   },
   {
     title: "Проверка мобильной версии",
@@ -37,7 +37,7 @@ export const getSlideData = (): SlideData[] => [
     blogId: 4,
     color: "#6366F1",
     icon: Smartphone,
-    image: "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158"
+    image: "https://images.unsplash.com/photo-1531297484001-80022131f5a1"
   },
   {
     title: "Анализ структуры URL",
@@ -45,7 +45,7 @@ export const getSlideData = (): SlideData[] => [
     blogId: 5,
     color: "#EC4899",
     icon: Link,
-    image: "https://images.unsplash.com/photo-1518770660439-4636190af475"
+    image: "https://images.unsplash.com/photo-1487058792275-0ad4aaf24ca7"
   },
   {
     title: "Проверка robots.txt и sitemap",
