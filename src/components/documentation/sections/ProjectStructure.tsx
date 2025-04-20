@@ -1,3 +1,4 @@
+
 import React from 'react';
 
 const ProjectStructure: React.FC = () => {
@@ -34,7 +35,7 @@ const ProjectStructure: React.FC = () => {
         <li><strong>AuditMain</strong> - Сводка общего результата аудита + рекомендации</li>
         <li><strong>AuditOptimization</strong> - Модуль расчёта сметы (стоимости) оптимизации<br/><span className="text-xs text-muted-foreground">Данные берутся из <code>optimizationCalculator</code> (см. /services/audit/optimization/optimizationCalculator.ts)</span></li>
         <li><strong>IssuesSummary</strong> - Компонент показа количества ошибок (критичные, важные, возможности)</li>
-        <li><strong>AuditIssuesAndEstimate</strong> - <em>Новый компонент для вывода списка обнаруженных ошибок и итоговой сметы</em></li>
+        <li><strong>AuditIssuesAndEstimate</strong> - <em>Компонент для вывода списка обнаруженных ошибок и итоговой сметы</em></li>
       </ul>
       <h4 className="text-lg font-medium mb-2">Структура основных данных аудита:</h4>
       <div className="bg-muted p-3 rounded mb-4 text-sm">
@@ -51,6 +52,11 @@ const ProjectStructure: React.FC = () => {
  *   - count: number       // Кол-во объектов (например, страниц)
  *   - price: number       // Базовая цена за единицу
  *   - totalPrice: number  // Общая стоимость (price * count)
+ *
+ * Блок AuditIssuesAndEstimate:
+ *   - auditData: AuditData       // Данные аудита с issues (ошибками)
+ *   - optimizationCost: number   // Итоговая стоимость оптимизации
+ *   - optimizationItems: array   // Детализация работ по оптимизации
  *
  * @see src/types/audit.ts для полного описания
  */

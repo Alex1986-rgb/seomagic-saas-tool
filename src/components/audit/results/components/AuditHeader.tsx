@@ -37,6 +37,15 @@ const AuditHeader: React.FC<AuditHeaderProps> = ({
           Обновить аудит
         </Button>
         
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={onDeepScan}
+        >
+          <Database className="h-4 w-4 mr-2" />
+          Глубокий анализ
+        </Button>
+        
         {onDownloadSitemap && (
           <Button
             variant="outline"

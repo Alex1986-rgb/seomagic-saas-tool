@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuditData } from './hooks/useAuditData';
@@ -233,7 +234,7 @@ const AuditResultsContainer: React.FC<AuditResultsContainerProps> = ({ url }) =>
             {/* Заголовок аудита с кнопками действий */}
             <AuditHeader 
               onRefresh={() => loadAuditData(true)}
-              onDeepScan={() => loadAuditData(false)}
+              onDeepScan={() => loadAuditData(false, true)}
               isRefreshing={isRefreshing}
               onDownloadSitemap={sitemap ? downloadSitemap : undefined}
               onTogglePrompt={() => setShowPrompt(!showPrompt)}
@@ -286,12 +287,14 @@ const AuditResultsContainer: React.FC<AuditResultsContainerProps> = ({ url }) =>
                 </div>
               )}
               
-              {/* Новы�� блок: Детализация ошибок и сметы */}
-              <AuditIssuesAndEstimate 
-                auditData={auditData} 
-                optimizationCost={optimizationCost} 
-                optimizationItems={optimizationItems} 
-              />
+              {/* Блок детализации ошибок и сметы */}
+              {auditData && (
+                <AuditIssuesAndEstimate 
+                  auditData={auditData} 
+                  optimizationCost={optimizationCost} 
+                  optimizationItems={optimizationItems} 
+                />
+              )}
 
               {/* Подробные рекомендации по категориям */}
               {recommendations && (
