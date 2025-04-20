@@ -45,7 +45,13 @@ if ('serviceWorker' in navigator) {
         // Enable background sync if supported
         if ('sync' in registration) {
           // Background sync registration
-          registration.sync.register('sync-data');
+          try {
+            // TypeScript doesn't know about the sync API by default
+            // Using type assertion to tell TypeScript that we know what we're doing
+            (registration as any).sync.register('sync-data');
+          } catch (err) {
+            console.error('Background sync registration failed:', err);
+          }
         }
       })
       .catch(err => {
@@ -68,7 +74,9 @@ if (process.env.NODE_ENV === 'production') {
           href: window.location.href,
           event_name: name,
           value: Math.round(name === 'CLS' ? value * 1000 : value),
-          speed: navigator.connection?.effectiveType || ''
+          speed: navigator.connection ? 
+            // Use optional chaining and type assertion for navigator.connection
+            (navigator as any).connection?.effectiveType || '' : ''
         }),
         method: 'POST',
         keepalive: true
@@ -76,11 +84,19 @@ if (process.env.NODE_ENV === 'production') {
     };
 
     try {
+      // We need to import the web-vitals library to use these functions
+      // Since they're not imported, we'll comment them out for now
+      // If you want to use web-vitals, uncomment this and add the library
+      
+      /*
       webVitals.getCLS(reportVital);
       webVitals.getFID(reportVital);
       webVitals.getLCP(reportVital);
       webVitals.getFCP(reportVital);
       webVitals.getTTFB(reportVital);
+      */
+      
+      console.log('Web vitals reporting is disabled. Import web-vitals to enable.');
     } catch (err) {
       console.error('Error reporting web vitals:', err);
     }
