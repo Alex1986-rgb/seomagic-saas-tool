@@ -95,7 +95,7 @@ const AuditResultsContainer: React.FC<AuditResultsContainerProps> = ({ url }) =>
       initRef.current = true;
       setIsLoading(true);
       
-      // Fix: Only pass one argument to loadAuditData instead of two
+      // Call loadAuditData with only one argument
       loadAuditData(false).then(() => {
         setIsLoading(false);
         
