@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -145,7 +146,7 @@ const PositionTrackerFeature: React.FC = () => {
               </div>
               
               <div className="mt-6 text-center">
-                <Link to="/position-tracker">
+                <Link to="/position-tracking">
                   <Button variant="outline" className="w-full">Проверить свой сайт</Button>
                 </Link>
               </div>
