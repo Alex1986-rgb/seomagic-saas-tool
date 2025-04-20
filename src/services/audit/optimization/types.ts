@@ -1,34 +1,47 @@
 
-export interface OptimizationItem {
-  type: string;
-  count: number;
-  pricePerUnit: number;
-  totalPrice: number;
-  description: string;
-  name: string;
-  price: number;
+export interface OptimizationMetrics {
+  missingMetaTags: number;
+  duplicateMetaTags: number;
+  missingAltTags: number;
+  lowContentPages: number;
+  poorTitleTags: number;
+  poorHeadingStructure: number;
+  slowLoadingPages: number;
+  poorMobileOptimization: number;
+  brokenLinks: number;
+  poorUrlStructure: number;
 }
 
-export interface PageStatistics {
-  totalPages: number;
-  subpages: Record<string, number>;
-  levels: Record<number, number>;
-}
-
-export interface OptimizationResult {
-  optimizationCost: number;
-  optimizationItems: OptimizationItem[];
+export interface OptimizationCosts {
+  sitemap: number;
+  metaTags: number;
+  content: number;
+  images: number;
+  performance: number;
+  links: number;
+  structure: number;
+  total: number;
+  discountPercentage?: number;
+  discountAmount?: number;
+  finalTotal?: number;
 }
 
 export interface PageContent {
   url: string;
-  content: string;
+  title: string;
   meta: {
-    description?: string;
-    keywords?: string;
+    description: string | null;
+    keywords: string | null;
   };
+  content: string;
   images: {
-    src: string;
-    alt?: string;
+    url: string;
+    alt: string | null;
   }[];
+}
+
+export interface OptimizationResults {
+  metrics: OptimizationMetrics;
+  costs: OptimizationCosts;
+  recommendations: string[];
 }

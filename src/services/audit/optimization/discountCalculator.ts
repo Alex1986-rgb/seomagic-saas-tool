@@ -1,30 +1,70 @@
 
-import { PRICING } from './pricingConfig';
-import { OptimizationItem } from './types';
+/**
+ * Calculate discount based on the total cost and site size
+ */
+export const calculateDiscount = (
+  totalCost: number, 
+  totalUrls: number
+): { discountPercentage: number; discountAmount: number; finalTotal: number } => {
+  let discountPercentage = 0;
+  
+  // Volume-based discount
+  if (totalUrls > 10000) {
+    discountPercentage = 30;
+  } else if (totalUrls > 5000) {
+    discountPercentage = 25;
+  } else if (totalUrls > 1000) {
+    discountPercentage = 20;
+  } else if (totalUrls > 500) {
+    discountPercentage = 15;
+  } else if (totalUrls > 100) {
+    discountPercentage = 10;
+  } else if (totalUrls > 50) {
+    discountPercentage = 5;
+  }
+  
+  // Calculate discount amount
+  const discountAmount = (totalCost * discountPercentage) / 100;
+  
+  // Calculate final total
+  const finalTotal = totalCost - discountAmount;
+  
+  return {
+    discountPercentage,
+    discountAmount,
+    finalTotal
+  };
+};
 
-export const calculateDiscount = (totalPages: number, totalCost: number): OptimizationItem | null => {
-  let discountPercent = 0;
+/**
+ * Calculate bulk order discount
+ */
+export const calculateBulkDiscount = (
+  totalCost: number,
+  orderQuantity: number
+): { discountPercentage: number; discountAmount: number; finalTotal: number } => {
+  let discountPercentage = 0;
   
-  if (totalPages > PRICING.DISCOUNTS.LARGE.threshold) {
-    discountPercent = PRICING.DISCOUNTS.LARGE.percent;
-  } else if (totalPages > PRICING.DISCOUNTS.MEDIUM.threshold) {
-    discountPercent = PRICING.DISCOUNTS.MEDIUM.percent;
-  } else if (totalPages > PRICING.DISCOUNTS.SMALL.threshold) {
-    discountPercent = PRICING.DISCOUNTS.SMALL.percent;
+  // Bulk order discount
+  if (orderQuantity >= 10) {
+    discountPercentage = 25;
+  } else if (orderQuantity >= 5) {
+    discountPercentage = 15;
+  } else if (orderQuantity >= 3) {
+    discountPercentage = 10;
+  } else if (orderQuantity >= 2) {
+    discountPercentage = 5;
   }
   
-  if (discountPercent > 0) {
-    const discountAmount = Math.round(totalCost * (discountPercent / 100));
-    return {
-      type: `Скидка за объем (${discountPercent}%)`,
-      count: 1,
-      pricePerUnit: -discountAmount,
-      totalPrice: -discountAmount,
-      description: `Скидка ${discountPercent}% от общей стоимости за большое количество страниц (${totalPages})`,
-      name: `Скидка ${discountPercent}%`,
-      price: -discountAmount
-    };
-  }
+  // Calculate discount amount
+  const discountAmount = (totalCost * discountPercentage) / 100;
   
-  return null;
+  // Calculate final total
+  const finalTotal = totalCost - discountAmount;
+  
+  return {
+    discountPercentage,
+    discountAmount,
+    finalTotal
+  };
 };
