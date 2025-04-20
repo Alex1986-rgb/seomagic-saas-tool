@@ -58,10 +58,10 @@ export const ContentExtractorDialog: React.FC<ContentExtractorDialogProps> = ({
 
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="grid grid-cols-2">
-            <TabsTrigger value="progress" disabled={!isExtracting && extractedSite}>
+            <TabsTrigger value="progress" disabled={isExtracting === false && extractedSite !== null}>
               Прогресс
             </TabsTrigger>
-            <TabsTrigger value="results" disabled={!extractedSite}>
+            <TabsTrigger value="results" disabled={extractedSite === null}>
               Результаты
             </TabsTrigger>
           </TabsList>
