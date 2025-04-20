@@ -2,7 +2,7 @@
 import React from "react";
 import { AlertTriangle, Info } from "lucide-react";
 
-interface SystemWarning {
+export interface SystemWarning {
   type: "warning" | "error" | "info";
   message: string;
 }

@@ -54,34 +54,34 @@ export const statCards: StatCard[] = [
   {
     title: "Загрузка CPU",
     value: "34%",
-    icon: <Cpu className="h-6 w-6 text-blue-500" />,
+    icon: "cpu",
     description: "Средняя за 15 минут",
     color: "bg-blue-50",
-    trend: { value: -3, icon: <TrendingDown className="h-4 w-4" /> }
+    trend: { value: -3, icon: "trending-down" }
   },
   {
     title: "Использование памяти",
     value: "68%",
-    icon: <Server className="h-6 w-6 text-purple-500" />,
+    icon: "server",
     description: "8.2 ГБ / 12 ГБ",
     color: "bg-purple-50",
-    trend: { value: 5, icon: <TrendingUp className="h-4 w-4" /> }
+    trend: { value: 5, icon: "trending-up" }
   },
   {
     title: "Диск",
     value: "47%",
-    icon: <HardDrive className="h-6 w-6 text-emerald-600" />,
+    icon: "hard-drive",
     description: "234 ГБ / 500 ГБ",
     color: "bg-emerald-50",
-    trend: { value: 2, icon: <TrendingUp className="h-4 w-4" /> }
+    trend: { value: 2, icon: "trending-up" }
   },
   {
     title: "Активных сессий",
     value: "14",
-    icon: <Activity className="h-6 w-6 text-emerald-600" />,
+    icon: "activity",
     description: "Текущие подключения",
     color: "bg-emerald-50",
-    trend: { value: -1, icon: <TrendingDown className="h-4 w-4" /> }
+    trend: { value: -1, icon: "trending-down" }
   },
 ];
 
@@ -91,39 +91,39 @@ export const systemStatus: SystemStatusItem[] = [
     status: "Online",
     uptime: "99.98%",
     lastRestart: "19.04.2025 02:15",
-    icon: <Database className="h-5 w-5 text-green-500" />
+    icon: "database"
   },
   {
     name: "API сервер",
     status: "Online",
     uptime: "99.95%",
     lastRestart: "18.04.2025 23:42",
-    icon: <Server className="h-5 w-5 text-green-500" />
+    icon: "server"
   },
   {
     name: "Веб-сервер",
     status: "Online",
     uptime: "100%",
     lastRestart: "17.04.2025 08:10",
-    icon: <Monitor className="h-5 w-5 text-green-500" />
+    icon: "monitor"
   },
   {
     name: "Обработчик задач",
     status: "Warning",
     uptime: "98.5%",
     lastRestart: "19.04.2025 10:30",
-    icon: <AlertTriangle className="h-5 w-5 text-amber-500" />
+    icon: "alert-triangle"
   },
 ];
 
 export const recentEvents = [
-  { time: "19.04.2025 15:42", event: "Автоматическое резервное копирование", type: "info", icon: <Info /> },
-  { time: "19.04.2025 14:15", event: "Обнаружена высокая загрузка CPU (82%)", type: "warning", icon: <AlertTriangle /> },
-  { time: "19.04.2025 12:30", event: "Запуск переиндексации базы данных", type: "info", icon: <Database /> },
-  { time: "19.04.2025 09:12", event: "Вход администратора admin", type: "info", icon: <Activity /> },
-  { time: "19.04.2025 08:51", event: "Обновлены настройки безопасности", type: "info", icon: <Server /> },
-  { time: "19.04.2025 07:44", event: "Выполнена SMS-рассылка", type: "info", icon: <Activity /> },
-  { time: "19.04.2025 05:30", event: "Сбой API запроса к внешнему сервису", type: "error", icon: <AlertTriangle /> },
+  { time: "19.04.2025 15:42", event: "Автоматическое резервное копирование", type: "info", icon: "info" },
+  { time: "19.04.2025 14:15", event: "Обнаружена высокая загрузка CPU (82%)", type: "warning", icon: "alert-triangle" },
+  { time: "19.04.2025 12:30", event: "Запуск переиндексации базы данных", type: "info", icon: "database" },
+  { time: "19.04.2025 09:12", event: "Вход администратора admin", type: "info", icon: "activity" },
+  { time: "19.04.2025 08:51", event: "Обновлены настройки безопасности", type: "info", icon: "server" },
+  { time: "19.04.2025 07:44", event: "Выполнена SMS-рассылка", type: "info", icon: "activity" },
+  { time: "19.04.2025 05:30", event: "Сбой API запроса к внешнему сервису", type: "error", icon: "alert-triangle" },
 ];
 
 export const sectionLinks = [
@@ -131,37 +131,37 @@ export const sectionLinks = [
     label: "База данных", 
     description: "Настройки подключения и оптимизации", 
     to: "/admin/system/database",
-    icon: <Database className="h-6 w-6" />
+    icon: "database"
   },
   {
     label: "Безопасность",
     description: "Защита и политики доступа",
     to: "/admin/system/security",
-    icon: <Server className="h-6 w-6" />
+    icon: "server"
   },
   {
     label: "Пользователи",
     description: "Администраторы и права",
     to: "/admin/system/users",
-    icon: <Activity className="h-6 w-6" />
+    icon: "activity"
   },
   {
     label: "Уведомления",
     description: "Email, SMS, мониторинг",
     to: "/admin/system/notifications",
-    icon: <Monitor className="h-6 w-6" />
+    icon: "monitor"
   },
   {
     label: "Аналитика",
     description: "Отчеты и интеграции",
     to: "/admin/system/analytics",
-    icon: <BarChart className="h-6 w-6" />
+    icon: "bar-chart"
   },
   {
     label: "Производительность",
     description: "Мониторинг и автоматизация",
     to: "/admin/system/performance",
-    icon: <Gauge className="h-6 w-6" />
+    icon: "gauge"
   }
 ];
 
