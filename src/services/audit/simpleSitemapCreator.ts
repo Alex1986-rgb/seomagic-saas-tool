@@ -18,6 +18,7 @@ export class SimpleSitemapCreator {
   private options: SimpleSitemapCreatorOptions;
   private sitemapExtractor: SitemapExtractor;
   private baseUrl: string = '';
+  private domain: string = '';
   
   constructor(options: SimpleSitemapCreatorOptions = {}) {
     this.options = {
@@ -28,7 +29,7 @@ export class SimpleSitemapCreator {
       followRedirects: true,
       retryCount: 3,    // Количество повторных попыток
       retryDelay: 1000, // Задержка между попытками в мс
-      concurrentRequests: 5, // Добавляем количество параллельных запросов
+      concurrentRequests: 30, // Увеличиваем для быстрого сканирования
       ...options
     };
     
@@ -42,6 +43,16 @@ export class SimpleSitemapCreator {
     this.baseUrl = url && url.trim() !== '' 
       ? (url.startsWith('http') ? url : `https://${url}`)
       : '';
+    
+    if (this.baseUrl) {
+      try {
+        const urlObj = new URL(this.baseUrl);
+        this.domain = urlObj.hostname;
+        console.log(`SimpleSitemapCreator: установлен базовый URL ${this.baseUrl} с доменом ${this.domain}`);
+      } catch (error) {
+        console.error('Невозможно извлечь домен из URL:', error);
+      }
+    }
   }
   
   /**
@@ -49,6 +60,13 @@ export class SimpleSitemapCreator {
    */
   getBaseUrl(): string {
     return this.baseUrl;
+  }
+  
+  /**
+   * Получить текущий домен
+   */
+  getDomain(): string {
+    return this.domain;
   }
   
   /**
@@ -60,14 +78,19 @@ export class SimpleSitemapCreator {
   ): Promise<string[]> {
     const normalizedUrl = url && url.trim() !== '' 
       ? (url.startsWith('http') ? url : `https://${url}`)
-      : this.baseUrl; // Если url пустой, используем ранее установленный baseUrl
+      : this.baseUrl; // Если url пустой, использ��ем ранее установленный baseUrl
     
     if (!normalizedUrl) {
       console.error('No URL provided for crawling');
       return [];
     }
     
+    // Обновляем baseUrl и domain на случай, если URL изменился
+    this.setBaseUrl(normalizedUrl);
+    
     try {
+      console.log(`Начинаем сканирование сайта ${normalizedUrl} (домен: ${this.domain})`);
+      
       // First, try to find and parse sitemaps
       const sitemapUrls = await this.findSitemaps(normalizedUrl);
       let allUrls: string[] = [];
@@ -81,15 +104,18 @@ export class SimpleSitemapCreator {
           if (sitemapXml) {
             const extractedUrls = await this.sitemapExtractor.extractUrlsFromSitemap(sitemapXml);
             
-            if (extractedUrls.length > 0) {
-              console.log(`Extracted ${extractedUrls.length} URLs from sitemap ${sitemapUrl}`);
-              allUrls = [...allUrls, ...extractedUrls];
+            // Фильтруем URL, чтобы оставить только те, которые относятся к целевому домену
+            const filteredUrls = this.filterUrlsByDomain(extractedUrls, this.domain);
+            
+            if (filteredUrls.length > 0) {
+              console.log(`Extracted ${filteredUrls.length} URLs from sitemap ${sitemapUrl}`);
+              allUrls = [...allUrls, ...filteredUrls];
               
               // Report progress if we have a callback
               if (progressCallback) {
                 progressCallback(
-                  extractedUrls.length,
-                  extractedUrls.length,
+                  filteredUrls.length,
+                  filteredUrls.length,
                   "Extracted URLs from sitemap"
                 );
               }
@@ -102,6 +128,7 @@ export class SimpleSitemapCreator {
       
       // If we found URLs from sitemaps, return them
       if (allUrls.length > 0) {
+        console.log(`Найдено ${allUrls.length} URL в картах сайта для домена ${this.domain}`);
         return [...new Set(allUrls)]; // Remove duplicates
       }
       
@@ -115,7 +142,8 @@ export class SimpleSitemapCreator {
         onProgress: progressCallback,
         crawlDelay: 300, // Увеличиваем задержку м��жду запросами
         retryCount: this.options.retryCount,
-        retryDelay: this.options.retryDelay
+        retryDelay: this.options.retryDelay,
+        domain: this.domain // Явно передаем домен
       });
       
       const result = await scanner.scan();
@@ -124,6 +152,22 @@ export class SimpleSitemapCreator {
       console.error('Error during crawl:', error);
       throw error;
     }
+  }
+  
+  /**
+   * Фильтрует URL, оставляя только те, которые относятся к указанному домену
+   */
+  private filterUrlsByDomain(urls: string[], targetDomain: string): string[] {
+    return urls.filter(url => {
+      try {
+        const urlObj = new URL(url);
+        return urlObj.hostname === targetDomain || 
+               urlObj.hostname === 'www.' + targetDomain ||
+               targetDomain === 'www.' + urlObj.hostname;
+      } catch {
+        return false;
+      }
+    });
   }
   
   /**

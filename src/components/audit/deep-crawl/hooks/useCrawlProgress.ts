@@ -1,255 +1,101 @@
 
-import { useState } from 'react';
-import { useCrawlState } from './useCrawlState';
+import { useState, useCallback, useEffect } from 'react';
 import { useCrawlExecution } from './useCrawlExecution';
-import { useSitemapExport } from '../utils/exportUtils';
-import { useToast } from "@/hooks/use-toast";
+import { useCrawlState } from './useCrawlState';
 
-export function useCrawlProgress(url: string) {
-  const [sitemap, setSitemap] = useState<string | null>(null);
-  const [isOptimizing, setIsOptimizing] = useState(false);
-  const [optimizedSiteBlob, setOptimizedSiteBlob] = useState<Blob | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const { toast } = useToast();
+export function useCrawlProgress(urlParam: string) {
+  const [url, setUrl] = useState(urlParam);
   
-  // Нормализуем URL для использования в компоненте
-  const normalizedUrl = url && url.trim() !== '' 
-    ? (url.startsWith('http') ? url : `https://${url}`)
-    : '';
-  
-  console.log('useCrawlProgress initialized with URL:', normalizedUrl);
-  
-  // Используем более узконаправленные хуки
-  const crawlState = useCrawlState(normalizedUrl);
-  const crawlExecution = useCrawlExecution();
-  const sitemapExport = useSitemapExport();
-
-  const startCrawling = async () => {
-    // Сбрасываем состояние
-    crawlState.resetState();
-    setError(null);
-    
-    if (!normalizedUrl) {
-      setError("URL не может быть пустым");
-      crawlState.setCrawlStage('failed');
-      crawlState.completeCrawl(false);
-      return null;
+  // Нормализуем URL
+  useEffect(() => {
+    let normalizedUrl = urlParam;
+    if (normalizedUrl && !normalizedUrl.startsWith('http')) {
+      normalizedUrl = `https://${normalizedUrl}`;
     }
+    
+    // Удаляем завершающий слэш, если он есть
+    if (normalizedUrl && normalizedUrl.endsWith('/')) {
+      normalizedUrl = normalizedUrl.slice(0, -1);
+    }
+    
+    console.log(`useCrawlProgress initialized with URL: ${normalizedUrl}`);
+    setUrl(normalizedUrl);
+  }, [urlParam]);
+  
+  const {
+    isLoading,
+    isComplete,
+    progress,
+    currentUrl,
+    pagesScanned,
+    totalPages,
+    crawlStage,
+    domain,
+    crawler,
+    scannedUrls,
+    resetState,
+    updateProgress,
+    completeCrawl,
+    setDomain,
+    setCrawler,
+    setCrawlStage
+  } = useCrawlState(url);
+
+  const { initializeCrawler, executeCrawler } = useCrawlExecution();
+  
+  const startCrawl = useCallback(async () => {
+    console.log(`Starting crawling for URL: ${url}`);
+    resetState();
+    setCrawlStage('starting');
     
     try {
-      console.log(`Starting crawl for URL: ${normalizedUrl}`);
+      console.log(`Starting crawl for URL: ${url}`);
       
-      // Устанавливаем этап на "starting"
-      crawlState.setCrawlStage('starting');
-      
-      // Инициализируем сканер с увеличенным лимитом
-      const { crawler, domain, maxPages, normalizedUrl: crawlerUrl } = crawlExecution.initializeCrawler({
-        url: normalizedUrl,
-        onProgress: (pagesScanned, totalEstimated, currentUrl) => {
-          // Используем больший ожидаемый размер для крупных сайтов
-          const expectedSize = totalEstimated > 1000 ? Math.max(totalEstimated, 100000) : totalEstimated;
-          crawlState.updateProgress(pagesScanned, expectedSize, currentUrl, maxPages);
-        },
-        maxPages: 500000 // Увеличиваем до 500,000 страниц
-      });
-      
-      crawlState.setDomain(domain);
-      crawlState.setCrawler(crawler);
-      
-      // Переходим в этап сканирования
-      crawlState.setCrawlStage('crawling');
-      
-      // Выполняем сканирование с уведомлением о большом сайте
-      console.log('Executing crawler with URL:', crawlerUrl);
-      
-      // Информируем пользователя о начале сканирования большого сайта
-      toast({
-        title: "Глубокое сканирование запущено",
-        description: "Сканирование большого сайта может занять значительное время. Вы можете закрыть это окно, процесс продолжится в фоне.",
-      });
-      
-      const result = await crawlExecution.executeCrawler(crawler, crawlerUrl);
-      
-      if (result && result.urls && result.urls.length > 0) {
-        console.log(`Crawl completed with ${result.urls.length} URLs`);
-        
-        // Генерируем sitemap из результатов
-        const generatedSitemap = sitemapExport.generateSitemapFile(domain, result.urls);
-        setSitemap(generatedSitemap);
-        
-        // Завершаем сканирование с правильной структурой данных
-        crawlState.completeCrawl(true, {
-          urls: result.urls,
-          pageCount: result.pageCount || result.urls.length
-        });
-        
-        toast({
-          title: "Сканирование завершено",
-          description: `Обнаружено ${result.urls.length} страниц на сайте ${domain}`,
-        });
-        
-        return {
-          urls: result.urls,
-          pageCount: result.pageCount || result.urls.length
-        };
-      }
-      else {
-        console.error('Crawler execution completed but no URLs were found');
-        setError("Не удалось найти страницы на сайте. Попробуйте другой URL или проверьте доступность сайта.");
-        crawlState.setCrawlStage('failed');
-        crawlState.completeCrawl(false);
-        return null;
-      }
-      
-    } catch (error) {
-      console.error('Error during deep crawl:', error);
-      setError(error instanceof Error ? error.message : "Неизвестная ошибка при сканировании");
-      crawlState.setCrawlStage('failed');
-      crawlState.completeCrawl(false);
-      return null;
-    }
-  };
-
-  const downloadSitemap = () => {
-    if (!sitemap && crawlState.scannedUrls.length > 0) {
-      // Generate sitemap if it doesn't exist yet
-      const generatedSitemap = sitemapExport.generateSitemapFile(
-        crawlState.domain, 
-        crawlState.scannedUrls
-      );
-      setSitemap(generatedSitemap);
-      sitemapExport.downloadSitemap(generatedSitemap, crawlState.domain);
-    } else if (sitemap) {
-      sitemapExport.downloadSitemap(sitemap, crawlState.domain);
-    } else {
-      toast({
-        title: "Ошибка",
-        description: "Нет данных для создания карты сайта",
-        variant: "destructive"
-      });
-    }
-  };
-  
-  const downloadAllData = async () => {
-    if (crawlState.scannedUrls.length === 0) {
-      toast({
-        title: "Ошибка",
-        description: "Нет данных для скачивания",
-        variant: "destructive"
-      });
-      return;
-    }
-    
-    sitemapExport.downloadAllData(crawlState.scannedUrls, crawlState.domain);
-  };
-  
-  const downloadReport = async () => {
-    if (!crawlState.crawler || crawlState.scannedUrls.length === 0) {
-      toast({
-        title: "Ошибка",
-        description: "Нет данных для создания отчета",
-        variant: "destructive"
-      });
-      return;
-    }
-    
-    sitemapExport.downloadReport(crawlState.crawler, crawlState.domain);
-  };
-  
-  const optimizeSite = async (prompt: string) => {
-    if (crawlState.scannedUrls.length === 0) {
-      toast({
-        title: "Ошибка",
-        description: "Нет данных для оптимизации",
-        variant: "destructive"
-      });
-      return;
-    }
-    
-    setIsOptimizing(true);
-    toast({
-      title: "Запуск оптимизации",
-      description: "Начинаем процесс оптимизации сайта с использованием ИИ",
-    });
-    
-    try {
-      // Wait to simulate processing time
-      await new Promise(resolve => setTimeout(resolve, 3000));
-      
-      // Create an optimized version of the site
-      const sampleContent = generateSampleContent(crawlState.domain, crawlState.scannedUrls, prompt);
-      
-      // Generate a ZIP file with the optimized site
-      const zip = await sitemapExport.createOptimizedSiteZip(crawlState.domain, sampleContent, prompt);
-      setOptimizedSiteBlob(zip);
-      
-      toast({
-        title: "Оптимизация завершена",
-        description: "Сайт был успешно оптимизирован согласно вашим требованиям",
-      });
-    } catch (error) {
-      console.error('Error optimizing site:', error);
-      toast({
-        title: "Ошибка оптимизации",
-        description: "Не удалось выполнить оптимизацию сайта",
-        variant: "destructive",
-      });
-    } finally {
-      setIsOptimizing(false);
-    }
-  };
-  
-  const downloadOptimizedSite = () => {
-    if (optimizedSiteBlob) {
-      sitemapExport.downloadOptimizedSite(optimizedSiteBlob, crawlState.domain);
-      toast({
-        title: "Сайт скачан",
-        description: "Оптимизированная версия сайта успешно скачана",
-      });
-    } else {
-      toast({
-        title: "Сайт не готов",
-        description: "Сначала необходимо запустить оптимизацию",
-        variant: "destructive",
-      });
-    }
-  };
-
-  // Helper function to generate sample content for demonstration
-  const generateSampleContent = (domain: string, urls: string[], prompt: string) => {
-    // This function would normally analyze the content and optimize it
-    // For the demo, we're generating sample content
-    const sampleContent = urls.slice(0, Math.min(urls.length, 30)).map(url => {
-      const isHomepage = url.endsWith(domain) || url.endsWith(domain + '/');
-      const pathParts = url.replace(/https?:\/\//, '').split('/').filter(Boolean);
-      const title = isHomepage 
-        ? `${domain} - Главная страница` 
-        : `${pathParts[pathParts.length - 1].replace(/-/g, ' ')} | ${domain}`;
-      
-      return {
+      // Инициализация сканера
+      const { crawler: newCrawler, domain: newDomain, maxPages, normalizedUrl } = initializeCrawler({
         url,
-        title,
-        content: `<p>Это оптимизированный контент для страницы ${url}.</p><p>Оптимизировано с помощью ИИ на основе промпта: "${prompt}"</p>`,
-        metaTags: {
-          description: `Оптимизированное мета-описание для ${url}. Включает ключевые слова и привлекательное описание для поисковых систем.`,
-          keywords: `ключевые, слова, для, ${pathParts[pathParts.length - 1] || domain}, оптимизированные`
+        onProgress: (pagesScanned, totalEstimated, currentUrl) => {
+          updateProgress(pagesScanned, totalEstimated, currentUrl, maxPages);
         }
-      };
-    });
-    
-    return sampleContent;
-  };
+      });
+      
+      setCrawler(newCrawler);
+      setDomain(newDomain);
+      console.log(`Executing crawler with URL: ${normalizedUrl}`);
+      
+      // Выполняем сканирование
+      const result = await executeCrawler(newCrawler, normalizedUrl);
+      
+      if (result && result.success) {
+        console.log(`Crawl completed with ${result.urls.length} URLs`);
+        completeCrawl(true, { urls: result.urls, pageCount: result.pageCount });
+      } else {
+        console.error("Crawling failed:", result);
+        completeCrawl(false);
+      }
+    } catch (error) {
+      console.error("Error during crawl:", error);
+      completeCrawl(false);
+    }
+  }, [url, resetState, initializeCrawler, executeCrawler, updateProgress, completeCrawl, setCrawler, setDomain, setCrawlStage]);
+
+  const cancelCrawl = useCallback(() => {
+    console.log("Cancelling crawl");
+    // Clean up
+    completeCrawl(false);
+  }, [completeCrawl]);
 
   return {
-    ...crawlState,
-    sitemap,
-    isOptimizing,
-    error,
-    startCrawling,
-    downloadSitemap,
-    downloadAllData,
-    downloadReport,
-    optimizeSite,
-    downloadOptimizedSite
+    isLoading,
+    isComplete,
+    progress,
+    currentUrl,
+    pagesScanned,
+    totalPages,
+    crawlStage,
+    domain,
+    scannedUrls,
+    startCrawl,
+    cancelCrawl
   };
 }

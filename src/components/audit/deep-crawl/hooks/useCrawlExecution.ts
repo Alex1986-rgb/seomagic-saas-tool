@@ -27,11 +27,16 @@ export function useCrawlExecution() {
         normalizedUrl = `https://${normalizedUrl}`;
       }
       
+      // Удаляем конечный слэш, если он есть
+      if (normalizedUrl.endsWith('/')) {
+        normalizedUrl = normalizedUrl.slice(0, -1);
+      }
+      
       // Проверяем валидность URL
       const urlObj = new URL(normalizedUrl);
       const domain = urlObj.hostname;
       
-      console.log(`Инициализация сканера для ${normalizedUrl} с лимитом ${maxPages} страниц`);
+      console.log(`Инициализация сканера для ${normalizedUrl} с доменом ${domain} и лимитом ${maxPages} страниц`);
       
       // Создаем новый сканер с расширенными параметрами
       const crawler = new SimpleSitemapCreator({
@@ -44,6 +49,9 @@ export function useCrawlExecution() {
         retryCount: 3,    // Повторные попытки при ошибках
         retryDelay: 500   // Меньшая задержка между попытками
       });
+      
+      // Устанавливаем базовый URL явно
+      crawler.setBaseUrl(normalizedUrl);
       
       return { crawler, domain, maxPages, normalizedUrl };
     } catch (error) {

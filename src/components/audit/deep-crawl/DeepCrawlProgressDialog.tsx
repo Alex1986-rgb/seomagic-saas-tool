@@ -1,18 +1,9 @@
-import React, { useState, useEffect } from 'react';
-import { X, AlertCircle, Check, FileSearch } from 'lucide-react';
-import { 
-  Dialog, 
-  DialogContent, 
-  DialogHeader, 
-  DialogTitle, 
-  DialogDescription,
-  DialogFooter 
-} from "@/components/ui/dialog";
+
+import React, { useEffect, useState } from 'react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { useToast } from "@/hooks/use-toast";
 import { useCrawlProgress } from './hooks/useCrawlProgress';
-import { Badge } from "@/components/ui/badge";
 
 interface DeepCrawlProgressDialogProps {
   open: boolean;
@@ -27,192 +18,90 @@ export const DeepCrawlProgressDialog: React.FC<DeepCrawlProgressDialogProps> = (
   url,
   initialStage = 'idle'
 }) => {
-  const { toast } = useToast();
-  const [dialogOpen, setDialogOpen] = useState(open);
-  const [forceAttempt, setForceAttempt] = useState(0);
-  const [hasStartedCrawling, setHasStartedCrawling] = useState(false);
-  
-  const normalizedUrl = url && url.trim() !== '' 
-    ? (url.startsWith('http') ? url : `https://${url}`)
-    : '';
-  
-  console.log("DeepCrawlProgressDialog initialized with URL:", normalizedUrl);
-  
   const {
     isLoading,
-    isComplete,
     progress,
     currentUrl,
     pagesScanned,
     totalPages,
-    scannedUrls,
     crawlStage,
-    error,
-    startCrawling,
-    downloadSitemap,
-    downloadAllData,
-    downloadReport
-  } = useCrawlProgress(normalizedUrl);
-
-  const initiateScanning = async () => {
-    try {
-      console.log("Starting crawling for URL:", normalizedUrl);
-      if (!hasStartedCrawling) {
-        setHasStartedCrawling(true);
-        const result = await startCrawling();
-        
-        if (result) {
-          console.log("Crawling completed successfully:", result);
-          toast({
-            title: "Сканирование завершено",
-            description: `Обнаружено ${result.urls.length} страниц на сайте ${url}`,
-          });
-        } else {
-          console.error("No result from crawling");
-          toast({
-            title: "Ошибка сканирования",
-            description: "Не удалось получить результаты сканирования. Попробуйте другой сайт или уменьшите глубину сканирования.",
-            variant: "destructive"
-          });
-        }
-      }
-    } catch (error) {
-      console.error("Error during crawling:", error);
-      toast({
-        title: "Ошибка сканирования",
-        description: "Произошла ошибка при сканировании. Попробуйте другой URL.",
-        variant: "destructive"
-      });
-    }
-  };
+    scannedUrls,
+    startCrawl,
+    cancelCrawl
+  } = useCrawlProgress(url);
 
   useEffect(() => {
-    setDialogOpen(open);
-    
-    if (open && normalizedUrl) {
-      setHasStartedCrawling(false);
-      initiateScanning();
+    if (open && initialStage === 'starting' && !isLoading) {
+      console.log(`DeepCrawlProgressDialog: Начинаем сканирование URL: ${url}`);
+      startCrawl();
     }
-  }, [open, normalizedUrl, forceAttempt]);
+  }, [open, initialStage, isLoading, startCrawl, url]);
+
+  const handleCancel = () => {
+    cancelCrawl();
+    onClose();
+  };
 
   const handleClose = () => {
-    setDialogOpen(false);
-    setHasStartedCrawling(false);
     onClose(pagesScanned, scannedUrls);
   };
 
-  const handleRetry = () => {
-    setHasStartedCrawling(false);
-    setForceAttempt(prev => prev + 1);
-  };
-
-  const getStageLabel = () => {
+  const getStageText = () => {
     switch (crawlStage) {
       case 'starting':
         return 'Подготовка к сканированию...';
       case 'crawling':
-        return 'Сканирование страниц...';
+        return `Сканирование страниц (${pagesScanned} из ${totalPages || '?'})`;
       case 'analyzing':
-        return 'Анализ структуры сайта...';
+        return 'Анализ найденных страниц...';
       case 'completed':
-        return 'Сканирование завершено';
+        return `Сканирование завершено. Найдено ${pagesScanned} страниц.`;
       case 'failed':
         return 'Ошибка сканирования';
       default:
-        return 'Ожидание';
+        return 'Ожидание запуска...';
     }
   };
 
   return (
-    <Dialog open={dialogOpen} onOpenChange={(open) => {
-      if (!open) handleClose();
-    }}>
-      <DialogContent className="sm:max-w-[600px]">
+    <Dialog open={open} onOpenChange={(isOpen) => !isOpen && (crawlStage === 'completed' || crawlStage === 'failed' ? handleClose() : handleCancel())}>
+      <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <FileSearch className="h-5 w-5 text-primary" />
-            Глубокое сканирование сайта
-            <Badge variant={crawlStage === 'completed' ? 'secondary' : 'default'}>{getStageLabel()}</Badge>
-          </DialogTitle>
+          <DialogTitle>Глубокое сканирование сайта</DialogTitle>
           <DialogDescription>
-            {normalizedUrl} <span className="text-xs opacity-70">| Максимум 500,000 страниц</span>
+            URL: {url}
           </DialogDescription>
         </DialogHeader>
 
-        <div className="py-4 space-y-5">
-          <Progress value={progress} className="h-2" />
+        <div className="space-y-4 py-4">
+          <Progress value={progress} className="w-full" />
           
-          <div className="grid grid-cols-2 gap-4 text-sm">
-            <div>
-              <div className="text-muted-foreground">Просканировано:</div>
-              <div className="font-medium">{pagesScanned.toLocaleString('ru-RU')} страниц</div>
-            </div>
-            <div>
-              <div className="text-muted-foreground">Примерно всего:</div>
-              <div className="font-medium">{totalPages > 0 ? totalPages.toLocaleString('ru-RU') : 'Оценка...'} страниц</div>
-            </div>
+          <div className="text-center space-y-2">
+            <p className="text-sm font-medium">{getStageText()}</p>
+            {currentUrl && (
+              <p className="text-xs text-muted-foreground truncate max-w-full">
+                Текущий URL: {currentUrl}
+              </p>
+            )}
           </div>
-          
-          {currentUrl && (
-            <div className="text-xs text-muted-foreground truncate p-2 border border-border rounded-md bg-muted/50">
-              Текущий URL: {currentUrl}
-            </div>
-          )}
-
-          {(crawlStage === 'failed' || error) && (
-            <div className="flex items-center gap-2 text-sm text-red-500 bg-red-50 dark:bg-red-950/30 p-3 rounded">
-              <AlertCircle className="h-4 w-4 flex-shrink-0" />
-              <span>{error || "Произошла ошибка при сканировании. Попробуйте другой URL или уменьшите глубину сканирования."}</span>
-            </div>
-          )}
-          
-          {pagesScanned === 0 && progress > 10 && crawlStage !== 'starting' && (
-            <div className="text-amber-500 text-sm flex items-center gap-2 p-2 bg-amber-50 dark:bg-amber-950/20 rounded-md">
-              <AlertCircle className="h-4 w-4 flex-shrink-0" />
-              <span>Сайт не отвечает или блокирует доступ. Попробуйте другой URL.</span>
-            </div>
-          )}
         </div>
 
-        <DialogFooter className="flex flex-col sm:flex-row gap-2">
-          {crawlStage === 'completed' ? (
-            <>
-              <Button 
-                onClick={downloadSitemap} 
-                variant="outline" 
-                size="sm" 
-                disabled={scannedUrls.length === 0}
-              >
-                Скачать к��рту сайта
-              </Button>
-              <Button 
-                onClick={downloadAllData} 
-                variant="outline" 
-                size="sm"
-                disabled={scannedUrls.length === 0}
-              >
-                Скачать все данные
-              </Button>
-              <Button onClick={handleClose} variant="default" size="sm">
-                <Check className="h-4 w-4 mr-1" /> Готово
-              </Button>
-            </>
-          ) : crawlStage === 'failed' ? (
-            <>
-              <Button onClick={handleRetry} variant="outline" size="sm">
-                Повторить
-              </Button>
-              <Button onClick={handleClose} variant="default" size="sm">
-                Закрыть
-              </Button>
-            </>
+        <DialogFooter className="flex flex-row justify-between gap-2">
+          {crawlStage !== 'completed' && crawlStage !== 'failed' ? (
+            <Button variant="outline" onClick={handleCancel}>Отменить</Button>
           ) : (
-            <Button onClick={handleClose} variant={isComplete ? "default" : "outline"} size="sm">
-              {isComplete ? "Закрыть" : "Отмена"}
-            </Button>
+            <Button onClick={handleClose}>Закрыть</Button>
+          )}
+          
+          {crawlStage === 'completed' && (
+            <div className="text-sm text-muted-foreground">
+              Найдено: {pagesScanned} страниц
+            </div>
           )}
         </DialogFooter>
       </DialogContent>
     </Dialog>
   );
 };
+
+export default DeepCrawlProgressDialog;
