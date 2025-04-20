@@ -17,6 +17,7 @@ export interface SimpleSitemapCreatorOptions {
 export class SimpleSitemapCreator {
   private options: SimpleSitemapCreatorOptions;
   private sitemapExtractor: SitemapExtractor;
+  private baseUrl: string = '';
   
   constructor(options: SimpleSitemapCreatorOptions = {}) {
     this.options = {
@@ -34,13 +35,36 @@ export class SimpleSitemapCreator {
   }
   
   /**
+   * Задать базовый URL для сканирования
+   */
+  setBaseUrl(url: string): void {
+    this.baseUrl = url && url.trim() !== '' 
+      ? (url.startsWith('http') ? url : `https://${url}`)
+      : '';
+  }
+  
+  /**
+   * Получить базовый URL
+   */
+  getBaseUrl(): string {
+    return this.baseUrl;
+  }
+  
+  /**
    * Crawl a website and return all URLs
    */
   async crawl(
     url: string, 
     progressCallback?: (scanned: number, total: number, currentUrl: string) => void
   ): Promise<string[]> {
-    const normalizedUrl = url.startsWith('http') ? url : `https://${url}`;
+    const normalizedUrl = url && url.trim() !== '' 
+      ? (url.startsWith('http') ? url : `https://${url}`)
+      : this.baseUrl; // Если url пустой, используем ранее установленный baseUrl
+    
+    if (!normalizedUrl) {
+      console.error('No URL provided for crawling');
+      return [];
+    }
     
     try {
       // First, try to find and parse sitemaps
@@ -206,6 +230,14 @@ export class SimpleSitemapCreator {
     const maxRetries = this.options.retryCount || 3;
     const retryDelay = this.options.retryDelay || 1000;
     
+    // Проверяем валидность URL
+    try {
+      new URL(url);
+    } catch (error) {
+      console.error(`Invalid URL: ${url}`, error);
+      return null;
+    }
+    
     while (retries <= maxRetries) {
       try {
         const response = await axios.get(url, { 
@@ -223,6 +255,7 @@ export class SimpleSitemapCreator {
         }
         return null;
       } catch (error) {
+        console.warn(`Attempt ${retries + 1}/${maxRetries} failed for URL ${url}:`, error);
         retries++;
         if (retries > maxRetries) {
           return null;

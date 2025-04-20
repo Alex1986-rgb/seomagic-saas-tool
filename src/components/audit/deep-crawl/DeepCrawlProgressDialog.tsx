@@ -32,6 +32,11 @@ export const DeepCrawlProgressDialog: React.FC<DeepCrawlProgressDialogProps> = (
   const [dialogOpen, setDialogOpen] = useState(open);
   const [forceAttempt, setForceAttempt] = useState(0);
   
+  // Проверяем и нормализуем URL перед использованием
+  const normalizedUrl = url && url.trim() !== '' 
+    ? (url.startsWith('http') ? url : `https://${url}`)
+    : '';
+  
   const {
     isLoading,
     isComplete,
@@ -51,13 +56,13 @@ export const DeepCrawlProgressDialog: React.FC<DeepCrawlProgressDialogProps> = (
   useEffect(() => {
     setDialogOpen(open);
     
-    if (open) {
-      // Start crawling when dialog is opened
+    if (open && normalizedUrl) {
+      // Запускаем сканирование, когда диалог открыт
       const startScanning = async () => {
         try {
-          console.log("Starting crawling for URL:", url);
-          const normalizedUrl = url.startsWith('http') ? url : `https://${url}`;
+          console.log("Starting crawling for URL:", normalizedUrl);
           const result = await startCrawling();
+          
           if (result) {
             console.log("Crawling completed successfully:", result);
             toast({
@@ -85,7 +90,7 @@ export const DeepCrawlProgressDialog: React.FC<DeepCrawlProgressDialogProps> = (
       
       startScanning();
     }
-  }, [open, url, startCrawling, toast, forceAttempt]);
+  }, [open, normalizedUrl, startCrawling, toast, forceAttempt]);
 
   const handleClose = () => {
     setDialogOpen(false);
@@ -127,7 +132,7 @@ export const DeepCrawlProgressDialog: React.FC<DeepCrawlProgressDialogProps> = (
             <Badge variant={crawlStage === 'completed' ? 'secondary' : 'default'}>{getStageLabel()}</Badge>
           </DialogTitle>
           <DialogDescription>
-            {url} <span className="text-xs opacity-70">| Максимум 500,000 страниц</span>
+            {normalizedUrl} <span className="text-xs opacity-70">| Максимум 500,000 страниц</span>
           </DialogDescription>
         </DialogHeader>
 

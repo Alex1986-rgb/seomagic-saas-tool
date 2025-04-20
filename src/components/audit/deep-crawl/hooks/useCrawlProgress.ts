@@ -11,29 +11,34 @@ export function useCrawlProgress(url: string) {
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
   
-  // Use the smaller, focused hooks
-  const crawlState = useCrawlState(url);
+  // Нормализуем URL для использования в компоненте
+  const normalizedUrl = url && url.trim() !== '' 
+    ? (url.startsWith('http') ? url : `https://${url}`)
+    : '';
+  
+  // Используем более узконаправленные хуки
+  const crawlState = useCrawlState(normalizedUrl);
   const crawlExecution = useCrawlExecution();
   const sitemapExport = useSitemapExport();
 
   const startCrawling = async () => {
-    // Reset state
+    // Сбрасываем состояние
     crawlState.resetState();
     setError(null);
     
-    if (!url) {
+    if (!normalizedUrl) {
       setError("URL не может быть пустым");
       crawlState.completeCrawl(false);
       return null;
     }
     
     try {
-      console.log(`Starting crawl for URL: ${url}`);
+      console.log(`Starting crawl for URL: ${normalizedUrl}`);
       
-      // Normalize URL
-      const normalizedUrl = url.startsWith('http') ? url : `https://${url}`;
+      // Устанавливаем этап на "starting"
+      crawlState.setCrawlStage('starting');
       
-      // Initialize crawler
+      // Инициализируем сканер
       const { crawler, domain, maxPages } = crawlExecution.initializeCrawler({
         url: normalizedUrl,
         onProgress: (pagesScanned, totalEstimated, currentUrl) => {
@@ -44,24 +49,21 @@ export function useCrawlProgress(url: string) {
       crawlState.setDomain(domain);
       crawlState.setCrawler(crawler);
       
-      // Set stage to starting
-      crawlState.setCrawlStage('starting');
-      
-      // Execute crawler
+      // Выполняем сканирование
       console.log('Executing crawler...');
       const result = await crawlExecution.executeCrawler(crawler);
       
       if (result && result.urls && result.urls.length > 0) {
         console.log(`Crawl completed with ${result.urls.length} URLs`);
         
-        // Generate sitemap from results
+        // Генерируем sitemap из результатов
         const generatedSitemap = sitemapExport.generateSitemapFile(domain, result.urls);
         setSitemap(generatedSitemap);
         
-        // Complete the crawl with the correct data structure
+        // Завершаем сканирование с правильной структурой данных
         crawlState.completeCrawl(true, {
           urls: result.urls,
-          pageCount: result.pageCount || result.urls.length // Fallback to urls length if pageCount doesn't exist
+          pageCount: result.pageCount || result.urls.length
         });
         
         return {

@@ -16,11 +16,24 @@ export function useCrawlExecution() {
   }: CrawlerSettings) => {
     
     try {
-      const normalizedUrl = url.startsWith('http') ? url : `https://${url}`;
+      // Проверяем, не пустой ли URL
+      if (!url || url.trim() === '') {
+        throw new Error('URL не может быть пустым');
+      }
+      
+      // Нормализуем URL, убедившись, что он начинается с http:// или https://
+      let normalizedUrl = url;
+      if (!normalizedUrl.startsWith('http://') && !normalizedUrl.startsWith('https://')) {
+        normalizedUrl = `https://${normalizedUrl}`;
+      }
+      
+      // Проверяем валидность URL
       const urlObj = new URL(normalizedUrl);
       const domain = urlObj.hostname;
       
-      // Create a new crawler
+      console.log(`Инициализация сканера для ${normalizedUrl} с лимитом ${maxPages} страниц`);
+      
+      // Создаем новый сканер
       const crawler = new SimpleSitemapCreator({
         maxPages,
         maxDepth: 5,
@@ -38,12 +51,18 @@ export function useCrawlExecution() {
   
   const executeCrawler = async (crawler: SimpleSitemapCreator) => {
     try {
-      // Execute the crawler
+      // Выполняем сканирование
       const progressCallback = (scanned: number, total: number, currentUrl: string) => {
         console.log(`Progress: ${scanned}/${total} - ${currentUrl}`);
       };
       
+      // Явно передаем пустую строку для url, так как URL уже инициализирован в crawl
       const urls = await crawler.crawl('', progressCallback);
+      
+      if (!urls || urls.length === 0) {
+        console.error('Не удалось найти URLs на сайте');
+        return null;
+      }
       
       return {
         success: true,
