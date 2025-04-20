@@ -77,6 +77,26 @@ class SeoApiService {
     }
   }
 
+  async getAuditInfo(taskId: string) {
+    try {
+      // Получаем статус задачи
+      const status = await this.getStatus(taskId);
+      
+      // Возвращаем данные о количестве страниц
+      return {
+        pageCount: status.total_pages || status.pages_scanned || 0,
+        url: status.url,
+        status: status.status
+      };
+    } catch (error) {
+      console.error('Error getting audit info:', error);
+      return {
+        pageCount: 0,
+        status: 'error'
+      };
+    }
+  }
+
   async downloadSitemap(taskId: string, format: 'xml' | 'html' | 'package' = 'xml') {
     try {
       await firecrawlService.downloadSitemap(taskId);

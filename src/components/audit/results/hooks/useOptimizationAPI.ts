@@ -36,7 +36,7 @@ export const useOptimizationAPI = (taskId: string | null) => {
         toast({
           title: "Предупреждение",
           description: "Не удалось определить количество страниц сайта. Используем примерную оценку.",
-          variant: "warning"
+          variant: "default"
         });
       }
       
@@ -64,7 +64,7 @@ export const useOptimizationAPI = (taskId: string | null) => {
       toast({
         title: "Внимание",
         description: "Используем примерную стоимость оптимизации из-за ошибки расчета",
-        variant: "warning"
+        variant: "default"
       });
     } finally {
       setIsLoadingCost(false);
