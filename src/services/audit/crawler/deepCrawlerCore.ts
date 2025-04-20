@@ -12,14 +12,22 @@ export class DeepCrawlerCore {
   protected baseUrl: string;
   protected options: DeepCrawlerOptions;
   protected userAgent = 'Mozilla/5.0 (compatible; SEOAuditBot/1.0)';
+  private queueManager: QueueManager;
+  private maxConcurrentRequests = 5; // Увеличиваем параллельные запросы
 
   constructor(url: string, options: DeepCrawlerOptions) {
-    this.options = options;
+    this.options = {
+      ...options,
+      maxPages: options.maxPages || 500000, // Увеличиваем лимит по умолчанию
+      maxDepth: options.maxDepth || 10      // Увеличиваем глубину по умолчанию
+    };
     this.baseUrl = url.startsWith('http') ? url : `https://${url}`;
     this.domain = new URL(this.baseUrl).hostname;
+    this.queueManager = new QueueManager();
   }
 
   async startCrawling(): Promise<CrawlResult> {
+    console.log(`Начинаем сканирование сайта ${this.baseUrl} с лимитом ${this.options.maxPages} страниц`);
     this.queue = [{ url: this.baseUrl, depth: 0 }];
     this.visited.clear();
     
@@ -32,89 +40,104 @@ export class DeepCrawlerCore {
       brokenLinks: []
     };
 
-    while (this.queue.length > 0) {
-      const { url, depth } = this.queue.shift()!;
+    // Попытка найти карту сайта для ускорения сканирования
+    try {
+      const sitemapUrl = `${this.baseUrl}/sitemap.xml`.replace(/([^:]\/)\/+/g, "$1");
+      console.log('Пытаемся извлечь карту сайта из:', sitemapUrl);
       
-      if (this.visited.has(url) || depth > this.options.maxDepth) {
-        continue;
-      }
-
-      try {
-        const response = await axios.get(url, {
-          headers: { 'User-Agent': this.userAgent },
-          timeout: 10000
+      const response = await axios.get(sitemapUrl, {
+        headers: { 'User-Agent': this.userAgent },
+        timeout: 10000
+      });
+      
+      if (response.status === 200) {
+        console.log('Найдена карта сайта, извлекаем URL');
+        const $ = cheerio.load(response.data, { xmlMode: true });
+        const urls: string[] = [];
+        
+        $('url > loc').each((_, element) => {
+          const url = $(element).text().trim();
+          if (url) {
+            urls.push(url);
+            this.queue.push({ url, depth: 1 });
+          }
         });
-
-        const $ = cheerio.load(response.data);
-        this.visited.add(url);
-        result.urls.push(url);
-
-        // Extract metadata
-        const title = $('title').text();
-        const description = $('meta[name="description"]').attr('content');
-        const keywords = $('meta[name="keywords"]').attr('content')?.split(',') || [];
         
-        // Update keywords in result
-        result.metadata!.keywords = [...new Set([...result.metadata!.keywords || [], ...keywords])];
+        console.log(`Извлечено ${urls.length} URL из карты сайта`);
+      }
+    } catch (error) {
+      console.warn('Не удалось извлечь карту сайта, продолжаем обычное сканирование');
+    }
 
-        // Process links
-        const links = await this.processLinks($, url);
-        result.metadata!.links!.internal += links.internal.length;
-        result.metadata!.links!.external += links.external.length;
-        
-        // Добавляем в brokenLinks объекты с url и statusCode
-        if (links.broken.length > 0) {
-          if (!result.brokenLinks) {
-            result.brokenLinks = [];
-          }
+    // Устанавливаем больший таймаут для обработки очереди
+    const processTimeout = setTimeout(() => {
+      console.warn(`Достигнут таймаут сканирования после ${this.visited.size} страниц`);
+    }, 30 * 60 * 1000); // 30 минут таймаут
+
+    try {
+      // Используем QueueManager для эффективной обработки большой очереди
+      const crawlResult = await this.queueManager.processCrawlQueue(
+        this.queue,
+        this.visited,
+        this.options,
+        this.processUrl.bind(this)
+      );
+      
+      // Объединяем результаты
+      result.urls = crawlResult.urls;
+      console.log(`Сканирование завершено, найдено ${result.urls.length} страниц`);
+      
+      return result;
+    } finally {
+      clearTimeout(processTimeout);
+    }
+  }
+
+  protected async processUrl(url: string, depth: number): Promise<void> {
+    if (this.visited.has(url) || depth > this.options.maxDepth) {
+      return;
+    }
+
+    try {
+      const response = await axios.get(url, {
+        headers: { 'User-Agent': this.userAgent },
+        timeout: 15000 // Увеличиваем таймаут
+      });
+
+      const $ = cheerio.load(response.data);
+      this.visited.add(url);
+
+      // Извлекаем и обрабатываем ссылки
+      const links = await this.processLinks($, url);
+      
+      // Добавляем внутренние ссылки в очередь с приоритетом для страниц товаров
+      for (const link of links.internal) {
+        if (!this.visited.has(link)) {
+          // Проверяем, является ли страница страницей товара
+          const isProductPage = /product|item|catalog|collection/i.test(link);
           
-          // Преобразуем строки в объекты { url, statusCode }
-          for (const brokenUrl of links.broken) {
-            (result.brokenLinks as { url: string; statusCode: number }[]).push({ 
-              url: brokenUrl, 
-              statusCode: 404 
-            });
-          }
-        }
-
-        // Add internal links to queue
-        for (const link of links.internal) {
-          if (!this.visited.has(link)) {
+          if (isProductPage) {
+            // Добавляем с высоким приоритетом
+            this.queue.unshift({ url: link, depth: depth + 1 });
+          } else {
             this.queue.push({ url: link, depth: depth + 1 });
           }
         }
+      }
 
-        // Progress callback
-        if (this.options.onProgress) {
-          this.options.onProgress({
-            pagesScanned: this.visited.size,
-            currentUrl: url,
-            totalUrls: this.queue.length + this.visited.size
-          });
-        }
-
-      } catch (error) {
-        console.error(`Error crawling ${url}:`, error);
-        if (!result.brokenLinks) {
-          result.brokenLinks = [];
-        }
-        
-        // Добавляем в brokenLinks объект с url и statusCode
-        (result.brokenLinks as { url: string; statusCode: number }[]).push({ 
-          url, 
-          statusCode: error instanceof axios.AxiosError && error.response ? error.response.status : 0 
+      // Сообщаем о прогрессе
+      if (this.options.onProgress) {
+        this.options.onProgress({
+          pagesScanned: this.visited.size,
+          currentUrl: url,
+          totalUrls: this.queue.length + this.visited.size
         });
-        
-        result.metadata!.links!.broken++;
       }
 
-      // Check limits
-      if (this.visited.size >= this.options.maxPages) {
-        break;
-      }
+    } catch (error) {
+      console.error(`Error crawling ${url}:`, error);
+      // Обрабатываем ошибку, но продолжаем сканирование
     }
-
-    return result;
   }
 
   private async processLinks($: cheerio.CheerioAPI, currentUrl: string) {
@@ -125,6 +148,7 @@ export class DeepCrawlerCore {
     };
 
     const currentUrlObj = new URL(currentUrl);
+    const seenUrls = new Set<string>(); // Для избежания дублирования
 
     $('a').each((_, element) => {
       const href = $(element).attr('href');
@@ -132,15 +156,30 @@ export class DeepCrawlerCore {
 
       try {
         const absoluteUrl = new URL(href, currentUrl);
+        
+        // Пропускаем нежелательные URL (файлы, якоря, etc.)
+        if (
+          absoluteUrl.hash || // якоря
+          /\.(pdf|zip|rar|jpg|jpeg|png|gif|doc|docx|xls|xlsx|csv)$/i.test(absoluteUrl.pathname) || // файлы
+          absoluteUrl.pathname.includes('/wp-admin/') || // админка WordPress
+          absoluteUrl.pathname.includes('/wp-login.php') // логин WordPress
+        ) {
+          return;
+        }
+        
+        const urlString = absoluteUrl.href;
+        if (seenUrls.has(urlString)) return;
+        seenUrls.add(urlString);
+        
         const isSameDomain = absoluteUrl.hostname === this.domain;
 
         if (isSameDomain) {
-          links.internal.push(absoluteUrl.href);
+          links.internal.push(urlString);
         } else {
-          links.external.push(absoluteUrl.href);
+          links.external.push(urlString);
         }
       } catch (error) {
-        console.warn(`Invalid URL ${href} on page ${currentUrl}`);
+        // Пропускаем недействительные URL
       }
     });
 

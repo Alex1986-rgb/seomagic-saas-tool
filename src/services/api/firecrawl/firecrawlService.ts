@@ -24,14 +24,15 @@ export class FirecrawlService {
       start_time: new Date().toISOString(),
       pages_scanned: 0,
       estimated_total_pages: maxPages,
-      progress: 0
+      progress: 0,
+      isLargeSite: maxPages > 10000 // Помечаем как крупный сайт, если лимит больше 10k
     };
 
     this.tasks.set(taskId, task);
 
     const crawler = new DeepCrawlerCore(url, {
       maxPages,
-      maxDepth: 10,
+      maxDepth: 15, // Увеличиваем глубину для больших сайтов
       onProgress: (progress: { pagesScanned: number; currentUrl: string; totalUrls: number }) => {
         this.updateTaskProgress(taskId, progress);
       }
@@ -79,7 +80,22 @@ export class FirecrawlService {
     if (task) {
       task.pages_scanned = progress.pagesScanned;
       task.current_url = progress.currentUrl;
-      task.progress = Math.min(Math.floor((progress.pagesScanned / (task.estimated_total_pages || 1)) * 100), 99);
+      
+      // Для крупных сайтов используем другую формулу прогресса, чтобы не держать на 1% слишком долго
+      if (task.isLargeSite) {
+        if (progress.pagesScanned < 100) {
+          task.progress = Math.min(Math.floor((progress.pagesScanned / 100) * 5), 5); // Быстрее растет до 5%
+        } else if (progress.pagesScanned < 1000) {
+          task.progress = 5 + Math.min(Math.floor(((progress.pagesScanned - 100) / 900) * 15), 15); // 5-20%
+        } else {
+          // После 1000 страниц прогресс растет медленнее, но постоянно
+          task.progress = 20 + Math.min(Math.floor(Math.log10(progress.pagesScanned) * 15), 79);
+        }
+      } else {
+        // Для обычных сайтов обычная формула
+        task.progress = Math.min(Math.floor((progress.pagesScanned / (task.estimated_total_pages || 1)) * 100), 99);
+      }
+      
       this.tasks.set(taskId, task);
     }
   }

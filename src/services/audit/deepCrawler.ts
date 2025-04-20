@@ -12,8 +12,8 @@ export class DeepCrawler extends DeepCrawlerCore {
   constructor(url: string, options: AuditDeepCrawlerOptions) {
     // Create a compatible options object that satisfies the FirecrawlDeepCrawlerOptions interface
     const compatibleOptions: FirecrawlDeepCrawlerOptions = {
-      maxPages: options.maxPages || 1000, // Default value if not provided
-      maxDepth: options.maxDepth || 5,
+      maxPages: options.maxPages || 500000, // Увеличиваем лимит по умолчанию до 500,000 страниц
+      maxDepth: options.maxDepth || 10,     // Увеличиваем глубину поиска
       onProgress: options.onProgress 
         ? (progress) => {
             // Adapt the new progress object format to the old callback format

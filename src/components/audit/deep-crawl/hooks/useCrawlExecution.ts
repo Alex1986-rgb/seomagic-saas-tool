@@ -12,7 +12,7 @@ export function useCrawlExecution() {
   const initializeCrawler = ({
     url, 
     onProgress, 
-    maxPages = 500
+    maxPages = 500000 // Увеличиваем максимальное количество страниц по умолчанию
   }: CrawlerSettings) => {
     
     try {
@@ -33,13 +33,14 @@ export function useCrawlExecution() {
       
       console.log(`Инициализация сканера для ${normalizedUrl} с лимитом ${maxPages} страниц`);
       
-      // Создаем новый сканер
+      // Создаем новый сканер с расширенными параметрами
       const crawler = new SimpleSitemapCreator({
         maxPages,
-        maxDepth: 5,
+        maxDepth: 15, // Увеличиваем глубину сканирования
         includeStylesheet: true,
-        timeout: 30000,
-        followRedirects: true
+        timeout: 60000, // Увеличиваем таймаут до 60 секунд
+        followRedirects: true,
+        concurrentRequests: 10 // Увеличиваем количество параллельных запросов
       });
       
       return { crawler, domain, maxPages, normalizedUrl };
@@ -51,7 +52,7 @@ export function useCrawlExecution() {
   
   const executeCrawler = async (crawler: SimpleSitemapCreator, startUrl: string) => {
     try {
-      // Выполняем сканирование
+      // Выполняем сканирование с расширенными параметрами
       const progressCallback = (scanned: number, total: number, currentUrl: string) => {
         console.log(`Progress: ${scanned}/${total} - ${currentUrl}`);
       };
@@ -65,6 +66,8 @@ export function useCrawlExecution() {
         console.error('Не удалось найти URLs на сайте');
         return null;
       }
+      
+      console.log(`Сканирование завершено, найдено ${urls.length} страниц`);
       
       return {
         success: true,

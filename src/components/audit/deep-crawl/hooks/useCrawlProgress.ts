@@ -42,12 +42,15 @@ export function useCrawlProgress(url: string) {
       // Устанавливаем этап на "starting"
       crawlState.setCrawlStage('starting');
       
-      // Инициализируем сканер
+      // Инициализируем сканер с увеличенным лимитом
       const { crawler, domain, maxPages, normalizedUrl: crawlerUrl } = crawlExecution.initializeCrawler({
         url: normalizedUrl,
         onProgress: (pagesScanned, totalEstimated, currentUrl) => {
-          crawlState.updateProgress(pagesScanned, totalEstimated, currentUrl, maxPages);
-        }
+          // Используем больший ожидаемый размер для крупных сайтов
+          const expectedSize = totalEstimated > 1000 ? Math.max(totalEstimated, 100000) : totalEstimated;
+          crawlState.updateProgress(pagesScanned, expectedSize, currentUrl, maxPages);
+        },
+        maxPages: 500000 // Увеличиваем до 500,000 страниц
       });
       
       crawlState.setDomain(domain);
@@ -56,8 +59,15 @@ export function useCrawlProgress(url: string) {
       // Переходим в этап сканирования
       crawlState.setCrawlStage('crawling');
       
-      // Выполняем сканирование
+      // Выполняем сканирование с уведомлением о большом сайте
       console.log('Executing crawler with URL:', crawlerUrl);
+      
+      // Информируем пользователя о начале сканирования большого сайта
+      toast({
+        title: "Глубокое сканирование запущено",
+        description: "Сканирование большого сайта может занять значительное время. Вы можете закрыть это окно, процесс продолжится в фоне.",
+      });
+      
       const result = await crawlExecution.executeCrawler(crawler, crawlerUrl);
       
       if (result && result.urls && result.urls.length > 0) {
@@ -73,6 +83,11 @@ export function useCrawlProgress(url: string) {
           pageCount: result.pageCount || result.urls.length
         });
         
+        toast({
+          title: "Сканирование завершено",
+          description: `Обнаружено ${result.urls.length} страниц на сайте ${domain}`,
+        });
+        
         return {
           urls: result.urls,
           pageCount: result.pageCount || result.urls.length
@@ -80,7 +95,7 @@ export function useCrawlProgress(url: string) {
       }
       else {
         console.error('Crawler execution completed but no URLs were found');
-        setError("Не удалось найти страницы на сайте");
+        setError("Не удалось найти страницы на сайте. Попробуйте другой URL или проверьте доступность сайта.");
         crawlState.setCrawlStage('failed');
         crawlState.completeCrawl(false);
         return null;

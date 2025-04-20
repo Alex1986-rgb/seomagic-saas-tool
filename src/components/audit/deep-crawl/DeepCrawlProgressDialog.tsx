@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { X, AlertCircle, Check, FileSearch } from 'lucide-react';
 import { 
@@ -33,7 +32,6 @@ export const DeepCrawlProgressDialog: React.FC<DeepCrawlProgressDialogProps> = (
   const [forceAttempt, setForceAttempt] = useState(0);
   const [hasStartedCrawling, setHasStartedCrawling] = useState(false);
   
-  // Проверяем и нормализуем URL перед использованием
   const normalizedUrl = url && url.trim() !== '' 
     ? (url.startsWith('http') ? url : `https://${url}`)
     : '';
@@ -56,7 +54,6 @@ export const DeepCrawlProgressDialog: React.FC<DeepCrawlProgressDialogProps> = (
     downloadReport
   } = useCrawlProgress(normalizedUrl);
 
-  // Обработчик для запуска сканирования
   const initiateScanning = async () => {
     try {
       console.log("Starting crawling for URL:", normalizedUrl);
@@ -94,7 +91,6 @@ export const DeepCrawlProgressDialog: React.FC<DeepCrawlProgressDialogProps> = (
     
     if (open && normalizedUrl) {
       setHasStartedCrawling(false);
-      // Запускаем сканирование при открытии диалога, если URL корректный
       initiateScanning();
     }
   }, [open, normalizedUrl, forceAttempt]);
@@ -106,12 +102,10 @@ export const DeepCrawlProgressDialog: React.FC<DeepCrawlProgressDialogProps> = (
   };
 
   const handleRetry = () => {
-    // Увеличиваем счетчик попыток, что вызовет перезапуск сканирования в useEffect
     setHasStartedCrawling(false);
     setForceAttempt(prev => prev + 1);
   };
 
-  // Get stage label
   const getStageLabel = () => {
     switch (crawlStage) {
       case 'starting':
@@ -189,7 +183,7 @@ export const DeepCrawlProgressDialog: React.FC<DeepCrawlProgressDialogProps> = (
                 size="sm" 
                 disabled={scannedUrls.length === 0}
               >
-                Скачать карту сайта
+                Скачать к��рту сайта
               </Button>
               <Button 
                 onClick={downloadAllData} 

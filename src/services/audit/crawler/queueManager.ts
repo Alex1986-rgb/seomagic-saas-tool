@@ -6,7 +6,7 @@
 import { CrawlResult, DeepCrawlerOptions } from './types';
 
 export class QueueManager {
-  private maxConcurrentRequests = 5;
+  private maxConcurrentRequests = 15; // Увеличиваем максимальное количество параллельных запросов
   private activeRequests = 0;
   private paused = false;
 
@@ -28,40 +28,66 @@ export class QueueManager {
   ): Promise<CrawlResult> {
     const { maxPages, maxDepth, onProgress } = options;
     let pagesScanned = 0;
+    const batchSize = 50; // Обрабатываем URL пакетами
+    
+    console.log(`Начинаем обработку очереди с ${queue.length} начальными URL`);
     
     while (queue.length > 0 && !this.paused) {
-      // Check if we've reached the maximum number of pages
+      // Проверяем, достигли ли мы максимального количества страниц
       if (pagesScanned >= maxPages) {
+        console.log(`Достигнут лимит ${maxPages} страниц`);
         break;
       }
       
-      // Get the next URL from the queue
-      const { url, depth } = queue.shift()!;
-      
-      // Skip if already visited or beyond max depth
-      if (visited.has(url) || depth > maxDepth) {
-        continue;
+      // Берем пакет URL для параллельной обработки
+      const batch = [];
+      for (let i = 0; i < Math.min(batchSize, queue.length); i++) {
+        if (queue.length === 0) break;
+        
+        const item = queue.shift()!;
+        
+        // Пропускаем, если уже посещали или слишком глубоко
+        if (visited.has(item.url) || item.depth > maxDepth) {
+          i--; // Компенсируем счетчик, так как этот элемент пропущен
+          continue;
+        }
+        
+        batch.push(item);
       }
       
-      // Mark as visited
-      visited.add(url);
-      pagesScanned++;
+      if (batch.length === 0) continue;
       
-      // Report progress
-      if (onProgress) {
-        onProgress(pagesScanned, queue.length + pagesScanned, url);
-      }
+      // Параллельно обрабатываем пакет URL
+      await Promise.all(
+        batch.map(async ({ url, depth }) => {
+          // Помечаем как посещенный до обработки, чтобы избежать дублирования
+          visited.add(url);
+          pagesScanned++;
+          
+          // Сообщаем о прогрессе
+          if (onProgress && pagesScanned % 10 === 0) {
+            onProgress(pagesScanned, queue.length + pagesScanned, url);
+          }
+          
+          // Обрабатываем URL
+          await processFunction(url, depth);
+        })
+      );
       
-      // Process the URL
-      await processFunction(url, depth);
-      
-      // Throttle requests to avoid overwhelming the server
+      // Небольшая пауза между пакетами, чтобы не перегружать сервер
       if (queue.length > 0) {
-        await new Promise(resolve => setTimeout(resolve, 100));
+        await new Promise(resolve => setTimeout(resolve, 500));
+      }
+      
+      // Выводим промежуточную статистику
+      if (pagesScanned % 100 === 0) {
+        console.log(`Просканировано ${pagesScanned} страниц, осталось в очереди: ${queue.length}`);
       }
     }
     
-    // Return the result
+    console.log(`Сканирование завершено, всего просканировано ${pagesScanned} страниц`);
+    
+    // Возвращаем результат
     return {
       urls: Array.from(visited),
       pageCount: pagesScanned
