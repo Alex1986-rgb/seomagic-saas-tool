@@ -104,7 +104,7 @@ export function useCrawlExecution() {
   const initializeCrawler = ({
     url, 
     onProgress, 
-    maxPages = 1000 // Уменьшаем максимальное количество страниц для внешних сайтов
+    maxPages = 5000 // Default to 5000 pages for external sites
   }: CrawlerSettings) => {
     
     try {
@@ -128,21 +128,32 @@ export function useCrawlExecution() {
       const urlObj = new URL(normalizedUrl);
       const domain = urlObj.hostname;
       
-      // For external domains, adjust maxPages to be more conservative
+      // Check if this is an external domain to adjust settings
       const isExternalDomain = !domain.includes('lovableproject.com');
-      const adjustedMaxPages = isExternalDomain ? Math.min(maxPages, 1000) : maxPages;
+      
+      // For external domains, adjust maxPages based on the target site
+      let adjustedMaxPages = maxPages;
+      if (isExternalDomain) {
+        // Special case for known large sites like myarredo.ru
+        if (domain.includes('myarredo.ru')) {
+          adjustedMaxPages = 50000; // Allow more pages for known large sites
+          console.log(`Detected large site (${domain}), setting max pages to ${adjustedMaxPages}`);
+        } else {
+          adjustedMaxPages = Math.min(maxPages, 10000);
+        }
+      }
       
       console.log(`Инициализация сканера для ${normalizedUrl} с доменом ${domain} и лимитом ${adjustedMaxPages} страниц`);
       
-      // Create new scanner with optimized settings for better performance
+      // Create new scanner with optimized settings for external domains
       const crawler = new SimpleSitemapCreator({
         maxPages: adjustedMaxPages,
-        maxDepth: 3,           // Уменьшаем глубину для более быстрого сканирования
+        maxDepth: isExternalDomain ? 5 : 3, // Deeper depth for external sites
         includeStylesheet: true,
-        timeout: 8000,         // Уменьшаем таймаут для внешних сайтов
+        timeout: isExternalDomain ? 10000 : 8000, // Increased timeout for external sites
         followRedirects: true,
-        concurrentRequests: 1, // Снижаем нагрузку для внешних сайтов
-        retryCount: 1,
+        concurrentRequests: isExternalDomain ? 3 : 5, // Lower concurrency for external sites
+        retryCount: isExternalDomain ? 2 : 1, // More retries for external sites
         retryDelay: 1000,
         forceTargetDomain: true // Принудительно сканируем только указанный домен
       });
@@ -194,9 +205,9 @@ export function useCrawlExecution() {
         }
       };
       
-      // Create Promise with timeout - shorter for external domains
-      const isExternalDomain = !crawlerDomain?.includes('lovableproject.com');
-      const timeoutDuration = isExternalDomain ? 45000 : 90000; // 45 seconds for external, 90 for local
+      // Create Promise with timeout - adjust for external domains
+      const isExternalDomain = crawlerDomain && !crawlerDomain.includes('lovableproject.com');
+      const timeoutDuration = isExternalDomain ? 180000 : 120000; // 3 minutes for external, 2 for internal
       
       const crawlWithTimeout = Promise.race([
         crawler.crawl(startUrl, progressCallback),

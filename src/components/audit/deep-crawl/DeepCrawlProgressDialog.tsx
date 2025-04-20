@@ -47,10 +47,19 @@ export const DeepCrawlProgressDialog: React.FC<DeepCrawlProgressDialogProps> = (
 
   useEffect(() => {
     if (open && initialStage === 'starting' && !isLoading) {
-      console.log(`DeepCrawlProgressDialog: Начинаем сканирование URL: ${url}`);
+      // Extract domain from URL for better display
+      let displayDomain = "";
+      try {
+        const urlObj = new URL(url);
+        displayDomain = urlObj.hostname;
+      } catch (e) {
+        displayDomain = url;
+      }
+      
+      console.log(`DeepCrawlProgressDialog: Начинаем сканирование URL: ${url} (домен: ${displayDomain})`);
       toast({
         title: "Запуск сканирования",
-        description: `Начинаем сканирование сайта: ${url}`,
+        description: `Начинаем сканирование сайта: ${displayDomain}`,
       });
       startCrawl();
     }
@@ -119,8 +128,19 @@ export const DeepCrawlProgressDialog: React.FC<DeepCrawlProgressDialogProps> = (
     }
   };
 
-  // Extract domain for display
-  const displayDomain = domain || url;
+  // Extract domain from URL for display
+  let displayDomain = domain || "Загрузка...";
+  
+  // If we have the URL but not yet the domain, try to extract it
+  if (!domain && url) {
+    try {
+      const urlObj = new URL(url);
+      displayDomain = urlObj.hostname;
+    } catch (e) {
+      // If URL parsing fails, just show the URL
+      displayDomain = url;
+    }
+  }
 
   return (
     <Dialog open={open} onOpenChange={(isOpen) => !isOpen && (crawlStage === 'completed' || crawlStage === 'failed' ? handleClose() : handleCancel())}>
@@ -128,8 +148,8 @@ export const DeepCrawlProgressDialog: React.FC<DeepCrawlProgressDialogProps> = (
         <DialogHeader>
           <DialogTitle>Глубокое сканирование сайта</DialogTitle>
           <DialogDescription>
-            URL: {url}
-            {domain && domain !== url && <div className="mt-1 text-xs">Домен: {domain}</div>}
+            Сканирование: {displayDomain}
+            {url && <div className="mt-1 text-xs">URL: {url}</div>}
           </DialogDescription>
         </DialogHeader>
 
@@ -143,9 +163,9 @@ export const DeepCrawlProgressDialog: React.FC<DeepCrawlProgressDialogProps> = (
                 <p className="text-xs text-muted-foreground truncate max-w-full">
                   Текущий URL: {currentUrl}
                 </p>
-                {domain && (
+                {displayDomain && (
                   <p className="text-xs text-primary">
-                    Сканируем домен: {displayDomain}
+                    Домен: {displayDomain}
                   </p>
                 )}
               </div>
