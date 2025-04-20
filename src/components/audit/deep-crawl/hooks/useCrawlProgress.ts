@@ -114,7 +114,7 @@ export function useCrawlProgress(urlParam: string) {
         return;
       }
       
-      // Check if this is Lovable domain - we should warn but still allow it
+      // Check if this is Lovable domain - we should warn but still allow it if explicitly requested
       try {
         const urlObj = new URL(url);
         const isLovableDomain = urlObj.hostname.includes('lovableproject.com') || urlObj.hostname.includes('lovable.app');
@@ -161,6 +161,7 @@ export function useCrawlProgress(urlParam: string) {
         console.warn("Could not check if domain is large site:", e);
       }
       
+      // Make sure we're using the explicitly provided URL
       const { crawler: newCrawler, domain: newDomain, normalizedUrl } = initializeCrawler({
         url,
         maxPages,
