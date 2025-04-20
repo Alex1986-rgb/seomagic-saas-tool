@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import { seoApiService } from '@/api/seoApiService';
 import { OptimizationItem } from '@/services/audit/optimization/types';
+import { calculateOptimizationCost } from '@/services/audit/optimization/pricingConfig';
 
 export const useOptimizationAPI = (taskId: string | null) => {
   const { toast } = useToast();
@@ -25,51 +26,45 @@ export const useOptimizationAPI = (taskId: string | null) => {
     setIsLoadingCost(true);
     
     try {
-      // Здесь мы симулируем запрос к API за данными оптимизации
-      // В реальном сценарии здесь был бы вызов к бэкенду
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      // Получаем данные о количестве страниц
+      const auditInfo = await seoApiService.getAuditInfo(taskId);
       
-      // Создаем примерные данные для демонстрации
-      const cost = Math.floor(Math.random() * 500) + 100;
-      const items: OptimizationItem[] = [
-        {
-          name: "Базовая оптимизация",
-          description: "Базовая оптимизация для всех страниц",
-          count: Math.floor(Math.random() * 100) + 50,
-          price: 0.05,
-          totalPrice: Math.floor(Math.random() * 100) + 50
-        },
-        {
-          name: "Создание META-описаний",
-          description: "Генерация отсутствующих мета-описаний",
-          count: Math.floor(Math.random() * 50) + 10,
-          price: 0.5,
-          totalPrice: Math.floor(Math.random() * 50) + 10
-        },
-        {
-          name: "Оптимизация текстов",
-          description: "Оптимизация текстового содержимого страниц",
-          count: Math.floor(Math.random() * 30) + 5,
-          price: 1.5,
-          totalPrice: Math.floor(Math.random() * 100) + 50
-        }
-      ];
+      // Рассчитываем стоимость оптимизации на основе количества страниц
+      const pageCount = auditInfo?.pageCount || 0;
       
-      setOptimizationCost(cost);
-      setOptimizationItems(items);
+      if (pageCount === 0) {
+        toast({
+          title: "Предупреждение",
+          description: "Не удалось определить количество страниц сайта. Используем примерную оценку.",
+          variant: "warning"
+        });
+      }
+      
+      // Используем функцию расчета из конфигурации цен
+      const optimizationData = calculateOptimizationCost(pageCount || 100);
+      
+      setOptimizationCost(optimizationData.totalCost);
+      setOptimizationItems(optimizationData.items);
       
       toast({
         title: "Данные оптимизации загружены",
-        description: `Расчетная стоимость оптимизации: $${cost}`,
+        description: `Расчетная стоимость оптимизации: ${new Intl.NumberFormat('ru-RU').format(optimizationData.totalCost)} ₽`,
       });
       
     } catch (error) {
       console.error('Error loading optimization cost:', error);
       
+      // В случае ошибки используем резервный расчет
+      const fallbackPageCount = 100;
+      const fallbackData = calculateOptimizationCost(fallbackPageCount);
+      
+      setOptimizationCost(fallbackData.totalCost);
+      setOptimizationItems(fallbackData.items);
+      
       toast({
-        title: "Ошибка",
-        description: "Не удалось рассчитать стоимость оптимизации",
-        variant: "destructive"
+        title: "Внимание",
+        description: "Используем примерную стоимость оптимизации из-за ошибки расчета",
+        variant: "warning"
       });
     } finally {
       setIsLoadingCost(false);

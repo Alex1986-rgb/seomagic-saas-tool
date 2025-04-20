@@ -12,14 +12,22 @@ const EstimateSummary: React.FC<EstimateSummaryProps> = ({
   totalCost,
   onDownloadEstimate
 }) => {
+  // Форматирование чисел с разделителями тысяч
+  const formatNumber = (num: number) => {
+    return new Intl.NumberFormat('ru-RU').format(num);
+  };
+
   return (
     <>
-      <div className="bg-primary/10 p-3 rounded-md">
+      <div className="bg-primary/10 p-4 rounded-md">
         <div className="flex flex-col md:flex-row justify-between items-center">
           <div>
             <div className="text-sm text-muted-foreground">Итоговая стоимость оптимизации</div>
             <div className="text-2xl font-bold text-primary">
-              {totalCost.toLocaleString('ru-RU')} ₽
+              {formatNumber(totalCost)} ₽
+            </div>
+            <div className="text-xs text-muted-foreground mt-1">
+              Без учета дополнительных работ и индивидуальных требований
             </div>
           </div>
           
@@ -42,8 +50,8 @@ const EstimateSummary: React.FC<EstimateSummaryProps> = ({
         </div>
       </div>
       
-      <div className="text-xs text-muted-foreground">
-        * Стоимость может быть скорректирована после детального анализа специалистом
+      <div className="mt-2 text-xs text-muted-foreground">
+        * Стоимость может быть скорректирована после детального анализа вашего сайта специалистом
       </div>
     </>
   );
