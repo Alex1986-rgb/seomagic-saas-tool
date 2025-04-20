@@ -48,15 +48,15 @@ const AuditMain: React.FC<AuditMainProps> = ({
           <div className="space-y-4">
             {recommendations.critical.map((rec, index) => (
               <div key={index} className="p-4 bg-red-50 dark:bg-red-900/20 rounded-lg">
-                <h4 className="font-medium text-red-700 dark:text-red-300">{rec.title}</h4>
-                <p className="text-sm text-red-600 dark:text-red-200">{rec.description}</p>
+                <h4 className="font-medium text-red-700 dark:text-red-300">{rec}</h4>
+                <p className="text-sm text-red-600 dark:text-red-200">{rec}</p>
               </div>
             ))}
             
             {recommendations.important.map((rec, index) => (
               <div key={index} className="p-4 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg">
-                <h4 className="font-medium text-yellow-700 dark:text-yellow-300">{rec.title}</h4>
-                <p className="text-sm text-yellow-600 dark:text-yellow-200">{rec.description}</p>
+                <h4 className="font-medium text-yellow-700 dark:text-yellow-300">{rec}</h4>
+                <p className="text-sm text-yellow-600 dark:text-yellow-200">{rec}</p>
               </div>
             ))}
           </div>
