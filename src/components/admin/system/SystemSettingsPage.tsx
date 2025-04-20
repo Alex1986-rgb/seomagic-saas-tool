@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Database, Shield, Users, Bell, BarChart2, Activity } from 'lucide-react';
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 const TILES = [
   {
@@ -43,6 +43,12 @@ const TILES = [
 ];
 
 const SystemSettingsPage: React.FC = () => {
+  const navigate = useNavigate();
+  
+  const handleTileClick = (path: string) => {
+    navigate(path);
+  };
+
   return (
     <div className="p-6 space-y-6">
       <div>
@@ -51,9 +57,9 @@ const SystemSettingsPage: React.FC = () => {
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {TILES.map(tile => (
-          <Link 
+          <div 
             key={tile.label}
-            to={tile.to}
+            onClick={() => handleTileClick(tile.to)}
             className="p-4 border rounded-md bg-card hover:bg-accent/10 transition-colors block group cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary"
           >
             <div className="flex items-center gap-2 mb-1">
@@ -61,7 +67,7 @@ const SystemSettingsPage: React.FC = () => {
               <span className="font-medium text-lg group-hover:text-primary transition-colors">{tile.label}</span>
             </div>
             <div className="text-sm text-muted-foreground">{tile.desc}</div>
-          </Link>
+          </div>
         ))}
       </div>
     </div>
