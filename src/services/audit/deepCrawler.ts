@@ -14,7 +14,16 @@ export class DeepCrawler extends DeepCrawlerCore {
     const compatibleOptions: FirecrawlDeepCrawlerOptions = {
       maxPages: options.maxPages || 1000, // Default value if not provided
       maxDepth: options.maxDepth || 5,
-      onProgress: options.onProgress
+      onProgress: options.onProgress 
+        ? (progress) => {
+            // Adapt the new progress object format to the old callback format
+            options.onProgress(
+              progress.pagesScanned,
+              progress.totalUrls,
+              progress.currentUrl
+            );
+          }
+        : undefined
     };
     
     super(url, compatibleOptions);
