@@ -30,7 +30,8 @@ const Slide: React.FC<SlideProps> = ({ slideData, currentSlide, slideIndex }) =>
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
-      className="absolute inset-0 flex flex-col items-center justify-center"
+      className="absolute inset-0 flex flex-col items-center justify-center cursor-pointer"
+      onClick={handleClick}
     >
       <h3 className="text-xl md:text-2xl font-semibold mb-3 text-white">
         {slideData.title}
@@ -39,7 +40,10 @@ const Slide: React.FC<SlideProps> = ({ slideData, currentSlide, slideIndex }) =>
         {slideData.description}
       </p>
       <Button 
-        onClick={handleClick}
+        onClick={(e) => {
+          e.stopPropagation(); // Prevent triggering the parent onClick
+          handleClick();
+        }}
         variant="outline"
         className="group hover:bg-primary/20"
       >
