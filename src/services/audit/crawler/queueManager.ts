@@ -6,9 +6,10 @@
 import { CrawlResult, DeepCrawlerOptions } from './types';
 
 export class QueueManager {
-  private maxConcurrentRequests = 15; // Увеличиваем максимальное количество параллельных запросов
+  private maxConcurrentRequests = 30; // Увеличиваем максимальное количество параллельных запросов до 30
   private activeRequests = 0;
   private paused = false;
+  private maxRetries = 3; // Добавляем возможность повторных попыток для URL
 
   constructor() {}
 
@@ -21,20 +22,24 @@ export class QueueManager {
   }
 
   async processCrawlQueue(
-    queue: { url: string; depth: number }[],
+    queue: { url: string; depth: number; retries?: number }[],
     visited: Set<string>,
     options: DeepCrawlerOptions,
     processFunction: (url: string, depth: number) => Promise<void>
   ): Promise<CrawlResult> {
     const { maxPages, maxDepth, onProgress } = options;
     let pagesScanned = 0;
-    const batchSize = 50; // Обрабатываем URL пакетами
+    const batchSize = 100; // Увеличиваем размер пакета для обработки
     
     console.log(`Начинаем обработку очереди с ${queue.length} начальными URL`);
     
+    // Создаем карту для отслеживания дублирующихся URL и попыток
+    const urlAttempts = new Map<string, number>();
+    
+    // Продолжаем, пока есть элементы в очереди и не приостановлено
     while (queue.length > 0 && !this.paused) {
       // Проверяем, достигли ли мы максимального количества страниц
-      if (pagesScanned >= maxPages) {
+      if (maxPages && pagesScanned >= maxPages) {
         console.log(`Достигнут лимит ${maxPages} страниц`);
         break;
       }
@@ -46,9 +51,22 @@ export class QueueManager {
         
         const item = queue.shift()!;
         
-        // Пропускаем, если уже посещали или слишком глубоко
-        if (visited.has(item.url) || item.depth > maxDepth) {
+        // Пропускаем, если слишком глубоко
+        if (item.depth > maxDepth) {
           i--; // Компенсируем счетчик, так как этот элемент пропущен
+          continue;
+        }
+        
+        // Пропускаем, если уже посещали (и не превышен лимит попыток)
+        if (visited.has(item.url)) {
+          // Проверяем, не нужна ли повторная попытка
+          const attempts = urlAttempts.get(item.url) || 0;
+          if (attempts < this.maxRetries) {
+            urlAttempts.set(item.url, attempts + 1);
+            // Добавляем URL обратно в очередь с увеличенным счетчиком попыток
+            queue.push({...item, retries: (item.retries || 0) + 1});
+          }
+          i--; // Компенсируем счетчик
           continue;
         }
         
@@ -56,6 +74,13 @@ export class QueueManager {
       }
       
       if (batch.length === 0) continue;
+      
+      // Проверяем, не слишком ли много активных запросов
+      if (batch.length > this.maxConcurrentRequests) {
+        batch.splice(this.maxConcurrentRequests).forEach(item => queue.unshift(item));
+      }
+      
+      console.log(`Обработка пакета из ${batch.length} URL-адресов, всего просканировано: ${pagesScanned}, в очереди: ${queue.length}`);
       
       // Параллельно обрабатываем пакет URL
       await Promise.all(
@@ -74,14 +99,29 @@ export class QueueManager {
             });
           }
           
-          // Обрабатываем URL
-          await processFunction(url, depth);
+          try {
+            // Обрабатываем URL
+            await processFunction(url, depth);
+          } catch (error) {
+            console.error(`Ошибка при обработке URL ${url}:`, error);
+            // При ошибке удаляем из посещенных, чтобы попытаться снова
+            visited.delete(url);
+            
+            // Добавляем обратно в очередь для повторной попытки, если не превышен лимит
+            const attempts = urlAttempts.get(url) || 0;
+            if (attempts < this.maxRetries) {
+              urlAttempts.set(url, attempts + 1);
+              queue.push({ url, depth, retries: attempts + 1 });
+              // Не увеличиваем счетчик pagesScanned, так как этот URL не был успешно обработан
+              pagesScanned--;
+            }
+          }
         })
       );
       
       // Небольшая пауза между пакетами, чтобы не перегружать сервер
       if (queue.length > 0) {
-        await new Promise(resolve => setTimeout(resolve, 500));
+        await new Promise(resolve => setTimeout(resolve, 200)); // Уменьшаем паузу для ускорения
       }
       
       // Выводим промежуточную статистику

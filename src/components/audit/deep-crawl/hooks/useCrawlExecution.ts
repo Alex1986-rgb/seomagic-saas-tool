@@ -36,11 +36,13 @@ export function useCrawlExecution() {
       // Создаем новый сканер с расширенными параметрами
       const crawler = new SimpleSitemapCreator({
         maxPages,
-        maxDepth: 15, // Увеличиваем глубину сканирования
+        maxDepth: 20, // Увеличиваем глубину сканирования еще больше
         includeStylesheet: true,
         timeout: 60000, // Увеличиваем таймаут до 60 секунд
         followRedirects: true,
-        concurrentRequests: 10 // Теперь это свойство объявлено в интерфейсе
+        concurrentRequests: 20, // Увеличиваем количество параллельных запросов
+        retryCount: 3,    // Повторные попытки при ошибках
+        retryDelay: 500   // Меньшая задержка между попытками
       });
       
       return { crawler, domain, maxPages, normalizedUrl };

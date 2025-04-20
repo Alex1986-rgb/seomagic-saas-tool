@@ -11,7 +11,7 @@ export interface SimpleSitemapCreatorOptions {
   followRedirects?: boolean;
   retryCount?: number;
   retryDelay?: number;
-  concurrentRequests?: number; // Added this property
+  concurrentRequests?: number; // Добавляем поддержку параллельных запросов
 }
 
 export class SimpleSitemapCreator {
@@ -28,7 +28,7 @@ export class SimpleSitemapCreator {
       followRedirects: true,
       retryCount: 3,    // Количество повторных попыток
       retryDelay: 1000, // Задержка между попытками в мс
-      concurrentRequests: 5, // Added this property
+      concurrentRequests: 5, // Добавляем количество параллельных запросов
       ...options
     };
     
