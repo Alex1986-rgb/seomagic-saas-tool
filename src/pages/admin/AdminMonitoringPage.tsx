@@ -2,62 +2,62 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { activity, database, monitor, barChart, server, gauge, signal } from "lucide-react";
+import { Activity, Database, Monitor, BarChart, Server, Gauge, Signal } from "lucide-react";
 
 const statCards = [
   {
     title: "Загрузка CPU",
     value: "34%",
-    icon: <gauge className="h-6 w-6 text-blue-500" />,
+    icon: <Gauge className="h-6 w-6 text-blue-500" />,
     description: "Нагрузка на процессор",
     color: "bg-blue-50",
   },
   {
     title: "Использование памяти",
     value: "68%",
-    icon: <signal className="h-6 w-6 text-purple-500" />,
+    icon: <Signal className="h-6 w-6 text-purple-500" />,
     description: "Физическая/виртуальная",
     color: "bg-purple-50",
   },
   {
     title: "Баз данных",
     value: "Подключено",
-    icon: <database className="h-6 w-6 text-green-600" />,
+    icon: <Database className="h-6 w-6 text-green-600" />,
     description: "Основная база данных",
     color: "bg-emerald-50",
   },
   {
     title: "Онлайн-юзеров",
     value: "14",
-    icon: <activity className="h-6 w-6 text-emerald-600" />,
+    icon: <Activity className="h-6 w-6 text-emerald-600" />,
     description: "Текущие подключения",
     color: "bg-emerald-50",
   },
   {
     title: "Рассылки/оповещения",
     value: "12 / 2",
-    icon: <monitor className="h-6 w-6 text-teal-600" />,
+    icon: <Monitor className="h-6 w-6 text-teal-600" />,
     description: "Email / Критические",
     color: "bg-teal-50",
   },
   {
     title: "Ошибки и сбои",
     value: "2",
-    icon: <server className="h-6 w-6 text-orange-600" />,
+    icon: <Server className="h-6 w-6 text-orange-600" />,
     description: "За 24 часа",
     color: "bg-orange-50",
   },
   {
     title: "Последний аудит",
     value: "19.04.2025",
-    icon: <barChart className="h-6 w-6 text-sky-600" />,
+    icon: <BarChart className="h-6 w-6 text-sky-600" />,
     description: "Дата проверки",
     color: "bg-sky-50",
   },
   {
     title: "Доход (месяц)",
     value: "₽284,500",
-    icon: <gauge className="h-6 w-6 text-green-700" />,
+    icon: <Gauge className="h-6 w-6 text-green-700" />,
     description: "Финансовые показатели",
     color: "bg-green-50",
   },
@@ -68,44 +68,44 @@ const sectionLinks = [
     label: "База данных", 
     description: "Настройки подключения и оптимизации", 
     to: "/admin/system/database",
-    icon: <database className="h-6 w-6" />
+    icon: <Database className="h-6 w-6" />
   },
   {
     label: "Безопасность",
     description: "Защита и политики доступа",
     to: "/admin/system/security",
-    icon: <server className="h-6 w-6" />
+    icon: <Server className="h-6 w-6" />
   },
   {
     label: "Пользователи",
     description: "Администраторы и права",
     to: "/admin/system/users",
-    icon: <activity className="h-6 w-6" />
+    icon: <Activity className="h-6 w-6" />
   },
   {
     label: "Уведомления",
     description: "Email, SMS, мониторинг",
     to: "/admin/system/notifications",
-    icon: <monitor className="h-6 w-6" />
+    icon: <Monitor className="h-6 w-6" />
   },
   {
     label: "Аналитика",
     description: "Отчеты и интеграции",
     to: "/admin/system/analytics",
-    icon: <barChart className="h-6 w-6" />
+    icon: <BarChart className="h-6 w-6" />
   },
   {
     label: "Производительность",
     description: "Мониторинг и автоматизация",
     to: "/admin/system/performance",
-    icon: <gauge className="h-6 w-6" />
+    icon: <Gauge className="h-6 w-6" />
   }
 ];
 
 const systemWarnings = [
   {
     type: "warning",
-    message: "Доступно обновление сервера до версии 2.8.1 — рекомендуется установить.",
+    message: "Доступно обновление сервера до версии 2.8.1 — рекомендуется установить.",
   },
   {
     type: "error",
@@ -139,7 +139,7 @@ const AdminMonitoringPage: React.FC = () => (
                 )
               }
             >
-              {w.type === "error" ? <server className="h-5 w-5" /> : w.type === "warning" ? <gauge className="h-5 w-5" /> : <monitor className="h-5 w-5" />}
+              {w.type === "error" ? <Server className="h-5 w-5" /> : w.type === "warning" ? <Gauge className="h-5 w-5" /> : <Monitor className="h-5 w-5" />}
               <span className="text-sm">{w.message}</span>
             </div>
           ))}
