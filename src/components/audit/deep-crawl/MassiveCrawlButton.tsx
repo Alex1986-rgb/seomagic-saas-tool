@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
-import { Database, BrainCircuit } from 'lucide-react';
+import { Shield } from 'lucide-react';
 import { MassiveSiteCrawlDialog } from './components/MassiveSiteCrawlDialog';
 import { useToast } from "@/hooks/use-toast";
 
@@ -38,12 +38,12 @@ const MassiveCrawlButton: React.FC<MassiveCrawlButtonProps> = ({
     <>
       <Button
         onClick={handleStartCrawl}
-        variant="default"
+        variant="outline"
         size="sm"
-        className="flex items-center gap-2"
+        className="flex items-center gap-2 bg-gradient-to-r from-indigo-500 to-purple-500 text-white hover:from-indigo-600 hover:to-purple-600 border-0"
         disabled={!url}
       >
-        <BrainCircuit className="h-4 w-4" />
+        <Shield className="h-4 w-4" />
         <span>Профессиональный аудит</span>
       </Button>
 
@@ -51,6 +51,7 @@ const MassiveCrawlButton: React.FC<MassiveCrawlButtonProps> = ({
         open={isDialogOpen}
         onClose={handleCloseDialog}
         url={url}
+        onCrawlComplete={onCrawlComplete}
       />
     </>
   );

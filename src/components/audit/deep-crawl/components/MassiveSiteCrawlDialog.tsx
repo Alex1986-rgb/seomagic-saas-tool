@@ -1,9 +1,8 @@
-
 import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Download, FileJson, FileText, Globe, Loader2, CheckCircle, AlertTriangle, X } from 'lucide-react';
+import { Download, FileJson, FileText, Globe, Loader2, CheckCircle, AlertTriangle, X, Shield } from 'lucide-react';
 import { useMassiveSiteCrawl } from '../hooks/useMassiveSiteCrawl';
 import { MassiveSiteCrawlProgress } from './MassiveSiteCrawlProgress';
 import { Input } from "@/components/ui/input";
@@ -15,12 +14,14 @@ interface MassiveSiteCrawlDialogProps {
   open: boolean;
   onClose: () => void;
   url: string;
+  onCrawlComplete?: (urls: string[]) => void;
 }
 
 export const MassiveSiteCrawlDialog: React.FC<MassiveSiteCrawlDialogProps> = ({
   open,
   onClose,
-  url
+  url,
+  onCrawlComplete
 }) => {
   const [activeTab, setActiveTab] = useState('progress');
   const [optimizationPrompt, setOptimizationPrompt] = useState('');
@@ -37,14 +38,12 @@ export const MassiveSiteCrawlDialog: React.FC<MassiveSiteCrawlDialogProps> = ({
     createOptimizedSite
   } = useMassiveSiteCrawl();
   
-  // Начать сканирование при открытии диалога
   useEffect(() => {
     if (open && url && !isScanning && !result) {
-      startCrawl(url, 1500000); // максимальное количество страниц - 1.5 миллиона
+      startCrawl(url, 15000000); // Увеличиваем лимит до 15 миллионов страниц
     }
   }, [open, url, isScanning, result, startCrawl]);
   
-  // Переключаемся на вкладку с результатами, когда сканирование завершено
   useEffect(() => {
     if (crawlProgress.processingStage === 'completed' && activeTab === 'progress') {
       setActiveTab('results');
@@ -53,11 +52,14 @@ export const MassiveSiteCrawlDialog: React.FC<MassiveSiteCrawlDialogProps> = ({
   
   const handleClose = () => {
     if (isScanning) {
-      if (window.confirm('Вы уверены, что хотите прервать сканирование?')) {
+      if (window.confirm('Вы уверены, что хотите прервать профессиональный аудит? Это может привести к потере данных.')) {
         cancelCrawl();
         onClose();
       }
     } else {
+      if (result && onCrawlComplete) {
+        onCrawlComplete(result.urls || []);
+      }
       onClose();
     }
   };
@@ -71,7 +73,7 @@ export const MassiveSiteCrawlDialog: React.FC<MassiveSiteCrawlDialogProps> = ({
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Globe className="h-5 w-5 text-primary" />
+            <Shield className="h-5 w-5 text-primary" />
             Профессиональный аудит крупного сайта
             <Badge variant={crawlProgress.processingStage === 'completed' ? 'secondary' : 'default'}>
               {crawlProgress.processingStage === 'completed' ? 'Завершено' : 'В процессе'}
