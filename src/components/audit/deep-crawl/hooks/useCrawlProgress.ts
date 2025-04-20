@@ -9,6 +9,7 @@ export function useCrawlProgress(url: string) {
   const [sitemap, setSitemap] = useState<string | null>(null);
   const [isOptimizing, setIsOptimizing] = useState(false);
   const [optimizedSiteBlob, setOptimizedSiteBlob] = useState<Blob | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
   
   // Use the smaller, focused hooks
@@ -19,11 +20,23 @@ export function useCrawlProgress(url: string) {
   const startCrawling = async () => {
     // Reset state
     crawlState.resetState();
+    setError(null);
+    
+    if (!url) {
+      setError("URL не может быть пустым");
+      crawlState.completeCrawl(false);
+      return null;
+    }
     
     try {
+      console.log(`Starting crawl for URL: ${url}`);
+      
+      // Normalize URL
+      const normalizedUrl = url.startsWith('http') ? url : `https://${url}`;
+      
       // Initialize crawler
       const { crawler, domain, maxPages } = crawlExecution.initializeCrawler({
-        url,
+        url: normalizedUrl,
         onProgress: (pagesScanned, totalEstimated, currentUrl) => {
           crawlState.updateProgress(pagesScanned, totalEstimated, currentUrl, maxPages);
         }
@@ -36,11 +49,14 @@ export function useCrawlProgress(url: string) {
       crawlState.setCrawlStage('starting');
       
       // Execute crawler
+      console.log('Executing crawler...');
       const result = await crawlExecution.executeCrawler(crawler);
       
-      if (result) {
+      if (result && result.urls && result.urls.length > 0) {
+        console.log(`Crawl completed with ${result.urls.length} URLs`);
+        
         // Generate sitemap from results
-        const generatedSitemap = sitemapExport.generateSitemapFile(domain, result.urls.length);
+        const generatedSitemap = sitemapExport.generateSitemapFile(domain, result.urls);
         setSitemap(generatedSitemap);
         
         // Complete the crawl with the correct data structure
@@ -55,30 +71,76 @@ export function useCrawlProgress(url: string) {
         };
       }
       else {
+        console.error('Crawler execution completed but no URLs were found');
+        setError("Не удалось найти страницы на сайте");
         crawlState.completeCrawl(false);
         return null;
       }
       
     } catch (error) {
       console.error('Error during deep crawl:', error);
+      setError(error instanceof Error ? error.message : "Неизвестная ошибка при сканировании");
       crawlState.completeCrawl(false);
       return null;
     }
   };
 
   const downloadSitemap = () => {
-    sitemapExport.downloadSitemap(sitemap, crawlState.domain);
+    if (!sitemap && crawlState.scannedUrls.length > 0) {
+      // Generate sitemap if it doesn't exist yet
+      const generatedSitemap = sitemapExport.generateSitemapFile(
+        crawlState.domain, 
+        crawlState.scannedUrls
+      );
+      setSitemap(generatedSitemap);
+      sitemapExport.downloadSitemap(generatedSitemap, crawlState.domain);
+    } else if (sitemap) {
+      sitemapExport.downloadSitemap(sitemap, crawlState.domain);
+    } else {
+      toast({
+        title: "Ошибка",
+        description: "Нет данных для создания карты сайта",
+        variant: "destructive"
+      });
+    }
   };
   
   const downloadAllData = async () => {
+    if (crawlState.scannedUrls.length === 0) {
+      toast({
+        title: "Ошибка",
+        description: "Нет данных для скачивания",
+        variant: "destructive"
+      });
+      return;
+    }
+    
     sitemapExport.downloadAllData(crawlState.scannedUrls, crawlState.domain);
   };
   
   const downloadReport = async () => {
+    if (!crawlState.crawler || crawlState.scannedUrls.length === 0) {
+      toast({
+        title: "Ошибка",
+        description: "Нет данных для создания отчета",
+        variant: "destructive"
+      });
+      return;
+    }
+    
     sitemapExport.downloadReport(crawlState.crawler, crawlState.domain);
   };
   
   const optimizeSite = async (prompt: string) => {
+    if (crawlState.scannedUrls.length === 0) {
+      toast({
+        title: "Ошибка",
+        description: "Нет данных для оптимизации",
+        variant: "destructive"
+      });
+      return;
+    }
+    
     setIsOptimizing(true);
     toast({
       title: "Запуск оптимизации",
@@ -157,6 +219,7 @@ export function useCrawlProgress(url: string) {
     ...crawlState,
     sitemap,
     isOptimizing,
+    error,
     startCrawling,
     downloadSitemap,
     downloadAllData,

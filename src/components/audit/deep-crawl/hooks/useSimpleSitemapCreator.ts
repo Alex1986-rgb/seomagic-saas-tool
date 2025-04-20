@@ -1,74 +1,75 @@
 
 import { useState } from 'react';
-import { useToast } from "@/hooks/use-toast";
+import { saveAs } from 'file-saver';
 import { SimpleSitemapCreator } from '@/services/audit/simpleSitemapCreator';
+import { useToast } from "@/hooks/use-toast";
 
-export const useSimpleSitemapCreator = () => {
+export function useSimpleSitemapCreator() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [progress, setProgress] = useState(0);
-  const [currentUrl, setCurrentUrl] = useState('');
-  const [urls, setUrls] = useState<string[]>([]);
   const [sitemap, setSitemap] = useState<string | null>(null);
+  const [urls, setUrls] = useState<string[]>([]);
+  const [currentUrl, setCurrentUrl] = useState('');
   const { toast } = useToast();
-  
-  const sitemapCreator = new SimpleSitemapCreator({
-    maxPages: 1000,
-    maxDepth: 5,
-    includeStylesheet: true,
-    timeout: 30000, // Увеличиваем таймаут до 30 секунд
-    retryCount: 3    // Добавляем попытки повторного подключения
-  });
 
   const generateSitemap = async (url: string) => {
     if (!url) {
       toast({
-        title: "URL не указан",
-        description: "Пожалуйста, укажите URL сайта для создания карты сайта",
-        variant: "destructive",
+        title: "Ошибка",
+        description: "Пожалуйста, введите URL сайта",
+        variant: "destructive"
       });
       return;
     }
 
     setIsGenerating(true);
     setProgress(0);
-    setUrls([]);
+    setCurrentUrl('');
     setSitemap(null);
-    
+    setUrls([]);
+
     try {
       const normalizedUrl = url.startsWith('http') ? url : `https://${url}`;
-      
-      // Start crawling
-      const discoveredUrls = await sitemapCreator.crawl(
-        normalizedUrl,
-        (scanned, total, currentUrl) => {
-          setProgress(Math.floor((scanned / Math.max(total, 1)) * 100));
-          setCurrentUrl(currentUrl);
-        }
-      );
-      
-      // Generate sitemap XML
-      const sitemapXml = sitemapCreator.generateSitemapXml(discoveredUrls);
-      
-      setUrls(discoveredUrls);
-      setSitemap(sitemapXml);
-      
-      toast({
-        title: "Карта сайта создана",
-        description: `Обнаружено ${discoveredUrls.length} URL на сайте ${url}`,
+      console.log(`Generating sitemap for ${normalizedUrl}...`);
+
+      const sitemapCreator = new SimpleSitemapCreator({
+        maxPages: 1000,
+        maxDepth: 5,
+        includeStylesheet: true
       });
-      
-      return {
-        urls: discoveredUrls,
-        pageCount: discoveredUrls.length
+
+      const progressCallback = (scanned: number, total: number, current: string) => {
+        const progressPercent = total > 0 ? Math.min(Math.round((scanned / total) * 100), 100) : 0;
+        setProgress(progressPercent);
+        setCurrentUrl(current);
       };
+
+      const scannedUrls = await sitemapCreator.crawl(normalizedUrl, progressCallback);
+      
+      if (scannedUrls.length > 0) {
+        // Generate XML sitemap
+        const sitemapXml = sitemapCreator.generateSitemapXml(scannedUrls);
+        setSitemap(sitemapXml);
+        setUrls(scannedUrls);
+        
+        toast({
+          title: "Sitemap создан",
+          description: `Найдено ${scannedUrls.length} URL на сайте ${url}`,
+        });
+      } else {
+        toast({
+          title: "Внимание",
+          description: "Не удалось найти URL на сайте. Проверьте доступность сайта.",
+          variant: "destructive"
+        });
+      }
     } catch (error) {
       console.error('Error generating sitemap:', error);
       toast({
-        title: "Ошибка создания карты сайта",
-        description: "Произошла ошибка при сканировании сайта и создании карты. Попробуйте использовать другой URL или уменьшить глубину сканирования.",
-        variant: "destructive",
+        title: "Ошибка",
+        description: "Произошла ошибка при создании карты сайта",
+        variant: "destructive"
       });
-      return null;
     } finally {
       setIsGenerating(false);
       setProgress(100);
@@ -76,67 +77,52 @@ export const useSimpleSitemapCreator = () => {
   };
 
   const downloadSitemap = () => {
-    if (!urls.length) {
+    if (!sitemap) {
       toast({
-        title: "Нет данных",
-        description: "Сначала создайте карту сайта",
-        variant: "destructive",
+        title: "Ошибка",
+        description: "Сначала сгенерируйте карту сайта",
+        variant: "destructive"
       });
       return;
     }
+
+    const blob = new Blob([sitemap], { type: 'application/xml' });
+    saveAs(blob, 'sitemap.xml');
     
-    try {
-      sitemapCreator.downloadSitemapXml(urls);
-      
-      toast({
-        title: "Файл скачан",
-        description: "Файл sitemap.xml успешно скачан",
-      });
-    } catch (error) {
-      console.error('Error downloading sitemap:', error);
-      toast({
-        title: "Ошибка скачивания",
-        description: "Произошла ошибка при скачивании файла",
-        variant: "destructive",
-      });
-    }
+    toast({
+      title: "Скачивание",
+      description: "Файл sitemap.xml скачан",
+    });
   };
 
   const downloadCsv = () => {
-    if (!urls.length) {
+    if (urls.length === 0) {
       toast({
-        title: "Нет данных",
-        description: "Сначала создайте карту сайта",
-        variant: "destructive",
+        title: "Ошибка",
+        description: "Нет данных для скачивания",
+        variant: "destructive"
       });
       return;
     }
+
+    const csv = urls.join('\n');
+    const blob = new Blob([csv], { type: 'text/csv' });
+    saveAs(blob, 'urls.csv');
     
-    try {
-      sitemapCreator.downloadUrlsAsCsv(urls);
-      
-      toast({
-        title: "Файл скачан",
-        description: "Файл с URL успешно скачан",
-      });
-    } catch (error) {
-      console.error('Error downloading CSV:', error);
-      toast({
-        title: "Ошибка скачивания",
-        description: "Произошла ошибка при скачивании файла",
-        variant: "destructive",
-      });
-    }
+    toast({
+      title: "Скачивание",
+      description: "Файл urls.csv скачан",
+    });
   };
 
   return {
     isGenerating,
     progress,
-    currentUrl,
-    urls,
     sitemap,
+    urls,
+    currentUrl,
     generateSitemap,
     downloadSitemap,
     downloadCsv
   };
-};
+}

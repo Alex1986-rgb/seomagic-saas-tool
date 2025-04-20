@@ -17,7 +17,7 @@ import { Badge } from "@/components/ui/badge";
 
 interface DeepCrawlProgressDialogProps {
   open: boolean;
-  onClose: (pageCount?: number) => void;
+  onClose: (pageCount?: number, urls?: string[]) => void;
   url: string;
   initialStage?: 'idle' | 'starting' | 'crawling' | 'analyzing' | 'completed' | 'failed';
 }
@@ -41,6 +41,7 @@ export const DeepCrawlProgressDialog: React.FC<DeepCrawlProgressDialogProps> = (
     totalPages,
     scannedUrls,
     crawlStage,
+    error,
     startCrawling,
     downloadSitemap,
     downloadAllData,
@@ -54,13 +55,17 @@ export const DeepCrawlProgressDialog: React.FC<DeepCrawlProgressDialogProps> = (
       // Start crawling when dialog is opened
       const startScanning = async () => {
         try {
+          console.log("Starting crawling for URL:", url);
+          const normalizedUrl = url.startsWith('http') ? url : `https://${url}`;
           const result = await startCrawling();
           if (result) {
+            console.log("Crawling completed successfully:", result);
             toast({
               title: "Сканирование завершено",
               description: `Обнаружено ${result.urls.length} страниц на сайте ${url}`,
             });
           } else {
+            console.error("No result from crawling");
             // Если результат не получен, показываем уведомление об ошибке
             toast({
               title: "Ошибка сканирования",
@@ -84,7 +89,7 @@ export const DeepCrawlProgressDialog: React.FC<DeepCrawlProgressDialogProps> = (
 
   const handleClose = () => {
     setDialogOpen(false);
-    onClose(pagesScanned);
+    onClose(pagesScanned, scannedUrls);
   };
 
   const handleRetry = () => {
@@ -146,10 +151,10 @@ export const DeepCrawlProgressDialog: React.FC<DeepCrawlProgressDialogProps> = (
             </div>
           )}
 
-          {crawlStage === 'failed' && (
+          {(crawlStage === 'failed' || error) && (
             <div className="flex items-center gap-2 text-sm text-red-500 bg-red-50 dark:bg-red-950/30 p-3 rounded">
               <AlertCircle className="h-4 w-4 flex-shrink-0" />
-              <span>Произошла ошибка при сканировании. Попробуйте другой URL или уменьшите глубину сканирования.</span>
+              <span>{error || "Произошла ошибка при сканировании. Попробуйте другой URL или уменьшите глубину сканирования."}</span>
             </div>
           )}
           

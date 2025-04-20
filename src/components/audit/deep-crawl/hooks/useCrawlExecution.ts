@@ -1,57 +1,61 @@
 
-import { SiteScanner } from '@/services/audit/crawler/siteScanner';
+import { SimpleSitemapCreator } from '@/services/audit/simpleSitemapCreator';
+
+interface CrawlerSettings {
+  url: string;
+  onProgress?: (pagesScanned: number, totalEstimated: number, currentUrl: string) => void;
+  maxPages?: number;
+}
 
 export function useCrawlExecution() {
-  const initializeCrawler = ({ 
+  
+  const initializeCrawler = ({
     url, 
-    onProgress 
-  }: { 
-    url: string; 
-    onProgress: (pagesScanned: number, totalEstimated: number, currentUrl: string) => void;
-  }) => {
-    // Normalize URL
-    const baseUrl = url.startsWith('http') ? url : `https://${url}`;
+    onProgress, 
+    maxPages = 500
+  }: CrawlerSettings) => {
     
-    // Extract domain from URL
-    let domain;
     try {
-      domain = new URL(baseUrl).hostname;
+      const normalizedUrl = url.startsWith('http') ? url : `https://${url}`;
+      const urlObj = new URL(normalizedUrl);
+      const domain = urlObj.hostname;
+      
+      // Create a new crawler
+      const crawler = new SimpleSitemapCreator({
+        maxPages,
+        maxDepth: 5,
+        includeStylesheet: true,
+        timeout: 30000,
+        followRedirects: true
+      });
+      
+      return { crawler, domain, maxPages };
     } catch (error) {
-      domain = url;
+      console.error('Error initializing crawler:', error);
+      throw new Error('Не удалось инициализировать сканирование: неверный URL');
     }
-    
-    // Set a reasonable limit for the maximum number of pages to scan
-    const maxPages = 500000;
-    
-    // Create the scanner instance
-    const scanner = new SiteScanner(baseUrl, {
-      maxPages,
-      maxDepth: 10,
-      followExternalLinks: false,
-      respectRobotsTxt: true,
-      onProgress,
-      timeout: 15000,
-      crawlDelay: 100 // Be respectful to the server
-    });
-    
-    return { 
-      crawler: scanner, 
-      domain, 
-      maxPages 
-    };
   };
-
-  const executeCrawler = async (crawler: SiteScanner) => {
-    if (!crawler || !crawler.scan) return null;
-    
+  
+  const executeCrawler = async (crawler: SimpleSitemapCreator) => {
     try {
-      return await crawler.scan();
+      // Execute the crawler
+      const progressCallback = (scanned: number, total: number, currentUrl: string) => {
+        console.log(`Progress: ${scanned}/${total} - ${currentUrl}`);
+      };
+      
+      const urls = await crawler.crawl('', progressCallback);
+      
+      return {
+        success: true,
+        urls,
+        pageCount: urls.length
+      };
     } catch (error) {
       console.error('Error executing crawler:', error);
       return null;
     }
   };
-
+  
   return {
     initializeCrawler,
     executeCrawler

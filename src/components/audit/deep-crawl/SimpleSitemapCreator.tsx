@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { useSimpleSitemapCreator } from './hooks/useSimpleSitemapCreator';
 import { DeepCrawlProgressDialog } from './DeepCrawlProgressDialog';
+import { useToast } from "@/hooks/use-toast";
 
 interface SimpleSitemapCreatorProps {
   domain?: string;
@@ -18,6 +19,9 @@ const SimpleSitemapCreator: React.FC<SimpleSitemapCreatorProps> = ({
   onUrlsScanned 
 }) => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [url, setUrl] = useState(initialUrl || domain || '');
+  const { toast } = useToast();
+  
   const {
     isGenerating,
     progress,
@@ -30,23 +34,30 @@ const SimpleSitemapCreator: React.FC<SimpleSitemapCreatorProps> = ({
   } = useSimpleSitemapCreator();
 
   const handleStartCrawl = async () => {
-    setIsDialogOpen(true);
+    if (!url) {
+      toast({
+        title: "Ошибка",
+        description: "Пожалуйста, введите URL сайта",
+        variant: "destructive"
+      });
+      return;
+    }
     
-    try {
-      // Use initialUrl if provided, otherwise fall back to domain
-      const urlToScan = initialUrl || domain || '';
-      await generateSitemap(urlToScan);
-      if (onUrlsScanned && urls.length > 0) {
-        onUrlsScanned(urls);
-      }
-    } catch (error) {
-      console.error("Error during sitemap generation:", error);
+    setIsDialogOpen(true);
+  };
+
+  const handleCloseDialog = (pageCount?: number, scannedUrls?: string[]) => {
+    setIsDialogOpen(false);
+    
+    if (scannedUrls && scannedUrls.length > 0 && onUrlsScanned) {
+      onUrlsScanned(scannedUrls);
     }
   };
 
-  const handleCloseDialog = () => {
-    setIsDialogOpen(false);
-  };
+  // Update URL when props change
+  React.useEffect(() => {
+    setUrl(initialUrl || domain || '');
+  }, [initialUrl, domain]);
 
   return (
     <div className="space-y-4">
@@ -56,7 +67,7 @@ const SimpleSitemapCreator: React.FC<SimpleSitemapCreatorProps> = ({
           variant="outline"
           size="sm"
           className="flex items-center gap-2 hover-lift"
-          disabled={isGenerating}
+          disabled={isGenerating || !url}
         >
           <Rocket className="h-4 w-4" />
           <span>Создать карту сайта</span>
@@ -90,7 +101,7 @@ const SimpleSitemapCreator: React.FC<SimpleSitemapCreatorProps> = ({
       <DeepCrawlProgressDialog
         open={isDialogOpen}
         onClose={handleCloseDialog}
-        url={initialUrl || domain || ''}
+        url={url}
         initialStage="starting"
       />
     </div>

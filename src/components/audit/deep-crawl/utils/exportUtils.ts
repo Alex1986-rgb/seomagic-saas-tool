@@ -3,160 +3,164 @@ import { saveAs } from 'file-saver';
 import JSZip from 'jszip';
 
 export function useSitemapExport() {
-  const generateSitemapFile = (domain: string, pageCount: number): string => {
-    const header = `<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
-        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9
-        http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
-  <!-- Generated for ${domain} with ${pageCount} pages -->`;
+  const generateSitemapFile = (domain: string, urls: string[]) => {
+    const now = new Date().toISOString().split('T')[0];
     
-    const footer = `</urlset>`;
+    let xml = '<?xml version="1.0" encoding="UTF-8"?>\n';
+    xml += '<?xml-stylesheet type="text/xsl" href="https://www.sitemaps.org/xsl/sitemap.xsl"?>\n';
+    xml += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n';
     
-    const urls = localStorage.getItem(`crawl_urls_${domain}`);
-    let urlsXml = '';
+    urls.forEach(url => {
+      xml += '  <url>\n';
+      xml += `    <loc>${escapeXml(url)}</loc>\n`;
+      xml += `    <lastmod>${now}</lastmod>\n`;
+      xml += '    <changefreq>monthly</changefreq>\n';
+      xml += '    <priority>0.8</priority>\n';
+      xml += '  </url>\n';
+    });
     
-    if (urls) {
-      const urlList = JSON.parse(urls) as string[];
-      urlsXml = urlList.map(url => `
-  <url>
-    <loc>${url}</loc>
-    <lastmod>${new Date().toISOString().slice(0, 10)}</lastmod>
-    <priority>0.8</priority>
-  </url>`).join('');
-    }
+    xml += '</urlset>';
     
-    return `${header}${urlsXml}
-${footer}`;
+    return xml;
   };
-
-  const downloadSitemap = (sitemap: string | null, domain: string) => {
-    if (!sitemap) {
-      const generatedSitemap = generateSitemapFile(domain, 0);
-      const blob = new Blob([generatedSitemap], { type: 'application/xml' });
-      saveAs(blob, `sitemap_${domain.replace(/\./g, '_')}.xml`);
-    } else {
-      const blob = new Blob([sitemap], { type: 'application/xml' });
-      saveAs(blob, `sitemap_${domain.replace(/\./g, '_')}.xml`);
-    }
+  
+  const downloadSitemap = (sitemap: string, domain: string) => {
+    const blob = new Blob([sitemap], { type: 'application/xml' });
+    saveAs(blob, `${domain.replace(/[^a-z0-9]/gi, '-')}-sitemap.xml`);
   };
   
   const downloadAllData = (urls: string[], domain: string) => {
-    if (!urls || urls.length === 0) return;
+    // Generate sitemap
+    const sitemap = generateSitemapFile(domain, urls);
     
-    const csvContent = "URL\n" + urls.join("\n");
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8' });
-    saveAs(blob, `urls_${domain.replace(/\./g, '_')}.csv`);
-  };
-  
-  const downloadReport = async (crawler: any, domain: string) => {
-    // Prepare data for report
-    const data = {
+    // Create CSV of URLs
+    const csv = urls.join('\n');
+    
+    // Create JSON data
+    const jsonData = {
       domain,
-      scanDate: new Date().toISOString(),
-      pageCount: crawler?.visited?.size || 0,
-      urls: Array.from(crawler?.visited || []).slice(0, 1000),
-      stats: crawler?.getStats() || { visited: 0, queued: 0 }
+      scannedAt: new Date().toISOString(),
+      totalUrls: urls.length,
+      urls
     };
     
-    // Convert to JSON
-    const jsonContent = JSON.stringify(data, null, 2);
-    const blob = new Blob([jsonContent], { type: 'application/json' });
-    saveAs(blob, `crawl_report_${domain.replace(/\./g, '_')}.json`);
+    // Create ZIP file
+    const zip = new JSZip();
+    zip.file("sitemap.xml", sitemap);
+    zip.file("urls.csv", csv);
+    zip.file("scan-data.json", JSON.stringify(jsonData, null, 2));
+    
+    // Generate and download ZIP
+    zip.generateAsync({ type: "blob" }).then(function(content) {
+      saveAs(content, `${domain.replace(/[^a-z0-9]/gi, '-')}-site-data.zip`);
+    });
   };
   
-  const createOptimizedSiteZip = async (domain: string, content: any[], prompt: string): Promise<Blob> => {
+  const downloadReport = (crawler: any, domain: string) => {
+    // In a real implementation, this would generate a detailed report
+    // For now, we'll create a simple JSON report
+    
+    const report = {
+      domain,
+      scannedAt: new Date().toISOString(),
+      summary: {
+        totalPages: crawler ? crawler.getStats().visited : 0,
+        crawlTime: "N/A", // Would be calculated in real implementation
+        issues: []
+      }
+    };
+    
+    const blob = new Blob([JSON.stringify(report, null, 2)], { type: 'application/json' });
+    saveAs(blob, `${domain.replace(/[^a-z0-9]/gi, '-')}-report.json`);
+  };
+  
+  const createOptimizedSiteZip = async (domain: string, content: any[], prompt: string) => {
     const zip = new JSZip();
     
-    // Add README file
-    zip.file("README.txt", 
-      `Оптимизированная версия сайта ${domain}
-Создано: ${new Date().toLocaleString()}
-Запрос для оптимизации: "${prompt}"
-
-Эта папка содержит оптимизированную версию вашего сайта.
-Для просмотра откройте index.html в вашем браузере.`);
+    // Add README
+    zip.file("README.txt", `Optimized site for ${domain}\nGenerated on: ${new Date().toISOString()}\nOptimization prompt: ${prompt}`);
     
-    // Add index.html with list of optimized pages
-    let indexContent = `<!DOCTYPE html>
+    // Add a simple index.html
+    const indexContent = `<!DOCTYPE html>
 <html>
 <head>
+  <title>Optimized site for ${domain}</title>
   <meta charset="UTF-8">
-  <title>Оптимизированный сайт - ${domain}</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
-    body { font-family: Arial, sans-serif; max-width: 1200px; margin: 0 auto; padding: 20px; }
-    h1 { color: #333; }
-    .page-list { margin-top: 20px; }
-    .page-item { padding: 10px; border-bottom: 1px solid #eee; }
-    .page-title { font-weight: bold; }
-    .page-url { color: #0066cc; text-decoration: none; }
-    .page-url:hover { text-decoration: underline; }
+    body { font-family: Arial, sans-serif; line-height: 1.6; }
+    .container { max-width: 1000px; margin: 0 auto; padding: 20px; }
+    .page-item { border: 1px solid #eee; margin-bottom: 20px; padding: 15px; border-radius: 4px; }
+    h1, h2 { color: #333; }
+    a { color: #0066cc; }
   </style>
 </head>
 <body>
-  <h1>Оптимизированный сайт - ${domain}</h1>
-  <p>Ниже представлен список оптимизированных страниц:</p>
-  <div class="page-list">`;
+  <div class="container">
+    <h1>Optimized Site: ${domain}</h1>
+    <p>This package contains ${content.length} optimized pages.</p>
     
-    // Add each page as HTML
-    content.forEach((page, index) => {
-      const filename = `pages/page_${index}.html`;
-      
-      // Add to index
-      indexContent += `
-    <div class="page-item">
-      <div class="page-title">${page.title}</div>
-      <a href="${filename}" class="page-url" target="_blank">${page.url}</a>
-    </div>`;
-      
-      // Create HTML for this page
-      const pageHtml = `<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="UTF-8">
-  <title>${page.title}</title>
-  <meta name="description" content="${page.metaTags?.description || ''}">
-  <meta name="keywords" content="${page.metaTags?.keywords || ''}">
-  <style>
-    body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
-    h1 { color: #333; }
-    .content { margin-top: 20px; line-height: 1.6; }
-    .back { margin-top: 30px; }
-    .back a { color: #0066cc; text-decoration: none; }
-    .back a:hover { text-decoration: underline; }
-  </style>
-</head>
-<body>
-  <h1>${page.title}</h1>
-  <div class="content">
-    ${page.content}
-  </div>
-  <div class="back">
-    <a href="../index.html">← Вернуться к списку страниц</a>
-  </div>
-</body>
-</html>`;
-      
-      zip.file(filename, pageHtml);
-    });
-    
-    // Close index.html
-    indexContent += `
+    <h2>Pages</h2>
+    <div class="pages-list">
+      ${content.map(page => `
+        <div class="page-item">
+          <h3><a href="${page.url}" target="_blank">${page.title}</a></h3>
+          <p><strong>URL:</strong> ${page.url}</p>
+          <p><strong>Meta Description:</strong> ${page.metaTags?.description || 'Not available'}</p>
+        </div>
+      `).join('')}
+    </div>
   </div>
 </body>
 </html>`;
     
     zip.file("index.html", indexContent);
     
-    // Generate ZIP file
-    const blob = await zip.generateAsync({ type: "blob" });
-    return blob;
+    // Create a folder for individual pages
+    const pagesFolder = zip.folder("pages");
+    
+    // Add optimized pages
+    content.forEach((page, index) => {
+      const pageContent = `<!DOCTYPE html>
+<html>
+<head>
+  <title>${page.title}</title>
+  <meta charset="UTF-8">
+  <meta name="description" content="${page.metaTags?.description || ''}">
+  <meta name="keywords" content="${page.metaTags?.keywords || ''}">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+  <h1>${page.title}</h1>
+  ${page.content}
+  <p><a href="index.html">Back to index</a></p>
+</body>
+</html>`;
+      
+      pagesFolder?.file(`page-${index + 1}.html`, pageContent);
+    });
+    
+    // Generate sitemap
+    const sitemap = generateSitemapFile(domain, content.map(page => page.url));
+    zip.file("sitemap.xml", sitemap);
+    
+    return await zip.generateAsync({ type: "blob" });
   };
   
   const downloadOptimizedSite = (blob: Blob, domain: string) => {
-    saveAs(blob, `optimized_site_${domain.replace(/\./g, '_')}.zip`);
+    saveAs(blob, `${domain.replace(/[^a-z0-9]/gi, '-')}-optimized.zip`);
   };
-
+  
+  // Helper function to escape XML special characters
+  const escapeXml = (unsafe: string) => {
+    return unsafe
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&apos;');
+  };
+  
   return {
     generateSitemapFile,
     downloadSitemap,
