@@ -1,4 +1,3 @@
-
 export interface AuditItemData {
   id: string;
   title: string;
@@ -120,6 +119,14 @@ export interface AuditData {
     tablet: number;
   };
   details: AuditDetailsData;
+  optimizationCost?: number;
+  optimizationItems?: {
+    name: string;
+    description: string;
+    count: number;
+    price: number;
+    totalPrice: number;
+  }[];
 }
 
 export interface RecommendationData {

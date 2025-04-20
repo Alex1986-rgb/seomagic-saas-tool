@@ -1,4 +1,3 @@
-
 import React from 'react';
 
 const ProjectStructure: React.FC = () => {
@@ -37,6 +36,27 @@ const ProjectStructure: React.FC = () => {
         <li><strong>IssuesSummary</strong> - Компонент показа количества ошибок (критичные, важные, возможности)</li>
         <li><strong>AuditIssuesAndEstimate</strong> - <em>Новый компонент для вывода списка обнаруженных ошибок и итоговой сметы</em></li>
       </ul>
+      <h4 className="text-lg font-medium mb-2">Структура основных данных аудита:</h4>
+      <div className="bg-muted p-3 rounded mb-4 text-sm">
+        <pre>
+{`/**
+ * Тип issues:
+ *   - critical: string[]    // Критические ошибки (SEO-угроза)
+ *   - important: string[]   // Важные проблемы
+ *   - opportunities: string[] // Возможности/рекомендации
+ * 
+ * Тип optimizationItems:
+ *   - name: string        // Название работы
+ *   - description: string // Подробности выполнения
+ *   - count: number       // Кол-во объектов (например, страниц)
+ *   - price: number       // Базовая цена за единицу
+ *   - totalPrice: number  // Общая стоимость (price * count)
+ *
+ * @see src/types/audit.ts для полного описания
+ */
+`}
+        </pre>
+      </div>
       <h4 className="text-lg font-medium mb-2">Сервисы ошибок и сметы:</h4>
       <ul className="list-disc pl-6 space-y-2">
         <li><strong>optimizationCalculator</strong> - Калькулятор сметы и сбор всех ошибок/рекомендаций (вызывается после аудита)</li>

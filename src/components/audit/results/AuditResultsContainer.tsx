@@ -12,7 +12,7 @@ import { useToast } from "@/hooks/use-toast";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import AuditRecommendations from '@/components/audit/AuditRecommendations';
 import IssuesSummary from '@/components/audit/summary/IssuesSummary';
-import AuditIssuesAndEstimate from '@/components/audit/AuditIssuesAndEstimate';
+import AuditIssuesAndEstimate from './components/AuditIssuesAndEstimate';
 
 /**
  * Основной контейнер для отображения результатов SEO аудита
