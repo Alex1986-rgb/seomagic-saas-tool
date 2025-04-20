@@ -38,13 +38,9 @@ const AnimatedVideoPlaceholder: React.FC<AnimatedVideoPlaceholderProps> = ({ isP
 
   return (
     <div className="aspect-video bg-gradient-to-br from-black/90 via-[#1a1a2e] to-black/95 rounded-xl overflow-hidden relative flex flex-col items-center justify-center text-center p-8 shadow-inner">
-      {/* Player header with controls */}
       <PlayerHeader />
-      
-      {/* Background elements */}
       <Background />
       
-      {/* Animated content */}
       <div className="flex-grow flex flex-col items-center justify-center w-full relative z-10 p-2">
         <AnimatePresence mode="wait">
           {slides.map((slideData, index) => (
@@ -63,14 +59,12 @@ const AnimatedVideoPlaceholder: React.FC<AnimatedVideoPlaceholderProps> = ({ isP
         />
       </div>
       
-      {/* Slide indicators */}
       <SlideIndicators 
         slides={slides}
         currentSlide={currentSlide}
         setCurrentSlide={setCurrentSlide}
       />
       
-      {/* Player controls */}
       <PlayerControls 
         isPaused={isPaused}
         togglePause={togglePause}
