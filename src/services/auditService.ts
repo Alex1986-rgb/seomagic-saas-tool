@@ -24,3 +24,18 @@ export * from './audit/optimizedSite';
 // Экспорт функций рекомендаций и истории
 export { fetchRecommendations } from './audit/recommendations';
 export { fetchAuditHistory } from './audit/history';
+
+// Экспорт функций анализа сайта
+export {
+  detectBrokenLinks,
+  detectDuplicates,
+  analyzeSiteStructure,
+  analyzeContentUniqueness,
+  type BrokenLink,
+  type Redirect,
+  type DuplicatePage,
+  type DuplicateMetaTag,
+  type SiteStructure,
+  type PageNode,
+  type ContentAnalysisResult
+} from './audit/siteAnalysis';

@@ -9,15 +9,31 @@ export * from './sitemap';
 export { collectPagesContent, type PageContent, optimizePageContent, improveSeoDescription, generateSeoDescription, generateKeywords } from './content';
 export { calculateOptimizationMetrics } from './optimization';
 
-export * from './optimizedSite';
+// Export site analysis features
+export {
+  detectBrokenLinks,
+  detectDuplicates,
+  analyzeSiteStructure,
+  analyzeContentUniqueness,
+  type BrokenLink,
+  type Redirect,
+  type DuplicatePage,
+  type DuplicateMetaTag,
+  type SiteStructure,
+  type PageNode,
+  type ContentAnalysisResult
+} from './siteAnalysis';
+
+// Export optimized site
+export { createOptimizedSite } from './optimizedSite';
 
 // Don't re-export PageContent from scanner to avoid ambiguity
-import { scanWebsite, generateSitemap, calculateScannerOptimizationMetrics, createOptimizedSite } from './scanner';
+import { scanWebsite, generateSitemap, calculateScannerOptimizationMetrics, createOptimizedSite as createScannerOptimizedSite } from './scanner';
 export { 
   scanWebsite, 
   generateSitemap, 
-  calculateScannerOptimizationMetrics, 
-  createOptimizedSite 
+  calculateScannerOptimizationMetrics,
+  createScannerOptimizedSite 
 };
 
 import { AuditData } from "@/types/audit";
