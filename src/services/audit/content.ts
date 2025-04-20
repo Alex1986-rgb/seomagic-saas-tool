@@ -95,9 +95,9 @@ export const collectPagesContent = async (
       });
       
       // Extract headings
-      $('h1').each((_, element) => pageContent.headings.h1.push($(element).text().trim()));
-      $('h2').each((_, element) => pageContent.headings.h2.push($(element).text().trim()));
-      $('h3').each((_, element) => pageContent.headings.h3.push($(element).text().trim()));
+      $('h1').each((_, element) => { pageContent.headings.h1.push($(element).text().trim()); return true; });
+      $('h2').each((_, element) => { pageContent.headings.h2.push($(element).text().trim()); return true; });
+      $('h3').each((_, element) => { pageContent.headings.h3.push($(element).text().trim()); return true; });
       
       // Calculate word count
       pageContent.wordCount = pageContent.content.split(/\s+/).filter(Boolean).length;
