@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import { ContentExtractor, contentExtractorService } from '@/services/audit/contentExtractor/contentExtractor';
 import { ExtractedSite, ExtractionOptions, ContentExtractionProgress } from '@/services/audit/contentExtractor/types';
+import { saveAs } from 'file-saver';
 
 export const useContentExtractor = () => {
   const [isExtracting, setIsExtracting] = useState(false);
@@ -55,8 +56,51 @@ export const useContentExtractor = () => {
         }
       };
 
-      // Extract content from all pages
-      const site = await contentExtractorService.extractSiteContent(urls, domain, extractionOptions);
+      // Use the contentExtractorService to extract content
+      // We'll use the extractFromUrls method and then convert the result to our ExtractedSite format
+      const extractedContent = await contentExtractorService.extractFromUrls(
+        urls,
+        (processed, total, currentUrl) => {
+          const onProgress = extractionOptions.onProgress;
+          if (onProgress) {
+            onProgress(processed, total);
+          }
+        }
+      );
+      
+      // Convert the extracted content to our ExtractedSite format
+      const site: ExtractedSite = {
+        domain,
+        extractedAt: new Date().toISOString(),
+        pageCount: extractedContent.size,
+        pages: Array.from(extractedContent.values()).map(content => ({
+          url: content.url,
+          title: content.title,
+          content: content.text,
+          html: content.html,
+          meta: {
+            description: content.metaTags.description || null,
+            keywords: content.metaTags.keywords || null,
+            author: null,
+            robots: null
+          },
+          headings: {
+            h1: content.headings.h1,
+            h2: content.headings.h2,
+            h3: content.headings.h3
+          },
+          links: {
+            internal: content.links.filter(link => link.includes(domain)),
+            external: content.links.filter(link => !link.includes(domain))
+          },
+          images: content.images.map(img => ({
+            url: img.src,
+            alt: img.alt || null,
+            title: null
+          }))
+        }))
+      };
+      
       setExtractedSite(site);
       
       toast({
@@ -91,21 +135,38 @@ export const useContentExtractor = () => {
 
     try {
       switch (format) {
-        case 'json':
-          await contentExtractorService.exportToJson(extractedSite);
+        case 'json': {
+          // Export to JSON manually since the service doesn't have this specific method
+          const jsonBlob = new Blob([JSON.stringify(extractedSite, null, 2)], { type: 'application/json' });
+          saveAs(jsonBlob, `${extractedSite.domain}-content.json`);
           break;
-        case 'html':
-          await contentExtractorService.exportToHtml(extractedSite);
+        }
+        case 'html': {
+          // Use the exportToHtml method from contentExtractorService
+          const htmlContent = contentExtractorService.exportToHtml();
+          const htmlBlob = new Blob([htmlContent], { type: 'text/html' });
+          saveAs(htmlBlob, `${extractedSite.domain}-sitemap.html`);
           break;
-        case 'markdown':
-          await contentExtractorService.exportToMarkdown(extractedSite);
+        }
+        case 'markdown': {
+          // Use the exportToMarkdown method from contentExtractorService
+          const markdownContent = contentExtractorService.exportToMarkdown();
+          const mdBlob = new Blob([markdownContent], { type: 'text/markdown' });
+          saveAs(mdBlob, `${extractedSite.domain}-sitemap.md`);
           break;
-        case 'sitemap':
-          await contentExtractorService.exportSitemapXml(extractedSite);
+        }
+        case 'sitemap': {
+          // Generate sitemap XML manually
+          const sitemapXml = generateSitemapXml(extractedSite);
+          const xmlBlob = new Blob([sitemapXml], { type: 'text/xml' });
+          saveAs(xmlBlob, `sitemap.xml`);
           break;
-        case 'all':
-          await contentExtractorService.exportAll(extractedSite);
+        }
+        case 'all': {
+          // Use the downloadAll method from contentExtractorService
+          await contentExtractorService.downloadAll(`${extractedSite.domain}-content.zip`);
           break;
+        }
       }
 
       toast({
@@ -120,6 +181,38 @@ export const useContentExtractor = () => {
         variant: "destructive"
       });
     }
+  };
+
+  // Helper function to generate sitemap XML
+  const generateSitemapXml = (site: ExtractedSite): string => {
+    const now = new Date().toISOString().split('T')[0];
+    
+    let xml = '<?xml version="1.0" encoding="UTF-8"?>\n';
+    xml += '<?xml-stylesheet type="text/xsl" href="https://www.sitemaps.org/xsl/sitemap.xsl"?>\n';
+    xml += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n';
+    
+    for (const page of site.pages) {
+      xml += '  <url>\n';
+      xml += `    <loc>${escapeXml(page.url)}</loc>\n`;
+      xml += `    <lastmod>${now}</lastmod>\n`;
+      xml += '    <changefreq>monthly</changefreq>\n';
+      xml += '    <priority>0.8</priority>\n';
+      xml += '  </url>\n';
+    }
+    
+    xml += '</urlset>';
+    
+    return xml;
+  };
+  
+  // Helper function to escape XML special characters
+  const escapeXml = (unsafe: string): string => {
+    return unsafe
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&apos;');
   };
 
   return {
