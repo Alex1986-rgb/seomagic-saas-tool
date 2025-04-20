@@ -11,12 +11,7 @@ import {
   Settings as SettingsIcon,
   Layout,
   FileText,
-  Server,
-  Shield,
-  Database,
-  Users,
-  BarChart,
-  LineChart
+  Server
 } from 'lucide-react';
 import { Card, CardContent } from "@/components/ui/card";
 import TabLayout, { TabItem } from "@/components/ui/tab-layout/TabLayout";
@@ -28,6 +23,7 @@ import EmailSettings from './settings/EmailSettings';
 import SecuritySettings from './settings/SecuritySettings';
 import SiteManagementSettings from './settings/SiteManagementSettings';
 import ContentManagementSettings from './settings/ContentManagementSettings';
+import SystemSettings from './SystemSettings';
 
 const AdminSettings: React.FC = () => {
   const [activeTab, setActiveTab] = useState("general");
@@ -111,67 +107,5 @@ const AdminSettings: React.FC = () => {
     </div>
   );
 };
-
-// Improved System Settings component with better organization
-const SystemSettings: React.FC = () => (
-  <div className="space-y-6">
-    <Card>
-      <CardContent className="p-6">
-        <h3 className="text-lg font-medium mb-4">Системные настройки</h3>
-        <p className="text-muted-foreground">Настройки сервера, баз данных и производительности.</p>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
-          <div className="p-4 border rounded-md bg-card hover:bg-accent/5 transition-colors">
-            <div className="flex items-center gap-2 mb-2">
-              <Database className="h-4 w-4 text-primary" />
-              <span className="font-medium">База данных</span>
-            </div>
-            <p className="text-sm text-muted-foreground">Настройки подключения и оптимизации базы данных.</p>
-          </div>
-          
-          <div className="p-4 border rounded-md bg-card hover:bg-accent/5 transition-colors">
-            <div className="flex items-center gap-2 mb-2">
-              <Shield className="h-4 w-4 text-primary" />
-              <span className="font-medium">Безопасность</span>
-            </div>
-            <p className="text-sm text-muted-foreground">Настройки защиты и политики безопасности.</p>
-          </div>
-          
-          <div className="p-4 border rounded-md bg-card hover:bg-accent/5 transition-colors">
-            <div className="flex items-center gap-2 mb-2">
-              <Users className="h-4 w-4 text-primary" />
-              <span className="font-medium">Пользователи системы</span>
-            </div>
-            <p className="text-sm text-muted-foreground">Управление администраторами и их правами.</p>
-          </div>
-          
-          <div className="p-4 border rounded-md bg-card hover:bg-accent/5 transition-colors">
-            <div className="flex items-center gap-2 mb-2">
-              <Bell className="h-4 w-4 text-primary" />
-              <span className="font-medium">Системные уведомления</span>
-            </div>
-            <p className="text-sm text-muted-foreground">Настройка системных уведомлений и мониторинга.</p>
-          </div>
-          
-          <div className="p-4 border rounded-md bg-card hover:bg-accent/5 transition-colors">
-            <div className="flex items-center gap-2 mb-2">
-              <LineChart className="h-4 w-4 text-primary" />
-              <span className="font-medium">Аналитика</span>
-            </div>
-            <p className="text-sm text-muted-foreground">Настройки сбора и анализа данных о работе системы.</p>
-          </div>
-          
-          <div className="p-4 border rounded-md bg-card hover:bg-accent/5 transition-colors">
-            <div className="flex items-center gap-2 mb-2">
-              <BarChart className="h-4 w-4 text-primary" />
-              <span className="font-medium">Производительность</span>
-            </div>
-            <p className="text-sm text-muted-foreground">Мониторинг и настройка производительности платформы.</p>
-          </div>
-        </div>
-      </CardContent>
-    </Card>
-  </div>
-);
 
 export default AdminSettings;
