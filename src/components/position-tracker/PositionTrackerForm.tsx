@@ -1,9 +1,8 @@
-
 import React, { useState } from 'react';
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
-import { Search, Plus, X, FileSpreadsheet, Clock } from 'lucide-react';
+import { Search, Plus, X, FileSpreadsheet, Clock, Upload } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
@@ -69,6 +68,32 @@ export const PositionTrackerForm = ({ onSearchComplete }) => {
     form.setValue("keywords", keywordList);
   };
 
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const text = e.target?.result as string;
+        const keywordList = text.split(/\r?\n/).filter(k => k.trim());
+        setKeywords([...new Set([...keywords, ...keywordList])]);
+        form.setValue("keywords", [...new Set([...keywords, ...keywordList])]);
+        toast({
+          title: "Файл загружен",
+          description: `Добавлено ${keywordList.length} ключевых слов`,
+        });
+      } catch (error) {
+        toast({
+          title: "Ошибка загрузки",
+          description: "Не удалось прочитать файл",
+          variant: "destructive",
+        });
+      }
+    };
+    reader.readAsText(file);
+  };
+
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     if (keywords.length === 0) {
       toast({
@@ -81,9 +106,8 @@ export const PositionTrackerForm = ({ onSearchComplete }) => {
     
     setIsLoading(true);
     try {
-      // Подготавливаем данные для отправки с явным указанием domain как обязательного поля
       const searchData = {
-        domain: values.domain, // Explicitly required field
+        domain: values.domain,
         keywords: keywords,
         searchEngine: values.searchEngine,
         region: values.region,
@@ -93,7 +117,6 @@ export const PositionTrackerForm = ({ onSearchComplete }) => {
         timestamp: new Date().toISOString()
       };
       
-      // Вызываем сервис проверки позиций
       const results = await checkPositions(searchData);
       
       toast({
@@ -101,7 +124,6 @@ export const PositionTrackerForm = ({ onSearchComplete }) => {
         description: `Проверено ${keywords.length} ключевых запросов в ${values.searchEngine === 'all' ? 'нескольких поисковых системах' : values.searchEngine}`,
       });
       
-      // Передаем результаты родительскому компоненту
       if (onSearchComplete) {
         onSearchComplete(results);
       }
@@ -265,7 +287,9 @@ export const PositionTrackerForm = ({ onSearchComplete }) => {
                 <TabsList>
                   <TabsTrigger value="single">Добавление по одному</TabsTrigger>
                   <TabsTrigger value="bulk">Массовое добавление</TabsTrigger>
+                  <TabsTrigger value="file">Загрузка файла</TabsTrigger>
                 </TabsList>
+                
                 <TabsContent value="single" className="space-y-4">
                   <div className="flex gap-2">
                     <Input
@@ -287,6 +311,7 @@ export const PositionTrackerForm = ({ onSearchComplete }) => {
                     Введите ключевое слово и нажмите + или Enter для добавления
                   </FormDescription>
                 </TabsContent>
+                
                 <TabsContent value="bulk">
                   <Textarea
                     placeholder="Введите ключевые слова, каждое с новой строки"
@@ -296,6 +321,25 @@ export const PositionTrackerForm = ({ onSearchComplete }) => {
                   <FormDescription className="mt-2">
                     Введите список ключевых слов, каждое с новой строки
                   </FormDescription>
+                </TabsContent>
+
+                <TabsContent value="file" className="space-y-4">
+                  <div className="flex flex-col gap-4">
+                    <div className="flex gap-2">
+                      <Input
+                        type="file"
+                        accept=".txt,.csv"
+                        onChange={handleFileUpload}
+                        className="flex-1"
+                      />
+                      <Button type="button" variant="outline" size="icon">
+                        <Upload className="h-4 w-4" />
+                      </Button>
+                    </div>
+                    <FormDescription>
+                      Загрузите файл с ключевыми словами (.txt или .csv, каждое слово с новой строки)
+                    </FormDescription>
+                  </div>
                 </TabsContent>
               </Tabs>
               
