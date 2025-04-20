@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { InfoCard } from './InfoCard';
 import SparkAreaChart from '@/components/charts/SparkAreaChart';
 import { Activity, ArrowUpRight, Users, LineChart } from 'lucide-react';
-import { mockAudits } from '@/data/mockData';
+import { mockAudits } from '@/components/dashboard/mock-data';
 
 interface DashboardOverviewProps {
   onStartNewAudit?: () => void;
