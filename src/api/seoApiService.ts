@@ -1,6 +1,7 @@
 
 import { firecrawlService } from '../services/api/firecrawl';
 import { v4 as uuidv4 } from 'uuid';
+import { SitemapExtractor } from '../services/audit/crawler/sitemapExtractor';
 
 export type ScanDetails = {
   current_url: string;
@@ -16,9 +17,35 @@ export interface OptimizationResult {
 }
 
 class SeoApiService {
-  async startCrawl(url: string, maxPages: number = 500000) { // Увеличиваем значение по умолчанию
+  private sitemapExtractor = new SitemapExtractor();
+
+  async startCrawl(url: string, maxPages: number = 500000) {
     try {
+      // Сначала запускаем процесс получения/создания sitemap
       const task = await firecrawlService.startCrawl(url);
+      
+      // Попытка получить sitemap.xml если он существует
+      try {
+        const sitemapUrl = `${url}/sitemap.xml`.replace(/([^:]\/)\/+/g, "$1");
+        console.log('Attempting to extract sitemap from:', sitemapUrl);
+        
+        const response = await fetch(sitemapUrl);
+        if (response.ok) {
+          const sitemapXml = await response.text();
+          const extractedUrls = await this.sitemapExtractor.extractUrlsFromSitemap(sitemapXml);
+          
+          // Обновляем информацию о задаче с данными из sitemap
+          if (extractedUrls.length > 0) {
+            console.log(`Found ${extractedUrls.length} URLs in sitemap.xml`);
+            
+            // Обновляем задачу с данными из sitemap
+            await firecrawlService.updateTaskWithSitemapUrls(task.id, extractedUrls);
+          }
+        }
+      } catch (sitemapError) {
+        console.warn('Error extracting sitemap, continuing with regular crawl:', sitemapError);
+      }
+      
       return {
         success: true,
         task_id: task.id,

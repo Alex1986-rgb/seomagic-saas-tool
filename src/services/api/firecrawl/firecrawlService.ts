@@ -82,6 +82,43 @@ export const firecrawlService = {
   },
   
   /**
+   * Update task with URLs from sitemap
+   */
+  updateTaskWithSitemapUrls: async (taskId: string, urls: string[]): Promise<CrawlTask> => {
+    try {
+      // Find task
+      const task = crawlTasks.find(t => t.id === taskId);
+      
+      if (!task) {
+        const storedTaskJson = localStorage.getItem(`crawl_task_${taskId}`);
+        if (!storedTaskJson) {
+          throw new Error('Task not found');
+        }
+        
+        const storedTask = JSON.parse(storedTaskJson);
+        crawlTasks.push(storedTask);
+        return firecrawlService.updateTaskWithSitemapUrls(taskId, urls);
+      }
+      
+      // Update task with sitemap URLs
+      task.status = 'completed';
+      task.urls = urls;
+      task.pages_scanned = urls.length;
+      task.estimated_total_pages = Math.max(urls.length, task.estimated_total_pages);
+      task.progress = 100;
+      task.updated_at = new Date().toISOString();
+      
+      // Store updated task
+      localStorage.setItem(`crawl_task_${task.id}`, JSON.stringify(task));
+      
+      return task;
+    } catch (error) {
+      console.error('Error updating task with sitemap URLs:', error);
+      throw error;
+    }
+  },
+  
+  /**
    * Get crawl task status
    */
   getStatus: async (taskId: string): Promise<CrawlTask> => {
@@ -237,7 +274,7 @@ async function handleLargeSiteCrawl(task: CrawlTask, normalizedUrl: string): Pro
   // с ограниченным количеством реальных запросов и экстраполяцией данных
   
   // Набор URL для сканирования (ограничиваем количество)
-  const MAX_REQUESTS = 50; // Ограничиваем количество реальных запросов
+  const MAX_REQUESTS = 50; // Ограничиваем количество реальных з��просов
   const urlsToScan = [normalizedUrl];
   const scannedUrls = new Set<string>();
   const foundUrls = new Set<string>();

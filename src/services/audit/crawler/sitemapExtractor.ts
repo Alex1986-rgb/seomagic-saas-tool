@@ -41,4 +41,58 @@ export class SitemapExtractor {
     
     return urls;
   }
+  
+  /**
+   * Try to locate sitemap files on a website
+   */
+  async findSitemaps(baseUrl: string): Promise<string[]> {
+    const possibleLocations = [
+      '/sitemap.xml',
+      '/sitemap_index.xml',
+      '/sitemap/',
+      '/sitemaps/',
+      '/sitemap/sitemap.xml',
+      '/sitemap.php',
+      '/sitemap.txt',
+    ];
+    
+    const sitemapUrls: string[] = [];
+    const normalizedBaseUrl = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
+    
+    for (const location of possibleLocations) {
+      try {
+        const url = normalizedBaseUrl + location;
+        const response = await axios.get(url, { timeout: 5000 });
+        if (response.status === 200) {
+          sitemapUrls.push(url);
+        }
+      } catch (error) {
+        // Ignore errors, just try next location
+      }
+    }
+    
+    // Also try to find sitemap URL in robots.txt
+    try {
+      const robotsUrl = normalizedBaseUrl + '/robots.txt';
+      const response = await axios.get(robotsUrl, { timeout: 5000 });
+      
+      if (response.status === 200) {
+        const robotsTxt = response.data;
+        const sitemapMatches = robotsTxt.match(/Sitemap:\s*(.+)/gi);
+        
+        if (sitemapMatches) {
+          for (const match of sitemapMatches) {
+            const sitemapUrl = match.replace(/Sitemap:\s*/i, '').trim();
+            if (sitemapUrl) {
+              sitemapUrls.push(sitemapUrl);
+            }
+          }
+        }
+      }
+    } catch (error) {
+      // Ignore errors from robots.txt
+    }
+    
+    return sitemapUrls;
+  }
 }
