@@ -20,6 +20,14 @@ export interface PageContent {
     h3: string[];
   };
   wordCount: number;
+  optimized?: {
+    content: string;
+    meta?: {
+      description?: string;
+      keywords?: string;
+    };
+    score?: number;
+  };
 }
 
 // Functions for content optimization

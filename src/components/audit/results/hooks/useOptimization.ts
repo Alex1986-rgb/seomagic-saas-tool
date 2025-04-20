@@ -53,27 +53,29 @@ export const useOptimization = (url: string) => {
       
       const optimizationResult = await createOptimizedSite(hostname, contentToOptimize);
       
-      if (optimizationResult.beforeScore && optimizationResult.afterScore) {
+      if ('beforeScore' in optimizationResult && 'afterScore' in optimizationResult) {
         setOptimizationScoresData({
           beforeScore: optimizationResult.beforeScore,
           afterScore: optimizationResult.afterScore
         });
       }
       
-      if (optimizationResult.demoPage) {
+      if ('demoPage' in optimizationResult && optimizationResult.demoPage) {
         setDemoPage(optimizationResult.demoPage);
       }
       
       setIsOptimized(true);
       
-      const downloadUrl = window.URL.createObjectURL(optimizationResult.blob);
-      const a = document.createElement('a');
-      a.href = downloadUrl;
-      a.download = `optimized_${hostname}.zip`;
-      document.body.appendChild(a);
-      a.click();
-      window.URL.revokeObjectURL(downloadUrl);
-      document.body.removeChild(a);
+      if ('blob' in optimizationResult) {
+        const downloadUrl = window.URL.createObjectURL(optimizationResult.blob);
+        const a = document.createElement('a');
+        a.href = downloadUrl;
+        a.download = `optimized_${hostname}.zip`;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(downloadUrl);
+        document.body.removeChild(a);
+      }
       
       toast({
         title: "Готово!",

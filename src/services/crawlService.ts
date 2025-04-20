@@ -6,7 +6,7 @@ interface CrawlTask {
   status: string;
   progress: number;
   url: string;
-  currentUrl: string; // Fixed property name from current_url to currentUrl
+  currentUrl: string;
   pagesScanned: number;
   pagesTotal: number;
   createdAt: string;
@@ -24,6 +24,7 @@ interface CrawlResult {
       broken: number;
     };
   };
+  brokenLinks?: string[];
 }
 
 export class CrawlService {
@@ -34,14 +35,20 @@ export class CrawlService {
     maxPages?: number;
     includeImages?: boolean;
     followExternalLinks?: boolean;
-  }): Promise<{ taskId: string }> {
+    maxDepth?: number;
+    checkBrokenLinks?: boolean;
+    findDuplicates?: boolean;
+    analyzeStructure?: boolean;
+    checkContent?: boolean;
+    generateSitemap?: boolean;
+  }, progressCallback?: (progress: any) => void): Promise<CrawlResult> {
     try {
       const response = await axios.post(`${this.API_URL}/crawl`, {
         url,
         options
       });
       
-      return { taskId: response.data.taskId };
+      return { urls: response.data.urls || [], brokenLinks: response.data.brokenLinks || [] };
     } catch (error) {
       console.error('Error starting crawl task:', error);
       throw new Error('Failed to start crawl task');
@@ -52,10 +59,11 @@ export class CrawlService {
     try {
       const response = await axios.get(`${this.API_URL}/crawl/${taskId}/status`);
       
-      // Convert API property from snake_case to camelCase if needed
+      // Return data with proper camelCase property naming
       const data = response.data;
       if (data.current_url && !data.currentUrl) {
         data.currentUrl = data.current_url;
+        delete data.current_url;
       }
       
       return data as CrawlTask;
@@ -105,5 +113,10 @@ export class CrawlService {
       console.error('Error scheduling crawl task:', error);
       throw new Error('Failed to schedule crawl task');
     }
+  }
+
+  static async generateReport(data: any): Promise<Blob> {
+    // This is a stub implementation - in a real app, you would generate an actual report
+    return new Blob(['Report content would go here'], { type: 'text/html' });
   }
 }

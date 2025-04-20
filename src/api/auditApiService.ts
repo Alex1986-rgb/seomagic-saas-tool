@@ -1,26 +1,41 @@
 
-import { crawlService, CrawlOptions, CrawlProgress, CrawlResult } from '@/services/crawlService';
+import { CrawlService } from '@/services/crawlService';
 import { positionTrackingService } from '@/services/positionTrackingService';
 import { calculateOptimizationMetrics, calculateOptimizationCosts, generateOptimizationRecommendations } from '@/services/audit/optimization/optimizationCalculator';
 import { collectPagesContent } from '@/services/audit/content';
 import { createOptimizedSite } from '@/services/audit/scanner';
 import { saveAs } from 'file-saver';
 
-export interface AuditOptions extends CrawlOptions {
+// Define proper interfaces for crawl options and progress
+export interface AuditOptions {
   domain: string;
+  maxPages?: number;
+  maxDepth?: number;
+  checkBrokenLinks?: boolean;
+  findDuplicates?: boolean;
+  analyzeStructure?: boolean;
+  checkContent?: boolean;
+  generateSitemap?: boolean;
   trackPositions?: boolean;
   keywords?: string[];
 }
 
-export interface AuditProgress extends CrawlProgress {
+export interface AuditProgress {
+  status?: string;
+  pagesScanned: number;
+  totalPages: number;
   stage?: string;
+  error?: string;
 }
 
-export interface AuditResult extends CrawlResult {
+export interface AuditResult {
+  domain: string;
+  urls: string[];
   optimizationMetrics?: any;
   optimizationCosts?: any;
   recommendations?: string[];
   positionResults?: any;
+  brokenLinks?: string[];
 }
 
 export const auditApiService = {
@@ -47,7 +62,7 @@ export const auditApiService = {
       const domain = new URL(url).hostname;
       
       // Start crawl
-      const crawlResult = await crawlService.startCrawl(
+      const crawlResult = await CrawlService.startCrawl(
         url,
         {
           maxPages: options.maxPages,
@@ -69,7 +84,8 @@ export const auditApiService = {
       );
       
       const result: AuditResult = {
-        ...crawlResult
+        domain,
+        urls: crawlResult.urls || []
       };
       
       // Collect page content for optimization analysis
@@ -165,7 +181,7 @@ export const auditApiService = {
    * Download audit results as PDF
    */
   downloadAuditReport: async (result: AuditResult): Promise<void> => {
-    const reportBlob = await crawlService.generateReport(result);
+    const reportBlob = await CrawlService.generateReport(result);
     saveAs(reportBlob, `seo_audit_${result.domain}.html`);
   },
   

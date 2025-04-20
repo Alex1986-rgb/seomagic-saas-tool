@@ -38,6 +38,12 @@ export interface PageContent {
     url: string;
     alt: string | null;
   }[];
+  headings?: {
+    h1: string[];
+    h2: string[];
+    h3: string[];
+  };
+  wordCount?: number;
   optimized?: {
     content: string;
     meta?: {

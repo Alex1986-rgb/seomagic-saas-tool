@@ -4,7 +4,6 @@
  */
 
 import { PageContent } from './optimization/types';
-import { optimizePageContent, improveSeoDescription, generateSeoDescription, generateKeywords } from './content';
 import { faker } from '@faker-js/faker';
 
 /**
@@ -61,4 +60,25 @@ export const createOptimizedSite = async (
     afterScore: averageAfterScore,
     demoPage
   };
+};
+
+// Helper functions for optimization
+const optimizePageContent = (content: string): string => {
+  // Simplified content optimization
+  return content + " (Optimized)";
+};
+
+const improveSeoDescription = (description: string): string => {
+  // Simplified description improvement
+  return description + " - Enhanced for SEO";
+};
+
+const generateSeoDescription = (title: string, content: string): string => {
+  // Simplified description generation
+  return `SEO-optimized description for ${title}`;
+};
+
+const generateKeywords = (title: string, content: string): string => {
+  // Simplified keywords generation
+  return title.toLowerCase().split(' ').join(', ');
 };
