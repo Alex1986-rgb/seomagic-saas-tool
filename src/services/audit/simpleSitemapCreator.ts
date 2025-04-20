@@ -1,4 +1,6 @@
 
+import axios from 'axios';
+import { saveAs } from 'file-saver';
 import { SiteScanner } from './crawler/siteScanner';
 import { SitemapExtractor } from './crawler/sitemapExtractor';
 
@@ -119,6 +121,24 @@ export class SimpleSitemapCreator {
     xml += '</urlset>';
     
     return xml;
+  }
+
+  /**
+   * Download sitemap as XML file
+   */
+  downloadSitemapXml(urls: string[], filename: string = 'sitemap.xml'): void {
+    const xml = this.generateSitemapXml(urls);
+    const blob = new Blob([xml], { type: 'application/xml' });
+    saveAs(blob, filename);
+  }
+  
+  /**
+   * Download URLs as CSV file
+   */
+  downloadUrlsAsCsv(urls: string[], filename: string = 'urls.csv'): void {
+    const csv = urls.join('\n');
+    const blob = new Blob([csv], { type: 'text/csv' });
+    saveAs(blob, filename);
   }
   
   /**

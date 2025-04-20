@@ -1,107 +1,90 @@
 
 import axios from 'axios';
 import * as cheerio from 'cheerio';
-import { SitemapExtractor } from './sitemapExtractor';
+import { urlCache } from '../linkExtraction';
 
-interface ScanOptions {
-  maxDepth?: number;
+interface SiteScannerOptions {
   maxPages?: number;
-  respectRobotsTxt?: boolean;
-  followExternalLinks?: boolean;
-  crawlDelay?: number;
-  userAgent?: string;
+  maxDepth?: number;
   timeout?: number;
-  onProgress?: (scanned: number, total: number, currentUrl: string) => void;
+  followExternalLinks?: boolean;
+  respectRobotsTxt?: boolean;
+  onProgress?: (pagesScanned: number, totalEstimated: number, currentUrl: string) => void;
+  crawlDelay?: number;
 }
 
 interface ScanResult {
   urls: string[];
-  pageCount: number;
-  metadata?: {
-    title?: string;
-    description?: string;
-    keywords?: string[];
-  };
-  brokenLinks?: { url: string; statusCode: number }[];
-  redirects?: { from: string; to: string }[];
+  pageDetails: Map<string, PageDetail>;
+}
+
+interface PageDetail {
+  url: string;
+  title: string | null;
+  metaDescription: string | null;
+  h1Count: number;
+  imageCount: number;
+  wordCount: number;
+  statusCode: number | null;
+  loadTime: number | null;
 }
 
 export class SiteScanner {
-  private visited = new Set<string>();
-  private queue: { url: string; depth: number }[] = [];
-  private domain: string;
   private baseUrl: string;
-  private options: ScanOptions;
-  private brokenLinks: { url: string; statusCode: number }[] = [];
-  private redirects: { from: string; to: string }[] = [];
-  private sitemapExtractor: SitemapExtractor;
-  private abortController: AbortController | null = null;
-  private isPaused = false;
-  private isAborted = false;
-  
-  constructor(url: string, options: ScanOptions = {}) {
-    // Set default options
+  private domain: string;
+  private options: SiteScannerOptions;
+  private visited = new Set<string>();
+  private queue: Array<{ url: string; depth: number }> = [];
+  private pageDetails = new Map<string, PageDetail>();
+  private robotsTxtRules: string[] = [];
+  private hasLoadedRobotsTxt = false;
+
+  constructor(baseUrl: string, options: SiteScannerOptions = {}) {
+    this.baseUrl = baseUrl;
+    
+    try {
+      const urlObj = new URL(baseUrl);
+      this.domain = urlObj.hostname;
+    } catch (error) {
+      this.domain = baseUrl;
+    }
+    
     this.options = {
-      maxDepth: 5,
-      maxPages: 10000,
-      respectRobotsTxt: true,
+      maxPages: 100,
+      maxDepth: 3,
+      timeout: 10000,
       followExternalLinks: false,
-      crawlDelay: 200,
-      userAgent: 'Mozilla/5.0 (compatible; SEOAuditBot/1.0; +https://example.com/bot)',
-      timeout: 15000,
+      respectRobotsTxt: true,
+      crawlDelay: 500,
       ...options
     };
     
-    // Normalize URL
-    this.baseUrl = url.startsWith('http') ? url : `https://${url}`;
-    
-    // Extract domain
-    try {
-      const urlObj = new URL(this.baseUrl);
-      this.domain = urlObj.hostname;
-    } catch (error) {
-      this.domain = url;
-    }
-    
-    this.sitemapExtractor = new SitemapExtractor();
-    this.abortController = new AbortController();
+    // Initialize the queue with the base URL
+    this.queue.push({ url: baseUrl, depth: 0 });
   }
   
-  /**
-   * Start the scanning process
-   */
   async scan(): Promise<ScanResult> {
-    this.visited.clear();
-    this.queue = [{ url: this.baseUrl, depth: 0 }];
-    this.brokenLinks = [];
-    this.redirects = [];
-    this.isPaused = false;
-    this.isAborted = false;
+    console.log(`Starting scan of ${this.baseUrl} with max ${this.options.maxPages} pages`);
     
-    // Try to find sitemap first
-    try {
-      await this.processSitemap();
-    } catch (error) {
-      console.warn('Error processing sitemap:', error);
-      // Continue with regular crawling
+    if (this.options.respectRobotsTxt) {
+      await this.loadRobotsTxt();
     }
     
-    // Process the queue
-    while (this.queue.length > 0 && this.visited.size < this.options.maxPages! && !this.isAborted) {
-      if (this.isPaused) {
-        await new Promise(resolve => setTimeout(resolve, 500));
-        continue;
-      }
-      
+    // Process the queue until it's empty or we reach the max pages
+    while (this.queue.length > 0 && this.visited.size < (this.options.maxPages || 100)) {
+      // Get the next URL from the queue
       const { url, depth } = this.queue.shift()!;
       
-      if (this.visited.has(url) || depth > this.options.maxDepth!) {
+      // Skip if we've already visited this URL
+      if (this.visited.has(url)) continue;
+      
+      // Skip if this URL is disallowed by robots.txt
+      if (this.options.respectRobotsTxt && this.isDisallowedByRobotsTxt(url)) {
+        console.log(`Skipping ${url} - disallowed by robots.txt`);
         continue;
       }
       
-      // Add to visited before processing to avoid duplicate processing
-      this.visited.add(url);
-      
+      // Process the URL
       try {
         await this.processUrl(url, depth);
         
@@ -109,247 +92,220 @@ export class SiteScanner {
         if (this.options.onProgress) {
           this.options.onProgress(
             this.visited.size,
-            Math.max(this.visited.size + this.queue.length, this.visited.size * 2),
+            Math.min(this.visited.size + this.queue.length, this.options.maxPages || 100),
             url
           );
         }
         
-        // Respect crawl delay
-        if (this.options.crawlDelay && this.options.crawlDelay > 0) {
+        // Add a small delay to be respectful to the server
+        if (this.options.crawlDelay) {
           await new Promise(resolve => setTimeout(resolve, this.options.crawlDelay));
         }
       } catch (error) {
         console.warn(`Error processing URL ${url}:`, error);
-        
-        if (axios.isAxiosError(error) && error.response) {
-          if (error.response.status >= 300 && error.response.status < 400 && error.response.headers.location) {
-            // Handle redirect
-            this.redirects.push({
-              from: url,
-              to: new URL(error.response.headers.location, url).toString()
-            });
-          } else if (error.response.status >= 400) {
-            // Handle broken link
-            this.brokenLinks.push({
-              url,
-              statusCode: error.response.status
-            });
-          }
-        }
       }
     }
     
-    // Save urls to localStorage for future use
-    localStorage.setItem(`crawl_urls_${this.domain}`, JSON.stringify(Array.from(this.visited)));
+    console.log(`Scan completed. Visited ${this.visited.size} pages.`);
     
+    // Return the scan results
     return {
       urls: Array.from(this.visited),
-      pageCount: this.visited.size,
-      brokenLinks: this.brokenLinks,
-      redirects: this.redirects
+      pageDetails: this.pageDetails
     };
   }
   
-  /**
-   * Process a URL and extract links
-   */
   private async processUrl(url: string, depth: number): Promise<void> {
-    if (!this.shouldCrawl(url)) {
-      return;
-    }
+    // Skip if we've reached the max depth
+    if (depth > (this.options.maxDepth || 3)) return;
     
-    const response = await axios.get(url, {
-      headers: {
-        'User-Agent': this.options.userAgent!,
-        'Accept': 'text/html,application/xhtml+xml,application/xml',
-        'Accept-Language': 'en-US,en;q=0.9'
-      },
-      timeout: this.options.timeout!,
-      validateStatus: status => status < 500, // Accept 404s but not server errors
-      signal: this.abortController?.signal
-    });
-    
-    // Skip non-HTML responses
-    const contentType = response.headers['content-type'] || '';
-    if (!contentType.includes('text/html') && !contentType.includes('application/xhtml+xml')) {
-      return;
-    }
-    
-    const $ = cheerio.load(response.data);
-    
-    // Extract links
-    const links = new Set<string>();
-    $('a').each((_, element) => {
-      const href = $(element).attr('href');
-      if (href) {
-        const absoluteUrl = this.resolveUrl(href, url);
-        if (absoluteUrl && this.shouldQueue(absoluteUrl)) {
-          links.add(absoluteUrl);
-        }
-      }
-    });
-    
-    // Add links to queue
-    for (const link of links) {
-      if (!this.visited.has(link)) {
-        this.queue.push({ url: link, depth: depth + 1 });
-      }
-    }
-  }
-  
-  /**
-   * Try to process sitemap.xml to get initial URLs
-   */
-  private async processSitemap(): Promise<void> {
-    const possibleSitemapLocations = [
-      `${this.baseUrl}/sitemap.xml`,
-      `${this.baseUrl}/sitemap_index.xml`,
-      `${this.baseUrl}/sitemap/`,
-      `${this.baseUrl}/sitemaps/sitemap.xml`
-    ];
+    // Mark this URL as visited
+    this.visited.add(url);
+    urlCache.add(url);
     
     try {
-      // Also check robots.txt for sitemap
-      const robotsTxtUrl = `${this.baseUrl}/robots.txt`;
-      const robotsResponse = await axios.get(robotsTxtUrl, { 
-        timeout: 5000,
-        signal: this.abortController?.signal
+      const startTime = performance.now();
+      const response = await axios.get(url, {
+        timeout: this.options.timeout,
+        validateStatus: (status) => status < 500, // Accept all status codes < 500 to process redirects
+        headers: {
+          'Accept': 'text/html,application/xhtml+xml,application/xml',
+          'User-Agent': 'Mozilla/5.0 (compatible; SEOAuditBot/1.0; +https://example.com/bot)',
+          'Accept-Language': 'en-US,en;q=0.9',
+        },
+        allowAbsoluteUrls: true, // Allow absolute URLs in Node.js
       });
       
-      if (robotsResponse.status === 200) {
-        const sitemapMatches = robotsResponse.data.match(/Sitemap:\s*(.+)/gi);
-        if (sitemapMatches) {
-          for (const match of sitemapMatches) {
-            const sitemapUrl = match.replace(/Sitemap:\s*/i, '').trim();
-            possibleSitemapLocations.unshift(sitemapUrl);
-          }
+      const loadTime = performance.now() - startTime;
+      const statusCode = response.status;
+      
+      // Skip non-HTML content
+      const contentType = response.headers['content-type'] || '';
+      if (!contentType.includes('text/html') && !contentType.includes('application/xhtml+xml')) {
+        return;
+      }
+      
+      // Parse the HTML
+      const $ = cheerio.load(response.data);
+      
+      // Extract page details
+      const title = $('title').text().trim() || null;
+      const metaDescription = $('meta[name="description"]').attr('content') || null;
+      const h1Count = $('h1').length;
+      const imageCount = $('img').length;
+      const text = $('body').text();
+      const wordCount = text.split(/\s+/).filter(word => word.length > 0).length;
+      
+      // Store page details
+      this.pageDetails.set(url, {
+        url,
+        title,
+        metaDescription,
+        h1Count,
+        imageCount,
+        wordCount,
+        statusCode,
+        loadTime
+      });
+      
+      // Extract links
+      const links = this.extractLinks($, url);
+      
+      // Add new links to the queue
+      for (const link of links) {
+        if (!this.visited.has(link) && !this.queue.some(item => item.url === link)) {
+          this.queue.push({ url: link, depth: depth + 1 });
         }
       }
     } catch (error) {
-      // Ignore errors from robots.txt
+      console.error(`Error processing URL ${url}:`, error);
+      
+      // Store error page details
+      this.pageDetails.set(url, {
+        url,
+        title: null,
+        metaDescription: null,
+        h1Count: 0,
+        imageCount: 0,
+        wordCount: 0,
+        statusCode: error.response?.status || null,
+        loadTime: null
+      });
     }
+  }
+  
+  private extractLinks($: cheerio.CheerioAPI, baseUrl: string): string[] {
+    const links: string[] = [];
     
-    // Try each possible sitemap location
-    for (const sitemapUrl of possibleSitemapLocations) {
+    $('a').each((_, element) => {
+      const href = $(element).attr('href');
+      if (!href) return;
+      
       try {
-        const response = await axios.get(sitemapUrl, { 
-          timeout: 10000,
-          signal: this.abortController?.signal
-        });
+        // Resolve relative URLs
+        const absoluteUrl = new URL(href, baseUrl).href;
+        const urlObj = new URL(absoluteUrl);
         
-        if (response.status === 200 && response.data) {
-          const urls = await this.sitemapExtractor.extractUrlsFromSitemap(response.data);
+        // Skip fragment identifiers and query params if the base URL is the same
+        const baseUrlObj = new URL(baseUrl);
+        if (urlObj.hostname === baseUrlObj.hostname && 
+            urlObj.pathname === baseUrlObj.pathname && 
+            (urlObj.hash || urlObj.search)) {
+          return;
+        }
+        
+        // Skip mailto, tel, javascript, etc.
+        if (urlObj.protocol !== 'http:' && urlObj.protocol !== 'https:') {
+          return;
+        }
+        
+        // Skip external domains unless configured to follow them
+        if (!this.options.followExternalLinks && urlObj.hostname !== this.domain) {
+          return;
+        }
+        
+        // Skip common file extensions
+        const skipExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.pdf', '.zip', '.doc', '.docx', '.xls', '.xlsx', '.ppt', '.pptx'];
+        if (skipExtensions.some(ext => urlObj.pathname.toLowerCase().endsWith(ext))) {
+          return;
+        }
+        
+        links.push(absoluteUrl);
+      } catch (error) {
+        // Invalid URL, skip
+      }
+    });
+    
+    return links;
+  }
+  
+  private async loadRobotsTxt(): Promise<void> {
+    if (this.hasLoadedRobotsTxt) return;
+    
+    try {
+      const robotsTxtUrl = `${this.baseUrl.replace(/\/$/, '')}/robots.txt`;
+      const response = await axios.get(robotsTxtUrl, { 
+        timeout: this.options.timeout,
+        validateStatus: () => true
+      });
+      
+      if (response.status === 200) {
+        const robotsTxt = response.data;
+        const lines = robotsTxt.split('\n');
+        
+        let isUserAgentRelevant = false;
+        
+        for (const line of lines) {
+          const trimmedLine = line.trim();
           
-          console.log(`Found ${urls.length} URLs in sitemap ${sitemapUrl}`);
-          
-          // Add URLs from sitemap to our queue with a low depth to prioritize them
-          for (const url of urls) {
-            if (this.shouldQueue(url) && !this.visited.has(url)) {
-              this.queue.push({ url, depth: 0 });
+          if (trimmedLine.startsWith('User-agent:')) {
+            const userAgent = trimmedLine.substring('User-agent:'.length).trim();
+            isUserAgentRelevant = userAgent === '*' || userAgent.toLowerCase().includes('bot');
+          } else if (isUserAgentRelevant && trimmedLine.startsWith('Disallow:')) {
+            const disallowPath = trimmedLine.substring('Disallow:'.length).trim();
+            if (disallowPath) {
+              this.robotsTxtRules.push(disallowPath);
             }
           }
-          
-          // If we found a valid sitemap, no need to check others
-          if (urls.length > 0) {
-            break;
+        }
+      }
+    } catch (error) {
+      console.warn('Error loading robots.txt:', error);
+    }
+    
+    this.hasLoadedRobotsTxt = true;
+  }
+  
+  private isDisallowedByRobotsTxt(url: string): boolean {
+    if (this.robotsTxtRules.length === 0) return false;
+    
+    try {
+      const urlObj = new URL(url);
+      const path = urlObj.pathname;
+      
+      for (const rule of this.robotsTxtRules) {
+        if (rule === '/') {
+          // Disallow all
+          return true;
+        }
+        
+        if (rule.endsWith('*')) {
+          // Wildcard match
+          const prefix = rule.slice(0, -1);
+          if (path.startsWith(prefix)) {
+            return true;
+          }
+        } else {
+          // Exact match
+          if (path === rule || path.startsWith(`${rule}/`)) {
+            return true;
           }
         }
-      } catch (error) {
-        console.warn(`Error loading sitemap from ${sitemapUrl}:`, error);
-        // Continue to the next possible location
       }
-    }
-  }
-  
-  /**
-   * Resolve a URL to an absolute URL
-   */
-  private resolveUrl(href: string, base: string): string | null {
-    try {
-      if (!href || href.startsWith('#') || href.startsWith('javascript:') || href.startsWith('mailto:') || href.startsWith('tel:')) {
-        return null;
-      }
-      
-      return new URL(href, base).toString();
-    } catch (error) {
-      return null;
-    }
-  }
-  
-  /**
-   * Check if a URL should be crawled
-   */
-  private shouldCrawl(url: string): boolean {
-    try {
-      const parsedUrl = new URL(url);
-      
-      // Only crawl same domain unless followExternalLinks is true
-      if (!this.options.followExternalLinks && parsedUrl.hostname !== this.domain) {
-        return false;
-      }
-      
-      // Skip common file extensions that are not HTML
-      const ext = parsedUrl.pathname.split('.').pop()?.toLowerCase();
-      if (ext && ['pdf', 'jpg', 'jpeg', 'png', 'gif', 'zip', 'tar', 'gz', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx'].includes(ext)) {
-        return false;
-      }
-      
-      return true;
     } catch (error) {
       return false;
     }
-  }
-  
-  /**
-   * Check if a URL should be added to the queue
-   */
-  private shouldQueue(url: string): boolean {
-    try {
-      const parsedUrl = new URL(url);
-      
-      // Only queue URLs from the same domain unless followExternalLinks is true
-      if (!this.options.followExternalLinks && parsedUrl.hostname !== this.domain) {
-        return false;
-      }
-      
-      return true;
-    } catch (error) {
-      return false;
-    }
-  }
-  
-  /**
-   * Pause the crawler
-   */
-  pause(): void {
-    this.isPaused = true;
-  }
-  
-  /**
-   * Resume the crawler
-   */
-  resume(): void {
-    this.isPaused = false;
-  }
-  
-  /**
-   * Abort the crawler
-   */
-  abort(): void {
-    this.isAborted = true;
-    this.abortController?.abort();
-    this.abortController = new AbortController();
-  }
-  
-  /**
-   * Get crawler stats
-   */
-  getStats(): { visited: number; queued: number; broken: number; redirects: number } {
-    return {
-      visited: this.visited.size,
-      queued: this.queue.length,
-      broken: this.brokenLinks.length,
-      redirects: this.redirects.length
-    };
+    
+    return false;
   }
 }

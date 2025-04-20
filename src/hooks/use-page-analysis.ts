@@ -31,7 +31,10 @@ export const usePageAnalysis = (auditId: string | undefined) => {
         
       if (error) throw error;
       
-      setData(analysisData.map(item => ({
+      // Sort the data by URL for consistent display
+      const sortedData = [...(analysisData || [])].sort((a, b) => a.url.localeCompare(b.url));
+      
+      setData(sortedData.map(item => ({
         url: item.url,
         title: item.title,
         metaDescription: item.meta_description,

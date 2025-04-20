@@ -1,78 +1,133 @@
 
 import { useState } from 'react';
-import { saveAs } from 'file-saver';
+import { useToast } from "@/hooks/use-toast";
 import { SimpleSitemapCreator } from '@/services/audit/simpleSitemapCreator';
 
 export const useSimpleSitemapCreator = () => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [progress, setProgress] = useState(0);
-  const [sitemap, setSitemap] = useState<string | null>(null);
-  const [urls, setUrls] = useState<string[]>([]);
   const [currentUrl, setCurrentUrl] = useState('');
+  const [urls, setUrls] = useState<string[]>([]);
+  const [sitemap, setSitemap] = useState<string | null>(null);
+  const { toast } = useToast();
   
   const sitemapCreator = new SimpleSitemapCreator({
-    maxPages: 500000,
-    maxDepth: 10,
-    includeStylesheet: true
+    maxPages: 1000,
+    maxDepth: 5,
+    includeStylesheet: true,
+    timeout: 15000
   });
-  
+
   const generateSitemap = async (url: string) => {
-    if (isGenerating) return;
-    
+    if (!url) {
+      toast({
+        title: "URL не указан",
+        description: "Пожалуйста, укажите URL сайта для создания карты сайта",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsGenerating(true);
     setProgress(0);
-    setSitemap(null);
     setUrls([]);
-    setCurrentUrl('');
+    setSitemap(null);
     
     try {
-      const scannedUrls = await sitemapCreator.crawl(
-        url,
+      const normalizedUrl = url.startsWith('http') ? url : `https://${url}`;
+      
+      // Start crawling
+      const discoveredUrls = await sitemapCreator.crawl(
+        normalizedUrl,
         (scanned, total, currentUrl) => {
-          setProgress(Math.floor((scanned / total) * 100));
+          setProgress(Math.floor((scanned / Math.max(total, 1)) * 100));
           setCurrentUrl(currentUrl);
         }
       );
       
-      const xml = sitemapCreator.generateSitemapXml(scannedUrls);
+      // Generate sitemap XML
+      const sitemapXml = sitemapCreator.generateSitemapXml(discoveredUrls);
       
-      setSitemap(xml);
-      setUrls(scannedUrls);
+      setUrls(discoveredUrls);
+      setSitemap(sitemapXml);
       
-      // Store the URLs for future use
-      const domain = new URL(url.startsWith('http') ? url : `https://${url}`).hostname;
-      localStorage.setItem(`sitemap_urls_${domain}`, JSON.stringify(scannedUrls));
-      
-      return scannedUrls;
+      toast({
+        title: "Карта сайта создана",
+        description: `Обнаружено ${discoveredUrls.length} URL на сайте ${url}`,
+      });
     } catch (error) {
       console.error('Error generating sitemap:', error);
-      throw error;
+      toast({
+        title: "Ошибка создания карты сайта",
+        description: "Произошла ошибка при сканировании сайта и создании карты",
+        variant: "destructive",
+      });
     } finally {
       setIsGenerating(false);
+      setProgress(100);
     }
   };
-  
+
   const downloadSitemap = () => {
-    if (!sitemap) return;
+    if (!urls.length) {
+      toast({
+        title: "Нет данных",
+        description: "Сначала создайте карту сайта",
+        variant: "destructive",
+      });
+      return;
+    }
     
-    const blob = new Blob([sitemap], { type: 'application/xml' });
-    saveAs(blob, 'sitemap.xml');
+    try {
+      sitemapCreator.downloadSitemapXml(urls);
+      
+      toast({
+        title: "Файл скачан",
+        description: "Файл sitemap.xml успешно скачан",
+      });
+    } catch (error) {
+      console.error('Error downloading sitemap:', error);
+      toast({
+        title: "Ошибка скачивания",
+        description: "Произошла ошибка при скачивании файла",
+        variant: "destructive",
+      });
+    }
   };
-  
+
   const downloadCsv = () => {
-    if (urls.length === 0) return;
+    if (!urls.length) {
+      toast({
+        title: "Нет данных",
+        description: "Сначала создайте карту сайта",
+        variant: "destructive",
+      });
+      return;
+    }
     
-    const csvContent = 'URL\n' + urls.join('\n');
-    const blob = new Blob([csvContent], { type: 'text/csv' });
-    saveAs(blob, 'urls.csv');
+    try {
+      sitemapCreator.downloadUrlsAsCsv(urls);
+      
+      toast({
+        title: "Файл скачан",
+        description: "Файл с URL успешно скачан",
+      });
+    } catch (error) {
+      console.error('Error downloading CSV:', error);
+      toast({
+        title: "Ошибка скачивания",
+        description: "Произошла ошибка при скачивании файла",
+        variant: "destructive",
+      });
+    }
   };
-  
+
   return {
     isGenerating,
     progress,
-    sitemap,
-    urls,
     currentUrl,
+    urls,
+    sitemap,
     generateSitemap,
     downloadSitemap,
     downloadCsv
