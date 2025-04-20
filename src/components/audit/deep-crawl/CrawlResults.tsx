@@ -22,6 +22,9 @@ const CrawlResults: React.FC<CrawlResultsProps> = ({
   onDownloadReport,
   onDownloadAllData
 }) => {
+  // Format the domain for display - show the original input URL as provided by the user
+  const displayDomain = domain || "Unknown domain";
+  
   return (
     <Card className="bg-white dark:bg-gray-800 shadow-sm">
       <CardHeader>
@@ -31,7 +34,7 @@ const CrawlResults: React.FC<CrawlResultsProps> = ({
             <CardDescription>
               <span className="flex items-center gap-1 mt-1">
                 <Globe className="h-4 w-4" />
-                <span>{domain}</span>
+                <span>{displayDomain}</span>
               </span>
             </CardDescription>
           </div>

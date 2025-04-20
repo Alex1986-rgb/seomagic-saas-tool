@@ -17,6 +17,24 @@ const DeepCrawlButton: React.FC<DeepCrawlButtonProps> = ({
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const { toast } = useToast();
 
+  // Normalize URL - make sure it has http/https prefix
+  const normalizeUrl = (inputUrl: string): string => {
+    if (!inputUrl) return '';
+    
+    // Remove any trailing slashes
+    let normalizedUrl = inputUrl.trim();
+    while (normalizedUrl.endsWith('/')) {
+      normalizedUrl = normalizedUrl.slice(0, -1);
+    }
+    
+    // Add https:// if no protocol specified
+    if (!normalizedUrl.startsWith('http://') && !normalizedUrl.startsWith('https://')) {
+      normalizedUrl = `https://${normalizedUrl}`;
+    }
+    
+    return normalizedUrl;
+  };
+
   const handleStartCrawl = () => {
     if (!url) {
       toast({
@@ -26,6 +44,9 @@ const DeepCrawlButton: React.FC<DeepCrawlButtonProps> = ({
       });
       return;
     }
+    
+    const normalizedUrl = normalizeUrl(url);
+    console.log(`Starting deep scan for: ${normalizedUrl}`);
     
     setIsDialogOpen(true);
   };
@@ -54,7 +75,7 @@ const DeepCrawlButton: React.FC<DeepCrawlButtonProps> = ({
       <DeepCrawlProgressDialog
         open={isDialogOpen}
         onClose={handleCloseDialog}
-        url={url}
+        url={normalizeUrl(url)}
         initialStage="starting"
       />
     </>

@@ -38,8 +38,17 @@ const ExportSitemap: React.FC<ExportSitemapProps> = ({
           description: "Файл sitemap.xml успешно скачан",
         });
       } else if (urls && urls.length > 0) {
+        // Extract domain from URL if possible
+        let domain = url;
+        try {
+          const urlObj = new URL(url.startsWith('http') ? url : `https://${url}`);
+          domain = urlObj.hostname;
+        } catch (e) {
+          console.warn("Could not parse URL for domain extraction:", e);
+        }
+        
         // Создаем sitemap.xml из списка URL
-        const sitemapContent = generateSitemapXml(url, urls);
+        const sitemapContent = generateSitemapXml(domain, urls);
         
         // Создаем и скачиваем файл
         const blob = new Blob([sitemapContent], { type: 'application/xml' });
@@ -86,6 +95,7 @@ const ExportSitemap: React.FC<ExportSitemapProps> = ({
 
     // Начало XML-документа
     const header = '<?xml version="1.0" encoding="UTF-8"?>\n' +
+                  '<?xml-stylesheet type="text/xsl" href="https://www.sitemaps.org/xsl/sitemap.xsl"?>\n' +
                   '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n';
     
     // Добавляем каждый URL как элемент <url>
@@ -110,8 +120,10 @@ const ExportSitemap: React.FC<ExportSitemapProps> = ({
         .replace(/"/g, '&quot;')
         .replace(/'/g, '&apos;');
 
-      // Формируем элемент URL
-      return `  <url>\n    <loc>${fullUrl}</loc>\n    <lastmod>${new Date().toISOString().split('T')[0]}</lastmod>\n  </url>`;
+      // Формируем элемент URL с текущей датой для lastmod
+      const currentDate = new Date().toISOString().split('T')[0];
+      
+      return `  <url>\n    <loc>${fullUrl}</loc>\n    <lastmod>${currentDate}</lastmod>\n    <changefreq>monthly</changefreq>\n    <priority>0.8</priority>\n  </url>`;
     }).join('\n');
     
     // Закрываем XML-документ

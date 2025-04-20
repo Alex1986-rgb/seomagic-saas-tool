@@ -12,10 +12,19 @@ export function useCrawlExecution() {
   
   const checkExistingCrawlTasks = async (url: string) => {
     try {
+      // Extract domain from URL for checking
+      let domain = url;
+      try {
+        const urlObj = new URL(url);
+        domain = urlObj.hostname;
+      } catch (e) {
+        console.warn("Could not parse URL:", e);
+      }
+      
       const { data, error } = await supabase
         .from('crawl_tasks')
         .select('*')
-        .eq('url', url)
+        .or(`url.eq.${url},url.ilike.%${domain}%`)
         .eq('status', 'completed')
         .order('updated_at', { ascending: false })
         .limit(1);
@@ -38,6 +47,15 @@ export function useCrawlExecution() {
   
   const recordCrawlTask = async (url: string, status: string, pagesScanned: number = 0, estimatedTotalPages: number = 0) => {
     try {
+      // Try to extract domain for better identification
+      let domain = "";
+      try {
+        const urlObj = new URL(url);
+        domain = urlObj.hostname;
+      } catch (e) {
+        console.warn("Could not parse URL for domain:", e);
+      }
+      
       const { data, error } = await supabase
         .from('crawl_tasks')
         .insert({
@@ -45,7 +63,8 @@ export function useCrawlExecution() {
           status,
           pages_scanned: pagesScanned,
           estimated_total_pages: estimatedTotalPages,
-          task_id: crypto.randomUUID()
+          task_id: crypto.randomUUID(),
+          options: { domain }
         })
         .select();
         
@@ -85,7 +104,7 @@ export function useCrawlExecution() {
   const initializeCrawler = ({
     url, 
     onProgress, 
-    maxPages = 2000 // Уменьшаем максимальное количество страниц для стабильности
+    maxPages = 1000 // Уменьшаем максимальное количество страниц для внешних сайтов
   }: CrawlerSettings) => {
     
     try {
@@ -109,18 +128,22 @@ export function useCrawlExecution() {
       const urlObj = new URL(normalizedUrl);
       const domain = urlObj.hostname;
       
-      console.log(`Инициализация сканера для ${normalizedUrl} с доменом ${domain} и лимитом ${maxPages} страниц`);
+      // For external domains, adjust maxPages to be more conservative
+      const isExternalDomain = !domain.includes('lovableproject.com');
+      const adjustedMaxPages = isExternalDomain ? Math.min(maxPages, 1000) : maxPages;
+      
+      console.log(`Инициализация сканера для ${normalizedUrl} с доменом ${domain} и лимитом ${adjustedMaxPages} страниц`);
       
       // Create new scanner with optimized settings for better performance
       const crawler = new SimpleSitemapCreator({
-        maxPages,
-        maxDepth: 5,           // Уменьшаем глубину для более быстрого сканирования
+        maxPages: adjustedMaxPages,
+        maxDepth: 3,           // Уменьшаем глубину для более быстрого сканирования
         includeStylesheet: true,
-        timeout: 15000,        // Уменьшаем таймаут до 15 секунд
+        timeout: 8000,         // Уменьшаем таймаут для внешних сайтов
         followRedirects: true,
-        concurrentRequests: 2, // Уменьшаем количество одновременных запросов
-        retryCount: 2,
-        retryDelay: 500,
+        concurrentRequests: 1, // Снижаем нагрузку для внешних сайтов
+        retryCount: 1,
+        retryDelay: 1000,
         forceTargetDomain: true // Принудительно сканируем только указанный домен
       });
       
@@ -131,7 +154,7 @@ export function useCrawlExecution() {
       // Create crawl task in Supabase
       recordCrawlTask(normalizedUrl, 'pending');
       
-      return { crawler, domain, maxPages, normalizedUrl };
+      return { crawler, domain, maxPages: adjustedMaxPages, normalizedUrl };
     } catch (error) {
       console.error('Error initializing crawler:', error);
       throw new Error('Не удалось инициализировать сканирование: неверный URL');
@@ -171,13 +194,16 @@ export function useCrawlExecution() {
         }
       };
       
-      // Create Promise with timeout
+      // Create Promise with timeout - shorter for external domains
+      const isExternalDomain = !crawlerDomain?.includes('lovableproject.com');
+      const timeoutDuration = isExternalDomain ? 45000 : 90000; // 45 seconds for external, 90 for local
+      
       const crawlWithTimeout = Promise.race([
         crawler.crawl(startUrl, progressCallback),
         new Promise<never>((_, reject) => {
           setTimeout(() => {
             reject(new Error('Timeout: сканирование заняло слишком много времени'));
-          }, 90000); // 90 seconds timeout
+          }, timeoutDuration);
         })
       ]);
       

@@ -54,13 +54,25 @@ export function useCrawlProgress(urlParam: string) {
         return false;
       }
 
+      // Try to extract domain for reporting
+      let domainForReport = "";
+      try {
+        if (url) {
+          const urlObj = new URL(url);
+          domainForReport = urlObj.hostname;
+        }
+      } catch (e) {
+        console.warn("Could not parse URL for domain:", e);
+      }
+
       const { data, error } = await supabase
         .from('crawl_results')
         .insert({
           urls: urls,
           page_types: {},
           created_at: new Date().toISOString(),
-          depth_data: []
+          depth_data: [],
+          project_id: null // To comply with any potential RLS policies
         })
         .select('id');
 
@@ -92,14 +104,25 @@ export function useCrawlProgress(urlParam: string) {
     
     try {
       // Создаем несколько таймаутов для отлова зависаний
-      // 1. Общий таймаут всего сканирования (2 минуты)
+      // 1. Общий таймаут всего сканирования (для внешних доменов - 60 секунд)
+      let isExternalDomain = false;
+      try {
+        const urlObj = new URL(url);
+        isExternalDomain = !urlObj.hostname.includes('lovableproject.com');
+      } catch (e) {
+        console.warn("Could not parse URL to check if external:", e);
+      }
+      
+      // Shorter timeout for external domains
+      const crawlTimeoutDuration = isExternalDomain ? 60000 : 120000;
+      
       const crawlTimeoutId = setTimeout(() => {
         console.error(`Crawl timeout for URL: ${url}`);
         setErrorMsg("Сканирование заняло слишком много времени");
         completeCrawl(false);
-      }, 120000);
+      }, crawlTimeoutDuration);
       
-      // 2. Таймаут на этапе инициализации (15 секунд)
+      // 2. Таймаут на этапе инициализации (10 секунд)
       const startupTimeoutId = setTimeout(() => {
         if (crawlStage === 'starting') {
           console.error(`Crawl startup timeout for URL: ${url}`);
@@ -107,13 +130,17 @@ export function useCrawlProgress(urlParam: string) {
           completeCrawl(false);
           clearTimeout(crawlTimeoutId);
         }
-      }, 15000);
+      }, 10000);
       
       // Инициализируем сканер с явным URL
       console.log(`Initializing crawler for URL: ${url}`);
       
-      const { crawler: newCrawler, domain: newDomain, maxPages, normalizedUrl } = initializeCrawler({
+      // Adjust maxPages based on whether this is an external domain
+      const maxPages = isExternalDomain ? 500 : 2000;
+      
+      const { crawler: newCrawler, domain: newDomain, normalizedUrl } = initializeCrawler({
         url,
+        maxPages,
         onProgress: (pagesScanned, totalEstimated, currentUrl) => {
           console.log(`Progress update: ${pagesScanned}/${totalEstimated} - ${currentUrl}`);
           updateProgress(pagesScanned, totalEstimated, currentUrl, maxPages);
@@ -151,7 +178,11 @@ export function useCrawlProgress(urlParam: string) {
         console.log(`Crawl completed successfully with ${result.urls.length} URLs`);
         
         // Сохраняем результаты в Supabase
-        await saveScanResultsToSupabase(result.urls, result.pageCount);
+        try {
+          await saveScanResultsToSupabase(result.urls, result.pageCount);
+        } catch (e) {
+          console.warn("Error saving results to Supabase, but continuing:", e);
+        }
         
         // Обновляем состояние о завершении
         completeCrawl(true, { urls: result.urls, pageCount: result.pageCount });

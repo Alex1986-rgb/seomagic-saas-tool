@@ -58,7 +58,7 @@ export const DeepCrawlProgressDialog: React.FC<DeepCrawlProgressDialogProps> = (
 
   // Add a loading timeout checker
   useEffect(() => {
-    // If scanning is stuck in starting stage for more than 10 seconds
+    // If scanning is stuck in starting stage for more than 12 seconds
     if (crawlStage === 'starting' && isLoading) {
       const timeoutId = setTimeout(() => {
         if (crawlStage === 'starting' && attemptCount < 2) {
@@ -77,7 +77,7 @@ export const DeepCrawlProgressDialog: React.FC<DeepCrawlProgressDialogProps> = (
             variant: "destructive"
           });
         }
-      }, 10000);
+      }, 12000);
       
       return () => clearTimeout(timeoutId);
     }
@@ -119,6 +119,9 @@ export const DeepCrawlProgressDialog: React.FC<DeepCrawlProgressDialogProps> = (
     }
   };
 
+  // Extract domain for display
+  const displayDomain = domain || url;
+
   return (
     <Dialog open={open} onOpenChange={(isOpen) => !isOpen && (crawlStage === 'completed' || crawlStage === 'failed' ? handleClose() : handleCancel())}>
       <DialogContent className="sm:max-w-md">
@@ -142,7 +145,7 @@ export const DeepCrawlProgressDialog: React.FC<DeepCrawlProgressDialogProps> = (
                 </p>
                 {domain && (
                   <p className="text-xs text-primary">
-                    Сканируем домен: {domain}
+                    Сканируем домен: {displayDomain}
                   </p>
                 )}
               </div>
