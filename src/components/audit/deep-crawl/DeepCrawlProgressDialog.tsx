@@ -25,6 +25,7 @@ export const DeepCrawlProgressDialog: React.FC<DeepCrawlProgressDialogProps> = (
     pagesScanned,
     totalPages,
     crawlStage,
+    domain,
     scannedUrls,
     startCrawl,
     cancelCrawl
@@ -70,6 +71,7 @@ export const DeepCrawlProgressDialog: React.FC<DeepCrawlProgressDialogProps> = (
           <DialogTitle>Глубокое сканирование сайта</DialogTitle>
           <DialogDescription>
             URL: {url}
+            {domain && domain !== url && <div className="mt-1 text-xs">Домен: {domain}</div>}
           </DialogDescription>
         </DialogHeader>
 
@@ -79,9 +81,16 @@ export const DeepCrawlProgressDialog: React.FC<DeepCrawlProgressDialogProps> = (
           <div className="text-center space-y-2">
             <p className="text-sm font-medium">{getStageText()}</p>
             {currentUrl && (
-              <p className="text-xs text-muted-foreground truncate max-w-full">
-                Текущий URL: {currentUrl}
-              </p>
+              <div className="space-y-1">
+                <p className="text-xs text-muted-foreground truncate max-w-full">
+                  Текущий URL: {currentUrl}
+                </p>
+                {domain && (
+                  <p className="text-xs text-primary">
+                    Сканируем домен: {domain}
+                  </p>
+                )}
+              </div>
             )}
           </div>
         </div>

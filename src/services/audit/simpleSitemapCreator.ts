@@ -12,7 +12,8 @@ export interface SimpleSitemapCreatorOptions {
   followRedirects?: boolean;
   retryCount?: number;
   retryDelay?: number;
-  concurrentRequests?: number; // Добавляем поддержку параллельных запросов
+  concurrentRequests?: number;
+  forceTargetDomain?: boolean; // Добавляем опцию принудительного использования целевого домена
 }
 
 export class SimpleSitemapCreator {
@@ -26,11 +27,12 @@ export class SimpleSitemapCreator {
       maxPages: 10000,
       maxDepth: 5,
       includeStylesheet: true,
-      timeout: 30000, // Увеличенный таймаут
+      timeout: 30000,
       followRedirects: true,
-      retryCount: 3,    // Количество повторных попыток
-      retryDelay: 1000, // Задержка между попытками в мс
-      concurrentRequests: 30, // Увеличиваем для быстрого сканирования
+      retryCount: 3,
+      retryDelay: 1000,
+      concurrentRequests: 30,
+      forceTargetDomain: true, // По умолчанию строго придерживаемся целевого домена
       ...options
     };
     
@@ -77,9 +79,10 @@ export class SimpleSitemapCreator {
     url: string, 
     progressCallback?: (scanned: number, total: number, currentUrl: string) => void
   ): Promise<string[]> {
+    // Строго соблюдаем указанный URL
     const normalizedUrl = url && url.trim() !== '' 
       ? (url.startsWith('http') ? url : `https://${url}`)
-      : this.baseUrl; // Если url пустой, использ��ем ранее установленный baseUrl
+      : this.baseUrl;
     
     if (!normalizedUrl) {
       console.error('No URL provided for crawling');
@@ -141,17 +144,23 @@ export class SimpleSitemapCreator {
         maxDepth: this.options.maxDepth,
         timeout: this.options.timeout,
         onProgress: progressCallback,
-        crawlDelay: 300, // Увеличиваем задержку м��жду запросами
+        crawlDelay: 300,
         retryCount: this.options.retryCount,
         retryDelay: this.options.retryDelay,
         // Удаляем свойство domain, так как оно не существует в типе SiteScannerOptions
       });
       
-      // Устанавливаем целевой домен в сканере другим способом, если это необходимо
-      // Например, используя отдельный метод или передавая его через другое поддерживаемое свойство
-      // scanner.setTargetDomain(this.domain);  // Если такой метод существует в SiteScanner
-      
+      // Принудительно ограничиваем сканирование только указанным доменом
+      // Это достигается путем фильтрации после получения результатов
       const result = await scanner.scan();
+      
+      // Фильтруем результаты, чтобы оставить только URL для нашего домена
+      if (this.options.forceTargetDomain) {
+        const filteredUrls = this.filterUrlsByDomain(result.urls, this.domain);
+        console.log(`Отфильтровано ${filteredUrls.length} URL из ${result.urls.length} для домена ${this.domain}`);
+        return filteredUrls;
+      }
+      
       return result.urls;
     } catch (error) {
       console.error('Error during crawl:', error);
@@ -163,13 +172,27 @@ export class SimpleSitemapCreator {
    * Фильтрует URL, оставляя только те, которые относятся к указанному домену
    */
   private filterUrlsByDomain(urls: string[], targetDomain: string): string[] {
+    if (!targetDomain) {
+      console.warn("Целевой домен не указан для фильтрации URL");
+      return urls;
+    }
+    
+    console.log(`Фильтруем URLs для домена: ${targetDomain}`);
+    
     return urls.filter(url => {
       try {
         const urlObj = new URL(url);
-        return urlObj.hostname === targetDomain || 
-               urlObj.hostname === 'www.' + targetDomain ||
-               targetDomain === 'www.' + urlObj.hostname;
-      } catch {
+        const urlDomain = urlObj.hostname;
+        
+        // Проверяем совпадение доменов с учетом www.
+        const isMatch = 
+          urlDomain === targetDomain || 
+          urlDomain === 'www.' + targetDomain ||
+          targetDomain === 'www.' + urlDomain;
+        
+        return isMatch;
+      } catch (error) {
+        console.warn(`Не удалось проанализировать URL: ${url}`, error);
         return false;
       }
     });

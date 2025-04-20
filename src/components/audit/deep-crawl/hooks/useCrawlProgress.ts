@@ -51,7 +51,7 @@ export function useCrawlProgress(urlParam: string) {
     try {
       console.log(`Starting crawl for URL: ${url}`);
       
-      // Инициализация сканера
+      // Инициализация сканера с явной передачей URL
       const { crawler: newCrawler, domain: newDomain, maxPages, normalizedUrl } = initializeCrawler({
         url,
         onProgress: (pagesScanned, totalEstimated, currentUrl) => {
@@ -61,9 +61,9 @@ export function useCrawlProgress(urlParam: string) {
       
       setCrawler(newCrawler);
       setDomain(newDomain);
-      console.log(`Executing crawler with URL: ${normalizedUrl}`);
+      console.log(`Executing crawler with URL: ${normalizedUrl} and domain: ${newDomain}`);
       
-      // Выполняем сканирование
+      // Выполняем сканирование с явной передачей URL
       const result = await executeCrawler(newCrawler, normalizedUrl);
       
       if (result && result.success) {

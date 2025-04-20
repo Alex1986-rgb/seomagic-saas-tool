@@ -12,7 +12,7 @@ export function useCrawlExecution() {
   const initializeCrawler = ({
     url, 
     onProgress, 
-    maxPages = 500000 // Увеличиваем максимальное количество страниц по умолчанию
+    maxPages = 500000
   }: CrawlerSettings) => {
     
     try {
@@ -41,13 +41,14 @@ export function useCrawlExecution() {
       // Создаем новый сканер с расширенными параметрами
       const crawler = new SimpleSitemapCreator({
         maxPages,
-        maxDepth: 20, // Увеличиваем глубину сканирования еще больше
+        maxDepth: 20,
         includeStylesheet: true,
-        timeout: 60000, // Увеличиваем таймаут до 60 секунд
+        timeout: 60000,
         followRedirects: true,
-        concurrentRequests: 20, // Увеличиваем количество параллельных запросов
-        retryCount: 3,    // Повторные попытки при ошибках
-        retryDelay: 500   // Меньшая задержка между попытками
+        concurrentRequests: 20,
+        retryCount: 3,
+        retryDelay: 500,
+        forceTargetDomain: true // Принудительно используем только целевой домен
       });
       
       // Устанавливаем базовый URL явно
@@ -62,14 +63,20 @@ export function useCrawlExecution() {
   
   const executeCrawler = async (crawler: SimpleSitemapCreator, startUrl: string) => {
     try {
-      // Выполняем сканирование с расширенными параметрами
+      // Убеждаемся, что мы используем корректный URL
+      const crawlerDomain = crawler.getDomain();
+      const crawlerBaseUrl = crawler.getBaseUrl();
+      
+      console.log(`Запуск сканирования с URL: ${startUrl}`);
+      console.log(`Текущий домен сканера: ${crawlerDomain}`);
+      console.log(`Базовый URL сканера: ${crawlerBaseUrl}`);
+      
+      // Используем прогресс-коллбэк для логирования
       const progressCallback = (scanned: number, total: number, currentUrl: string) => {
         console.log(`Progress: ${scanned}/${total} - ${currentUrl}`);
       };
       
-      console.log(`Запуск сканирования с URL: ${startUrl}`);
-      
-      // Передаем нормализованный URL в метод crawl
+      // Явно передаем URL для сканирования, чтобы избежать проблем
       const urls = await crawler.crawl(startUrl, progressCallback);
       
       if (!urls || urls.length === 0) {
