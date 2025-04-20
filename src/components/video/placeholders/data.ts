@@ -1,39 +1,82 @@
-
-import { LineChart, BarChart2, CheckCircle, ArrowRight, Star } from 'lucide-react';
-import { SlideData } from './types';
-
-// Helper function to create slide data with properly typed icons
-export const getSlideData = (): SlideData[] => {
-  return [
-    {
-      title: "SEO Аудит сайта",
-      icon: LineChart,
-      content: "Анализ более 100 SEO-факторов",
-      color: "#9b87f5"
-    },
-    {
-      title: "Отслеживание позиций",
-      icon: BarChart2,
-      content: "Мониторинг ключевых слов в поисковых системах",
-      color: "#0EA5E9"
-    },
-    {
-      title: "Оптимизация контента",
-      icon: Star,
-      content: "ИИ-рекомендации для улучшения контента",
-      color: "#F97316"
-    },
-    {
-      title: "Рост трафика",
-      icon: ArrowRight,
-      content: "Увеличение органического трафика до 150%",
-      color: "#22c55e"
-    },
-    {
-      title: "Проверено экспертами",
-      icon: CheckCircle,
-      content: "Надежное решение для SEO-оптимизации",
-      color: "#9b87f5"
-    }
-  ];
-};
+export const getSlideData = () => [
+  {
+    title: "Полное сканирование сайта",
+    description: "Глубокий анализ всех страниц вашего сайта для обнаружения SEO проблем.",
+    blogId: 1
+  },
+  {
+    title: "Анализ метаданных",
+    description: "Проверка тегов title, description и других метаданных для оптимизации.",
+    blogId: 2
+  },
+  {
+    title: "Проверка скорости загрузки",
+    description: "Анализ времени загрузки страниц и рекомендации по увеличению скорости.",
+    blogId: 3
+  },
+  {
+    title: "Проверка мобильной версии",
+    description: "Тестирование адаптивности и удобства использования на мобильных устройствах.",
+    blogId: 4
+  },
+  {
+    title: "Анализ структуры URL",
+    description: "Проверка ЧПУ и рекомендации по оптимизации URL-адресов.",
+    blogId: 5
+  },
+  {
+    title: "Проверка robots.txt и sitemap",
+    description: "Анализ файлов robots.txt и sitemap.xml для корректной индексации.",
+    blogId: 6
+  },
+  {
+    title: "Ежедневное отслеживание позиций",
+    description: "Мониторинг позиций вашего сайта в поисковых системах ежедневно.",
+    blogId: 7
+  },
+  {
+    title: "Анализ конкурентов",
+    description: "Сравнение ваших позиций с конкурентами для определения стратегии.",
+    blogId: 8
+  },
+  {
+    title: "Мониторинг ключевых слов",
+    description: "Отслеживание изменений позиций по ключевым словам.",
+    blogId: 9
+  },
+  {
+    title: "Уведомления об изменениях",
+    description: "Получение оповещений при значительном изменении позиций.",
+    blogId: 10
+  },
+  {
+    title: "История изменений",
+    description: "Доступ к истории изменений позиций для анализа прогресса.",
+    blogId: 11
+  },
+  {
+    title: "Интеграция с Google Analytics",
+    description: "Связь данных о позициях с аналитикой трафика.",
+    blogId: 12
+  },
+  {
+    title: "Анализ контента",
+    description: "Проверка уникальности и качества контента на вашем сайте.",
+    blogId: 13
+  },
+  {
+    title: "Безопасность данных",
+    description: "Полная конфиденциальность и безопасность ваших данных.",
+    blogId: 14
+  },
+  {
+    title: "Интеграция с CMS",
+    description: "Совместимость с популярными CMS-системами.",
+    blogId: 15
+  },
+  {
+    title: "Отчеты о производительности",
+    description: "Детальные отчеты о производительности и рейтинге вашего сайта.",
+    blogId: 16
+  }
+];
