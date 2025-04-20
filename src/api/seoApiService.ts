@@ -59,7 +59,7 @@ class SeoApiService {
     }
   }
 
-  async downloadReport(taskId: string, reportType: 'full' | 'errors' = 'full') {
+  async downloadReport(taskId: string, reportType: 'full' | 'errors' | 'detailed' = 'full') {
     try {
       await firecrawlService.downloadReport(taskId, reportType);
       return { success: true };

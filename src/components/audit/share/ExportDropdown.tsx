@@ -58,12 +58,11 @@ const ExportDropdown: React.FC<ExportDropdownProps> = ({
         />
         
         <ExportErrorReport
-          auditData={auditData}
+          taskId={taskId || ''}
           url={url}
           urls={urls}
           isExporting={isExporting}
           setIsExporting={setIsExporting}
-          taskId={taskId}
         />
         
         <ExportJSON
