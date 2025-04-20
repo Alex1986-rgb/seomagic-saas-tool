@@ -52,12 +52,7 @@ const SystemSettingsPage: React.FC = () => {
   ];
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold mb-1">Системные настройки</h1>
-        <p className="text-muted-foreground">Настройки сервера, баз данных и производительности.</p>
-      </div>
-      
+    <div className="p-6 space-y-6">
       <TabLayout
         tabs={tabs}
         activeTab={activeTab}
