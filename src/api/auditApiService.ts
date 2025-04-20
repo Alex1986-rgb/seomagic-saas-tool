@@ -1,207 +1,134 @@
 
-import { CrawlService } from '@/services/crawlService';
-import { positionTrackingService } from '@/services/positionTrackingService';
-import { calculateOptimizationMetrics, calculateOptimizationCosts, generateOptimizationRecommendations } from '@/services/audit/optimization/optimizationCalculator';
-import { collectPagesContent } from '@/services/audit/content';
-import { createOptimizedSite } from '@/services/audit/scanner';
-import { saveAs } from 'file-saver';
+import { AuditData } from '@/types/audit';
+import { fetchAuditData, fetchRecommendations, fetchAuditHistory } from '@/services/auditService';
+import { PageContent } from '@/services/audit/optimization/types';
+import { 
+  detectBrokenLinks, 
+  detectDuplicates, 
+  analyzeSiteStructure, 
+  analyzeContentUniqueness 
+} from '@/services/audit/siteAnalysis';
 
-// Define proper interfaces for crawl options and progress
-export interface AuditOptions {
-  domain: string;
-  maxPages?: number;
-  maxDepth?: number;
-  checkBrokenLinks?: boolean;
-  findDuplicates?: boolean;
-  analyzeStructure?: boolean;
-  checkContent?: boolean;
-  generateSitemap?: boolean;
-  trackPositions?: boolean;
-  keywords?: string[];
-}
-
-export interface AuditProgress {
-  status?: string;
-  pagesScanned: number;
-  totalPages: number;
-  stage?: string;
-  error?: string;
-}
-
-export interface AuditResult {
-  domain: string;
-  urls: string[];
-  optimizationMetrics?: any;
-  optimizationCosts?: any;
-  recommendations?: string[];
-  positionResults?: any;
-  brokenLinks?: string[];
-}
-
-export const auditApiService = {
+class AuditApiService {
   /**
-   * Start a comprehensive audit of a website
+   * Получает данные аудита сайта
    */
-  startAudit: async (
-    options: AuditOptions,
-    onProgress?: (progress: AuditProgress) => void
-  ): Promise<AuditResult> => {
+  async getAuditData(url: string): Promise<AuditData> {
     try {
-      // Start with crawling
-      if (onProgress) {
-        onProgress({
-          status: 'pending',
-          pagesScanned: 0,
-          totalPages: 0,
-          stage: 'Preparing audit'
-        });
-      }
-      
-      // Normalize URL and domain
-      const url = options.domain.startsWith('http') ? options.domain : `https://${options.domain}`;
-      const domain = new URL(url).hostname;
-      
-      // Start crawl
-      const crawlResult = await CrawlService.startCrawl(
-        url,
-        {
-          maxPages: options.maxPages,
-          maxDepth: options.maxDepth,
-          checkBrokenLinks: options.checkBrokenLinks,
-          findDuplicates: options.findDuplicates,
-          analyzeStructure: options.analyzeStructure,
-          checkContent: options.checkContent,
-          generateSitemap: options.generateSitemap
-        },
-        (progress) => {
-          if (onProgress) {
-            onProgress({
-              ...progress,
-              stage: progress.stage || 'Crawling website'
-            });
-          }
-        }
-      );
-      
-      const result: AuditResult = {
-        domain,
-        urls: crawlResult.urls || []
-      };
-      
-      // Collect page content for optimization analysis
-      if (onProgress) {
-        onProgress({
-          status: 'analyzing',
-          pagesScanned: crawlResult.urls.length,
-          totalPages: crawlResult.urls.length,
-          stage: 'Collecting page content'
-        });
-      }
-      
-      const pagesContent = await collectPagesContent(
-        crawlResult.urls.slice(0, 100), // Limit to 100 pages for performance
-        100,
-        (current, total) => {
-          if (onProgress) {
-            onProgress({
-              status: 'analyzing',
-              pagesScanned: current,
-              totalPages: total,
-              stage: 'Collecting page content'
-            });
-          }
-        }
-      );
-      
-      // Calculate optimization metrics
-      if (onProgress) {
-        onProgress({
-          status: 'analyzing',
-          pagesScanned: crawlResult.urls.length,
-          totalPages: crawlResult.urls.length,
-          stage: 'Calculating optimization metrics'
-        });
-      }
-      
-      const brokenLinksCount = crawlResult.brokenLinks ? crawlResult.brokenLinks.length : 0;
-      result.optimizationMetrics = calculateOptimizationMetrics(pagesContent, crawlResult.urls.length, brokenLinksCount);
-      result.optimizationCosts = calculateOptimizationCosts(result.optimizationMetrics, crawlResult.urls.length);
-      result.recommendations = generateOptimizationRecommendations(result.optimizationMetrics);
-      
-      // Track positions if requested
-      if (options.trackPositions && options.keywords && options.keywords.length > 0) {
-        if (onProgress) {
-          onProgress({
-            status: 'analyzing',
-            pagesScanned: crawlResult.urls.length,
-            totalPages: crawlResult.urls.length,
-            stage: 'Tracking keyword positions'
-          });
-        }
-        
-        result.positionResults = await positionTrackingService.trackPositions({
-          domain: options.domain,
-          keywords: options.keywords,
-          searchEngine: 'all',
-          depth: 100,
-          scanFrequency: 'once',
-          useProxy: false
-        });
-      }
-      
-      // Final progress update
-      if (onProgress) {
-        onProgress({
-          status: 'completed',
-          pagesScanned: crawlResult.urls.length,
-          totalPages: crawlResult.urls.length,
-          stage: 'Audit completed'
-        });
-      }
-      
-      return result;
+      return await fetchAuditData(url);
     } catch (error) {
-      console.error('Error during audit:', error);
-      
-      if (onProgress) {
-        onProgress({
-          status: 'failed',
-          pagesScanned: 0,
-          totalPages: 0,
-          stage: 'Error during audit',
-          error: error instanceof Error ? error.message : 'Unknown error'
-        });
-      }
-      
+      console.error('Error fetching audit data:', error);
       throw error;
     }
-  },
-  
-  /**
-   * Download audit results as PDF
-   */
-  downloadAuditReport: async (result: AuditResult): Promise<void> => {
-    const reportBlob = await CrawlService.generateReport(result);
-    saveAs(reportBlob, `seo_audit_${result.domain}.html`);
-  },
-  
-  /**
-   * Generate and download optimized version of the site
-   */
-  downloadOptimizedSite: async (
-    result: AuditResult,
-    onProgress?: (progress: number) => void
-  ): Promise<void> => {
-    const optimizedSiteBlob = await createOptimizedSite(
-      result.domain,
-      result.urls,
-      (current, total) => {
-        if (onProgress) {
-          onProgress((current / total) * 100);
-        }
-      }
-    );
-    
-    saveAs(optimizedSiteBlob, `optimized_${result.domain}.zip`);
   }
-};
+
+  /**
+   * Получает рекомендации для сайта
+   */
+  async getRecommendations(url: string): Promise<any> {
+    try {
+      return await fetchRecommendations(url);
+    } catch (error) {
+      console.error('Error fetching recommendations:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Получает историю аудитов
+   */
+  async getAuditHistory(url: string): Promise<any> {
+    try {
+      return await fetchAuditHistory(url);
+    } catch (error) {
+      console.error('Error fetching audit history:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Обнаружение битых ссылок
+   */
+  async findBrokenLinks(domain: string, urls: string[], onProgress?: Function) {
+    try {
+      return await detectBrokenLinks(domain, urls, onProgress);
+    } catch (error) {
+      console.error('Error detecting broken links:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Обнаружение дубликатов
+   */
+  async findDuplicates(urls: string[], onProgress?: Function) {
+    try {
+      return await detectDuplicates(urls, onProgress);
+    } catch (error) {
+      console.error('Error detecting duplicates:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Анализ структуры сайта
+   */
+  async analyzeSiteStructure(domain: string, urls: string[], onProgress?: Function) {
+    try {
+      return await analyzeSiteStructure(domain, urls, onProgress);
+    } catch (error) {
+      console.error('Error analyzing site structure:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Анализ уникальности контента
+   */
+  async analyzeContentUniqueness(urls: string[], onProgress?: Function) {
+    try {
+      return await analyzeContentUniqueness(urls, onProgress);
+    } catch (error) {
+      console.error('Error analyzing content uniqueness:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Оптимизация контента страниц
+   */
+  async optimizeContent(pagesContent: PageContent[], domain: string) {
+    try {
+      // В реальном приложении этот метод отправлял бы данные на сервер
+      // для выполнения оптимизации контента с помощью ИИ
+      console.log(`Запрос на оптимизацию контента для ${domain}`);
+      
+      // Симуляция задержки
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      // Симуляция результата
+      return {
+        success: true,
+        message: "Контент успешно оптимизирован",
+        optimizedPages: pagesContent.map(page => ({
+          ...page,
+          optimized: {
+            content: page.content + " (оптимизировано)",
+            meta: {
+              description: page.meta.description 
+                ? page.meta.description + " (улучшено)" 
+                : "Новое мета-описание для " + page.title,
+              keywords: "keywords, seo, optimization"
+            },
+            score: Math.floor(Math.random() * 20) + 80
+          }
+        }))
+      };
+    } catch (error) {
+      console.error('Error optimizing content:', error);
+      throw error;
+    }
+  }
+}
+
+export const auditApiService = new AuditApiService();

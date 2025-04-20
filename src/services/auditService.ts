@@ -13,7 +13,8 @@ export {
 } from './audit';
 
 // Экспорт отдельных типов для устранения неоднозначности
-export type { PageContent } from './audit/content';
+export type { PageContent } from './audit/optimization/types';
+export type { OptimizationMetrics, OptimizationItem, OptimizationResponse } from './audit/optimization/types';
 
 // Экспорт модулей сканера и карты сайта
 export * from './audit/scanner';
