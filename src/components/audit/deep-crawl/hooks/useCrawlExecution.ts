@@ -51,6 +51,7 @@ export function useCrawlExecution() {
         
       if (error) {
         console.error('Error recording crawl task:', error);
+        return null;
       }
       
       return data?.[0] || null;
@@ -84,7 +85,7 @@ export function useCrawlExecution() {
   const initializeCrawler = ({
     url, 
     onProgress, 
-    maxPages = 50000
+    maxPages = 2000 // Уменьшаем максимальное количество страниц для стабильности
   }: CrawlerSettings) => {
     
     try {
@@ -110,20 +111,21 @@ export function useCrawlExecution() {
       
       console.log(`Инициализация сканера для ${normalizedUrl} с доменом ${domain} и лимитом ${maxPages} страниц`);
       
-      // Create new scanner with extended parameters and shorter timeouts
+      // Create new scanner with optimized settings for better performance
       const crawler = new SimpleSitemapCreator({
         maxPages,
-        maxDepth: 8, // Reduce max depth for faster scanning
+        maxDepth: 5,           // Уменьшаем глубину для более быстрого сканирования
         includeStylesheet: true,
-        timeout: 20000, // Reduce timeout to 20 seconds
+        timeout: 15000,        // Уменьшаем таймаут до 15 секунд
         followRedirects: true,
-        concurrentRequests: 3, // Reduce number of concurrent requests
+        concurrentRequests: 2, // Уменьшаем количество одновременных запросов
         retryCount: 2,
         retryDelay: 500,
-        forceTargetDomain: true // Force target domain only
+        forceTargetDomain: true // Принудительно сканируем только указанный домен
       });
       
       // Set base URL explicitly
+      console.log(`Setting base URL to: ${normalizedUrl}`);
       crawler.setBaseUrl(normalizedUrl);
       
       // Create crawl task in Supabase
@@ -179,11 +181,11 @@ export function useCrawlExecution() {
         })
       ]);
       
-      // Explicitly pass URL for scanning
+      // Directly pass URL for scanning
       const urls = await crawlWithTimeout as string[];
       
       if (!urls || urls.length === 0) {
-        console.error('Не удалось найти URLs на сайте');
+        console.log('Не удалось найти URLs на сайте, возвращаем пустой массив');
         
         if (taskId) {
           await updateCrawlTask(taskId, 'completed', 0, 0);

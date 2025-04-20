@@ -6,6 +6,7 @@ import { Progress } from "@/components/ui/progress";
 import { useCrawlProgress } from './hooks/useCrawlProgress';
 import { AlertTriangle } from 'lucide-react';
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { useToast } from "@/hooks/use-toast";
 
 interface DeepCrawlProgressDialogProps {
   open: boolean;
@@ -21,6 +22,7 @@ export const DeepCrawlProgressDialog: React.FC<DeepCrawlProgressDialogProps> = (
   initialStage = 'idle'
 }) => {
   const [attemptCount, setAttemptCount] = useState(0);
+  const { toast } = useToast();
   
   const {
     isLoading,
@@ -46,9 +48,13 @@ export const DeepCrawlProgressDialog: React.FC<DeepCrawlProgressDialogProps> = (
   useEffect(() => {
     if (open && initialStage === 'starting' && !isLoading) {
       console.log(`DeepCrawlProgressDialog: Начинаем сканирование URL: ${url}`);
+      toast({
+        title: "Запуск сканирования",
+        description: `Начинаем сканирование сайта: ${url}`,
+      });
       startCrawl();
     }
-  }, [open, initialStage, isLoading, startCrawl, url]);
+  }, [open, initialStage, isLoading, startCrawl, url, toast]);
 
   // Add a loading timeout checker
   useEffect(() => {
@@ -57,23 +63,43 @@ export const DeepCrawlProgressDialog: React.FC<DeepCrawlProgressDialogProps> = (
       const timeoutId = setTimeout(() => {
         if (crawlStage === 'starting' && attemptCount < 2) {
           console.log("Scan seems to be stuck in starting phase, retrying...");
+          toast({
+            title: "Перезапуск сканирования",
+            description: "Сканирование зависло на начальном этапе, выполняем перезапуск",
+            variant: "default"
+          });
           retryScanning();
         } else if (crawlStage === 'starting' && attemptCount >= 2) {
           console.error("Failed to start scanning after multiple attempts");
+          toast({
+            title: "Ошибка сканирования",
+            description: "Не удалось запустить сканирование после нескольких попыток",
+            variant: "destructive"
+          });
         }
       }, 10000);
       
       return () => clearTimeout(timeoutId);
     }
-  }, [crawlStage, isLoading, attemptCount]);
+  }, [crawlStage, isLoading, attemptCount, toast]);
 
   const handleCancel = () => {
     cancelCrawl();
+    toast({
+      title: "Сканирование отменено",
+      description: "Процесс сканирования был прерван",
+    });
     onClose();
   };
 
   const handleClose = () => {
     onClose(pagesScanned, scannedUrls);
+    if (pagesScanned > 0) {
+      toast({
+        title: "Сканирование завершено",
+        description: `Обнаружено ${pagesScanned} страниц на сайте`,
+      });
+    }
   };
 
   const getStageText = () => {

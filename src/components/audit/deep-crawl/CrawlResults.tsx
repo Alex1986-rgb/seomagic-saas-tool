@@ -1,18 +1,16 @@
 
-import React, { useState } from 'react';
-import { CrawlResultsActions } from './components/results/CrawlResultsActions';
-import { Button } from '@/components/ui/button';
-import { FileText, Download, Package, Map, Database, BarChart2 } from 'lucide-react';
-import { ContentExtractorDialog } from './components/ContentExtractorDialog';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import React from 'react';
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { FileText, Globe, Download, FileJson } from 'lucide-react';
 
 interface CrawlResultsProps {
   pageCount: number;
   domain: string;
   urls: string[];
-  onDownloadSitemap?: () => void;
-  onDownloadReport?: () => void;
+  onDownloadSitemap: () => void;
+  onDownloadReport: () => void;
   onDownloadAllData?: () => void;
 }
 
@@ -24,164 +22,81 @@ const CrawlResults: React.FC<CrawlResultsProps> = ({
   onDownloadReport,
   onDownloadAllData
 }) => {
-  const [isExtractorOpen, setIsExtractorOpen] = useState(false);
-
-  const openContentExtractor = () => {
-    setIsExtractorOpen(true);
-  };
-
-  const getSiteSize = (count: number) => {
-    if (count > 10000) return 'Крупный';
-    if (count > 1000) return 'Средний';
-    return 'Малый';
-  };
-
   return (
-    <div className="space-y-6">
-      <Card className="border-primary/20">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Map className="h-5 w-5 text-primary" />
-            Результаты сканирования
-            <Badge variant="outline" className="ml-2">{getSiteSize(pageCount)} сайт</Badge>
-          </CardTitle>
-          <CardDescription>
-            Анализ структуры сайта и данные для создания карты сайта
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-            <div className="bg-background p-4 rounded-lg shadow-sm border">
-              <div className="text-sm text-muted-foreground">Домен</div>
-              <div className="text-lg font-medium">{domain}</div>
-            </div>
-            <div className="bg-background p-4 rounded-lg shadow-sm border">
-              <div className="text-sm text-muted-foreground">Обнаружено страниц</div>
-              <div className="text-lg font-medium">{pageCount.toLocaleString()}</div>
-            </div>
-            <div className="bg-background p-4 rounded-lg shadow-sm border">
-              <div className="text-sm text-muted-foreground">Тип сайта</div>
-              <div className="text-lg font-medium">{getSiteSize(pageCount)}</div>
-            </div>
+    <Card className="bg-white dark:bg-gray-800 shadow-sm">
+      <CardHeader>
+        <div className="flex items-center justify-between">
+          <div>
+            <CardTitle className="text-xl font-bold">Результаты сканирования</CardTitle>
+            <CardDescription>
+              <span className="flex items-center gap-1 mt-1">
+                <Globe className="h-4 w-4" />
+                <span>{domain}</span>
+              </span>
+            </CardDescription>
+          </div>
+          <Badge variant="outline" className="px-3 py-1">
+            {pageCount} страниц
+          </Badge>
+        </div>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-4">
+          <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-md">
+            <h4 className="font-medium mb-2">Статистика сканирования</h4>
+            <ul className="space-y-1 text-sm">
+              <li className="flex justify-between">
+                <span className="text-gray-500 dark:text-gray-400">Всего страниц:</span>
+                <span className="font-medium">{pageCount}</span>
+              </li>
+              <li className="flex justify-between">
+                <span className="text-gray-500 dark:text-gray-400">Уникальных URL:</span>
+                <span className="font-medium">{urls.length}</span>
+              </li>
+            </ul>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-            <Button 
-              variant="outline" 
-              size="lg" 
-              onClick={onDownloadSitemap} 
-              className="gap-2"
-            >
-              <Download className="h-4 w-4" />
+          <div className="flex flex-wrap gap-2">
+            <Button size="sm" variant="outline" onClick={onDownloadSitemap}>
+              <FileText className="h-4 w-4 mr-2" />
               Скачать Sitemap
             </Button>
             
-            <Button 
-              variant="outline" 
-              size="lg" 
-              onClick={onDownloadReport} 
-              className="gap-2"
-            >
-              <FileText className="h-4 w-4" />
-              Отчет о сканировании
+            <Button size="sm" variant="outline" onClick={onDownloadReport}>
+              <FileJson className="h-4 w-4 mr-2" />
+              Отчет
             </Button>
             
-            <Button 
-              variant="default" 
-              size="lg" 
-              onClick={openContentExtractor} 
-              className="gap-2"
-            >
-              <Package className="h-4 w-4" />
-              Извлечь контент и создать карту сайта
-            </Button>
+            {onDownloadAllData && (
+              <Button size="sm" variant="outline" onClick={onDownloadAllData}>
+                <Download className="h-4 w-4 mr-2" />
+                Все данные
+              </Button>
+            )}
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Card className="bg-muted/50">
-              <CardHeader className="py-3 px-4">
-                <CardTitle className="text-sm flex items-center">
-                  <Database className="h-4 w-4 mr-2" />
-                  Экспорт данных
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="py-2 px-4">
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  onClick={onDownloadAllData} 
-                  className="gap-2 w-full justify-start"
-                >
-                  <Download className="h-3.5 w-3.5" />
-                  Все данные (ZIP)
-                </Button>
-              </CardContent>
-            </Card>
-            
-            <Card className="bg-muted/50">
-              <CardHeader className="py-3 px-4">
-                <CardTitle className="text-sm flex items-center">
-                  <Map className="h-4 w-4 mr-2" />
-                  Карта сайта
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="py-2 px-4">
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  onClick={onDownloadSitemap} 
-                  className="gap-2 w-full justify-start"
-                >
-                  <FileText className="h-3.5 w-3.5" />
-                  Sitemap XML
-                </Button>
-              </CardContent>
-            </Card>
-            
-            <Card className="bg-muted/50">
-              <CardHeader className="py-3 px-4">
-                <CardTitle className="text-sm flex items-center">
-                  <BarChart2 className="h-4 w-4 mr-2" />
-                  Аналитика
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="py-2 px-4">
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  onClick={onDownloadReport} 
-                  className="gap-2 w-full justify-start"
-                >
-                  <FileText className="h-3.5 w-3.5" />
-                  Отчет SEO
-                </Button>
-              </CardContent>
-            </Card>
-          </div>
-          
-          <div className="text-sm text-muted-foreground mt-4">
-            Сканирование завершено. Вы можете скачать карту сайта для отправки в Google Search Console
-            или выполнить экстракцию контента для более детального анализа.
-          </div>
-        </CardContent>
-      </Card>
-      
-      <CrawlResultsActions 
-        domain={domain}
-        pageCount={pageCount}
-        urls={urls}
-        onDownloadSitemap={onDownloadSitemap}
-        onDownloadReport={onDownloadReport}
-        onDownloadAllData={onDownloadAllData}
-      />
-      
-      <ContentExtractorDialog
-        open={isExtractorOpen}
-        onClose={() => setIsExtractorOpen(false)}
-        urls={urls}
-        domain={domain}
-      />
-    </div>
+          {urls.length > 0 && (
+            <div className="mt-4">
+              <h4 className="font-medium mb-2">Найденные URL ({Math.min(urls.length, 5)} из {urls.length})</h4>
+              <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-md max-h-40 overflow-y-auto text-xs">
+                <ul className="space-y-1">
+                  {urls.slice(0, 5).map((url, index) => (
+                    <li key={index} className="truncate">
+                      {url}
+                    </li>
+                  ))}
+                  {urls.length > 5 && (
+                    <li className="text-gray-500 dark:text-gray-400 italic">
+                      ... и еще {urls.length - 5} URL
+                    </li>
+                  )}
+                </ul>
+              </div>
+            </div>
+          )}
+        </div>
+      </CardContent>
+    </Card>
   );
 };
 

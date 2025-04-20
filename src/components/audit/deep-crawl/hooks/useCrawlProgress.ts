@@ -48,6 +48,12 @@ export function useCrawlProgress(urlParam: string) {
   // Function to store scan results to Supabase
   const saveScanResultsToSupabase = async (urls: string[], pageCount: number) => {
     try {
+      // Проверяем, что URLs не пусты
+      if (!urls || urls.length === 0) {
+        console.warn("No URLs to save to Supabase");
+        return false;
+      }
+
       const { data, error } = await supabase
         .from('crawl_results')
         .insert({
@@ -85,26 +91,15 @@ export function useCrawlProgress(urlParam: string) {
     setCrawlStage('starting');
     
     try {
-      // Create timeout for detecting hangs
+      // Создаем несколько таймаутов для отлова зависаний
+      // 1. Общий таймаут всего сканирования (2 минуты)
       const crawlTimeoutId = setTimeout(() => {
         console.error(`Crawl timeout for URL: ${url}`);
         setErrorMsg("Сканирование заняло слишком много времени");
         completeCrawl(false);
-      }, 120000); // 2 minute timeout for entire scan
+      }, 120000);
       
-      // Initialize scanner with explicit URL
-      const { crawler: newCrawler, domain: newDomain, maxPages, normalizedUrl } = initializeCrawler({
-        url,
-        onProgress: (pagesScanned, totalEstimated, currentUrl) => {
-          updateProgress(pagesScanned, totalEstimated, currentUrl, maxPages);
-        }
-      });
-      
-      setCrawler(newCrawler);
-      setDomain(newDomain);
-      console.log(`Executing crawler with URL: ${normalizedUrl} and domain: ${newDomain}`);
-      
-      // Also add startup timeout
+      // 2. Таймаут на этапе инициализации (15 секунд)
       const startupTimeoutId = setTimeout(() => {
         if (crawlStage === 'starting') {
           console.error(`Crawl startup timeout for URL: ${url}`);
@@ -112,30 +107,62 @@ export function useCrawlProgress(urlParam: string) {
           completeCrawl(false);
           clearTimeout(crawlTimeoutId);
         }
-      }, 15000); // 15 seconds startup timeout
+      }, 15000);
       
-      // Execute crawler with explicit URL
+      // Инициализируем сканер с явным URL
+      console.log(`Initializing crawler for URL: ${url}`);
+      
+      const { crawler: newCrawler, domain: newDomain, maxPages, normalizedUrl } = initializeCrawler({
+        url,
+        onProgress: (pagesScanned, totalEstimated, currentUrl) => {
+          console.log(`Progress update: ${pagesScanned}/${totalEstimated} - ${currentUrl}`);
+          updateProgress(pagesScanned, totalEstimated, currentUrl, maxPages);
+          
+          // Обновляем этап сканирования, чтобы предотвратить таймаут
+          if (crawlStage === 'starting' && pagesScanned > 0) {
+            setCrawlStage('crawling');
+            clearTimeout(startupTimeoutId); // Отменяем таймаут инициализации
+          }
+        }
+      });
+      
+      if (!newCrawler) {
+        console.error("Failed to initialize crawler");
+        setErrorMsg("Ошибка инициализации сканера");
+        completeCrawl(false);
+        clearTimeout(crawlTimeoutId);
+        clearTimeout(startupTimeoutId);
+        return;
+      }
+      
+      setCrawler(newCrawler);
+      setDomain(newDomain);
+      console.log(`Executing crawler with URL: ${normalizedUrl} and domain: ${newDomain}`);
+      
+      // Запускаем сканирование
+      console.log("Starting crawler execution");
       const result = await executeCrawler(newCrawler, normalizedUrl);
       
-      // Cancel timeouts since scan completed
+      // Отменяем таймауты после завершения сканирования
       clearTimeout(crawlTimeoutId);
       clearTimeout(startupTimeoutId);
       
       if (result && result.success) {
-        console.log(`Crawl completed with ${result.urls.length} URLs`);
+        console.log(`Crawl completed successfully with ${result.urls.length} URLs`);
         
-        // Save results to Supabase
+        // Сохраняем результаты в Supabase
         await saveScanResultsToSupabase(result.urls, result.pageCount);
         
+        // Обновляем состояние о завершении
         completeCrawl(true, { urls: result.urls, pageCount: result.pageCount });
       } else {
-        console.error("Crawling failed:", result);
+        console.error("Crawling failed:", result?.error || "Unknown error");
         setErrorMsg(result?.error || "Ошибка при сканировании сайта");
         completeCrawl(false);
       }
     } catch (error) {
       console.error("Error during crawl:", error);
-      setErrorMsg("Непредвиденная ошибка при сканировании");
+      setErrorMsg(`Непредвиденная ошибка при сканировании: ${error instanceof Error ? error.message : 'Неизвестная ошибка'}`);
       completeCrawl(false);
     }
   }, [url, resetState, initializeCrawler, executeCrawler, updateProgress, completeCrawl, setCrawler, setDomain, setCrawlStage, crawlStage]);
@@ -143,9 +170,20 @@ export function useCrawlProgress(urlParam: string) {
   const cancelCrawl = useCallback(() => {
     console.log("Cancelling crawl");
     setErrorMsg(null);
-    // Clean up
+    
+    // Отменяем сканирование в crawler, если он существует
+    if (crawler) {
+      try {
+        console.log("Attempting to cancel active crawler");
+        crawler.cancel && crawler.cancel();
+      } catch (error) {
+        console.error("Error cancelling crawler:", error);
+      }
+    }
+    
+    // Очищаем состояние
     completeCrawl(false);
-  }, [completeCrawl]);
+  }, [completeCrawl, crawler]);
 
   return {
     isLoading,

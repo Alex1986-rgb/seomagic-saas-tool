@@ -38,9 +38,10 @@ const ExportSitemap: React.FC<ExportSitemapProps> = ({
           description: "Файл sitemap.xml успешно скачан",
         });
       } else if (urls && urls.length > 0) {
-        // Use frontend implementation - basic example
+        // Создаем sitemap.xml из списка URL
         const sitemapContent = generateSitemapXml(url, urls);
         
+        // Создаем и скачиваем файл
         const blob = new Blob([sitemapContent], { type: 'application/xml' });
         const dataUrl = URL.createObjectURL(blob);
         
@@ -76,14 +77,44 @@ const ExportSitemap: React.FC<ExportSitemapProps> = ({
     }
   };
   
+  // Функция для генерации XML-файла sitemap
   const generateSitemapXml = (domain: string, urls: string[]) => {
+    // Проверяем, что домен корректный
+    if (!domain) {
+      return '';
+    }
+
+    // Начало XML-документа
     const header = '<?xml version="1.0" encoding="UTF-8"?>\n' +
                   '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n';
     
+    // Добавляем каждый URL как элемент <url>
     const urlEntries = urls.map(pageUrl => {
-      return `  <url>\n    <loc>${pageUrl}</loc>\n    <lastmod>${new Date().toISOString().split('T')[0]}</lastmod>\n  </url>`;
+      // Убеждаемся, что URL полный
+      let fullUrl = pageUrl;
+      if (!fullUrl.startsWith('http')) {
+        if (domain.startsWith('http')) {
+          // Если домен уже включает протокол
+          fullUrl = `${domain}${pageUrl.startsWith('/') ? '' : '/'}${pageUrl}`;
+        } else {
+          // Иначе добавляем протокол
+          fullUrl = `https://${domain}${pageUrl.startsWith('/') ? '' : '/'}${pageUrl}`;
+        }
+      }
+
+      // Экранируем специальные символы XML
+      fullUrl = fullUrl
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&apos;');
+
+      // Формируем элемент URL
+      return `  <url>\n    <loc>${fullUrl}</loc>\n    <lastmod>${new Date().toISOString().split('T')[0]}</lastmod>\n  </url>`;
     }).join('\n');
     
+    // Закрываем XML-документ
     const footer = '\n</urlset>';
     
     return header + urlEntries + footer;
