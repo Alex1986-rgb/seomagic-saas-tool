@@ -1,7 +1,7 @@
 
 import { useState } from 'react';
 import { useToast } from "@/hooks/use-toast";
-import { contentExtractor } from '@/services/audit/contentExtractor/contentExtractor';
+import { ContentExtractor, contentExtractorService } from '@/services/audit/contentExtractor/contentExtractor';
 import { ExtractedSite, ExtractionOptions, ContentExtractionProgress } from '@/services/audit/contentExtractor/types';
 
 export const useContentExtractor = () => {
@@ -56,7 +56,7 @@ export const useContentExtractor = () => {
       };
 
       // Extract content from all pages
-      const site = await contentExtractor.extractSiteContent(urls, domain, extractionOptions);
+      const site = await contentExtractorService.extractSiteContent(urls, domain, extractionOptions);
       setExtractedSite(site);
       
       toast({
@@ -92,19 +92,19 @@ export const useContentExtractor = () => {
     try {
       switch (format) {
         case 'json':
-          await contentExtractor.exportToJson(extractedSite);
+          await contentExtractorService.exportToJson(extractedSite);
           break;
         case 'html':
-          await contentExtractor.exportToHtml(extractedSite);
+          await contentExtractorService.exportToHtml(extractedSite);
           break;
         case 'markdown':
-          await contentExtractor.exportToMarkdown(extractedSite);
+          await contentExtractorService.exportToMarkdown(extractedSite);
           break;
         case 'sitemap':
-          await contentExtractor.exportSitemapXml(extractedSite);
+          await contentExtractorService.exportSitemapXml(extractedSite);
           break;
         case 'all':
-          await contentExtractor.exportAll(extractedSite);
+          await contentExtractorService.exportAll(extractedSite);
           break;
       }
 

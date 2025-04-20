@@ -31,8 +31,9 @@ const AuditPageInfo: React.FC<AuditPageInfoProps> = ({
     timeToFix: string;
   } | null>(null);
 
-  const handleCrawlComplete = (count: number) => {
-    // Обновляем количество страниц
+  const handleCrawlComplete = (urls: string[]) => {
+    // Обновляем количество страниц с количеством найденных URL
+    const count = urls.length;
     onUpdatePageCount(count);
     
     // Генерируем примерную смету на основе количества страниц
