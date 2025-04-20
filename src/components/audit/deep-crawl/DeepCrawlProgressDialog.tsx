@@ -20,7 +20,6 @@ export const DeepCrawlProgressDialog: React.FC<DeepCrawlProgressDialogProps> = (
   url,
   initialStage = 'idle'
 }) => {
-  const [error, setError] = useState<string | null>(null);
   const [attemptCount, setAttemptCount] = useState(0);
   
   const {
@@ -33,12 +32,12 @@ export const DeepCrawlProgressDialog: React.FC<DeepCrawlProgressDialogProps> = (
     domain,
     scannedUrls,
     startCrawl,
-    cancelCrawl
+    cancelCrawl,
+    errorMsg
   } = useCrawlProgress(url);
 
-  // Функция повторной попытки сканирования
+  // Function to retry scanning
   const retryScanning = () => {
-    setError(null);
     setAttemptCount(prevCount => prevCount + 1);
     console.log(`Retrying scan, attempt ${attemptCount + 1}`);
     startCrawl();
@@ -51,27 +50,20 @@ export const DeepCrawlProgressDialog: React.FC<DeepCrawlProgressDialogProps> = (
     }
   }, [open, initialStage, isLoading, startCrawl, url]);
 
-  // Отслеживаем состояние сканирования
+  // Add a loading timeout checker
   useEffect(() => {
-    // Если сканирование застряло на начальном этапе более 10 секунд
+    // If scanning is stuck in starting stage for more than 10 seconds
     if (crawlStage === 'starting' && isLoading) {
       const timeoutId = setTimeout(() => {
         if (crawlStage === 'starting' && attemptCount < 2) {
-          setError("Сканирование не запускается. Попробуем еще раз.");
+          console.log("Scan seems to be stuck in starting phase, retrying...");
           retryScanning();
         } else if (crawlStage === 'starting' && attemptCount >= 2) {
-          setError("Не удалось запустить сканирование после нескольких попыток.");
+          console.error("Failed to start scanning after multiple attempts");
         }
       }, 10000);
       
       return () => clearTimeout(timeoutId);
-    }
-    
-    // Если этап failed, устанавливаем сообщение об ошибке
-    if (crawlStage === 'failed') {
-      setError("Произошла ошибка при сканировании сайта.");
-    } else {
-      setError(null);
     }
   }, [crawlStage, isLoading, attemptCount]);
 
@@ -131,11 +123,13 @@ export const DeepCrawlProgressDialog: React.FC<DeepCrawlProgressDialogProps> = (
             )}
           </div>
           
-          {error && (
+          {(errorMsg || crawlStage === 'failed') && (
             <Alert variant="destructive">
               <AlertTriangle className="h-4 w-4" />
-              <AlertDescription>{error}</AlertDescription>
-              {attemptCount < 3 && crawlStage !== 'crawling' && (
+              <AlertDescription>
+                {errorMsg || "Произошла ошибка при сканировании сайта"}
+              </AlertDescription>
+              {attemptCount < 3 && (
                 <Button 
                   variant="outline" 
                   size="sm" 
