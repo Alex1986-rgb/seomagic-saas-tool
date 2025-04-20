@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuditData } from './hooks/useAuditData';
@@ -13,6 +12,7 @@ import { useToast } from "@/hooks/use-toast";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import AuditRecommendations from '@/components/audit/AuditRecommendations';
 import IssuesSummary from '@/components/audit/summary/IssuesSummary';
+import AuditIssuesAndEstimate from '@/components/audit/AuditIssuesAndEstimate';
 
 /**
  * Основной контейнер для отображения результатов SEO аудита
@@ -286,6 +286,13 @@ const AuditResultsContainer: React.FC<AuditResultsContainerProps> = ({ url }) =>
                 </div>
               )}
               
+              {/* Новы�� блок: Детализация ошибок и сметы */}
+              <AuditIssuesAndEstimate 
+                auditData={auditData} 
+                optimizationCost={optimizationCost} 
+                optimizationItems={optimizationItems} 
+              />
+
               {/* Подробные рекомендации по категориям */}
               {recommendations && (
                 <AuditRecommendations recommendations={recommendations} />
