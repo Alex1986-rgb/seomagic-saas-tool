@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { 
   BarChart3, 
@@ -24,6 +23,7 @@ import AdminAudits from '@/components/admin/AdminAudits';
 import AdminPayments from '@/components/admin/AdminPayments';
 import AdminSettings from '@/components/admin/AdminSettings';
 import AdminPositions from '@/components/admin/AdminPositions';
+import { Link } from "react-router-dom";
 
 const AdminPanel: React.FC = () => {
   return (
@@ -39,18 +39,24 @@ const AdminPanel: React.FC = () => {
             </div>
             
             <div className="flex flex-wrap gap-2">
-              <Button variant="outline" className="flex items-center gap-2" size="sm">
-                <Server className="h-4 w-4" />
-                Состояние системы
-              </Button>
-              <Button variant="outline" className="flex items-center gap-2" size="sm">
-                <Bell className="h-4 w-4" />
-                Уведомления
-              </Button>
-              <Button className="flex items-center gap-2" size="sm">
-                <Grid3X3 className="h-4 w-4" />
-                Панель мониторинга
-              </Button>
+              <Link to="/admin/system-status">
+                <Button variant="outline" className="flex items-center gap-2" size="sm">
+                  <Server className="h-4 w-4" />
+                  Состояние системы
+                </Button>
+              </Link>
+              <Link to="/admin/notifications">
+                <Button variant="outline" className="flex items-center gap-2" size="sm">
+                  <Bell className="h-4 w-4" />
+                  Уведомления
+                </Button>
+              </Link>
+              <Link to="/admin/monitoring">
+                <Button className="flex items-center gap-2" size="sm">
+                  <Grid3X3 className="h-4 w-4" />
+                  Панель мониторинга
+                </Button>
+              </Link>
             </div>
           </div>
           
