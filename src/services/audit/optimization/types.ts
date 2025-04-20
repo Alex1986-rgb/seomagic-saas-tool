@@ -1,3 +1,4 @@
+
 /**
  * Типы данных для оптимизации сайта
  */
@@ -42,6 +43,10 @@ export interface OptimizationMetrics {
   poorMobileOptimization: number;
   brokenLinks: number;
   poorUrlStructure: number;
+  underscoreUrls?: number;
+  duplicateContent?: number;
+  contentToRewrite?: number;
+  missingMetaTags?: number;
   totalScore: number;
   potentialScoreIncrease: number;
   estimatedCost: number;

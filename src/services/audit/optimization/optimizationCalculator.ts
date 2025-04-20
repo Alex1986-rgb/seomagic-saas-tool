@@ -11,9 +11,10 @@ export const calculateOptimizationMetrics = (
 ): OptimizationMetrics => {
   // Default metrics
   const metrics: OptimizationMetrics = {
-    missingMetaTags: 0,
-    duplicateMetaTags: 0,
+    missingMetaDescriptions: 0,
+    missingMetaKeywords: 0,
     missingAltTags: 0,
+    duplicateMetaTags: 0,
     lowContentPages: 0,
     poorTitleTags: 0,
     poorHeadingStructure: 0,
@@ -21,16 +22,21 @@ export const calculateOptimizationMetrics = (
     poorMobileOptimization: Math.floor(totalUrls * 0.25), // Estimate
     brokenLinks,
     poorUrlStructure: Math.floor(totalUrls * 0.1), // Estimate
+    totalScore: 0,
+    potentialScoreIncrease: 0,
+    estimatedCost: 0,
+    optimizationItems: []
   };
   
   // Analyze the content to fill in the metrics
   const contentAnalysis = analyzeContent(pagesContent);
   
-  metrics.missingMetaTags = contentAnalysis.missingMetaDescriptions + contentAnalysis.missingMetaKeywords;
+  metrics.missingMetaDescriptions = contentAnalysis.missingMetaDescriptions;
+  metrics.missingMetaKeywords = contentAnalysis.missingMetaKeywords;
   metrics.missingAltTags = contentAnalysis.missingAltTags;
-  metrics.poorUrlStructure = contentAnalysis.underscoreUrls;
-  metrics.duplicateMetaTags = contentAnalysis.duplicateContent;
-  metrics.lowContentPages = contentAnalysis.contentToRewrite;
+  metrics.poorUrlStructure = contentAnalysis.underscoreUrls || 0;
+  metrics.duplicateMetaTags = contentAnalysis.duplicateContent || 0;
+  metrics.lowContentPages = contentAnalysis.contentToRewrite || 0;
   
   return metrics;
 };
@@ -41,7 +47,7 @@ export const calculateOptimizationCosts = (metrics: OptimizationMetrics, totalUr
   // Calculate individual costs
   const costs: OptimizationCosts = {
     sitemap: pricingConfig.sitemap,
-    metaTags: (metrics.missingMetaTags + metrics.duplicateMetaTags) * pricingConfig.metaTagsPerItem,
+    metaTags: (metrics.missingMetaDescriptions + metrics.missingMetaKeywords + metrics.duplicateMetaTags) * pricingConfig.metaTagsPerItem,
     content: metrics.lowContentPages * pricingConfig.contentPerPage,
     images: metrics.missingAltTags * pricingConfig.imageAltPerItem,
     performance: metrics.slowLoadingPages * pricingConfig.performancePerPage,
@@ -67,8 +73,12 @@ export const calculateOptimizationCosts = (metrics: OptimizationMetrics, totalUr
 export const generateOptimizationRecommendations = (metrics: OptimizationMetrics): string[] => {
   const recommendations: string[] = [];
   
-  if (metrics.missingMetaTags > 0) {
-    recommendations.push(`Add missing meta descriptions and keywords to ${metrics.missingMetaTags} pages.`);
+  if (metrics.missingMetaDescriptions > 0) {
+    recommendations.push(`Add missing meta descriptions to ${metrics.missingMetaDescriptions} pages.`);
+  }
+  
+  if (metrics.missingMetaKeywords > 0) {
+    recommendations.push(`Add missing meta keywords to ${metrics.missingMetaKeywords} pages.`);
   }
   
   if (metrics.duplicateMetaTags > 0) {

@@ -76,8 +76,49 @@ export const useOptimizationAPI = (taskId: string | null) => {
     }
   };
 
+  const optimizeSiteContent = async (contentPrompt: string) => {
+    if (!taskId) {
+      toast({
+        title: "Ошибка",
+        description: "Не удалось получить ID задачи для оптимизации контента",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    try {
+      // Симуляция запроса к API
+      toast({
+        title: "Оптимизация контента",
+        description: "Начат процесс оптимизации контента",
+      });
+
+      // Здесь будет реальный вызов API для оптимизации контента
+      // В демо версии просто задержка для имитации процесса
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      toast({
+        title: "Успех",
+        description: "Контент успешно оптимизирован",
+      });
+      
+      return true;
+    } catch (error) {
+      console.error('Error optimizing content:', error);
+      
+      toast({
+        title: "Ошибка",
+        description: "Не удалось оптимизировать контент сайта",
+        variant: "destructive"
+      });
+      
+      return false;
+    }
+  };
+
   return {
     isLoadingCost,
-    loadOptimizationCost
+    loadOptimizationCost,
+    optimizeSiteContent
   };
 };

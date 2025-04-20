@@ -31,7 +31,7 @@ const ExportErrorReport: React.FC<ExportErrorReportProps> = ({
         setIsExporting('error-report');
         
         // Use backend API to generate the report
-        await seoApiService.downloadReport(taskId, detailed ? 'detailed' : 'errors');
+        await seoApiService.downloadReport(taskId, detailed ? 'full' : 'errors');
         
         showExportSuccess(
           detailed ? "Детальный отчет экспортирован" : "Отчет об ошибках экспортирован", 
