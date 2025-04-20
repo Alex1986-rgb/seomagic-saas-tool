@@ -1,4 +1,3 @@
-
 import axios from 'axios';
 import { saveAs } from 'file-saver';
 import { SiteScanner } from './crawler/siteScanner';
@@ -12,6 +11,7 @@ export interface SimpleSitemapCreatorOptions {
   followRedirects?: boolean;
   retryCount?: number;
   retryDelay?: number;
+  concurrentRequests?: number; // Added this property
 }
 
 export class SimpleSitemapCreator {
@@ -28,6 +28,7 @@ export class SimpleSitemapCreator {
       followRedirects: true,
       retryCount: 3,    // Количество повторных попыток
       retryDelay: 1000, // Задержка между попытками в мс
+      concurrentRequests: 5, // Added this property
       ...options
     };
     
@@ -112,7 +113,7 @@ export class SimpleSitemapCreator {
         maxDepth: this.options.maxDepth,
         timeout: this.options.timeout,
         onProgress: progressCallback,
-        crawlDelay: 300, // Увеличиваем задержку между запросами
+        crawlDelay: 300, // Увеличиваем задержку м��жду запросами
         retryCount: this.options.retryCount,
         retryDelay: this.options.retryDelay
       });

@@ -1,4 +1,3 @@
-
 export interface CrawlResult {
   urls: string[];
   pageCount: number;
@@ -18,7 +17,7 @@ export interface CrawlResult {
 }
 
 export interface DeepCrawlerOptions {
-  maxPages: number; // Making this required to match the Firecrawl type
+  maxPages: number; // Required to match firecrawl/types
   maxDepth?: number;
   includeQuery?: boolean;
   respectRobotsTxt?: boolean;
@@ -26,7 +25,7 @@ export interface DeepCrawlerOptions {
   followRedirects?: boolean;
   timeout?: number;
   ignorePatterns?: string[];
-  onProgress?: (scanned: number, total: number, currentUrl: string) => void;
+  onProgress?: (progress: { pagesScanned: number; currentUrl: string; totalUrls: number; }) => void; // Updated to match firecrawl type
 }
 
 export interface PageData {

@@ -40,7 +40,7 @@ export function useCrawlExecution() {
         includeStylesheet: true,
         timeout: 60000, // Увеличиваем таймаут до 60 секунд
         followRedirects: true,
-        concurrentRequests: 10 // Увеличиваем количество параллельных запросов
+        concurrentRequests: 10 // Теперь это свойство объявлено в интерфейсе
       });
       
       return { crawler, domain, maxPages, normalizedUrl };

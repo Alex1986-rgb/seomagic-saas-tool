@@ -1,7 +1,7 @@
 
 import axios from 'axios';
 import * as cheerio from 'cheerio';
-import { CrawlResult, DeepCrawlerOptions } from '../../api/firecrawl/types';
+import { CrawlResult, DeepCrawlerOptions } from './types';
 import { UrlProcessor } from './urlProcessor';
 import { QueueManager } from './queueManager';
 

@@ -16,12 +16,14 @@ export class DeepCrawler extends DeepCrawlerCore {
       maxDepth: options.maxDepth || 10,     // Увеличиваем глубину поиска
       onProgress: options.onProgress 
         ? (progress) => {
-            // Adapt the new progress object format to the old callback format
-            options.onProgress(
-              progress.pagesScanned,
-              progress.totalUrls,
-              progress.currentUrl
-            );
+            // Convert the new progress object format to match the callback's expected parameters
+            if (typeof options.onProgress === 'function') {
+              options.onProgress({
+                pagesScanned: progress.pagesScanned,
+                currentUrl: progress.currentUrl,
+                totalUrls: progress.totalUrls
+              });
+            }
           }
         : undefined
     };
