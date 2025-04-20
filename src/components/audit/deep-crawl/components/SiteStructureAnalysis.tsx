@@ -1,270 +1,263 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { BarChart, FileSearch, Download, Clock, ScrollText } from 'lucide-react';
+
+import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
-import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { PageNode, SiteStructure, analyzeSiteStructure } from '@/services/audit/siteAnalysis';
-import { useToast } from "@/hooks/use-toast";
-import { ResponsiveContainer } from 'recharts';
+import { Card } from "@/components/ui/card";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Activity, BarChart3, AlertTriangle, Download } from "lucide-react";
+import { useToast } from '@/hooks/use-toast';
+import { useSimpleSitemapCreator } from '../hooks/useSimpleSitemapCreator';
 
 interface SiteStructureAnalysisProps {
   domain: string;
   urls: string[];
 }
 
-const SiteStructureAnalysis = ({ domain, urls }: SiteStructureAnalysisProps) => {
-  const [loading, setLoading] = useState(false);
-  const [progress, setProgress] = useState(0);
-  const [siteStructure, setSiteStructure] = useState<SiteStructure | null>(null);
-  const [showResults, setShowResults] = useState(false);
-  const graphRef = useRef<HTMLDivElement>(null);
+const SiteStructureAnalysis: React.FC<SiteStructureAnalysisProps> = ({ 
+  domain, 
+  urls 
+}) => {
   const { toast } = useToast();
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [urlPatterns, setUrlPatterns] = useState<{pattern: string; count: number; urls: string[]}[]>([]);
+  const [depthData, setDepthData] = useState<{depth: number; count: number}[]>([]);
+  const [domainStructure, setDomainStructure] = useState<{segment: string; count: number}[]>([]);
 
-  const runAnalysis = async () => {
-    setLoading(true);
-    setProgress(0);
-    setSiteStructure(null);
+  const analyzeStructure = async () => {
+    if (urls.length === 0) {
+      toast({
+        title: "Нет данных",
+        description: "Сначала выполните сканирование сайта для анализа структуры",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    setIsAnalyzing(true);
     
     try {
-      const structure = await analyzeSiteStructure(domain, urls, (current, total) => {
-        setProgress(Math.floor((current / total) * 100));
-      });
+      // Extract patterns from URLs
+      const patterns: Map<string, string[]> = new Map();
+      const depthCounts: Map<number, number> = new Map();
+      const segmentCounts: Map<string, number> = new Map();
       
-      setSiteStructure(structure);
-      setShowResults(true);
+      for (const url of urls) {
+        try {
+          const urlObj = new URL(url);
+          
+          // Skip if not from the same domain
+          if (!urlObj.hostname.includes(domain)) continue;
+          
+          // Count by path depth
+          const pathSegments = urlObj.pathname.split('/').filter(Boolean);
+          const depth = pathSegments.length;
+          depthCounts.set(depth, (depthCounts.get(depth) || 0) + 1);
+          
+          // Count segments at each level
+          if (pathSegments.length > 0) {
+            const firstSegment = pathSegments[0];
+            segmentCounts.set(firstSegment, (segmentCounts.get(firstSegment) || 0) + 1);
+          }
+          
+          // Generate a pattern by replacing dynamic parts with placeholders
+          let pattern = urlObj.pathname;
+          
+          // Replace likely IDs with {id}
+          pattern = pattern.replace(/\/\d+\/?/g, '/{id}/');
+          
+          // Replace UUIDs with {uuid}
+          pattern = pattern.replace(/\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\/?/gi, '/{uuid}/');
+          
+          // Replace slugs with {slug}
+          pattern = pattern.replace(/\/[a-z0-9-_]+\/?/gi, '/{slug}/');
+          
+          // Add to patterns map
+          if (!patterns.has(pattern)) {
+            patterns.set(pattern, []);
+          }
+          patterns.get(pattern)!.push(url);
+        } catch (error) {
+          console.warn(`Error analyzing URL: ${url}`, error);
+        }
+      }
+      
+      // Convert maps to arrays and sort
+      const patternArray = Array.from(patterns.entries())
+        .map(([pattern, urls]) => ({ pattern, count: urls.length, urls }))
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 20); // Take top 20 patterns
+      
+      const depthArray = Array.from(depthCounts.entries())
+        .map(([depth, count]) => ({ depth, count }))
+        .sort((a, b) => a.depth - b.depth);
+      
+      const segmentArray = Array.from(segmentCounts.entries())
+        .map(([segment, count]) => ({ segment, count }))
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 15); // Take top 15 segments
+      
+      setUrlPatterns(patternArray);
+      setDepthData(depthArray);
+      setDomainStructure(segmentArray);
       
       toast({
         title: "Анализ завершен",
-        description: `Проанализировано ${structure.nodes.length} страниц и ${structure.links.length} связей`,
+        description: `Проанализировано ${urls.length} URL-адресов, найдено ${patterns.size} шаблонов`
       });
     } catch (error) {
-      console.error("Ошибка при анализе структуры:", error);
+      console.error('Error analyzing site structure:', error);
       toast({
         title: "Ошибка анализа",
-        description: "Не удалось выполнить анализ структуры сайта",
-        variant: "destructive",
+        description: "Произошла ошибка при анализе структуры сайта",
+        variant: "destructive"
       });
     } finally {
-      setLoading(false);
+      setIsAnalyzing(false);
     }
   };
 
+  // Auto-analyze if we already have URLs
   useEffect(() => {
-    if (showResults && siteStructure && graphRef.current) {
-      console.log('Рисуем граф структуры сайта:', siteStructure);
+    if (urls.length > 0 && urlPatterns.length === 0) {
+      analyzeStructure();
     }
-  }, [showResults, siteStructure]);
+  }, [urls]);
 
-  const downloadReport = () => {
-    if (!siteStructure) return;
-    
-    const report = {
+  // Download analysis as JSON
+  const downloadAnalysis = () => {
+    const analysisData = {
       domain,
-      date: new Date().toISOString(),
-      siteStructure,
-      summary: {
-        totalPages: siteStructure.nodes.length,
-        totalLinks: siteStructure.links.length,
-        averagePageRank: siteStructure.nodes.reduce((sum, node) => sum + node.pageRank, 0) / siteStructure.nodes.length
-      }
+      urlCount: urls.length,
+      patterns: urlPatterns,
+      depthDistribution: depthData,
+      topSections: domainStructure,
+      analyzedAt: new Date().toISOString()
     };
     
-    const blob = new Blob([JSON.stringify(report, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `site-structure-${domain}.json`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+    const blob = new Blob([JSON.stringify(analysisData, null, 2)], { type: 'application/json' });
+    const fileName = `site-structure-${domain.replace(/\./g, '_')}.json`;
     
-    toast({
-      title: "Отчет сохранен",
-      description: "Отчет о структуре сайта успешно скачан",
-    });
-  };
-
-  const generateSitemap = () => {
-    if (!siteStructure) return;
-    
-    let sitemap = '<?xml version="1.0" encoding="UTF-8"?>\n';
-    sitemap += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n';
-    
-    for (const node of siteStructure.nodes) {
-      sitemap += `  <url>\n    <loc>${node.url}</loc>\n`;
-      const priority = Math.max(0.1, Math.min(1.0, node.pageRank / 100)).toFixed(1);
-      sitemap += `    <priority>${priority}</priority>\n`;
-      sitemap += `  </url>\n`;
-    }
-    
-    sitemap += '</urlset>';
-    
-    const blob = new Blob([sitemap], { type: 'text/xml' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `sitemap-${domain}.xml`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-    
-    toast({
-      title: "Sitemap создан",
-      description: "XML-файл карты сайта успешно скачан",
-    });
+    // Use FileSaver to download
+    saveAs(blob, fileName);
   };
 
   return (
-    <Card className="shadow-md">
-      <CardHeader className="pb-3">
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <h3 className="text-lg font-medium">Анализ структуры сайта</h3>
+        
         <div className="flex items-center gap-2">
-          <BarChart className="h-5 w-5 text-primary" />
-          <CardTitle className="text-lg">Анализ структуры сайта</CardTitle>
-        </div>
-        <CardDescription>
-          Визуализация структуры сайта и расчет внутреннего PageRank для каждой страницы
-        </CardDescription>
-      </CardHeader>
-      
-      <CardContent>
-        {loading ? (
-          <div className="space-y-2">
-            <div className="flex items-center justify-between mb-2 text-sm text-muted-foreground">
-              <span>Анализ структуры...</span>
-              <span>{progress}%</span>
-            </div>
-            <Progress value={progress} className="h-2" />
-          </div>
-        ) : (
-          <>
-            {showResults && siteStructure ? (
-              <div className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="rounded-lg border bg-card p-3 flex flex-col items-center">
-                    <div className="text-2xl font-bold text-primary">{siteStructure.nodes.length}</div>
-                    <div className="text-sm text-muted-foreground">Проанализировано страниц</div>
-                  </div>
-                  <div className="rounded-lg border bg-card p-3 flex flex-col items-center">
-                    <div className="text-2xl font-bold text-primary">{siteStructure.links.length}</div>
-                    <div className="text-sm text-muted-foreground">Внутренних ссылок</div>
-                  </div>
-                  <div className="rounded-lg border bg-card p-3 flex flex-col items-center">
-                    <div className="text-2xl font-bold text-primary">
-                      {(siteStructure.links.length / Math.max(1, siteStructure.nodes.length)).toFixed(1)}
-                    </div>
-                    <div className="text-sm text-muted-foreground">Среднее кол-во ссылок</div>
-                  </div>
-                </div>
-                
-                <Tabs defaultValue="graph">
-                  <TabsList className="w-full grid grid-cols-2">
-                    <TabsTrigger value="graph">Структура сайта</TabsTrigger>
-                    <TabsTrigger value="pagerank">PageRank страниц</TabsTrigger>
-                  </TabsList>
-                  
-                  <TabsContent value="graph" className="mt-4">
-                    <div className="rounded-lg border bg-card p-4 aspect-video">
-                      <div ref={graphRef} className="w-full h-full flex items-center justify-center">
-                        <div className="text-center text-muted-foreground">
-                          <Clock className="h-10 w-10 mx-auto mb-2 animate-pulse" />
-                          <p>Визуализация структуры сайта</p>
-                          <p className="text-sm">Для просмотра интерактивного графа скачайте полный отчет</p>
-                        </div>
-                      </div>
-                    </div>
-                  </TabsContent>
-                  
-                  <TabsContent value="pagerank" className="mt-4">
-                    <div className="rounded-md border overflow-hidden">
-                      <table className="w-full">
-                        <thead>
-                          <tr className="border-b bg-muted/50">
-                            <th className="p-2 text-left font-medium">URL</th>
-                            <th className="p-2 text-left font-medium w-24">PageRank</th>
-                            <th className="p-2 text-left font-medium w-24 hidden md:table-cell">Входящие</th>
-                            <th className="p-2 text-left font-medium w-24 hidden md:table-cell">Исходящие</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {[...siteStructure.nodes]
-                            .sort((a, b) => b.pageRank - a.pageRank)
-                            .slice(0, 10)
-                            .map((node, index) => (
-                              <tr key={index} className="border-b">
-                                <td className="p-2 truncate max-w-[200px]" title={node.url}>
-                                  {new URL(node.url).pathname || '/'}
-                                </td>
-                                <td className="p-2">
-                                  <Badge variant="outline" className="font-mono">
-                                    {node.pageRank.toFixed(1)}
-                                  </Badge>
-                                </td>
-                                <td className="p-2 hidden md:table-cell">{node.incomingLinks}</td>
-                                <td className="p-2 hidden md:table-cell">{node.outgoingLinks}</td>
-                              </tr>
-                            ))}
-                        </tbody>
-                      </table>
-                    </div>
-                    <p className="text-sm text-muted-foreground mt-2">
-                      Показаны 10 страниц с наивысшим значением PageRank
-                    </p>
-                  </TabsContent>
-                </Tabs>
-              </div>
-            ) : (
-              <div className="text-center py-6">
-                <p className="text-muted-foreground mb-6">
-                  Анализирует структуру сайта, строит граф связей и рассчитывает внутренний PageRank
-                </p>
-                <Button onClick={runAnalysis} className="gap-2">
-                  <BarChart className="h-4 w-4" />
-                  Анализировать структуру сайта
-                </Button>
-              </div>
-            )}
-          </>
-        )}
-      </CardContent>
-      
-      {showResults && siteStructure && (
-        <CardFooter className="flex flex-wrap gap-2 justify-between pt-3">
-          <Button 
-            variant="secondary" 
+          <Button
+            variant="outline"
             size="sm"
-            onClick={() => setShowResults(false)}
+            onClick={analyzeStructure}
+            disabled={isAnalyzing || urls.length === 0}
           >
-            Скрыть результаты
+            <Activity className="mr-2 h-4 w-4" />
+            {isAnalyzing ? 'Анализ...' : 'Проанализировать'}
           </Button>
           
-          <div className="flex gap-2">
+          {urlPatterns.length > 0 && (
             <Button 
-              variant="outline" 
+              variant="outline"
               size="sm"
-              onClick={generateSitemap}
-              className="gap-2"
+              onClick={downloadAnalysis}
             >
-              <ScrollText className="h-4 w-4" />
-              Скачать Sitemap
+              <Download className="mr-2 h-4 w-4" />
+              Скачать анализ
             </Button>
-            
-            <Button 
-              variant="outline" 
-              size="sm"
-              onClick={downloadReport}
-              className="gap-2"
-            >
-              <Download className="h-4 w-4" />
-              Скачать отчет
-            </Button>
-          </div>
-        </CardFooter>
+          )}
+        </div>
+      </div>
+      
+      {urls.length === 0 ? (
+        <Alert>
+          <AlertTriangle className="h-4 w-4" />
+          <AlertDescription>
+            Сначала необходимо выполнить сканирование сайта для анализа структуры
+          </AlertDescription>
+        </Alert>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* URL Depth Distribution */}
+          <Card className="p-4">
+            <h4 className="text-sm font-medium mb-2">Распределение по глубине</h4>
+            <div className="h-64 flex items-end justify-between gap-1">
+              {depthData.map(({ depth, count }) => (
+                <div key={depth} className="relative flex flex-col items-center group">
+                  <div
+                    className="bg-primary/80 hover:bg-primary rounded w-8"
+                    style={{ 
+                      height: `${Math.max(20, Math.min(100, (count / Math.max(...depthData.map(d => d.count))) * 100))}%` 
+                    }}
+                  ></div>
+                  <span className="text-xs mt-1">{depth}</span>
+                  <div className="absolute bottom-full mb-2 hidden group-hover:block bg-background px-2 py-1 rounded shadow-sm text-xs whitespace-nowrap">
+                    Глубина {depth}: {count} URL ({Math.round((count / urls.length) * 100)}%)
+                  </div>
+                </div>
+              ))}
+            </div>
+            <p className="text-xs text-muted-foreground mt-2">
+              Распределение URL по уровням вложенности (число сегментов в пути)
+            </p>
+          </Card>
+          
+          {/* Top Sections */}
+          <Card className="p-4">
+            <h4 className="text-sm font-medium mb-2">Основные разделы сайта</h4>
+            <div className="space-y-2">
+              {domainStructure.slice(0, 10).map(({ segment, count }) => (
+                <div key={segment} className="flex items-center gap-2">
+                  <div className="flex-grow">
+                    <div className="text-sm">{segment || '/'}</div>
+                    <div 
+                      className="h-2 bg-primary/80 rounded-full mt-1"
+                      style={{ 
+                        width: `${Math.max(5, Math.min(100, (count / Math.max(...domainStructure.map(d => d.count))) * 100))}%` 
+                      }}
+                    ></div>
+                  </div>
+                  <div className="text-sm whitespace-nowrap">
+                    {count} URL
+                  </div>
+                </div>
+              ))}
+            </div>
+            <p className="text-xs text-muted-foreground mt-2">
+              Популярность основных разделов сайта (первый сегмент пути)
+            </p>
+          </Card>
+          
+          {/* URL Patterns */}
+          <Card className="p-4 md:col-span-2">
+            <h4 className="text-sm font-medium mb-2">Шаблоны URL</h4>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b">
+                    <th className="text-left py-2 px-3 font-medium">Шаблон</th>
+                    <th className="text-right py-2 px-3 font-medium">Количество URL</th>
+                    <th className="text-right py-2 px-3 font-medium">Процент</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {urlPatterns.slice(0, 10).map(({ pattern, count }, index) => (
+                    <tr key={index} className="border-b last:border-0 hover:bg-muted/50">
+                      <td className="py-2 px-3 font-mono text-xs">{pattern || '/'}</td>
+                      <td className="py-2 px-3 text-right">{count}</td>
+                      <td className="py-2 px-3 text-right">{Math.round((count / urls.length) * 100)}%</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <p className="text-xs text-muted-foreground mt-2">
+              Часто встречающиеся шаблоны URL на сайте
+            </p>
+          </Card>
+        </div>
       )}
-    </Card>
+    </div>
   );
 };
 

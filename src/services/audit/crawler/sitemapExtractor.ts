@@ -8,38 +8,52 @@ import * as cheerio from 'cheerio';
 
 export class SitemapExtractor {
   async extractUrlsFromSitemap(sitemapXml: string): Promise<string[]> {
-    const urls: string[] = [];
-    const $ = cheerio.load(sitemapXml, { xmlMode: true });
-    
-    // Extract URLs from the sitemap
-    $('url > loc').each((_, element) => {
-      const url = $(element).text().trim();
-      if (url) {
-        urls.push(url);
+    try {
+      const urls: string[] = [];
+      const $ = cheerio.load(sitemapXml, { xmlMode: true });
+      
+      // Extract URLs from the sitemap
+      $('url > loc').each((_, element) => {
+        const url = $(element).text().trim();
+        if (url && this.isValidUrl(url)) {
+          urls.push(url);
+        }
+      });
+      
+      // Collect nested sitemap URLs first
+      const nestedSitemapUrls: string[] = [];
+      $('sitemap > loc').each((_, element) => {
+        const sitemapUrl = $(element).text().trim();
+        if (sitemapUrl && this.isValidUrl(sitemapUrl)) {
+          nestedSitemapUrls.push(sitemapUrl);
+        }
+      });
+      
+      // Process nested sitemaps sequentially to avoid overloading servers
+      for (const sitemapUrl of nestedSitemapUrls) {
+        try {
+          const response = await axios.get(sitemapUrl, { 
+            timeout: 10000,
+            headers: {
+              'User-Agent': 'Mozilla/5.0 (compatible; SitemapExtractor/1.0)'
+            }
+          });
+          
+          if (response.status === 200) {
+            const nestedUrls = await this.extractUrlsFromSitemap(response.data);
+            urls.push(...nestedUrls);
+          }
+        } catch (error) {
+          console.error(`Error processing nested sitemap ${sitemapUrl}:`, error);
+        }
       }
-    });
-    
-    // Fixed: Collect nested sitemap URLs first, then process them sequentially
-    const nestedSitemapUrls: string[] = [];
-    $('sitemap > loc').each((_, element) => {
-      const sitemapUrl = $(element).text().trim();
-      if (sitemapUrl) {
-        nestedSitemapUrls.push(sitemapUrl);
-      }
-    });
-    
-    // Process nested sitemaps sequentially
-    for (const sitemapUrl of nestedSitemapUrls) {
-      try {
-        const response = await axios.get(sitemapUrl, { timeout: 8000 });
-        const nestedUrls = await this.extractUrlsFromSitemap(response.data);
-        urls.push(...nestedUrls);
-      } catch (error) {
-        console.error(`Error processing nested sitemap ${sitemapUrl}:`, error);
-      }
+      
+      // Filter out duplicates and return
+      return [...new Set(urls)];
+    } catch (error) {
+      console.error('Error extracting URLs from sitemap:', error);
+      return [];
     }
-    
-    return urls;
   }
   
   /**
@@ -62,7 +76,13 @@ export class SitemapExtractor {
     for (const location of possibleLocations) {
       try {
         const url = normalizedBaseUrl + location;
-        const response = await axios.get(url, { timeout: 5000 });
+        const response = await axios.get(url, { 
+          timeout: 5000,
+          headers: {
+            'User-Agent': 'Mozilla/5.0 (compatible; SitemapExtractor/1.0)'
+          }
+        });
+        
         if (response.status === 200) {
           sitemapUrls.push(url);
         }
@@ -74,7 +94,12 @@ export class SitemapExtractor {
     // Also try to find sitemap URL in robots.txt
     try {
       const robotsUrl = normalizedBaseUrl + '/robots.txt';
-      const response = await axios.get(robotsUrl, { timeout: 5000 });
+      const response = await axios.get(robotsUrl, { 
+        timeout: 5000,
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (compatible; SitemapExtractor/1.0)'
+        }
+      });
       
       if (response.status === 200) {
         const robotsTxt = response.data;
@@ -83,7 +108,7 @@ export class SitemapExtractor {
         if (sitemapMatches) {
           for (const match of sitemapMatches) {
             const sitemapUrl = match.replace(/Sitemap:\s*/i, '').trim();
-            if (sitemapUrl) {
+            if (sitemapUrl && this.isValidUrl(sitemapUrl)) {
               sitemapUrls.push(sitemapUrl);
             }
           }
@@ -94,5 +119,17 @@ export class SitemapExtractor {
     }
     
     return sitemapUrls;
+  }
+  
+  /**
+   * Validate URL format
+   */
+  private isValidUrl(url: string): boolean {
+    try {
+      new URL(url);
+      return true;
+    } catch (error) {
+      return false;
+    }
   }
 }

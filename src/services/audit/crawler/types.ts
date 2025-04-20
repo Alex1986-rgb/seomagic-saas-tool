@@ -1,74 +1,30 @@
-/**
- * Shared types for the crawler system
- */
-
-export interface RequestManager {
-  delayBetweenRequests: number;
-  maxConcurrentRequests: number;
-  requestQueue: Array<() => Promise<void>>;
-  activeRequests: number;
-  pause: () => void;
-  resume: () => void;
-  addToQueue: (request: () => Promise<void>) => void;
-  processQueue: () => void;
-}
-
-export interface PageData {
-  url: string;
-  title: string | null;
-  headings: {h1: string[], h2: string[]};
-  metaDescription: string | null;
-  statusCode: number;
-  contentType: string | null;
-  contentLength: number | null;
-  internalLinks: string[];
-  externalLinks: string[];
-  images: {url: string, alt: string | null}[];
-  hasCanonical: boolean;
-  canonicalUrl: string | null;
-}
-
-export interface CrawlSummary {
-  crawlSummary: {
-    url: string;
-    domain: string;
-    startTime: string;
-    endTime: string;
-    duration: string;
-    totalPages: number;
-    crawlRate: string;
-  };
-  pageStats: {
-    totalInternalLinks: number;
-    totalExternalLinks: number;
-    totalImages: number;
-    avgInternalLinksPerPage: string;
-    avgExternalLinksPerPage: string;
-    avgImagesPerPage: string;
-  };
-  seoIssues: {
-    pagesWithoutTitle: number;
-    pagesWithoutDescription: number;
-    pagesWithoutH1: number;
-    percentWithoutTitle: string;
-    percentWithoutDescription: string;
-    percentWithoutH1: string;
-  };
-}
-
-export interface SiteStructureAnalysis {
-  levels: Record<number, number>;
-  pathCounts: Record<string, number>;
-}
-
-export interface DeepCrawlerOptions {
-  maxPages: number;
-  maxDepth: number;
-  followExternalLinks: boolean;
-  onProgress: (pagesScanned: number, totalEstimated: number, currentUrl: string) => void;
-}
 
 export interface CrawlResult {
   urls: string[];
   pageCount: number;
+  metadata?: {
+    title?: string;
+    description?: string;
+    keywords?: string[];
+    links?: {
+      internal: number;
+      external: number;
+      broken: number;
+    };
+  };
+  brokenLinks?: {url: string; statusCode: number}[];
+  redirects?: {from: string; to: string}[];
+  errors?: string[];
+}
+
+export interface DeepCrawlerOptions {
+  maxPages?: number;
+  maxDepth?: number;
+  includeQuery?: boolean;
+  respectRobotsTxt?: boolean;
+  userAgent?: string;
+  followRedirects?: boolean;
+  timeout?: number;
+  ignorePatterns?: string[];
+  onProgress?: (scanned: number, total: number, currentUrl: string) => void;
 }

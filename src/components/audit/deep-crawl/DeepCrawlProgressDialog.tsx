@@ -1,176 +1,155 @@
 
 import React, { useState, useEffect } from 'react';
-import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useCrawlProgress } from './hooks/useCrawlProgress';
-import { getStageTitleAndInfo } from './utils/crawlStageUtils';
-import { useToast } from "@/hooks/use-toast";
-import { promptTemplates } from './components/dialog/PromptTemplates';
+import { X, AlertCircle, Check } from 'lucide-react';
 import { 
-  ProgressTab, 
-  ResultsTab, 
-  OptimizeTab,
-  DialogHeader,
-  DialogFooter,
-  EstimateTab
-} from './components/dialog';
+  Dialog, 
+  DialogContent, 
+  DialogHeader, 
+  DialogTitle, 
+  DialogDescription,
+  DialogFooter 
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
+import { useToast } from "@/hooks/use-toast";
+import { useCrawlProgress } from './hooks/useCrawlProgress';
+import { Badge } from "@/components/ui/badge";
 
 interface DeepCrawlProgressDialogProps {
   open: boolean;
   onClose: (pageCount?: number) => void;
   url: string;
+  initialStage?: 'idle' | 'starting' | 'crawling' | 'analyzing' | 'completed' | 'failed';
 }
 
-export const DeepCrawlProgressDialog: React.FC<DeepCrawlProgressDialogProps> = ({ 
-  open, 
-  onClose, 
-  url 
+export const DeepCrawlProgressDialog: React.FC<DeepCrawlProgressDialogProps> = ({
+  open,
+  onClose,
+  url,
+  initialStage = 'idle'
 }) => {
-  const [showResults, setShowResults] = useState(false);
-  const [activeTab, setActiveTab] = useState<string>("progress");
-  const [seoPrompt, setSeoPrompt] = useState<string>("");
-  const [selectedPromptTemplate, setSelectedPromptTemplate] = useState<string>("");
-  const [isCrawlInitiated, setIsCrawlInitiated] = useState(false);
   const { toast } = useToast();
+  const [dialogOpen, setDialogOpen] = useState(open);
   
   const {
+    isLoading,
+    isComplete,
     progress,
     currentUrl,
     pagesScanned,
-    estimatedPages,
-    sitemap,
-    crawlStage,
-    isCompleted,
-    error,
-    domain,
+    totalPages,
     scannedUrls,
+    crawlStage,
     startCrawling,
     downloadSitemap,
     downloadAllData,
-    downloadReport,
-    optimizeSite,
-    downloadOptimizedSite,
-    isOptimizing
+    downloadReport
   } = useCrawlProgress(url);
 
   useEffect(() => {
-    if (open && !isCrawlInitiated) {
-      const timer = setTimeout(() => {
-        startCrawling();
-        setIsCrawlInitiated(true);
-      }, 300);
-      return () => clearTimeout(timer);
-    }
+    setDialogOpen(open);
     
-    if (!open) {
-      setIsCrawlInitiated(false);
+    if (open) {
+      // Start crawling when dialog is opened
+      const startScanning = async () => {
+        const result = await startCrawling();
+        if (result) {
+          toast({
+            title: "Сканирование завершено",
+            description: `Обнаружено ${result.pageCount} страниц на сайте ${url}`,
+          });
+        }
+      };
+      
+      startScanning();
     }
-  }, [open, isCrawlInitiated, startCrawling]);
+  }, [open, url, startCrawling, toast]);
 
   const handleClose = () => {
-    if (isCompleted) {
-      onClose(pagesScanned);
-    } else {
-      if (window.confirm("Вы уверены, что хотите прервать сканирование?")) {
-        onClose();
-      }
+    setDialogOpen(false);
+    onClose(pagesScanned);
+  };
+
+  // Get stage label
+  const getStageLabel = () => {
+    switch (crawlStage) {
+      case 'starting':
+        return 'Подготовка к сканированию...';
+      case 'crawling':
+        return 'Сканирование страниц...';
+      case 'analyzing':
+        return 'Анализ структуры сайта...';
+      case 'completed':
+        return 'Сканирование завершено';
+      case 'failed':
+        return 'Ошибка сканирования';
+      default:
+        return 'Ожидание';
     }
   };
-  
-  const toggleResults = () => {
-    setShowResults(!showResults);
-  };
-
-  const handlePromptTemplateChange = (value: string) => {
-    setSelectedPromptTemplate(value);
-    const template = promptTemplates.find(t => t.id === value);
-    if (template) {
-      setSeoPrompt(template.prompt);
-    }
-  };
-
-  const handleOptimizeSite = () => {
-    if (seoPrompt.trim()) {
-      optimizeSite(seoPrompt);
-    }
-  };
-
-  const handleDownloadEstimate = () => {
-    toast({
-      title: "Смета скачана",
-      description: "Файл со сметой загружен успешно",
-    });
-  };
-
-  const { title, info } = getStageTitleAndInfo(crawlStage, error, pagesScanned);
 
   return (
-    <Dialog open={open} onOpenChange={() => handleClose()}>
-      <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[95vw]">
-        <DialogHeader title={title} />
-        
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="mt-2">
-          <TabsList className="grid grid-cols-4">
-            <TabsTrigger value="progress">Прогресс</TabsTrigger>
-            <TabsTrigger value="results" disabled={!isCompleted}>Результаты</TabsTrigger>
-            <TabsTrigger value="estimate" disabled={!isCompleted}>Смета</TabsTrigger>
-            <TabsTrigger value="optimize" disabled={!isCompleted}>Оптимизация</TabsTrigger>
-          </TabsList>
+    <Dialog open={dialogOpen} onOpenChange={(open) => {
+      if (!open) handleClose();
+    }}>
+      <DialogContent className="sm:max-w-[600px]">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            Глубокое сканирование сайта
+            <Badge variant={crawlStage === 'completed' ? 'success' : 'default'}>{getStageLabel()}</Badge>
+          </DialogTitle>
+          <DialogDescription>
+            {url} <span className="text-xs opacity-70">| Максимум 500,000 страниц</span>
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="py-4 space-y-5">
+          <Progress value={progress} className="h-2" />
           
-          <TabsContent value="progress">
-            <ProgressTab 
-              progress={progress}
-              pagesScanned={pagesScanned}
-              estimatedPages={estimatedPages}
-              currentUrl={currentUrl}
-              error={error}
-              info={info}
-            />
-          </TabsContent>
+          <div className="grid grid-cols-2 gap-4 text-sm">
+            <div>
+              <div className="text-muted-foreground">Просканировано:</div>
+              <div className="font-medium">{pagesScanned.toLocaleString('ru-RU')} страниц</div>
+            </div>
+            <div>
+              <div className="text-muted-foreground">Примерно всего:</div>
+              <div className="font-medium">{totalPages > 0 ? totalPages.toLocaleString('ru-RU') : 'Оценка...'} страниц</div>
+            </div>
+          </div>
           
-          <TabsContent value="results">
-            <ResultsTab 
-              isCompleted={isCompleted}
-              error={error}
-              pagesScanned={pagesScanned}
-              domain={domain}
-              scannedUrls={scannedUrls}
-              onDownloadSitemap={downloadSitemap}
-              onDownloadReport={downloadReport}
-              onDownloadAllData={downloadAllData}
-            />
-          </TabsContent>
-          
-          <TabsContent value="estimate">
-            <EstimateTab 
-              isCompleted={isCompleted}
-              pagesScanned={pagesScanned}
-              onGenerateReport={downloadReport}
-              onDownloadEstimate={handleDownloadEstimate}
-            />
-          </TabsContent>
-          
-          <TabsContent value="optimize">
-            <OptimizeTab 
-              seoPrompt={seoPrompt}
-              selectedPromptTemplate={selectedPromptTemplate}
-              promptTemplates={promptTemplates}
-              isOptimizing={isOptimizing}
-              isCompleted={isCompleted}
-              onSeoPromptChange={setSeoPrompt}
-              onPromptTemplateChange={handlePromptTemplateChange}
-              onOptimize={handleOptimizeSite}
-              onDownloadOptimized={downloadOptimizedSite}
-            />
-          </TabsContent>
-        </Tabs>
-        
-        <DialogFooter 
-          isCompleted={isCompleted}
-          activeTab={activeTab}
-          onClose={handleClose}
-          onTabChange={setActiveTab}
-        />
+          {currentUrl && (
+            <div className="text-xs text-muted-foreground truncate">
+              Текущий URL: {currentUrl}
+            </div>
+          )}
+
+          {crawlStage === 'failed' && (
+            <div className="flex items-center gap-2 text-sm text-red-500 bg-red-50 dark:bg-red-950/30 p-3 rounded">
+              <AlertCircle className="h-4 w-4" />
+              <span>Произошла ошибка при сканировании. Пожалуйста, попробуйте еще раз.</span>
+            </div>
+          )}
+        </div>
+
+        <DialogFooter className="flex flex-col sm:flex-row gap-2">
+          {crawlStage === 'completed' ? (
+            <>
+              <Button onClick={downloadSitemap} variant="outline" size="sm">
+                Скачать карту сайта
+              </Button>
+              <Button onClick={downloadAllData} variant="outline" size="sm">
+                Скачать все данные
+              </Button>
+              <Button onClick={handleClose} variant="default" size="sm">
+                <Check className="h-4 w-4 mr-1" /> Готово
+              </Button>
+            </>
+          ) : (
+            <Button onClick={handleClose} variant={isComplete ? "default" : "outline"} size="sm">
+              {isComplete ? "Закрыть" : "Отмена"}
+            </Button>
+          )}
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );

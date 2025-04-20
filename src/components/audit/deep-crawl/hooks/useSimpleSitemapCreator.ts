@@ -11,8 +11,8 @@ export const useSimpleSitemapCreator = () => {
   const [currentUrl, setCurrentUrl] = useState('');
   
   const sitemapCreator = new SimpleSitemapCreator({
-    maxPages: 10000,
-    maxDepth: 5,
+    maxPages: 500000,
+    maxDepth: 10,
     includeStylesheet: true
   });
   
@@ -38,6 +38,12 @@ export const useSimpleSitemapCreator = () => {
       
       setSitemap(xml);
       setUrls(scannedUrls);
+      
+      // Store the URLs for future use
+      const domain = new URL(url.startsWith('http') ? url : `https://${url}`).hostname;
+      localStorage.setItem(`sitemap_urls_${domain}`, JSON.stringify(scannedUrls));
+      
+      return scannedUrls;
     } catch (error) {
       console.error('Error generating sitemap:', error);
       throw error;
