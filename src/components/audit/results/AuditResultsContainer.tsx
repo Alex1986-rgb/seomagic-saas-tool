@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuditData } from './hooks/useAuditData';
@@ -20,7 +21,7 @@ const AuditResultsContainer: React.FC<AuditResultsContainerProps> = ({ url }) =>
   const [isInitialized, setIsInitialized] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [hadError, setHadError] = useState(false);
-  const [timeout, setTimeout] = useState(false);
+  const [timeout, setTimeoutStatus] = useState(false);
   const { toast } = useToast();
   const initRef = useRef(false);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -59,7 +60,7 @@ const AuditResultsContainer: React.FC<AuditResultsContainerProps> = ({ url }) =>
       
       timeoutRef.current = setTimeout(() => {
         console.log("Audit data loading timeout triggered after 3 minutes");
-        setTimeout(true);
+        setTimeoutStatus(true);
         setIsLoading(false);
         setHadError(true);
         
@@ -149,7 +150,7 @@ const AuditResultsContainer: React.FC<AuditResultsContainerProps> = ({ url }) =>
     initRef.current = false;
     setIsInitialized(false);
     setHadError(false);
-    setTimeout(false);
+    setTimeoutStatus(false);
   };
 
   if (hadError || timeout) {
