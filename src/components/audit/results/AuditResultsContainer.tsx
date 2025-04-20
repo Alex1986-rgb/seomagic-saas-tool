@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuditData } from './hooks/useAuditData';
@@ -94,7 +95,7 @@ const AuditResultsContainer: React.FC<AuditResultsContainerProps> = ({ url }) =>
       initRef.current = true;
       setIsLoading(true);
       
-      // We don't use deep scan initially to improve loading time
+      // Fix: Only pass one argument to loadAuditData instead of two
       loadAuditData(false).then(() => {
         setIsLoading(false);
         
