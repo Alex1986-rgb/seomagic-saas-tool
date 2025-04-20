@@ -15,21 +15,8 @@ export interface CrawlTask {
   error?: string;
 }
 
-export interface CrawlTaskData {
-  id: string;
-  url: string;
-  status: string;
-  progress: number;
-  pages_scanned: number;
-  estimated_total_pages: number;
-  start_time: string;
-  updated_at: string;
-}
+export const crawlTasks: CrawlTask[] = [];
 
-// Helper function for generating IDs
 export const generateTaskId = (): string => {
   return uuidv4();
 };
-
-// In-memory storage for tasks
-export let crawlTasks: CrawlTask[] = [];
