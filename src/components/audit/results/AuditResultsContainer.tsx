@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuditData } from './hooks/useAuditData';
@@ -61,7 +60,6 @@ const AuditResultsContainer: React.FC<AuditResultsContainerProps> = ({ url }) =>
       }
       
       // Set a new timeout - 3 minutes maximum for audit data loading
-      // Fix Type error: ensure we're using the NodeJS.Timeout type
       timeoutRef.current = setTimeout(() => {
         console.log("Audit data loading timeout triggered after 3 minutes");
         setTimeout(true);
@@ -73,7 +71,7 @@ const AuditResultsContainer: React.FC<AuditResultsContainerProps> = ({ url }) =>
           description: "Загрузка данных аудита заняла слишком много времени. Пожалуйста, попробуйте снова или используйте другой URL.",
           variant: "destructive",
         });
-      }, 180000); // 3 minutes
+      }, 180000) as unknown as NodeJS.Timeout; // 3 minutes
     }
     
     return () => {
@@ -97,7 +95,6 @@ const AuditResultsContainer: React.FC<AuditResultsContainerProps> = ({ url }) =>
       setIsLoading(true);
       
       // We don't use deep scan initially to improve loading time
-      // Fix parameter count mismatch: loadAuditData expects only one argument
       loadAuditData(false).then(() => {
         setIsLoading(false);
         
@@ -212,7 +209,7 @@ const AuditResultsContainer: React.FC<AuditResultsContainerProps> = ({ url }) =>
           <>
             <AuditHeader 
               onRefresh={() => loadAuditData(true)}
-              onDeepScan={() => loadAuditData(false, true)}
+              onDeepScan={() => loadAuditData(false)}
               isRefreshing={isRefreshing}
               onDownloadSitemap={sitemap ? downloadSitemap : undefined}
               onTogglePrompt={() => setShowPrompt(!showPrompt)}
