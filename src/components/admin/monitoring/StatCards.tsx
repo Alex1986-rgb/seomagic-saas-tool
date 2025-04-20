@@ -4,7 +4,6 @@ import { Card, CardContent } from "@/components/ui/card";
 import { AreaChart, Area, PieChart, Pie, Cell, LineChart, Line, ResponsiveContainer } from "recharts";
 import { Cpu, Server, HardDrive, Activity, TrendingDown, TrendingUp } from "lucide-react";
 
-// Reuse the palette
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8'];
 
 export interface StatCard {
@@ -29,18 +28,16 @@ const StatCards: React.FC<StatCardsProps> = ({
   memoryUsageData,
   diskUsageData,
 }) => {
-  // Helper function to render the appropriate icon based on icon name
   const renderIcon = (iconName: string) => {
     switch (iconName) {
-      case 'cpu': return <Cpu className="h-6 w-6 text-blue-500" />;
-      case 'server': return <Server className="h-6 w-6 text-purple-500" />;
-      case 'hard-drive': return <HardDrive className="h-6 w-6 text-emerald-600" />;
-      case 'activity': return <Activity className="h-6 w-6 text-emerald-600" />;
-      default: return <Activity className="h-6 w-6" />;
+      case 'cpu': return <Cpu className="h-8 w-8 text-blue-500" />;
+      case 'server': return <Server className="h-8 w-8 text-purple-500" />;
+      case 'hard-drive': return <HardDrive className="h-8 w-8 text-emerald-600" />;
+      case 'activity': return <Activity className="h-8 w-8 text-emerald-600" />;
+      default: return <Activity className="h-8 w-8" />;
     }
   };
 
-  // Helper function to render trend icon
   const renderTrendIcon = (iconName: string) => {
     switch (iconName) {
       case 'trending-up': return <TrendingUp className="h-4 w-4" />;
@@ -50,27 +47,25 @@ const StatCards: React.FC<StatCardsProps> = ({
   };
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+    <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-10">
       {statCards.map((card, i) => (
-        <Card key={card.title} className="shadow hover:shadow-md transition">
-          <CardContent className={`p-6 ${card.color}`}>
-            <div className="flex items-center justify-between">
-              <div className="rounded-xl bg-white/80 p-3 shadow">
-                {renderIcon(card.icon)}
+        <Card key={card.title} className="shadow-md hover:shadow-lg transition border-0 bg-gradient-to-br from-white via-gray-50 to-primary/10 !overflow-visible">
+          <CardContent className={`relative p-7 md:p-8 ${card.color} rounded-2xl`}>
+            <div className="flex items-start gap-4">
+              <div className="flex flex-col items-center justify-center mr-3">
+                <span className={`flex items-center gap-1 mb-1 text-xl font-bold ${card.trend.value > 0 ? "text-green-500" : "text-red-500"}`}>
+                  {renderTrendIcon(card.trend.icon)}
+                  {card.trend.value > 0 ? `+${card.trend.value}%` : `${card.trend.value}%`}
+                </span>
+                <div className="bg-white rounded-xl p-3 shadow border">{renderIcon(card.icon)}</div>
               </div>
-              <div className={`text-xs px-2 py-1 rounded-full flex items-center gap-1 
-                bg-opacity-20 font-medium
-                ${card.trend.value > 0 ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-                {renderTrendIcon(card.trend.icon)}
-                <span>{card.trend.value > 0 ? '+' : ''}{card.trend.value}%</span>
+              <div className="flex-1">
+                <div className="text-base text-muted-foreground">{card.title}</div>
+                <div className="text-3xl font-black leading-tight mb-2">{card.value}</div>
+                <div className="text-sm text-gray-600 font-medium">{card.description}</div>
               </div>
             </div>
-            <div className="mt-3">
-              <div className="text-xs text-muted-foreground">{card.title}</div>
-              <div className="text-2xl font-bold">{card.value}</div>
-              <div className="text-xs text-muted-foreground">{card.description}</div>
-            </div>
-            <div className="h-20 mt-3">
+            <div className="h-20 mt-4">
               {i === 0 && (
                 <ResponsiveContainer width="100%" height="100%">
                   <AreaChart data={cpuUsageData} margin={{ top: 5, right: 5, left: 5, bottom: 5 }}>

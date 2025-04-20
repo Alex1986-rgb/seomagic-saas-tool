@@ -13,25 +13,35 @@ interface Props {
 const SystemWarnings: React.FC<Props> = ({ warnings }) => {
   if (!warnings.length) return null;
   return (
-    <div className="mb-6">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+    <div className="mb-8">
+      <div className="flex flex-col md:flex-row gap-4">
         {warnings.map((w, i) => (
           <div
             key={i}
             className={
-              "rounded-lg p-4 flex items-center gap-3 " +
+              "flex-1 rounded-2xl p-5 flex items-center gap-4 shadow-lg border-2 " +
               (w.type === "warning"
-                ? "bg-amber-50 text-amber-800 border border-amber-200"
+                ? "bg-yellow-50/70 border-yellow-300 text-yellow-900"
                 : w.type === "error"
-                ? "bg-red-50 text-red-700 border border-red-200"
-                : "bg-blue-50 text-blue-800 border border-blue-200"
+                ? "bg-red-50/70 border-red-400 text-red-700"
+                : "bg-blue-50/70 border-blue-300 text-blue-900"
               )
             }
           >
-            {w.type === "error" ? <AlertTriangle className="h-5 w-5 flex-shrink-0" /> :
-             w.type === "warning" ? <AlertTriangle className="h-5 w-5 flex-shrink-0" /> :
-             <Info className="h-5 w-5 flex-shrink-0" />}
-            <span className="text-sm">{w.message}</span>
+            <div className={
+              "flex items-center justify-center rounded-full p-3 shrink-0 " + 
+              (w.type === "warning"
+                ? "bg-yellow-200/80"
+                : w.type === "error"
+                ? "bg-red-200/80"
+                : "bg-blue-200/80"
+              )}
+            >
+              {w.type === "error" ? <AlertTriangle className="h-7 w-7" /> :
+                w.type === "warning" ? <AlertTriangle className="h-7 w-7" /> :
+                <Info className="h-7 w-7" />}
+            </div>
+            <span className="text-base md:text-lg font-semibold">{w.message}</span>
           </div>
         ))}
       </div>
