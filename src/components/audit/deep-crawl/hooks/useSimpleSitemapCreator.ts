@@ -15,7 +15,8 @@ export const useSimpleSitemapCreator = () => {
     maxPages: 1000,
     maxDepth: 5,
     includeStylesheet: true,
-    timeout: 15000
+    timeout: 30000, // Увеличиваем таймаут до 30 секунд
+    retryCount: 3    // Добавляем попытки повторного подключения
   });
 
   const generateSitemap = async (url: string) => {
@@ -64,7 +65,7 @@ export const useSimpleSitemapCreator = () => {
       console.error('Error generating sitemap:', error);
       toast({
         title: "Ошибка создания карты сайта",
-        description: "Произошла ошибка при сканировании сайта и создании карты",
+        description: "Произошла ошибка при сканировании сайта и создании карты. Попробуйте использовать другой URL или уменьшить глубину сканирования.",
         variant: "destructive",
       });
       return null;

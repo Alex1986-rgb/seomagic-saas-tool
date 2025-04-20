@@ -1,5 +1,6 @@
+
 import React, { useState, useEffect } from 'react';
-import { X, AlertCircle, Check } from 'lucide-react';
+import { X, AlertCircle, Check, FileSearch } from 'lucide-react';
 import { 
   Dialog, 
   DialogContent, 
@@ -29,6 +30,7 @@ export const DeepCrawlProgressDialog: React.FC<DeepCrawlProgressDialogProps> = (
 }) => {
   const { toast } = useToast();
   const [dialogOpen, setDialogOpen] = useState(open);
+  const [forceAttempt, setForceAttempt] = useState(0);
   
   const {
     isLoading,
@@ -51,22 +53,43 @@ export const DeepCrawlProgressDialog: React.FC<DeepCrawlProgressDialogProps> = (
     if (open) {
       // Start crawling when dialog is opened
       const startScanning = async () => {
-        const result = await startCrawling();
-        if (result) {
+        try {
+          const result = await startCrawling();
+          if (result) {
+            toast({
+              title: "Сканирование завершено",
+              description: `Обнаружено ${result.urls.length} страниц на сайте ${url}`,
+            });
+          } else {
+            // Если результат не получен, показываем уведомление об ошибке
+            toast({
+              title: "Ошибка сканирования",
+              description: "Не удалось получить результаты сканирования. Попробуйте другой сайт или уменьшите глубину сканирования.",
+              variant: "destructive"
+            });
+          }
+        } catch (error) {
+          console.error("Error during crawling:", error);
           toast({
-            title: "Сканирование завершено",
-            description: `Обнаружено ${result.urls.length} страниц на сайте ${url}`,
+            title: "Ошибка сканирования",
+            description: "Произошла ошибка при сканировании. Попробуйте другой URL.",
+            variant: "destructive"
           });
         }
       };
       
       startScanning();
     }
-  }, [open, url, startCrawling, toast]);
+  }, [open, url, startCrawling, toast, forceAttempt]);
 
   const handleClose = () => {
     setDialogOpen(false);
     onClose(pagesScanned);
+  };
+
+  const handleRetry = () => {
+    // Увеличиваем счетчик попыток, что вызовет перезапуск сканирования в useEffect
+    setForceAttempt(prev => prev + 1);
   };
 
   // Get stage label
@@ -94,6 +117,7 @@ export const DeepCrawlProgressDialog: React.FC<DeepCrawlProgressDialogProps> = (
       <DialogContent className="sm:max-w-[600px]">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
+            <FileSearch className="h-5 w-5 text-primary" />
             Глубокое сканирование сайта
             <Badge variant={crawlStage === 'completed' ? 'secondary' : 'default'}>{getStageLabel()}</Badge>
           </DialogTitle>
@@ -117,15 +141,22 @@ export const DeepCrawlProgressDialog: React.FC<DeepCrawlProgressDialogProps> = (
           </div>
           
           {currentUrl && (
-            <div className="text-xs text-muted-foreground truncate">
+            <div className="text-xs text-muted-foreground truncate p-2 border border-border rounded-md bg-muted/50">
               Текущий URL: {currentUrl}
             </div>
           )}
 
           {crawlStage === 'failed' && (
             <div className="flex items-center gap-2 text-sm text-red-500 bg-red-50 dark:bg-red-950/30 p-3 rounded">
-              <AlertCircle className="h-4 w-4" />
-              <span>Произошла ошибка при сканировании. Пожалуйста, попробуйте еще раз.</span>
+              <AlertCircle className="h-4 w-4 flex-shrink-0" />
+              <span>Произошла ошибка при сканировании. Попробуйте другой URL или уменьшите глубину сканирования.</span>
+            </div>
+          )}
+          
+          {pagesScanned === 0 && progress > 10 && (
+            <div className="text-amber-500 text-sm flex items-center gap-2 p-2 bg-amber-50 dark:bg-amber-950/20 rounded-md">
+              <AlertCircle className="h-4 w-4 flex-shrink-0" />
+              <span>Сайт не отвечает или блокирует доступ. Попробуйте другой URL.</span>
             </div>
           )}
         </div>
@@ -133,14 +164,33 @@ export const DeepCrawlProgressDialog: React.FC<DeepCrawlProgressDialogProps> = (
         <DialogFooter className="flex flex-col sm:flex-row gap-2">
           {crawlStage === 'completed' ? (
             <>
-              <Button onClick={downloadSitemap} variant="outline" size="sm">
+              <Button 
+                onClick={downloadSitemap} 
+                variant="outline" 
+                size="sm" 
+                disabled={scannedUrls.length === 0}
+              >
                 Скачать карту сайта
               </Button>
-              <Button onClick={downloadAllData} variant="outline" size="sm">
+              <Button 
+                onClick={downloadAllData} 
+                variant="outline" 
+                size="sm"
+                disabled={scannedUrls.length === 0}
+              >
                 Скачать все данные
               </Button>
               <Button onClick={handleClose} variant="default" size="sm">
                 <Check className="h-4 w-4 mr-1" /> Готово
+              </Button>
+            </>
+          ) : crawlStage === 'failed' ? (
+            <>
+              <Button onClick={handleRetry} variant="outline" size="sm">
+                Повторить
+              </Button>
+              <Button onClick={handleClose} variant="default" size="sm">
+                Закрыть
               </Button>
             </>
           ) : (

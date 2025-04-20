@@ -1,3 +1,4 @@
+
 import axios from 'axios';
 import * as cheerio from 'cheerio';
 import { urlCache } from '../linkExtraction';
@@ -10,6 +11,8 @@ interface SiteScannerOptions {
   respectRobotsTxt?: boolean;
   onProgress?: (pagesScanned: number, totalEstimated: number, currentUrl: string) => void;
   crawlDelay?: number;
+  retryCount?: number;
+  retryDelay?: number;
 }
 
 interface ScanResult {
@@ -38,6 +41,7 @@ export class SiteScanner {
   private pageDetails = new Map<string, PageDetail>();
   private robotsTxtRules: string[] = [];
   private hasLoadedRobotsTxt = false;
+  private isCancelled = false;
 
   constructor(baseUrl: string, options: SiteScannerOptions = {}) {
     this.baseUrl = baseUrl;
@@ -52,10 +56,12 @@ export class SiteScanner {
     this.options = {
       maxPages: 100,
       maxDepth: 3,
-      timeout: 10000,
+      timeout: 30000,  // Увеличенный таймаут
       followExternalLinks: false,
       respectRobotsTxt: true,
-      crawlDelay: 500,
+      crawlDelay: 300,  // Увеличенная задержка между запросами
+      retryCount: 3,    // Количество повторных попыток
+      retryDelay: 1000, // Задержка между попытками
       ...options
     };
     
@@ -69,7 +75,7 @@ export class SiteScanner {
       await this.loadRobotsTxt();
     }
     
-    while (this.queue.length > 0 && this.visited.size < (this.options.maxPages || 100)) {
+    while (this.queue.length > 0 && this.visited.size < (this.options.maxPages || 100) && !this.isCancelled) {
       const { url, depth } = this.queue.shift()!;
       
       if (this.visited.has(url)) continue;
@@ -91,7 +97,7 @@ export class SiteScanner {
         }
         
         if (this.options.crawlDelay) {
-          await new Promise(resolve => setTimeout(resolve, this.options.crawlDelay));
+          await this.sleep(this.options.crawlDelay);
         }
       } catch (error) {
         console.warn(`Error processing URL ${url}:`, error);
@@ -114,19 +120,24 @@ export class SiteScanner {
     urlCache.add(url);
     
     try {
-      const startTime = performance.now();
-      const response = await axios.get(url, {
-        timeout: this.options.timeout,
-        validateStatus: (status) => status < 500,
-        headers: {
-          'Accept': 'text/html,application/xhtml+xml,application/xml',
-          'User-Agent': 'Mozilla/5.0 (compatible; SEOAuditBot/1.0; +https://example.com/bot)',
-          'Accept-Language': 'en-US,en;q=0.9',
-        },
-        allowAbsoluteUrls: true,
-      });
+      // Используем собственную функцию с повторными попытками
+      const { response, loadTime } = await this.fetchWithRetry(url);
       
-      const loadTime = performance.now() - startTime;
+      if (!response) {
+        // Если запрос не удался после всех попыток
+        this.pageDetails.set(url, {
+          url,
+          title: null,
+          metaDescription: null,
+          h1Count: 0,
+          imageCount: 0,
+          wordCount: 0,
+          statusCode: null,
+          loadTime: null
+        });
+        return;
+      }
+      
       const statusCode = response.status;
       
       const contentType = response.headers['content-type'] || '';
@@ -177,6 +188,44 @@ export class SiteScanner {
     }
   }
   
+  private async fetchWithRetry(url: string): Promise<{ response: any; loadTime: number } | { response: null; loadTime: null }> {
+    let retries = 0;
+    const maxRetries = this.options.retryCount || 3;
+    
+    while (retries <= maxRetries) {
+      try {
+        const startTime = performance.now();
+        
+        const response = await axios.get(url, {
+          timeout: this.options.timeout,
+          validateStatus: (status) => status < 500,
+          headers: {
+            'Accept': 'text/html,application/xhtml+xml,application/xml',
+            'User-Agent': 'Mozilla/5.0 (compatible; SEOAuditBot/1.0; +https://example.com/bot)',
+            'Accept-Language': 'en-US,en;q=0.9,ru;q=0.8',
+          },
+          allowAbsoluteUrls: true,
+          maxRedirects: 5
+        });
+        
+        const loadTime = performance.now() - startTime;
+        return { response, loadTime };
+      } catch (error) {
+        retries++;
+        console.warn(`Attempt ${retries}/${maxRetries + 1} failed for URL ${url}:`, error.message);
+        
+        if (retries > maxRetries) {
+          return { response: null, loadTime: null };
+        }
+        
+        // Ждем перед повторной попыткой
+        await this.sleep(this.options.retryDelay || 1000);
+      }
+    }
+    
+    return { response: null, loadTime: null };
+  }
+  
   private extractLinks($: cheerio.CheerioAPI, baseUrl: string): string[] {
     const links: string[] = [];
     
@@ -210,6 +259,7 @@ export class SiteScanner {
         
         links.push(absoluteUrl);
       } catch (error) {
+        // Игнорируем невалидные URL
       }
     });
     
@@ -221,12 +271,9 @@ export class SiteScanner {
     
     try {
       const robotsTxtUrl = `${this.baseUrl.replace(/\/$/, '')}/robots.txt`;
-      const response = await axios.get(robotsTxtUrl, { 
-        timeout: this.options.timeout,
-        validateStatus: () => true
-      });
+      const { response } = await this.fetchWithRetry(robotsTxtUrl);
       
-      if (response.status === 200) {
+      if (response && response.status === 200) {
         const robotsTxt = response.data;
         const lines = robotsTxt.split('\n');
         
@@ -281,5 +328,15 @@ export class SiteScanner {
     }
     
     return false;
+  }
+  
+  // Вспомогательный метод для ожидания
+  private sleep(ms: number): Promise<void> {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
+  
+  // Метод для отмены сканирования
+  cancel(): void {
+    this.isCancelled = true;
   }
 }
