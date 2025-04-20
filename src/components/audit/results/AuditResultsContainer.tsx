@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuditData } from './hooks/useAuditData';
@@ -52,15 +51,12 @@ const AuditResultsContainer: React.FC<AuditResultsContainerProps> = ({ url }) =>
     setContentOptimizationPrompt
   } = useAuditData(url);
 
-  // Set a timeout for the audit process
   useEffect(() => {
     if (url && !timeout && isInitialized) {
-      // Clear any existing timeout
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current);
       }
       
-      // Set a new timeout - 3 minutes maximum for audit data loading
       timeoutRef.current = setTimeout(() => {
         console.log("Audit data loading timeout triggered after 3 minutes");
         setTimeout(true);
@@ -72,7 +68,7 @@ const AuditResultsContainer: React.FC<AuditResultsContainerProps> = ({ url }) =>
           description: "Загрузка данных аудита заняла слишком много времени. Пожалуйста, попробуйте снова или используйте другой URL.",
           variant: "destructive",
         });
-      }, 180000) as unknown as NodeJS.Timeout; // 3 minutes
+      }, 180000) as unknown as NodeJS.Timeout;
     }
     
     return () => {
@@ -82,7 +78,6 @@ const AuditResultsContainer: React.FC<AuditResultsContainerProps> = ({ url }) =>
     };
   }, [url, timeout, isInitialized, toast]);
 
-  // Update loading state when audit loading changes
   useEffect(() => {
     setIsLoading(isAuditLoading);
   }, [isAuditLoading]);
@@ -95,11 +90,9 @@ const AuditResultsContainer: React.FC<AuditResultsContainerProps> = ({ url }) =>
       initRef.current = true;
       setIsLoading(true);
       
-      // Call loadAuditData with only one argument
       loadAuditData(false).then(() => {
         setIsLoading(false);
         
-        // Clear timeout when successfully loaded
         if (timeoutRef.current) {
           clearTimeout(timeoutRef.current);
         }
@@ -141,7 +134,6 @@ const AuditResultsContainer: React.FC<AuditResultsContainerProps> = ({ url }) =>
   };
 
   const handleSelectHistoricalAudit = (auditId: string) => {
-    // Implementation can be added later
     console.log("Selected historical audit:", auditId);
   };
 
@@ -153,14 +145,11 @@ const AuditResultsContainer: React.FC<AuditResultsContainerProps> = ({ url }) =>
     auditData?.id
   );
   
-  // If we had an error loading, but the component is still mounted,
-  // let's give the user a way to retry
   const handleRetry = () => {
     initRef.current = false;
     setIsInitialized(false);
     setHadError(false);
     setTimeout(false);
-    // This will trigger the useEffect to run again
   };
 
   if (hadError || timeout) {
