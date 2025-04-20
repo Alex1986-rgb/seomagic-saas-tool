@@ -18,7 +18,7 @@ export interface CrawlResult {
 }
 
 export interface DeepCrawlerOptions {
-  maxPages?: number;
+  maxPages: number; // Making this required to match the Firecrawl type
   maxDepth?: number;
   includeQuery?: boolean;
   respectRobotsTxt?: boolean;

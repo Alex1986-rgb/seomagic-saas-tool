@@ -14,6 +14,14 @@ import { PageProcessor } from './pageProcessor';
 export class AdvancedCrawler extends CrawlerBase {
   private requestManager = createRequestManager();
   private pageProcessor: PageProcessor;
+  // Add the missing productPatterns property
+  protected productPatterns: RegExp[] = [
+    /\/product\//i, 
+    /\/products\//i, 
+    /\/item\//i, 
+    /\/catalog\//i, 
+    /\/collection\//i
+  ];
 
   constructor(url: string, options: any) {
     super(url, options);
