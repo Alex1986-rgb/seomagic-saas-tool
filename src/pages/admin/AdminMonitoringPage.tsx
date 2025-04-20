@@ -1,6 +1,4 @@
 import React from "react";
-import { Link } from "react-router-dom";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { 
   Activity, 
   Database, 
@@ -208,7 +206,10 @@ const sectionLinks = [
   }
 ];
 
-const systemWarnings = [
+const systemWarnings: {
+  type: "warning" | "error" | "info";
+  message: string;
+}[] = [
   {
     type: "warning",
     message: "Доступно обновление сервера до версии 2.8.1 — рекомендуется установить.",
