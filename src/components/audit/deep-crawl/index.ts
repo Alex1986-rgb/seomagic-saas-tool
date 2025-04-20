@@ -4,3 +4,4 @@ export { default as AdvancedAnalysisTools } from './AdvancedAnalysisTools';
 export { default as DeepCrawlButton } from './DeepCrawlButton';
 export { default as CrawlResults } from './CrawlResults';
 export { ContentExtractorDialog } from './components/ContentExtractorDialog';
+export { DeepCrawlProgressDialog } from './DeepCrawlProgressDialog';
