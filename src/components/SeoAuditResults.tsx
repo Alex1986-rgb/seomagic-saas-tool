@@ -9,10 +9,14 @@ interface SeoAuditResultsProps {
 
 const SeoAuditResults: React.FC<SeoAuditResultsProps> = ({ url }) => {
   const [isReady, setIsReady] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
+    console.log("SeoAuditResults mounted with URL:", url);
+    
     if (!url) {
+      setError("URL не указан");
       toast({
         title: "URL не указан",
         description: "Пожалуйста, укажите URL сайта для анализа",
@@ -26,13 +30,24 @@ const SeoAuditResults: React.FC<SeoAuditResultsProps> = ({ url }) => {
       setIsReady(true);
     }, 100);
 
-    return () => clearTimeout(timer);
+    return () => {
+      console.log("SeoAuditResults unmounted");
+      clearTimeout(timer);
+    };
   }, [url, toast]);
 
   if (!url) {
     return (
       <div className="p-6 text-center">
         <p className="text-lg text-red-500">URL сайта не указан</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="p-6 text-center">
+        <p className="text-lg text-red-500">{error}</p>
       </div>
     );
   }
@@ -45,7 +60,11 @@ const SeoAuditResults: React.FC<SeoAuditResultsProps> = ({ url }) => {
     );
   }
 
-  return <AuditResultsContainer url={url} />;
+  return (
+    <div className="relative">
+      <AuditResultsContainer url={url} />
+    </div>
+  );
 };
 
 export default SeoAuditResults;

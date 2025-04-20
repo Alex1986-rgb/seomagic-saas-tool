@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuditData } from './hooks/useAuditData';
 import { usePageAnalysis } from '@/hooks/use-page-analysis';
@@ -9,6 +9,7 @@ import AuditMain from './components/AuditMain';
 import AuditPageInfo from './components/AuditPageInfo';
 import AuditOptimization from './components/AuditOptimization';
 import PageAnalysisTable from './components/PageAnalysisTable';
+import { useToast } from "@/hooks/use-toast";
 
 interface AuditResultsContainerProps {
   url: string;
@@ -17,6 +18,8 @@ interface AuditResultsContainerProps {
 const AuditResultsContainer: React.FC<AuditResultsContainerProps> = ({ url }) => {
   const [showPrompt, setShowPrompt] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
+  const [hadError, setHadError] = useState(false);
+  const { toast } = useToast();
   
   const {
     isLoading,
@@ -44,12 +47,34 @@ const AuditResultsContainer: React.FC<AuditResultsContainerProps> = ({ url }) =>
     setContentOptimizationPrompt
   } = useAuditData(url);
 
+  const initializeAudit = useCallback(() => {
+    console.log("Initializing audit for URL:", url);
+    try {
+      loadAuditData(false, false).catch(err => {
+        console.error("Error loading audit data:", err);
+        setHadError(true);
+        toast({
+          title: "Ошибка загрузки аудита",
+          description: "Произошла ошибка при загрузке данных аудита",
+          variant: "destructive"
+        });
+      });
+    } catch (err) {
+      console.error("Exception during audit initialization:", err);
+      setHadError(true);
+    }
+    setIsInitialized(true);
+  }, [url, loadAuditData, toast]);
+
   useEffect(() => {
     if (!isInitialized && url) {
-      loadAuditData(false, false);
-      setIsInitialized(true);
+      initializeAudit();
     }
-  }, [url, isInitialized, loadAuditData]);
+    
+    return () => {
+      console.log("AuditResultsContainer unmounted");
+    };
+  }, [url, isInitialized, initializeAudit]);
 
   const handleUpdatePageCount = (pageCount: number) => {
     if (auditData) {
@@ -59,6 +84,7 @@ const AuditResultsContainer: React.FC<AuditResultsContainerProps> = ({ url }) =>
 
   const handleSelectHistoricalAudit = (auditId: string) => {
     // Implementation can be added later
+    console.log("Selected historical audit:", auditId);
   };
 
   const toggleContentPrompt = () => {
@@ -68,6 +94,28 @@ const AuditResultsContainer: React.FC<AuditResultsContainerProps> = ({ url }) =>
   const { data: pageAnalysisData, isLoading: isLoadingAnalysis } = usePageAnalysis(
     auditData?.id
   );
+  
+  // If we had an error loading, but the component is still mounted,
+  // let's give the user a way to retry
+  const handleRetry = () => {
+    setIsInitialized(false);
+    setHadError(false);
+    // This will trigger the useEffect to run again
+  };
+
+  if (hadError) {
+    return (
+      <div className="p-6 text-center">
+        <p className="text-lg text-red-500 mb-4">Произошла ошибка при загрузке аудита</p>
+        <button 
+          onClick={handleRetry}
+          className="px-4 py-2 bg-primary text-white rounded-md"
+        >
+          Попробовать снова
+        </button>
+      </div>
+    );
+  }
 
   return (
     <AnimatePresence mode="sync">

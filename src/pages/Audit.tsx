@@ -9,6 +9,7 @@ import Layout from '@/components/Layout';
 import AuditHero from '@/components/audit/AuditHero';
 import AuditErrorAlert from '@/components/audit/AuditErrorAlert';
 import AuditAdvancedTools from '@/components/audit/AuditAdvancedTools';
+import { ErrorBoundary } from 'react-error-boundary';
 
 const Audit: React.FC = () => {
   const [searchParams] = useSearchParams();
@@ -26,10 +27,11 @@ const Audit: React.FC = () => {
     if (urlParam) {
       try {
         const formattedUrl = urlParam.startsWith('http') ? urlParam : `https://${urlParam}`;
-        new URL(formattedUrl);
+        new URL(formattedUrl); // Validate URL format
         setUrl(urlParam);
         setError(null);
       } catch (err) {
+        console.error("URL validation error:", err);
         setError("Предоставленный URL некорректен. Пожалуйста, попробуйте снова.");
         toast({
           title: "Некорректный URL",
@@ -46,11 +48,15 @@ const Audit: React.FC = () => {
   }, [searchParams, toast]);
 
   useEffect(() => {
+    console.log("Audit component mounted");
     const timer = setTimeout(() => {
       extractUrlParam();
     }, 300);
     
-    return () => clearTimeout(timer);
+    return () => {
+      console.log("Audit component unmounted");
+      clearTimeout(timer);
+    };
   }, [extractUrlParam]);
 
   const handleClearError = () => {
@@ -66,6 +72,21 @@ const Audit: React.FC = () => {
       });
       setShowAdvancedTools(true);
     }
+  };
+
+  const handleErrorFallback = ({ error, resetErrorBoundary }: { error: Error; resetErrorBoundary: () => void }) => {
+    console.error("Error caught by boundary:", error);
+    return (
+      <div className="p-6 text-center">
+        <p className="text-lg text-red-500 mb-4">Произошла ошибка при загрузке аудита</p>
+        <button 
+          onClick={resetErrorBoundary}
+          className="px-4 py-2 bg-primary text-white rounded-md"
+        >
+          Попробовать снова
+        </button>
+      </div>
+    );
   };
 
   return (
@@ -102,7 +123,15 @@ const Audit: React.FC = () => {
                 <div className="mb-8">
                   <div className="elegant-divider-alt" />
                 </div>
-                <SeoAuditResults url={url} />
+                <ErrorBoundary 
+                  FallbackComponent={handleErrorFallback}
+                  onReset={() => {
+                    // Reset state when error boundary resets
+                    extractUrlParam();
+                  }}
+                >
+                  <SeoAuditResults url={url} />
+                </ErrorBoundary>
               </>
             )}
             
