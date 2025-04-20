@@ -1,4 +1,3 @@
-
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
@@ -44,7 +43,6 @@ if ('serviceWorker' in navigator) {
         
         // Enable background sync if supported
         if ('sync' in registration) {
-          // Background sync registration
           try {
             // TypeScript doesn't know about the sync API by default
             // Using type assertion to tell TypeScript that we know what we're doing
@@ -74,9 +72,7 @@ if (process.env.NODE_ENV === 'production') {
           href: window.location.href,
           event_name: name,
           value: Math.round(name === 'CLS' ? value * 1000 : value),
-          speed: navigator.connection ? 
-            // Use optional chaining and type assertion for navigator.connection
-            (navigator as any).connection?.effectiveType || '' : ''
+          speed: navigator.connection?.effectiveType || ''
         }),
         method: 'POST',
         keepalive: true
