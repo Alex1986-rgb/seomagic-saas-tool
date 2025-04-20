@@ -44,12 +44,22 @@ export function useCrawlProgress(urlParam: string) {
   const { initializeCrawler, executeCrawler } = useCrawlExecution();
   
   const startCrawl = useCallback(async () => {
+    if (!url) {
+      console.error("Cannot start crawl: URL is empty");
+      completeCrawl(false);
+      return;
+    }
+
     console.log(`Starting crawling for URL: ${url}`);
     resetState();
     setCrawlStage('starting');
     
     try {
-      console.log(`Starting crawl for URL: ${url}`);
+      // Создаем таймаут для обнаружения зависаний
+      const timeoutId = setTimeout(() => {
+        console.error(`Crawl timeout for URL: ${url}`);
+        completeCrawl(false);
+      }, 60000); // 60 секунд таймаут
       
       // Инициализация сканера с явной передачей URL
       const { crawler: newCrawler, domain: newDomain, maxPages, normalizedUrl } = initializeCrawler({
@@ -65,6 +75,9 @@ export function useCrawlProgress(urlParam: string) {
       
       // Выполняем сканирование с явной передачей URL
       const result = await executeCrawler(newCrawler, normalizedUrl);
+      
+      // Отменяем таймаут, так как сканирование завершилось
+      clearTimeout(timeoutId);
       
       if (result && result.success) {
         console.log(`Crawl completed with ${result.urls.length} URLs`);

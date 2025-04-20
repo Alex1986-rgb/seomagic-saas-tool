@@ -4,6 +4,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { useCrawlProgress } from './hooks/useCrawlProgress';
+import { AlertTriangle } from 'lucide-react';
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface DeepCrawlProgressDialogProps {
   open: boolean;
@@ -18,6 +20,9 @@ export const DeepCrawlProgressDialog: React.FC<DeepCrawlProgressDialogProps> = (
   url,
   initialStage = 'idle'
 }) => {
+  const [error, setError] = useState<string | null>(null);
+  const [attemptCount, setAttemptCount] = useState(0);
+  
   const {
     isLoading,
     progress,
@@ -31,12 +36,44 @@ export const DeepCrawlProgressDialog: React.FC<DeepCrawlProgressDialogProps> = (
     cancelCrawl
   } = useCrawlProgress(url);
 
+  // Функция повторной попытки сканирования
+  const retryScanning = () => {
+    setError(null);
+    setAttemptCount(prevCount => prevCount + 1);
+    console.log(`Retrying scan, attempt ${attemptCount + 1}`);
+    startCrawl();
+  };
+
   useEffect(() => {
     if (open && initialStage === 'starting' && !isLoading) {
       console.log(`DeepCrawlProgressDialog: Начинаем сканирование URL: ${url}`);
       startCrawl();
     }
   }, [open, initialStage, isLoading, startCrawl, url]);
+
+  // Отслеживаем состояние сканирования
+  useEffect(() => {
+    // Если сканирование застряло на начальном этапе более 10 секунд
+    if (crawlStage === 'starting' && isLoading) {
+      const timeoutId = setTimeout(() => {
+        if (crawlStage === 'starting' && attemptCount < 2) {
+          setError("Сканирование не запускается. Попробуем еще раз.");
+          retryScanning();
+        } else if (crawlStage === 'starting' && attemptCount >= 2) {
+          setError("Не удалось запустить сканирование после нескольких попыток.");
+        }
+      }, 10000);
+      
+      return () => clearTimeout(timeoutId);
+    }
+    
+    // Если этап failed, устанавливаем сообщение об ошибке
+    if (crawlStage === 'failed') {
+      setError("Произошла ошибка при сканировании сайта.");
+    } else {
+      setError(null);
+    }
+  }, [crawlStage, isLoading, attemptCount]);
 
   const handleCancel = () => {
     cancelCrawl();
@@ -93,6 +130,23 @@ export const DeepCrawlProgressDialog: React.FC<DeepCrawlProgressDialogProps> = (
               </div>
             )}
           </div>
+          
+          {error && (
+            <Alert variant="destructive">
+              <AlertTriangle className="h-4 w-4" />
+              <AlertDescription>{error}</AlertDescription>
+              {attemptCount < 3 && crawlStage !== 'crawling' && (
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="mt-2"
+                  onClick={retryScanning}
+                >
+                  Попробовать снова
+                </Button>
+              )}
+            </Alert>
+          )}
         </div>
 
         <DialogFooter className="flex flex-row justify-between gap-2">
