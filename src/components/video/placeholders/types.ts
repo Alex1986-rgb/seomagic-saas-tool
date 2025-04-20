@@ -7,6 +7,7 @@ export interface SlideData {
   blogId: number;
   color: string;
   icon: LucideIcon;
+  image?: string;
 }
 
 export interface AnimatedVideoPlaceholderProps {
