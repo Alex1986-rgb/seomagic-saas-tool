@@ -1,4 +1,3 @@
-
 import { firecrawlService } from '../services/api/firecrawl';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -65,6 +64,48 @@ class SeoApiService {
 
   getTaskIdForUrl(url: string): string | null {
     return firecrawlService.getTaskIdForUrl(url);
+  }
+
+  async generateShareLink(taskId: string): Promise<string> {
+    try {
+      const baseUrl = window.location.origin;
+      return `${baseUrl}/audit?task_id=${taskId}`;
+    } catch (error) {
+      console.error('Error generating share link:', error);
+      throw error;
+    }
+  }
+
+  async sendEmailReport(taskId: string, email: string): Promise<boolean> {
+    try {
+      console.log(`Sending report for task ${taskId} to ${email}`);
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      return true;
+    } catch (error) {
+      console.error('Error sending email report:', error);
+      throw error;
+    }
+  }
+
+  async exportJSON(taskId: string): Promise<Blob> {
+    try {
+      const data = { taskId, timestamp: new Date().toISOString() };
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+      return blob;
+    } catch (error) {
+      console.error('Error exporting JSON:', error);
+      throw error;
+    }
+  }
+
+  async downloadOptimizedSite(taskId: string): Promise<Blob> {
+    try {
+      const dummyContent = 'Optimized site content';
+      return new Blob([dummyContent], { type: 'application/zip' });
+    } catch (error) {
+      console.error('Error downloading optimized site:', error);
+      throw error;
+    }
   }
 }
 

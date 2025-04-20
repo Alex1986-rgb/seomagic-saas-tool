@@ -1,4 +1,3 @@
-
 import { AuditData } from '@/types/audit';
 import { fetchAuditData, fetchRecommendations, fetchAuditHistory } from '@/services/auditService';
 import { PageContent } from '@/services/audit/optimization/types';
@@ -8,6 +7,8 @@ import {
   analyzeSiteStructure, 
   analyzeContentUniqueness 
 } from '@/services/audit/siteAnalysis';
+
+type ProgressCallback = (current: number, total: number) => void;
 
 class AuditApiService {
   /**
@@ -49,7 +50,7 @@ class AuditApiService {
   /**
    * Обнаружение битых ссылок
    */
-  async findBrokenLinks(domain: string, urls: string[], onProgress?: Function) {
+  async findBrokenLinks(domain: string, urls: string[], onProgress?: ProgressCallback) {
     try {
       return await detectBrokenLinks(domain, urls, onProgress);
     } catch (error) {
@@ -61,7 +62,7 @@ class AuditApiService {
   /**
    * Обнаружение дубликатов
    */
-  async findDuplicates(urls: string[], onProgress?: Function) {
+  async findDuplicates(urls: string[], onProgress?: ProgressCallback) {
     try {
       return await detectDuplicates(urls, onProgress);
     } catch (error) {
@@ -73,7 +74,7 @@ class AuditApiService {
   /**
    * Анализ структуры сайта
    */
-  async analyzeSiteStructure(domain: string, urls: string[], onProgress?: Function) {
+  async analyzeSiteStructure(domain: string, urls: string[], onProgress?: ProgressCallback) {
     try {
       return await analyzeSiteStructure(domain, urls, onProgress);
     } catch (error) {
@@ -85,7 +86,7 @@ class AuditApiService {
   /**
    * Анализ уникальности контента
    */
-  async analyzeContentUniqueness(urls: string[], onProgress?: Function) {
+  async analyzeContentUniqueness(urls: string[], onProgress?: ProgressCallback) {
     try {
       return await analyzeContentUniqueness(urls, onProgress);
     } catch (error) {
