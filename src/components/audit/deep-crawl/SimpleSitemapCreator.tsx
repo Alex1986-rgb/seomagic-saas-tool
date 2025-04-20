@@ -2,18 +2,19 @@
 import React, { useState } from 'react';
 import { Rocket, Download } from 'lucide-react';
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 import { useSimpleSitemapCreator } from './hooks/useSimpleSitemapCreator';
 import { DeepCrawlProgressDialog } from './DeepCrawlProgressDialog';
 
 interface SimpleSitemapCreatorProps {
-  domain: string;
+  domain?: string;
+  initialUrl?: string;
   onUrlsScanned?: (urls: string[]) => void;
 }
 
 const SimpleSitemapCreator: React.FC<SimpleSitemapCreatorProps> = ({ 
   domain, 
+  initialUrl,
   onUrlsScanned 
 }) => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -32,7 +33,9 @@ const SimpleSitemapCreator: React.FC<SimpleSitemapCreatorProps> = ({
     setIsDialogOpen(true);
     
     try {
-      await generateSitemap(domain);
+      // Use initialUrl if provided, otherwise fall back to domain
+      const urlToScan = initialUrl || domain || '';
+      await generateSitemap(urlToScan);
       if (onUrlsScanned && urls.length > 0) {
         onUrlsScanned(urls);
       }
@@ -87,7 +90,7 @@ const SimpleSitemapCreator: React.FC<SimpleSitemapCreatorProps> = ({
       <DeepCrawlProgressDialog
         open={isDialogOpen}
         onClose={handleCloseDialog}
-        url={domain}
+        url={initialUrl || domain || ''}
         initialStage="starting"
       />
     </div>

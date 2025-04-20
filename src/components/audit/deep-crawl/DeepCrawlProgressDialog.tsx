@@ -96,7 +96,7 @@ export const DeepCrawlProgressDialog: React.FC<DeepCrawlProgressDialogProps> = (
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             Глубокое сканирование сайта
-            <Badge variant={crawlStage === 'completed' ? 'success' : 'default'}>{getStageLabel()}</Badge>
+            <Badge variant={crawlStage === 'completed' ? 'secondary' : 'default'}>{getStageLabel()}</Badge>
           </DialogTitle>
           <DialogDescription>
             {url} <span className="text-xs opacity-70">| Максимум 500,000 страниц</span>

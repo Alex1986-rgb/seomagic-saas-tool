@@ -6,6 +6,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Activity, BarChart3, AlertTriangle, Download } from "lucide-react";
 import { useToast } from '@/hooks/use-toast';
 import { useSimpleSitemapCreator } from '../hooks/useSimpleSitemapCreator';
+import { saveAs } from 'file-saver';
 
 interface SiteStructureAnalysisProps {
   domain: string;
