@@ -54,7 +54,7 @@ const SystemSettingsPage: React.FC = () => {
           <Link 
             key={tile.label}
             to={tile.to}
-            className="p-4 border rounded-md bg-card hover:bg-accent/10 transition-colors block group focus:outline-none focus:ring-2 focus:ring-primary"
+            className="p-4 border rounded-md bg-card hover:bg-accent/10 transition-colors block group cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary"
           >
             <div className="flex items-center gap-2 mb-1">
               {tile.icon}
