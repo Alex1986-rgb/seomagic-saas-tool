@@ -46,7 +46,7 @@ const SeoAuditResults: React.FC<SeoAuditResultsProps> = ({ url }) => {
         clearTimeout(timeoutRef.current);
       }
       
-      // Set timeout for initialization
+      // Set timeout for initialization (a slight delay to ensure DOM is ready)
       timeoutRef.current = setTimeout(() => {
         setIsReady(true);
       }, 200);

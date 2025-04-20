@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuditData } from './hooks/useAuditData';
@@ -174,10 +175,14 @@ const AuditResultsContainer: React.FC<AuditResultsContainerProps> = ({ url }) =>
   
   // Обработчик повторной попытки при ошибке
   const handleRetry = () => {
+    console.log("Retrying audit...");
     initRef.current = false;
     setIsInitialized(false);
     setHadError(false);
     setTimeoutStatus(false);
+    setTimeout(() => {
+      initializeAudit();
+    }, 100);
   };
 
   // Отображение сообщения об ошибке или таймауте
