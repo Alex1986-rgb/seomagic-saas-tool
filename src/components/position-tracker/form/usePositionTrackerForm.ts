@@ -1,117 +1,205 @@
 
 import { useState } from 'react';
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useToast } from "@/hooks/use-toast";
-import { formSchema, FormData } from './FormFields';
-import { checkPositions } from '@/services/position/positionTracker';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
+import { useToast } from '@/hooks/use-toast';
+
+// Form validation schema
+const formSchema = z.object({
+  domain: z.string().min(1, { message: 'Доменное имя обязательно' }),
+  searchEngine: z.enum(['google', 'yandex', 'all'], {
+    required_error: 'Выберите поисковую систему',
+  }),
+  region: z.string().optional(),
+  depth: z.coerce.number().min(10).max(1000).default(100),
+  scanFrequency: z.enum(['once', 'daily', 'weekly', 'monthly']).default('once'),
+  useProxy: z.boolean().default(false),
+});
 
 export const usePositionTrackerForm = (onSearchComplete?: Function) => {
   const [keywords, setKeywords] = useState<string[]>([]);
-  const [inputKeyword, setInputKeyword] = useState("");
+  const [inputKeyword, setInputKeyword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
-  const form = useForm<FormData>({
+  // Initialize form
+  const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      domain: "",
-      searchEngine: "all",
-      region: "",
-      keywords: [],
-      depth: 30,
+      domain: '',
+      searchEngine: 'all',
+      region: 'Москва',
+      depth: 100,
+      scanFrequency: 'once',
       useProxy: false,
-      scanFrequency: "once",
     },
   });
 
+  // Add keyword to the list
   const addKeyword = () => {
-    if (inputKeyword.trim()) {
-      setKeywords([...keywords, inputKeyword.trim()]);
-      form.setValue("keywords", [...keywords, inputKeyword.trim()]);
-      setInputKeyword("");
+    const trimmedKeyword = inputKeyword.trim();
+    if (!trimmedKeyword) {
+      toast({
+        title: "Ошибка",
+        description: "Введите ключевое слово",
+        variant: "destructive",
+      });
+      return;
     }
+
+    if (keywords.includes(trimmedKeyword)) {
+      toast({
+        title: "Внимание",
+        description: "Это ключевое слово уже добавлено",
+        variant: "warning",
+      });
+      return;
+    }
+
+    setKeywords([...keywords, trimmedKeyword]);
+    setInputKeyword('');
   };
 
+  // Remove keyword from list
   const removeKeyword = (index: number) => {
     const newKeywords = [...keywords];
     newKeywords.splice(index, 1);
     setKeywords(newKeywords);
-    form.setValue("keywords", newKeywords);
   };
 
-  const handleBulkKeywords = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    const text = e.target.value;
-    if (!text.trim()) return;
+  // Handle bulk keywords input
+  const handleBulkKeywords = (text: string) => {
+    if (!text.trim()) {
+      toast({
+        title: "Ошибка",
+        description: "Введите ключевые слова",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const lines = text.split('\n').filter(line => line.trim() !== '');
     
-    const keywordList = text.split(/\r?\n/).filter(k => k.trim());
-    setKeywords([...keywordList]);
-    form.setValue("keywords", keywordList);
+    // Filter out duplicates within the input and existing keywords
+    const uniqueKeywords = lines.filter(
+      (keyword, index, self) => 
+        self.indexOf(keyword) === index && !keywords.includes(keyword)
+    );
+
+    if (uniqueKeywords.length > 0) {
+      setKeywords([...keywords, ...uniqueKeywords]);
+      toast({
+        title: "Добавлено",
+        description: `Добавлено ${uniqueKeywords.length} ключевых слов`,
+      });
+    } else {
+      toast({
+        title: "Внимание",
+        description: "Нет новых ключевых слов для добавления",
+        variant: "warning",
+      });
+    }
   };
 
-  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
+  // Handle file upload
+  const handleFileUpload = (file: File) => {
     if (!file) return;
 
     const reader = new FileReader();
     reader.onload = (e) => {
       try {
-        const text = e.target?.result as string;
-        const keywordList = text.split(/\r?\n/).filter(k => k.trim());
-        setKeywords([...new Set([...keywords, ...keywordList])]);
-        form.setValue("keywords", [...new Set([...keywords, ...keywordList])]);
-        toast({
-          title: "Файл загружен",
-          description: `Добавлено ${keywordList.length} ключевых слов`,
-        });
+        const content = e.target?.result as string;
+        const fileExtension = file.name.split('.').pop()?.toLowerCase();
+
+        if (fileExtension === 'txt' || fileExtension === 'csv') {
+          // Process as text file
+          const lines = content.split(/\r?\n/).filter(line => line.trim() !== '');
+          
+          // Remove duplicates and existing keywords
+          const uniqueKeywords = lines.filter(
+            keyword => !keywords.includes(keyword.trim())
+          );
+          
+          if (uniqueKeywords.length > 0) {
+            setKeywords([...keywords, ...uniqueKeywords]);
+            toast({
+              title: "Файл загружен",
+              description: `Добавлено ${uniqueKeywords.length} ключевых слов из файла`,
+            });
+          } else {
+            toast({
+              title: "Предупреждение",
+              description: "В файле не найдено новых ключевых слов",
+              variant: "warning",
+            });
+          }
+        } else {
+          toast({
+            title: "Ошибка",
+            description: "Неподдерживаемый формат файла. Используйте .txt или .csv",
+            variant: "destructive",
+          });
+        }
       } catch (error) {
+        console.error("Error processing file:", error);
         toast({
-          title: "Ошибка загрузки",
-          description: "Не удалось прочитать файл",
+          title: "Ошибка",
+          description: "Не удалось обработать файл",
           variant: "destructive",
         });
       }
     };
+
     reader.readAsText(file);
   };
 
-  const onSubmit = async (values: FormData) => {
+  // Form submission handler
+  const onSubmit = async (values: z.infer<typeof formSchema>) => {
     if (keywords.length === 0) {
       toast({
         title: "Ошибка",
-        description: "Добавьте хотя бы один ключевой запрос для проверки",
+        description: "Добавьте хотя бы одно ключевое слово",
         variant: "destructive",
       });
       return;
     }
-    
+
     setIsLoading(true);
+
     try {
-      const searchData = {
+      // Simulate API call with a delay
+      await new Promise(resolve => setTimeout(resolve, 2000));
+
+      // Example mock results
+      const results = {
         domain: values.domain,
         keywords: keywords,
         searchEngine: values.searchEngine,
         region: values.region,
         depth: values.depth,
         scanFrequency: values.scanFrequency,
-        useProxy: values.useProxy,
-        timestamp: new Date().toISOString()
+        positions: keywords.map(keyword => ({
+          keyword,
+          position: Math.floor(Math.random() * 100) + 1,
+          url: `https://${values.domain}/page-${keyword.toLowerCase().replace(/\s+/g, '-')}`,
+          previousPosition: Math.floor(Math.random() * 100) + 1,
+        })),
       };
-      
-      const results = await checkPositions(searchData);
-      
+
       toast({
-        title: "Проверка завершена",
-        description: `Проверено ${keywords.length} ключевых запросов в ${values.searchEngine === 'all' ? 'нескольких поисковых системах' : values.searchEngine}`,
+        title: "Успешно",
+        description: "Проверка позиций выполнена",
       });
-      
+
       if (onSearchComplete) {
         onSearchComplete(results);
       }
     } catch (error) {
+      console.error(error);
       toast({
-        title: "Ошибка при проверке позиций",
-        description: error.message || "Произошла неизвестная ошибка",
+        title: "Ошибка",
+        description: "Не удалось выполнить проверку позиций",
         variant: "destructive",
       });
     } finally {
