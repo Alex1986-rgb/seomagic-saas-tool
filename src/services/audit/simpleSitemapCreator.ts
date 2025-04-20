@@ -171,9 +171,8 @@ export class SimpleSitemapCreator {
         onProgress: progressCallback,
         crawlDelay: 300,
         retryCount: this.options.retryCount,
-        retryDelay: this.options.retryDelay,
-        // Remove concurrentRequests and update with parameter that's accepted by SiteScanner
-        maxConcurrentRequests: this.options.concurrentRequests
+        retryDelay: this.options.retryDelay
+        // Removed concurrentRequests or maxConcurrentRequests option to fix type error
       });
       
       // Принудительно ограничиваем сканирование только указанным доменом
