@@ -15,8 +15,6 @@ export function useSimpleSitemapCreator({ url, maxPages = 10000, maxDepth = 5 }:
   const [scannedUrls, setScannedUrls] = useState<string[]>([]);
   const [sitemap, setSitemap] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  
-  // Adding the missing properties that are used in components
   const [urls, setUrls] = useState<string[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
 

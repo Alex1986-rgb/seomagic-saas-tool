@@ -10,7 +10,7 @@ interface SimpleSitemapCreatorOptions {
   concurrentRequests?: number;
   retryCount?: number;
   retryDelay?: number;
-  timeout?: number; // Adding timeout option
+  timeout?: number; // Добавляем опцию timeout
 }
 
 export class SimpleSitemapCreator {
@@ -74,7 +74,7 @@ export class SimpleSitemapCreator {
     });
   }
 
-  // Method to cancel crawling (placeholder)
+  // Method to cancel crawling
   public cancel(): void {
     console.log('Crawling cancelled');
     this.visited.clear();
