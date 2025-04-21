@@ -4,11 +4,13 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Search, ArrowRight } from 'lucide-react';
+import { useToast } from "@/hooks/use-toast";
 
 const UrlForm: React.FC = () => {
   const navigate = useNavigate();
   const [url, setUrl] = useState<string>('');
   const [isUrlValid, setIsUrlValid] = useState<boolean>(true);
+  const { toast } = useToast();
   
   const validateUrl = (value: string): boolean => {
     if (!value.trim()) return false;
@@ -32,7 +34,26 @@ const UrlForm: React.FC = () => {
         formattedUrl = 'https://' + formattedUrl;
       }
       
-      navigate(`/audit?url=${encodeURIComponent(formattedUrl)}`);
+      try {
+        toast({
+          title: "Переход к аудиту",
+          description: `Анализируем сайт: ${formattedUrl}`,
+        });
+        navigate(`/audit?url=${encodeURIComponent(formattedUrl)}`);
+      } catch (error) {
+        console.error("Navigation error:", error);
+        toast({
+          title: "Ошибка перехода",
+          description: "Произошла ошибка при переходе к аудиту. Попробуйте еще раз.",
+          variant: "destructive"
+        });
+      }
+    } else {
+      toast({
+        title: "Некорректный URL",
+        description: "Пожалуйста, введите корректный URL сайта",
+        variant: "destructive"
+      });
     }
   };
   
@@ -46,7 +67,7 @@ const UrlForm: React.FC = () => {
     }
   };
   
-  console.log("UrlForm rendering");
+  console.log("UrlForm rendering with url:", url);
 
   return (
     <form onSubmit={handleSubmit} className="w-full">

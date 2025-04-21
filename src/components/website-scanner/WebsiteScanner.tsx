@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import { Search, Download, FileText, BarChart } from 'lucide-react';
 import { Input } from "@/components/ui/input";
@@ -18,12 +18,26 @@ interface WebsiteScannerProps {
 const WebsiteScanner: React.FC<WebsiteScannerProps> = ({ initialUrl = '' }) => {
   const [url, setUrl] = useState(initialUrl);
   const [isScanning, setIsScanning] = useState(false);
+  const [isError, setIsError] = useState(false);
   const [scanProgress, setScanProgress] = useState(0);
   const [scanStage, setScanStage] = useState('');
   const [scannedUrls, setScannedUrls] = useState<string[]>([]);
   const [auditData, setAuditData] = useState<any>(null);
   const [hasAuditResults, setHasAuditResults] = useState(false);
   const { toast } = useToast();
+
+  // Clear any errors when the component mounts
+  useEffect(() => {
+    setIsError(false);
+  }, []);
+
+  const handleUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setUrl(e.target.value);
+    // Reset error state when user changes URL
+    if (isError) {
+      setIsError(false);
+    }
+  };
 
   const handleUrlsScanned = (urls: string[]) => {
     setScannedUrls(urls);
@@ -43,11 +57,12 @@ const WebsiteScanner: React.FC<WebsiteScannerProps> = ({ initialUrl = '' }) => {
       return;
     }
 
-    setIsScanning(true);
-    setScanProgress(0);
-    setScanStage('Подготовка к сканированию...');
-
     try {
+      setIsScanning(true);
+      setIsError(false);
+      setScanProgress(0);
+      setScanStage('Подготовка к сканированию...');
+
       // Имитация процесса сканирования
       for (let i = 1; i <= 10; i++) {
         await new Promise(resolve => setTimeout(resolve, 500));
@@ -81,6 +96,8 @@ const WebsiteScanner: React.FC<WebsiteScannerProps> = ({ initialUrl = '' }) => {
         description: "Сайт успешно просканирован",
       });
     } catch (error) {
+      console.error("Scan error:", error);
+      setIsError(true);
       toast({
         title: "Ошибка сканирования",
         description: "Произошла ошибка при сканировании сайта",
@@ -122,6 +139,7 @@ const WebsiteScanner: React.FC<WebsiteScannerProps> = ({ initialUrl = '' }) => {
         throw new Error("Не удалось создать PDF");
       }
     } catch (error) {
+      console.error("PDF generation error:", error);
       toast({
         title: "Ошибка",
         description: "Не удалось создать PDF-отчет",
@@ -161,6 +179,7 @@ const WebsiteScanner: React.FC<WebsiteScannerProps> = ({ initialUrl = '' }) => {
         throw new Error("Не удалось создать отчет об ошибках");
       }
     } catch (error) {
+      console.error("Error report generation error:", error);
       toast({
         title: "Ошибка",
         description: "Не удалось создать отчет об ошибках",
@@ -184,7 +203,7 @@ const WebsiteScanner: React.FC<WebsiteScannerProps> = ({ initialUrl = '' }) => {
               type="text"
               placeholder="Например: example.com"
               value={url}
-              onChange={(e) => setUrl(e.target.value)}
+              onChange={handleUrlChange}
               className="flex-1"
             />
             <Button 
@@ -204,6 +223,12 @@ const WebsiteScanner: React.FC<WebsiteScannerProps> = ({ initialUrl = '' }) => {
                 <span>{scanProgress}%</span>
               </div>
               <Progress value={scanProgress} className="h-2" />
+            </div>
+          )}
+
+          {isError && !isScanning && (
+            <div className="mt-4 p-3 bg-destructive/10 text-destructive rounded-md text-sm">
+              Произошла ошибка при сканировании. Пожалуйста, проверьте URL и попробуйте снова.
             </div>
           )}
         </CardContent>

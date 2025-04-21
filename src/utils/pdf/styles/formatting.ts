@@ -31,3 +31,28 @@ export function truncateText(text: string, maxLength: number = 50): string {
   if (text.length <= maxLength) return text;
   return text.substring(0, maxLength) + '...';
 }
+
+/**
+ * Formats the report header with standardized styling
+ */
+export function formatReportHeader(
+  doc: any,
+  title: string,
+  date: string
+): void {
+  // Set background color for header
+  doc.setFillColor(56, 189, 248); // Primary color
+  doc.rect(0, 0, 210, 30, 'F');
+  
+  // Set title
+  doc.setFontSize(24);
+  doc.setTextColor(255, 255, 255);
+  doc.text(title, 15, 15);
+  
+  // Set date
+  doc.setFontSize(14);
+  doc.text(`Дата: ${date}`, 15, 22);
+  
+  // Reset text color for the rest of the document
+  doc.setTextColor(0, 0, 0);
+}

@@ -24,4 +24,9 @@ export const pdfFonts = {
     size: 6,
     style: 'normal',
   },
+  // Add these properties to fix the errors
+  primary: 'helvetica',
+  bold: 'bold',
+  normal: 'normal',
+  italic: 'italic'
 };
