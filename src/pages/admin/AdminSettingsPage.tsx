@@ -3,7 +3,7 @@ import React from 'react';
 import { Helmet } from 'react-helmet-async';
 import AdminSettings from '@/components/admin/AdminSettings';
 import { Card, CardContent } from "@/components/ui/card";
-import { Settings, UserCheck, Globe, Shield, BellRing, Server, Database, Gauge, ArrowRight } from 'lucide-react';
+import { Settings, UserCheck, Globe, Shield, BellRing, Server, BarChart2, Gauge, ArrowRight } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 
@@ -57,23 +57,24 @@ const AdminSettingsPage: React.FC = () => {
       </Helmet>
       
       <div className="container mx-auto px-4 md:px-6 py-10 max-w-6xl">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
-          <div>
-            <div className="flex items-center gap-3 mb-2">
-              <div className="bg-primary/20 text-primary p-2 rounded-lg shadow-md">
-                <Settings className="h-6 w-6" />
-              </div>
-              <h1 className="text-3xl font-bold tracking-tight text-gradient-primary">Настройки администратора</h1>
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6 mb-8">
+          <div className="flex items-center gap-4">
+            <div className="bg-yellow-100 text-primary p-4 rounded-2xl shadow hover:scale-110 transition">
+              <Settings className="h-8 w-8" />
             </div>
-            <p className="text-muted-foreground">
-              Управление всеми ключевыми настройками и конфигурацией платформы.
-            </p>
+            <div>
+              <h1 className="text-3xl font-extrabold tracking-tight text-gradient-primary mb-0.5">
+                Настройки администратора
+              </h1>
+              <p className="text-muted-foreground">
+                Управление всеми ключевыми настройками и конфигурацией платформы.
+              </p>
+            </div>
           </div>
-          
           <div className="flex flex-wrap gap-2">
             {navSettings.map((item) => (
               <Link to={item.to} key={item.to}>
-                <Button variant="outline" className="flex items-center gap-2 hover-scale shadow" size="sm">
+                <Button variant="outline" className="flex items-center gap-2 hover-scale shadow border-primary/20" size="sm">
                   {item.icon}
                   {item.label}
                   <ArrowRight className="h-4 w-4 ml-1" />
@@ -83,21 +84,21 @@ const AdminSettingsPage: React.FC = () => {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-          <div className="lg:col-span-2">
-            <Card className="backdrop-blur-md bg-gradient-to-br from-card/90 to-secondary/40 border shadow-lg">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-6">
+          <div className="lg:col-span-2 flex flex-col gap-6">
+            <Card className="bg-gradient-to-br from-yellow-50 to-white/80 border-0 shadow-xl">
               <CardContent className="p-0">
                 <AdminSettings />
               </CardContent>
             </Card>
           </div>
           
-          <div className="space-y-7">
-            <Card className="bg-gradient-to-br from-green-50 to-white/80 border-green-100 shadow hover:scale-105 transition-transform">
+          <div className="space-y-8">
+            <Card className="bg-gradient-to-br from-green-50 to-white/80 border-0 shadow hover:scale-105 transition-transform">
               <CardContent className="p-6">
                 <div className="flex items-center gap-2 mb-4">
                   <BellRing className="h-5 w-5 text-primary" />
-                  <h3 className="font-medium">Недавние изменения</h3>
+                  <h3 className="font-semibold">Недавние изменения</h3>
                 </div>
                 <div className="space-y-4">
                   {recentChanges.map((change, index) => (
@@ -122,16 +123,16 @@ const AdminSettingsPage: React.FC = () => {
               </CardContent>
             </Card>
             
-            <Card className="bg-gradient-to-br from-blue-50 to-white/90 border-blue-100 shadow hover:scale-105 transition-transform">
+            <Card className="bg-gradient-to-br from-blue-50 to-white/90 border-0 shadow hover:scale-105 transition-transform">
               <CardContent className="p-6">
                 <div className="flex items-center gap-2 mb-4">
                   <Gauge className="h-5 w-5 text-primary" />
-                  <h3 className="font-medium">Важные настройки</h3>
+                  <h3 className="font-semibold">Важные настройки</h3>
                 </div>
                 <div className="space-y-3 text-sm">
                   {hotSettings.map(link => (
                     <Link key={link.to} to={link.to}>
-                      <Button variant="outline" className="w-full justify-start mb-1 hover-scale" size="sm">
+                      <Button variant="outline" className="w-full justify-start mb-1 hover-scale shadow" size="sm">
                         {link.label}
                         <ArrowRight className="h-4 w-4 ml-1" />
                       </Button>
