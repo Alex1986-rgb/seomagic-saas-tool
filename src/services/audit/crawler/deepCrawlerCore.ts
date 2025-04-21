@@ -1,3 +1,4 @@
+
 import axios from 'axios';
 import * as cheerio from 'cheerio';
 import { CrawlResult, DeepCrawlerOptions } from './types';
@@ -377,7 +378,16 @@ export class DeepCrawlerCore {
       const links = await this.processLinks($, url);
       
       // Function to evaluate URL priority (lower number = higher priority)
-      const getPriority = (url: string): number => {
+      const getPriority = (urlStr: string): number => {
+        // Fix: Convert string to URL object to access pathname
+        let urlObj: URL;
+        try {
+          urlObj = new URL(urlStr);
+        } catch (e) {
+          console.warn(`Invalid URL for priority evaluation: ${urlStr}`);
+          return 4; // Low priority for invalid URLs
+        }
+        
         // Keywords for product pages
         const productKeywords = [
           '/product/', '/item/', '/catalog/', '/collection/', 
@@ -387,21 +397,21 @@ export class DeepCrawlerCore {
         
         // Check for keywords in URL
         for (const keyword of productKeywords) {
-          if (url.includes(keyword)) {
+          if (urlObj.pathname.includes(keyword)) {
             return 1; // High priority
           }
         }
         
         // Category or "important" pages
-        if (url.includes('/category/') || 
-            url.includes('/blog/') || 
-            url.includes('/news/') ||
-            url.pathname.split('/').length <= 3) { // Shallow URLs are important
+        if (urlObj.pathname.includes('/category/') || 
+            urlObj.pathname.includes('/blog/') || 
+            urlObj.pathname.includes('/news/') ||
+            urlObj.pathname.split('/').length <= 3) { // Shallow URLs are important
           return 2; // Medium priority
         }
         
         // Check for file extensions (not files)
-        if (!/\.(jpg|jpeg|png|gif|pdf|zip|doc|xls|csv|xml)$/i.test(url)) {
+        if (!/\.(jpg|jpeg|png|gif|pdf|zip|doc|xls|csv|xml)$/i.test(urlObj.pathname)) {
           return 3; // Normal priority
         }
         
