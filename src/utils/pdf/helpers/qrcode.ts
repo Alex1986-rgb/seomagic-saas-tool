@@ -56,5 +56,6 @@ export function addQRCodeToPage(
   // Add small label
   doc.setFontSize(7);
   doc.setTextColor(100, 100, 100);
-  doc.text('Scan for report', x + size / 2, y + size + 8, { align: 'center' });
+  doc.text('Scan for report', String(x + size / 2), String(y + size + 8), { align: 'center' });
 }
+
