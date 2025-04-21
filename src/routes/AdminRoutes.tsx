@@ -9,6 +9,8 @@ import SystemStatusPage from '@/pages/admin/SystemStatusPage';
 import AdminNotificationsPage from '@/pages/admin/AdminNotificationsPage';
 import AdminMonitoringPage from '@/pages/admin/AdminMonitoringPage';
 import AdminSettingsPage from '@/pages/admin/AdminSettingsPage';
+import AdminUsersPage from '@/pages/admin/AdminUsersPage';
+import AdminAnalyticsPage from '@/pages/admin/AdminAnalyticsPage';
 
 // system settings sections
 import DatabaseSettingsPage from '@/pages/admin/system/DatabaseSettingsPage';
@@ -28,6 +30,8 @@ const AdminRoutes: React.FC = () => {
         <Route path="notifications" element={<AdminNotificationsPage />} />
         <Route path="monitoring" element={<AdminMonitoringPage />} />
         <Route path="settings" element={<AdminSettingsPage />} />
+        <Route path="users" element={<AdminUsersPage />} />
+        <Route path="analytics" element={<AdminAnalyticsPage />} />
 
         {/* System Settings subroutes */}
         <Route path="system/database" element={<DatabaseSettingsPage />} />
