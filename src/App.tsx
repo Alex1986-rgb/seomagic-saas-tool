@@ -9,7 +9,7 @@ import LoadingSpinner from '@/components/LoadingSpinner';
 const HomePage = React.lazy(() => import('@/pages/Index'));
 const AuditPage = React.lazy(() => import('@/pages/Audit'));
 const SiteAudit = React.lazy(() => import('@/pages/SiteAudit'));
-const AdminRoutes = React.lazy(() => import('@/routes/AdminRoutes'));
+const AdminPage = React.lazy(() => import('@/pages/AdminPanel'));
 const SeoOptimizationPage = React.lazy(() => import('@/pages/SeoOptimizationPage'));
 const BlogPage = React.lazy(() => import('@/pages/Blog'));
 const BlogPostPage = React.lazy(() => import('@/pages/BlogPost'));
@@ -35,6 +35,9 @@ const NotFound = React.lazy(() => import('@/pages/NotFound'));
 const GuidePost = React.lazy(() => import('@/pages/GuidePost'));
 const IPInfo = React.lazy(() => import('@/pages/IPInfo'));
 const Partnership = React.lazy(() => import('@/pages/Partnership'));
+
+// Lazy load admin routes
+const AdminRoutes = React.lazy(() => import('@/routes/AdminRoutes'));
 
 // Import the AuthProvider from contexts
 import { AuthProvider } from '@/contexts/AuthContext';
