@@ -1,3 +1,4 @@
+
 import { useState, useCallback, useEffect } from 'react';
 import { useCrawlExecution } from './useCrawlExecution';
 import { useCrawlState } from './useCrawlState';
@@ -163,9 +164,7 @@ export function useCrawlProgress(urlParam: string) {
       const { crawler: newCrawler, domain: newDomain, normalizedUrl } = initializeCrawler({
         url,
         maxPages: maxPages || 5000,
-        // Remove concurrentRequests since it's not in the type definition
-        // Instead add comments to explain we wanted to increase parallel requests
-        // but it's not supported in the current interface
+        // Removed concurrentRequests since it's not in the type definition
         onProgress: (pagesScanned, totalEstimated, currentUrl) => {
           console.log(`Progress update: ${pagesScanned}/${totalEstimated} - ${currentUrl}`);
           updateProgress(pagesScanned, totalEstimated, currentUrl, maxPages);
