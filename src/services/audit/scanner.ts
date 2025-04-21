@@ -1,4 +1,3 @@
-
 import { SimpleSitemapCreator } from './simpleSitemapCreator';
 import { generateErrorReportPdf } from '../../utils/pdf/errorReport';
 import { generateDeepCrawlPdf } from '../../utils/pdf/deepCrawlPdf';
@@ -99,7 +98,8 @@ export class WebsiteScanner {
       const pdfBlob = await generateDeepCrawlPdf({
         domain,
         urls,
-        pageCount: urls.length,
+        pagesScanned: urls.length,
+        totalPages: urls.length,
         scanDate: new Date().toISOString(),
         pageTypes: { html: urls.length },
         enhancedStyling: true,
@@ -120,10 +120,19 @@ export class WebsiteScanner {
   async downloadErrorReport(domain: string, urls: string[], auditData: any) {
     try {
       const errorReportBlob = await generateErrorReportPdf({
-        auditData,
+        domain: domain,
         url: domain,
         urls,
-        detailed: true
+        auditData,
+        detailed: true,
+        errors: auditData?.errors || [
+          {
+            url: domain,
+            type: 'sample',
+            description: 'Sample error for report',
+            severity: 'medium'
+          }
+        ]
       });
       
       if (!errorReportBlob) throw new Error("Не удалось создать отчет об ошибках");

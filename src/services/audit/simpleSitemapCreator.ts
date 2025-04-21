@@ -1,3 +1,4 @@
+
 import { SitemapExtractor } from './crawler/sitemapExtractor';
 import { generateSitemapXml } from './sitemap/generator';
 
@@ -7,11 +8,20 @@ interface SitemapCreatorOptions {
   includeStylesheet?: boolean;
   requestDelay?: number;
   userAgent?: string;
+  // Добавим недостающие параметры для совместимости
+  concurrentRequests?: number;
+  retryCount?: number;
+  retryDelay?: number;
+  forceTargetDomain?: boolean;
+  timeout?: number;
 }
 
 export class SimpleSitemapCreator {
   private options: Required<SitemapCreatorOptions>;
   private sitemapExtractor: SitemapExtractor;
+  private baseUrl: string = '';
+  private domain: string = '';
+  private isCancelled: boolean = false;
   
   constructor(options: SitemapCreatorOptions = {}) {
     this.options = {
@@ -19,10 +29,40 @@ export class SimpleSitemapCreator {
       maxDepth: options.maxDepth || 5,
       includeStylesheet: options.includeStylesheet !== undefined ? options.includeStylesheet : true,
       requestDelay: options.requestDelay || 500,
-      userAgent: options.userAgent || 'SEO Market Website Scanner Bot'
+      userAgent: options.userAgent || 'SEO Market Website Scanner Bot',
+      concurrentRequests: options.concurrentRequests || 3,
+      retryCount: options.retryCount || 2,
+      retryDelay: options.retryDelay || 1000,
+      forceTargetDomain: options.forceTargetDomain !== undefined ? options.forceTargetDomain : true,
+      timeout: options.timeout || 10000
     };
     
     this.sitemapExtractor = new SitemapExtractor();
+  }
+  
+  // Добавляем методы для работы с baseUrl и domain
+  setBaseUrl(url: string): void {
+    this.baseUrl = url;
+    try {
+      const urlObj = new URL(url);
+      this.domain = urlObj.hostname;
+    } catch (error) {
+      console.error('Invalid URL format:', error);
+    }
+  }
+  
+  getBaseUrl(): string {
+    return this.baseUrl;
+  }
+  
+  getDomain(): string {
+    return this.domain;
+  }
+  
+  // Добавляем метод отмены сканирования
+  cancel(): void {
+    this.isCancelled = true;
+    console.log('Crawling cancelled by user');
   }
   
   async crawl(
@@ -30,10 +70,14 @@ export class SimpleSitemapCreator {
     progressCallback?: (scanned: number, total: number, currentUrl: string) => void
   ): Promise<string[]> {
     try {
+      // Сбрасываем флаг отмены при новом запуске
+      this.isCancelled = false;
+      
+      // Устанавливаем базовый URL и домен
+      this.setBaseUrl(url);
+      
       // В реальной реализации здесь был бы код сканирования сайта
       // Для простоты демонстрации будем имитировать процесс
-      
-      const hostname = new URL(url).hostname;
       const baseUrl = url.endsWith('/') ? url : `${url}/`;
       
       // Имитация прогресса сканирования
@@ -45,6 +89,12 @@ export class SimpleSitemapCreator {
       
       // Имитация процесса сканирования
       for (let i = 1; i < totalPages; i++) {
+        // Проверяем флаг отмены
+        if (this.isCancelled) {
+          console.log('Crawling was cancelled');
+          break;
+        }
+        
         // Имитируем задержку для демонстрации прогресса
         await new Promise(resolve => setTimeout(resolve, 50));
         
@@ -60,7 +110,7 @@ export class SimpleSitemapCreator {
       }
       
       // Уведомляем о завершении
-      if (progressCallback) {
+      if (progressCallback && !this.isCancelled) {
         progressCallback(totalPages, totalPages, 'Завершение...');
       }
       

@@ -1,31 +1,23 @@
-
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import { addPaginationFooters } from './helpers';
-import { getScoreColorRGB } from './styles/colors';
-import { pdfColors } from './styles/colors';
-import { pdfFonts } from './styles/fonts';
-import { pdfTableStyles } from './styles/tables';
-import { formatReportHeader } from './styles/formatting';
-import { drawGauge } from './styles/drawing';
-import { analyzeCommonPaths, getSeoRecommendations, getSiteSummary } from './errorReport/analyzer';
+import { addPaginationFooters, addQRCodeToPage } from './helpers';
 
-interface DeepCrawlPdfOptions {
+export interface DeepCrawlPdfOptions {
   domain: string;
-  scanDate: string;
+  scanDate?: string;
+  urls: string[];
   pagesScanned: number;
   totalPages: number;
-  urls: string[];
   pageTypes?: Record<string, number>;
-  depthData?: { level: number; count: number }[];
-  brokenLinks?: { url: string; statusCode: number }[];
-  duplicatePages?: { url: string; similarUrls: string[] }[];
-  includeFullDetails?: boolean;
+  depthData?: Array<{ level: number; count: number }>;
+  brokenLinks?: Array<{ url: string; statusCode: number }>;
+  duplicatePages?: Array<{ url: string; similarUrls: string[] }>;
   enhancedStyling?: boolean;
+  includeFullDetails?: boolean;
 }
 
 /**
- * Generates a detailed PDF report from deep crawl analysis data
+ * Generates a PDF report from deep crawl data
  */
 export const generateDeepCrawlPdf = async (options: DeepCrawlPdfOptions): Promise<Blob> => {
   const { 
