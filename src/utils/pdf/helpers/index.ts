@@ -3,6 +3,8 @@
 export * from './colors';
 export * from './pagination';
 export * from './formatting';
+export * from './qrcode';
+export * from './seo';
 
 // Adds a timestamp to the document
 export const addTimestamp = (doc: any, x: number, y: number): void => {

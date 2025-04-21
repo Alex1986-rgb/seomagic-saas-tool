@@ -1,63 +1,73 @@
 
-/**
- * Table styling utilities for PDF generation
- */
+import { pdfColors } from './colors';
 
-// Default table styles
+/**
+ * Table styles for PDF documents
+ */
 export const pdfTableStyles = {
   default: {
     headStyles: {
-      fillColor: [56, 189, 248],
+      fillColor: pdfColors.primary,
       textColor: [255, 255, 255],
-      fontStyle: 'bold'
+      fontSize: 10,
+      fontStyle: 'bold',
     },
     bodyStyles: {
-      textColor: [0, 0, 0]
+      fontSize: 10,
+      fontStyle: 'normal',
     },
     alternateRowStyles: {
-      fillColor: [241, 245, 249]
-    }
+      fillColor: [249, 250, 251],
+    },
+    footStyles: {
+      fillColor: [243, 244, 246],
+      textColor: pdfColors.dark,
+      fontStyle: 'bold',
+    },
   },
   
-  compact: {
-    styles: {
-      fontSize: 9,
-      cellPadding: 2
-    }
-  },
-  
-  error: {
+  secondary: {
     headStyles: {
-      fillColor: [239, 68, 68]
-    }
-  },
-  
-  success: {
-    headStyles: {
-      fillColor: [74, 222, 128]
-    }
+      fillColor: pdfColors.secondary,
+      textColor: [255, 255, 255],
+      fontSize: 10,
+      fontStyle: 'bold',
+    },
+    bodyStyles: {
+      fontSize: 10,
+    },
+    alternateRowStyles: {
+      fillColor: [249, 250, 251],
+    },
   },
   
   warning: {
     headStyles: {
-      fillColor: [251, 146, 60]
-    }
-  }
+      fillColor: pdfColors.warning,
+      textColor: [255, 255, 255],
+      fontSize: 10,
+      fontStyle: 'bold',
+    },
+    bodyStyles: {
+      fontSize: 10,
+    },
+    alternateRowStyles: {
+      fillColor: [249, 250, 251],
+    },
+  },
+  
+  error: {
+    headStyles: {
+      fillColor: pdfColors.error,
+      textColor: [255, 255, 255],
+      fontSize: 10,
+      fontStyle: 'bold',
+    },
+    bodyStyles: {
+      fontSize: 10,
+    },
+    alternateRowStyles: {
+      fillColor: [249, 250, 251],
+    },
+  },
 };
-
-/**
- * Applies row coloring based on value
- */
-export function getRowColorByValue(
-  value: number, 
-  goodThreshold: number = 80,
-  mediumThreshold: number = 50
-): number[] {
-  if (value >= goodThreshold) {
-    return [240, 253, 244]; // Light green
-  } else if (value >= mediumThreshold) {
-    return [254, 249, 195]; // Light yellow
-  } else {
-    return [254, 226, 226]; // Light red
-  }
-}

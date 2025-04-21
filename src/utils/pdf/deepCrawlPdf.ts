@@ -1,6 +1,13 @@
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import { addPaginationFooters, addQRCodeToPage } from './helpers';
+import { addPaginationFooters } from './helpers/pagination';
+import { addQRCodeToPage } from './helpers/qrcode';
+import { pdfColors } from './styles/colors';
+import { pdfFonts } from './styles/fonts';
+import { pdfTableStyles } from './styles/tables';
+import { formatDateString } from './styles/formatting';
+import { drawGauge } from './styles/drawing';
+import { analyzeCommonPaths, getSeoRecommendations, getSiteSummary } from './helpers/seo';
 
 export interface DeepCrawlPdfOptions {
   domain: string;
@@ -468,7 +475,7 @@ export const generateDeepCrawlPdf = async (options: DeepCrawlPdfOptions): Promis
       
       doc.setFontSize(10);
       doc.setFont('helvetica', 'normal');
-      doc.text('Похожие страницы:', 20, dupeY);
+      doc.text('Похожи�� страницы:', 20, dupeY);
       dupeY += 6;
       
       // Show similar URLs (limited to 3)
