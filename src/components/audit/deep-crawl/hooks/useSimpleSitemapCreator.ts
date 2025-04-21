@@ -1,80 +1,89 @@
 
-import { useState } from 'react';
-import { saveAs } from 'file-saver';
+import { useState, useCallback } from 'react';
 import { SimpleSitemapCreator } from '@/services/audit/simpleSitemapCreator';
 
-export function useSimpleSitemapCreator() {
-  const [isGenerating, setIsGenerating] = useState(false);
+interface UseSimpleSitemapCreatorProps {
+  url: string;
+  maxPages?: number;
+  maxDepth?: number;
+}
+
+export function useSimpleSitemapCreator({ url, maxPages = 10000, maxDepth = 5 }: UseSimpleSitemapCreatorProps) {
+  const [isScanning, setIsScanning] = useState(false);
   const [progress, setProgress] = useState(0);
-  const [sitemap, setSitemap] = useState('');
-  const [urls, setUrls] = useState<string[]>([]);
   const [currentUrl, setCurrentUrl] = useState('');
-  
-  const generateSitemap = async (url: string) => {
-    if (!url) return;
-    
-    setIsGenerating(true);
-    setProgress(0);
-    setSitemap('');
-    setUrls([]);
-    
+  const [scannedUrls, setScannedUrls] = useState<string[]>([]);
+  const [sitemap, setSitemap] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  const startScan = useCallback(async () => {
+    if (!url) {
+      setError('URL is required');
+      return;
+    }
+
     try {
-      const crawler = new SimpleSitemapCreator({
-        maxPages: 10000,
-        maxDepth: 5,
-        includeStylesheet: true
+      setIsScanning(true);
+      setError(null);
+      setSitemap(null);
+      setScannedUrls([]);
+      setProgress(0);
+
+      const scanner = new SimpleSitemapCreator({
+        maxPages,
+        maxDepth,
+        includeStylesheet: true,
+        requestDelay: 300
       });
-      
-      // Track progress
+
       const progressCallback = (scanned: number, total: number, url: string) => {
-        setProgress(Math.min(100, Math.round((scanned / total) * 100)));
+        const percentage = total > 0 ? Math.min(Math.round((scanned / total) * 100), 100) : 0;
+        setProgress(percentage);
         setCurrentUrl(url);
       };
-      
-      // Start crawling
-      const foundUrls = await crawler.crawl(url, progressCallback);
-      setUrls(foundUrls);
-      
+
+      const urls = await scanner.crawl(url, progressCallback);
+      setScannedUrls(urls);
+
       // Generate sitemap XML
-      const sitemapXml = crawler.generateSitemap(foundUrls);
+      const sitemapXml = scanner.generateSitemap(urls);
       setSitemap(sitemapXml);
-      
-      return {
-        urls: foundUrls,
-        sitemap: sitemapXml
-      };
-    } catch (error) {
-      console.error('Error generating sitemap:', error);
-      throw error;
-    } finally {
-      setIsGenerating(false);
-      setProgress(100);
+
+      setIsScanning(false);
+      return { urls, sitemap: sitemapXml };
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An unknown error occurred');
+      setIsScanning(false);
+      return null;
     }
-  };
-  
-  const downloadSitemap = () => {
-    if (!sitemap) return;
-    
-    const blob = new Blob([sitemap], { type: 'application/xml;charset=utf-8' });
-    saveAs(blob, 'sitemap.xml');
-  };
-  
-  const downloadCsv = () => {
-    if (!urls.length) return;
-    
-    const csvContent = 'URL\n' + urls.join('\n');
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8' });
-    saveAs(blob, 'urls.csv');
-  };
-  
+  }, [url, maxPages, maxDepth]);
+
+  const downloadSitemap = useCallback(() => {
+    if (!sitemap) return null;
+
+    const blob = new Blob([sitemap], { type: 'application/xml' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `sitemap-${new Date().toISOString().slice(0, 10)}.xml`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+    return true;
+  }, [sitemap]);
+
   return {
-    isGenerating,
+    isScanning,
     progress,
-    sitemap,
-    urls,
     currentUrl,
-    generateSitemap,
-    downloadSitemap,
-    downloadCsv
+    scannedUrls,
+    sitemap,
+    error,
+    startScan,
+    downloadSitemap
   };
 }
+
+export default useSimpleSitemapCreator;

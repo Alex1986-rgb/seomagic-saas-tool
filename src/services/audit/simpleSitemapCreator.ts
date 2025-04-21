@@ -1,375 +1,235 @@
+
 import axios from 'axios';
 import * as cheerio from 'cheerio';
-import { SitemapExtractor } from './crawler/sitemapExtractor';
-import { normalizeUrl, isUrlFromSameDomain, getDomainFromUrl } from './crawler/urlUtils';
 
-interface SitemapCreatorOptions {
+interface SimpleSitemapCreatorOptions {
   maxPages?: number;
   maxDepth?: number;
   includeStylesheet?: boolean;
   requestDelay?: number;
-  userAgent?: string;
   concurrentRequests?: number;
-  retryCount?: number;
-  retryDelay?: number;
-  timeout?: number;
 }
 
 export class SimpleSitemapCreator {
-  private options: Required<SitemapCreatorOptions>;
-  private sitemapExtractor: SitemapExtractor;
-  private baseUrl: string = '';
-  private domain: string = '';
-  private isCancelled: boolean = false;
-  private debugMode: boolean = false;
+  private options: SimpleSitemapCreatorOptions;
   private visited = new Set<string>();
-  private queue: { url: string; depth: number }[] = [];
-  private userAgents = [
-    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
-    'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.0 Safari/605.1.15',
-    'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:89.0) Gecko/20100101 Firefox/89.0',
-    'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.212 Safari/537.36'
-  ];
-  
-  constructor(options: SitemapCreatorOptions = {}) {
+  private domain: string = '';
+  private baseUrl: string = '';
+
+  constructor(options: SimpleSitemapCreatorOptions = {}) {
     this.options = {
       maxPages: options.maxPages || 10000,
-      maxDepth: options.maxDepth || 10,
+      maxDepth: options.maxDepth || 5,
       includeStylesheet: options.includeStylesheet !== undefined ? options.includeStylesheet : true,
-      requestDelay: options.requestDelay || 300,
-      userAgent: options.userAgent || 'SEO Market Website Scanner Bot',
-      concurrentRequests: options.concurrentRequests || 5,
-      retryCount: options.retryCount || 2,
-      retryDelay: options.retryDelay || 1000,
-      timeout: options.timeout || 15000
+      requestDelay: options.requestDelay || 100,
+      concurrentRequests: options.concurrentRequests || 5
     };
-    
-    this.sitemapExtractor = new SitemapExtractor();
-  }
-  
-  enableDebugMode(enabled: boolean): void {
-    this.debugMode = enabled;
-    console.log(`Debug mode ${enabled ? 'enabled' : 'disabled'} for SimpleSitemapCreator`);
   }
 
-  logCrawlSettings(): void {
-    console.log('SimpleSitemapCreator settings:', {
-      baseUrl: this.baseUrl,
-      domain: this.domain,
-      maxPages: this.options.maxPages,
-      maxDepth: this.options.maxDepth,
-      requestDelay: this.options.requestDelay,
-      concurrentRequests: this.options.concurrentRequests,
-      retryCount: this.options.retryCount,
-      retryDelay: this.options.retryDelay,
-      timeout: this.options.timeout,
-      debugMode: this.debugMode
-    });
-  }
-  
-  setBaseUrl(url: string): void {
-    this.baseUrl = url;
+  private extractDomain(url: string): string {
     try {
       const urlObj = new URL(url);
-      this.domain = urlObj.hostname;
+      return urlObj.hostname;
     } catch (error) {
-      console.error('Invalid URL format:', error);
+      return '';
     }
   }
-  
-  getBaseUrl(): string {
-    return this.baseUrl;
-  }
-  
-  getDomain(): string {
-    return this.domain;
-  }
-  
-  cancel(): void {
-    this.isCancelled = true;
-    console.log('Crawling cancelled by user');
-  }
-  
-  private getRandomUserAgent(): string {
-    return this.userAgents[Math.floor(Math.random() * this.userAgents.length)];
-  }
-  
-  private async findSitemaps(url: string): Promise<string[]> {
-    try {
-      const commonSitemapPaths = [
-        '/sitemap.xml',
-        '/sitemap_index.xml',
-        '/sitemap/',
-        '/sitemap/sitemap.xml',
-        '/wp-sitemap.xml',
-      ];
-      
-      const baseUrl = new URL(url).origin;
-      
-      for (const path of commonSitemapPaths) {
-        const sitemapUrl = `${baseUrl}${path}`;
-        try {
-          const response = await axios.get(sitemapUrl, {
-            headers: { 'User-Agent': this.getRandomUserAgent() },
-            timeout: 5000
-          });
-          
-          if (response.status === 200 && 
-              (response.headers['content-type']?.includes('xml') || 
-               response.data?.includes('<urlset') || 
-               response.data?.includes('<sitemapindex'))) {
-            
-            const urls = await this.sitemapExtractor.extractUrlsFromSitemap(sitemapUrl);
-            if (urls.length > 0) {
-              if (this.debugMode) {
-                console.log(`Found sitemap at ${sitemapUrl} with ${urls.length} URLs`);
-              }
-              return urls;
-            }
-          }
-        } catch (error) {
-          if (this.debugMode) {
-            console.log(`No sitemap found at ${sitemapUrl}`);
-          }
-        }
-      }
-      
-      try {
-        const robotsTxtUrl = `${baseUrl}/robots.txt`;
-        const response = await axios.get(robotsTxtUrl, {
-          headers: { 'User-Agent': this.getRandomUserAgent() },
-          timeout: 5000
-        });
-        
-        if (response.status === 200) {
-          const robotsTxt = response.data;
-          const sitemapRegex = /Sitemap:\s*([^\s]+)/gi;
-          let match;
-          let sitemapUrls = [];
-          
-          while ((match = sitemapRegex.exec(robotsTxt)) !== null) {
-            sitemapUrls.push(match[1]);
-          }
-          
-          if (sitemapUrls.length > 0) {
-            let allUrls = [];
-            
-            for (const sitemapUrl of sitemapUrls) {
-              try {
-                const urls = await this.sitemapExtractor.extractUrlsFromSitemap(sitemapUrl);
-                allUrls = [...allUrls, ...urls];
-              } catch (error) {
-              }
-            }
-            
-            if (allUrls.length > 0) {
-              if (this.debugMode) {
-                console.log(`Found ${allUrls.length} URLs from sitemaps in robots.txt`);
-              }
-              return allUrls;
-            }
-          }
-        }
-      } catch (error) {
-      }
-    } catch (error) {
-      console.error('Error finding sitemaps:', error);
-    }
-    
-    return [];
-  }
-  
-  private extractLinks(html: string, baseUrl: string): string[] {
-    const links: string[] = [];
+
+  // Парсинг URLs из HTML
+  private extractUrls(html: string, baseUrl: string): string[] {
     const $ = cheerio.load(html);
-    
+    const urls: string[] = [];
+
     $('a').each((_, element) => {
       const href = $(element).attr('href');
-      if (href) {
+      if (href && !href.startsWith('#') && !href.startsWith('javascript:') && !href.startsWith('mailto:')) {
         try {
-          const resolvedUrl = new URL(href, baseUrl).href;
-          links.push(resolvedUrl);
-        } catch (error) {
+          const absoluteUrl = new URL(href, baseUrl).href;
+          // Удаляем фрагмент и параметры запроса
+          const cleanUrl = absoluteUrl.split('#')[0].split('?')[0];
+          urls.push(cleanUrl);
+        } catch (e) {
+          // Пропускаем некорректные URL
         }
       }
     });
-    
-    return links;
+
+    return urls;
   }
-  
-  private async processSingleUrl(url: string, currentDepth: number): Promise<string[]> {
-    if (this.isCancelled) {
-      return [];
+
+  // Проверяем, должен ли URL быть включен в карту сайта
+  private shouldIncludeUrl(url: string): boolean {
+    if (!url.startsWith(this.baseUrl)) {
+      return false;
     }
-    
-    if (!isUrlFromSameDomain(url, this.domain)) {
-      return [];
-    }
-    
-    const foundLinks: string[] = [];
-    let retryCount = 0;
-    
-    while (retryCount <= this.options.retryCount) {
-      try {
-        const randomDelay = Math.floor(Math.random() * 300) + this.options.requestDelay;
-        await new Promise(resolve => setTimeout(resolve, randomDelay));
-        
-        const response = await axios.get(url, {
-          headers: {
-            'User-Agent': this.getRandomUserAgent(),
-            'Accept': 'text/html,application/xhtml+xml',
-            'Accept-Language': 'en-US,en;q=0.9,ru;q=0.8'
-          },
-          timeout: this.options.timeout,
-          maxRedirects: 5
-        });
-        
-        const contentType = response.headers['content-type'] || '';
-        if (!contentType.includes('text/html')) {
-          break;
-        }
-        
-        const links = this.extractLinks(response.data, url);
-        
-        for (const link of links) {
-          try {
-            if (isUrlFromSameDomain(link, this.domain)) {
-              const normalizedLink = normalizeUrl(link);
-              foundLinks.push(normalizedLink);
-              
-              if (currentDepth < this.options.maxDepth && !this.visited.has(normalizedLink)) {
-                this.queue.push({ url: normalizedLink, depth: currentDepth + 1 });
-              }
-            }
-          } catch (error) {
-          }
-        }
-        
-        break;
-      } catch (error) {
-        retryCount++;
-        
-        if (retryCount <= this.options.retryCount) {
-          const backoff = this.options.retryDelay * Math.pow(2, retryCount - 1) + Math.random() * 500;
-          await new Promise(resolve => setTimeout(resolve, backoff));
-        }
-      }
-    }
-    
-    return foundLinks;
+
+    const urlLower = url.toLowerCase();
+    // Исключаем статические файлы и административные пути
+    return !urlLower.match(/\.(css|js|jpg|jpeg|png|gif|svg|webp|pdf|zip|rar|doc|docx|xls|xlsx|mp3|mp4|avi|mov)$/);
   }
-  
-  async crawl(
-    url: string, 
-    progressCallback?: (scanned: number, total: number, currentUrl: string) => void
-  ): Promise<string[]> {
+
+  // Поиск существующих Sitemap на сайте
+  private async findSitemaps(url: string): Promise<string[]> {
     try {
-      this.isCancelled = false;
-      this.visited.clear();
-      this.queue = [];
+      const urls: string[] = [];
+      const baseUrlObj = new URL(url);
+      const baseUrl = `${baseUrlObj.protocol}//${baseUrlObj.host}`;
       
-      this.setBaseUrl(url);
-      const normalizedUrl = url.endsWith('/') ? url.slice(0, -1) : url;
-      this.queue.push({ url: normalizedUrl, depth: 0 });
-      
-      if (this.debugMode) {
-        console.log(`Starting crawl for ${url} with max pages: ${this.options.maxPages}`);
-      }
-      
-      const sitemapUrls = await this.findSitemaps(normalizedUrl);
-      if (sitemapUrls.length > 0) {
-        console.log(`Found ${sitemapUrls.length} URLs from sitemap(s)`);
-        
-        sitemapUrls.forEach(sitemapUrl => this.visited.add(sitemapUrl));
-        
-        if (sitemapUrls.length >= this.options.maxPages) {
-          console.log(`Returning ${this.options.maxPages} URLs from sitemap(s)`);
-          if (progressCallback) {
-            progressCallback(this.options.maxPages, this.options.maxPages, normalizedUrl);
-          }
-          return sitemapUrls.slice(0, this.options.maxPages);
-        }
-        
-        console.log(`Sitemap has ${sitemapUrls.length} URLs, continuing with crawling to find more...`);
-      }
-      
-      let processedCount = 0;
-      this.visited.add(normalizedUrl);
-      
-      let estimatedTotal = this.options.maxPages;
-      if (sitemapUrls.length > 0) {
-        estimatedTotal = Math.min(sitemapUrls.length * 2, this.options.maxPages);
-      }
-      
-      if (progressCallback) {
-        progressCallback(processedCount, estimatedTotal, normalizedUrl);
-      }
-      
-      while (this.queue.length > 0 && this.visited.size < this.options.maxPages && !this.isCancelled) {
-        const batch = this.queue.splice(0, this.options.concurrentRequests);
-        const promises = batch.map(({ url: queuedUrl, depth }) => {
-          return this.processSingleUrl(queuedUrl, depth);
-        });
-        
-        const batchResults = await Promise.all(promises);
-        
-        for (let i = 0; i < batch.length; i++) {
-          const currentUrl = batch[i].url;
-          const foundLinks = batchResults[i];
+      const possibleSitemapPaths = [
+        '/sitemap.xml',
+        '/sitemap_index.xml',
+        '/sitemap-index.xml',
+        '/sitemapindex.xml',
+        '/sitemap/',
+      ];
+
+      for (const path of possibleSitemapPaths) {
+        try {
+          const sitemapUrl = `${baseUrl}${path}`;
+          const response = await axios.get(sitemapUrl, { timeout: 5000 });
           
-          processedCount++;
-          
-          for (const link of foundLinks) {
-            if (!this.visited.has(link) && this.visited.size < this.options.maxPages) {
-              this.visited.add(link);
-            }
-          }
-          
-          if (progressCallback && processedCount % 5 === 0) {
-            progressCallback(this.visited.size, estimatedTotal, currentUrl);
+          if (response.status === 200 && response.data) {
+            const $ = cheerio.load(response.data, { xmlMode: true });
             
-            if (this.visited.size > estimatedTotal * 0.8) {
-              estimatedTotal = Math.min(this.visited.size * 1.25, this.options.maxPages);
-            }
+            // Извлекаем URLs из стандартного sitemap
+            $('url > loc').each((_, element) => {
+              const foundUrl = $(element).text().trim();
+              if (foundUrl) urls.push(foundUrl);
+            });
+            
+            // Также проверяем sitemap индексы
+            $('sitemap > loc').each((_, element) => {
+              const sitemapUrl = $(element).text().trim();
+              if (sitemapUrl) {
+                // TODO: Можно рекурсивно загрузить вложенные sitemaps при необходимости
+                console.log(`Found sitemap index: ${sitemapUrl}`);
+              }
+            });
           }
+        } catch (error) {
+          // Пропускаем ошибки при проверке путей sitemap
         }
       }
       
-      if (progressCallback) {
-        progressCallback(this.visited.size, this.visited.size, "Завершено");
-      }
-      
-      console.log(`Crawling completed. Found ${this.visited.size} URLs.`);
-      return Array.from(this.visited);
+      console.log(`Found ${urls.length} URLs from existing sitemaps`);
+      return urls;
     } catch (error) {
-      console.error('Error during crawl:', error);
-      return Array.from(this.visited);
+      console.error('Error finding sitemaps:', error);
+      return [];
     }
   }
-  
-  /**
-   * Generate a sitemap XML from the list of URLs
-   */
-  generateSitemap(urls: string[]): string {
-    let sitemap = '<?xml version="1.0" encoding="UTF-8"?>\n';
+
+  // Основной метод сканирования
+  public async crawl(url: string, progressCallback?: (scanned: number, total: number, currentUrl: string) => void): Promise<string[]> {
+    if (!url) {
+      throw new Error('URL cannot be empty');
+    }
+
+    // Нормализация URL
+    let normalizedUrl = url;
+    if (!normalizedUrl.startsWith('http://') && !normalizedUrl.startsWith('https://')) {
+      normalizedUrl = `https://${normalizedUrl}`;
+    }
+
+    try {
+      const urlObj = new URL(normalizedUrl);
+      this.baseUrl = `${urlObj.protocol}//${urlObj.hostname}`;
+      this.domain = urlObj.hostname;
+    } catch (error) {
+      throw new Error(`Invalid URL: ${normalizedUrl}`);
+    }
+
+    this.visited.clear();
+    
+    // Сначала пытаемся найти существующие карты сайта
+    const sitemapUrls = await this.findSitemaps(normalizedUrl);
+    if (sitemapUrls.length > 0) {
+      console.log(`Using existing sitemap with ${sitemapUrls.length} URLs`);
+      // Если нашли достаточное количество URL в существующих картах сайта,
+      // можем использовать их вместо повторного сканирования
+      if (sitemapUrls.length > this.options.maxPages! / 10) {
+        return sitemapUrls.slice(0, this.options.maxPages);
+      }
+      
+      // Иначе добавляем найденные URL и продолжаем сканирование
+      for (const foundUrl of sitemapUrls) {
+        this.visited.add(foundUrl);
+      }
+    }
+
+    // Если sitemap не найден или содержит мало URL, выполняем сканирование
+    const queue = [{ url: normalizedUrl, depth: 0 }];
+    
+    while (queue.length > 0 && this.visited.size < this.options.maxPages!) {
+      const { url: currentUrl, depth } = queue.shift()!;
+      
+      if (this.visited.has(currentUrl) || depth > this.options.maxDepth!) {
+        continue;
+      }
+      
+      this.visited.add(currentUrl);
+      
+      if (progressCallback) {
+        progressCallback(this.visited.size, queue.length + this.visited.size, currentUrl);
+      }
+      
+      try {
+        const response = await axios.get(currentUrl, { timeout: 15000 });
+        
+        if (response.status === 200 && response.data) {
+          const extractedUrls = this.extractUrls(response.data, currentUrl);
+          
+          for (const foundUrl of extractedUrls) {
+            if (this.shouldIncludeUrl(foundUrl) && !this.visited.has(foundUrl)) {
+              queue.push({ url: foundUrl, depth: depth + 1 });
+            }
+          }
+        }
+      } catch (error) {
+        // Пропускаем ошибки при сканировании отдельных страниц
+      }
+      
+      // Добавляем задержку между запросами
+      if (this.options.requestDelay! > 0) {
+        await new Promise(resolve => setTimeout(resolve, this.options.requestDelay));
+      }
+    }
+    
+    return Array.from(this.visited);
+  }
+
+  // Генерация sitemap XML
+  public generateSitemap(urls: string[]): string {
+    let xml = '<?xml version="1.0" encoding="UTF-8"?>\n';
     
     if (this.options.includeStylesheet) {
-      sitemap = sitemap.replace('?>', '?><?xml-stylesheet type="text/xsl" href="/sitemap.xsl"?>');
+      xml += '<?xml-stylesheet type="text/xsl" href="https://static.googleusercontent.com/media/www.google.com/en//schemas/sitemap/0.84/sitemap.xsl"?>\n';
     }
     
-    sitemap += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n';
+    xml += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n';
     
+    // Добавляем URLs
     for (const url of urls) {
-      try {
-        sitemap += `  <url>\n    <loc>${url}</loc>\n`;
-        sitemap += `    <priority>0.5</priority>\n`;
-        sitemap += `  </url>\n`;
-      } catch (e) {
-        // Skip invalid URLs
+      // Пропускаем некорректные URL
+      if (url) {
+        xml += '  <url>\n';
+        xml += `    <loc>${this.escapeXml(url)}</loc>\n`;
+        xml += `    <lastmod>${new Date().toISOString().split('T')[0]}</lastmod>\n`;
+        xml += '  </url>\n';
       }
     }
     
-    sitemap += '</urlset>';
-    return sitemap;
+    xml += '</urlset>';
+    return xml;
+  }
+
+  // Вспомогательный метод для экранирования специальных XML символов
+  private escapeXml(unsafe: string): string {
+    return unsafe
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&apos;');
   }
 }
