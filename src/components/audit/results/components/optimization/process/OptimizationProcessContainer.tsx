@@ -1,70 +1,57 @@
 
 import React, { useState, useEffect } from 'react';
-import { useToast } from "@/hooks/use-toast";
-import OptimizationProgress from '../../OptimizationProgress';
-import { runOptimizationSimulation } from './optimizationSimulation';
+import { Progress } from '@/components/ui/progress';
+import { Loader2 } from 'lucide-react';
 
 interface OptimizationProcessContainerProps {
   url: string;
-  setOptimizationResult: (result: {
-    beforeScore: number;
-    afterScore: number;
-    demoPage?: {
-      title: string;
-      content: string;
-      meta?: {
-        description?: string;
-        keywords?: string;
-      };
-      optimized?: {
-        content: string;
-        meta?: {
-          description?: string;
-          keywords?: string;
-        };
-      };
-    };
-  } | null) => void;
-  setLocalIsOptimized: (value: boolean) => void;
+  progress: number;
+  setOptimizationResult: (result: any) => void;
+  setLocalIsOptimized: (isOptimized: boolean) => void;
 }
 
 const OptimizationProcessContainer: React.FC<OptimizationProcessContainerProps> = ({
   url,
+  progress,
   setOptimizationResult,
   setLocalIsOptimized
 }) => {
-  const { toast } = useToast();
-  const [optimizationProgress, setOptimizationProgress] = useState(0);
-  const [optimizationStage, setOptimizationStage] = useState('Начало процесса оптимизации...');
-
+  const [currentStage, setCurrentStage] = useState<string>('Анализ страниц');
+  
+  // Update the current stage based on progress
   useEffect(() => {
-    const runOptimization = async () => {
-      const result = await runOptimizationSimulation({
-        url,
-        onProgressUpdate: (progress: number, stage: string) => {
-          setOptimizationProgress(progress);
-          setOptimizationStage(stage);
-        }
-      });
-      
-      setOptimizationResult(result);
-      setLocalIsOptimized(true);
-      
-      toast({
-        title: "Оптимизация завершена",
-        description: `Сайт успешно оптимизирован! Оценка SEO повышена с ${result.beforeScore} до ${result.afterScore} баллов.`,
-      });
-    };
-    
-    runOptimization();
-  }, [url, setOptimizationResult, setLocalIsOptimized, toast]);
-
+    if (progress < 20) {
+      setCurrentStage('Анализ страниц');
+    } else if (progress < 40) {
+      setCurrentStage('Оптимизация мета-тегов');
+    } else if (progress < 60) {
+      setCurrentStage('Улучшение контента');
+    } else if (progress < 80) {
+      setCurrentStage('Оптимизация изображений');
+    } else {
+      setCurrentStage('Применение изменений');
+    }
+  }, [progress]);
+  
   return (
-    <OptimizationProgress 
-      progress={optimizationProgress} 
-      stage={optimizationStage} 
-      className="mt-4 mb-4"
-    />
+    <div className="my-6 p-4 border border-primary/20 rounded-lg bg-background/50">
+      <div className="flex items-center gap-2 mb-2">
+        <Loader2 className="animate-spin h-4 w-4 text-primary" />
+        <h3 className="font-medium">Оптимизация сайта</h3>
+      </div>
+      
+      <Progress value={progress} className="h-2 mb-2" />
+      
+      <div className="flex justify-between items-center text-sm">
+        <span className="text-muted-foreground">{currentStage}</span>
+        <span className="font-medium">{Math.round(progress)}%</span>
+      </div>
+      
+      <div className="mt-3 text-xs text-muted-foreground">
+        Пожалуйста, не закрывайте страницу во время оптимизации. 
+        Процесс может занять до 5 минут в зависимости от размера сайта.
+      </div>
+    </div>
   );
 };
 

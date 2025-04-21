@@ -73,7 +73,7 @@ export const useCrawlProgress = (baseUrl: string) => {
           const newUrls = [];
           for (let i = scannedUrls.length; i < newPagesScanned; i++) {
             const randomPath = Math.random().toString(36).substring(2, 8);
-            newUrls.push(`${baseUrl}/${randomPath}`);
+            newUrls.push(`${config.baseUrl}/${randomPath}`);
           }
           setScannedUrls(prev => [...prev, ...newUrls]);
           setCurrentUrl(newUrls[newUrls.length - 1]);
@@ -93,7 +93,7 @@ export const useCrawlProgress = (baseUrl: string) => {
     }, 10000);
     
     return () => clearInterval(interval);
-  }, [baseUrl, scannedUrls]);
+  }, []);
 
   // Запуск сканирования
   const startCrawl = useCallback(async () => {

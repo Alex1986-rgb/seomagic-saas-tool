@@ -1,4 +1,6 @@
 
+import { OptimizationItem } from './types';
+
 export interface PricingConfig {
   sitemap: number;
   metaTagsPerItem: number;
@@ -83,7 +85,7 @@ export const calculateServiceBasePrice = (
  */
 export const calculateOptimizationCost = (pageCount: number): {
   totalCost: number;
-  items: Array<{ name: string; description: string; count: number; price: number; totalPrice: number; }>;
+  items: OptimizationItem[];
 } => {
   // Apply volume discounts
   let discount = 0;
@@ -95,57 +97,83 @@ export const calculateOptimizationCost = (pageCount: number): {
     discount = 0.05; // 5% discount
   }
   
-  // Estimate how many items need optimization
-  const metaTagsCount = Math.ceil(pageCount * 0.7); // 70% of pages need meta tag optimization
-  const contentCount = Math.ceil(pageCount * 0.5); // 50% of pages need content optimization
-  const imageAltCount = Math.ceil(pageCount * 3); // Assuming 3 images per page on average
-  const performanceCount = Math.ceil(pageCount * 0.3); // 30% of pages need performance improvement
+  // Calculate quantities based on page count
+  const metaTagsCount = Math.ceil(pageCount * 0.7); // 70% of pages need meta tags
+  const contentPagesCount = Math.ceil(pageCount * 0.5); // 50% of pages need content optimization
+  const imageAltCount = Math.ceil(pageCount * 3); // Average 3 images per page
+  const performancePagesCount = Math.ceil(pageCount * 0.3); // 30% of pages have performance issues
+  const brokenLinksCount = Math.ceil(pageCount * 0.1); // 10% of links may be broken
+  const structureIssuesCount = Math.ceil(pageCount * 0.2); // 20% of pages have structure issues
   
-  // Calculate item costs
-  const items = [
+  // Calculate costs for each item
+  const items: OptimizationItem[] = [
     {
-      name: "Создание карты сайта",
-      description: "Генерация полной карты сайта",
+      name: 'Карта сайта (sitemap.xml)',
+      description: 'Создание и оптимизация файла sitemap.xml',
       count: 1,
       price: currentPricingConfig.sitemap,
       totalPrice: currentPricingConfig.sitemap
     },
     {
-      name: "Оптимизация META-тегов",
-      description: "Генерация оптимизированных заголовков и описаний",
+      name: 'Оптимизация мета-тегов',
+      description: 'Оптимизация title, description и других мета-тегов',
       count: metaTagsCount,
       price: currentPricingConfig.metaTagsPerItem,
       totalPrice: metaTagsCount * currentPricingConfig.metaTagsPerItem
     },
     {
-      name: "Оптимизация контента",
-      description: "SEO-оптимизация текстового содержимого",
-      count: contentCount,
+      name: 'Оптимизация контента',
+      description: 'Улучшение текстового содержания страниц',
+      count: contentPagesCount,
       price: currentPricingConfig.contentPerPage,
-      totalPrice: contentCount * currentPricingConfig.contentPerPage
+      totalPrice: contentPagesCount * currentPricingConfig.contentPerPage
     },
     {
-      name: "Оптимизация изображений",
-      description: "Добавление ALT-атрибутов для изображений",
+      name: 'Оптимизация изображений',
+      description: 'Добавление и оптимизация alt-атрибутов',
       count: imageAltCount,
       price: currentPricingConfig.imageAltPerItem,
       totalPrice: imageAltCount * currentPricingConfig.imageAltPerItem
     },
     {
-      name: "Улучшение производительности",
-      description: "Оптимизация скорости загрузки страниц",
-      count: performanceCount,
+      name: 'Оптимизация производительности',
+      description: 'Улучшение скорости загрузки страниц',
+      count: performancePagesCount,
       price: currentPricingConfig.performancePerPage,
-      totalPrice: performanceCount * currentPricingConfig.performancePerPage
+      totalPrice: performancePagesCount * currentPricingConfig.performancePerPage
+    },
+    {
+      name: 'Исправление ссылок',
+      description: 'Починка битых ссылок и редиректов',
+      count: brokenLinksCount,
+      price: currentPricingConfig.linksPerItem,
+      totalPrice: brokenLinksCount * currentPricingConfig.linksPerItem
+    },
+    {
+      name: 'Оптимизация структуры',
+      description: 'Улучшение структуры URL и навигации',
+      count: structureIssuesCount,
+      price: currentPricingConfig.structurePerItem,
+      totalPrice: structureIssuesCount * currentPricingConfig.structurePerItem
     }
   ];
   
-  // Calculate total
-  let totalCost = items.reduce((sum, item) => sum + item.totalPrice, 0);
+  // Calculate subtotal
+  const subtotal = items.reduce((sum, item) => sum + item.totalPrice, 0);
   
   // Apply discount
+  const discountAmount = Math.round(subtotal * discount);
+  const totalCost = Math.round(subtotal - discountAmount);
+  
+  // Add discount item if applicable
   if (discount > 0) {
-    totalCost = Math.round(totalCost * (1 - discount));
+    items.push({
+      name: `Скидка за объем (${discount * 100}%)`,
+      description: 'Скидка при оптимизации большого количества страниц',
+      count: 1,
+      price: -discountAmount,
+      totalPrice: -discountAmount
+    });
   }
   
   return {

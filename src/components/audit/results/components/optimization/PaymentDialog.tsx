@@ -1,7 +1,8 @@
 
-import React from 'react';
-import { Check, CreditCard } from 'lucide-react';
+import React, { useState } from 'react';
+import { Check, CreditCard, Loader2 } from 'lucide-react';
 import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast";
 import {
   Dialog,
   DialogContent,
@@ -27,8 +28,39 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
   isDialogOpen, 
   setIsDialogOpen 
 }) => {
+  const [isProcessing, setIsProcessing] = useState(false);
+  const { toast } = useToast();
+  
   const formatNumber = (num: number) => {
     return new Intl.NumberFormat('ru-RU').format(num);
+  };
+
+  const handlePayment = async () => {
+    try {
+      setIsProcessing(true);
+      
+      // Simulate payment processing delay
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      
+      // Call the payment callback
+      onPayment();
+      
+      toast({
+        title: "Оплата прошла успешно",
+        description: "Ваш платеж был обработан, оптимизация будет запущена.",
+        variant: "default",
+      });
+      
+      setIsDialogOpen(false);
+    } catch (error) {
+      toast({
+        title: "Ошибка платежа",
+        description: "Не удалось обработать платеж. Пожалуйста, попробуйте снова.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   return (
@@ -83,9 +115,18 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
           <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
             Отмена
           </Button>
-          <Button onClick={onPayment} className="gap-2">
-            <CreditCard className="h-4 w-4" />
-            Оплатить
+          <Button onClick={handlePayment} className="gap-2" disabled={isProcessing}>
+            {isProcessing ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Обработка...
+              </>
+            ) : (
+              <>
+                <CreditCard className="h-4 w-4" />
+                Оплатить
+              </>
+            )}
           </Button>
         </DialogFooter>
       </DialogContent>

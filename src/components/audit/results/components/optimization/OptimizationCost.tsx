@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useToast } from "@/hooks/use-toast";
 import CostSummary from './CostSummary';
@@ -36,6 +36,7 @@ const OptimizationCost: React.FC<OptimizationCostProps> = ({
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isOptimizing, setIsOptimizing] = useState(false);
   const [localIsOptimized, setLocalIsOptimized] = useState(isOptimized);
+  const [optimizationProgress, setOptimizationProgress] = useState(0);
   const [optimizationResult, setOptimizationResult] = useState<{
     beforeScore: number;
     afterScore: number;
@@ -58,6 +59,56 @@ const OptimizationCost: React.FC<OptimizationCostProps> = ({
   
   const isOptimizedState = isOptimized || localIsOptimized;
   
+  // Effect to update optimization progress simulation
+  useEffect(() => {
+    let progressInterval: NodeJS.Timeout;
+    
+    if (isOptimizing && !isOptimizedState && optimizationProgress < 100) {
+      progressInterval = setInterval(() => {
+        setOptimizationProgress(prev => {
+          const newProgress = prev + (Math.random() * 2);
+          if (newProgress >= 100) {
+            clearInterval(progressInterval);
+            setTimeout(() => {
+              setLocalIsOptimized(true);
+              setOptimizationProgress(100);
+              setOptimizationResult({
+                beforeScore: 65,
+                afterScore: 92,
+                demoPage: {
+                  title: 'Главная страница',
+                  content: 'Первоначальный контент страницы...',
+                  meta: {
+                    description: 'Старое описание',
+                    keywords: 'старые, ключевые, слова'
+                  },
+                  optimized: {
+                    content: 'Оптимизированный контент страницы с улучшенной структурой...',
+                    meta: {
+                      description: 'Оптимизированное SEO-описание с ключевыми словами',
+                      keywords: 'оптимизированные, ключевые, слова, сайт'
+                    }
+                  }
+                }
+              });
+              
+              toast({
+                title: "Оптимизация завершена",
+                description: "Сайт был успешно оптимизирован для SEO",
+              });
+            }, 1000);
+            return 100;
+          }
+          return newProgress;
+        });
+      }, 200);
+    }
+    
+    return () => {
+      if (progressInterval) clearInterval(progressInterval);
+    };
+  }, [isOptimizing, isOptimizedState, optimizationProgress, toast]);
+  
   const handlePayment = () => {
     toast({
       title: "Оплата успешно произведена",
@@ -70,6 +121,12 @@ const OptimizationCost: React.FC<OptimizationCostProps> = ({
   
   const startOptimization = async () => {
     setIsOptimizing(true);
+    setOptimizationProgress(0);
+    
+    toast({
+      title: "Оптимизация начата",
+      description: "Процесс оптимизации сайта запущен",
+    });
   };
   
   if (!optimizationCost) return null;
@@ -87,9 +144,10 @@ const OptimizationCost: React.FC<OptimizationCostProps> = ({
       
       <CostDetailsTable optimizationItems={optimizationItems} />
       
-      {isOptimizing && (
+      {isOptimizing && !isOptimizedState && (
         <OptimizationProcessContainer 
           url={url}
+          progress={optimizationProgress}
           setOptimizationResult={setOptimizationResult}
           setLocalIsOptimized={setLocalIsOptimized}
         />
