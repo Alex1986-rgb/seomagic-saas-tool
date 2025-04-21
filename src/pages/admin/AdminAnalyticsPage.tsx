@@ -6,7 +6,7 @@ import { Gauge, BarChart2, Monitor, Users } from "lucide-react";
 const AdminAnalyticsPage: React.FC = () => {
   return (
     <div className="container mx-auto px-6 py-10 max-w-6xl">
-      <div className="mb-8 px-6 py-8 rounded-3xl bg-gradient-to-br from-blue-50 via-white/60 to-purple-50 flex items-center gap-6 border border-primary/15 shadow-2xl">
+      <div className="mb-8 px-6 py-8 rounded-3xl bg-gradient-to-br from-blue-600/20 via-purple-500/20 to-indigo-600/20 flex items-center gap-6 border border-primary/20 shadow-2xl">
         <div className="bg-primary/20 text-primary rounded-full p-5 shadow-lg">
           <BarChart2 className="h-10 w-10" />
         </div>

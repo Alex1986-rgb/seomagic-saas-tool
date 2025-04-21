@@ -20,7 +20,7 @@ const Dashboard: React.FC = () => {
         <title>Админ-панель | Дашборд</title>
       </Helmet>
       
-      <div className="mb-8 px-8 py-10 rounded-3xl bg-gradient-to-br from-blue-50 via-white/80 to-purple-50 flex items-center gap-6 border border-primary/15 shadow-2xl">
+      <div className="mb-8 px-8 py-10 rounded-3xl bg-gradient-to-br from-blue-600/20 via-purple-500/20 to-indigo-600/20 flex items-center gap-6 border border-primary/20 shadow-2xl">
         <div className="bg-primary/20 text-primary rounded-full p-5 shadow-lg">
           <BarChart2 className="h-10 w-10" />
         </div>
@@ -33,10 +33,10 @@ const Dashboard: React.FC = () => {
       </div>
       
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-        <Card className="shadow-md hover:shadow-lg transition-all">
+        <Card className="shadow-md hover:shadow-lg transition-all backdrop-blur-sm bg-gradient-to-br from-blue-600/5 to-purple-600/5 border-primary/10">
           <CardContent className="p-6">
             <div className="flex flex-col h-full">
-              <div className="h-12 w-12 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center mb-4">
+              <div className="h-12 w-12 rounded-lg bg-blue-600/20 text-blue-600 flex items-center justify-center mb-4">
                 <Users className="h-6 w-6" />
               </div>
               <h2 className="text-xl font-bold mb-1">Пользователи</h2>
@@ -52,10 +52,10 @@ const Dashboard: React.FC = () => {
           </CardContent>
         </Card>
         
-        <Card className="shadow-md hover:shadow-lg transition-all">
+        <Card className="shadow-md hover:shadow-lg transition-all backdrop-blur-sm bg-gradient-to-br from-purple-600/5 to-blue-600/5 border-primary/10">
           <CardContent className="p-6">
             <div className="flex flex-col h-full">
-              <div className="h-12 w-12 rounded-lg bg-purple-100 text-purple-600 flex items-center justify-center mb-4">
+              <div className="h-12 w-12 rounded-lg bg-purple-600/20 text-purple-600 flex items-center justify-center mb-4">
                 <BarChart2 className="h-6 w-6" />
               </div>
               <h2 className="text-xl font-bold mb-1">Аналитика</h2>
@@ -71,10 +71,10 @@ const Dashboard: React.FC = () => {
           </CardContent>
         </Card>
         
-        <Card className="shadow-md hover:shadow-lg transition-all">
+        <Card className="shadow-md hover:shadow-lg transition-all backdrop-blur-sm bg-gradient-to-br from-green-600/5 to-blue-600/5 border-primary/10">
           <CardContent className="p-6">
             <div className="flex flex-col h-full">
-              <div className="h-12 w-12 rounded-lg bg-green-100 text-green-600 flex items-center justify-center mb-4">
+              <div className="h-12 w-12 rounded-lg bg-green-600/20 text-green-600 flex items-center justify-center mb-4">
                 <FileText className="h-6 w-6" />
               </div>
               <h2 className="text-xl font-bold mb-1">Аудиты</h2>
@@ -90,10 +90,10 @@ const Dashboard: React.FC = () => {
           </CardContent>
         </Card>
         
-        <Card className="shadow-md hover:shadow-lg transition-all">
+        <Card className="shadow-md hover:shadow-lg transition-all backdrop-blur-sm bg-gradient-to-br from-amber-600/5 to-orange-600/5 border-primary/10">
           <CardContent className="p-6">
             <div className="flex flex-col h-full">
-              <div className="h-12 w-12 rounded-lg bg-amber-100 text-amber-600 flex items-center justify-center mb-4">
+              <div className="h-12 w-12 rounded-lg bg-amber-600/20 text-amber-600 flex items-center justify-center mb-4">
                 <Server className="h-6 w-6" />
               </div>
               <h2 className="text-xl font-bold mb-1">Хостинг</h2>
@@ -109,10 +109,10 @@ const Dashboard: React.FC = () => {
           </CardContent>
         </Card>
         
-        <Card className="shadow-md hover:shadow-lg transition-all">
+        <Card className="shadow-md hover:shadow-lg transition-all backdrop-blur-sm bg-gradient-to-br from-indigo-600/5 to-blue-600/5 border-primary/10">
           <CardContent className="p-6">
             <div className="flex flex-col h-full">
-              <div className="h-12 w-12 rounded-lg bg-indigo-100 text-indigo-600 flex items-center justify-center mb-4">
+              <div className="h-12 w-12 rounded-lg bg-indigo-600/20 text-indigo-600 flex items-center justify-center mb-4">
                 <Globe className="h-6 w-6" />
               </div>
               <h2 className="text-xl font-bold mb-1">Сайты</h2>

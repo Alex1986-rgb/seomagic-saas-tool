@@ -13,7 +13,7 @@ const AdminMonitoringPage: React.FC = () => (
       <title>Мониторинг | Админ панель</title>
     </Helmet>
     <div className="container mx-auto px-4 md:px-8 py-10 max-w-6xl">
-      <div className="mb-8 px-8 py-10 rounded-3xl bg-gradient-to-br from-purple-50 via-white/80 to-blue-50 shadow-2xl flex flex-col md:flex-row items-center gap-8 border border-primary/15 animate-fade-in">
+      <div className="mb-8 px-8 py-10 rounded-3xl bg-gradient-to-br from-purple-600/20 via-indigo-500/20 to-blue-600/20 shadow-2xl flex flex-col md:flex-row items-center gap-8 border border-primary/20 animate-fade-in">
         <div className="flex-shrink-0 bg-primary/20 text-primary rounded-full p-6 glass-morphism shadow-lg">
           <Monitor className="h-12 w-12" />
         </div>
@@ -48,7 +48,7 @@ const AdminMonitoringPage: React.FC = () => (
           </div>
         </div>
       </div>
-      <Card className="bg-gradient-to-br from-purple-50 via-white/70 to-indigo-50 border-0 shadow-2xl">
+      <Card className="bg-gradient-to-br from-purple-600/5 via-indigo-500/5 to-blue-600/5 border-0 shadow-2xl">
         <CardContent className="p-0">
           <AdminMonitoringContainer />
         </CardContent>
