@@ -2,15 +2,15 @@
 import React from 'react';
 import { Outlet } from 'react-router-dom';
 import { SidebarProvider, Sidebar, SidebarContent, SidebarGroup, SidebarGroupLabel, SidebarGroupContent, SidebarMenu, SidebarMenuItem, SidebarMenuButton } from "@/components/ui/sidebar";
-import { layoutDashboard, users, fileText, search, settings, menu } from "lucide-react";
+import { LayoutDashboard, Users, FileText, Search, Settings, Menu } from "lucide-react";
 import { Helmet } from 'react-helmet-async';
 
 const ADMIN_LINKS = [
-  { icon: layoutDashboard, label: "Дашборд", to: "/admin" },
-  { icon: users, label: "Пользователи", to: "/admin/users" },
-  { icon: fileText, label: "Аудиты", to: "/admin/audits" },
-  { icon: search, label: "Позиции", to: "/admin/positions" },
-  { icon: settings, label: "Настройки", to: "/admin/settings" },
+  { icon: LayoutDashboard, label: "Дашборд", to: "/admin" },
+  { icon: Users, label: "Пользователи", to: "/admin/users" },
+  { icon: FileText, label: "Аудиты", to: "/admin/audits" },
+  { icon: Search, label: "Позиции", to: "/admin/positions" },
+  { icon: Settings, label: "Настройки", to: "/admin/settings" },
 ];
 
 const AdminPanel: React.FC = () => {
@@ -51,4 +51,3 @@ const AdminPanel: React.FC = () => {
 };
 
 export default AdminPanel;
-
