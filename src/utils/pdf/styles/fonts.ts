@@ -12,7 +12,7 @@ export const pdfFonts = {
     size: 14,
     style: 'bold',
   },
-  normal: {
+  body: {
     size: 10,
     style: 'normal',
   },
@@ -24,9 +24,9 @@ export const pdfFonts = {
     size: 6,
     style: 'normal',
   },
-  // Add these properties to fix the errors
+  // Font family settings
   primary: 'helvetica',
   bold: 'bold',
-  normal: 'normal',
+  normalStyle: 'normal', // Renamed from 'normal' to avoid duplicate
   italic: 'italic'
 };

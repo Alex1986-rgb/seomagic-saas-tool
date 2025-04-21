@@ -1,3 +1,4 @@
+
 import { AuditData, AuditItemData } from '@/types/audit';
 import { AnalyzedError, AnalyzedErrors } from './types';
 
@@ -45,15 +46,19 @@ const processCategory = (items: AuditItemData[], errors: AnalyzedErrors, categor
       description: item.description,
       category: category,
       impact: getImpactLevel(item),
-      solution: getSolutionForItem(item)
+      solution: getSolutionForItem(item),
+      severity: 'important' // Default severity
     };
     
     if (item.status === 'error') {
+      error.severity = 'critical';
       errors.critical.push(error);
     } else if (item.status === 'warning') {
+      error.severity = 'important';
       errors.important.push(error);
     } else if (item.status === 'good' && item.trend === 'down') {
       // Items with good status but negative trend are considered minor issues
+      error.severity = 'minor';
       errors.minor.push(error);
     }
   }

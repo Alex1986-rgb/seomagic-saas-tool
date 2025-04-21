@@ -9,6 +9,7 @@ export interface AnalyzedError {
   url?: string;
   severity: 'critical' | 'important' | 'minor';
   category: string;
+  impact?: 'high' | 'medium' | 'low';
 }
 
 // Analyzed errors structure
@@ -16,6 +17,7 @@ export interface AnalyzedErrors {
   critical: AnalyzedError[];
   important: AnalyzedError[];
   minor: AnalyzedError[];
+  byPage?: Record<string, AnalyzedError[]>;
 }
 
 // Options for the error report PDF generator

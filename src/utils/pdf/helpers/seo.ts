@@ -1,101 +1,109 @@
 
 /**
- * Analyzes common paths in the URLs
+ * Analyzes common URL path patterns in the crawl results
  */
-export function analyzeCommonPaths(urls: string[]): Array<{path: string, count: number}> {
-  const pathCounts = new Map<string, number>();
+export function analyzeCommonPaths(urls: string[]): { path: string; count: number }[] {
+  const pathCounts: Record<string, number> = {};
   
   urls.forEach(url => {
     try {
-      const urlObj = new URL(url);
-      const path = urlObj.pathname;
+      const parsedUrl = new URL(url);
+      const path = parsedUrl.pathname;
       
-      // Count occurrences of each path
-      if (pathCounts.has(path)) {
-        pathCounts.set(path, pathCounts.get(path)! + 1);
+      // Skip empty paths
+      if (!path || path === '/') return;
+      
+      if (pathCounts[path]) {
+        pathCounts[path]++;
       } else {
-        pathCounts.set(path, 1);
+        pathCounts[path] = 1;
       }
     } catch (error) {
-      // Skip invalid URLs
+      console.error('Error parsing URL:', error);
     }
   });
   
   // Convert to array and sort by count (descending)
-  const pathArray = Array.from(pathCounts.entries()).map(([path, count]) => ({
-    path,
-    count
-  }));
-  
-  return pathArray.sort((a, b) => b.count - a.count);
+  return Object.entries(pathCounts)
+    .map(([path, count]) => ({ path, count }))
+    .sort((a, b) => b.count - a.count);
 }
 
 /**
- * Generates SEO recommendations based on scan results
+ * Generates SEO recommendations based on crawl data
  */
 export function getSeoRecommendations(
   brokenLinksCount: number,
   duplicatesCount: number,
   totalUrls: number,
-  depthData?: Array<{ level: number; count: number }>
-): Array<{title: string, description: string, priority: 'high' | 'medium' | 'low'}> {
-  const recommendations: Array<{title: string, description: string, priority: 'high' | 'medium' | 'low'}> = [];
+  depthData: { level: number; count: number }[] = []
+): Array<{ title: string; description: string; priority: string }> {
+  const recommendations = [];
   
   // Broken links recommendations
   if (brokenLinksCount > 0) {
-    const priority = brokenLinksCount > totalUrls * 0.05 ? 'high' : 'medium';
+    const priority = brokenLinksCount > 10 ? 'high' : (brokenLinksCount > 5 ? 'medium' : 'low');
     recommendations.push({
       title: 'Исправьте битые ссылки',
-      description: `На сайте обнаружено ${brokenLinksCount} битых ссылок. Это негативно влияет на пользовательский опыт и SEO.`,
+      description: `Обнаружено ${brokenLinksCount} битых ссылок. Исправьте их для улучшения пользовательского опыта и SEO.`,
       priority
     });
   }
   
-  // Duplicate content recommendations
+  // Duplicates recommendations
   if (duplicatesCount > 0) {
-    const priority = duplicatesCount > totalUrls * 0.1 ? 'high' : 'medium';
+    const priority = duplicatesCount > 10 ? 'high' : (duplicatesCount > 5 ? 'medium' : 'low');
     recommendations.push({
-      title: 'Устраните дублированный контент',
-      description: `Обнаружено ${duplicatesCount} страниц с дублирующимся содержимым. Используйте атрибуты canonical и 301-редиректы.`,
+      title: 'Устраните дубликаты страниц',
+      description: `Обнаружено ${duplicatesCount} групп дублирующихся страниц. Используйте каноническую ссылку или редиректы для улучшения SEO.`,
       priority
     });
   }
   
-  // Site structure recommendations
-  if (depthData && depthData.some(d => d.level > 3 && d.count > totalUrls * 0.2)) {
-    recommendations.push({
-      title: 'Оптимизируйте структуру сайта',
-      description: 'Слишком много страниц находятся на большой глубине вложенности. Поисковые роботы могут не индексировать эти страницы эффективно.',
-      priority: 'medium'
-    });
+  // Depth recommendations
+  if (depthData.length > 0) {
+    const deepPages = depthData.filter(d => d.level > 4).reduce((sum, d) => sum + d.count, 0);
+    if (deepPages > 0) {
+      const percentage = (deepPages / totalUrls) * 100;
+      const priority = percentage > 30 ? 'high' : (percentage > 15 ? 'medium' : 'low');
+      recommendations.push({
+        title: 'Оптимизируйте глубину вложенности',
+        description: `${deepPages} страниц (${percentage.toFixed(1)}%) находятся на глубине более 4 уровней. Упростите структуру сайта для улучшения индексации.`,
+        priority
+      });
+    }
   }
   
-  // Add generic recommendations if list is too short
-  if (recommendations.length < 3) {
-    recommendations.push({
-      title: 'Создайте или улучшите файл robots.txt',
-      description: 'Правильно настроенный файл robots.txt помогает поисковым системам эффективнее индексировать ваш сайт.',
-      priority: 'medium'
-    });
-    
-    recommendations.push({
-      title: 'Оптимизируйте скорость загрузки страниц',
-      description: 'Скорость загрузки страниц является важным фактором ранжирования и влияет на пользовательский опыт.',
-      priority: 'medium'
-    });
-    
-    recommendations.push({
-      title: 'Внедрите микроразметку Schema.org',
-      description: 'Микроразметка помогает поисковым системам лучше понимать содержимое вашего сайта и может улучшить отображение в результатах поиска.',
-      priority: 'low'
-    });
-  }
+  // Additional standard recommendations
+  recommendations.push({
+    title: 'Оптимизируйте структуру URL',
+    description: 'Создайте четкую, понятную структуру URL с использованием ключевых слов для улучшения SEO.',
+    priority: 'medium'
+  });
+  
+  recommendations.push({
+    title: 'Создайте и обновите XML-карту сайта',
+    description: 'Создайте и регулярно обновляйте XML-карту сайта, чтобы улучшить индексацию страниц поисковыми системами.',
+    priority: 'medium'
+  });
+  
+  recommendations.push({
+    title: 'Проверьте мобильную оптимизацию',
+    description: 'Убедитесь, что ваш сайт оптимизирован для мобильных устройств и имеет адаптивный дизайн.',
+    priority: 'high'
+  });
+  
+  recommendations.push({
+    title: 'Улучшите скорость загрузки страниц',
+    description: 'Оптимизируйте изображения, минимизируйте код и используйте кэширование для улучшения скорости загрузки страниц.',
+    priority: 'high'
+  });
   
   return recommendations;
 }
 
 /**
- * Generates a summary of the site analysis
+ * Generates a comprehensive site summary based on analysis results
  */
 export function getSiteSummary(
   score: number,
@@ -106,32 +114,30 @@ export function getSiteSummary(
   let summary = '';
   
   if (score >= 90) {
-    summary = `Ваш сайт находится в отличном состоянии! Из ${totalUrls} проанализированных страниц, `;
+    summary = `Общая оценка сайта: ${score}/100. Отличный результат! `;
   } else if (score >= 70) {
-    summary = `Ваш сайт находится в хорошем состоянии, но есть возможности для улучшения. Из ${totalUrls} проанализированных страниц, `;
+    summary = `Общая оценка сайта: ${score}/100. Хороший результат, но есть возможности для улучшения. `;
   } else if (score >= 50) {
-    summary = `Ваш сайт требует некоторой оптимизации. Из ${totalUrls} проанализированных страниц, `;
+    summary = `Общая оценка сайта: ${score}/100. Удовлетворительный результат, требуется работа над оптимизацией. `;
   } else {
-    summary = `Ваш сайт требует значительной оптимизации. Из ${totalUrls} проанализированных страниц, `;
+    summary = `Общая оценка сайта: ${score}/100. Требуется значительная оптимизация. `;
   }
   
-  // Add details about issues
   if (brokenLinksCount > 0) {
-    summary += `обнаружено ${brokenLinksCount} битых ссылок `;
-    
-    if (duplicatesCount > 0) {
-      summary += `и ${duplicatesCount} дублирующихся страниц. `;
-    } else {
-      summary += `. `;
-    }
-  } else if (duplicatesCount > 0) {
-    summary += `обнаружено ${duplicatesCount} дублирующихся страниц. `;
+    const percentage = (brokenLinksCount / totalUrls) * 100;
+    summary += `Обнаружено ${brokenLinksCount} битых ссылок (${percentage.toFixed(1)}% от общего числа URL). `;
   } else {
-    summary += `не обнаружено существенных проблем. `;
+    summary += 'Битых ссылок не обнаружено. ';
   }
   
-  // Add recommendation
-  summary += `Мы рекомендуем выполнить предложенные улучшения для повышения эффективности вашего сайта в поисковых системах и улучшения пользовательского опыта.`;
+  if (duplicatesCount > 0) {
+    const percentage = (duplicatesCount / totalUrls) * 100;
+    summary += `Обнаружено ${duplicatesCount} групп дублирующихся страниц (затрагивает примерно ${percentage.toFixed(1)}% контента). `;
+  } else {
+    summary += 'Дублирующихся страниц не обнаружено. ';
+  }
+  
+  summary += `Всего просканировано ${totalUrls} уникальных URL.`;
   
   return summary;
 }
