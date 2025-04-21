@@ -38,19 +38,19 @@ export function addQRCodeToPage(
   doc.setFillColor(0);
   // Top left
   doc.rect(x, y, cellSize * 3, cellSize * 3, 'F');
-  doc.setFillColor(255);
+  doc.setFillColor(255, 255, 255);
   doc.rect(x + cellSize, y + cellSize, cellSize, cellSize, 'F');
   
   // Top right
   doc.setFillColor(0);
   doc.rect(x + size - cellSize * 3, y, cellSize * 3, cellSize * 3, 'F');
-  doc.setFillColor(255);
+  doc.setFillColor(255, 255, 255);
   doc.rect(x + size - cellSize * 2, y + cellSize, cellSize, cellSize, 'F');
   
   // Bottom left
   doc.setFillColor(0);
   doc.rect(x, y + size - cellSize * 3, cellSize * 3, cellSize * 3, 'F');
-  doc.setFillColor(255);
+  doc.setFillColor(255, 255, 255);
   doc.rect(x + cellSize, y + size - cellSize * 2, cellSize, cellSize, 'F');
   
   // Add small label

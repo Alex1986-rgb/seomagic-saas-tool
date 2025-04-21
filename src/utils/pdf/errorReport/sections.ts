@@ -39,7 +39,7 @@ export function addReportHeaderSection(
   doc.text('Информация об отчете:', 15, yPosition);
   yPosition += 8;
   
-  doc.setFont(pdfFonts.primary, pdfFonts.normal);
+  doc.setFont(pdfFonts.primary, pdfFonts.normalStyle);
   doc.text(`Дата создания: ${date}`, 15, yPosition);
   yPosition += 6;
   
@@ -124,7 +124,7 @@ export function addCriticalErrorsSection(
   
   // Description
   doc.setFontSize(11);
-  doc.setFont(pdfFonts.primary, pdfFonts.normal);
+  doc.setFont(pdfFonts.primary, pdfFonts.normalStyle);
   doc.text('Эти ошибки требуют немедленного внимания и могут серьезно влиять на работу сайта.', 15, yPosition);
   yPosition += 8;
   
@@ -182,7 +182,7 @@ export function addMajorErrorsSection(
   
   // Description
   doc.setFontSize(11);
-  doc.setFont(pdfFonts.primary, pdfFonts.normal);
+  doc.setFont(pdfFonts.primary, pdfFonts.normalStyle);
   doc.text('Эти ошибки важны и должны быть исправлены, но они не нарушают работу сайта.', 15, yPosition);
   yPosition += 8;
   
@@ -240,7 +240,7 @@ export function addMinorErrorsSection(
   
   // Description
   doc.setFontSize(11);
-  doc.setFont(pdfFonts.primary, pdfFonts.normal);
+  doc.setFont(pdfFonts.primary, pdfFonts.normalStyle);
   doc.text('Эти ошибки не критичны, но их исправление улучшит качество сайта.', 15, yPosition);
   yPosition += 8;
   
@@ -326,7 +326,7 @@ export function addErrorDetailsSection(
     
     // Error description
     doc.setFontSize(11);
-    doc.setFont(pdfFonts.primary, pdfFonts.normal);
+    doc.setFont(pdfFonts.primary, pdfFonts.normalStyle);
     doc.text(error.description, 15, yPosition);
     yPosition += 8;
     
@@ -347,7 +347,7 @@ export function addErrorDetailsSection(
       doc.text('Решение:', 15, yPosition);
       yPosition += 6;
       
-      doc.setFont(pdfFonts.primary, pdfFonts.normal);
+      doc.setFont(pdfFonts.primary, pdfFonts.normalStyle);
       doc.text(error.solution, 15, yPosition, { maxWidth: 180 });
       yPosition += 10;
     }
@@ -361,7 +361,7 @@ export function addErrorDetailsSection(
     const displayUrls = error.urls.slice(0, 5);
     
     for (const url of displayUrls) {
-      doc.setFont(pdfFonts.primary, pdfFonts.normal);
+      doc.setFont(pdfFonts.primary, pdfFonts.normalStyle);
       doc.text(`• ${url}`, 20, yPosition);
       yPosition += 5;
     }
@@ -400,7 +400,7 @@ export function addRecommendationsSection(
   
   // Description
   doc.setFontSize(11);
-  doc.setFont(pdfFonts.primary, pdfFonts.normal);
+  doc.setFont(pdfFonts.primary, pdfFonts.normalStyle);
   doc.text('Здесь приведены рекомендации по исправлению обнаруженных ошибок в порядке приоритета.', 15, yPosition);
   yPosition += 10;
   
@@ -432,11 +432,11 @@ export function addRecommendationsSection(
       yPosition += 6;
       
       if (error.solution) {
-        doc.setFont(pdfFonts.primary, pdfFonts.normal);
+        doc.setFont(pdfFonts.primary, pdfFonts.normalStyle);
         doc.text(error.solution, 20, yPosition, { maxWidth: 175 });
         yPosition += 10;
       } else {
-        doc.setFont(pdfFonts.primary, pdfFonts.normal);
+        doc.setFont(pdfFonts.primary, pdfFonts.normalStyle);
         doc.text(`Исправьте ошибку "${error.name}" на всех затронутых страницах.`, 20, yPosition);
         yPosition += 10;
       }
