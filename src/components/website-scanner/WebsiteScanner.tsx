@@ -8,6 +8,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { SimpleSitemapCreatorTool } from '../audit/deep-crawl';
+import { downloadAuditPdfReport, downloadErrorReport } from '@/services/audit/scanner';
+import { generateAuditData } from '@/services/audit/generators';
 
 interface WebsiteScannerProps {
   initialUrl?: string;
@@ -19,6 +21,8 @@ const WebsiteScanner: React.FC<WebsiteScannerProps> = ({ initialUrl = '' }) => {
   const [scanProgress, setScanProgress] = useState(0);
   const [scanStage, setScanStage] = useState('');
   const [scannedUrls, setScannedUrls] = useState<string[]>([]);
+  const [auditData, setAuditData] = useState<any>(null);
+  const [hasAuditResults, setHasAuditResults] = useState(false);
   const { toast } = useToast();
 
   const handleUrlsScanned = (urls: string[]) => {
@@ -44,7 +48,7 @@ const WebsiteScanner: React.FC<WebsiteScannerProps> = ({ initialUrl = '' }) => {
     setScanStage('Подготовка к сканированию...');
 
     try {
-      // Simulate the scanning process
+      // Имитация процесса сканирования
       for (let i = 1; i <= 10; i++) {
         await new Promise(resolve => setTimeout(resolve, 500));
         setScanProgress(i * 10);
@@ -64,6 +68,10 @@ const WebsiteScanner: React.FC<WebsiteScannerProps> = ({ initialUrl = '' }) => {
             break;
           case 10:
             setScanStage('Сканирование завершено');
+            // Генерируем тестовые данные аудита
+            const generatedData = generateAuditData(url);
+            setAuditData(generatedData);
+            setHasAuditResults(true);
             break;
         }
       }
@@ -80,6 +88,84 @@ const WebsiteScanner: React.FC<WebsiteScannerProps> = ({ initialUrl = '' }) => {
       });
     } finally {
       setIsScanning(false);
+    }
+  };
+
+  const handleDownloadPdfReport = async () => {
+    if (!scannedUrls.length && !hasAuditResults) {
+      toast({
+        title: "Нет данных",
+        description: "Сначала выполните сканирование сайта",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    // Используем данные аудита, либо генерируем их, если их нет
+    const data = auditData || generateAuditData(url);
+    
+    toast({
+      title: "Создание PDF",
+      description: "Подготовка отчета...",
+    });
+    
+    try {
+      const domain = url.replace(/^https?:\/\//, '').replace(/\/$/, '');
+      const success = await downloadAuditPdfReport(domain, scannedUrls, data);
+      
+      if (success) {
+        toast({
+          title: "Готово",
+          description: "PDF-отчет успешно скачан",
+        });
+      } else {
+        throw new Error("Не удалось создать PDF");
+      }
+    } catch (error) {
+      toast({
+        title: "Ошибка",
+        description: "Не удалось создать PDF-отчет",
+        variant: "destructive",
+      });
+    }
+  };
+  
+  const handleDownloadErrorReport = async () => {
+    if (!scannedUrls.length && !hasAuditResults) {
+      toast({
+        title: "Нет данных",
+        description: "Сначала выполните сканирование сайта",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    // Используем данные аудита, либо генерируем их, если их нет
+    const data = auditData || generateAuditData(url);
+    
+    toast({
+      title: "Создание отчета об ошибках",
+      description: "Подготовка отчета...",
+    });
+    
+    try {
+      const domain = url.replace(/^https?:\/\//, '').replace(/\/$/, '');
+      const success = await downloadErrorReport(domain, scannedUrls, data);
+      
+      if (success) {
+        toast({
+          title: "Готово",
+          description: "Отчет об ошибках успешно скачан",
+        });
+      } else {
+        throw new Error("Не удалось создать отчет об ошибках");
+      }
+    } catch (error) {
+      toast({
+        title: "Ошибка",
+        description: "Не удалось создать отчет об ошибках",
+        variant: "destructive",
+      });
     }
   };
 
@@ -155,12 +241,16 @@ const WebsiteScanner: React.FC<WebsiteScannerProps> = ({ initialUrl = '' }) => {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              {scannedUrls.length > 0 ? (
+              {scannedUrls.length > 0 || hasAuditResults ? (
                 <div className="space-y-4">
-                  <p className="text-sm">Найдено {scannedUrls.length} URL для аудита</p>
-                  <Button className="gap-2">
+                  <p className="text-sm">{scannedUrls.length > 0 ? `Найдено ${scannedUrls.length} URL для аудита` : "Аудит готов"}</p>
+                  <Button 
+                    className="gap-2" 
+                    onClick={startFullScan}
+                    disabled={isScanning}
+                  >
                     <Search className="h-4 w-4" />
-                    Начать аудит
+                    {hasAuditResults ? "Обновить данные аудита" : "Начать аудит"}
                   </Button>
                 </div>
               ) : (
@@ -182,19 +272,28 @@ const WebsiteScanner: React.FC<WebsiteScannerProps> = ({ initialUrl = '' }) => {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                <p className="text-sm text-muted-foreground">
-                  Доступные отчеты появятся после выполнения аудита
-                </p>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <Button variant="outline" disabled className="gap-2 justify-start">
-                    <FileText className="h-4 w-4" />
-                    Общий SEO-отчет
-                  </Button>
-                  <Button variant="outline" disabled className="gap-2 justify-start">
-                    <Download className="h-4 w-4" />
-                    Скачать карту сайта
-                  </Button>
-                </div>
+                {hasAuditResults || scannedUrls.length > 0 ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <Button variant="outline" className="gap-2 justify-start" onClick={handleDownloadPdfReport}>
+                      <FileText className="h-4 w-4" />
+                      Скачать полный SEO-отчет
+                    </Button>
+                    <Button variant="outline" className="gap-2 justify-start" onClick={handleDownloadErrorReport}>
+                      <Download className="h-4 w-4" />
+                      Скачать отчет об ошибках
+                    </Button>
+                    {scannedUrls.length > 0 && (
+                      <Button variant="outline" className="gap-2 justify-start">
+                        <Download className="h-4 w-4" />
+                        Скачать карту сайта
+                      </Button>
+                    )}
+                  </div>
+                ) : (
+                  <p className="text-sm text-muted-foreground">
+                    Доступные отчеты появятся после выполнения аудита
+                  </p>
+                )}
               </div>
             </CardContent>
           </Card>

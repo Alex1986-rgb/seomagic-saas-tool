@@ -28,12 +28,22 @@ export {
 export { createOptimizedSite } from './optimizedSite';
 
 // Export functions from scanner.ts
-import { scanWebsite, generateSitemap, calculateScannerOptimizationMetrics, createOptimizedSite as createScannerOptimizedSite } from './scanner';
+import { 
+  scanWebsite, 
+  generateSitemap, 
+  calculateScannerOptimizationMetrics, 
+  createOptimizedSite as createScannerOptimizedSite,
+  downloadAuditPdfReport,
+  downloadErrorReport
+} from './scanner';
+
 export { 
   scanWebsite, 
   generateSitemap, 
   calculateScannerOptimizationMetrics,
-  createScannerOptimizedSite 
+  createScannerOptimizedSite,
+  downloadAuditPdfReport,
+  downloadErrorReport
 };
 
 import { AuditData } from "@/types/audit";
