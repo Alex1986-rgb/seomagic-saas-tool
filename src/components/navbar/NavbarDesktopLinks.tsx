@@ -3,6 +3,8 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { NavLink } from 'react-router-dom';
 import { NavigationMenu, NavigationMenuList, NavigationMenuItem } from "@/components/ui/navigation-menu";
+import { useAuth } from '@/contexts/AuthContext';
+import { ADMIN_ITEMS } from './navConstants';
 
 interface NavbarDesktopLinksProps {
   navItems: {
@@ -12,10 +14,17 @@ interface NavbarDesktopLinksProps {
 }
 
 const NavbarDesktopLinks: React.FC<NavbarDesktopLinksProps> = ({ navItems }) => {
+  const { user } = useAuth();
+  
+  // Дополнительные пункты для администраторов
+  const displayItems = user?.isAdmin 
+    ? [...navItems, ...ADMIN_ITEMS] 
+    : navItems;
+  
   return (
     <NavigationMenu className="hidden md:flex w-full justify-center">
       <NavigationMenuList className="flex space-x-4 lg:space-x-6 xl:space-x-8">
-        {navItems.map((item) => (
+        {displayItems.map((item) => (
           <NavigationMenuItem key={item.href} className="flex-grow text-center">
             <NavLink
               to={item.href}
