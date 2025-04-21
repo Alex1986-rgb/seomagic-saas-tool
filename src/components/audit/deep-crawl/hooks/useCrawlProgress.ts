@@ -1,3 +1,4 @@
+
 import { useState, useCallback, useEffect } from 'react';
 import { useCrawlExecution } from './useCrawlExecution';
 import { useCrawlState } from './useCrawlState';
@@ -123,8 +124,8 @@ export function useCrawlProgress(urlParam: string) {
         console.warn("Could not check if domain is Lovable:", e);
       }
       
-      // Создаем несколько таймаутов для отлова зависаний
-      const crawlTimeoutDuration = 180000; // Увеличиваем до 3 минут
+      // Create timeouts for error handling
+      const crawlTimeoutDuration = 180000; // 3 minutes timeout
       
       const crawlTimeoutId = setTimeout(() => {
         console.error(`Crawl timeout for URL: ${url}`);
@@ -132,7 +133,7 @@ export function useCrawlProgress(urlParam: string) {
         completeCrawl(false);
       }, crawlTimeoutDuration);
       
-      // 2. Таймаут на этапе инициализации (10 секунд)
+      // Timeout for initialization (10 seconds)
       const startupTimeoutId = setTimeout(() => {
         if (crawlStage === 'starting') {
           console.error(`Crawl startup timeout for URL: ${url}`);
@@ -142,11 +143,11 @@ export function useCrawlProgress(urlParam: string) {
         }
       }, 10000);
       
-      // Инициализируем сканер с явным URL
+      // Initialize crawler with explicit URL
       console.log(`Initializing crawler for URL: ${url}`);
       
-      // Set default max pages
-      let maxPages = 100000; // Увеличиваем лимит по умолчанию
+      // Set higher maxPages for larger sites
+      let maxPages = 100000; // Increase default limit
       
       // Special case for known large sites
       try {
@@ -163,7 +164,6 @@ export function useCrawlProgress(urlParam: string) {
       const { crawler: newCrawler, domain: newDomain, normalizedUrl } = initializeCrawler({
         url,
         maxPages: maxPages || 100000,
-        // Removed concurrentRequests since it's not in the type definition
         onProgress: (pagesScanned, totalEstimated, currentUrl) => {
           console.log(`Progress update: ${pagesScanned}/${totalEstimated} - ${currentUrl}`);
           updateProgress(pagesScanned, totalEstimated, currentUrl, maxPages);
@@ -188,32 +188,32 @@ export function useCrawlProgress(urlParam: string) {
       setDomain(newDomain);
       console.log(`Executing crawler with URL: ${normalizedUrl} and domain: ${newDomain}`);
       
-      // Запускаем сканирование
+      // Start crawling
       console.log("Starting crawler execution");
       const result = await executeCrawler(newCrawler, normalizedUrl);
       
-      // Отменяем таймауты после завершения сканирования
+      // Clear timeouts after crawling is complete
       clearTimeout(crawlTimeoutId);
       clearTimeout(startupTimeoutId);
       
       if (result && result.success) {
         console.log(`Crawl completed successfully with ${result.urls.length} URLs`);
         
-        // Сохраняем результаты в локальное хранилище для быстрого доступа
+        // Save results to localStorage for quick access
         try {
           localStorage.setItem(`crawl_results_${newDomain}`, JSON.stringify({
-            urls: result.urls.slice(0, 1000), // Ограничиваем для localStorage
+            urls: result.urls.slice(0, 1000), // Limit for localStorage
             pageCount: result.pageCount,
             timestamp: new Date().toISOString()
           }));
           
-          // И также сохраняем в Supabase для долгосрочного хранения
+          // Also save to Supabase for long-term storage
           await saveScanResultsToSupabase(result.urls, result.pageCount);
         } catch (e) {
           console.warn("Error saving results, but continuing:", e);
         }
         
-        // Обновляем состояние о завершении
+        // Update completion state
         completeCrawl(true, { urls: result.urls, pageCount: result.pageCount });
       } else {
         console.error("Crawling failed:", result?.error || "Unknown error");

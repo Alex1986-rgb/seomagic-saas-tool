@@ -156,7 +156,7 @@ export function useCrawlExecution() {
         timeout: 15000, // 15 seconds timeout for requests
         retryCount: 3, // Увеличиваем количество попыток запроса
         retryDelay: 1000,
-        // Removed followExternalLinks property as it doesn't exist in type
+        // Removed followExternalLinks property as it doesn't exist in the options interface
       });
       
       // Set base URL explicitly
@@ -215,10 +215,14 @@ export function useCrawlExecution() {
       const isLovableDomain = crawlerDomain.includes('lovableproject.com') || crawlerDomain.includes('lovable.app');
       const timeoutDuration = 300000; // 5 minutes timeout - increased for large sites
       
-      // Configure crawler with additional logging
+      // Configure crawler with additional logging if method exists
       console.log('Configuring crawler with extra debug settings');
-      // Removed enableDebugMode and logCrawlSettings calls as they don't exist
-      console.log('Debug configuration not available in this crawler version');
+      if (crawler.enableDebugMode) {
+        crawler.enableDebugMode(true);
+      }
+      if (crawler.logCrawlSettings) {
+        crawler.logCrawlSettings();
+      }
       
       const crawlWithTimeout = Promise.race([
         crawler.crawl(startUrl, progressCallback),

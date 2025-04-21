@@ -1,4 +1,3 @@
-
 import axios from 'axios';
 import * as cheerio from 'cheerio';
 import { CrawlResult, DeepCrawlerOptions } from './types';
@@ -109,12 +108,16 @@ export class DeepCrawlerCore {
 
     try {
       // Configure queue manager with better settings
-      this.queueManager.configure({
-        maxConcurrentRequests: this.maxConcurrentRequests,
-        requestTimeout: this.requestTimeout,
-        retryAttempts: this.retryAttempts,
-        debug: this.debugMode
-      });
+      if (this.queueManager.configure) {
+        this.queueManager.configure({
+          maxConcurrentRequests: this.maxConcurrentRequests,
+          requestTimeout: this.requestTimeout,
+          retryAttempts: this.retryAttempts,
+          debug: this.debugMode
+        });
+      } else {
+        console.warn("QueueManager.configure method not available, using default settings");
+      }
       
       // Start the crawl process with improved logging
       console.log('Starting to process the URL queue');
@@ -145,7 +148,6 @@ export class DeepCrawlerCore {
     }
   }
 
-  // Improved method for finding and processing sitemaps
   private async findAndProcessSitemaps(): Promise<void> {
     const possibleSitemapUrls = [
       `${this.baseUrl}/sitemap.xml`,
@@ -288,7 +290,6 @@ export class DeepCrawlerCore {
     }
   }
   
-  // Improved sitemap processing with better error handling
   private async processSitemap(sitemapUrl: string): Promise<number> {
     try {
       console.log(`Обработка подкарты сайта: ${sitemapUrl}`);
@@ -311,7 +312,6 @@ export class DeepCrawlerCore {
     return 0;
   }
   
-  // Improved URL extraction from sitemap
   private async processUrlsFromSitemap($: cheerio.CheerioAPI): Promise<number> {
     let urlCount = 0;
     
@@ -355,7 +355,6 @@ export class DeepCrawlerCore {
     return urlCount;
   }
 
-  // Improved URL processing with better error handling
   protected async processUrl(url: string, depth: number): Promise<void> {
     if (this.isCancelled || this.visited.has(url) || depth > this.options.maxDepth) {
       return;
@@ -452,7 +451,6 @@ export class DeepCrawlerCore {
     }
   }
 
-  // Improved link processing with better filtering
   private async processLinks($: cheerio.CheerioAPI, currentUrl: string) {
     const links = {
       internal: [] as string[],

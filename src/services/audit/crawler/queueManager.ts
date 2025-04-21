@@ -16,7 +16,7 @@ export class QueueManager {
 
   constructor() {}
 
-  // Add the missing configure method
+  // Add the configure method required by DeepCrawlerCore
   configure(options: { 
     maxConcurrentRequests?: number; 
     requestTimeout?: number; 
