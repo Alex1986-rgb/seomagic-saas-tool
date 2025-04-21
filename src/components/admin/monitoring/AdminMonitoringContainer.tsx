@@ -1,5 +1,6 @@
 
 import React from "react";
+import { Server } from "lucide-react";
 import MonitoringHeader from "./MonitoringHeader";
 import { 
   cpuUsageData, 
