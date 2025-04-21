@@ -12,7 +12,6 @@ interface SitemapCreatorOptions {
   concurrentRequests?: number;
   retryCount?: number;
   retryDelay?: number;
-  forceTargetDomain?: boolean;
   timeout?: number;
 }
 
@@ -22,6 +21,7 @@ export class SimpleSitemapCreator {
   private baseUrl: string = '';
   private domain: string = '';
   private isCancelled: boolean = false;
+  private debugMode: boolean = false;
   
   constructor(options: SitemapCreatorOptions = {}) {
     this.options = {
@@ -33,11 +33,31 @@ export class SimpleSitemapCreator {
       concurrentRequests: options.concurrentRequests || 3,
       retryCount: options.retryCount || 2,
       retryDelay: options.retryDelay || 1000,
-      forceTargetDomain: options.forceTargetDomain !== undefined ? options.forceTargetDomain : true,
       timeout: options.timeout || 10000
     };
     
     this.sitemapExtractor = new SitemapExtractor();
+  }
+  
+  // Add the missing methods for debug functionality
+  enableDebugMode(enabled: boolean): void {
+    this.debugMode = enabled;
+    console.log(`Debug mode ${enabled ? 'enabled' : 'disabled'} for SimpleSitemapCreator`);
+  }
+
+  logCrawlSettings(): void {
+    console.log('SimpleSitemapCreator settings:', {
+      baseUrl: this.baseUrl,
+      domain: this.domain,
+      maxPages: this.options.maxPages,
+      maxDepth: this.options.maxDepth,
+      requestDelay: this.options.requestDelay,
+      concurrentRequests: this.options.concurrentRequests,
+      retryCount: this.options.retryCount,
+      retryDelay: this.options.retryDelay,
+      timeout: this.options.timeout,
+      debugMode: this.debugMode
+    });
   }
   
   // Добавляем методы для работы с baseUrl и domain
@@ -80,6 +100,11 @@ export class SimpleSitemapCreator {
       // Для простоты демонстрации будем имитировать процесс
       const baseUrl = url.endsWith('/') ? url : `${url}/`;
       
+      // Log debug information if debug mode is enabled
+      if (this.debugMode) {
+        console.log(`Starting crawl for ${url} with max pages: ${this.options.maxPages}`);
+      }
+      
       // Имитация прогресса сканирования
       const totalPages = Math.min(100, this.options.maxPages);
       const urls: string[] = [];
@@ -112,6 +137,10 @@ export class SimpleSitemapCreator {
       // Уведомляем о завершении
       if (progressCallback && !this.isCancelled) {
         progressCallback(totalPages, totalPages, 'Завершение...');
+      }
+      
+      if (this.debugMode) {
+        console.log(`Crawl completed, found ${urls.length} URLs`);
       }
       
       return urls;

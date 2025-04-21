@@ -1,4 +1,3 @@
-
 import { useState, useCallback, useEffect } from 'react';
 import { useCrawlExecution } from './useCrawlExecution';
 import { useCrawlState } from './useCrawlState';
@@ -228,7 +227,6 @@ export function useCrawlProgress(urlParam: string) {
     }
   }, [url, resetState, initializeCrawler, executeCrawler, updateProgress, completeCrawl, setCrawler, setDomain, setCrawlStage, crawlStage]);
 
-  
   const cancelCrawl = useCallback(() => {
     console.log("Cancelling crawl");
     setErrorMsg(null);

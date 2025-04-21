@@ -10,8 +10,41 @@ export class QueueManager {
   private activeRequests = 0;
   private paused = false;
   private maxRetries = 3; // Добавляем возможность повторных попыток для URL
+  private debug = false;
+  private requestTimeout = 15000;
+  private retryAttempts = 2;
 
   constructor() {}
+
+  // Add the missing configure method
+  configure(options: { 
+    maxConcurrentRequests?: number; 
+    requestTimeout?: number; 
+    retryAttempts?: number; 
+    debug?: boolean 
+  }): void {
+    if (options.maxConcurrentRequests) {
+      this.maxConcurrentRequests = options.maxConcurrentRequests;
+    }
+    if (options.requestTimeout) {
+      this.requestTimeout = options.requestTimeout;
+    }
+    if (options.retryAttempts) {
+      this.retryAttempts = options.retryAttempts;
+    }
+    if (options.debug !== undefined) {
+      this.debug = options.debug;
+    }
+    
+    if (this.debug) {
+      console.log('QueueManager configured with:', {
+        maxConcurrentRequests: this.maxConcurrentRequests,
+        requestTimeout: this.requestTimeout,
+        retryAttempts: this.retryAttempts,
+        debug: this.debug
+      });
+    }
+  }
 
   pause(): void {
     this.paused = true;

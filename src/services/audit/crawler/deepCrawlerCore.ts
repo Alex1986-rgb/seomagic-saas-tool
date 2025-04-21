@@ -1,4 +1,3 @@
-
 import axios from 'axios';
 import * as cheerio from 'cheerio';
 import { CrawlResult, DeepCrawlerOptions } from './types';
@@ -214,7 +213,7 @@ export class DeepCrawlerCore {
           console.log(`Найдена карта сайта: ${sitemapUrl} (${response.data.length} bytes)`);
           sitemapsProcessed++;
           
-          // Извлекаем URL из карты сайта
+          // Извл��каем URL из карты сайта
           const $ = cheerio.load(response.data, { xmlMode: true });
           
           // Проверяем, является ли это индексом карты сайта

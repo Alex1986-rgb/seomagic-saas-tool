@@ -1,4 +1,3 @@
-
 import { SimpleSitemapCreator } from '@/services/audit/simpleSitemapCreator';
 import { supabase } from "@/integrations/supabase/client";
 
@@ -149,7 +148,7 @@ export function useCrawlExecution() {
       }
             
       // Create new scanner with appropriate settings
-      // Explicitly configuring more properties for better crawling
+      // Using only properties that are known to exist in the SimpleSitemapCreator options
       const crawler = new SimpleSitemapCreator({
         maxPages: adjustedMaxPages,
         maxDepth: 10, // Увеличиваем глубину поиска
@@ -157,9 +156,7 @@ export function useCrawlExecution() {
         timeout: 15000, // 15 seconds timeout for requests
         retryCount: 3, // Увеличиваем количество попыток запроса
         retryDelay: 1000,
-        forceTargetDomain: true, // Only scan the target domain
-        followExternalLinks: false, // Не следовать по внешним ссылкам
-        maxConcurrency: 5 // Параметр для параллельных запросов
+        // Removed followExternalLinks property as it doesn't exist in type
       });
       
       // Set base URL explicitly
@@ -220,8 +217,8 @@ export function useCrawlExecution() {
       
       // Configure crawler with additional logging
       console.log('Configuring crawler with extra debug settings');
-      crawler.enableDebugMode(true); // Turn on debug mode
-      crawler.logCrawlSettings(); // Log all crawler settings
+      // Removed enableDebugMode and logCrawlSettings calls as they don't exist
+      console.log('Debug configuration not available in this crawler version');
       
       const crawlWithTimeout = Promise.race([
         crawler.crawl(startUrl, progressCallback),
