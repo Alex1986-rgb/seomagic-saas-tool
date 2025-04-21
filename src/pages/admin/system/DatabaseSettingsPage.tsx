@@ -18,8 +18,8 @@ const DatabaseStats = () => (
 );
 
 const DatabaseSettingsPage = () => (
-  <div className="container mx-auto px-4 py-8 max-w-3xl">
-    <h2 className="text-2xl font-bold mb-3">База данных</h2>
+  <div className="container mx-auto px-6 py-10 max-w-3xl">
+    <h1 className="text-3xl font-bold mb-6">База данных</h1>
     <p className="mb-4 text-muted-foreground">Настройки подключения и оптимизации базы данных, а также мониторинг состояния сервера.</p>
     <DatabaseStats />
     <Card>
@@ -41,4 +41,3 @@ const DatabaseSettingsPage = () => (
 );
 
 export default DatabaseSettingsPage;
-

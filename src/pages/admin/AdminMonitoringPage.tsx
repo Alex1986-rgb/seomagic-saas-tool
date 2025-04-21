@@ -5,10 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 
 const AdminMonitoringPage: React.FC = () => (
   <div className="container mx-auto px-6 py-10 max-w-6xl">
-    <h1 className="text-3xl font-bold mb-4">Мониторинг</h1>
-    <p className="text-muted-foreground text-lg max-w-3xl mb-6">
-      Слежение за состоянием системы, событийный журнал, распределение ресурсов и предупреждения.
-    </p>
+    <h1 className="text-3xl font-bold mb-6">Мониторинг</h1>
     <Card className="backdrop-blur-sm bg-card/80 border shadow-sm">
       <CardContent className="p-0">
         <AdminMonitoringContainer />
