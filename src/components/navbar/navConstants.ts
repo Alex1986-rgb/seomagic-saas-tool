@@ -1,4 +1,6 @@
 
+import { Settings } from "lucide-react";
+
 export const COMPANY_ITEMS = [
   { label: "О нас", href: "/about" },
   { label: "Карьера", href: "/careers" },
@@ -15,12 +17,16 @@ export const RESOURCE_ITEMS = [
   { label: "Демо", href: "/demo" },
 ];
 
+export const ADMIN_ICON = Settings;
+
 export const NAV_ITEMS = [
   { label: "Главная", href: "/" },
   { label: "Возможности", href: "/features" },
   { label: "Аудит", href: "/audit" },
   { label: "Цены", href: "/pricing" },
   { label: "Контакты", href: "/contact" },
+  // Добавляем ссылку на админку для всех
+  { label: "Панель администратора", href: "/admin", admin: true },
 ];
 
 export const CLIENT_ITEMS = [
