@@ -13,6 +13,18 @@ export const useCrawlProgress = (baseUrl: string) => {
   const [crawlStage, setCrawlStage] = useState<CrawlStage>('idle');
   const [scannedUrls, setScannedUrls] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [domain, setDomain] = useState<string>('');
+
+  // Extract domain from URL
+  useCallback(() => {
+    try {
+      const normalizedUrl = baseUrl.startsWith('http') ? baseUrl : `https://${baseUrl}`;
+      const urlObj = new URL(normalizedUrl);
+      setDomain(urlObj.hostname);
+    } catch (e) {
+      setDomain(baseUrl);
+    }
+  }, [baseUrl]);
 
   // Инициализация веб-краулера
   const initializeCrawler = useCallback(() => {
@@ -81,6 +93,15 @@ export const useCrawlProgress = (baseUrl: string) => {
   // Запуск сканирования
   const startCrawl = useCallback(async () => {
     try {
+      // Extract domain when starting a crawl
+      try {
+        const normalizedUrl = baseUrl.startsWith('http') ? baseUrl : `https://${baseUrl}`;
+        const urlObj = new URL(normalizedUrl);
+        setDomain(urlObj.hostname);
+      } catch (e) {
+        setDomain(baseUrl);
+      }
+      
       const config = initializeCrawler();
       const cleanup = executeCrawler(config);
       
@@ -98,7 +119,7 @@ export const useCrawlProgress = (baseUrl: string) => {
       setIsLoading(false);
       throw err;
     }
-  }, [initializeCrawler, executeCrawler, crawlStage, scannedUrls]);
+  }, [initializeCrawler, executeCrawler, crawlStage, scannedUrls, baseUrl]);
 
   // Отмена сканирования
   const cancelCrawl = useCallback(() => {
@@ -120,6 +141,8 @@ export const useCrawlProgress = (baseUrl: string) => {
     cancelCrawl,
     initializeCrawler,
     executeCrawler,
-    error
+    error,
+    domain,
+    errorMsg: error // alias for compatibility with existing code
   };
 };
