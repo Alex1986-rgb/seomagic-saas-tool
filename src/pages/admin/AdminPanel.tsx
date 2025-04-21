@@ -3,13 +3,13 @@ import React from 'react';
 import { 
   LayoutDashboard,
   Search,
-  SystemStatus,
-  Bell,
   Monitor,
+  Bell,
+  Monitor as MonitorIcon,
   Settings,
   Users,
-  Analytics,
-  Hosting,
+  ChartBar,
+  Server,
   Globe
 } from 'lucide-react';
 import Layout from '@/components/Layout';
@@ -34,7 +34,7 @@ const adminCards = [
   {
     to: "/admin/system-status",
     title: "Статус системы",
-    icon: <SystemStatus className="h-6 w-6" />,
+    icon: <Monitor className="h-6 w-6" />,
     desc: "Актуальное состояние сервисов и инфраструктуры."
   },
   {
@@ -46,7 +46,7 @@ const adminCards = [
   {
     to: "/admin/monitoring",
     title: "Мониторинг",
-    icon: <Monitor className="h-6 w-6" />,
+    icon: <MonitorIcon className="h-6 w-6" />,
     desc: "Контроль ключевых показателей и событий сервиса."
   },
   {
@@ -64,13 +64,13 @@ const adminCards = [
   {
     to: "/admin/analytics",
     title: "Аналитика",
-    icon: <Analytics className="h-6 w-6" />,
+    icon: <ChartBar className="h-6 w-6" />,
     desc: "Сбор, визуализация и анализ платформенных данных."
   },
   {
     to: "/admin/hosting",
     title: "Хостинг",
-    icon: <Hosting className="h-6 w-6" />,
+    icon: <Server className="h-6 w-6" />,
     desc: "Управление хостингами сайтов."
   },
   {
@@ -128,3 +128,4 @@ const AdminPanel: React.FC = () => {
 };
 
 export default AdminPanel;
+
