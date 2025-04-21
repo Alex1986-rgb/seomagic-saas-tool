@@ -19,20 +19,20 @@ const SystemWarnings: React.FC<Props> = ({ warnings }) => {
           <div
             key={i}
             className={
-              "rounded-lg p-4 flex items-center gap-3 border shadow-sm hover:shadow-md transition-shadow " +
+              "rounded-lg p-4 flex items-center gap-3 border shadow-md transition-shadow hover:shadow-lg " +
               (w.type === "warning"
-                ? "bg-amber-50 text-amber-800 border-amber-200"
+                ? "bg-amber-950/40 text-amber-200 border-amber-800/50"
                 : w.type === "error"
-                ? "bg-red-50 text-red-700 border-red-200"
-                : "bg-blue-50 text-blue-800 border-blue-200"
+                ? "bg-red-950/40 text-red-200 border-red-800/50"
+                : "bg-blue-950/40 text-blue-200 border-blue-800/50"
               )
             }
           >
             {w.type === "error" ? 
-              <AlertCircle className="h-6 w-6 flex-shrink-0 text-red-500" /> :
+              <AlertCircle className="h-6 w-6 flex-shrink-0 text-red-400" /> :
              w.type === "warning" ? 
-              <AlertTriangle className="h-6 w-6 flex-shrink-0 text-amber-500" /> :
-              <Info className="h-6 w-6 flex-shrink-0 text-blue-500" />
+              <AlertTriangle className="h-6 w-6 flex-shrink-0 text-amber-400" /> :
+              <Info className="h-6 w-6 flex-shrink-0 text-blue-400" />
             }
             <span className="text-sm font-medium">{w.message}</span>
           </div>

@@ -26,7 +26,7 @@ const EventLog: React.FC<Props> = ({ recentEvents }) => {
   };
 
   return (
-    <Card className="shadow lg:col-span-2">
+    <Card className="shadow lg:col-span-2 border-0 bg-gradient-to-br from-[#1A1F2C]/80 via-[#28213a]/80 to-[#403E43]/80 backdrop-blur-sm">
       <CardHeader className="pb-2">
         <CardTitle className="text-lg font-medium">Журнал событий</CardTitle>
         <CardDescription>Последние действия и системные события</CardDescription>
@@ -36,9 +36,9 @@ const EventLog: React.FC<Props> = ({ recentEvents }) => {
           {recentEvents.map((event, idx) => (
             <div key={idx} className="py-3 flex items-center gap-3">
               <div className={`rounded-full p-2 
-                  ${event.type === 'error' ? 'bg-red-100 text-red-500' : 
-                    event.type === 'warning' ? 'bg-amber-100 text-amber-500' : 
-                    'bg-blue-100 text-blue-500'}`}>
+                  ${event.type === 'error' ? 'bg-red-950/60 text-red-400' : 
+                    event.type === 'warning' ? 'bg-amber-950/60 text-amber-400' : 
+                    'bg-blue-950/60 text-blue-400'}`}>
                 {renderIcon(event.icon)}
               </div>
               <div className="flex-1">

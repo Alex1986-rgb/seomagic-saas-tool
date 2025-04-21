@@ -18,10 +18,10 @@ interface Props {
 const SystemStatusGrid: React.FC<Props> = ({ systemStatus }) => {
   const renderIcon = (iconName: string) => {
     switch (iconName) {
-      case 'database': return <Database className="h-5 w-5 text-green-500" />;
-      case 'server': return <Server className="h-5 w-5 text-green-500" />;
-      case 'monitor': return <Monitor className="h-5 w-5 text-green-500" />;
-      case 'alert-triangle': return <AlertTriangle className="h-5 w-5 text-amber-500" />;
+      case 'database': return <Database className="h-5 w-5 text-green-400" />;
+      case 'server': return <Server className="h-5 w-5 text-green-400" />;
+      case 'monitor': return <Monitor className="h-5 w-5 text-green-400" />;
+      case 'alert-triangle': return <AlertTriangle className="h-5 w-5 text-amber-400" />;
       default: return <Server className="h-5 w-5" />;
     }
   };
@@ -29,16 +29,16 @@ const SystemStatusGrid: React.FC<Props> = ({ systemStatus }) => {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
       {systemStatus.map((item) => (
-        <div key={item.name} className="border rounded-lg p-4 bg-card">
+        <div key={item.name} className="border border-primary/20 rounded-lg p-4 bg-gradient-to-br from-[#1A1F2C]/80 via-[#28213a]/80 to-[#403E43]/80 backdrop-blur-sm">
           <div className="flex items-center gap-3">
             {renderIcon(item.icon)}
             <div>
               <div className="font-medium">{item.name}</div>
               <div className="flex items-center gap-2 mt-1">
                 <Badge variant={item.status === "Online" ? "outline" : "destructive"}
-                  className={item.status === "Online" ? "bg-green-50 text-green-700 hover:bg-green-100" :
-                    item.status === "Warning" ? "bg-amber-50 text-amber-700 hover:bg-amber-100" :
-                    "bg-red-50 text-red-700 hover:bg-red-100"}>
+                  className={item.status === "Online" ? "bg-green-950/50 text-green-400 border-green-700/50 hover:bg-green-950/70" :
+                    item.status === "Warning" ? "bg-amber-950/50 text-amber-400 border-amber-700/50 hover:bg-amber-950/70" :
+                    "bg-red-950/50 text-red-400 border-red-700/50 hover:bg-red-950/70"}>
                   {item.status}
                 </Badge>
                 <span className="text-xs text-muted-foreground">Uptime: {item.uptime}</span>

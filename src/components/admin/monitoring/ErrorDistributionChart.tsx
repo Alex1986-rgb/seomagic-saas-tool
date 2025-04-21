@@ -12,7 +12,7 @@ interface Props {
   errorDistributionData: ErrorDistributionItem[];
 }
 const ErrorDistributionChart: React.FC<Props> = ({ errorDistributionData }) => (
-  <Card className="shadow">
+  <Card className="shadow border-0 bg-gradient-to-br from-[#1A1F2C]/80 via-[#28213a]/80 to-[#403E43]/80 backdrop-blur-sm">
     <CardHeader className="pb-2">
       <CardTitle className="text-lg font-medium">Распределение ошибок</CardTitle>
       <CardDescription>За последние 24 часа</CardDescription>
@@ -35,7 +35,13 @@ const ErrorDistributionChart: React.FC<Props> = ({ errorDistributionData }) => (
                 <Cell key={`cell-${index}`} fill={entry.color} />
               ))}
             </Pie>
-            <Tooltip />
+            <Tooltip 
+              contentStyle={{ 
+                backgroundColor: 'rgba(26, 31, 44, 0.8)', 
+                borderColor: 'rgba(155, 135, 245, 0.3)',
+                color: '#fff' 
+              }} 
+            />
             <Legend verticalAlign="bottom" height={36} />
           </PieChart>
         </ResponsiveContainer>

@@ -24,7 +24,7 @@ import SectionLinks from "./SectionLinks";
 import ServerInfo from "./ServerInfo";
 
 const AdminMonitoringContainer: React.FC = () => (
-  <div className="container mx-auto px-4 py-8 max-w-7xl">
+  <div className="container mx-auto px-4 py-8 max-w-7xl text-white">
     <MonitoringHeader />
     <div className="mb-8">
       <SystemWarnings warnings={systemWarnings} />
