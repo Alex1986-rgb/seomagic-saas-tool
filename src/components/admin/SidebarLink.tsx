@@ -8,17 +8,20 @@ interface SidebarLinkProps {
   to: string;
   icon: React.ReactNode;
   label: string;
-  active?: boolean;
 }
 
-const SidebarLink: React.FC<SidebarLinkProps> = ({ to, icon, label, active }) => {
+const SidebarLink: React.FC<SidebarLinkProps> = ({ to, icon, label }) => {
+  const location = useLocation();
+  const isActive = location.pathname === to || 
+                   (to !== '/admin' && location.pathname.startsWith(to));
+  
   return (
-    <Link to={to}>
+    <Link to={to} className="block w-full">
       <Button
         variant="ghost"
         className={cn(
           "w-full justify-start gap-2 mb-1 font-normal",
-          active && "bg-primary/10 text-primary font-medium"
+          isActive && "bg-primary/10 text-primary font-medium"
         )}
       >
         {icon}

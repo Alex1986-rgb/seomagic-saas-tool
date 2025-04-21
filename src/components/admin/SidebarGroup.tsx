@@ -7,9 +7,15 @@ interface SidebarGroupProps {
   title: string;
   children: React.ReactNode;
   defaultOpen?: boolean;
+  icon?: React.ReactNode;
 }
 
-const SidebarGroup: React.FC<SidebarGroupProps> = ({ title, children, defaultOpen = false }) => {
+const SidebarGroup: React.FC<SidebarGroupProps> = ({ 
+  title, 
+  children, 
+  defaultOpen = false,
+  icon
+}) => {
   const [open, setOpen] = useState(defaultOpen);
 
   return (
@@ -23,7 +29,10 @@ const SidebarGroup: React.FC<SidebarGroupProps> = ({ title, children, defaultOpe
           variant="ghost"
           className="w-full justify-between px-4 py-2 font-medium text-sm uppercase tracking-wider text-muted-foreground hover:text-foreground"
         >
-          {title}
+          <div className="flex items-center gap-2">
+            {icon}
+            <span>{title}</span>
+          </div>
           <span className="text-xs">{open ? "▲" : "▼"}</span>
         </Button>
       </CollapsibleTrigger>
