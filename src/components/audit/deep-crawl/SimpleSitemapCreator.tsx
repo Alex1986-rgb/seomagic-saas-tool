@@ -23,15 +23,17 @@ const SimpleSitemapCreator: React.FC<SimpleSitemapCreatorProps> = ({
   const { toast } = useToast();
   
   const {
+    isScanning,
     isGenerating,
     progress,
     sitemap,
     urls,
     currentUrl,
+    startScan,
     generateSitemap,
     downloadSitemap,
     downloadCsv
-  } = useSimpleSitemapCreator();
+  } = useSimpleSitemapCreator({ url });
 
   const handleStartCrawl = async () => {
     if (!url) {
@@ -77,7 +79,7 @@ const SimpleSitemapCreator: React.FC<SimpleSitemapCreatorProps> = ({
           <span>Создать карту сайта</span>
         </Button>
         
-        {sitemap && urls.length > 0 && (
+        {sitemap && urls && urls.length > 0 && (
           <div className="flex gap-2">
             <Button
               onClick={downloadSitemap}

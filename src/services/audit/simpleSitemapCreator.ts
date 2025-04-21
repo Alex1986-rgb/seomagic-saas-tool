@@ -8,6 +8,9 @@ interface SimpleSitemapCreatorOptions {
   includeStylesheet?: boolean;
   requestDelay?: number;
   concurrentRequests?: number;
+  retryCount?: number;
+  retryDelay?: number;
+  timeout?: number; // Adding timeout option
 }
 
 export class SimpleSitemapCreator {
@@ -15,6 +18,7 @@ export class SimpleSitemapCreator {
   private visited = new Set<string>();
   private domain: string = '';
   private baseUrl: string = '';
+  private isDebugMode: boolean = false;
 
   constructor(options: SimpleSitemapCreatorOptions = {}) {
     this.options = {
@@ -22,8 +26,58 @@ export class SimpleSitemapCreator {
       maxDepth: options.maxDepth || 5,
       includeStylesheet: options.includeStylesheet !== undefined ? options.includeStylesheet : true,
       requestDelay: options.requestDelay || 100,
-      concurrentRequests: options.concurrentRequests || 5
+      concurrentRequests: options.concurrentRequests || 5,
+      retryCount: options.retryCount || 3,
+      retryDelay: options.retryDelay || 1000,
+      timeout: options.timeout || 15000
     };
+  }
+
+  // Method to set base URL
+  public setBaseUrl(url: string): void {
+    try {
+      const urlObj = new URL(url);
+      this.baseUrl = `${urlObj.protocol}//${urlObj.hostname}`;
+      this.domain = urlObj.hostname;
+    } catch (error) {
+      console.error('Invalid URL in setBaseUrl:', url);
+    }
+  }
+
+  // Method to get domain
+  public getDomain(): string {
+    return this.domain;
+  }
+
+  // Method to get base URL
+  public getBaseUrl(): string {
+    return this.baseUrl;
+  }
+
+  // Method to enable debug mode
+  public enableDebugMode(enable: boolean): void {
+    this.isDebugMode = enable;
+    if (this.isDebugMode) {
+      console.log('Debug mode enabled for SimpleSitemapCreator');
+    }
+  }
+
+  // Method to log crawl settings
+  public logCrawlSettings(): void {
+    console.log('SimpleSitemapCreator settings:', {
+      maxPages: this.options.maxPages,
+      maxDepth: this.options.maxDepth,
+      requestDelay: this.options.requestDelay,
+      concurrentRequests: this.options.concurrentRequests,
+      domain: this.domain,
+      baseUrl: this.baseUrl
+    });
+  }
+
+  // Method to cancel crawling (placeholder)
+  public cancel(): void {
+    console.log('Crawling cancelled');
+    this.visited.clear();
   }
 
   private extractDomain(url: string): string {
@@ -174,7 +228,7 @@ export class SimpleSitemapCreator {
       }
       
       try {
-        const response = await axios.get(currentUrl, { timeout: 15000 });
+        const response = await axios.get(currentUrl, { timeout: this.options.timeout });
         
         if (response.status === 200 && response.data) {
           const extractedUrls = this.extractUrls(response.data, currentUrl);

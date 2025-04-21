@@ -15,6 +15,10 @@ export function useSimpleSitemapCreator({ url, maxPages = 10000, maxDepth = 5 }:
   const [scannedUrls, setScannedUrls] = useState<string[]>([]);
   const [sitemap, setSitemap] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  
+  // Adding the missing properties that are used in components
+  const [urls, setUrls] = useState<string[]>([]);
+  const [isGenerating, setIsGenerating] = useState(false);
 
   const startScan = useCallback(async () => {
     if (!url) {
@@ -24,9 +28,11 @@ export function useSimpleSitemapCreator({ url, maxPages = 10000, maxDepth = 5 }:
 
     try {
       setIsScanning(true);
+      setIsGenerating(true);
       setError(null);
       setSitemap(null);
       setScannedUrls([]);
+      setUrls([]);
       setProgress(0);
 
       const scanner = new SimpleSitemapCreator({
@@ -42,21 +48,45 @@ export function useSimpleSitemapCreator({ url, maxPages = 10000, maxDepth = 5 }:
         setCurrentUrl(url);
       };
 
-      const urls = await scanner.crawl(url, progressCallback);
-      setScannedUrls(urls);
+      const crawledUrls = await scanner.crawl(url, progressCallback);
+      setScannedUrls(crawledUrls);
+      setUrls(crawledUrls);
 
       // Generate sitemap XML
-      const sitemapXml = scanner.generateSitemap(urls);
+      const sitemapXml = scanner.generateSitemap(crawledUrls);
       setSitemap(sitemapXml);
 
       setIsScanning(false);
-      return { urls, sitemap: sitemapXml };
+      setIsGenerating(false);
+      return { urls: crawledUrls, sitemap: sitemapXml };
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An unknown error occurred');
       setIsScanning(false);
+      setIsGenerating(false);
       return null;
     }
   }, [url, maxPages, maxDepth]);
+
+  const generateSitemap = useCallback(async () => {
+    if (urls.length === 0) {
+      await startScan();
+    } else {
+      try {
+        setIsGenerating(true);
+        const scanner = new SimpleSitemapCreator({
+          includeStylesheet: true,
+        });
+        const sitemapXml = scanner.generateSitemap(urls);
+        setSitemap(sitemapXml);
+        setIsGenerating(false);
+        return sitemapXml;
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'An unknown error occurred');
+        setIsGenerating(false);
+        return null;
+      }
+    }
+  }, [urls, startScan]);
 
   const downloadSitemap = useCallback(() => {
     if (!sitemap) return null;
@@ -74,15 +104,41 @@ export function useSimpleSitemapCreator({ url, maxPages = 10000, maxDepth = 5 }:
     return true;
   }, [sitemap]);
 
+  const downloadCsv = useCallback(() => {
+    if (!urls || urls.length === 0) return null;
+
+    // Create CSV content
+    let csvContent = "URL\n";
+    urls.forEach(url => {
+      csvContent += `${url}\n`;
+    });
+
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `urls-${new Date().toISOString().slice(0, 10)}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+    return true;
+  }, [urls]);
+
   return {
     isScanning,
+    isGenerating,
     progress,
     currentUrl,
     scannedUrls,
+    urls,
     sitemap,
     error,
     startScan,
-    downloadSitemap
+    generateSitemap,
+    downloadSitemap,
+    downloadCsv
   };
 }
 

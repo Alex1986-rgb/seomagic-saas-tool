@@ -24,15 +24,17 @@ const SimpleSitemapCreatorTool: React.FC<SimpleSitemapCreatorToolProps> = ({
   const { toast } = useToast();
   
   const {
+    isScanning,
     isGenerating,
     progress,
     sitemap,
     urls,
     currentUrl,
+    startScan,
     generateSitemap,
     downloadSitemap,
     downloadCsv
-  } = useSimpleSitemapCreator();
+  } = useSimpleSitemapCreator({ url });
 
   const handleStartCrawl = async () => {
     if (!url) {
@@ -88,7 +90,7 @@ const SimpleSitemapCreatorTool: React.FC<SimpleSitemapCreatorToolProps> = ({
             <span>Начать глубокое сканирование</span>
           </Button>
           
-          {sitemap && urls.length > 0 && (
+          {sitemap && urls && urls.length > 0 && (
             <div className="flex gap-2">
               <Button
                 onClick={downloadSitemap}
