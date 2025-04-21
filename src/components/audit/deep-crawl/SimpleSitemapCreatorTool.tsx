@@ -4,7 +4,7 @@ import { Rocket, Download } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { useSimpleSitemapCreator } from './hooks/useSimpleSitemapCreator';
 import { useToast } from "@/hooks/use-toast";
-import { TextField } from '@/components/ui/textfield';
+import { TextField } from '@/components/ui/TextField';
 
 interface SimpleSitemapCreatorToolProps {
   domain?: string;
@@ -87,6 +87,40 @@ const SimpleSitemapCreatorTool: React.FC<SimpleSitemapCreatorToolProps> = ({
             <Download className="mr-2 h-4 w-4" />
             Download URLs as CSV
           </Button>
+        </div>
+      )}
+      
+      {isScanning && (
+        <div className="mt-4 space-y-2">
+          <div className="flex justify-between text-sm">
+            <span>Scanning: {currentUrl}</span>
+            <span>{progress}%</span>
+          </div>
+          <div className="w-full bg-gray-200 rounded-full h-2">
+            <div 
+              className="bg-primary h-2 rounded-full transition-all"
+              style={{ width: `${progress}%` }}
+            ></div>
+          </div>
+          <div className="text-sm text-muted-foreground">
+            {urls ? `Found ${urls.length} URLs` : 'Scanning in progress...'}
+          </div>
+        </div>
+      )}
+      
+      {urls && urls.length > 0 && !isScanning && (
+        <div className="mt-4 space-y-2">
+          <h3 className="font-semibold">Found URLs ({urls.length})</h3>
+          <div className="max-h-60 overflow-y-auto p-3 border rounded-md bg-background/50">
+            <ul className="space-y-1 text-sm">
+              {urls.slice(0, 100).map((url, index) => (
+                <li key={index} className="truncate">{url}</li>
+              ))}
+              {urls.length > 100 && (
+                <li className="text-muted-foreground">...and {urls.length - 100} more</li>
+              )}
+            </ul>
+          </div>
         </div>
       )}
     </div>

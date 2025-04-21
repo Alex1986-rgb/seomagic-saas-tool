@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { SimpleSitemapCreatorTool } from '../audit/deep-crawl';
+import SimpleSitemapCreatorTool from '../audit/deep-crawl/SimpleSitemapCreatorTool';
 import { downloadAuditPdfReport, downloadErrorReport } from '@/services/audit/scanner';
 import { generateAuditData } from '@/services/audit/generators';
 
