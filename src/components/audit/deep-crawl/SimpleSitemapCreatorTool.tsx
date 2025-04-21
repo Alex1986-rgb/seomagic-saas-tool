@@ -6,8 +6,18 @@ import { useSimpleSitemapCreator } from './hooks/useSimpleSitemapCreator';
 import { useToast } from "@/hooks/use-toast";
 import { TextField } from '@/components/ui/textfield';
 
-const SimpleSitemapCreatorTool: React.FC = () => {
-  const [url, setUrl] = useState('');
+interface SimpleSitemapCreatorToolProps {
+  domain?: string;
+  initialUrl?: string;
+  onUrlsScanned?: (urls: string[]) => void;
+}
+
+const SimpleSitemapCreatorTool: React.FC<SimpleSitemapCreatorToolProps> = ({ 
+  domain, 
+  initialUrl,
+  onUrlsScanned 
+}) => {
+  const [url, setUrl] = useState(initialUrl || domain || '');
   const { toast } = useToast();
   
   const {
@@ -33,7 +43,10 @@ const SimpleSitemapCreatorTool: React.FC = () => {
       return;
     }
     
-    await startScan();
+    const result = await startScan();
+    if (result && onUrlsScanned && result.urls) {
+      onUrlsScanned(result.urls);
+    }
   };
 
   return (

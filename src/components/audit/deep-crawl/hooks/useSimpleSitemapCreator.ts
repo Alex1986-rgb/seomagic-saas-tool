@@ -21,7 +21,7 @@ export function useSimpleSitemapCreator({ url, maxPages = 10000, maxDepth = 5 }:
   const startScan = useCallback(async () => {
     if (!url) {
       setError('URL is required');
-      return;
+      return null;
     }
 
     try {
@@ -42,9 +42,17 @@ export function useSimpleSitemapCreator({ url, maxPages = 10000, maxDepth = 5 }:
       });
 
       // Set base URL and enable debug mode
-      scanner.setBaseUrl(url);
-      scanner.enableDebugMode(true);
-      scanner.logCrawlSettings();
+      if (typeof scanner.setBaseUrl === 'function') {
+        scanner.setBaseUrl(url);
+      }
+      
+      if (typeof scanner.enableDebugMode === 'function') {
+        scanner.enableDebugMode(true);
+      }
+      
+      if (typeof scanner.logCrawlSettings === 'function') {
+        scanner.logCrawlSettings();
+      }
 
       const progressCallback = (scanned: number, total: number, url: string) => {
         const percentage = total > 0 ? Math.min(Math.round((scanned / total) * 100), 100) : 0;

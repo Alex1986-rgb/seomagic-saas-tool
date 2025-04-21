@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import { Search, Download, FileText, BarChart } from 'lucide-react';
@@ -26,14 +25,12 @@ const WebsiteScanner: React.FC<WebsiteScannerProps> = ({ initialUrl = '' }) => {
   const [hasAuditResults, setHasAuditResults] = useState(false);
   const { toast } = useToast();
 
-  // Clear any errors when the component mounts
   useEffect(() => {
     setIsError(false);
   }, []);
 
   const handleUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setUrl(e.target.value);
-    // Reset error state when user changes URL
     if (isError) {
       setIsError(false);
     }
@@ -63,7 +60,6 @@ const WebsiteScanner: React.FC<WebsiteScannerProps> = ({ initialUrl = '' }) => {
       setScanProgress(0);
       setScanStage('Подготовка к сканированию...');
 
-      // Имитация процесса сканирования
       for (let i = 1; i <= 10; i++) {
         await new Promise(resolve => setTimeout(resolve, 500));
         setScanProgress(i * 10);
@@ -83,7 +79,6 @@ const WebsiteScanner: React.FC<WebsiteScannerProps> = ({ initialUrl = '' }) => {
             break;
           case 10:
             setScanStage('Сканирование завершено');
-            // Генерируем тестовые данные аудита
             const generatedData = generateAuditData(url);
             setAuditData(generatedData);
             setHasAuditResults(true);
@@ -118,7 +113,6 @@ const WebsiteScanner: React.FC<WebsiteScannerProps> = ({ initialUrl = '' }) => {
       return;
     }
     
-    // Используем данные аудита, либо генерируем их, если их нет
     const data = auditData || generateAuditData(url);
     
     toast({
@@ -158,7 +152,6 @@ const WebsiteScanner: React.FC<WebsiteScannerProps> = ({ initialUrl = '' }) => {
       return;
     }
     
-    // Используем данные аудита, либо генерируем их, если их нет
     const data = auditData || generateAuditData(url);
     
     toast({
@@ -254,6 +247,7 @@ const WebsiteScanner: React.FC<WebsiteScannerProps> = ({ initialUrl = '' }) => {
           <SimpleSitemapCreatorTool 
             initialUrl={url} 
             onUrlsScanned={handleUrlsScanned} 
+            domain={url.replace(/^https?:\/\//, '')}
           />
         </TabsContent>
         

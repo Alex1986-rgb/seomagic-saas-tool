@@ -1,8 +1,8 @@
 
 import { useState, useCallback, useEffect } from 'react';
-import { useCrawlExecution } from './useCrawlExecution';
 import { useCrawlState } from './useCrawlState';
 import { supabase } from "@/integrations/supabase/client";
+import { SimpleSitemapCreator } from '@/services/audit/simpleSitemapCreator';
 
 export function useCrawlProgress(urlParam: string) {
   const [url, setUrl] = useState(urlParam);
@@ -43,7 +43,67 @@ export function useCrawlProgress(urlParam: string) {
     setCrawlStage
   } = useCrawlState(url);
 
-  const { initializeCrawler, executeCrawler } = useCrawlExecution();
+  // Add missing methods
+  const initializeCrawler = useCallback(({ url, maxPages, onProgress }: { 
+    url: string; 
+    maxPages: number; 
+    onProgress: (pagesScanned: number, totalEstimated: number, currentUrl: string) => void; 
+  }) => {
+    try {
+      const crawler = new SimpleSitemapCreator({
+        maxPages,
+        maxDepth: 5,
+        includeStylesheet: true,
+        requestDelay: 300,
+        concurrentRequests: 2,
+        retryCount: 2,
+        retryDelay: 1000,
+        timeout: 20000
+      });
+      
+      // Extract domain
+      let domain = "";
+      try {
+        const urlObj = new URL(url);
+        domain = urlObj.hostname;
+      } catch (e) {
+        console.error("Error extracting domain:", e);
+        domain = url;
+      }
+      
+      return { crawler, domain, normalizedUrl: url };
+    } catch (error) {
+      console.error("Error initializing crawler:", error);
+      return { crawler: null, domain: "", normalizedUrl: url };
+    }
+  }, []);
+  
+  const executeCrawler = useCallback(async (crawler: SimpleSitemapCreator, url: string) => {
+    if (!crawler) {
+      return { success: false, error: "No crawler instance" };
+    }
+    
+    try {
+      // Perform the crawl
+      const urls = await crawler.crawl(url, (scanned: number, total: number, currentUrl: string) => {
+        updateProgress(scanned, total, currentUrl, crawler.options.maxPages || 10000);
+      });
+      
+      return { 
+        success: true, 
+        urls,
+        pageCount: urls.length 
+      };
+    } catch (error) {
+      console.error("Error executing crawler:", error);
+      return { 
+        success: false, 
+        error: error instanceof Error ? error.message : "Unknown error during crawl",
+        urls: [],
+        pageCount: 0
+      };
+    }
+  }, [updateProgress]);
   
   // Улучшенная функция сохранения результатов в Supabase
   const saveScanResultsToSupabase = async (urls: string[], pageCount: number) => {
@@ -258,6 +318,9 @@ export function useCrawlProgress(urlParam: string) {
     scannedUrls,
     startCrawl,
     cancelCrawl,
-    errorMsg
+    errorMsg,
+    // Add the missing functions to the returned object
+    initializeCrawler,
+    executeCrawler
   };
 }
