@@ -1,162 +1,230 @@
-import React, { useState } from 'react';
+
+import React from 'react';
 import { 
   BarChart3, 
   Users, 
   FileText, 
   CreditCard, 
   Settings, 
-  User, 
-  Globe, 
-  Server, 
-  MessageSquare,
   Search,
   Grid3X3,
-  Bell
+  Bell,
+  Server
 } from 'lucide-react';
 import Layout from '@/components/Layout';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import AdminAnalytics from '@/components/admin/AdminAnalytics';
-import AdminUsers from '@/components/admin/AdminUsers';
-import AdminAudits from '@/components/admin/AdminAudits';
-import AdminPayments from '@/components/admin/AdminPayments';
-import AdminSettings from '@/components/admin/AdminSettings';
-import AdminPositions from '@/components/admin/AdminPositions';
+import { Card, CardContent } from "@/components/ui/card";
 import { Link } from "react-router-dom";
+import { Helmet } from 'react-helmet-async';
 
 const AdminPanel: React.FC = () => {
   return (
     <Layout>
+      <Helmet>
+        <title>Панель администратора | SeoMarket</title>
+      </Helmet>
+      
       <div className="container mx-auto px-4 md:px-6 pt-32 pb-20">
-        <div className="max-w-7xl mx-auto">
-          <div className="flex flex-col lg:flex-row justify-between lg:items-center gap-4 mb-8">
+        <div className="max-w-7xl mx-auto space-y-10">
+          <div className="flex flex-col lg:flex-row justify-between lg:items-center gap-4 mb-4">
             <div>
+              <div className="inline-block mb-2 px-3 py-1 bg-primary/10 text-primary text-sm rounded-full">
+                Версия 2.8.1
+              </div>
               <h1 className="text-3xl md:text-4xl font-bold mb-2">Панель администратора</h1>
               <p className="text-lg text-muted-foreground">
-                Управление сервисом SeoMarket, пользователями и аудитами
+                Централизованное управление сервисом SeoMarket
               </p>
             </div>
             
             <div className="flex flex-wrap gap-2">
-              <Link to="/admin/system-status">
+              <Link to="/admin">
                 <Button variant="outline" className="flex items-center gap-2" size="sm">
-                  <Server className="h-4 w-4" />
-                  Состояние системы
+                  <BarChart3 className="h-4 w-4" />
+                  Дашборд
                 </Button>
               </Link>
               <Link to="/admin/notifications">
                 <Button variant="outline" className="flex items-center gap-2" size="sm">
                   <Bell className="h-4 w-4" />
-                  Уведомления
+                  <span className="relative">
+                    Уведомления
+                    <span className="absolute -top-1 -right-3 flex h-3 w-3">
+                      <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-75"></span>
+                      <span className="relative inline-flex h-3 w-3 rounded-full bg-primary"></span>
+                    </span>
+                  </span>
                 </Button>
               </Link>
               <Link to="/admin/monitoring">
                 <Button className="flex items-center gap-2" size="sm">
                   <Grid3X3 className="h-4 w-4" />
-                  Панель мониторинга
+                  Мониторинг
                 </Button>
               </Link>
             </div>
           </div>
           
-          <Card className="backdrop-blur-sm bg-card/80 border border-primary/10 mb-8 shadow-sm">
-            <CardHeader className="pb-3">
-              <CardTitle>Статистика платформы</CardTitle>
-              <CardDescription>Общая информация о платформе за последние 30 дней</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div className="space-y-1">
-                  <p className="text-sm text-muted-foreground">Пользователей</p>
-                  <div className="flex items-end gap-2">
-                    <p className="text-2xl font-bold">1,248</p>
-                    <span className="text-xs text-green-500">+12%</span>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {/* Аналитика */}
+            <Link to="/admin/analytics">
+              <Card className="group h-full backdrop-blur-sm bg-card/80 border border-primary/10 shadow-sm hover:shadow-md hover:border-primary/30 transition-all">
+                <CardContent className="p-6 flex flex-col h-full">
+                  <div className="h-12 w-12 mb-4 rounded-lg bg-primary/10 text-primary flex items-center justify-center group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
+                    <BarChart3 className="h-6 w-6" />
                   </div>
-                </div>
-                <div className="space-y-1">
-                  <p className="text-sm text-muted-foreground">Аудитов</p>
-                  <div className="flex items-end gap-2">
-                    <p className="text-2xl font-bold">3,567</p>
-                    <span className="text-xs text-green-500">+24%</span>
+                  <h2 className="text-xl font-bold mb-2">Аналитика</h2>
+                  <p className="text-muted-foreground text-sm flex-grow">
+                    Обзор ключевых метрик, статистика использования и бизнес-показатели платформы.
+                  </p>
+                  <div className="text-primary font-medium mt-4 flex items-center text-sm">
+                    Перейти в раздел
+                    <svg className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M3 10a.75.75 0 01.75-.75h10.638L10.23 5.29a.75.75 0 111.04-1.08l5.5 5.25a.75.75 0 010 1.08l-5.5 5.25a.75.75 0 11-1.04-1.08l4.158-3.96H3.75A.75.75 0 013 10z" clipRule="evenodd" />
+                    </svg>
                   </div>
-                </div>
-                <div className="space-y-1">
-                  <p className="text-sm text-muted-foreground">Доход</p>
-                  <div className="flex items-end gap-2">
-                    <p className="text-2xl font-bold">₽245,890</p>
-                    <span className="text-xs text-green-500">+8%</span>
-                  </div>
-                </div>
-                <div className="space-y-1">
-                  <p className="text-sm text-muted-foreground">Активные планы</p>
-                  <div className="flex items-end gap-2">
-                    <p className="text-2xl font-bold">578</p>
-                    <span className="text-xs text-green-500">+5%</span>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          
-          <Tabs defaultValue="analytics">
-            <div className="mb-6">
-              <TabsList className="grid grid-cols-2 md:grid-cols-6 gap-2 p-1 bg-secondary/40 rounded-lg">
-                <TabsTrigger value="analytics" className="flex items-center gap-2">
-                  <BarChart3 className="h-4 w-4" />
-                  <span>Аналитика</span>
-                </TabsTrigger>
-                <TabsTrigger value="users" className="flex items-center gap-2">
-                  <Users className="h-4 w-4" />
-                  <span>Пользователи</span>
-                </TabsTrigger>
-                <TabsTrigger value="audits" className="flex items-center gap-2">
-                  <FileText className="h-4 w-4" />
-                  <span>Аудиты</span>
-                </TabsTrigger>
-                <TabsTrigger value="positions" className="flex items-center gap-2">
-                  <Search className="h-4 w-4" />
-                  <span>Позиции</span>
-                </TabsTrigger>
-                <TabsTrigger value="payments" className="flex items-center gap-2">
-                  <CreditCard className="h-4 w-4" />
-                  <span>Платежи</span>
-                </TabsTrigger>
-                <TabsTrigger value="settings" className="flex items-center gap-2">
-                  <Settings className="h-4 w-4" />
-                  <span>Настройки</span>
-                </TabsTrigger>
-              </TabsList>
-            </div>
+                </CardContent>
+              </Card>
+            </Link>
             
+            {/* Пользователи */}
+            <Link to="/admin/users">
+              <Card className="group h-full backdrop-blur-sm bg-card/80 border border-primary/10 shadow-sm hover:shadow-md hover:border-primary/30 transition-all">
+                <CardContent className="p-6 flex flex-col h-full">
+                  <div className="h-12 w-12 mb-4 rounded-lg bg-primary/10 text-primary flex items-center justify-center group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
+                    <Users className="h-6 w-6" />
+                  </div>
+                  <h2 className="text-xl font-bold mb-2">Пользователи</h2>
+                  <p className="text-muted-foreground text-sm flex-grow">
+                    Управление аккаунтами, подписками, правами доступа и активностью пользователей.
+                  </p>
+                  <div className="text-primary font-medium mt-4 flex items-center text-sm">
+                    Перейти в раздел
+                    <svg className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M3 10a.75.75 0 01.75-.75h10.638L10.23 5.29a.75.75 0 111.04-1.08l5.5 5.25a.75.75 0 010 1.08l-5.5 5.25a.75.75 0 11-1.04-1.08l4.158-3.96H3.75A.75.75 0 013 10z" clipRule="evenodd" />
+                    </svg>
+                  </div>
+                </CardContent>
+              </Card>
+            </Link>
+            
+            {/* Аудиты */}
+            <Link to="/admin/audits">
+              <Card className="group h-full backdrop-blur-sm bg-card/80 border border-primary/10 shadow-sm hover:shadow-md hover:border-primary/30 transition-all">
+                <CardContent className="p-6 flex flex-col h-full">
+                  <div className="h-12 w-12 mb-4 rounded-lg bg-primary/10 text-primary flex items-center justify-center group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
+                    <FileText className="h-6 w-6" />
+                  </div>
+                  <h2 className="text-xl font-bold mb-2">Аудиты</h2>
+                  <p className="text-muted-foreground text-sm flex-grow">
+                    История проведенных аудитов, статусы и результаты, экспорт отчетов.
+                  </p>
+                  <div className="text-primary font-medium mt-4 flex items-center text-sm">
+                    Перейти в раздел
+                    <svg className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M3 10a.75.75 0 01.75-.75h10.638L10.23 5.29a.75.75 0 111.04-1.08l5.5 5.25a.75.75 0 010 1.08l-5.5 5.25a.75.75 0 11-1.04-1.08l4.158-3.96H3.75A.75.75 0 013 10z" clipRule="evenodd" />
+                    </svg>
+                  </div>
+                </CardContent>
+              </Card>
+            </Link>
+            
+            {/* Позиции */}
+            <Link to="/admin/positions">
+              <Card className="group h-full backdrop-blur-sm bg-card/80 border border-primary/10 shadow-sm hover:shadow-md hover:border-primary/30 transition-all">
+                <CardContent className="p-6 flex flex-col h-full">
+                  <div className="h-12 w-12 mb-4 rounded-lg bg-primary/10 text-primary flex items-center justify-center group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
+                    <Search className="h-6 w-6" />
+                  </div>
+                  <h2 className="text-xl font-bold mb-2">Позиции</h2>
+                  <p className="text-muted-foreground text-sm flex-grow">
+                    Отслеживание позиций сайтов в поисковых системах, динамика и тренды.
+                  </p>
+                  <div className="text-primary font-medium mt-4 flex items-center text-sm">
+                    Перейти в раздел
+                    <svg className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M3 10a.75.75 0 01.75-.75h10.638L10.23 5.29a.75.75 0 111.04-1.08l5.5 5.25a.75.75 0 010 1.08l-5.5 5.25a.75.75 0 11-1.04-1.08l4.158-3.96H3.75A.75.75 0 013 10z" clipRule="evenodd" />
+                    </svg>
+                  </div>
+                </CardContent>
+              </Card>
+            </Link>
+            
+            {/* Платежи */}
+            <Link to="/admin/payments">
+              <Card className="group h-full backdrop-blur-sm bg-card/80 border border-primary/10 shadow-sm hover:shadow-md hover:border-primary/30 transition-all">
+                <CardContent className="p-6 flex flex-col h-full">
+                  <div className="h-12 w-12 mb-4 rounded-lg bg-primary/10 text-primary flex items-center justify-center group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
+                    <CreditCard className="h-6 w-6" />
+                  </div>
+                  <h2 className="text-xl font-bold mb-2">Платежи</h2>
+                  <p className="text-muted-foreground text-sm flex-grow">
+                    История транзакций, управление подписками, тарифами и методами оплаты.
+                  </p>
+                  <div className="text-primary font-medium mt-4 flex items-center text-sm">
+                    Перейти в раздел
+                    <svg className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M3 10a.75.75 0 01.75-.75h10.638L10.23 5.29a.75.75 0 111.04-1.08l5.5 5.25a.75.75 0 010 1.08l-5.5 5.25a.75.75 0 11-1.04-1.08l4.158-3.96H3.75A.75.75 0 013 10z" clipRule="evenodd" />
+                    </svg>
+                  </div>
+                </CardContent>
+              </Card>
+            </Link>
+            
+            {/* Настройки */}
+            <Link to="/admin/settings">
+              <Card className="group h-full backdrop-blur-sm bg-card/80 border border-primary/10 shadow-sm hover:shadow-md hover:border-primary/30 transition-all">
+                <CardContent className="p-6 flex flex-col h-full">
+                  <div className="h-12 w-12 mb-4 rounded-lg bg-primary/10 text-primary flex items-center justify-center group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
+                    <Settings className="h-6 w-6" />
+                  </div>
+                  <h2 className="text-xl font-bold mb-2">Настройки</h2>
+                  <p className="text-muted-foreground text-sm flex-grow">
+                    Конфигурация приложения, интеграции, локализация и другие системные настройки.
+                  </p>
+                  <div className="text-primary font-medium mt-4 flex items-center text-sm">
+                    Перейти в раздел
+                    <svg className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M3 10a.75.75 0 01.75-.75h10.638L10.23 5.29a.75.75 0 111.04-1.08l5.5 5.25a.75.75 0 010 1.08l-5.5 5.25a.75.75 0 11-1.04-1.08l4.158-3.96H3.75A.75.75 0 013 10z" clipRule="evenodd" />
+                    </svg>
+                  </div>
+                </CardContent>
+              </Card>
+            </Link>
+          </div>
+          
+          <div className="mt-8">
             <Card className="backdrop-blur-sm bg-card/80 border border-primary/10 shadow-sm">
               <CardContent className="p-6">
-                <TabsContent value="analytics">
-                  <AdminAnalytics />
-                </TabsContent>
-                
-                <TabsContent value="users">
-                  <AdminUsers />
-                </TabsContent>
-                
-                <TabsContent value="audits">
-                  <AdminAudits />
-                </TabsContent>
-                
-                <TabsContent value="positions">
-                  <AdminPositions />
-                </TabsContent>
-                
-                <TabsContent value="payments">
-                  <AdminPayments />
-                </TabsContent>
-                
-                <TabsContent value="settings">
-                  <AdminSettings />
-                </TabsContent>
+                <div className="flex items-center gap-3 mb-4">
+                  <Server className="h-5 w-5 text-primary" />
+                  <h2 className="text-xl font-bold">Быстрый доступ к системным настройкам</h2>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 mt-4">
+                  <Link to="/admin/system-status">
+                    <Button variant="outline" className="w-full justify-start">
+                      Состояние системы
+                    </Button>
+                  </Link>
+                  <Link to="/admin/system/database">
+                    <Button variant="outline" className="w-full justify-start">
+                      База данных
+                    </Button>
+                  </Link>
+                  <Link to="/admin/system/security">
+                    <Button variant="outline" className="w-full justify-start">
+                      Безопасность
+                    </Button>
+                  </Link>
+                  <Link to="/admin/system/performance">
+                    <Button variant="outline" className="w-full justify-start">
+                      Производительность
+                    </Button>
+                  </Link>
+                </div>
               </CardContent>
             </Card>
-          </Tabs>
+          </div>
         </div>
       </div>
     </Layout>
