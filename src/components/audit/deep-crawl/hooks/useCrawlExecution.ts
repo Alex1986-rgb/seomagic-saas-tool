@@ -1,3 +1,4 @@
+
 import { SimpleSitemapCreator } from '@/services/audit/simpleSitemapCreator';
 import { supabase } from "@/integrations/supabase/client";
 
@@ -146,17 +147,30 @@ export function useCrawlExecution() {
         adjustedMaxPages = 500000; // Allow more pages for large sites
         console.log(`Обнаружен крупный сайт (${domain}), увеличиваем лимит до ${adjustedMaxPages} страниц`);
       }
+      
+      // Determine if the site is a popular CMS or e-commerce platform
+      const isCmsOrEcommerce = 
+        domain.includes('wordpress.com') ||
+        domain.includes('shopify.com') ||
+        domain.includes('wix.com') ||
+        domain.includes('opencart') ||
+        domain.includes('magento') ||
+        domain.includes('prestashop');
+      
+      // Optimized settings for different site types
+      const timeout = isCmsOrEcommerce ? 20000 : 15000; // Longer timeout for CMS sites
+      const retryCount = domain.includes('myarredo.ru') ? 4 : 3; // More retries for known problematic sites
             
       // Create new scanner with appropriate settings
-      // Using only properties that are known to exist in the SimpleSitemapCreator options
       const crawler = new SimpleSitemapCreator({
         maxPages: adjustedMaxPages,
         maxDepth: 10, // Увеличиваем глубину поиска
         includeStylesheet: true,
-        timeout: 15000, // 15 seconds timeout for requests
-        retryCount: 3, // Увеличиваем количество попыток запроса
+        timeout: timeout,
+        retryCount: retryCount,
         retryDelay: 1000,
-        // Removed followExternalLinks property as it doesn't exist in the options interface
+        requestDelay: 500, // Add some delay between requests
+        concurrentRequests: domain.includes('myarredo.ru') ? 3 : 5 // Fewer concurrent requests for problematic sites
       });
       
       // Set base URL explicitly
@@ -217,10 +231,10 @@ export function useCrawlExecution() {
       
       // Configure crawler with additional logging if method exists
       console.log('Configuring crawler with extra debug settings');
-      if (crawler.enableDebugMode) {
+      if (typeof crawler.enableDebugMode === 'function') {
         crawler.enableDebugMode(true);
       }
-      if (crawler.logCrawlSettings) {
+      if (typeof crawler.logCrawlSettings === 'function') {
         crawler.logCrawlSettings();
       }
       

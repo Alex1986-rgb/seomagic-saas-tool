@@ -1,529 +1,376 @@
-import axios from 'axios';
+
+/**
+ * Core crawler implementation for deep site analysis
+ */
+
 import * as cheerio from 'cheerio';
-import { CrawlResult, DeepCrawlerOptions } from './types';
-import { UrlProcessor } from './urlProcessor';
+import axios from 'axios';
 import { QueueManager } from './queueManager';
+import { normalizePath, normalizeUrl, isUrlFromSameDomain, isExternalUrl } from './urlUtils';
+import { CrawlResult, DeepCrawlerOptions, ExtractorFunction } from './types';
 
 export class DeepCrawlerCore {
-  protected visited = new Set<string>();
-  protected queue: { url: string; depth: number }[] = [];
-  protected domain: string;
-  protected baseUrl: string;
-  protected options: DeepCrawlerOptions;
-  protected userAgent = 'Mozilla/5.0 (compatible; LovableSEOAuditBot/1.1)';
+  private url: string;
+  private baseUrl: string;
+  private domain: string;
+  private options: DeepCrawlerOptions;
+  private queue: { url: string; depth: number }[] = [];
+  private visited = new Set<string>();
   private queueManager: QueueManager;
-  private maxConcurrentRequests = 10; // Увеличиваем для быстрого сканирования
-  private retryAttempts = 3;
-  private requestTimeout = 15000; // 15 seconds timeout
-  private abortController: AbortController | null = null;
   private isCancelled = false;
+  private robotsTxtAllowed: { [key: string]: boolean } = {};
   private debugMode = false;
+  private retryCount = 2;
+  private userAgents = [
+    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+    'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.0 Safari/605.1.15',
+    'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:89.0) Gecko/20100101 Firefox/89.0'
+  ];
 
   constructor(url: string, options: DeepCrawlerOptions) {
-    this.options = {
-      ...options,
-      maxPages: options.maxPages || 100000, // Увеличиваем лимит по умолчанию
-      maxDepth: options.maxDepth || 15      // Увеличиваем глубину по умолчанию
-    };
-    this.baseUrl = url.startsWith('http') ? url : `https://${url}`;
-    this.domain = new URL(this.baseUrl).hostname;
-    this.queueManager = new QueueManager();
-    console.log(`DeepCrawlerCore initialized with ${this.baseUrl}, domain: ${this.domain}, maxPages: ${this.options.maxPages}`);
-  }
-
-  enableDebugMode(enabled: boolean): void {
-    this.debugMode = enabled;
-    console.log(`Debug mode ${enabled ? 'enabled' : 'disabled'}`);
-  }
-
-  logCrawlSettings(): void {
-    console.log('Crawler settings:', {
-      baseUrl: this.baseUrl,
-      domain: this.domain,
-      maxPages: this.options.maxPages,
-      maxDepth: this.options.maxDepth,
-      maxConcurrentRequests: this.maxConcurrentRequests,
-      retryAttempts: this.retryAttempts,
-      requestTimeout: this.requestTimeout
-    });
-  }
-
-  cancel() {
-    this.isCancelled = true;
-    if (this.abortController) {
-      this.abortController.abort();
+    // Normalize and validate the URL
+    if (!url) {
+      throw new Error('URL cannot be empty');
     }
-    this.queueManager.pause();
-    console.log("Scanning cancelled by user");
+
+    let normalizedUrl = url;
+    if (!normalizedUrl.startsWith('http://') && !normalizedUrl.startsWith('https://')) {
+      normalizedUrl = `https://${normalizedUrl}`;
+    }
+
+    try {
+      const urlObj = new URL(normalizedUrl);
+      this.url = normalizedUrl;
+      this.baseUrl = urlObj.origin;
+      this.domain = urlObj.hostname;
+    } catch (error) {
+      throw new Error(`Invalid URL: ${normalizedUrl}`);
+    }
+
+    // Set default options with fallbacks
+    this.options = {
+      maxPages: options.maxPages || 50000,
+      maxDepth: options.maxDepth || 10,
+      onProgress: options.onProgress || (() => {}),
+    };
+
+    // Initialize queue manager and configure it
+    this.queueManager = new QueueManager();
+    if (typeof this.queueManager.configure === 'function') {
+      this.queueManager.configure({
+        maxConcurrentRequests: 10,
+        retryAttempts: 3,
+        requestTimeout: 15000,
+        debug: false
+      });
+    }
   }
 
+  /**
+   * Retrieves the domain for the current crawl
+   */
   getDomain(): string {
     return this.domain;
   }
 
+  /**
+   * Retrieves the base URL for the current crawl
+   */
   getBaseUrl(): string {
     return this.baseUrl;
   }
 
-  async startCrawling(): Promise<CrawlResult> {
-    console.log(`Beginning scan for site ${this.baseUrl} with limit of ${this.options.maxPages} pages`);
-    
-    // Reset state
-    this.queue = [{ url: this.baseUrl, depth: 0 }];
-    this.visited.clear();
-    this.isCancelled = false;
-    this.abortController = new AbortController();
-    
-    const result: CrawlResult = {
-      urls: [],
-      pageCount: 0,
-      metadata: {
-        keywords: [],
-        links: { internal: 0, external: 0, broken: 0 }
-      },
-      brokenLinks: []
-    };
+  /**
+   * Enables or disables debug mode
+   */
+  setDebug(enabled: boolean): void {
+    this.debugMode = enabled;
+  }
 
-    // Attempt to find sitemap for faster scanning
-    try {
-      await this.findAndProcessSitemaps();
-      console.log(`After sitemap processing, queue has ${this.queue.length} URLs`);
-      
-      // Log the first 5 URLs in the queue for debugging
-      if (this.debugMode && this.queue.length > 0) {
-        console.log('First URLs in queue after sitemap processing:');
-        for (let i = 0; i < Math.min(5, this.queue.length); i++) {
-          console.log(`  ${i+1}. ${this.queue[i].url} (depth: ${this.queue[i].depth})`);
-        }
-      }
-    } catch (error) {
-      console.warn('Failed to process sitemap, continuing with normal scan:', error);
+  /**
+   * Cancels the current crawling process
+   */
+  cancel(): void {
+    this.isCancelled = true;
+    this.queueManager.pause();
+    
+    if (this.debugMode) {
+      console.log('Crawling cancelled by user');
     }
+  }
 
-    // Set shorter processing timeout (45 minutes)
-    const processTimeout = setTimeout(() => {
-      console.warn(`Scan timeout reached after ${this.visited.size} pages`);
-      this.queueManager.pause();
-    }, 45 * 60 * 1000);
+  /**
+   * Gets a random user agent to avoid detection
+   */
+  private getRandomUserAgent(): string {
+    return this.userAgents[Math.floor(Math.random() * this.userAgents.length)];
+  }
 
+  /**
+   * Starts the crawling process
+   */
+  async startCrawling(): Promise<CrawlResult> {
     try {
-      // Configure queue manager with better settings
-      if (this.queueManager.configure) {
-        this.queueManager.configure({
-          maxConcurrentRequests: this.maxConcurrentRequests,
-          requestTimeout: this.requestTimeout,
-          retryAttempts: this.retryAttempts,
-          debug: this.debugMode
-        });
-      } else {
-        console.warn("QueueManager.configure method not available, using default settings");
+      if (this.debugMode) {
+        console.log(`Starting deep crawl for ${this.url}`);
       }
-      
-      // Start the crawl process with improved logging
-      console.log('Starting to process the URL queue');
-      const crawlResult = await this.queueManager.processCrawlQueue(
+
+      // Reset state for new crawl
+      this.queue = [];
+      this.visited.clear();
+      this.isCancelled = false;
+      this.queueManager.resume();
+
+      // Add the initial URL to the queue
+      this.queue.push({ url: this.url, depth: 0 });
+
+      // Fetch and parse robots.txt
+      await this.parseRobotsTxt();
+
+      // Begin crawling
+      const result = await this.queueManager.processCrawlQueue(
         this.queue,
         this.visited,
         this.options,
-        this.processUrl.bind(this)
+        this.processSingleUrl.bind(this)
       );
-      
-      // Merge results
-      result.urls = crawlResult.urls;
-      result.pageCount = crawlResult.pageCount;
-      
-      // Extra logging
-      console.log(`Scan completed, found ${result.urls.length} pages`);
-      console.log(`Visited ${this.visited.size} unique URLs`);
-      if (this.debugMode) {
-        console.log(`First 5 discovered URLs:`);
-        for (let i = 0; i < Math.min(5, result.urls.length); i++) {
-          console.log(`  ${i+1}. ${result.urls[i]}`);
-        }
-      }
-      
+
       return result;
-    } finally {
-      clearTimeout(processTimeout);
+    } catch (error) {
+      console.error('Error during crawl:', error);
+      throw error;
     }
   }
 
-  private async findAndProcessSitemaps(): Promise<void> {
-    const possibleSitemapUrls = [
-      `${this.baseUrl}/sitemap.xml`,
-      `${this.baseUrl}/sitemap_index.xml`,
-      `${this.baseUrl}/sitemap-index.xml`,
-      `${this.baseUrl}/sitemaps/sitemap.xml`,
-      `${this.baseUrl}/wp-sitemap.xml`,
-      // Add more common sitemap paths
-      `${this.baseUrl}/sitemap1.xml`,
-      `${this.baseUrl}/sitemap_1.xml`,
-      `${this.baseUrl}/sitemap/sitemap.xml`,
-      `${this.baseUrl}/sitemap_product.xml`,
-      `${this.baseUrl}/sitemap_category.xml`
-    ];
-    
-    console.log(`Checking ${possibleSitemapUrls.length} possible sitemap locations`);
-    
-    // Also check robots.txt
+  /**
+   * Parses robots.txt file if available
+   */
+  private async parseRobotsTxt(): Promise<void> {
     try {
       const robotsUrl = `${this.baseUrl}/robots.txt`;
-      console.log(`Checking robots.txt at ${robotsUrl}`);
-      
-      const robotsResponse = await axios.get(robotsUrl, {
-        headers: { 'User-Agent': this.userAgent },
-        timeout: this.requestTimeout,
-        validateStatus: status => status < 500 // Accept 404s without throwing
-      });
-      
-      if (robotsResponse.status === 200) {
-        const robotsText = robotsResponse.data;
-        console.log(`Found robots.txt, looking for Sitemap entries`);
-        
-        const sitemapMatches = robotsText.match(/Sitemap:\s*(https?:\/\/[^\s]+)/gi);
-        
-        if (sitemapMatches && sitemapMatches.length > 0) {
-          console.log(`Found ${sitemapMatches.length} sitemap entries in robots.txt`);
-          sitemapMatches.forEach(match => {
-            const sitemapUrl = match.replace(/Sitemap:\s*/i, '').trim();
-            possibleSitemapUrls.push(sitemapUrl);
-            console.log(`Added sitemap from robots.txt: ${sitemapUrl}`);
-          });
-        } else {
-          console.log(`No sitemap entries found in robots.txt`);
+      const response = await axios.get(robotsUrl, {
+        timeout: 5000,
+        headers: {
+          'User-Agent': this.getRandomUserAgent()
         }
-      } else {
-        console.log(`robots.txt not found (status ${robotsResponse.status})`);
-      }
-    } catch (error) {
-      console.warn('Не удалось получить robots.txt:', error);
-    }
-    
-    let sitemapsProcessed = 0;
-    let urlsAdded = 0;
-    
-    // Проверяем каждый возможный URL карты сайта
-    for (const sitemapUrl of possibleSitemapUrls) {
-      try {
-        console.log(`Проверка карты сайта: ${sitemapUrl}`);
-        const response = await axios.get(sitemapUrl, {
-          headers: { 'User-Agent': this.userAgent },
-          timeout: this.requestTimeout,
-          validateStatus: status => status < 500 // Accept 404s without throwing
-        });
-        
-        if (response.status === 200) {
-          console.log(`Найдена карта сайта: ${sitemapUrl} (${response.data.length} bytes)`);
-          sitemapsProcessed++;
+      }).catch(() => null);
+
+      if (response && response.status === 200) {
+        const lines = response.data.split('\n');
+        let currentUserAgent = '*';
+
+        for (const line of lines) {
+          const trimmedLine = line.trim();
           
-          // Извл��каем URL из карты сайта
-          const $ = cheerio.load(response.data, { xmlMode: true });
-          
-          // Проверяем, является ли это индексом карты сайта
-          const sitemapNodes = $('sitemapindex sitemap loc');
-          if (sitemapNodes.length > 0) {
-            console.log(`Обнаружен индекс карты сайта с ${sitemapNodes.length} подкартами`);
-            
-            // Обрабатываем каждую подкарту сайта
-            const subsitemapPromises = [];
-            sitemapNodes.each((_, element) => {
-              const subsitemapUrl = $(element).text().trim();
-              if (subsitemapUrl) {
-                console.log(`Found sub-sitemap: ${subsitemapUrl}`);
-                subsitemapPromises.push(this.processSitemap(subsitemapUrl));
-              }
-            });
-            
-            // Ждем завершения обработки всех подкарт
-            const subsitemapResults = await Promise.allSettled(subsitemapPromises);
-            
-            // Count successful results
-            const successCount = subsitemapResults.filter(r => r.status === 'fulfilled').length;
-            console.log(`Processed ${successCount} of ${subsitemapPromises.length} sub-sitemaps`);
-            
-            // Add up URLs found
-            for (const result of subsitemapResults) {
-              if (result.status === 'fulfilled') {
-                urlsAdded += result.value;
-              }
-            }
-          } else {
-            // Обрабатываем обычную карту сайта
-            const foundUrls = await this.processUrlsFromSitemap($);
-            urlsAdded += foundUrls;
-            console.log(`Извлечено ${foundUrls} URL из карты сайта ${sitemapUrl}`);
-          }
-        } else {
-          console.log(`Sitemap not found at ${sitemapUrl} (status ${response.status})`);
-        }
-      } catch (error) {
-        console.warn(`Ошибка при проверке карты сайта ${sitemapUrl}:`, error);
-      }
-    }
-    
-    console.log(`Sitemap processing complete: processed ${sitemapsProcessed} sitemaps, added ${urlsAdded} URLs to queue`);
-    
-    // If no sitemaps were found or processed, add some common paths to queue
-    if (urlsAdded === 0) {
-      console.log(`No sitemaps found, adding common paths to queue`);
-      const commonPaths = [
-        '/',
-        '/about',
-        '/contact',
-        '/products',
-        '/services',
-        '/blog',
-        '/catalog',
-        '/shop',
-        '/category',
-        '/news'
-      ];
-      
-      for (const path of commonPaths) {
-        const commonUrl = `${this.baseUrl}${path}`;
-        if (!this.visited.has(commonUrl) && !this.queue.some(q => q.url === commonUrl)) {
-          this.queue.push({ url: commonUrl, depth: 1 });
-          console.log(`Added common path to queue: ${commonUrl}`);
-          urlsAdded++;
-        }
-      }
-    }
-  }
-  
-  private async processSitemap(sitemapUrl: string): Promise<number> {
-    try {
-      console.log(`Обработка подкарты сайта: ${sitemapUrl}`);
-      const response = await axios.get(sitemapUrl, {
-        headers: { 'User-Agent': this.userAgent },
-        timeout: this.requestTimeout,
-        validateStatus: status => status < 500 // Accept 404s without throwing
-      });
-      
-      if (response.status === 200) {
-        const $ = cheerio.load(response.data, { xmlMode: true });
-        return await this.processUrlsFromSitemap($);
-      } else {
-        console.log(`Sub-sitemap not found at ${sitemapUrl} (status ${response.status})`);
-      }
-    } catch (error) {
-      console.warn(`Ошибка при обработке подкарты сайта ${sitemapUrl}:`, error);
-    }
-    
-    return 0;
-  }
-  
-  private async processUrlsFromSitemap($: cheerio.CheerioAPI): Promise<number> {
-    let urlCount = 0;
-    
-    // Try both URL formats commonly found in sitemaps
-    $('url > loc, url loc').each((_, element) => {
-      const url = $(element).text().trim();
-      if (url) {
-        // Отфильтровываем внешние домены
-        try {
-          const urlObj = new URL(url);
-          // Accept main domain or www.domain
-          if (urlObj.hostname === this.domain || 
-              urlObj.hostname === 'www.' + this.domain || 
-              this.domain === 'www.' + urlObj.hostname) {
-                
-            // Skip URL with certain extensions (images, PDFs, etc.)
-            if (!/\.(jpg|jpeg|png|gif|pdf|zip|doc|docx|xls|xlsx|csv|xml)$/i.test(url)) {
-              // Prioritize product and category pages
-              const isPriority = /\/(product|category|catalog|item)\//.test(url);
-              
-              // Add to the beginning of queue if priority
-              if (isPriority) {
-                this.queue.unshift({ url, depth: 1 });
-              } else {
-                this.queue.push({ url, depth: 1 });
-              }
-              urlCount++;
-              
-              // Print progress for large sitemaps
-              if (urlCount % 1000 === 0) {
-                console.log(`Processed ${urlCount} URLs from sitemap`);
-              }
+          if (trimmedLine.startsWith('User-agent:')) {
+            currentUserAgent = trimmedLine.substring(11).trim();
+          } else if (trimmedLine.startsWith('Disallow:') && 
+                    (currentUserAgent === '*' || currentUserAgent.includes('bot'))) {
+            const path = trimmedLine.substring(9).trim();
+            if (path) {
+              this.robotsTxtAllowed[path] = false;
             }
           }
-        } catch (error) {
-          console.warn(`Некорректный URL в карте сайта: ${url}`);
         }
       }
-    });
-    
-    return urlCount;
+    } catch (error) {
+      console.warn('Could not parse robots.txt:', error);
+    }
   }
 
-  protected async processUrl(url: string, depth: number): Promise<void> {
-    if (this.isCancelled || this.visited.has(url) || depth > this.options.maxDepth) {
+  /**
+   * Checks if a URL is allowed by robots.txt
+   */
+  private isAllowedByRobotsTxt(url: string): boolean {
+    try {
+      const urlObj = new URL(url);
+      if (urlObj.hostname !== this.domain) {
+        return false; // External URLs are not allowed in our crawl
+      }
+
+      const pathname = urlObj.pathname;
+      for (const path in this.robotsTxtAllowed) {
+        if (pathname.startsWith(path) && !this.robotsTxtAllowed[path]) {
+          return false;
+        }
+      }
+      
+      return true;
+    } catch (error) {
+      return false;
+    }
+  }
+
+  /**
+   * Processes a single URL
+   */
+  private async processSingleUrl(url: string, depth: number): Promise<void> {
+    if (this.isCancelled) {
       return;
     }
 
     try {
-      this.abortController = new AbortController();
-      const response = await axios.get(url, {
-        headers: { 'User-Agent': this.userAgent },
-        timeout: this.requestTimeout,
-        maxRedirects: 5,
-        signal: this.abortController.signal,
-        validateStatus: status => status >= 200 && status < 400 // Only accept 2xx and 3xx
-      });
+      // Skip if not allowed by robots.txt
+      if (!this.isAllowedByRobotsTxt(url)) {
+        return;
+      }
 
-      const $ = cheerio.load(response.data);
-      this.visited.add(url);
-
-      // Extract and process links with improved priority
-      const links = await this.processLinks($, url);
+      // Try to fetch the URL with retry logic
+      let response;
+      let retryCount = 0;
       
-      // Function to evaluate URL priority (lower number = higher priority)
-      const getPriority = (urlStr: string): number => {
-        // Fix: Convert string to URL object to access pathname
-        let urlObj: URL;
+      while (retryCount <= this.retryCount) {
         try {
-          urlObj = new URL(urlStr);
-        } catch (e) {
-          console.warn(`Invalid URL for priority evaluation: ${urlStr}`);
-          return 4; // Low priority for invalid URLs
-        }
-        
-        // Keywords for product pages
-        const productKeywords = [
-          '/product/', '/item/', '/catalog/', '/collection/', 
-          '/shop/', '/goods/', '/category/', '/produkt/', 
-          '/tovar/', '/p/', '/i/', '/products/'
-        ];
-        
-        // Check for keywords in URL
-        for (const keyword of productKeywords) {
-          if (urlObj.pathname.includes(keyword)) {
-            return 1; // High priority
+          response = await axios.get(url, {
+            headers: {
+              'User-Agent': this.getRandomUserAgent(),
+              'Accept': 'text/html,application/xhtml+xml',
+              'Accept-Language': 'en-US,en;q=0.9,ru;q=0.8'
+            },
+            timeout: 10000,
+            maxRedirects: 5
+          });
+          break; // Success, exit retry loop
+        } catch (error) {
+          retryCount++;
+          if (retryCount > this.retryCount) {
+            throw error;
           }
+          
+          // Exponential backoff
+          await new Promise(resolve => setTimeout(resolve, 1000 * retryCount));
         }
-        
-        // Category or "important" pages
-        if (urlObj.pathname.includes('/category/') || 
-            urlObj.pathname.includes('/blog/') || 
-            urlObj.pathname.includes('/news/') ||
-            urlObj.pathname.split('/').length <= 3) { // Shallow URLs are important
-          return 2; // Medium priority
-        }
-        
-        // Check for file extensions (not files)
-        if (!/\.(jpg|jpeg|png|gif|pdf|zip|doc|xls|csv|xml)$/i.test(urlObj.pathname)) {
-          return 3; // Normal priority
-        }
-        
-        return 4; // Low priority
-      };
+      }
+
+      if (!response) {
+        return;
+      }
+
+      // Only process HTML content
+      const contentType = response.headers['content-type'] || '';
+      if (!contentType.includes('text/html')) {
+        return;
+      }
+
+      // Extract links from the page
+      const links = this.extractLinks(response.data, url);
       
-      // Sort internal links by priority
-      const sortedLinks = [...links.internal].sort((a, b) => {
-        return getPriority(a) - getPriority(b);
-      });
-      
-      // Add internal links to queue with priority
+      // Filter by priority
+      const sortedLinks = this.sortLinksByPriority(links);
+
+      // Process the sorted links
       for (const link of sortedLinks) {
-        if (!this.visited.has(link)) {
-          this.queue.push({ url: link, depth: depth + 1 });
+        try {
+          const normalizedLink = normalizeUrl(link);
+          if (this.shouldCrawl(normalizedLink)) {
+            this.queue.push({ url: normalizedLink, depth: depth + 1 });
+          }
+        } catch (error) {
+          // Invalid link, skip
         }
       }
-
-      // Report progress
-      if (this.options.onProgress) {
-        this.options.onProgress({
-          pagesScanned: this.visited.size,
-          currentUrl: url,
-          totalUrls: this.queue.length + this.visited.size
-        });
-      }
-
-      // Extra debug logging for every 100 pages
-      if (this.debugMode && this.visited.size % 100 === 0) {
-        console.log(`Processed ${this.visited.size} pages, ${this.queue.length} URLs in queue`);
-      }
-
     } catch (error) {
-      // Skip but log error
       if (this.debugMode) {
-        console.error(`Error scanning ${url}:`, error instanceof Error ? error.message : 'Unknown error');
+        console.error(`Error processing ${url}:`, error);
       }
     }
   }
 
-  private async processLinks($: cheerio.CheerioAPI, currentUrl: string) {
-    const links = {
-      internal: [] as string[],
-      external: [] as string[],
-      broken: [] as string[]
-    };
-
-    const currentUrlObj = new URL(currentUrl);
-    const seenUrls = new Set<string>(); // To avoid duplicates
-
-    $('a').each((_, element) => {
-      const href = $(element).attr('href');
-      if (!href) return;
-
+  /**
+   * Sorts links by priority for more efficient crawling
+   * This helps find important pages earlier in the crawl
+   */
+  private sortLinksByPriority(links: string[]): string[] {
+    return links.sort((a, b) => {
+      let aPriority = 0;
+      let bPriority = 0;
+      
       try {
-        const absoluteUrl = new URL(href, currentUrl);
+        const aUrl = new URL(a);
+        const bUrl = new URL(b);
         
-        // Skip URLs with anchors on current page
-        if (absoluteUrl.href === currentUrl + '#' || absoluteUrl.href === currentUrl) {
-          return;
-        }
+        // Higher priority for URLs with fewer path segments
+        const aPathDepth = aUrl.pathname.split('/').filter(Boolean).length;
+        const bPathDepth = bUrl.pathname.split('/').filter(Boolean).length;
         
-        // Skip unwanted URLs (files, admin pages, etc)
-        if (
-          // anchors - only skip if they refer to another fragment of the current page
-          (absoluteUrl.hash && absoluteUrl.href.split('#')[0] === currentUrl) || 
-          /\.(pdf|zip|rar|jpg|jpeg|png|gif|doc|docx|xls|xlsx|csv)$/i.test(absoluteUrl.pathname) || // files
-          absoluteUrl.pathname.includes('/wp-admin/') || // WordPress admin
-          absoluteUrl.pathname.includes('/wp-login.php') || // WordPress login
-          absoluteUrl.search.includes('utm_') || // UTM parameters
-          /\?(?:fbclid|gclid|msclkid|yclid)=/.test(absoluteUrl.search) // tracking parameters
-        ) {
-          return;
-        }
+        aPriority -= aPathDepth;
+        bPriority -= bPathDepth;
         
-        const urlString = absoluteUrl.href;
+        // Higher priority for URLs without query params
+        if (!aUrl.search) aPriority += 2;
+        if (!bUrl.search) bPriority += 2;
         
-        // Normalize URL, removing trailing slash for comparison
-        const normalizedUrl = urlString.endsWith('/') ? urlString.slice(0, -1) : urlString;
+        // Higher priority for URLs that look like product pages
+        if (aUrl.pathname.includes('product') || aUrl.pathname.includes('item')) aPriority += 3;
+        if (bUrl.pathname.includes('product') || bUrl.pathname.includes('item')) bPriority += 3;
         
-        if (seenUrls.has(normalizedUrl)) return;
-        seenUrls.add(normalizedUrl);
+        // Higher priority for category pages
+        if (aUrl.pathname.includes('category') || aUrl.pathname.includes('catalog')) aPriority += 2;
+        if (bUrl.pathname.includes('category') || bUrl.pathname.includes('catalog')) bPriority += 2;
         
-        const isSameDomain = absoluteUrl.hostname === this.domain || 
-                           absoluteUrl.hostname === 'www.' + this.domain ||
-                           this.domain === 'www.' + absoluteUrl.hostname;
-
-        if (isSameDomain) {
-          links.internal.push(urlString);
-        } else {
-          links.external.push(urlString);
-        }
+        return bPriority - aPriority;
       } catch (error) {
-        // Skip invalid URLs
+        return 0;
       }
     });
+  }
 
-    // Also look for canonical URLs if available
-    const canonicalUrl = $('link[rel="canonical"]').attr('href');
-    if (canonicalUrl && !seenUrls.has(canonicalUrl)) {
-      try {
-        const absoluteCanonical = new URL(canonicalUrl, currentUrl).href;
-        const isSameDomain = new URL(absoluteCanonical).hostname === this.domain;
-        
-        if (isSameDomain && !seenUrls.has(absoluteCanonical)) {
-          links.internal.push(absoluteCanonical);
-          seenUrls.add(absoluteCanonical);
+  /**
+   * Extracts links from HTML content
+   */
+  private extractLinks(html: string, baseUrl: string): string[] {
+    const links: string[] = [];
+    const $ = cheerio.load(html);
+    
+    $('a').each((_, element) => {
+      const href = $(element).attr('href');
+      if (href) {
+        try {
+          // Resolve relative URLs
+          const resolvedUrl = new URL(href, baseUrl).href;
+          links.push(resolvedUrl);
+        } catch (error) {
+          // Skip invalid URLs
         }
-      } catch (error) {
-        // Skip invalid canonical URLs
       }
-    }
-
+    });
+    
     return links;
+  }
+
+  /**
+   * Determines whether a URL should be crawled
+   */
+  private shouldCrawl(url: string): boolean {
+    try {
+      const urlObj = new URL(url);
+      
+      // Skip non-http/https URLs
+      if (urlObj.protocol !== 'http:' && urlObj.protocol !== 'https:') {
+        return false;
+      }
+      
+      // Only crawl within the same domain
+      if (urlObj.hostname !== this.domain) {
+        return false;
+      }
+      
+      // Skip URLs with certain file extensions
+      const fileExtensions = /\.(jpg|jpeg|png|gif|css|js|svg|pdf|zip|rar|doc|xls)$/i;
+      if (fileExtensions.test(urlObj.pathname)) {
+        return false;
+      }
+      
+      // Skip admin/backend URLs
+      if (urlObj.pathname.includes('/wp-admin/') || 
+          urlObj.pathname.includes('/admin/') ||
+          urlObj.pathname.includes('/wp-login.php')) {
+        return false;
+      }
+      
+      return true;
+    } catch (error) {
+      return false;
+    }
   }
 }
