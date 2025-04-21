@@ -3,7 +3,7 @@ import React from "react";
 import { Helmet } from 'react-helmet-async';
 import AdminMonitoringContainer from "@/components/admin/monitoring/AdminMonitoringContainer";
 import { Card, CardContent } from "@/components/ui/card";
-import { Gauge, AlertTriangle, Monitor, BarChart2, Info } from "lucide-react";
+import { Gauge, AlertTriangle, Monitor } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 
@@ -13,8 +13,8 @@ const AdminMonitoringPage: React.FC = () => (
       <title>Мониторинг | Админ панель</title>
     </Helmet>
     <div className="container mx-auto px-4 md:px-8 py-10 max-w-6xl">
-      <div className="mb-8 px-8 py-10 rounded-3xl bg-gradient-to-br from-purple-600/20 via-indigo-500/20 to-blue-600/20 shadow-2xl flex flex-col md:flex-row items-center gap-8 border border-primary/20 animate-fade-in">
-        <div className="flex-shrink-0 bg-primary/20 text-primary rounded-full p-6 glass-morphism shadow-lg">
+      <div className="mb-8 px-8 py-10 rounded-3xl bg-gradient-to-br from-[#4c2e91] via-[#6a4bc7] to-[#0ea5e9] border border-primary/30 shadow-2xl flex flex-col md:flex-row items-center gap-8 animate-fade-in">
+        <div className="flex-shrink-0 bg-primary/30 text-primary rounded-full p-6 glass-morphism shadow-lg">
           <Monitor className="h-12 w-12" />
         </div>
         <div className="flex-1 min-w-[210px]">
@@ -24,31 +24,31 @@ const AdminMonitoringPage: React.FC = () => (
           </p>
           <div className="flex flex-wrap gap-3 mt-6">
             <Link to="/admin">
-              <Button variant="outline" className="hover-scale">На главную</Button>
+              <Button variant="outline" className="hover-scale border-primary text-primary hover:bg-primary/10">На главную</Button>
             </Link>
             <Link to="/admin/settings">
-              <Button variant="outline" className="hover-scale">Настройки</Button>
+              <Button variant="outline" className="hover-scale border-primary text-primary hover:bg-primary/10">Настройки</Button>
             </Link>
             <Link to="/admin/users">
-              <Button variant="outline" className="hover-scale">Пользователи</Button>
+              <Button variant="outline" className="hover-scale border-primary text-primary hover:bg-primary/10">Пользователи</Button>
             </Link>
             <Link to="/admin/analytics">
-              <Button variant="outline" className="hover-scale">Аналитика</Button>
+              <Button variant="outline" className="hover-scale border-primary text-primary hover:bg-primary/10">Аналитика</Button>
             </Link>
             <Link to="/admin/website-analyzer">
-              <Button variant="outline" className="hover-scale">Анализатор сайтов</Button>
+              <Button variant="outline" className="hover-scale border-primary text-primary hover:bg-primary/10">Анализатор сайтов</Button>
             </Link>
           </div>
         </div>
-        <div className="flex items-center gap-3 bg-orange-50/80 text-orange-700 rounded-xl border border-orange-200 shadow px-5 py-3 mt-6 md:mt-0">
+        <div className="flex items-center gap-3 bg-orange-900/50 text-orange-400 rounded-xl border border-orange-700 shadow-md px-5 py-3 mt-6 md:mt-0">
           <AlertTriangle className="h-5 w-5 mr-1" />
           <div className="text-sm">
-            <div className="font-medium">Высокая нагрузка API</div>
-            <div className="text-xs text-orange-500">543 запр/мин</div>
+            <div className="font-semibold">Высокая нагрузка API</div>
+            <div className="text-xs text-orange-300">543 запр/мин</div>
           </div>
         </div>
       </div>
-      <Card className="bg-gradient-to-br from-purple-600/5 via-indigo-500/5 to-blue-600/5 border-0 shadow-2xl">
+      <Card className="bg-gradient-to-br from-[#3A238A] via-[#5B47BA] to-[#178CD8] border-0 shadow-2xl glass-morphism">
         <CardContent className="p-0">
           <AdminMonitoringContainer />
         </CardContent>
@@ -64,9 +64,9 @@ const AdminMonitoringPage: React.FC = () => (
           <li>Детальный журнал ошибок</li>
           <li>Статусные панели по API и серверу</li>
         </ul>
-        <div className="flex items-center gap-1 mt-3">
-          <Info className="h-4 w-4 text-blue-400" />
-          <span>Для расширенного анализа — используйте <Link to="/admin/analytics" className="underline text-blue-800">раздел аналитики</Link>.</span>
+        <div className="flex items-center gap-1 mt-3 text-primary/80">
+          <Gauge className="h-4 w-4" />
+          <span>Для расширенного анализа — используйте <Link to="/admin/analytics" className="underline hover:text-primary">раздел аналитики</Link>.</span>
         </div>
       </div>
     </div>
