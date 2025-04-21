@@ -1,4 +1,3 @@
-
 import jsPDF from 'jspdf';
 import { addQRCodeToPage } from './helpers/qrcode';
 import { addCoverPage } from './helpers/coverPage';
