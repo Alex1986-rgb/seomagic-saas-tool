@@ -40,11 +40,15 @@ const AdminMonitoringContainer: React.FC = () => (
       memoryUsageData={memoryUsageData}
       trafficData={trafficData}
     />
-    <div className="mb-8">
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <SystemStatusGrid systemStatus={systemStatus} />
-      </div>
+    
+    <div className="bg-gradient-to-br from-[#232539]/90 to-[#1E1B34]/95 border border-primary/15 rounded-2xl p-6 mb-8 shadow-lg">
+      <h2 className="text-xl font-bold mb-5 text-white flex items-center gap-2">
+        <Server className="h-5 w-5 text-primary" />
+        Статус системных компонентов
+      </h2>
+      <SystemStatusGrid systemStatus={systemStatus} />
     </div>
+    
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
       <EventLog recentEvents={recentEvents} />
       <ErrorDistributionChart errorDistributionData={errorDistributionData} />
