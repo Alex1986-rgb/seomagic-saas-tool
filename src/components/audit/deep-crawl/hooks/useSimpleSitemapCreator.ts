@@ -47,8 +47,8 @@ export function useSimpleSitemapCreator() {
       const scannedUrls = await sitemapCreator.crawl(normalizedUrl, progressCallback);
       
       if (scannedUrls.length > 0) {
-        // Generate XML sitemap
-        const sitemapXml = sitemapCreator.generateSitemapXml(scannedUrls);
+        // Generate XML sitemap - fix method name
+        const sitemapXml = sitemapCreator.generateSitemap(scannedUrls);
         setSitemap(sitemapXml);
         setUrls(scannedUrls);
         

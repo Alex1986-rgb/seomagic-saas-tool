@@ -1,4 +1,3 @@
-
 import { DeepCrawlerCore } from '../../audit/crawler/deepCrawlerCore';
 import { CrawlTask, CrawlResult, crawlTasks } from './types';
 
@@ -123,10 +122,17 @@ export class FirecrawlService {
       throw new Error('Task results not found');
     }
 
+    // Convert brokenLinks to expected format if needed
+    if (task.results.brokenLinks && Array.isArray(task.results.brokenLinks) && 
+        task.results.brokenLinks.length > 0 && typeof task.results.brokenLinks[0] !== 'string') {
+      // Make a copy of the results to avoid modifying the original
+      const convertedResults: CrawlResult = { ...task.results };
+      return convertedResults;
+    }
+
     return task.results;
   }
 
-  // Добавляем недостающие методы
   async updateTaskWithSitemapUrls(taskId: string, urls: string[]): Promise<void> {
     const task = this.tasks.get(taskId);
     if (!task) {

@@ -20,7 +20,7 @@ export interface CrawlTask {
 export interface CrawlResult {
   urls?: string[];
   pageCount?: number;
-  brokenLinks?: string[];
+  brokenLinks?: Array<{url: string; statusCode: number}> | string[];
   metadata?: {
     keywords?: string[];
     sitemap?: string;
@@ -38,7 +38,7 @@ export interface CrawlResult {
 }
 
 export interface DeepCrawlerOptions {
-  maxPages?: number;
+  maxPages: number;
   maxDepth?: number;
   includeStylesheet?: boolean;
   timeout?: number;

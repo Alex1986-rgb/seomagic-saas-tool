@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -97,7 +96,7 @@ const WebsiteAnalyzerPage: React.FC = () => {
                 toast({
                   title: "Сканирование завершено",
                   description: `Найдено ${pagesScanned} страниц. Sitemap не был создан.`,
-                  variant: "warning"
+                  variant: "destructive"
                 });
               }
             } catch (e) {

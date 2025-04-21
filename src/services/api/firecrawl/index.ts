@@ -1,4 +1,3 @@
-
 import { DeepCrawlerCore } from '../../audit/crawler/deepCrawlerCore';
 import { CrawlTask, CrawlResult } from './types';
 
@@ -18,7 +17,7 @@ export class FirecrawlService {
    * @param maxPages Максимальное количество страниц для сканирования (по умолчанию 15000000)
    * @returns ID задачи сканирования
    */
-  async startCrawl(url: string, maxPages: number = 15000000): Promise<string> {
+  async startCrawl(url: string, maxPages: number = 15000000): Promise<CrawlTask> {
     try {
       const taskId = crypto.randomUUID();
       const normalizedUrl = url.startsWith('http') ? url : `https://${url}`;
@@ -58,7 +57,7 @@ export class FirecrawlService {
       // Start crawling in background
       this.processCrawl(taskId);
 
-      return taskId;
+      return task;
     } catch (error) {
       console.error("Error starting crawl:", error);
       throw error;

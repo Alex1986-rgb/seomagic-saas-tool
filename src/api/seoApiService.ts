@@ -2,6 +2,7 @@
 import { firecrawlService } from '../services/api/firecrawl';
 import { v4 as uuidv4 } from 'uuid';
 import { SitemapExtractor } from '../services/audit/crawler/sitemapExtractor';
+import { CrawlTask } from '../services/api/firecrawl/types';
 
 export type ScanDetails = {
   current_url: string;
@@ -22,7 +23,7 @@ class SeoApiService {
   async startCrawl(url: string, maxPages: number = 500000) {
     try {
       // Сначала запускаем процесс получения/создания sitemap
-      const task = await firecrawlService.startCrawl(url);
+      const task: CrawlTask = await firecrawlService.startCrawl(url, maxPages);
       
       // Попытка получить sitemap.xml если он существует
       try {

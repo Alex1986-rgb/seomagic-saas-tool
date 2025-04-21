@@ -346,7 +346,7 @@ function calculateOptimizationScore(pageCount: number): number {
 function generateImprovementAreas(pageCount: number): string[] {
   const areas = [
     'Оптимизация метатегов',
-    'Улучшение структуры з��головков',
+    'Улучшение структуры заголовков',
     'Исправление дублирующегося контента',
     'Ускорение загрузки страниц',
     'Оптимизация мобильной версии',
