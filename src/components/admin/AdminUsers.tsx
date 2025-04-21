@@ -5,8 +5,6 @@ import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import UserStatsCards from "./UserStatsCards";
-import UserCharts from "./UserCharts";
 
 const mockUsers = [
   {
@@ -88,9 +86,6 @@ const AdminUsers: React.FC = () => {
 
   return (
     <div>
-      {/* ... убираем дублирующий вывод UserStatsCards, UserCharts ... */}
-
-      {/* Фильтры / Поиск / Добавить */}
       <div className="flex flex-col md:flex-row gap-6 mb-8 items-end">
         <div className="flex-1">
           <div className="relative">

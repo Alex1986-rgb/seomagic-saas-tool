@@ -29,23 +29,13 @@ const Layout: React.FC<LayoutProps> = ({
   const shouldHideNavbar = hideNavbar || isAdminRoute;
   const shouldHideFooter = hideFooter || isAdminRoute;
 
-  // Debug log to track component mounting
-  useEffect(() => {
-    console.log('Layout mounted, path:', location.pathname);
-    console.log('Navbar visible:', !shouldHideNavbar);
-    console.log('Footer visible:', !shouldHideFooter);
-    return () => {
-      console.log('Layout unmounted');
-    };
-  }, [location.pathname, shouldHideNavbar, shouldHideFooter]);
-
   return (
     <div className={cn("flex flex-col min-h-screen relative", className)}>
       <div className="fixed inset-0 z-[-1]">
         <StarryBackground />
       </div>
       {!shouldHideNavbar && <Navbar />}
-      <main className="flex-grow relative z-10">{children}</main>
+      <main className="flex-grow relative z-10 w-full">{children}</main>
       {!shouldHideFooter && <Footer />}
     </div>
   );

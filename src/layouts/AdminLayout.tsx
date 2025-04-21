@@ -16,7 +16,7 @@ const AdminLayout: React.FC = () => {
         <title>Панель администратора | SeoMarket</title>
       </Helmet>
       
-      <div className="flex min-h-screen">
+      <div className="flex h-screen overflow-hidden">
         {/* Мобильная кнопка переключения бокового меню */}
         <div className="md:hidden fixed top-20 left-4 z-50">
           <Button 
@@ -41,13 +41,15 @@ const AdminLayout: React.FC = () => {
         </div>
         
         {/* Боковое меню для десктопа */}
-        <div className={`hidden md:block ${sidebarOpen ? 'w-64' : 'w-0'} transition-all duration-300`}>
+        <div className={`hidden md:block ${sidebarOpen ? 'w-64' : 'w-0'} transition-all duration-300 flex-shrink-0`}>
           <AdminSidebar />
         </div>
         
         {/* Основной контент */}
-        <div className="flex-1 pt-20">
-          <Outlet />
+        <div className="flex-1 overflow-y-auto">
+          <div className="py-20 px-4 md:px-6">
+            <Outlet />
+          </div>
         </div>
       </div>
     </Layout>
