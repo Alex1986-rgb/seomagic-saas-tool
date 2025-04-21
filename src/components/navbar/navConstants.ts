@@ -30,3 +30,7 @@ export const CLIENT_ITEMS = [
   { label: "Отчеты", href: "/reports" },
   { label: "Настройки", href: "/settings" },
 ];
+
+export const ADMIN_ITEMS = [
+  { label: "Панель администратора", href: "/admin" },
+];
