@@ -11,16 +11,24 @@ const stats = [
 ];
 
 const UserStatsCards: React.FC = () => (
-  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 mb-8">
     {stats.map(s => (
-      <Card key={s.label} className="shadow hover:shadow-md transition bg-gradient-to-br from-[#191B22]/90 via-[#23263B]/70 to-[#221F26]/90 border-0 rounded-xl">
-        <CardContent className="p-4 flex flex-col gap-2">
-          <div className="flex gap-3 items-center">
+      <Card
+        key={s.label}
+        className="shadow-lg hover:shadow-xl transition bg-gradient-to-br from-[#191B22]/95 via-[#23263B]/85 to-[#221F26]/95 border-0 rounded-2xl p-1 hover:scale-[1.03] duration-150"
+      >
+        <CardContent className="p-6 flex flex-col gap-4">
+          <div className="flex gap-4 items-center">
             {s.icon}
-            <div className="text-2xl font-bold text-white drop-shadow">{s.value}</div>
+            <div className="text-3xl font-bold text-white drop-shadow">{s.value}</div>
           </div>
-          <div className="text-xs text-[#b2b6cf]">
-            {s.label} {s.sub && <span className={`ml-2 ${s.sub.startsWith("+") ? "text-[#14CC8C]" : ""}`}>{s.sub}</span>}
+          <div className="text-sm text-[#ccccdd] font-medium tracking-wide">
+            {s.label}
+            {s.sub && (
+              <span className={`ml-3 rounded-full px-2 py-0.5 ${s.sub.startsWith("+") ? "bg-[#223d2c]/80 text-[#14CC8C]" : ""} font-semibold text-xs align-middle`}>
+                {s.sub}
+              </span>
+            )}
           </div>
         </CardContent>
       </Card>

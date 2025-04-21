@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Check, ChevronDown, Edit, Trash, UserRound, Search } from 'lucide-react';
 import { Input } from "@/components/ui/input";
@@ -9,7 +8,6 @@ import { Badge } from "@/components/ui/badge";
 import UserStatsCards from "./UserStatsCards";
 import UserCharts from "./UserCharts";
 
-// Мок-данные пользователей
 const mockUsers = [
   {
     id: '1',
@@ -68,7 +66,6 @@ const AdminUsers: React.FC = () => {
   const [filterPlan, setFilterPlan] = useState('all');
   const [filterRole, setFilterRole] = useState('all');
 
-  // Фильтрация пользователей
   const filteredUsers = mockUsers.filter(user => {
     const matchesSearch = 
       user.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
@@ -94,25 +91,25 @@ const AdminUsers: React.FC = () => {
       {/* ... убираем дублирующий вывод UserStatsCards, UserCharts ... */}
 
       {/* Фильтры / Поиск / Добавить */}
-      <div className="flex flex-col md:flex-row gap-4 mb-6 items-end">
+      <div className="flex flex-col md:flex-row gap-6 mb-8 items-end">
         <div className="flex-1">
           <div className="relative">
-            <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+            <Search className="absolute left-3 top-3 h-4 w-4 text-[#8B5CF6]" />
             <Input
               placeholder="Поиск пользователей..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 bg-[#23263B]/80 border border-[#222644] placeholder:text-[#b2b6cf] text-white focus:border-[#8B5CF6]/60 transition-all"
+              className="pl-10 bg-[#191B22] border border-[#23263B] placeholder:text-[#b2b6cf] text-white focus:border-[#8B5CF6]/60 rounded-lg shadow-md"
             />
           </div>
         </div>
         
-        <div className="flex gap-2">
+        <div className="flex gap-3 flex-wrap">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button 
                 variant="outline" 
-                className="flex items-center bg-[#23263B]/80 text-white border border-[#383a50]/60 hover:bg-[#1A1F2C]/90 transition-all"
+                className="flex items-center bg-[#23263B] text-[#b2b6cf] border-none hover:bg-[#28213a] hover:text-[#8B5CF6] transition-all rounded-lg px-4 py-2"
               >
                 Тариф: {filterPlan === 'all' ? 'Все' : filterPlan}
                 <ChevronDown className="h-4 w-4 ml-2" />
@@ -142,7 +139,7 @@ const AdminUsers: React.FC = () => {
             <DropdownMenuTrigger asChild>
               <Button 
                 variant="outline" 
-                className="flex items-center bg-[#23263B]/80 text-white border border-[#383a50]/60 hover:bg-[#1A1F2C]/90 transition-all"
+                className="flex items-center bg-[#23263B] text-[#b2b6cf] border-none hover:bg-[#28213a] hover:text-[#36CFFF] transition-all rounded-lg px-4 py-2"
               >
                 Роль: {filterRole === 'all' ? 'Все' : filterRole}
                 <ChevronDown className="h-4 w-4 ml-2" />
@@ -164,29 +161,29 @@ const AdminUsers: React.FC = () => {
             </DropdownMenuContent>
           </DropdownMenu>
           
-          <Button className="whitespace-nowrap bg-gradient-to-r from-[#8B5CF6] to-[#0EA5E9] text-white shadow-lg border-none hover:scale-[1.04] transition-transform duration-150">
+          <Button className="whitespace-nowrap bg-gradient-to-r from-[#8B5CF6] to-[#0EA5E9] text-white shadow-lg border-none hover:scale-[1.04] transition-transform duration-150 rounded-lg px-6 py-2">
             Добавить пользователя
           </Button>
         </div>
       </div>
       
-      <div className="overflow-x-auto">
+      <div className="overflow-x-auto rounded-2xl bg-[#191B22] border border-[#23263B]/40 shadow-xl">
         <table className="w-full rounded-2xl overflow-hidden">
           <thead>
             <tr className="border-b border-[#28213a] bg-gradient-to-r from-[#23263B]/90 to-[#1A1F2C]/95">
-              <th className="text-left py-3 px-4 font-medium text-[#8B5CF6]">Пользователь</th>
-              <th className="text-left py-3 px-4 font-medium text-[#36CFFF]">Тариф</th>
-              <th className="text-left py-3 px-4 font-medium text-[#FF81C0]">Роль</th>
-              <th className="text-left py-3 px-4 font-medium text-[#F6C778]">Аудитов</th>
-              <th className="text-left py-3 px-4 font-medium text-[#82FFD7]">Дата регистрации</th>
-              <th className="text-left py-3 px-4 font-medium text-white">Действия</th>
+              <th className="text-left py-4 px-5 font-bold text-lg text-gradient bg-gradient-to-r from-[#9b87f5] via-[#8B5CF6] to-[#0EA5E9] bg-clip-text text-transparent">Пользователь</th>
+              <th className="text-left py-4 px-5 font-bold text-lg text-[#36CFFF]">Тариф</th>
+              <th className="text-left py-4 px-5 font-bold text-lg text-[#FF81C0]">Роль</th>
+              <th className="text-left py-4 px-5 font-bold text-lg text-[#F6C778]">Аудитов</th>
+              <th className="text-left py-4 px-5 font-bold text-lg text-[#82FFD7]">Дата регистрации</th>
+              <th className="text-left py-4 px-5 font-bold text-lg text-white">Действия</th>
             </tr>
           </thead>
           <tbody className="bg-[#191B22]/95">
             {filteredUsers.map(user => (
-              <tr key={user.id} className="border-b border-[#23263B]/60 hover:bg-[#23263B]/60 transition-colors">
-                <td className="py-4 px-4">
-                  <div className="flex items-center gap-3">
+              <tr key={user.id} className="border-b border-[#23263B]/60 hover:bg-[#23263B]/80 transition-colors duration-100">
+                <td className="py-5 px-5">
+                  <div className="flex items-center gap-4">
                     <Avatar>
                       <AvatarImage src={user.avatar} />
                       <AvatarFallback className="bg-[#23263B] text-[#8B5CF6]">
@@ -194,33 +191,33 @@ const AdminUsers: React.FC = () => {
                       </AvatarFallback>
                     </Avatar>
                     <div>
-                      <div className="font-medium text-white">{user.name}</div>
+                      <div className="font-bold text-white">{user.name}</div>
                       <div className="text-xs text-[#b2b6cf]">{user.email}</div>
                     </div>
                   </div>
                 </td>
-                <td className="py-4 px-4">
+                <td className="py-5 px-5">
                   <Badge className={getPlanColor(user.plan) + " rounded text-xs px-2 py-1"}>
                     {user.plan === 'free' && 'Бесплатный'}
                     {user.plan === 'basic' && 'Базовый'}
                     {user.plan === 'pro' && 'Про'}
                   </Badge>
                 </td>
-                <td className="py-4 px-4">
+                <td className="py-5 px-5">
                   <Badge variant={user.role === 'admin' ? 'destructive' : 'secondary'} className={user.role === 'admin' ? 'bg-[#FF3355]/80 text-white border-none' : 'bg-[#191B22]/80 text-[#36CFFF] border border-[#36CFFF]/20 text-xs'}>
                     {user.role === 'admin' ? 'Администратор' : 'Пользователь'}
                   </Badge>
                 </td>
-                <td className="py-4 px-4 text-[#DED6F6]">{user.audits}</td>
-                <td className="py-4 px-4 text-[#bddfff]">
+                <td className="py-5 px-5 text-[#DED6F6] text-base">{user.audits}</td>
+                <td className="py-5 px-5 text-[#bddfff] text-base">
                   {new Date(user.joined).toLocaleDateString('ru-RU')}
                 </td>
-                <td className="py-4 px-4">
+                <td className="py-5 px-5">
                   <div className="flex gap-2">
-                    <Button variant="ghost" size="sm" className="bg-[#23263B] hover:bg-[#2d2e3b] text-[#8B5CF6]">
+                    <Button variant="ghost" size="sm" className="bg-[#23263B] hover:bg-[#2d2e3b] text-[#8B5CF6] rounded-md">
                       <Edit className="h-4 w-4" />
                     </Button>
-                    <Button variant="ghost" size="sm" className="bg-[#23263B] hover:bg-[#2d2e3b] text-[#F97316]">
+                    <Button variant="ghost" size="sm" className="bg-[#23263B] hover:bg-[#2d2e3b] text-[#F97316] rounded-md">
                       <Trash className="h-4 w-4" />
                     </Button>
                   </div>

@@ -36,33 +36,37 @@ const activeUsersData = [
 
 const COLORS = ['#8B5CF6', '#36CFFF', '#14CC8C', '#FFBB28'];
 
+const darkShadow = "0 6px 32px 0 rgba(34,33,67,0.22)";
+
 const UserCharts: React.FC = () => (
-  <div className="grid grid-cols-1 xl:grid-cols-3 gap-8 my-6">
+  <div className="grid grid-cols-1 xl:grid-cols-3 gap-10 my-10">
     {/* Линейный график по регистрациям */}
-    <div className="h-60 rounded-lg shadow-md p-4 bg-gradient-to-br from-[#23263B]/80 via-[#191B22]/95 to-[#221F26]/90 border border-[#23263B]/40">
-      <div className="font-semibold mb-2 text-md text-white">Регистрации по месяцам</div>
-      <ResponsiveContainer width="100%" height="100%">
+    <div className="h-64 rounded-2xl shadow-xl p-6 bg-gradient-to-br from-[#221F26]/95 via-[#23263B]/95 to-[#191B22]/90 border-none" style={{ boxShadow: darkShadow }}>
+      <div className="font-semibold text-lg mb-4 text-gradient bg-gradient-to-r from-[#9b87f5] via-[#8B5CF6] to-[#0EA5E9] bg-clip-text text-transparent">Регистрации по месяцам</div>
+      <ResponsiveContainer width="100%" height="85%">
         <LineChart data={registrationData}>
           <XAxis dataKey="month" stroke="#b2b6cf" />
           <YAxis stroke="#b2b6cf" />
-          <Tooltip contentStyle={{ background: '#23263B', border: 'none', color: '#fff' }} />
+          <Tooltip contentStyle={{ background: '#221F26', border: 'none', color: '#fff' }} />
           <Legend />
-          <Line type="monotone" dataKey="count" stroke="#8B5CF6" strokeWidth={2} name="Регистрации" />
+          <Line type="monotone" dataKey="count" stroke="#8B5CF6" strokeWidth={3} name="Регистрации" dot={{ r: 4, stroke: "#fff", strokeWidth: 1 }} />
         </LineChart>
       </ResponsiveContainer>
     </div>
 
     {/* Круговая диаграмма по типам пользователей */}
-    <div className="h-60 rounded-lg shadow-md p-4 bg-gradient-to-br from-[#191B22]/90 via-[#23263B]/70 to-[#221F26]/85 border border-[#23263B]/40">
-      <div className="font-semibold mb-2 text-md text-white">Распределение пользователей по ролям</div>
-      <ResponsiveContainer width="100%" height="100%">
+    <div className="h-64 rounded-2xl shadow-xl p-6 bg-gradient-to-br from-[#23263B]/95 via-[#191B22]/90 to-[#28213a]/95 border-none" style={{ boxShadow: darkShadow }}>
+      <div className="font-semibold text-lg mb-4 text-gradient bg-gradient-to-r from-[#8B5CF6] via-[#36CFFF] to-[#14CC8C] bg-clip-text text-transparent">
+        Распределение пользователей по ролям
+      </div>
+      <ResponsiveContainer width="100%" height="85%">
         <PieChart>
           <Pie
             data={userTypeData}
             cx="50%"
             cy="50%"
             labelLine={false}
-            outerRadius={70}
+            outerRadius={75}
             fill="#8B5CF6"
             dataKey="value"
             label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
@@ -78,16 +82,18 @@ const UserCharts: React.FC = () => (
     </div>
 
     {/* Столбчатый график активности */}
-    <div className="h-60 rounded-lg shadow-md p-4 bg-gradient-to-br from-[#23263B]/80 via-[#191B22]/95 to-[#221F26]/90 border border-[#23263B]/40">
-      <div className="font-semibold mb-2 text-md text-white">Активные пользователи по дням недели</div>
-      <ResponsiveContainer width="100%" height="100%">
+    <div className="h-64 rounded-2xl shadow-xl p-6 bg-gradient-to-br from-[#191B22]/95 via-[#28213a]/80 to-[#23263B]/95 border-none" style={{ boxShadow: darkShadow }}>
+      <div className="font-semibold text-lg mb-4 text-gradient bg-gradient-to-r from-[#36CFFF] via-[#14CC8C] to-[#8B5CF6] bg-clip-text text-transparent">
+        Активные пользователи по дням недели
+      </div>
+      <ResponsiveContainer width="100%" height="85%">
         <BarChart data={activeUsersData}>
           <CartesianGrid strokeDasharray="3 3" stroke="#23263B" />
           <XAxis dataKey="day" stroke="#b2b6cf" />
           <YAxis stroke="#b2b6cf" />
           <Tooltip contentStyle={{ background: '#23263B', border: 'none', color: '#fff' }} />
           <Legend />
-          <Bar dataKey="active" name="Активные" fill="#36CFFF" />
+          <Bar dataKey="active" name="Активные" fill="#36CFFF" radius={[8, 8, 0, 0]} />
         </BarChart>
       </ResponsiveContainer>
     </div>
