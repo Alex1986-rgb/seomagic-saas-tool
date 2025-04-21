@@ -1,131 +1,151 @@
 
-# SeoMarket - SEO Analysis and Optimization Platform
+# SeoMarket — SEO Analysis and Optimization Platform
 
 [![GitHub license](https://img.shields.io/github/license/KyrlanAlanAlexandre/seomarket)](https://github.com/KyrlanAlanAlexandre/seomarket/blob/main/LICENSE)
 [![React](https://img.shields.io/badge/React-v18.3-blue)](https://reactjs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-v5.0-blue)](https://www.typescriptlang.org/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind-v3.3-blue)](https://tailwindcss.com/)
 
-## Project info
+## Project Info
 
-**URL**: https://seomarket.ru
+**LIVE**: https://seomarket.ru
+
+---
 
 ## About the Project
 
-SeoMarket is a comprehensive platform for professional SEO audit and optimization. The platform provides a range of tools for website analysis, position tracking, and automatic optimization to improve search engine rankings.
+SeoMarket — это комплексная платформа для проведения SEO-аудита и оптимизации сайтов (React + TypeScript + Supabase). Платформа включает в себя инструменты для анализа сайта, отслеживания позиций, автоматической оптимизации для увеличения позиций в поисковых системах.
 
-### Key Features
+### Ключевые фичи
 
-- 🔍 Complete SEO Audit
-- 🚀 AI-powered optimization
-- 📊 Position tracking
-- 📝 Content analysis
-- 🔗 Link analysis
-- 📱 Mobile optimization
-- 📈 Performance monitoring
+- 🔍 Полный SEO-аудит сайта
+- 🚀 Оптимизация на базе ИИ
+- 📊 Отслеживание позиций
+- 📝 Контент-анализ
+- 🔗 Анализ ссылок
+- 📱 Мобильная оптимизация
+- 📈 Мониторинг производительности
 
-## Getting Started
+---
 
-### Prerequisites
+## Быстрый старт
 
-- Node.js (v16 or higher)
-- npm or yarn
-
-### Installation
+### 1. Клонирование и установка с GitHub
 
 ```bash
-# Clone the repository
 git clone https://github.com/KyrlanAlanAlexandre/seomarket.git
-
-# Navigate to the project directory
 cd seomarket
-
-# Install dependencies
 npm install
-
-# Start the development server
-npm run dev
 ```
 
-## Project Structure
+### 2. Подключение Supabase
+
+SeoMarket использует [Supabase](https://supabase.com/) для хранения данных, аутентификации и фоновых функций.  
+**Рекомендуем подключаться через Lovable Integration (см. зеленую кнопку Supabase справа в редакторе Lovable).**
+
+#### Минимальная настройка:
+- Перейдите на [supabase.com](https://supabase.com/), создайте проект.
+- Добавьте переменные окружения для доступа к Supabase (пример ниже).
+- Используйте `project_ref` и `anon`-key, которые выдаются в панели управления Supabase.
+- Рекомендуется активировать pg_net/pg_cron для edge-функций и отправки писем (см. [документацию Supabase](https://supabase.com/docs)).
+
+**Пример секции с переменными (если вы не используете Lovable):**
+```
+SUPABASE_URL=https://YOUR_PROJECT_REF.supabase.co
+SUPABASE_ANON_KEY=...
+```
+_Рекомендуется использовать нативную интеграцию Lovable для корректной работы edge функций и авторизации._
+
+---
+
+### 3. Настройка переменных окружения и стабильной работы
+
+- Удостоверьтесь, что в `.env` файле, все переменные для Supabase прописаны корректно и доступны на всех средах.
+- Не используйте секретные ключи в публичном репозитории.
+- Регулярно обновляйте зависимости:  
+  ```bash
+  npm update
+  ```
+- При настройке рабочих Cron задач используйте pg_cron через Supabase.
+- Для production используйте HTTPS и проверяйте правила структуры (RLS) в Supabase.
+
+---
+
+## Запуск проекта
+
+```bash
+npm run dev        # Локальный запуск
+npm run build      # Сборка для production
+```
+
+---
+
+## Настройка GitHub Actions (CI/CD)
+
+Рекомендуется использовать GitHub Actions для автоматизации тестов и деплоя.  
+Пример базового workflow файла:
+
+```yaml
+name: CI
+
+on:
+  push:
+    branches: [main]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: npm install
+      - run: npm run build
+```
+(Добавьте отдельные секреты для production)
+
+---
+
+## Структура проекта
 
 ```
 src/
 ├── components/        # React components
-│   ├── audit/         # SEO audit components
-│   ├── ui/            # UI components
-│   ├── navbar/        # Navigation components
-│   └── ...
 ├── pages/             # Application pages
 ├── hooks/             # Custom React hooks
-├── contexts/          # React contexts
 ├── services/          # API services and business logic
-├── utils/             # Utility functions
-├── types/             # TypeScript types and interfaces
-└── styles/            # CSS styles
+├── types/             # TypeScript types
+└── ...
 ```
 
-## Technologies Used
+---
 
-- **Frontend**:
-  - React
-  - TypeScript
-  - Tailwind CSS
-  - Shadcn UI
-  - Framer Motion
-  - Recharts
+## Интеграция с Lovable и Supabase
 
-- **State Management**:
-  - React Query
-  - React Context API
+SeoMarket идеально работает на платформе Lovable.  
+[Документация по интеграции с Supabase](https://docs.lovable.dev/integrations/supabase/)
 
-- **Authentication**:
-  - JWT
+---
 
-## Contributing
-
-We welcome contributions to SeoMarket! Please read our [Contributing Guidelines](CONTRIBUTING.md) before submitting a pull request.
-
-### Development Workflow
-
-1. Fork the repository
-2. Create a feature branch: `git checkout -b feature/my-feature`
-3. Commit your changes: `git commit -m 'Add some feature'`
-4. Push to the branch: `git push origin feature/my-feature`
-5. Submit a pull request
-
-## Documentation
-
-For detailed documentation, visit:
+## Документация
 
 - [User Guide](https://seomarket.ru/documentation/user-guide)
 - [Developer Guide](https://seomarket.ru/documentation/developer-guide)
 - [API Documentation](https://seomarket.ru/documentation/api)
 
-## Security
+---
 
-Security is a priority for us. If you discover a security vulnerability, please follow our [Security Policy](SECURITY.md) for responsible disclosure.
+## Безопасность
 
-## License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## Contact
-
-- Website: [seomarket.ru](https://seomarket.ru)
-- Email: [info@seomarket.ru](mailto:info@seomarket.ru)
-- Twitter: [@seomarket](https://twitter.com/seomarket)
-
-## Acknowledgements
-
-- [React](https://reactjs.org/)
-- [Tailwind CSS](https://tailwindcss.com/)
-- [Shadcn UI](https://ui.shadcn.com/)
-- [Vite](https://vitejs.dev/)
-- [Recharts](https://recharts.org/)
-- [Framer Motion](https://www.framer.com/motion/)
-- All our open-source contributors
+Безопасность — приоритет. Для уязвимостей — см. [Security Policy](SECURITY.md).
 
 ---
 
-Developed and designed by Kyrlan Alexandr
+## Лицензия
+
+MIT License — см. [LICENSE](LICENSE)
+
+---
+
+## Контакты и поддержка
+
+- Сайт: [seomarket.ru](https://seomarket.ru)
+- Email: [info@seomarket.ru](mailto:info@seomarket.ru)
+- Twitter: [@seomarket](https://twitter.com/seomarket)
