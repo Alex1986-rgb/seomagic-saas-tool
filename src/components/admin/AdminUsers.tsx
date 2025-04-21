@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Check, ChevronDown, Edit, Trash, UserRound, Search } from 'lucide-react';
 import { Input } from "@/components/ui/input";
@@ -6,6 +5,8 @@ import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
+import UserStatsCards from "./UserStatsCards";
+import UserCharts from "./UserCharts";
 
 // Мок-данные пользователей
 const mockUsers = [
@@ -89,6 +90,11 @@ const AdminUsers: React.FC = () => {
 
   return (
     <div>
+      {/* Добавлены карточки и графики */}
+      <UserStatsCards />
+      <UserCharts />
+
+      {/* ... keep existing code (search, filters, user table) ... */}
       <div className="flex flex-col md:flex-row gap-4 mb-6 items-end">
         <div className="flex-1">
           <div className="relative">
