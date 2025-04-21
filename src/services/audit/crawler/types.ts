@@ -7,7 +7,7 @@ export interface DeepCrawlerOptions {
 
 export interface CrawlResult {
   urls: string[];
-  pageCount?: number; // Adding pageCount that was missing
+  pageCount?: number;
   metadata?: {
     startTime: string;
     endTime: string;
@@ -22,25 +22,25 @@ export interface CrawlResult {
 export interface PageData {
   url?: string;
   title: string;
-  description: string; // Renamed from metaDescription to match usage
+  description: string;
   h1s?: string[];
   headings: {h1: string[]; h2: string[]; h3: string[]; h4: string[]; h5: string[]; h6: string[];};
   wordCount?: number;
   links?: {internal: string[]; external: string[];};
-  internalLinks?: string[]; // Added to match usage
-  externalLinks?: string[]; // Added to match usage
-  images: {src: string; alt: string; title?: string; url?: string;}[]; // Added url property
+  internalLinks?: string[];
+  externalLinks?: string[];
+  images: {src: string; alt: string; title?: string; url?: string;}[];
   statusCode: number;
   contentType: string;
   loadTime?: number;
   contentLength?: number | null;
   hasCanonical?: boolean;
   canonicalUrl?: string | null;
+  metaDescription?: string; // Adding this for backward compatibility
 }
 
 export type ExtractorFunction = (html: string, url: string) => string[];
 
-// Adding CrawlSummary type that was missing
 export interface CrawlSummary {
   crawlSummary: {
     url: string;
@@ -69,7 +69,6 @@ export interface CrawlSummary {
   };
 }
 
-// Adding RequestManager interface
 export interface RequestManager {
   configure(options: any): void;
   pause(): void;
@@ -82,7 +81,6 @@ export interface RequestManager {
   ): Promise<CrawlResult>;
 }
 
-// Adding SiteStructureAnalysis interface
 export interface SiteStructureAnalysis {
   pages: number;
   depth: number;

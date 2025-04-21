@@ -4,7 +4,7 @@
  */
 
 import axios from 'axios';
-import { RequestManager } from './types';
+import { RequestManager, CrawlResult } from './types';
 
 export function createRequestManager(): RequestManager {
   return {
@@ -29,6 +29,7 @@ export function createRequestManager(): RequestManager {
       
       return {
         urls: Array.from(visited),
+        pageCount: visited.size,
         metadata: {
           startTime: new Date().toISOString(),
           endTime: new Date().toISOString(),

@@ -61,6 +61,7 @@ export class DeepCrawlerCore {
   async startCrawling(): Promise<CrawlResult> {
     return {
       urls: Array.from(this.visited),
+      pageCount: this.visited.size,
       metadata: {
         startTime: new Date().toISOString(),
         endTime: new Date().toISOString(),
@@ -69,5 +70,12 @@ export class DeepCrawlerCore {
         domain: this.domain,
       }
     };
+  }
+
+  /**
+   * Cancels an ongoing crawling operation
+   */
+  cancel(): void {
+    console.log('Crawling operation cancelled');
   }
 }

@@ -1,7 +1,6 @@
 import axios from 'axios';
 import * as cheerio from 'cheerio';
 import { SitemapExtractor } from './crawler/sitemapExtractor';
-import { generateSitemapXml } from './sitemap/generator';
 import { normalizeUrl, isUrlFromSameDomain, getDomainFromUrl } from './crawler/urlUtils';
 
 interface SitemapCreatorOptions {
@@ -348,8 +347,16 @@ export class SimpleSitemapCreator {
     }
   }
   
+  /**
+   * Generate a sitemap XML from the list of URLs
+   */
   generateSitemap(urls: string[]): string {
     let sitemap = '<?xml version="1.0" encoding="UTF-8"?>\n';
+    
+    if (this.options.includeStylesheet) {
+      sitemap = sitemap.replace('?>', '?><?xml-stylesheet type="text/xsl" href="/sitemap.xsl"?>');
+    }
+    
     sitemap += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n';
     
     for (const url of urls) {
@@ -358,15 +365,11 @@ export class SimpleSitemapCreator {
         sitemap += `    <priority>0.5</priority>\n`;
         sitemap += `  </url>\n`;
       } catch (e) {
+        // Skip invalid URLs
       }
     }
     
     sitemap += '</urlset>';
-    
-    if (this.options.includeStylesheet) {
-      sitemap = sitemap.replace('?>', '?><?xml-stylesheet type="text/xsl" href="/sitemap.xsl"?>');
-    }
-    
     return sitemap;
   }
 }

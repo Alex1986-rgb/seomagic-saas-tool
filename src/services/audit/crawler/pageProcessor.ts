@@ -1,6 +1,6 @@
 
 /**
- * Page processing utilities for the crawler
+ * Page processor class for extracting data from crawled pages
  */
 
 import axios from 'axios';
@@ -8,118 +8,109 @@ import * as cheerio from 'cheerio';
 import { PageData } from './types';
 
 export class PageProcessor {
-  constructor(
-    private domain: string,
-    private baseUrl: string,
-    private userAgent: string
-  ) {}
-  
-  async processPage(url: string): Promise<{ pageData: PageData, links: string[] }> {
+  private domain: string;
+  private baseUrl: string;
+  private userAgent: string;
+
+  constructor(domain: string, baseUrl: string, userAgent: string) {
+    this.domain = domain;
+    this.baseUrl = baseUrl;
+    this.userAgent = userAgent;
+  }
+
+  async processPage(url: string): Promise<{ pageData: PageData | null; links: string[] }> {
     try {
-      const response = await axios.get(url, { 
-        timeout: 15000,
+      const response = await axios.get(url, {
         headers: {
-          'User-Agent': this.userAgent,
-          'Accept': 'text/html,application/xhtml+xml,application/xml',
-          'Accept-Language': 'en-US,en;q=0.9,ru;q=0.8'
+          'User-Agent': this.userAgent
         },
-        maxRedirects: 5
+        timeout: 15000
       });
-      
+
       const $ = cheerio.load(response.data);
-      const links: string[] = [];
+      const title = $('title').text().trim() || '';
+      const description = $('meta[name="description"]').attr('content') || '';
       
-      // Initialize page data
-      const pageData: PageData = {
-        url,
-        title: $('title').text() || '',
-        description: $('meta[name="description"]').attr('content') || '',
-        headings: {
-          h1: $('h1').map((_, el) => $(el).text().trim()).get(),
-          h2: $('h2').map((_, el) => $(el).text().trim()).get(),
-          h3: $('h3').map((_, el) => $(el).text().trim()).get(),
-          h4: $('h4').map((_, el) => $(el).text().trim()).get(),
-          h5: $('h5').map((_, el) => $(el).text().trim()).get(),
-          h6: $('h6').map((_, el) => $(el).text().trim()).get(),
-        },
-        statusCode: response.status,
-        contentType: response.headers['content-type'] || '',
-        contentLength: parseInt(response.headers['content-length'] || '0') || null,
-        internalLinks: [],
-        externalLinks: [],
-        images: [],
-        hasCanonical: $('link[rel="canonical"]').length > 0,
-        canonicalUrl: $('link[rel="canonical"]').attr('href') || null
-      };
+      // Extract headings
+      const h1s = $('h1').map((_, el) => $(el).text().trim()).get();
+      const h2s = $('h2').map((_, el) => $(el).text().trim()).get();
+      const h3s = $('h3').map((_, el) => $(el).text().trim()).get();
+      const h4s = $('h4').map((_, el) => $(el).text().trim()).get();
+      const h5s = $('h5').map((_, el) => $(el).text().trim()).get();
+      const h6s = $('h6').map((_, el) => $(el).text().trim()).get();
 
       // Extract all links
-      $('a').each((_, element) => {
+      const links: string[] = [];
+      $('a[href]').each((_, element) => {
         const href = $(element).attr('href');
         if (href) {
           try {
-            // Normalize URL
-            let fullUrl = href;
-            if (href.startsWith('/')) {
-              fullUrl = new URL(href, this.baseUrl).toString();
-            } else if (!href.startsWith('http')) {
-              fullUrl = new URL(href, url).toString();
-            } else {
-              fullUrl = href;
-            }
-            
-            const urlObj = new URL(fullUrl);
-            const isExternalLink = urlObj.hostname !== this.domain;
-            
-            // Categorize as internal or external
-            if (isExternalLink) {
-              pageData.externalLinks.push(fullUrl);
-            } else {
-              // It's an internal link
-              pageData.internalLinks.push(fullUrl);
-              links.push(fullUrl);
-            }
-          } catch (e) {
+            const resolvedUrl = new URL(href, url).href;
+            links.push(resolvedUrl);
+          } catch (error) {
             // Skip invalid URLs
           }
         }
       });
-      
-      // Extract image information
-      $('img').each((_, element) => {
-        const src = $(element).attr('src');
-        if (src) {
-          try {
-            let fullUrl = src;
-            if (src.startsWith('/')) {
-              fullUrl = new URL(src, this.baseUrl).toString();
-            } else if (!src.startsWith('http')) {
-              fullUrl = new URL(src, url).toString();
-            }
-            
-            pageData.images.push({
-              src: fullUrl,
-              alt: $(element).attr('alt') || ''
-            });
-          } catch (e) {
-            // Skip invalid URLs
+
+      // Separate internal and external links
+      const internalLinks: string[] = [];
+      const externalLinks: string[] = [];
+
+      for (const link of links) {
+        try {
+          const linkDomain = new URL(link).hostname;
+          if (linkDomain === this.domain) {
+            internalLinks.push(link);
+          } else {
+            externalLinks.push(link);
           }
+        } catch (error) {
+          // Skip invalid URLs
         }
-      });
-      
+      }
+
+      // Extract images
+      const images = $('img').map((_, el) => {
+        const src = $(el).attr('src') || '';
+        const alt = $(el).attr('alt') || '';
+        const title = $(el).attr('title') || undefined;
+        
+        try {
+          const imageUrl = new URL(src, url).href;
+          return {
+            src: imageUrl,
+            alt,
+            title,
+            url: imageUrl // Adding url property to match the type
+          };
+        } catch (error) {
+          return null;
+        }
+      }).get().filter(Boolean);
+
+      const pageData: PageData = {
+        url,
+        title,
+        description,
+        h1s,
+        headings: { h1: h1s, h2: h2s, h3: h3s, h4: h4s, h5: h5s, h6: h6s },
+        wordCount: $('body').text().split(/\s+/).length,
+        links: { internal: internalLinks, external: externalLinks },
+        internalLinks, // Add these properties to match the expected interface
+        externalLinks,
+        images,
+        statusCode: response.status,
+        contentType: response.headers['content-type'] || '',
+        loadTime: 0, // This would need to be measured properly
+        contentLength: parseInt(response.headers['content-length'] || '0', 10) || null,
+        metaDescription: description // For backward compatibility
+      };
+
       return { pageData, links };
     } catch (error) {
-      console.warn(`Error processing URL ${url}:`, error);
-      return { 
-        pageData: {
-          title: '',
-          description: '',
-          headings: { h1: [], h2: [], h3: [], h4: [], h5: [], h6: [] },
-          statusCode: 0,
-          contentType: '',
-          images: []
-        }, 
-        links: [] 
-      };
+      console.error(`Error processing page ${url}:`, error);
+      return { pageData: null, links: [] };
     }
   }
 }
