@@ -52,27 +52,44 @@ const ExportDeepCrawlPdf: React.FC<ExportDeepCrawlPdfProps> = ({
         description: "Пожалуйста, подождите...",
       });
       
+      // Оптимизация для больших сайтов - ограничиваем количество URL в отчете
+      let filteredUrls = urls;
+      if (urls.length > 10000) {
+        filteredUrls = urls.slice(0, 10000);
+        toast({
+          title: "Информация",
+          description: `Для оптимизации размера PDF, в отчет включено только 10,000 URL из ${urls.length}`,
+        });
+      }
+      
+      // Оптимизированный вызов генерации PDF
       const pdfBlob = await generateDeepCrawlPdf({
         domain,
         scanDate,
         pagesScanned: pageCount,
         totalPages: pageCount,
-        urls,
+        urls: filteredUrls,
         pageTypes,
         depthData,
         brokenLinks,
         duplicatePages,
         includeFullDetails,
-        enhancedStyling
+        enhancedStyling,
+        maxUrlsPerPage: 100 // Больше URL на странице для компактности
       });
       
       if (!pdfBlob) throw new Error("Не удалось создать PDF");
       
-      // Create a download link for the PDF
+      // Создаем ссылку для скачивания PDF
       const url = window.URL.createObjectURL(pdfBlob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `detailed-audit-${domain.replace(/[^a-zA-Z0-9]/g, '-')}-${new Date().toISOString().split('T')[0]}.pdf`;
+      
+      // Форматируем имя файла для скачивания
+      const formattedDomain = domain.replace(/[^a-zA-Z0-9]/g, '-');
+      const formattedDate = new Date().toISOString().split('T')[0];
+      a.download = `detailed-audit-${formattedDomain}-${formattedDate}.pdf`;
+      
       document.body.appendChild(a);
       a.click();
       window.URL.revokeObjectURL(url);

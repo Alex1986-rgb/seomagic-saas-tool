@@ -1,834 +1,248 @@
+
 import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
-import { addPaginationFooters } from './helpers/pagination';
 import { addQRCodeToPage } from './helpers/qrcode';
-import { pdfColors } from './styles/colors';
-import { pdfFonts } from './styles/fonts';
-import { pdfTableStyles } from './styles/tables';
-import { formatDateString } from './styles/formatting';
-import { drawGauge } from './styles/drawing';
-import { analyzeCommonPaths, getSeoRecommendations, getSiteSummary } from './helpers/seo';
+import { addCoverPage } from './helpers/coverPage';
+import { addPaginationFooters } from './helpers';
+import { formatTitle, formatSubtitle, formatHeading, formatParagraph } from './styles/formatting';
+import { generatePieChart } from './helpers/charts';
 
 export interface DeepCrawlPdfOptions {
   domain: string;
-  scanDate?: string;
-  urls: string[];
+  scanDate: string;
   pagesScanned: number;
   totalPages: number;
+  urls: string[];
   pageTypes?: Record<string, number>;
-  depthData?: Array<{ level: number; count: number }>;
-  brokenLinks?: Array<{ url: string; statusCode: number }>;
-  duplicatePages?: Array<{ url: string; similarUrls: string[] }>;
-  enhancedStyling?: boolean;
+  depthData?: { level: number; count: number }[];
+  brokenLinks?: { url: string; statusCode: number }[];
+  duplicatePages?: { url: string; similarUrls: string[] }[];
   includeFullDetails?: boolean;
+  enhancedStyling?: boolean;
+  maxUrlsPerPage?: number;
 }
 
-/**
- * Generates a PDF report from deep crawl data
- */
-export const generateDeepCrawlPdf = async (options: DeepCrawlPdfOptions): Promise<Blob> => {
-  const { 
-    domain, 
-    scanDate, 
-    pagesScanned, 
-    totalPages, 
-    urls, 
-    pageTypes = {}, 
+export async function generateDeepCrawlPdf(options: DeepCrawlPdfOptions): Promise<Blob> {
+  const {
+    domain,
+    scanDate,
+    pagesScanned,
+    totalPages,
+    urls,
+    pageTypes = {},
     depthData = [],
     brokenLinks = [],
     duplicatePages = [],
-    includeFullDetails = false,
-    enhancedStyling = false
+    includeFullDetails = true,
+    enhancedStyling = true,
+    maxUrlsPerPage = 50
   } = options;
-  
-  // Create new PDF document
+
+  // Создаем PDF документ
   const doc = new jsPDF({
     orientation: 'portrait',
     unit: 'mm',
     format: 'a4'
   });
-  
-  // Format the date
-  const formattedDate = new Date(scanDate).toLocaleDateString('ru-RU', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit'
-  });
-  
-  // Set the title of the document (for metadata)
-  doc.setProperties({
-    title: `Аудит сайта ${domain}`,
-    subject: 'Отчет о глубоком сканировании сайта',
-    author: 'SEO Analyzer',
-    keywords: 'SEO, аудит, анализ, сканирование',
-    creator: 'SEO Analyzer Tool'
-  });
-  
-  // Add enhanced header with graphics
-  if (enhancedStyling) {
-    // Background gradient for header
-    doc.setFillColor(56, 189, 248);
-    doc.rect(0, 0, 210, 40, 'F');
-    
-    // Add header graphic elements
-    doc.setFillColor(70, 203, 255);
-    doc.circle(180, 20, 15, 'F');
-    doc.setFillColor(90, 217, 255);
-    doc.circle(190, 10, 8, 'F');
-    
-    // Header text with enhanced styling
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(26);
-    doc.setTextColor(255, 255, 255);
-    doc.text('Глубокий аудит сайта', 15, 20);
-    
-    doc.setFontSize(14);
-    doc.text(`Домен: ${domain}`, 15, 30);
-  } else {
-    // Simple header
-    doc.setFillColor(56, 189, 248);
-    doc.rect(0, 0, 210, 30, 'F');
-    
-    doc.setFontSize(24);
-    doc.setTextColor(255, 255, 255);
-    doc.text('Глубокий анализ сайта', 15, 15);
-    
-    doc.setFontSize(14);
-    doc.text(`Сайт: ${domain}`, 15, 22);
-  }
-  
-  // Reset text color for the rest of the document
-  doc.setTextColor(0, 0, 0);
-  doc.setFont('helvetica', 'normal');
-  
-  // Add audit information
-  let yPosition = enhancedStyling ? 50 : 40;
-  
-  doc.setFontSize(12);
-  doc.text(`Дата сканирования: ${formattedDate}`, 15, yPosition);
-  yPosition += 8;
-  doc.text(`Обработано страниц: ${pagesScanned} из ${totalPages}`, 15, yPosition);
-  yPosition += 15;
-  
-  // Add overall score visualization if available
-  const score = calculateOverallScore(brokenLinks.length, duplicatePages.length, urls.length);
-  
-  if (enhancedStyling) {
-    // Add score gauge visualization
-    doc.setFontSize(16);
-    doc.setFont('helvetica', 'bold');
-    doc.text('Общая оценка сайта', 15, yPosition);
-    yPosition += 10;
-    
-    drawGauge(doc, score, 50, yPosition + 20, 20);
-    
-    // Add score explanation
-    doc.setFontSize(11);
-    doc.setFont('helvetica', 'normal');
-    let scoreExplanation = '';
-    
-    if (score >= 90) {
-      scoreExplanation = 'Отлично! Ваш сайт хорошо оптимизирован.';
-    } else if (score >= 70) {
-      scoreExplanation = 'Хорошо. Есть некоторые моменты для улучшения.';
-    } else if (score >= 50) {
-      scoreExplanation = 'Удовлетворительно. Требуется работа над оптимизацией.';
-    } else {
-      scoreExplanation = 'Требуется значительная оптимизация сайта.';
-    }
-    
-    doc.text(scoreExplanation, 80, yPosition + 20);
-    yPosition += 50;
-  }
-  
-  // Add summary section
-  doc.setFontSize(16);
-  doc.setFont('helvetica', 'bold');
-  doc.text('Общая информация', 15, yPosition);
-  yPosition += 10;
-  
-  // Create summary table
-  const summaryData = [
-    ['Всего уникальных URL', urls.length.toString()],
-    ['Обработано страниц', pagesScanned.toString()],
-    ['Найдено проблем', brokenLinks.length.toString()],
-    ['Найдено дубликатов', duplicatePages.length.toString()]
-  ];
-  
-  autoTable(doc, {
-    startY: yPosition,
-    head: [['Параметр', 'Значение']],
-    body: summaryData,
-    theme: 'grid',
-    styles: { halign: 'left' },
-    headStyles: { fillColor: [pdfColors.primary[0], pdfColors.primary[1], pdfColors.primary[2]] }
-  });
-  
-  // Update current position after table
-  yPosition = (doc as any).lastAutoTable.finalY + 15;
-  
-  // Add page types distribution if available
-  if (Object.keys(pageTypes).length > 0) {
-    // Check if we need a new page
-    if (yPosition > 240) {
-      doc.addPage();
-      yPosition = 30;
-    }
-    
-    doc.setFontSize(16);
-    doc.setFont('helvetica', 'bold');
-    doc.text('Распределение типов страниц', 15, yPosition);
-    yPosition += 10;
-    
-    const pageTypesData = Object.entries(pageTypes).map(([type, count]) => [
-      type.charAt(0).toUpperCase() + type.slice(1),
-      count.toString(),
-      ((count / urls.length) * 100).toFixed(1) + '%'
-    ]);
-    
-    autoTable(doc, {
-      startY: yPosition,
-      head: [['Тип страницы', 'Количество', 'Процент']],
-      body: pageTypesData,
-      theme: 'grid',
-      styles: { halign: 'left' },
-      headStyles: { fillColor: [pdfColors.primary[0], pdfColors.primary[1], pdfColors.primary[2]] }
-    });
-    
-    // Update current Y position
-    yPosition = (doc as any).lastAutoTable.finalY + 15;
-  }
-  
-  // Add page depth distribution if available
-  if (depthData.length > 0) {
-    // Check if we need a new page
-    if (yPosition > 240) {
-      doc.addPage();
-      yPosition = 30;
-    }
-    
-    doc.setFontSize(16);
-    doc.setFont('helvetica', 'bold');
-    doc.text('Глубина вложенности страниц', 15, yPosition);
-    yPosition += 10;
-    
-    const depthTableData = depthData.map(item => [
-      `Уровень ${item.level}`,
-      item.count.toString(),
-      ((item.count / urls.length) * 100).toFixed(1) + '%'
-    ]);
-    
-    autoTable(doc, {
-      startY: yPosition,
-      head: [['Уровень вложенности', 'Количество страниц', 'Процент']],
-      body: depthTableData,
-      theme: 'grid',
-      styles: { halign: 'left' },
-      headStyles: { fillColor: [pdfColors.secondary[0], pdfColors.secondary[1], pdfColors.secondary[2]] }
-    });
-    
-    // Update current Y position
-    yPosition = (doc as any).lastAutoTable.finalY + 15;
-  }
-  
-  // Add URL structure analysis
-  if (includeFullDetails) {
-    doc.addPage();
-    
-    doc.setFillColor(96, 165, 250); // Blue
-    doc.rect(0, 0, 210, 20, 'F');
-    doc.setFontSize(18);
-    doc.setTextColor(255, 255, 255);
-    doc.text('Структура URL-адресов', 15, 15);
-    
-    doc.setTextColor(0, 0, 0);
-    doc.setFontSize(12);
-    doc.setFont('helvetica', 'normal');
-    
-    yPosition = 30;
-    
-    // Calculate URL structure metrics
-    const urlLengths = urls.map(url => url.length);
-    const avgUrlLength = urlLengths.reduce((sum, len) => sum + len, 0) / urlLengths.length;
-    const maxUrlLength = Math.max(...urlLengths);
-    const urlsWithParams = urls.filter(url => url.includes('?')).length;
-    const urlsWithHashes = urls.filter(url => url.includes('#')).length;
-    
-    const mostCommonPaths = analyzeCommonPaths(urls);
-    
-    // Add URL structure metrics
-    doc.setFontSize(14);
-    doc.setFont('helvetica', 'bold');
-    doc.text('Метрики URL-адресов', 15, yPosition);
-    yPosition += 10;
-    
-    const urlMetricsData = [
-      ['Средняя длина URL', avgUrlLength.toFixed(1) + ' символов'],
-      ['Максимальная длина URL', maxUrlLength + ' символов'],
-      ['URL с параметрами', urlsWithParams + ' (' + ((urlsWithParams / urls.length) * 100).toFixed(1) + '%)'],
-      ['URL с якорями', urlsWithHashes + ' (' + ((urlsWithHashes / urls.length) * 100).toFixed(1) + '%)']
-    ];
-    
-    autoTable(doc, {
-      startY: yPosition,
-      head: [['Параметр', 'Значение']],
-      body: urlMetricsData,
-      theme: 'grid',
-      styles: { halign: 'left' },
-      headStyles: { fillColor: [pdfColors.info[0], pdfColors.info[1], pdfColors.info[2]] }
-    });
-    
-    yPosition = (doc as any).lastAutoTable.finalY + 15;
-    
-    // Add most common paths
-    if (mostCommonPaths.length > 0) {
-      // Check if we need a new page
-      if (yPosition > 220) {
-        doc.addPage();
-        yPosition = 30;
-      }
-      
-      doc.setFontSize(14);
-      doc.setFont('helvetica', 'bold');
-      doc.text('Наиболее распространенные пути URL', 15, yPosition);
-      yPosition += 10;
-      
-      const pathsData = mostCommonPaths.slice(0, 10).map(item => [
-        item.path,
-        item.count.toString(),
-        ((item.count / urls.length) * 100).toFixed(1) + '%'
-      ]);
-      
-      autoTable(doc, {
-        startY: yPosition,
-        head: [['Путь', 'Количество', 'Процент']],
-        body: pathsData,
-        theme: 'grid',
-        styles: { 
-          halign: 'left',
-          fontSize: 8,
-          cellWidth: 'wrap',
-          overflow: 'linebreak'
-        },
-        columnStyles: {
-          0: { cellWidth: 100 },
-          1: { cellWidth: 30 },
-          2: { cellWidth: 30 }
-        },
-        headStyles: { fillColor: [pdfColors.info[0], pdfColors.info[1], pdfColors.info[2]] }
-      });
-      
-      yPosition = (doc as any).lastAutoTable.finalY + 15;
-    }
-  }
-  
-  // Add URL list page
+
+  // Создаем обложку
+  addCoverPage(doc, `Отчет о структуре сайта ${domain}`, 'Результаты глубокого сканирования', scanDate);
+
+  // Добавляем QR-код
+  addQRCodeToPage(doc, domain);
+
+  // Добавляем общую информацию
   doc.addPage();
+  let yPos = 20;
+  formatTitle(doc, 'Общая информация о сайте', yPos);
+  yPos += 15;
+
+  // Форматируем строки общей информации
+  formatParagraph(doc, `Домен: ${domain}`, yPos);
+  yPos += 10;
+  formatParagraph(doc, `Дата сканирования: ${new Date(scanDate).toLocaleDateString('ru-RU')}`, yPos);
+  yPos += 10;
+  formatParagraph(doc, `Количество страниц: ${pagesScanned.toLocaleString('ru-RU')}`, yPos);
+  yPos += 10;
   
-  doc.setFillColor(56, 189, 248);
-  doc.rect(0, 0, 210, 20, 'F');
-  doc.setFontSize(18);
-  doc.setTextColor(255, 255, 255);
-  doc.text('Список URL (до 100)', 15, 15);
-  
-  doc.setTextColor(0, 0, 0);
-  
-  // Format URLs for table
-  const urlsToShow = urls.slice(0, 100);
-  const urlTableData = urlsToShow.map((url, index) => [`${index + 1}`, url]);
-  
-  autoTable(doc, {
-    startY: 30,
-    head: [['#', 'URL']],
-    body: urlTableData,
-    theme: 'grid',
-    styles: { 
-      overflow: 'linebreak', 
-      cellWidth: 'wrap',
-      fontSize: 8
-    },
-    columnStyles: {
-      0: { cellWidth: 10 },
-      1: { cellWidth: 'auto' }
-    },
-    headStyles: { fillColor: [pdfColors.primary[0], pdfColors.primary[1], pdfColors.primary[2]] }
-  });
-  
-  // Add note if there are more URLs
-  if (urls.length > 100) {
-    const noteY = (doc as any).lastAutoTable.finalY + 5;
-    doc.setFontSize(10);
-    doc.setTextColor(100, 100, 100);
-    doc.text(`Показано 100 из ${urls.length} URL. Полный список доступен в экспортированных данных.`, 15, noteY);
+  // Если есть данные о типах страниц, добавляем график
+  if (Object.keys(pageTypes).length > 0) {
+    yPos += 10;
+    formatSubtitle(doc, 'Распределение типов страниц', yPos);
+    yPos += 15;
+    
+    // Генерируем и добавляем круговую диаграмму
+    generatePieChart(doc, pageTypes, 105, yPos + 40, 70);
+    yPos += 100;
   }
-  
-  // Add broken links page if any found
+
+  // Добавляем раздел с данными о глубине страниц
+  if (depthData.length > 0) {
+    yPos += 10;
+    formatSubtitle(doc, 'Распределение по глубине', yPos);
+    yPos += 15;
+    
+    // Добавляем таблицу с данными о глубине
+    doc.setFontSize(10);
+    doc.text('Уровень', 20, yPos);
+    doc.text('Количество страниц', 100, yPos);
+    yPos += 5;
+    doc.line(20, yPos, 190, yPos);
+    yPos += 10;
+    
+    depthData.forEach(item => {
+      doc.text(`Уровень ${item.level}`, 20, yPos);
+      doc.text(item.count.toString(), 100, yPos);
+      yPos += 8;
+      
+      if (yPos > 270) {
+        doc.addPage();
+        yPos = 20;
+      }
+    });
+  }
+
+  // Добавляем раздел с неработающими ссылками
   if (brokenLinks.length > 0) {
     doc.addPage();
+    yPos = 20;
+    formatTitle(doc, 'Неработающие ссылки', yPos);
+    yPos += 15;
+    formatParagraph(doc, `Обнаружено ${brokenLinks.length} неработающих ссылок:`, yPos);
+    yPos += 10;
     
-    doc.setFillColor(pdfColors.error[0], pdfColors.error[1], pdfColors.error[2]); // Red color for errors
-    doc.rect(0, 0, 210, 20, 'F');
-    doc.setFontSize(18);
-    doc.setTextColor(255, 255, 255);
-    doc.text('Обнаруженные проблемы', 15, 15);
-    
-    doc.setTextColor(0, 0, 0);
-    doc.setFontSize(14);
-    doc.setFont('helvetica', 'bold');
-    doc.text('Битые ссылки', 15, 30);
-    
-    const brokenLinksToShow = brokenLinks.slice(0, 50);
-    const brokenLinkData = brokenLinksToShow.map((link, index) => [
-      `${index + 1}`,
-      link.url,
-      link.statusCode.toString(),
-      getErrorDescription(link.statusCode)
-    ]);
-    
-    autoTable(doc, {
-      startY: 35,
-      head: [['#', 'URL', 'Код', 'Описание ошибки']],
-      body: brokenLinkData,
-      theme: 'grid',
-      styles: { 
-        overflow: 'linebreak', 
-        cellWidth: 'wrap',
-        fontSize: 8
-      },
-      columnStyles: {
-        0: { cellWidth: 10 },
-        1: { cellWidth: 'auto' },
-        2: { cellWidth: 15 },
-        3: { cellWidth: 50 }
-      },
-      headStyles: { fillColor: [pdfColors.error[0], pdfColors.error[1], pdfColors.error[2]] }
-    });
-    
-    // Add note if there are more broken links
-    if (brokenLinks.length > 50) {
-      const noteY = (doc as any).lastAutoTable.finalY + 5;
-      doc.setFontSize(10);
-      doc.setTextColor(100, 100, 100);
-      doc.text(`Показано 50 из ${brokenLinks.length} проблемных URL.`, 15, noteY);
-    }
-    
-    // Add recommendations for fixing broken links
-    const brokenLinksY = (doc as any).lastAutoTable.finalY + 15;
-    doc.setFontSize(14);
-    doc.setFont('helvetica', 'bold');
-    doc.text('Рекомендации по исправлению', 15, brokenLinksY);
-    
-    doc.setFontSize(11);
-    doc.setFont('helvetica', 'normal');
-    const recommendations = [
-      '• Проверьте и исправьте все ссылки с кодами ошибок 404 (Страница не найдена)',
-      '• Для страниц, которые были перемещены, настройте 301 редиректы',
-      '• Исправьте серверные ошибки (5xx) и обратитесь к хостинг-провайдеру при необходимости',
-      '• Регулярно проверяйте сайт на наличие битых ссылок с помощью инструментов мониторинга'
-    ];
-    
-    let recY = brokenLinksY + 10;
-    recommendations.forEach(rec => {
-      doc.text(rec, 15, recY);
-      recY += 7;
+    brokenLinks.forEach((link, index) => {
+      const urlText = typeof link === 'string' ? link : `${link.url} (код: ${link.statusCode})`;
+      formatParagraph(doc, `${index + 1}. ${urlText}`, yPos);
+      yPos += 8;
+      
+      if (yPos > 270) {
+        doc.addPage();
+        yPos = 20;
+      }
     });
   }
-  
-  // Add duplicate pages if any found
+
+  // Добавляем раздел с дублирующимися страницами
   if (duplicatePages.length > 0) {
     doc.addPage();
+    yPos = 20;
+    formatTitle(doc, 'Дублирующиеся страницы', yPos);
+    yPos += 15;
+    formatParagraph(doc, `Обнаружено ${duplicatePages.length} групп дублирующихся страниц:`, yPos);
+    yPos += 10;
     
-    doc.setFillColor(pdfColors.warning[0], pdfColors.warning[1], pdfColors.warning[2]); // Orange color for warnings
-    doc.rect(0, 0, 210, 20, 'F');
-    doc.setFontSize(18);
-    doc.setTextColor(255, 255, 255);
-    doc.text('Дубликаты страниц', 15, 15);
-    
-    doc.setTextColor(0, 0, 0);
-    
-    // Add introduction text
-    doc.setFontSize(11);
-    doc.setFont('helvetica', 'normal');
-    doc.text(
-      'Дубликаты страниц могут негативно влиять на SEO-производительность вашего сайта. ' +
-      'Поисковые системы могут не понимать, какую версию страницы индексировать, что приводит к снижению рейтинга.',
-      15, 30, { maxWidth: 180 }
-    );
-    
-    // We'll show a few examples of duplicates
-    const duplicatesToShow = duplicatePages.slice(0, 15);
-    
-    let dupeY = 45;
-    duplicatesToShow.forEach((dupe, index) => {
-      // Check if we need a new page
-      if (dupeY > 250) {
-        doc.addPage();
-        dupeY = 30;
-      }
+    duplicatePages.forEach((group, index) => {
+      formatSubtitle(doc, `Группа ${index + 1}`, yPos);
+      yPos += 10;
+      formatParagraph(doc, `Основная страница: ${group.url}`, yPos);
+      yPos += 8;
+      formatParagraph(doc, 'Похожие страницы:', yPos);
+      yPos += 8;
       
-      doc.setFontSize(11);
-      doc.setFont('helvetica', 'bold');
-      doc.text(`${index + 1}. Оригинал: ${dupe.url}`, 15, dupeY);
-      dupeY += 7;
-      
-      doc.setFontSize(10);
-      doc.setFont('helvetica', 'normal');
-      doc.text('Похожи�� страницы:', 20, dupeY);
-      dupeY += 6;
-      
-      // Show similar URLs (limited to 3)
-      const similarToShow = dupe.similarUrls.slice(0, 3);
-      similarToShow.forEach(similar => {
-        doc.setFontSize(9);
-        doc.text(`• ${similar}`, 25, dupeY);
-        dupeY += 5;
+      (group.similarUrls || []).forEach((url, i) => {
+        formatParagraph(doc, `- ${url}`, yPos);
+        yPos += 6;
+        
+        if (yPos > 270) {
+          doc.addPage();
+          yPos = 20;
+        }
       });
       
-      // If there are more similar URLs
-      if (dupe.similarUrls.length > 3) {
-        doc.setFontSize(8);
-        doc.setTextColor(100, 100, 100);
-        doc.text(`... и еще ${dupe.similarUrls.length - 3} похожих URL`, 25, dupeY);
-        doc.setTextColor(0, 0, 0);
+      yPos += 10;
+      
+      if (yPos > 250) {
+        doc.addPage();
+        yPos = 20;
+      }
+    });
+  }
+
+  // Если включен полный отчет, добавляем полный список URL
+  if (includeFullDetails && urls.length > 0) {
+    doc.addPage();
+    yPos = 20;
+    formatTitle(doc, 'Полный список URL', yPos);
+    yPos += 15;
+    
+    // Разбиваем URLs на страницы для лучшей читаемости
+    const totalUrls = urls.length;
+    let currentPage = 1;
+    const totalPages = Math.ceil(totalUrls / maxUrlsPerPage);
+    
+    formatParagraph(doc, `Всего URL: ${totalUrls.toLocaleString('ru-RU')}`, yPos);
+    yPos += 10;
+    
+    for (let i = 0; i < totalUrls; i++) {
+      const pageNumber = Math.floor(i / maxUrlsPerPage) + 1;
+      
+      // Если начинаем новую страницу в списке
+      if (pageNumber > currentPage) {
+        doc.addPage();
+        yPos = 20;
+        formatSubtitle(doc, `Список URL (страница ${pageNumber} из ${totalPages})`, yPos);
+        yPos += 15;
+        currentPage = pageNumber;
       }
       
-      dupeY += 10;
-    });
-    
-    // Add note if there are more duplicates
-    if (duplicatePages.length > 15) {
-      doc.setFontSize(10);
-      doc.setTextColor(100, 100, 100);
-      doc.text(`Показано 15 из ${duplicatePages.length} групп дубликатов.`, 15, dupeY);
-      dupeY += 10;
+      // Добавляем URL с номером
+      doc.setFontSize(8);
+      doc.text(`${i+1}. ${urls[i]}`, 20, yPos);
+      yPos += 6;
+      
+      // Если достигли конца страницы
+      if (yPos > 270) {
+        doc.addPage();
+        yPos = 20;
+        formatSubtitle(doc, `Список URL (продолжение страницы ${pageNumber} из ${totalPages})`, yPos);
+        yPos += 15;
+      }
     }
-    
-    // Add recommendations for handling duplicates
-    doc.setFontSize(14);
-    doc.setFont('helvetica', 'bold');
-    doc.text('Рекомендации по устранению дубликатов', 15, dupeY);
-    dupeY += 10;
-    
-    doc.setFontSize(11);
-    doc.setFont('helvetica', 'normal');
-    const dupeRecs = [
-      '• Используйте тег rel="canonical" для указания предпочтительного URL',
-      '• Настройте 301 редиректы с дубликатов на оригинальные страницы',
-      '• Используйте параметр hreflang для многоязычных версий одной страницы',
-      '• Консолидируйте содержимое похожих страниц',
-      '• Включите правильные директивы в файл robots.txt для дублированного контента'
-    ];
-    
-    dupeRecs.forEach(rec => {
-      doc.text(rec, 15, dupeY);
-      dupeY += 7;
-    });
   }
-  
-  // Add SEO recommendations page
+
+  // Добавляем последнюю страницу с выводами
   doc.addPage();
+  yPos = 20;
+  formatTitle(doc, 'Выводы и рекомендации', yPos);
+  yPos += 15;
   
-  doc.setFillColor(pdfColors.success[0], pdfColors.success[1], pdfColors.success[2]); // Green color for recommendations
-  doc.rect(0, 0, 210, 20, 'F');
-  doc.setFontSize(18);
-  doc.setTextColor(255, 255, 255);
-  doc.text('Рекомендации по SEO', 15, 15);
-  
-  doc.setTextColor(0, 0, 0);
-  
-  let recY = 30;
-  const allRecommendations = getSeoRecommendations(brokenLinks.length, duplicatePages.length, urls.length, depthData);
-  
-  allRecommendations.forEach((rec, index) => {
-    // Check if we need a new page
-    if (recY > 250) {
-      doc.addPage();
-      recY = 30;
-    }
-    
-    doc.setFontSize(14);
-    doc.setFont('helvetica', 'bold');
-    doc.text(`${index + 1}. ${rec.title}`, 15, recY);
-    recY += 8;
-    
-    doc.setFontSize(10);
-    doc.setFont('helvetica', 'normal');
-    
-    // Split long descriptions into multiple lines
-    const descLines = doc.splitTextToSize(rec.description, 180);
-    descLines.forEach((line: string) => {
-      doc.text(line, 20, recY);
-      recY += 5;
-    });
-    
-    // Add priority indicator
-    doc.setFontSize(9);
-    applyRecommendationPriorityColor(doc, rec.priority);
-    doc.text(`Приоритет: ${getRecommendationPriorityText(rec.priority)}`, 20, recY);
-    doc.setTextColor(0, 0, 0);
-    
-    recY += 10;
-  });
-  
-  // Add checklist for implementation if we have detailed report
-  if (includeFullDetails) {
-    // Check if we need a new page
-    if (recY > 200) {
-      doc.addPage();
-      recY = 30;
-    }
-    
-    doc.setFontSize(14);
-    doc.setFont('helvetica', 'bold');
-    doc.text('План внедрения рекомендаций', 15, recY);
-    recY += 10;
-    
-    // Create checklist table
-    const checklistData = allRecommendations.map((rec, index) => [
-      `${index + 1}. ${rec.title}`,
-      getRecommendationPriorityText(rec.priority),
-      ''  // Empty column for checkbox
-    ]);
-    
-    autoTable(doc, {
-      startY: recY,
-      head: [['Задача', 'Приоритет', 'Выполнено']],
-      body: checklistData,
-      theme: 'grid',
-      styles: { 
-        halign: 'left',
-        fontSize: 9,
-        overflow: 'linebreak'
-      },
-      columnStyles: {
-        0: { cellWidth: 130 },
-        1: { cellWidth: 30 },
-        2: { cellWidth: 20 }
-      },
-      headStyles: { fillColor: [pdfColors.success[0], pdfColors.success[1], pdfColors.success[2]] }
-    });
-    
-    recY = (doc as any).lastAutoTable.finalY + 15;
-  }
-  
-  // Add final summary and contact
-  doc.addPage();
-  
-  if (enhancedStyling) {
-    // Add summary header with style
-    doc.setFillColor(pdfColors.secondary[0], pdfColors.secondary[1], pdfColors.secondary[2]); // Purple for summary
-    doc.rect(0, 0, 210, 20, 'F');
-    doc.setFontSize(18);
-    doc.setTextColor(255, 255, 255);
-    doc.text('Итоги и следующие шаги', 15, 15);
-    
-    // Add graphical elements
-    doc.setFillColor(155, 135, 245, 0.3); // Light purple with transparency
-    doc.rect(160, 30, 40, 40, 'F');
-    doc.setFillColor(155, 135, 245, 0.5); // Light purple with transparency
-    doc.circle(170, 60, 10, 'F');
+  // Добавляем выводы на основе данных сканирования
+  if (pagesScanned > 5000) {
+    formatParagraph(doc, '1. У вас крупный сайт с большим количеством страниц. Рекомендуется регулярный аудит структуры.', yPos);
+    yPos += 10;
+  } else if (pagesScanned > 1000) {
+    formatParagraph(doc, '1. У вас сайт среднего размера. Важно поддерживать оптимальную структуру.', yPos);
+    yPos += 10;
   } else {
-    // Simple header
-    doc.setFontSize(18);
-    doc.setTextColor(0, 0, 0);
-    doc.text('Итоги и следующие шаги', 15, 15);
+    formatParagraph(doc, '1. У вас сайт небольшого размера. Это упрощает поддержку и оптимизацию структуры.', yPos);
+    yPos += 10;
   }
   
-  doc.setTextColor(0, 0, 0);
+  if (brokenLinks.length > 0) {
+    formatParagraph(doc, `2. Необходимо исправить ${brokenLinks.length} неработающих ссылок для улучшения SEO и пользовательского опыта.`, yPos);
+    yPos += 10;
+  } else {
+    formatParagraph(doc, '2. Неработающих ссылок не обнаружено - отличный результат!', yPos);
+    yPos += 10;
+  }
   
-  let summaryY = 30;
-  doc.setFontSize(14);
-  doc.setFont('helvetica', 'bold');
-  doc.text('Краткий итог анализа', 15, summaryY);
-  summaryY += 10;
+  if (duplicatePages.length > 0) {
+    formatParagraph(doc, `3. Рекомендуется устранить дублирование контента (${duplicatePages.length} групп дублирующихся страниц).`, yPos);
+    yPos += 10;
+  } else {
+    formatParagraph(doc, '3. Дублирующихся страниц не обнаружено - это положительно влияет на SEO.', yPos);
+    yPos += 10;
+  }
   
-  doc.setFontSize(11);
-  doc.setFont('helvetica', 'normal');
-  
-  const summaryText = getSiteSummary(score, brokenLinks.length, duplicatePages.length, urls.length);
-  const summaryLines = doc.splitTextToSize(summaryText, 180);
-  
-  summaryLines.forEach((line: string) => {
-    doc.text(line, 15, summaryY);
-    summaryY += 6;
-  });
-  
-  summaryY += 10;
-  
-  // Add next steps
-  doc.setFontSize(14);
-  doc.setFont('helvetica', 'bold');
-  doc.text('Следующие шаги', 15, summaryY);
-  summaryY += 10;
-  
-  doc.setFontSize(11);
-  doc.setFont('helvetica', 'normal');
-  
-  const nextSteps = [
-    '1. Исправьте критические ошибки и битые ссылки',
-    '2. Решите проблему дублированного содержимого',
-    '3. Оптимизируйте структуру URL и глубину вложенности',
-    '4. Обновите или создайте карту сайта и файл robots.txt',
-    '5. Проведите повторный аудит для отслеживания прогресса'
-  ];
-  
-  nextSteps.forEach(step => {
-    doc.text(step, 15, summaryY);
-    summaryY += 7;
-  });
-  
-  summaryY += 10;
-  
-  // Add expected benefits
-  doc.setFontSize(14);
-  doc.setFont('helvetica', 'bold');
-  doc.text('Ожидаемые результаты', 15, summaryY);
-  summaryY += 10;
-  
-  doc.setFontSize(11);
-  doc.setFont('helvetica', 'normal');
-  
-  const benefits = [
-    '• Улучшение позиций в поисковых системах',
-    '• Более эффективное сканирование сайта поисковыми роботами',
-    '• Повышение пользовательского опыта и конверсии',
-    '• Более четкая и понятная структура сайта',
-    '• Лучшее распределение \"весомости\" страниц'
-  ];
-  
-  benefits.forEach(benefit => {
-    doc.text(benefit, 15, summaryY);
-    summaryY += 7;
-  });
-  
-  // Add contact information and branding
-  summaryY = 230;
-  doc.setFillColor(245, 245, 245);
-  doc.rect(0, summaryY, 210, 40, 'F');
-  
-  doc.setFontSize(11);
-  doc.setFont('helvetica', 'bold');
-  doc.text('SEO Analyzer', 15, summaryY + 10);
-  
-  doc.setFontSize(9);
-  doc.setFont('helvetica', 'normal');
-  doc.text('Профессиональный инструмент анализа и оптимизации сайтов', 15, summaryY + 16);
-  doc.text('support@seo-analyzer.com', 15, summaryY + 22);
-  doc.text('www.seo-analyzer.com', 15, summaryY + 28);
-  
-  // Add report generation info
+  // Добавляем информацию о дате создания отчета
+  yPos = 270;
   doc.setFontSize(8);
   doc.setTextColor(100, 100, 100);
-  doc.text(`Отчет сгенерирован: ${new Date().toLocaleString('ru-RU')}`, 105, summaryY + 28, { align: 'center' });
+  doc.text(`Отчет создан: ${new Date().toLocaleString('ru-RU')}`, 20, yPos);
   
-  // Add pagination to all pages
+  // Добавляем нумерацию страниц
   addPaginationFooters(doc);
   
-  // Return the PDF as a blob
+  // Возвращаем PDF как Blob
   return doc.output('blob');
-};
-
-// Helper functions
-
-/**
- * Calculate overall score based on site metrics
- */
-function calculateOverallScore(
-  brokenLinksCount: number,
-  duplicatesCount: number,
-  totalUrls: number
-): number {
-  // Base score
-  let score = 100;
-  
-  // Penalize for broken links (more severe)
-  if (totalUrls > 0) {
-    const brokenLinkPercentage = (brokenLinksCount / totalUrls) * 100;
-    if (brokenLinkPercentage > 5) {
-      score -= 30;
-    } else if (brokenLinkPercentage > 2) {
-      score -= 20;
-    } else if (brokenLinkPercentage > 0) {
-      score -= 10;
-    }
-  }
-  
-  // Penalize for duplicates
-  if (totalUrls > 0) {
-    const duplicatePercentage = (duplicatesCount / totalUrls) * 100;
-    if (duplicatePercentage > 10) {
-      score -= 25;
-    } else if (duplicatePercentage > 5) {
-      score -= 15;
-    } else if (duplicatePercentage > 0) {
-      score -= 5;
-    }
-  }
-  
-  // Ensure score is between 0 and 100
-  return Math.max(0, Math.min(100, score));
-}
-
-/**
- * Get error description based on status code
- */
-function getErrorDescription(statusCode: number): string {
-  switch (statusCode) {
-    case 400:
-      return 'Некорректный запрос';
-    case 401:
-      return 'Требуется авторизация';
-    case 403:
-      return 'Доступ запрещен';
-    case 404:
-      return 'Страница не найдена';
-    case 405:
-      return 'Метод не разрешен';
-    case 408:
-      return 'Истекло время ожидания';
-    case 410:
-      return 'Ресурс удален';
-    case 500:
-      return 'Внутренняя ошибка сервера';
-    case 502:
-      return 'Ошибка шлюза';
-    case 503:
-      return 'Сервис недоступен';
-    case 504:
-      return 'Истекло время ожидания шлюза';
-    default:
-      return 'Ошибка соединения';
-  }
-}
-
-// Additional helper functions copied from other modules to ensure functionality
-function applyRecommendationPriorityColor(doc: jsPDF, priority: string): void {
-  switch (priority) {
-    case 'high':
-      doc.setTextColor(pdfColors.error[0], pdfColors.error[1], pdfColors.error[2]);
-      break;
-    case 'medium':
-      doc.setTextColor(pdfColors.warning[0], pdfColors.warning[1], pdfColors.warning[2]);
-      break;
-    case 'low':
-      doc.setTextColor(pdfColors.info[0], pdfColors.info[1], pdfColors.info[2]);
-      break;
-    default:
-      doc.setTextColor(0, 0, 0);
-  }
-}
-
-function getRecommendationPriorityText(priority: string): string {
-  switch (priority) {
-    case 'high':
-      return 'Высокий';
-    case 'medium':
-      return 'Средний';
-    case 'low':
-      return 'Низкий';
-    default:
-      return 'Средний';
-  }
 }

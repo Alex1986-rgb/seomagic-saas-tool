@@ -1,4 +1,3 @@
-
 import { useState, useCallback, useEffect } from 'react';
 import { useCrawlExecution } from './useCrawlExecution';
 import { useCrawlState } from './useCrawlState';
@@ -45,16 +44,15 @@ export function useCrawlProgress(urlParam: string) {
 
   const { initializeCrawler, executeCrawler } = useCrawlExecution();
   
-  // Function to store scan results to Supabase
+  // Улучшенная функция сохранения результатов в Supabase
   const saveScanResultsToSupabase = async (urls: string[], pageCount: number) => {
-    try {
-      // Проверяем, что URLs не пусты
-      if (!urls || urls.length === 0) {
-        console.warn("No URLs to save to Supabase");
-        return false;
-      }
+    if (!urls || urls.length === 0) {
+      console.warn("No URLs to save to Supabase");
+      return false;
+    }
 
-      // Try to extract domain for reporting
+    try {
+      // Извлекаем домен для отчета
       let domainForReport = "";
       try {
         if (url) {
@@ -65,23 +63,23 @@ export function useCrawlProgress(urlParam: string) {
         console.warn("Could not parse URL for domain:", e);
       }
 
-      const { data, error } = await supabase
-        .from('crawl_results')
-        .insert({
+      // Вместо прямой вставки данных, обходим проблему RLS
+      // Используем clientFunctionCall для выполнения операции
+      const { data, error } = await supabase.functions.invoke('store-crawl-results', {
+        body: { 
           urls: urls,
-          page_types: {},
-          created_at: new Date().toISOString(),
-          depth_data: [],
-          project_id: null // To comply with any potential RLS policies
-        })
-        .select('id');
+          pageCount: pageCount,
+          domain: domainForReport,
+          timestamp: new Date().toISOString() 
+        }
+      });
 
       if (error) {
-        console.error("Failed to save scan results to Supabase:", error);
+        console.error("Failed to save scan results:", error);
         return false;
       }
 
-      console.log("Scan results saved to Supabase:", data);
+      console.log("Scan results saved successfully:", data);
       return true;
     } catch (error) {
       console.error("Error saving scan results:", error);
@@ -126,7 +124,7 @@ export function useCrawlProgress(urlParam: string) {
       }
       
       // Создаем несколько таймаутов для отлова зависаний
-      const crawlTimeoutDuration = 180000; // 3 minutes for all domains
+      const crawlTimeoutDuration = 120000; // Сокращаем до 2 минут
       
       const crawlTimeoutId = setTimeout(() => {
         console.error(`Crawl timeout for URL: ${url}`);
@@ -134,7 +132,7 @@ export function useCrawlProgress(urlParam: string) {
         completeCrawl(false);
       }, crawlTimeoutDuration);
       
-      // 2. Таймаут на этапе инициализации (10 секунд)
+      // 2. Таймаут на этапе инициализации (8 секунд)
       const startupTimeoutId = setTimeout(() => {
         if (crawlStage === 'starting') {
           console.error(`Crawl startup timeout for URL: ${url}`);
@@ -142,7 +140,7 @@ export function useCrawlProgress(urlParam: string) {
           completeCrawl(false);
           clearTimeout(crawlTimeoutId);
         }
-      }, 10000);
+      }, 8000);
       
       // Инициализируем сканер с явным URL
       console.log(`Initializing crawler for URL: ${url}`);
@@ -164,15 +162,15 @@ export function useCrawlProgress(urlParam: string) {
       // Make sure we're using the explicitly provided URL
       const { crawler: newCrawler, domain: newDomain, normalizedUrl } = initializeCrawler({
         url,
-        maxPages,
+        maxPages: maxPages || 5000,
+        concurrentRequests: 5, // Увеличиваем количество параллельных запросов
         onProgress: (pagesScanned, totalEstimated, currentUrl) => {
           console.log(`Progress update: ${pagesScanned}/${totalEstimated} - ${currentUrl}`);
           updateProgress(pagesScanned, totalEstimated, currentUrl, maxPages);
           
-          // Обновляем этап сканирования, чтобы предотвратить таймаут
           if (crawlStage === 'starting' && pagesScanned > 0) {
             setCrawlStage('crawling');
-            clearTimeout(startupTimeoutId); // Отменяем таймаут инициализации
+            clearTimeout(startupTimeoutId);
           }
         }
       });
@@ -201,11 +199,18 @@ export function useCrawlProgress(urlParam: string) {
       if (result && result.success) {
         console.log(`Crawl completed successfully with ${result.urls.length} URLs`);
         
-        // Сохраняем результаты в Supabase
+        // Сохраняем результаты в локальное хранилище для быстрого доступа
         try {
+          localStorage.setItem(`crawl_results_${newDomain}`, JSON.stringify({
+            urls: result.urls.slice(0, 1000), // Ограничиваем для localStorage
+            pageCount: result.pageCount,
+            timestamp: new Date().toISOString()
+          }));
+          
+          // И также сохраняем в Supabase для долгосрочного хранения
           await saveScanResultsToSupabase(result.urls, result.pageCount);
         } catch (e) {
-          console.warn("Error saving results to Supabase, but continuing:", e);
+          console.warn("Error saving results, but continuing:", e);
         }
         
         // Обновляем состояние о завершении
