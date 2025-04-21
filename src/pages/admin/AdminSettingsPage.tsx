@@ -3,11 +3,10 @@ import React from 'react';
 import { Helmet } from 'react-helmet-async';
 import AdminSettings from '@/components/admin/AdminSettings';
 import { Card, CardContent } from "@/components/ui/card";
-import { Settings, UserCheck, Globe, Shield, BellRing, Server, Database, Gauge } from 'lucide-react';
+import { Settings, UserCheck, Globe, Shield, BellRing, Server, Database, Gauge, ArrowRight } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 
-// Recent settings changes
 const recentChanges = [
   { action: "Изменены настройки SMTP", user: "Анна С.", time: "20 мин назад" },
   { action: "Обновлены параметры кеширования", user: "Василий П.", time: "2 ч назад" },
@@ -50,7 +49,6 @@ const hotSettings = [
   { to: "/admin/system/logging", label: "Логирование событий" },
 ];
 
-
 const AdminSettingsPage: React.FC = () => {
   return (
     <>
@@ -58,26 +56,27 @@ const AdminSettingsPage: React.FC = () => {
         <title>Настройки | Админ панель</title>
       </Helmet>
       
-      <div className="container mx-auto px-6 py-10 max-w-6xl">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
+      <div className="container mx-auto px-4 md:px-6 py-10 max-w-6xl">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
           <div>
-            <div className="flex items-center gap-2 mb-2">
-              <div className="bg-primary/10 text-primary p-1.5 rounded">
-                <Settings className="h-5 w-5" />
+            <div className="flex items-center gap-3 mb-2">
+              <div className="bg-primary/20 text-primary p-2 rounded-lg shadow-md">
+                <Settings className="h-6 w-6" />
               </div>
-              <h1 className="text-3xl font-bold">Настройки администратора</h1>
+              <h1 className="text-3xl font-bold tracking-tight text-gradient-primary">Настройки администратора</h1>
             </div>
             <p className="text-muted-foreground">
-              Управление системными настройками и конфигурацией платформы
+              Управление всеми ключевыми настройками и конфигурацией платформы.
             </p>
           </div>
           
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             {navSettings.map((item) => (
               <Link to={item.to} key={item.to}>
-                <Button variant="outline" className="flex items-center gap-2" size="sm">
+                <Button variant="outline" className="flex items-center gap-2 hover-scale shadow" size="sm">
                   {item.icon}
                   {item.label}
+                  <ArrowRight className="h-4 w-4 ml-1" />
                 </Button>
               </Link>
             ))}
@@ -86,16 +85,15 @@ const AdminSettingsPage: React.FC = () => {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
           <div className="lg:col-span-2">
-            <Card className="backdrop-blur-sm bg-card/80 border shadow-sm">
+            <Card className="backdrop-blur-md bg-gradient-to-br from-card/90 to-secondary/40 border shadow-lg">
               <CardContent className="p-0">
                 <AdminSettings />
               </CardContent>
             </Card>
           </div>
           
-          <div className="space-y-6">
-            {/* Блок недавних изменений */}
-            <Card className="backdrop-blur-sm bg-card/80 border shadow-sm">
+          <div className="space-y-7">
+            <Card className="bg-gradient-to-br from-green-50 to-white/80 border-green-100 shadow hover:scale-105 transition-transform">
               <CardContent className="p-6">
                 <div className="flex items-center gap-2 mb-4">
                   <BellRing className="h-5 w-5 text-primary" />
@@ -117,15 +115,14 @@ const AdminSettingsPage: React.FC = () => {
                   ))}
                 </div>
                 <Link to="/admin/history">
-                  <Button variant="outline" className="w-full mt-4" size="sm">
+                  <Button variant="outline" className="w-full mt-4 hover-scale" size="sm">
                     Просмотреть историю изменений
                   </Button>
                 </Link>
               </CardContent>
             </Card>
             
-            {/* Блок "Важные настройки" - теперь с активными ссылками! */}
-            <Card className="backdrop-blur-sm bg-card/80 border shadow-sm">
+            <Card className="bg-gradient-to-br from-blue-50 to-white/90 border-blue-100 shadow hover:scale-105 transition-transform">
               <CardContent className="p-6">
                 <div className="flex items-center gap-2 mb-4">
                   <Gauge className="h-5 w-5 text-primary" />
@@ -134,8 +131,9 @@ const AdminSettingsPage: React.FC = () => {
                 <div className="space-y-3 text-sm">
                   {hotSettings.map(link => (
                     <Link key={link.to} to={link.to}>
-                      <Button variant="outline" className="w-full justify-start mb-1" size="sm">
+                      <Button variant="outline" className="w-full justify-start mb-1 hover-scale" size="sm">
                         {link.label}
+                        <ArrowRight className="h-4 w-4 ml-1" />
                       </Button>
                     </Link>
                   ))}
@@ -147,13 +145,13 @@ const AdminSettingsPage: React.FC = () => {
         <div className="mt-10 text-sm text-muted-foreground space-y-3 max-w-3xl">
           <p className="flex items-center gap-2">
             <Settings className="h-4 w-4 text-primary" />
-            <b>Возможности:</b> управление всеми настройками платформы, пользователи, интеграции, безопасность, уведомления.
+            <b>Возможности:</b> расширенное управление платформой, пользователи, интеграции, безопасность, уведомления.
           </p>
           <ul className="list-disc pl-6 space-y-1">
-            <li>Все изменения настроек автоматически логируются</li>
-            <li>Для критических изменений требуется дополнительное подтверждение</li>
-            <li>Резервное копирование выполняется раз в сутки</li>
-            <li>Восстановление настроек из резервной копии доступно администраторам</li>
+            <li>Автоматическое логирование изменений</li>
+            <li>Подтверждение для критичных операций</li>
+            <li>Регулярное резервное копирование</li>
+            <li>Гибкое восстановление из бэкапа для администраторов</li>
           </ul>
         </div>
       </div>
