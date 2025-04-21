@@ -1,406 +1,514 @@
 
 import axios from 'axios';
+import * as cheerio from 'cheerio';
 import { saveAs } from 'file-saver';
-import { SiteScanner } from './crawler/siteScanner';
-import { SitemapExtractor } from './crawler/sitemapExtractor';
 
-export interface SimpleSitemapCreatorOptions {
+interface SimpleSitemapCreatorOptions {
   maxPages?: number;
   maxDepth?: number;
   includeStylesheet?: boolean;
   timeout?: number;
+  forceTargetDomain?: boolean;
   followRedirects?: boolean;
+  concurrentRequests?: number;
   retryCount?: number;
   retryDelay?: number;
-  concurrentRequests?: number;
-  forceTargetDomain?: boolean;
 }
 
 export class SimpleSitemapCreator {
-  private options: SimpleSitemapCreatorOptions;
-  private sitemapExtractor: SitemapExtractor;
-  private baseUrl: string = '';
+  private visited = new Set<string>();
+  private queue: { url: string; depth: number }[] = [];
   private domain: string = '';
-  private isCancelled: boolean = false;
+  private baseUrl: string = '';
+  private options: SimpleSitemapCreatorOptions;
+  private userAgent = 'Mozilla/5.0 (compatible; SEOAuditBot/1.0)';
+  private isCancelled = false;
+  private progressCallback?: (scanned: number, total: number, currentUrl: string) => void;
+  private concurrentRequests = 3; // Снижаем конкурентные запросы для надежности
+  private activeRequests = 0;
   
   constructor(options: SimpleSitemapCreatorOptions = {}) {
     this.options = {
-      maxPages: 10000,
-      maxDepth: 5,
-      includeStylesheet: true,
-      timeout: 30000,
-      followRedirects: true,
-      retryCount: 3,
-      retryDelay: 1000,
-      concurrentRequests: 30,
-      forceTargetDomain: true,
-      ...options
+      maxPages: options.maxPages || 100000, // Увеличение лимита для масштабного сканирования
+      maxDepth: options.maxDepth || 5,
+      includeStylesheet: options.includeStylesheet !== undefined ? options.includeStylesheet : true,
+      timeout: options.timeout || 15000, // Увеличиваем таймаут для более стабильной работы
+      forceTargetDomain: options.forceTargetDomain !== undefined ? options.forceTargetDomain : true,
+      followRedirects: options.followRedirects !== undefined ? options.followRedirects : true,
+      concurrentRequests: options.concurrentRequests || 3,
+      retryCount: options.retryCount || 2,
+      retryDelay: options.retryDelay || 1000
     };
     
-    this.sitemapExtractor = new SitemapExtractor();
+    this.concurrentRequests = this.options.concurrentRequests || 3;
   }
   
   /**
-   * Отменить сканирование
-   */
-  cancel(): void {
-    console.log("SimpleSitemapCreator: Cancelling crawl");
-    this.isCancelled = true;
-  }
-  
-  /**
-   * Задать базовый URL для сканирования
+   * Устанавливает базовый URL для сканирования
+   * @param url URL сайта
    */
   setBaseUrl(url: string): void {
-    if (!url || url.trim() === '') {
-      console.error("Cannot set empty baseUrl");
-      return;
-    }
-    
     this.baseUrl = url.startsWith('http') ? url : `https://${url}`;
-    
     try {
       const urlObj = new URL(this.baseUrl);
       this.domain = urlObj.hostname;
-      console.log(`SimpleSitemapCreator: установлен базовый URL ${this.baseUrl} с доменом ${this.domain}`);
-    } catch (error) {
-      console.error('Невозможно извлечь домен из URL:', error);
+    } catch (e) {
+      console.error("Invalid URL:", e);
+      throw new Error("Некорректный URL");
     }
   }
   
   /**
-   * Получить базовый URL
-   */
-  getBaseUrl(): string {
-    return this.baseUrl;
-  }
-  
-  /**
-   * Получить текущий домен
+   * Получает текущий домен сканирования
+   * @returns домен сайта
    */
   getDomain(): string {
     return this.domain;
   }
   
   /**
-   * Crawl a website and return all URLs
+   * Получает текущий базовый URL сканирования
+   * @returns базовый URL
    */
-  async crawl(
-    url: string, 
-    progressCallback?: (scanned: number, total: number, currentUrl: string) => void
-  ): Promise<string[]> {
+  getBaseUrl(): string {
+    return this.baseUrl;
+  }
+  
+  /**
+   * Отменяет текущее сканирование
+   */
+  cancel(): void {
+    this.isCancelled = true;
+    console.log("Scanning cancelled");
+  }
+  
+  /**
+   * Выполняет сканирование сайта начиная с указанного URL
+   * @param url URL для начала сканирования
+   * @param progressCallback Функция обратного вызова для отслеживания прогресса
+   * @returns Массив найденных URL
+   */
+  async crawl(url: string, progressCallback?: (scanned: number, total: number, currentUrl: string) => void): Promise<string[]> {
+    this.progressCallback = progressCallback;
     this.isCancelled = false;
     
-    // Строго соблюдаем указанный URL
-    let normalizedUrl = '';
-    
-    if (url && url.trim() !== '') {
-      normalizedUrl = url.startsWith('http') ? url : `https://${url}`;
-    } else if (this.baseUrl) {
-      normalizedUrl = this.baseUrl;
-    } else {
-      console.error('No URL provided for crawling');
-      return [];
+    // Если baseUrl не установлен, устанавливаем его
+    if (!this.baseUrl) {
+      this.setBaseUrl(url);
     }
     
-    // Обновляем baseUrl и domain на случай, если URL изменился
-    this.setBaseUrl(normalizedUrl);
+    this.visited.clear();
+    this.queue = [{ url, depth: 0 }];
     
-    // Проверяем, что URL и домен установлены
-    if (!this.baseUrl || !this.domain) {
-      console.error('Invalid URL or domain not extracted:', normalizedUrl);
-      return [];
-    }
-    
+    // Используем сканирование карты сайта для ускорения процесса
     try {
-      console.log(`Начинаем сканирование сайта ${normalizedUrl} (домен: ${this.domain})`);
-      
-      // First, try to find and parse sitemaps
-      const sitemapUrls = await this.findSitemaps(normalizedUrl);
-      let allUrls: string[] = [];
-      
-      for (const sitemapUrl of sitemapUrls) {
-        if (this.isCancelled) {
-          console.log("Crawl cancelled during sitemap processing");
-          return [];
-        }
-        
-        try {
-          console.log(`Found sitemap at ${sitemapUrl}, extracting URLs...`);
-          
-          // Fetch the sitemap with retry logic
-          const sitemapXml = await this.fetchWithRetry(sitemapUrl);
-          if (sitemapXml) {
-            const extractedUrls = await this.sitemapExtractor.extractUrlsFromSitemap(sitemapXml);
-            
-            // Фильтруем URL, чтобы оставить только те, которые относятся к целевому домену
-            const filteredUrls = this.filterUrlsByDomain(extractedUrls, this.domain);
-            
-            if (filteredUrls.length > 0) {
-              console.log(`Extracted ${filteredUrls.length} URLs from sitemap ${sitemapUrl}`);
-              allUrls = [...allUrls, ...filteredUrls];
-              
-              // Report progress if we have a callback
-              if (progressCallback) {
-                progressCallback(
-                  filteredUrls.length,
-                  filteredUrls.length,
-                  "Extracted URLs from sitemap"
-                );
-              }
-            }
-          }
-        } catch (error) {
-          console.warn(`Error processing sitemap ${sitemapUrl}:`, error);
-        }
-      }
-      
-      // If we found URLs from sitemaps, return them
-      if (allUrls.length > 0) {
-        console.log(`Найдено ${allUrls.length} URL в картах сайта для домена ${this.domain}`);
-        return [...new Set(allUrls)]; // Remove duplicates
-      }
-      
-      // If no sitemaps found or they were empty, fall back to crawler
-      console.log('No valid sitemaps found or they were empty, falling back to crawling...');
-      
-      const scanner = new SiteScanner(normalizedUrl, {
-        maxPages: this.options.maxPages,
-        maxDepth: this.options.maxDepth,
-        timeout: this.options.timeout,
-        onProgress: progressCallback,
-        crawlDelay: 300,
-        retryCount: this.options.retryCount,
-        retryDelay: this.options.retryDelay
-        // Removed concurrentRequests option as it's not supported by SiteScanner
-      });
-      
-      // Принудительно ограничиваем сканирование только указанным доменом
-      // Это достигается путем фильтрации после получения результатов
-      const result = await scanner.scan();
-      
-      if (this.isCancelled) {
-        console.log("Crawl cancelled during scanning");
-        return [];
-      }
-      
-      // Фильтруем результаты, чтобы оставить только URL для нашего домена
-      if (this.options.forceTargetDomain) {
-        const filteredUrls = this.filterUrlsByDomain(result.urls, this.domain);
-        console.log(`Отфильтровано ${filteredUrls.length} URL из ${result.urls.length} для домена ${this.domain}`);
-        return filteredUrls;
-      }
-      
-      return result.urls;
-    } catch (error) {
-      console.error('Error during crawl:', error);
-      throw error;
+      await this.findAndProcessSitemaps();
+    } catch (e) {
+      console.warn("Error processing sitemaps:", e);
     }
+
+    const urls: string[] = [];
+    
+    while (this.queue.length > 0 && this.visited.size < this.options.maxPages! && !this.isCancelled) {
+      // Обрабатываем одновременно несколько URL для ускорения сканирования
+      const batchSize = Math.min(this.concurrentRequests, this.queue.length);
+      const batch = [];
+      
+      for (let i = 0; i < batchSize && this.activeRequests < this.concurrentRequests; i++) {
+        const nextUrl = this.queue.shift();
+        if (nextUrl) {
+          batch.push(this.processUrl(nextUrl.url, nextUrl.depth));
+          this.activeRequests++;
+        }
+      }
+      
+      if (batch.length > 0) {
+        // Ожидаем завершения текущей партии запросов
+        await Promise.allSettled(batch);
+      } else {
+        // Если активных запросов слишком много, делаем короткую паузу
+        await new Promise(resolve => setTimeout(resolve, 100));
+      }
+      
+      // Обновляем прогресс
+      if (this.progressCallback) {
+        const currentUrl = this.queue.length > 0 ? this.queue[0].url : '';
+        this.progressCallback(this.visited.size, this.visited.size + this.queue.length, currentUrl);
+      }
+    }
+    
+    // Формируем список найденных URL
+    this.visited.forEach(url => {
+      urls.push(url);
+    });
+    
+    return urls;
   }
   
   /**
-   * Фильтрует URL, оставляя только те, которые относятся к указанному домену
+   * Создает sitemap.xml на основе найденных URL
+   * @param urls Массив URL
+   * @param filename Имя файла для сохранения
    */
-  private filterUrlsByDomain(urls: string[], targetDomain: string): string[] {
-    if (!targetDomain) {
-      console.warn("Целевой домен не указан для фильтрации URL");
-      return urls;
+  generateSitemap(urls: string[], filename?: string): string {
+    let sitemap = '<?xml version="1.0" encoding="UTF-8"?>\n';
+    
+    // Добавляем необязательную таблицу стилей для просмотра в браузере
+    if (this.options.includeStylesheet) {
+      sitemap += '<?xml-stylesheet type="text/xsl" href="https://cdn.jsdelivr.net/npm/sitemap-stylesheet@1.0.0/sitemap.xsl"?>\n';
     }
     
-    console.log(`Фильтруем URLs для домена: ${targetDomain}`);
+    sitemap += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n';
     
-    return urls.filter(url => {
+    // Добавляем URL в sitemap
+    for (const url of urls) {
       try {
         const urlObj = new URL(url);
-        const urlDomain = urlObj.hostname;
         
-        // Проверяем совпадение доменов с учетом www.
-        const isMatch = 
-          urlDomain === targetDomain || 
-          urlDomain === 'www.' + targetDomain ||
-          targetDomain === 'www.' + urlDomain;
+        // Пропускаем URL, которые не относятся к нашему домену
+        if (this.options.forceTargetDomain && urlObj.hostname !== this.domain && urlObj.hostname !== 'www.' + this.domain) {
+          continue;
+        }
         
-        return isMatch;
-      } catch (error) {
-        console.warn(`Не удалось проанализировать URL: ${url}`, error);
-        return false;
+        // Пропускаем URL с расширениями файлов, которые не подходят для sitemap
+        if (/\.(jpg|jpeg|png|gif|css|js|svg|ico|woff|woff2|ttf|eot)$/i.test(urlObj.pathname)) {
+          continue;
+        }
+        
+        sitemap += '  <url>\n';
+        sitemap += `    <loc>${url}</loc>\n`;
+        sitemap += `    <lastmod>${new Date().toISOString()}</lastmod>\n`;
+        
+        // Определяем приоритет на основе глубины URL
+        const depth = (url.match(/\//g) || []).length - 3; // примерная оценка глубины
+        const priority = Math.max(0.1, 1.0 - depth * 0.2).toFixed(1); // 1.0 -> 0.8 -> 0.6 -> ...
+        
+        sitemap += `    <priority>${priority}</priority>\n`;
+        sitemap += '  </url>\n';
+      } catch (e) {
+        // Пропускаем некорректные URL
+        console.warn("Invalid URL:", url);
       }
-    });
+    }
+    
+    sitemap += '</urlset>';
+    
+    // Сохраняем sitemap в файл, если указано имя файла
+    if (filename) {
+      const blob = new Blob([sitemap], { type: 'application/xml' });
+      saveAs(blob, filename);
+    }
+    
+    return sitemap;
   }
   
   /**
-   * Find sitemaps for a website
+   * Поиск и обработка существующих sitemap.xml для более быстрого сканирования
+   * @private
    */
-  private async findSitemaps(url: string): Promise<string[]> {
-    const sitemaps: string[] = [];
-    const domain = this.extractDomain(url);
-    
-    // Common sitemap locations
-    const potentialPaths = [
-      `${url}/sitemap.xml`,
-      `${url}/sitemap_index.xml`,
-      `${url}/sitemap.php`,
-      `${url}/sitemap.txt`,
-      `${url}/sitemaps/sitemap.xml`
+  private async findAndProcessSitemaps(): Promise<void> {
+    const possibleSitemapUrls = [
+      `${this.baseUrl}/sitemap.xml`,
+      `${this.baseUrl}/sitemap_index.xml`,
+      `${this.baseUrl}/sitemap-index.xml`,
+      `${this.baseUrl}/sitemaps/sitemap.xml`,
+      `${this.baseUrl}/wp-sitemap.xml`,
+      `${this.baseUrl}/sitemap/sitemap.xml`
     ];
     
-    // Also check robots.txt for sitemap references
+    // Также проверяем robots.txt
     try {
-      const robotsTxt = await this.fetchWithRetry(`${url}/robots.txt`);
-      if (robotsTxt) {
-        const sitemapMatches = robotsTxt.match(/Sitemap:\s*([^\s]+)/gi);
+      const robotsUrl = `${this.baseUrl}/robots.txt`;
+      const robotsResponse = await axios.get(robotsUrl, {
+        headers: { 'User-Agent': this.userAgent },
+        timeout: this.options.timeout
+      });
+      
+      if (robotsResponse.status === 200) {
+        const robotsText = robotsResponse.data;
+        const sitemapMatches = robotsText.match(/Sitemap:\s*(https?:\/\/[^\s]+)/gi);
+        
         if (sitemapMatches) {
           sitemapMatches.forEach(match => {
             const sitemapUrl = match.replace(/Sitemap:\s*/i, '').trim();
-            potentialPaths.push(sitemapUrl);
+            possibleSitemapUrls.push(sitemapUrl);
           });
         }
       }
     } catch (error) {
-      console.warn('Error checking robots.txt:', error);
+      console.warn('Could not fetch robots.txt:', error);
     }
     
-    // Check each potential sitemap location
-    for (const path of potentialPaths) {
-      if (this.isCancelled) {
-        return sitemaps;
-      }
+    // Проверяем каждый возможный URL карты сайта
+    for (const sitemapUrl of possibleSitemapUrls) {
+      if (this.isCancelled) break;
       
       try {
-        const response = await axios.head(path, { 
-          timeout: this.options.timeout,
-          maxRedirects: 5
+        console.log(`Checking sitemap: ${sitemapUrl}`);
+        const response = await axios.get(sitemapUrl, {
+          headers: { 'User-Agent': this.userAgent },
+          timeout: this.options.timeout
         });
         
         if (response.status === 200) {
-          sitemaps.push(path);
-        }
-      } catch (error) {
-        // Ignore 404s and other errors
-      }
-    }
-    
-    return sitemaps;
-  }
-  
-  /**
-   * Generate sitemap XML from a list of URLs
-   */
-  generateSitemapXml(urls: string[]): string {
-    const now = new Date().toISOString().substring(0, 10);
-    
-    let xml = '<?xml version="1.0" encoding="UTF-8"?>\n';
-    
-    if (this.options.includeStylesheet) {
-      xml += '<?xml-stylesheet type="text/xsl" href="https://www.sitemaps.org/xsl/sitemap.xsl"?>\n';
-    }
-    
-    xml += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n';
-    
-    for (const url of urls) {
-      xml += '  <url>\n';
-      xml += `    <loc>${this.escapeXml(url)}</loc>\n`;
-      xml += `    <lastmod>${now}</lastmod>\n`;
-      xml += '    <changefreq>monthly</changefreq>\n';
-      xml += '    <priority>0.8</priority>\n';
-      xml += '  </url>\n';
-    }
-    
-    xml += '</urlset>';
-    
-    return xml;
-  }
-
-  /**
-   * Download sitemap as XML file
-   */
-  downloadSitemapXml(urls: string[], filename: string = 'sitemap.xml'): void {
-    const xml = this.generateSitemapXml(urls);
-    const blob = new Blob([xml], { type: 'application/xml' });
-    saveAs(blob, filename);
-  }
-  
-  /**
-   * Download URLs as CSV file
-   */
-  downloadUrlsAsCsv(urls: string[], filename: string = 'urls.csv'): void {
-    const csv = urls.join('\n');
-    const blob = new Blob([csv], { type: 'text/csv' });
-    saveAs(blob, filename);
-  }
-  
-  /**
-   * Helper method to fetch with retry
-   */
-  private async fetchWithRetry(url: string): Promise<string | null> {
-    let retries = 0;
-    const maxRetries = this.options.retryCount || 3;
-    const retryDelay = this.options.retryDelay || 1000;
-    
-    // Проверяем валидность URL
-    try {
-      new URL(url);
-    } catch (error) {
-      console.error(`Invalid URL: ${url}`, error);
-      return null;
-    }
-    
-    while (retries <= maxRetries) {
-      if (this.isCancelled) {
-        return null;
-      }
-      
-      try {
-        const response = await axios.get(url, { 
-          timeout: this.options.timeout,
-          maxRedirects: 5,
-          headers: {
-            'User-Agent': 'Mozilla/5.0 (compatible; SitemapGenerator/1.0; +https://example.com/bot)',
-            'Accept': 'text/html,application/xhtml+xml,application/xml',
-            'Accept-Language': 'en-US,en;q=0.9,ru;q=0.8'
+          console.log(`Found sitemap: ${sitemapUrl}`);
+          
+          // Извлекаем URL из карты сайта
+          const $ = cheerio.load(response.data, { xmlMode: true });
+          
+          // Проверяем, является ли это индексом карты сайта
+          const sitemapNodes = $('sitemapindex sitemap loc');
+          if (sitemapNodes.length > 0) {
+            console.log(`Found sitemap index with ${sitemapNodes.length} subsitemaps`);
+            
+            // Обрабатываем каждую подкарту сайта
+            const subsitemapPromises = [];
+            sitemapNodes.each((_, element) => {
+              const subsitemapUrl = $(element).text().trim();
+              if (subsitemapUrl) {
+                subsitemapPromises.push(this.processSitemap(subsitemapUrl));
+              }
+            });
+            
+            // Ждем завершения обработки всех подкарт
+            await Promise.all(subsitemapPromises);
+          } else {
+            // Обрабатываем обычную карту сайта
+            const urlsFound = await this.processUrlsFromSitemap($);
+            console.log(`Extracted ${urlsFound} URLs from sitemap ${sitemapUrl}`);
           }
-        });
-        
-        if (response.status === 200) {
-          return response.data;
         }
-        return null;
       } catch (error) {
-        console.warn(`Attempt ${retries + 1}/${maxRetries} failed for URL ${url}:`, error);
-        retries++;
-        if (retries > maxRetries) {
-          return null;
-        }
-        
-        // Wait before retrying
-        await new Promise(resolve => setTimeout(resolve, retryDelay));
+        console.warn(`Error checking sitemap ${sitemapUrl}:`, error);
       }
     }
+  }
+  
+  /**
+   * Обрабатывает отдельную карту сайта
+   * @param sitemapUrl URL карты сайта
+   * @private
+   */
+  private async processSitemap(sitemapUrl: string): Promise<number> {
+    if (this.isCancelled) return 0;
     
-    return null;
-  }
-  
-  /**
-   * Escape special characters for XML
-   */
-  private escapeXml(unsafe: string): string {
-    return unsafe
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;')
-      .replace(/'/g, '&apos;');
-  }
-  
-  /**
-   * Extract domain from URL
-   */
-  private extractDomain(url: string): string {
     try {
-      const urlObj = new URL(url);
-      return urlObj.hostname;
+      console.log(`Processing subsitemap: ${sitemapUrl}`);
+      const response = await axios.get(sitemapUrl, {
+        headers: { 'User-Agent': this.userAgent },
+        timeout: this.options.timeout
+      });
+      
+      if (response.status === 200) {
+        const $ = cheerio.load(response.data, { xmlMode: true });
+        return await this.processUrlsFromSitemap($);
+      }
     } catch (error) {
-      return url;
+      console.warn(`Error processing subsitemap ${sitemapUrl}:`, error);
     }
+    
+    return 0;
+  }
+  
+  /**
+   * Извлекает URL из загруженной карты сайта
+   * @param $ Объект cheerio для работы с XML
+   * @private
+   */
+  private async processUrlsFromSitemap($: cheerio.CheerioAPI): Promise<number> {
+    if (this.isCancelled) return 0;
+    
+    let urlCount = 0;
+    
+    $('url > loc').each((_, element) => {
+      const url = $(element).text().trim();
+      if (url) {
+        // Отфильтровываем внешние домены
+        try {
+          const urlObj = new URL(url);
+          if (
+            !this.options.forceTargetDomain ||
+            urlObj.hostname === this.domain || 
+            urlObj.hostname === 'www.' + this.domain
+          ) {
+            // Добавляем в начало очереди с приоритетом
+            this.queue.unshift({ url, depth: 1 });
+            urlCount++;
+          }
+        } catch (error) {
+          console.warn(`Invalid URL in sitemap: ${url}`);
+        }
+      }
+    });
+    
+    return urlCount;
+  }
+  
+  /**
+   * Обрабатывает отдельный URL
+   * @param url URL для обработки
+   * @param depth Глубина от начального URL
+   * @private
+   */
+  private async processUrl(url: string, depth: number): Promise<void> {
+    try {
+      // Если URL уже посещен, отменен или превышена глубина - пропускаем
+      if (this.isCancelled || this.visited.has(url) || depth > this.options.maxDepth!) {
+        this.activeRequests--;
+        return;
+      }
+      
+      // Если достигнут лимит страниц, отменяем
+      if (this.visited.size >= this.options.maxPages!) {
+        this.activeRequests--;
+        return;
+      }
+      
+      // Делаем запрос с повторами при неудаче
+      let response;
+      let retries = 0;
+      
+      while (retries <= this.options.retryCount!) {
+        try {
+          response = await axios.get(url, {
+            headers: { 'User-Agent': this.userAgent },
+            timeout: this.options.timeout,
+            maxRedirects: this.options.followRedirects ? 5 : 0
+          });
+          break; // Если успешно, выходим из цикла
+        } catch (error) {
+          retries++;
+          
+          if (retries > this.options.retryCount!) {
+            console.warn(`Failed to fetch ${url} after ${retries} retries`);
+            this.activeRequests--;
+            return;
+          }
+          
+          // Ждем перед повторной попыткой
+          await new Promise(resolve => setTimeout(resolve, this.options.retryDelay));
+        }
+      }
+      
+      if (!response) {
+        this.activeRequests--;
+        return;
+      }
+      
+      // Проверяем, что это HTML-страница
+      const contentType = response.headers['content-type'] || '';
+      if (!contentType.includes('text/html')) {
+        this.activeRequests--;
+        return;
+      }
+      
+      // Добавляем URL в список посещенных
+      this.visited.add(url);
+      
+      // Извлекаем и обрабатываем ссылки
+      const $ = cheerio.load(response.data);
+      const links = this.extractLinks($, url);
+      
+      // Функция для определения приоритета URL
+      const getPriority = (url: string): number => {
+        // Ключевые слова для страниц товаров
+        const productKeywords = [
+          '/product/', '/item/', '/catalog/', '/collection/', 
+          '/shop/', '/goods/', '/category/', '/produkt/', 
+          '/tovar/', '/p/', '/i/', '/products/'
+        ];
+        
+        // Проверяем наличие ключевых слов в URL
+        for (const keyword of productKeywords) {
+          if (url.includes(keyword)) {
+            return 1; // Высокий приоритет
+          }
+        }
+        
+        // Проверяем расширения файлов (не файлы)
+        if (!/\.(jpg|jpeg|png|gif|pdf|zip|doc|xls|csv|xml|js|css)$/i.test(url)) {
+          return 2; // Средний приоритет
+        }
+        
+        return 3; // Низкий приоритет
+      };
+      
+      // Сортируем внутренние ссылки по приоритету
+      const sortedLinks = [...links].sort((a, b) => {
+        return getPriority(a) - getPriority(b);
+      });
+      
+      // Добавляем внутренние ссылки в очередь с приоритетом
+      for (const link of sortedLinks) {
+        if (!this.visited.has(link) && !this.queue.some(item => item.url === link)) {
+          this.queue.push({ url: link, depth: depth + 1 });
+        }
+      }
+    } catch (error) {
+      console.warn(`Error processing ${url}:`, error);
+    } finally {
+      this.activeRequests--;
+    }
+  }
+  
+  /**
+   * Извлекает ссылки со страницы
+   * @param $ Объект cheerio для работы с HTML
+   * @param currentUrl Текущий URL
+   * @private
+   */
+  private extractLinks($: cheerio.CheerioAPI, currentUrl: string): string[] {
+    const links: string[] = [];
+    const seenUrls = new Set<string>();
+    
+    const currentUrlObj = new URL(currentUrl);
+    
+    $('a').each((_, element) => {
+      const href = $(element).attr('href');
+      if (!href) return;
+      
+      try {
+        const absoluteUrl = new URL(href, currentUrl);
+        
+        // Пропускаем якоря на текущей странице
+        if (absoluteUrl.href === currentUrl + '#' || absoluteUrl.href === currentUrl) {
+          return;
+        }
+        
+        // Пропускаем нежелательные URL (файлы, админ-страницы и т.д.)
+        if (
+          // Якори - пропускаем только если они относятся к текущей странице
+          (absoluteUrl.hash && absoluteUrl.href.split('#')[0] === currentUrl) || 
+          /\.(pdf|zip|rar|jpg|jpeg|png|gif|doc|docx|xls|xlsx|csv|svg|ico|mp3|mp4|avi|mov|wmv|flv|webm)$/i.test(absoluteUrl.pathname) || // Файлы
+          absoluteUrl.pathname.includes('/wp-admin/') || // WordPress админка
+          absoluteUrl.pathname.includes('/wp-login.php') || // WordPress логин
+          absoluteUrl.search.includes('utm_') || // UTM-параметры
+          /\?(?:fbclid|gclid|msclkid|yclid)=/.test(absoluteUrl.search) // Трекинговые параметры
+        ) {
+          return;
+        }
+        
+        const urlString = absoluteUrl.href;
+        
+        // Нормализуем URL, убирая конечный слеш для сравнения
+        const normalizedUrl = urlString.endsWith('/') ? urlString.slice(0, -1) : urlString;
+        
+        if (seenUrls.has(normalizedUrl)) return;
+        seenUrls.add(normalizedUrl);
+        
+        // Проверяем, что это URL того же домена, если включена опция forceTargetDomain
+        if (
+          !this.options.forceTargetDomain || 
+          absoluteUrl.hostname === this.domain || 
+          absoluteUrl.hostname === 'www.' + this.domain
+        ) {
+          links.push(urlString);
+        }
+      } catch (error) {
+        // Пропускаем некорректные URL
+      }
+    });
+    
+    return links;
   }
 }

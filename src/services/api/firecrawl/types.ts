@@ -2,44 +2,59 @@
 export interface CrawlTask {
   id: string;
   url: string;
-  status: 'pending' | 'in_progress' | 'completed' | 'failed';
+  domain: string;
+  status: 'pending' | 'in_progress' | 'completed' | 'failed' | 'cancelled';
   start_time: string;
   completion_time?: string;
   pages_scanned: number;
-  estimated_total_pages: number;
+  estimated_total_pages?: number;
   current_url?: string;
+  progress: number;
   error?: string;
   results?: CrawlResult;
-  // Добавляем недостающие свойства
-  progress?: number;
-  isLargeSite?: boolean;
-  domain?: string;
   urls?: string[];
+  sitemap?: string;
+  isLargeSite?: boolean;
 }
 
 export interface CrawlResult {
-  urls: string[];
+  urls?: string[];
+  pageCount?: number;
+  brokenLinks?: string[];
   metadata?: {
-    sitemap?: string;
     keywords?: string[];
+    sitemap?: string;
     links?: {
       internal: number;
       external: number;
       broken: number;
     };
   };
-  brokenLinks?: string[] | { url: string; statusCode: number; }[];
+  analysisResults?: {
+    optimizationScore: number;
+    estimatedOptimizationTime: string;
+    improvementAreas: string[];
+  };
 }
 
 export interface DeepCrawlerOptions {
-  maxPages: number;
-  maxDepth: number;
-  onProgress?: (progress: {
-    pagesScanned: number;
-    currentUrl: string;
-    totalUrls: number;
-  }) => void;
+  maxPages?: number;
+  maxDepth?: number;
+  includeStylesheet?: boolean;
+  timeout?: number;
+  followRedirects?: boolean;
+  concurrentRequests?: number;
+  retryCount?: number;
+  retryDelay?: number;
+  forceTargetDomain?: boolean;
+  onProgress?: (progress: TaskProgress) => void;
 }
 
-// Добавим массив для хранения задач сканирования, который используется в crawlSimulator.ts
+export interface TaskProgress {
+  pagesScanned: number;
+  currentUrl: string;
+  totalUrls: number;
+}
+
+// Определяем интерфейс для массива задач сканирования (для хранения и работы в памяти)
 export const crawlTasks: CrawlTask[] = [];
