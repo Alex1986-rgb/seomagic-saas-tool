@@ -1,4 +1,3 @@
-
 import { SimpleSitemapCreator } from '@/services/audit/simpleSitemapCreator';
 import { supabase } from "@/integrations/supabase/client";
 
@@ -154,7 +153,6 @@ export function useCrawlExecution() {
         maxDepth: 5, // Set a reasonable depth limit
         includeStylesheet: true,
         timeout: 10000, // 10 seconds timeout for requests
-        followRedirects: true,
         concurrentRequests: 3, // Lower concurrency to avoid overwhelming the server
         retryCount: 2, // Set retries
         retryDelay: 1000,

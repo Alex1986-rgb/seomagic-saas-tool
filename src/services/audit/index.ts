@@ -27,7 +27,7 @@ export {
 // Export optimized site
 export { createOptimizedSite } from './optimizedSite';
 
-// Don't re-export PageContent from scanner to avoid ambiguity
+// Export functions from scanner.ts
 import { scanWebsite, generateSitemap, calculateScannerOptimizationMetrics, createOptimizedSite as createScannerOptimizedSite } from './scanner';
 export { 
   scanWebsite, 
