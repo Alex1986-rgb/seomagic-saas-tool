@@ -1,36 +1,35 @@
 
 /**
- * Site structure analyzer for evaluating website architecture
+ * Site structure analyzer
  */
 
 import { SiteStructureAnalysis } from './types';
 
 export class SiteAnalyzer {
-  // Enhanced site structure analysis
   static analyzeSiteStructure(visited: Set<string>, domain: string): SiteStructureAnalysis {
-    const levels: Record<number, number> = {};
-    const pathCounts: Record<string, number> = {};
+    const sections: { [key: string]: number } = {};
+    const orphanedPages: string[] = [];
+    let maxDepth = 0;
     
+    // Analyze pages by section
     for (const url of visited) {
       try {
         const urlObj = new URL(url);
+        const path = urlObj.pathname;
         
-        // Skip external URLs
+        // Skip non-domain URLs
         if (urlObj.hostname !== domain) continue;
         
-        // Calculate level (depth) based on path segments
-        const pathSegments = urlObj.pathname.split('/').filter(s => s);
-        const level = pathSegments.length;
+        // Calculate depth
+        const pathSegments = path.split('/').filter(Boolean);
+        maxDepth = Math.max(maxDepth, pathSegments.length);
         
-        levels[level] = (levels[level] || 0) + 1;
-        
-        // Count URLs by first directory
+        // Categorize by section
         if (pathSegments.length > 0) {
-          const firstDir = pathSegments[0];
-          pathCounts[firstDir] = (pathCounts[firstDir] || 0) + 1;
+          const section = pathSegments[0] || 'root';
+          sections[section] = (sections[section] || 0) + 1;
         } else {
-          // Root pages
-          pathCounts['root'] = (pathCounts['root'] || 0) + 1;
+          sections['root'] = (sections['root'] || 0) + 1;
         }
       } catch (e) {
         // Skip invalid URLs
@@ -38,8 +37,11 @@ export class SiteAnalyzer {
     }
     
     return {
-      levels,
-      pathCounts
+      pages: visited.size,
+      depth: maxDepth,
+      breadth: Object.keys(sections).length,
+      sections,
+      orphanedPages
     };
   }
 }

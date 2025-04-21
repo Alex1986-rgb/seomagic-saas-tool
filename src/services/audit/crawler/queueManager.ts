@@ -1,4 +1,3 @@
-
 /**
  * Queue management for crawler requests
  */
@@ -248,7 +247,13 @@ export class QueueManager {
     // Возвращаем результат
     return {
       urls: Array.from(visited),
-      pageCount: pagesScanned
+      metadata: {
+        startTime: new Date().toISOString(),
+        endTime: new Date().toISOString(),
+        totalTime: 0,
+        totalPages: pagesScanned,
+        domain: ''
+      }
     };
   }
 }

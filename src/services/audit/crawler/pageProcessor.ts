@@ -32,14 +32,18 @@ export class PageProcessor {
       // Initialize page data
       const pageData: PageData = {
         url,
-        title: $('title').text() || null,
+        title: $('title').text() || '',
+        description: $('meta[name="description"]').attr('content') || '',
         headings: {
           h1: $('h1').map((_, el) => $(el).text().trim()).get(),
           h2: $('h2').map((_, el) => $(el).text().trim()).get(),
+          h3: $('h3').map((_, el) => $(el).text().trim()).get(),
+          h4: $('h4').map((_, el) => $(el).text().trim()).get(),
+          h5: $('h5').map((_, el) => $(el).text().trim()).get(),
+          h6: $('h6').map((_, el) => $(el).text().trim()).get(),
         },
-        metaDescription: $('meta[name="description"]').attr('content') || null,
         statusCode: response.status,
-        contentType: response.headers['content-type'] || null,
+        contentType: response.headers['content-type'] || '',
         contentLength: parseInt(response.headers['content-length'] || '0') || null,
         internalLinks: [],
         externalLinks: [],
@@ -93,8 +97,8 @@ export class PageProcessor {
             }
             
             pageData.images.push({
-              url: fullUrl,
-              alt: $(element).attr('alt') || null
+              src: fullUrl,
+              alt: $(element).attr('alt') || ''
             });
           } catch (e) {
             // Skip invalid URLs
@@ -105,7 +109,17 @@ export class PageProcessor {
       return { pageData, links };
     } catch (error) {
       console.warn(`Error processing URL ${url}:`, error);
-      return { pageData: null, links: [] };
+      return { 
+        pageData: {
+          title: '',
+          description: '',
+          headings: { h1: [], h2: [], h3: [], h4: [], h5: [], h6: [] },
+          statusCode: 0,
+          contentType: '',
+          images: []
+        }, 
+        links: [] 
+      };
     }
   }
 }

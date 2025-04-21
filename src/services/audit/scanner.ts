@@ -41,7 +41,6 @@ export class WebsiteScanner {
     }
   }
   
-  // Added missing exports for audit/index.ts
   generateSitemap(urls: string[]): string {
     return this.sitemapCreator.generateSitemap(urls);
   }
@@ -92,7 +91,6 @@ export class WebsiteScanner {
     }
   }
   
-  // Новый метод для создания и скачивания PDF отчета с аудитом
   async downloadAuditPdfReport(domain: string, urls: string[], auditData: any) {
     try {
       const pdfBlob = await generateDeepCrawlPdf({
@@ -116,7 +114,6 @@ export class WebsiteScanner {
     }
   }
   
-  // Новый метод для создания и скачивания отчета об ошибках
   async downloadErrorReport(domain: string, urls: string[], auditData: any) {
     try {
       const errorReportBlob = await generateErrorReportPdf({
@@ -146,7 +143,6 @@ export class WebsiteScanner {
   }
 }
 
-// Export functions for audit/index.ts
 export const websiteScanner = new WebsiteScanner();
 
 export const scanWebsite = (url: string, progressCallback?: (scanned: number, total: number, currentUrl: string) => void) => {
@@ -165,7 +161,6 @@ export const createOptimizedSite = (urls: string[], options?: any) => {
   return websiteScanner.createOptimizedSite(urls, options);
 };
 
-// Экспортируем новые функции для скачивания отчетов
 export const downloadAuditPdfReport = (domain: string, urls: string[], auditData: any) => {
   return websiteScanner.downloadAuditPdfReport(domain, urls, auditData);
 };

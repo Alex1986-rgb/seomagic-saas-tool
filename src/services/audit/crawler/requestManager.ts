@@ -1,51 +1,42 @@
 
 /**
- * Request manager for controlling parallel requests and rate limiting
+ * Request manager for handling HTTP requests in the crawler
  */
 
+import axios from 'axios';
 import { RequestManager } from './types';
 
 export function createRequestManager(): RequestManager {
   return {
-    delayBetweenRequests: 50,
-    maxConcurrentRequests: 8,
-    requestQueue: [],
-    activeRequests: 0,
-    
-    pause: function() {
-      console.log('Request manager paused');
+    configure(options) {
+      // Configure options
     },
-    
-    resume: function() {
-      console.log('Request manager resumed');
-      this.processQueue();
+    pause() {
+      // Pause operations
     },
-    
-    addToQueue: function(request: () => Promise<void>) {
-      this.requestQueue.push(request);
-      this.processQueue();
+    resume() {
+      // Resume operations
     },
-    
-    processQueue: function() {
-      if (this.activeRequests >= this.maxConcurrentRequests) {
-        return;
+    async processCrawlQueue(queue, visited, options, processFunction) {
+      // Process the queue
+      for (const item of queue) {
+        if (visited.size >= (options.maxPages || 1000)) break;
+        if (!visited.has(item.url)) {
+          visited.add(item.url);
+          await processFunction(item.url, item.depth);
+        }
       }
       
-      if (this.requestQueue.length === 0) {
-        return;
-      }
-      
-      const request = this.requestQueue.shift();
-      if (request) {
-        this.activeRequests++;
-        
-        setTimeout(() => {
-          request().finally(() => {
-            this.activeRequests--;
-            this.processQueue();
-          });
-        }, this.delayBetweenRequests);
-      }
+      return {
+        urls: Array.from(visited),
+        metadata: {
+          startTime: new Date().toISOString(),
+          endTime: new Date().toISOString(),
+          totalTime: 0,
+          totalPages: visited.size,
+          domain: ''
+        }
+      };
     }
   };
 }

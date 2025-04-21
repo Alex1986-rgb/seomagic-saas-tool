@@ -1,4 +1,3 @@
-
 import axios from 'axios';
 import * as cheerio from 'cheerio';
 import { SitemapExtractor } from './crawler/sitemapExtractor';
@@ -49,7 +48,6 @@ export class SimpleSitemapCreator {
     this.sitemapExtractor = new SitemapExtractor();
   }
   
-  // Debugging methods
   enableDebugMode(enabled: boolean): void {
     this.debugMode = enabled;
     console.log(`Debug mode ${enabled ? 'enabled' : 'disabled'} for SimpleSitemapCreator`);
@@ -70,7 +68,6 @@ export class SimpleSitemapCreator {
     });
   }
   
-  // URL and domain management methods
   setBaseUrl(url: string): void {
     this.baseUrl = url;
     try {
@@ -89,18 +86,15 @@ export class SimpleSitemapCreator {
     return this.domain;
   }
   
-  // Method to cancel crawling
   cancel(): void {
     this.isCancelled = true;
     console.log('Crawling cancelled by user');
   }
   
-  // Get random user agent to avoid blocking
   private getRandomUserAgent(): string {
     return this.userAgents[Math.floor(Math.random() * this.userAgents.length)];
   }
   
-  // Find sitemaps for a domain
   private async findSitemaps(url: string): Promise<string[]> {
     try {
       const commonSitemapPaths = [
@@ -111,10 +105,8 @@ export class SimpleSitemapCreator {
         '/wp-sitemap.xml',
       ];
       
-      // Extract domain for constructing sitemap URLs
       const baseUrl = new URL(url).origin;
       
-      // Try common sitemap locations
       for (const path of commonSitemapPaths) {
         const sitemapUrl = `${baseUrl}${path}`;
         try {
@@ -128,7 +120,6 @@ export class SimpleSitemapCreator {
                response.data?.includes('<urlset') || 
                response.data?.includes('<sitemapindex'))) {
             
-            // Process the sitemap with SitemapExtractor
             const urls = await this.sitemapExtractor.extractUrlsFromSitemap(sitemapUrl);
             if (urls.length > 0) {
               if (this.debugMode) {
@@ -138,14 +129,12 @@ export class SimpleSitemapCreator {
             }
           }
         } catch (error) {
-          // Continue to next potential sitemap location
           if (this.debugMode) {
             console.log(`No sitemap found at ${sitemapUrl}`);
           }
         }
       }
       
-      // Try to find sitemap URL in robots.txt
       try {
         const robotsTxtUrl = `${baseUrl}/robots.txt`;
         const response = await axios.get(robotsTxtUrl, {
@@ -163,7 +152,6 @@ export class SimpleSitemapCreator {
             sitemapUrls.push(match[1]);
           }
           
-          // Process each sitemap found in robots.txt
           if (sitemapUrls.length > 0) {
             let allUrls = [];
             
@@ -172,7 +160,6 @@ export class SimpleSitemapCreator {
                 const urls = await this.sitemapExtractor.extractUrlsFromSitemap(sitemapUrl);
                 allUrls = [...allUrls, ...urls];
               } catch (error) {
-                // Continue to next sitemap
               }
             }
             
@@ -185,16 +172,14 @@ export class SimpleSitemapCreator {
           }
         }
       } catch (error) {
-        // Robots.txt not found or couldn't be parsed
       }
     } catch (error) {
       console.error('Error finding sitemaps:', error);
     }
     
-    return []; // No sitemaps found
+    return [];
   }
   
-  // Extract links from HTML content
   private extractLinks(html: string, baseUrl: string): string[] {
     const links: string[] = [];
     const $ = cheerio.load(html);
@@ -203,11 +188,9 @@ export class SimpleSitemapCreator {
       const href = $(element).attr('href');
       if (href) {
         try {
-          // Resolve relative URLs
           const resolvedUrl = new URL(href, baseUrl).href;
           links.push(resolvedUrl);
         } catch (error) {
-          // Skip invalid URLs
         }
       }
     });
@@ -215,13 +198,11 @@ export class SimpleSitemapCreator {
     return links;
   }
   
-  // Process a single URL with retry logic
   private async processSingleUrl(url: string, currentDepth: number): Promise<string[]> {
     if (this.isCancelled) {
       return [];
     }
     
-    // Skip URLs from different domains
     if (!isUrlFromSameDomain(url, this.domain)) {
       return [];
     }
@@ -231,7 +212,6 @@ export class SimpleSitemapCreator {
     
     while (retryCount <= this.options.retryCount) {
       try {
-        // Add random delay to avoid being blocked
         const randomDelay = Math.floor(Math.random() * 300) + this.options.requestDelay;
         await new Promise(resolve => setTimeout(resolve, randomDelay));
         
@@ -245,38 +225,32 @@ export class SimpleSitemapCreator {
           maxRedirects: 5
         });
         
-        // Only process HTML content
         const contentType = response.headers['content-type'] || '';
         if (!contentType.includes('text/html')) {
           break;
         }
         
-        // Extract links from the page
         const links = this.extractLinks(response.data, url);
         
         for (const link of links) {
           try {
-            // Filter links from the same domain
             if (isUrlFromSameDomain(link, this.domain)) {
               const normalizedLink = normalizeUrl(link);
               foundLinks.push(normalizedLink);
               
-              // Add to queue for deeper crawling if needed
               if (currentDepth < this.options.maxDepth && !this.visited.has(normalizedLink)) {
                 this.queue.push({ url: normalizedLink, depth: currentDepth + 1 });
               }
             }
           } catch (error) {
-            // Skip invalid links
           }
         }
         
-        break; // Successful, exit retry loop
+        break;
       } catch (error) {
         retryCount++;
         
         if (retryCount <= this.options.retryCount) {
-          // Exponential backoff with jitter
           const backoff = this.options.retryDelay * Math.pow(2, retryCount - 1) + Math.random() * 500;
           await new Promise(resolve => setTimeout(resolve, backoff));
         }
@@ -286,18 +260,15 @@ export class SimpleSitemapCreator {
     return foundLinks;
   }
   
-  // Improved crawl method that actually crawls websites
   async crawl(
     url: string, 
     progressCallback?: (scanned: number, total: number, currentUrl: string) => void
   ): Promise<string[]> {
     try {
-      // Reset state for new crawl
       this.isCancelled = false;
       this.visited.clear();
       this.queue = [];
       
-      // Initialize with the base URL
       this.setBaseUrl(url);
       const normalizedUrl = url.endsWith('/') ? url.slice(0, -1) : url;
       this.queue.push({ url: normalizedUrl, depth: 0 });
@@ -306,12 +277,10 @@ export class SimpleSitemapCreator {
         console.log(`Starting crawl for ${url} with max pages: ${this.options.maxPages}`);
       }
       
-      // Try to find sitemap first for faster crawling
       const sitemapUrls = await this.findSitemaps(normalizedUrl);
       if (sitemapUrls.length > 0) {
         console.log(`Found ${sitemapUrls.length} URLs from sitemap(s)`);
         
-        // Add sitemap URLs to the visited set and return them if we have enough
         sitemapUrls.forEach(sitemapUrl => this.visited.add(sitemapUrl));
         
         if (sitemapUrls.length >= this.options.maxPages) {
@@ -322,55 +291,44 @@ export class SimpleSitemapCreator {
           return sitemapUrls.slice(0, this.options.maxPages);
         }
         
-        // If sitemap doesn't have enough URLs, continue with crawling
         console.log(`Sitemap has ${sitemapUrls.length} URLs, continuing with crawling to find more...`);
       }
       
-      // Start the crawling process
       let processedCount = 0;
       this.visited.add(normalizedUrl);
       
-      // Calculate a sensible estimate of total pages
       let estimatedTotal = this.options.maxPages;
       if (sitemapUrls.length > 0) {
         estimatedTotal = Math.min(sitemapUrls.length * 2, this.options.maxPages);
       }
       
-      // Report initial progress
       if (progressCallback) {
         progressCallback(processedCount, estimatedTotal, normalizedUrl);
       }
       
-      // Process the queue using a BFS approach with concurrency limit
       while (this.queue.length > 0 && this.visited.size < this.options.maxPages && !this.isCancelled) {
-        // Take a batch of URLs to process concurrently
         const batch = this.queue.splice(0, this.options.concurrentRequests);
         const promises = batch.map(({ url: queuedUrl, depth }) => {
           return this.processSingleUrl(queuedUrl, depth);
         });
         
-        // Wait for all URLs in the batch to be processed
         const batchResults = await Promise.all(promises);
         
-        // Process the results
         for (let i = 0; i < batch.length; i++) {
           const currentUrl = batch[i].url;
           const foundLinks = batchResults[i];
           
           processedCount++;
           
-          // Add new links to visited set
           for (const link of foundLinks) {
             if (!this.visited.has(link) && this.visited.size < this.options.maxPages) {
               this.visited.add(link);
             }
           }
           
-          // Update progress
           if (progressCallback && processedCount % 5 === 0) {
             progressCallback(this.visited.size, estimatedTotal, currentUrl);
             
-            // Adjust the estimated total as we discover more pages
             if (this.visited.size > estimatedTotal * 0.8) {
               estimatedTotal = Math.min(this.visited.size * 1.25, this.options.maxPages);
             }
@@ -378,7 +336,6 @@ export class SimpleSitemapCreator {
         }
       }
       
-      // Final progress report
       if (progressCallback) {
         progressCallback(this.visited.size, this.visited.size, "Завершено");
       }
@@ -389,5 +346,27 @@ export class SimpleSitemapCreator {
       console.error('Error during crawl:', error);
       return Array.from(this.visited);
     }
+  }
+  
+  generateSitemap(urls: string[]): string {
+    let sitemap = '<?xml version="1.0" encoding="UTF-8"?>\n';
+    sitemap += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n';
+    
+    for (const url of urls) {
+      try {
+        sitemap += `  <url>\n    <loc>${url}</loc>\n`;
+        sitemap += `    <priority>0.5</priority>\n`;
+        sitemap += `  </url>\n`;
+      } catch (e) {
+      }
+    }
+    
+    sitemap += '</urlset>';
+    
+    if (this.options.includeStylesheet) {
+      sitemap = sitemap.replace('?>', '?><?xml-stylesheet type="text/xsl" href="/sitemap.xsl"?>');
+    }
+    
+    return sitemap;
   }
 }

@@ -57,12 +57,12 @@ export class ReportGenerator {
     let pagesWithoutH1 = 0;
     
     for (const page of pageData.values()) {
-      totalInternalLinks += page.internalLinks.length;
-      totalExternalLinks += page.externalLinks.length;
+      totalInternalLinks += page.internalLinks?.length || 0;
+      totalExternalLinks += page.externalLinks?.length || 0;
       totalImages += page.images.length;
       
       if (!page.title) pagesWithoutTitle++;
-      if (!page.metaDescription) pagesWithoutDescription++;
+      if (!page.description) pagesWithoutDescription++;
       if (page.headings.h1.length === 0) pagesWithoutH1++;
     }
     
