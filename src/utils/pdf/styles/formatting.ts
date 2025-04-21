@@ -99,3 +99,14 @@ export function formatParagraph(doc: any, text: string, yPos: number): void {
   doc.setTextColor(60, 60, 60);
   doc.text(text, 20, yPos);
 }
+
+export default {
+  formatDateString,
+  formatNumber,
+  truncateText,
+  formatReportHeader,
+  formatTitle,
+  formatSubtitle,
+  formatHeading,
+  formatParagraph
+};

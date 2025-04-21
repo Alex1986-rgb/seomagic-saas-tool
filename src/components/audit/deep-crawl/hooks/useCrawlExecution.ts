@@ -1,3 +1,4 @@
+
 import { SimpleSitemapCreator } from '@/services/audit/simpleSitemapCreator';
 import { supabase } from "@/integrations/supabase/client";
 
@@ -103,7 +104,7 @@ export function useCrawlExecution() {
   const initializeCrawler = ({
     url, 
     onProgress, 
-    maxPages = 5000 // Default to 5000 pages for external sites
+    maxPages = 100000 // Увеличиваем лимит по умолчанию
   }: CrawlerSettings) => {
     
     try {
@@ -132,7 +133,7 @@ export function useCrawlExecution() {
       }
       
       const domain = urlObj.hostname;
-      console.log(`Инициализируем сканер для домена: ${domain} с URL: ${normalizedUrl}`);
+      console.log(`Инициализируем сканер для домена: ${domain} с URL: ${normalizedUrl}, максимум страниц: ${maxPages}`);
       
       // Check if this is Lovable domain - we should warn but still allow it
       const isLovableDomain = domain.includes('lovableproject.com') || domain.includes('lovable.app');
@@ -143,20 +144,22 @@ export function useCrawlExecution() {
       // Special case for large known sites like myarredo.ru
       let adjustedMaxPages = maxPages;
       if (domain.includes('myarredo.ru')) {
-        adjustedMaxPages = 50000; // Allow more pages for large sites
+        adjustedMaxPages = 500000; // Allow more pages for large sites
         console.log(`Обнаружен крупный сайт (${domain}), увеличиваем лимит до ${adjustedMaxPages} страниц`);
       }
             
       // Create new scanner with appropriate settings
+      // Explicitly configuring more properties for better crawling
       const crawler = new SimpleSitemapCreator({
         maxPages: adjustedMaxPages,
-        maxDepth: 5, // Set a reasonable depth limit
+        maxDepth: 10, // Увеличиваем глубину поиска
         includeStylesheet: true,
-        timeout: 10000, // 10 seconds timeout for requests
-        concurrentRequests: 3, // Lower concurrency to avoid overwhelming the server
-        retryCount: 2, // Set retries
+        timeout: 15000, // 15 seconds timeout for requests
+        retryCount: 3, // Увеличиваем количество попыток запроса
         retryDelay: 1000,
-        forceTargetDomain: true // Only scan the target domain
+        forceTargetDomain: true, // Only scan the target domain
+        followExternalLinks: false, // Не следовать по внешним ссылкам
+        maxConcurrency: 5 // Параметр для параллельных запросов
       });
       
       // Set base URL explicitly
@@ -213,7 +216,12 @@ export function useCrawlExecution() {
       
       // Create Promise with timeout
       const isLovableDomain = crawlerDomain.includes('lovableproject.com') || crawlerDomain.includes('lovable.app');
-      const timeoutDuration = 180000; // 3 minutes timeout
+      const timeoutDuration = 300000; // 5 minutes timeout - increased for large sites
+      
+      // Configure crawler with additional logging
+      console.log('Configuring crawler with extra debug settings');
+      crawler.enableDebugMode(true); // Turn on debug mode
+      crawler.logCrawlSettings(); // Log all crawler settings
       
       const crawlWithTimeout = Promise.race([
         crawler.crawl(startUrl, progressCallback),
@@ -225,6 +233,7 @@ export function useCrawlExecution() {
       ]);
       
       // Directly pass URL for scanning
+      console.log('Starting the actual crawl process...');
       const urls = await crawlWithTimeout as string[];
       
       if (!urls || urls.length === 0) {

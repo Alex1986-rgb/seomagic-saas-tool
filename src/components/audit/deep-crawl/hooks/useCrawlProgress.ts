@@ -125,7 +125,7 @@ export function useCrawlProgress(urlParam: string) {
       }
       
       // Создаем несколько таймаутов для отлова зависаний
-      const crawlTimeoutDuration = 120000; // Сокращаем до 2 минут
+      const crawlTimeoutDuration = 180000; // Увеличиваем до 3 минут
       
       const crawlTimeoutId = setTimeout(() => {
         console.error(`Crawl timeout for URL: ${url}`);
@@ -133,7 +133,7 @@ export function useCrawlProgress(urlParam: string) {
         completeCrawl(false);
       }, crawlTimeoutDuration);
       
-      // 2. Таймаут на этапе инициализации (8 секунд)
+      // 2. Таймаут на этапе инициализации (10 секунд)
       const startupTimeoutId = setTimeout(() => {
         if (crawlStage === 'starting') {
           console.error(`Crawl startup timeout for URL: ${url}`);
@@ -141,19 +141,19 @@ export function useCrawlProgress(urlParam: string) {
           completeCrawl(false);
           clearTimeout(crawlTimeoutId);
         }
-      }, 8000);
+      }, 10000);
       
       // Инициализируем сканер с явным URL
       console.log(`Initializing crawler for URL: ${url}`);
       
       // Set default max pages
-      let maxPages = 5000;
+      let maxPages = 100000; // Увеличиваем лимит по умолчанию
       
       // Special case for known large sites
       try {
         const urlObj = new URL(url);
         if (urlObj.hostname.includes('myarredo.ru')) {
-          maxPages = 50000; // Allow more pages for known large sites
+          maxPages = 500000; // Allow more pages for known large sites
           console.log(`Detected large site (${urlObj.hostname}), setting max pages to ${maxPages}`);
         }
       } catch (e) {
@@ -163,7 +163,7 @@ export function useCrawlProgress(urlParam: string) {
       // Make sure we're using the explicitly provided URL
       const { crawler: newCrawler, domain: newDomain, normalizedUrl } = initializeCrawler({
         url,
-        maxPages: maxPages || 5000,
+        maxPages: maxPages || 100000,
         // Removed concurrentRequests since it's not in the type definition
         onProgress: (pagesScanned, totalEstimated, currentUrl) => {
           console.log(`Progress update: ${pagesScanned}/${totalEstimated} - ${currentUrl}`);
