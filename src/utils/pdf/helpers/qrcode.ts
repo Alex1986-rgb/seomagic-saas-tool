@@ -14,13 +14,13 @@ export function addQRCodeToPage(
   size: number = 30
 ): void {
   // Draw a placeholder box for the QR code
-  doc.setDrawColor(0);
-  doc.setFillColor(255, 255, 255);
+  doc.setDrawColor('#000000');
+  doc.setFillColor('#FFFFFF');
   doc.roundedRect(x - 5, y - 5, size + 10, size + 10, 3, 3, 'FD');
   
   // Draw a fake QR code (grid)
-  doc.setDrawColor(0);
-  doc.setFillColor(0);
+  doc.setDrawColor('#000000');
+  doc.setFillColor('#000000');
   
   const cellSize = size / 10;
   
@@ -35,22 +35,22 @@ export function addQRCodeToPage(
   }
   
   // Add corners (typical QR code markers)
-  doc.setFillColor(0);
+  doc.setFillColor('#000000');
   // Top left
   doc.rect(x, y, cellSize * 3, cellSize * 3, 'F');
-  doc.setFillColor(255, 255, 255);
+  doc.setFillColor('#FFFFFF');
   doc.rect(x + cellSize, y + cellSize, cellSize, cellSize, 'F');
   
   // Top right
-  doc.setFillColor(0);
+  doc.setFillColor('#000000');
   doc.rect(x + size - cellSize * 3, y, cellSize * 3, cellSize * 3, 'F');
-  doc.setFillColor(255, 255, 255);
+  doc.setFillColor('#FFFFFF');
   doc.rect(x + size - cellSize * 2, y + cellSize, cellSize, cellSize, 'F');
   
   // Bottom left
-  doc.setFillColor(0);
+  doc.setFillColor('#000000');
   doc.rect(x, y + size - cellSize * 3, cellSize * 3, cellSize * 3, 'F');
-  doc.setFillColor(255, 255, 255);
+  doc.setFillColor('#FFFFFF');
   doc.rect(x + cellSize, y + size - cellSize * 2, cellSize, cellSize, 'F');
   
   // Add small label
