@@ -24,9 +24,11 @@ import SectionLinks from "./SectionLinks";
 import ServerInfo from "./ServerInfo";
 
 const AdminMonitoringContainer: React.FC = () => (
-  <div className="container mx-auto px-4 py-8 max-w-7xl text-white">
+  <div className="container mx-auto px-4 py-8 max-w-7xl">
     <MonitoringHeader />
-    <SystemWarnings warnings={systemWarnings} />
+    <div className="mb-8">
+      <SystemWarnings warnings={systemWarnings} />
+    </div>
     <StatCards
       statCards={statCards}
       cpuUsageData={cpuUsageData}
