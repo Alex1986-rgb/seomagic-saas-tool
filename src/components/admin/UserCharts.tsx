@@ -39,13 +39,13 @@ const COLORS = ['#8B5CF6', '#36CFFF', '#14CC8C', '#FFBB28'];
 const UserCharts: React.FC = () => (
   <div className="grid grid-cols-1 xl:grid-cols-3 gap-8 my-6">
     {/* Линейный график по регистрациям */}
-    <div className="h-60 bg-card rounded-lg shadow-md p-4">
-      <div className="font-semibold mb-2 text-md">Регистрации по месяцам</div>
+    <div className="h-60 rounded-lg shadow-md p-4 bg-gradient-to-br from-[#23263B]/80 via-[#191B22]/95 to-[#221F26]/90 border border-[#23263B]/40">
+      <div className="font-semibold mb-2 text-md text-white">Регистрации по месяцам</div>
       <ResponsiveContainer width="100%" height="100%">
         <LineChart data={registrationData}>
-          <XAxis dataKey="month" />
-          <YAxis />
-          <Tooltip />
+          <XAxis dataKey="month" stroke="#b2b6cf" />
+          <YAxis stroke="#b2b6cf" />
+          <Tooltip contentStyle={{ background: '#23263B', border: 'none', color: '#fff' }} />
           <Legend />
           <Line type="monotone" dataKey="count" stroke="#8B5CF6" strokeWidth={2} name="Регистрации" />
         </LineChart>
@@ -53,8 +53,8 @@ const UserCharts: React.FC = () => (
     </div>
 
     {/* Круговая диаграмма по типам пользователей */}
-    <div className="h-60 bg-card rounded-lg shadow-md p-4">
-      <div className="font-semibold mb-2 text-md">Распределение пользователей по ролям</div>
+    <div className="h-60 rounded-lg shadow-md p-4 bg-gradient-to-br from-[#191B22]/90 via-[#23263B]/70 to-[#221F26]/85 border border-[#23263B]/40">
+      <div className="font-semibold mb-2 text-md text-white">Распределение пользователей по ролям</div>
       <ResponsiveContainer width="100%" height="100%">
         <PieChart>
           <Pie
@@ -71,21 +71,21 @@ const UserCharts: React.FC = () => (
               <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
             ))}
           </Pie>
-          <Tooltip />
+          <Tooltip contentStyle={{ background: '#23263B', border: 'none', color: '#fff' }} />
           <Legend />
         </PieChart>
       </ResponsiveContainer>
     </div>
 
     {/* Столбчатый график активности */}
-    <div className="h-60 bg-card rounded-lg shadow-md p-4">
-      <div className="font-semibold mb-2 text-md">Активные пользователи по дням недели</div>
+    <div className="h-60 rounded-lg shadow-md p-4 bg-gradient-to-br from-[#23263B]/80 via-[#191B22]/95 to-[#221F26]/90 border border-[#23263B]/40">
+      <div className="font-semibold mb-2 text-md text-white">Активные пользователи по дням недели</div>
       <ResponsiveContainer width="100%" height="100%">
         <BarChart data={activeUsersData}>
-          <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey="day" />
-          <YAxis />
-          <Tooltip />
+          <CartesianGrid strokeDasharray="3 3" stroke="#23263B" />
+          <XAxis dataKey="day" stroke="#b2b6cf" />
+          <YAxis stroke="#b2b6cf" />
+          <Tooltip contentStyle={{ background: '#23263B', border: 'none', color: '#fff' }} />
           <Legend />
           <Bar dataKey="active" name="Активные" fill="#36CFFF" />
         </BarChart>

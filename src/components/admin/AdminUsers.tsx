@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Check, ChevronDown, Edit, Trash, UserRound, Search } from 'lucide-react';
 import { Input } from "@/components/ui/input";
@@ -81,20 +82,18 @@ const AdminUsers: React.FC = () => {
 
   const getPlanColor = (plan) => {
     switch(plan) {
-      case 'free': return 'bg-blue-500';
-      case 'basic': return 'bg-green-500';
-      case 'pro': return 'bg-purple-500';
-      default: return 'bg-gray-500';
+      case 'free': return 'bg-[#23263B]/70 text-[#36CFFF] border border-[#36CFFF]/20';
+      case 'basic': return 'bg-[#1A2239]/70 text-[#14CC8C] border border-[#14CC8C]/20';
+      case 'pro': return 'bg-[#28213a]/70 text-[#8B5CF6] border border-[#8B5CF6]/30';
+      default: return 'bg-[#23263B]/70 text-white border border-[#483194]/10';
     }
   };
 
   return (
     <div>
-      {/* Добавлены карточки и графики */}
-      <UserStatsCards />
-      <UserCharts />
+      {/* ... убираем дублирующий вывод UserStatsCards, UserCharts ... */}
 
-      {/* ... keep existing code (search, filters, user table) ... */}
+      {/* Фильтры / Поиск / Добавить */}
       <div className="flex flex-col md:flex-row gap-4 mb-6 items-end">
         <div className="flex-1">
           <div className="relative">
@@ -103,7 +102,7 @@ const AdminUsers: React.FC = () => {
               placeholder="Поиск пользователей..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10"
+              className="pl-10 bg-[#23263B]/80 border border-[#222644] placeholder:text-[#b2b6cf] text-white focus:border-[#8B5CF6]/60 transition-all"
             />
           </div>
         </div>
@@ -111,26 +110,29 @@ const AdminUsers: React.FC = () => {
         <div className="flex gap-2">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" className="flex items-center">
+              <Button 
+                variant="outline" 
+                className="flex items-center bg-[#23263B]/80 text-white border border-[#383a50]/60 hover:bg-[#1A1F2C]/90 transition-all"
+              >
                 Тариф: {filterPlan === 'all' ? 'Все' : filterPlan}
                 <ChevronDown className="h-4 w-4 ml-2" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent>
+            <DropdownMenuContent className="bg-[#23263B] border-[#483194]/25 shadow-xl z-[60] min-w-[160px] text-white">
               <DropdownMenuItem onClick={() => setFilterPlan('all')}>
-                <Check className={`h-4 w-4 mr-2 ${filterPlan === 'all' ? 'opacity-100' : 'opacity-0'}`} />
+                <Check className={`h-4 w-4 mr-2 ${filterPlan === 'all' ? 'opacity-100 text-[#8B5CF6]' : 'opacity-0'}`} />
                 Все
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => setFilterPlan('free')}>
-                <Check className={`h-4 w-4 mr-2 ${filterPlan === 'free' ? 'opacity-100' : 'opacity-0'}`} />
+                <Check className={`h-4 w-4 mr-2 ${filterPlan === 'free' ? 'opacity-100 text-[#36CFFF]' : 'opacity-0'}`} />
                 Бесплатный
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => setFilterPlan('basic')}>
-                <Check className={`h-4 w-4 mr-2 ${filterPlan === 'basic' ? 'opacity-100' : 'opacity-0'}`} />
+                <Check className={`h-4 w-4 mr-2 ${filterPlan === 'basic' ? 'opacity-100 text-[#14CC8C]' : 'opacity-0'}`} />
                 Базовый
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => setFilterPlan('pro')}>
-                <Check className={`h-4 w-4 mr-2 ${filterPlan === 'pro' ? 'opacity-100' : 'opacity-0'}`} />
+                <Check className={`h-4 w-4 mr-2 ${filterPlan === 'pro' ? 'opacity-100 text-[#8B5CF6]' : 'opacity-0'}`} />
                 Про
               </DropdownMenuItem>
             </DropdownMenuContent>
@@ -138,84 +140,87 @@ const AdminUsers: React.FC = () => {
           
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" className="flex items-center">
+              <Button 
+                variant="outline" 
+                className="flex items-center bg-[#23263B]/80 text-white border border-[#383a50]/60 hover:bg-[#1A1F2C]/90 transition-all"
+              >
                 Роль: {filterRole === 'all' ? 'Все' : filterRole}
                 <ChevronDown className="h-4 w-4 ml-2" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent>
+            <DropdownMenuContent className="bg-[#23263B] border-[#483194]/25 shadow-xl z-[60] min-w-[160px] text-white">
               <DropdownMenuItem onClick={() => setFilterRole('all')}>
-                <Check className={`h-4 w-4 mr-2 ${filterRole === 'all' ? 'opacity-100' : 'opacity-0'}`} />
+                <Check className={`h-4 w-4 mr-2 ${filterRole === 'all' ? 'opacity-100 text-[#8B5CF6]' : 'opacity-0'}`} />
                 Все
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => setFilterRole('user')}>
-                <Check className={`h-4 w-4 mr-2 ${filterRole === 'user' ? 'opacity-100' : 'opacity-0'}`} />
+                <Check className={`h-4 w-4 mr-2 ${filterRole === 'user' ? 'opacity-100 text-[#36CFFF]' : 'opacity-0'}`} />
                 Пользователь
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => setFilterRole('admin')}>
-                <Check className={`h-4 w-4 mr-2 ${filterRole === 'admin' ? 'opacity-100' : 'opacity-0'}`} />
+                <Check className={`h-4 w-4 mr-2 ${filterRole === 'admin' ? 'opacity-100 text-[#ff5555]' : 'opacity-0'}`} />
                 Администратор
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
           
-          <Button className="whitespace-nowrap">
+          <Button className="whitespace-nowrap bg-gradient-to-r from-[#8B5CF6] to-[#0EA5E9] text-white shadow-lg border-none hover:scale-[1.04] transition-transform duration-150">
             Добавить пользователя
           </Button>
         </div>
       </div>
       
       <div className="overflow-x-auto">
-        <table className="w-full">
+        <table className="w-full rounded-2xl overflow-hidden">
           <thead>
-            <tr className="border-b">
-              <th className="text-left py-3 px-4 font-medium">Пользователь</th>
-              <th className="text-left py-3 px-4 font-medium">Тариф</th>
-              <th className="text-left py-3 px-4 font-medium">Роль</th>
-              <th className="text-left py-3 px-4 font-medium">Аудитов</th>
-              <th className="text-left py-3 px-4 font-medium">Дата регистрации</th>
-              <th className="text-left py-3 px-4 font-medium">Действия</th>
+            <tr className="border-b border-[#28213a] bg-gradient-to-r from-[#23263B]/90 to-[#1A1F2C]/95">
+              <th className="text-left py-3 px-4 font-medium text-[#8B5CF6]">Пользователь</th>
+              <th className="text-left py-3 px-4 font-medium text-[#36CFFF]">Тариф</th>
+              <th className="text-left py-3 px-4 font-medium text-[#FF81C0]">Роль</th>
+              <th className="text-left py-3 px-4 font-medium text-[#F6C778]">Аудитов</th>
+              <th className="text-left py-3 px-4 font-medium text-[#82FFD7]">Дата регистрации</th>
+              <th className="text-left py-3 px-4 font-medium text-white">Действия</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody className="bg-[#191B22]/95">
             {filteredUsers.map(user => (
-              <tr key={user.id} className="border-b">
+              <tr key={user.id} className="border-b border-[#23263B]/60 hover:bg-[#23263B]/60 transition-colors">
                 <td className="py-4 px-4">
                   <div className="flex items-center gap-3">
                     <Avatar>
                       <AvatarImage src={user.avatar} />
-                      <AvatarFallback>
+                      <AvatarFallback className="bg-[#23263B] text-[#8B5CF6]">
                         <UserRound className="h-4 w-4" />
                       </AvatarFallback>
                     </Avatar>
                     <div>
-                      <div className="font-medium">{user.name}</div>
-                      <div className="text-sm text-muted-foreground">{user.email}</div>
+                      <div className="font-medium text-white">{user.name}</div>
+                      <div className="text-xs text-[#b2b6cf]">{user.email}</div>
                     </div>
                   </div>
                 </td>
                 <td className="py-4 px-4">
-                  <Badge className={getPlanColor(user.plan)}>
+                  <Badge className={getPlanColor(user.plan) + " rounded text-xs px-2 py-1"}>
                     {user.plan === 'free' && 'Бесплатный'}
                     {user.plan === 'basic' && 'Базовый'}
                     {user.plan === 'pro' && 'Про'}
                   </Badge>
                 </td>
                 <td className="py-4 px-4">
-                  <Badge variant={user.role === 'admin' ? 'destructive' : 'secondary'}>
+                  <Badge variant={user.role === 'admin' ? 'destructive' : 'secondary'} className={user.role === 'admin' ? 'bg-[#FF3355]/80 text-white border-none' : 'bg-[#191B22]/80 text-[#36CFFF] border border-[#36CFFF]/20 text-xs'}>
                     {user.role === 'admin' ? 'Администратор' : 'Пользователь'}
                   </Badge>
                 </td>
-                <td className="py-4 px-4">{user.audits}</td>
-                <td className="py-4 px-4">
+                <td className="py-4 px-4 text-[#DED6F6]">{user.audits}</td>
+                <td className="py-4 px-4 text-[#bddfff]">
                   {new Date(user.joined).toLocaleDateString('ru-RU')}
                 </td>
                 <td className="py-4 px-4">
                   <div className="flex gap-2">
-                    <Button variant="ghost" size="sm">
+                    <Button variant="ghost" size="sm" className="bg-[#23263B] hover:bg-[#2d2e3b] text-[#8B5CF6]">
                       <Edit className="h-4 w-4" />
                     </Button>
-                    <Button variant="ghost" size="sm">
+                    <Button variant="ghost" size="sm" className="bg-[#23263B] hover:bg-[#2d2e3b] text-[#F97316]">
                       <Trash className="h-4 w-4" />
                     </Button>
                   </div>
