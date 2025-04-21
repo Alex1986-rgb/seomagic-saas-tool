@@ -5,6 +5,7 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
 
 const ButtonsSettings: React.FC = () => {
   const [primaryButtonColor, setPrimaryButtonColor] = useState("#0284c7");
@@ -102,15 +103,9 @@ const ButtonsSettings: React.FC = () => {
           <div className="pt-4 space-y-2">
             <Label>Предпросмотр кнопок</Label>
             <div className="flex flex-wrap gap-3 p-4 border rounded-md">
-              <button className="px-4 py-2 bg-primary text-white rounded hover:bg-primary/90 transition-all">
-                Основная кнопка
-              </button>
-              <button className="px-4 py-2 bg-secondary text-secondary-foreground rounded hover:bg-secondary/90 transition-all">
-                Вторичная кнопка
-              </button>
-              <button className="px-4 py-2 border rounded hover:bg-accent transition-all">
-                Третичная кнопка
-              </button>
+              <Button variant="default">Основная кнопка</Button>
+              <Button variant="secondary">Вторичная кнопка</Button>
+              <Button variant="outline">Третичная кнопка</Button>
             </div>
           </div>
         </CardContent>

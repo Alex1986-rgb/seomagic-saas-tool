@@ -3,7 +3,7 @@ import React from 'react';
 import { Helmet } from 'react-helmet-async';
 import AdminSettings from '@/components/admin/AdminSettings';
 import { Card, CardContent } from "@/components/ui/card";
-import { Settings, UserCheck, Globe, Shield, BellRing } from 'lucide-react';
+import { Settings, UserCheck, Globe, Shield, BellRing, Server, Database, Gauge } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 
@@ -13,6 +13,43 @@ const recentChanges = [
   { action: "Обновлены параметры кеширования", user: "Василий П.", time: "2 ч назад" },
   { action: "Добавлен новый тариф", user: "Максим К.", time: "вчера, 15:42" },
 ];
+
+const navSettings = [
+  {
+    to: "/admin/system-status",
+    label: "Безопасность",
+    icon: <Shield className="h-5 w-5" />,
+  },
+  {
+    to: "/admin/system/users",
+    label: "Пользователи",
+    icon: <UserCheck className="h-5 w-5" />,
+  },
+  {
+    to: "/admin/system/database",
+    label: "Интеграции",
+    icon: <Globe className="h-5 w-5" />,
+  },
+  {
+    to: "/admin/system/performance",
+    label: "Сервер",
+    icon: <Server className="h-5 w-5" />,
+  },
+  {
+    to: "/admin/system/notifications",
+    label: "Уведомления",
+    icon: <BellRing className="h-5 w-5" />,
+  }
+];
+
+const hotSettings = [
+  { to: "/admin/system/security", label: "Параметры безопасности" },
+  { to: "/admin/system/backup", label: "Резервное копирование" },
+  { to: "/admin/system/api", label: "API ключи и доступ" },
+  { to: "/admin/system/email", label: "Настройки почты" },
+  { to: "/admin/system/logging", label: "Логирование событий" },
+];
+
 
 const AdminSettingsPage: React.FC = () => {
   return (
@@ -36,27 +73,17 @@ const AdminSettingsPage: React.FC = () => {
           </div>
           
           <div className="flex gap-2">
-            <Link to="/admin/system-status">
-              <Button variant="outline" className="flex items-center gap-2" size="sm">
-                <Shield className="h-4 w-4" />
-                Безопасность
-              </Button>
-            </Link>
-            <Link to="/admin/system/users">
-              <Button variant="outline" className="flex items-center gap-2" size="sm">
-                <UserCheck className="h-4 w-4" />
-                Пользователи
-              </Button>
-            </Link>
-            <Link to="/admin/system/database">
-              <Button className="flex items-center gap-2" size="sm">
-                <Globe className="h-4 w-4" />
-                Интеграции
-              </Button>
-            </Link>
+            {navSettings.map((item) => (
+              <Link to={item.to} key={item.to}>
+                <Button variant="outline" className="flex items-center gap-2" size="sm">
+                  {item.icon}
+                  {item.label}
+                </Button>
+              </Link>
+            ))}
           </div>
         </div>
-        
+
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
           <div className="lg:col-span-2">
             <Card className="backdrop-blur-sm bg-card/80 border shadow-sm">
@@ -67,13 +94,13 @@ const AdminSettingsPage: React.FC = () => {
           </div>
           
           <div className="space-y-6">
+            {/* Блок недавних изменений */}
             <Card className="backdrop-blur-sm bg-card/80 border shadow-sm">
               <CardContent className="p-6">
                 <div className="flex items-center gap-2 mb-4">
                   <BellRing className="h-5 w-5 text-primary" />
                   <h3 className="font-medium">Недавние изменения</h3>
                 </div>
-                
                 <div className="space-y-4">
                   {recentChanges.map((change, index) => (
                     <div key={index} className="flex items-start gap-3 py-2 border-b last:border-0">
@@ -89,42 +116,34 @@ const AdminSettingsPage: React.FC = () => {
                     </div>
                   ))}
                 </div>
-                
-                <Button variant="outline" className="w-full mt-4" size="sm">
-                  Просмотреть историю изменений
-                </Button>
+                <Link to="/admin/history">
+                  <Button variant="outline" className="w-full mt-4" size="sm">
+                    Просмотреть историю изменений
+                  </Button>
+                </Link>
               </CardContent>
             </Card>
             
+            {/* Блок "Важные настройки" - теперь с активными ссылками! */}
             <Card className="backdrop-blur-sm bg-card/80 border shadow-sm">
               <CardContent className="p-6">
                 <div className="flex items-center gap-2 mb-4">
-                  <Shield className="h-5 w-5 text-primary" />
+                  <Gauge className="h-5 w-5 text-primary" />
                   <h3 className="font-medium">Важные настройки</h3>
                 </div>
-                
                 <div className="space-y-3 text-sm">
-                  <Button variant="outline" className="w-full justify-start" size="sm">
-                    Параметры безопасности
-                  </Button>
-                  <Button variant="outline" className="w-full justify-start" size="sm">
-                    Резервное копирование
-                  </Button>
-                  <Button variant="outline" className="w-full justify-start" size="sm">
-                    API ключи и доступ
-                  </Button>
-                  <Button variant="outline" className="w-full justify-start" size="sm">
-                    Настройки почты
-                  </Button>
-                  <Button variant="outline" className="w-full justify-start" size="sm">
-                    Логирование событий
-                  </Button>
+                  {hotSettings.map(link => (
+                    <Link key={link.to} to={link.to}>
+                      <Button variant="outline" className="w-full justify-start mb-1" size="sm">
+                        {link.label}
+                      </Button>
+                    </Link>
+                  ))}
                 </div>
               </CardContent>
             </Card>
           </div>
         </div>
-        
         <div className="mt-10 text-sm text-muted-foreground space-y-3 max-w-3xl">
           <p className="flex items-center gap-2">
             <Settings className="h-4 w-4 text-primary" />
