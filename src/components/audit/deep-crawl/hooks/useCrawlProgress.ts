@@ -1,5 +1,5 @@
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 
 type CrawlStage = 'idle' | 'starting' | 'crawling' | 'analyzing' | 'completed' | 'failed';
 
@@ -16,7 +16,7 @@ export const useCrawlProgress = (baseUrl: string) => {
   const [domain, setDomain] = useState<string>('');
 
   // Extract domain from URL
-  useCallback(() => {
+  const extractDomain = useCallback(() => {
     try {
       const normalizedUrl = baseUrl.startsWith('http') ? baseUrl : `https://${baseUrl}`;
       const urlObj = new URL(normalizedUrl);
@@ -25,6 +25,11 @@ export const useCrawlProgress = (baseUrl: string) => {
       setDomain(baseUrl);
     }
   }, [baseUrl]);
+
+  // Initialize domain on mount
+  useEffect(() => {
+    extractDomain();
+  }, [extractDomain]);
 
   // Инициализация веб-краулера
   const initializeCrawler = useCallback(() => {
@@ -94,13 +99,7 @@ export const useCrawlProgress = (baseUrl: string) => {
   const startCrawl = useCallback(async () => {
     try {
       // Extract domain when starting a crawl
-      try {
-        const normalizedUrl = baseUrl.startsWith('http') ? baseUrl : `https://${baseUrl}`;
-        const urlObj = new URL(normalizedUrl);
-        setDomain(urlObj.hostname);
-      } catch (e) {
-        setDomain(baseUrl);
-      }
+      extractDomain();
       
       const config = initializeCrawler();
       const cleanup = executeCrawler(config);
@@ -119,7 +118,7 @@ export const useCrawlProgress = (baseUrl: string) => {
       setIsLoading(false);
       throw err;
     }
-  }, [initializeCrawler, executeCrawler, crawlStage, scannedUrls, baseUrl]);
+  }, [initializeCrawler, executeCrawler, crawlStage, scannedUrls, extractDomain]);
 
   // Отмена сканирования
   const cancelCrawl = useCallback(() => {
