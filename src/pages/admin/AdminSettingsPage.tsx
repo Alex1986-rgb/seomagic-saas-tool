@@ -3,11 +3,10 @@ import React from 'react';
 import { Helmet } from 'react-helmet-async';
 import AdminSettings from '@/components/admin/AdminSettings';
 import { Card, CardContent } from "@/components/ui/card";
-import { Settings, User, UserCheck, Globe, Shield, BellRing, Server, BarChart2, Gauge, ArrowRight, Monitor, BarChart, LayoutDashboard } from 'lucide-react';
+import { Settings, User, UserCheck, Globe, Shield, BellRing, Server, BarChart2, Gauge, ArrowRight, Monitor, BarChart } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 
-// Единая цветовая палитра блоков для яркого современного впечатления
 const recentChanges = [
   { action: "Изменены настройки SMTP", user: "Анна С.", time: "20 мин назад" },
   { action: "Обновлены параметры кеширования", user: "Василий П.", time: "2 ч назад" },
@@ -16,34 +15,29 @@ const recentChanges = [
 
 const navSettings = [
   {
-    to: "/admin",
-    label: "Главная",
-    icon: <LayoutDashboard className="h-5 w-5" />,
+    to: "/admin/system-status",
+    label: "Безопасность",
+    icon: <Shield className="h-5 w-5" />,
   },
   {
-    to: "/admin/monitoring",
-    label: "Мониторинг",
-    icon: <Monitor className="h-5 w-5" />,
-  },
-  {
-    to: "/admin/users",
+    to: "/admin/system/users",
     label: "Пользователи",
     icon: <UserCheck className="h-5 w-5" />,
   },
   {
-    to: "/admin/analytics",
-    label: "Аналитика",
-    icon: <BarChart2 className="h-5 w-5" />,
-  },
-  {
-    to: "/admin/website-analyzer",
-    label: "Анализатор сайтов",
+    to: "/admin/system/database",
+    label: "Интеграции",
     icon: <Globe className="h-5 w-5" />,
   },
   {
-    to: "/admin/system-status",
-    label: "Статус системы",
-    icon: <Shield className="h-5 w-5" />,
+    to: "/admin/system/performance",
+    label: "Сервер",
+    icon: <Server className="h-5 w-5" />,
+  },
+  {
+    to: "/admin/system/notifications",
+    label: "Уведомления",
+    icon: <BellRing className="h-5 w-5" />,
   }
 ];
 
@@ -69,20 +63,30 @@ const AdminSettingsPage: React.FC = () => {
           <div className="flex-1 min-w-[210px]">
             <h1 className="text-4xl font-extrabold mb-2 tracking-tight text-gradient-primary">Настройки администратора</h1>
             <p className="text-muted-foreground text-lg">
-              Управление всеми ключевыми настройками и конфигурацией платформы с интеграцией мониторинга, аналитики и системы безопасности.
+              Управление всеми ключевыми настройками и конфигурацией платформы.
             </p>
             <div className="flex flex-wrap gap-3 mt-6">
-              {navSettings.map((nav) => (
-                <Link key={nav.to} to={nav.to}>
-                  <Button variant="outline" className="hover-scale glass-button font-semibold gap-2">
-                    <span>{nav.icon}</span>
-                    <span>{nav.label}</span>
-                  </Button>
-                </Link>
-              ))}
+              <Link to="/admin">
+                <Button variant="outline" className="hover-scale">Главная</Button>
+              </Link>
+              <Link to="/admin/monitoring">
+                <Button variant="outline" className="hover-scale"><Gauge className="h-4 w-4 mr-1" />Мониторинг</Button>
+              </Link>
+              <Link to="/admin/users">
+                <Button variant="outline" className="hover-scale"><User className="h-4 w-4 mr-1" />Пользователи</Button>
+              </Link>
+              <Link to="/admin/analytics">
+                <Button variant="outline" className="hover-scale"><BarChart className="h-4 w-4 mr-1" />Аналитика</Button>
+              </Link>
+              <Link to="/admin/website-analyzer">
+                <Button variant="outline" className="hover-scale"><Monitor className="h-4 w-4 mr-1" />Анализатор сайтов</Button>
+              </Link>
+              <Link to="/admin/system-status">
+                <Button variant="outline" className="hover-scale"><Shield className="h-4 w-4 mr-1" />Статус системы</Button>
+              </Link>
             </div>
           </div>
-          <div className="flex flex-col gap-3 mt-6 md:mt-0 w-full md:w-auto">
+          <div className="flex flex-col gap-3 mt-6 md:mt-0">
             <div className="flex items-center gap-3 bg-orange-50/80 text-orange-700 rounded-xl border border-orange-200 shadow px-5 py-3">
               <Gauge className="h-5 w-5 mr-1" />
               <div className="text-sm">
@@ -91,7 +95,7 @@ const AdminSettingsPage: React.FC = () => {
               </div>
             </div>
             <div className="flex items-center gap-3 bg-primary/5 rounded-xl border border-primary/10 shadow px-4 py-2">
-              <BarChart2 className="h-5 w-5 mr-1 text-primary" />
+              <BarChart className="h-5 w-5 mr-1 text-primary" />
               <span>Трафик: 72 тыс/мес</span>
             </div>
           </div>
@@ -127,7 +131,7 @@ const AdminSettingsPage: React.FC = () => {
                   ))}
                 </div>
                 <Link to="/admin/history">
-                  <Button variant="outline" className="w-full mt-4 hover-scale glass-button" size="sm">
+                  <Button variant="outline" className="w-full mt-4 hover-scale" size="sm">
                     Просмотреть историю изменений
                   </Button>
                 </Link>
@@ -136,14 +140,13 @@ const AdminSettingsPage: React.FC = () => {
             <Card className="bg-gradient-to-br from-blue-50 to-white/90 border-0 shadow hover:scale-105 transition-transform">
               <CardContent className="p-6">
                 <div className="flex items-center gap-2 mb-4">
-                  <Shield className="h-5 w-5 text-primary" />
+                  <Gauge className="h-5 w-5 text-primary" />
                   <h3 className="font-semibold">Важные настройки</h3>
                 </div>
                 <div className="space-y-3 text-sm">
                   {hotSettings.map(link => (
                     <Link key={link.to} to={link.to}>
-                      <Button variant="outline" className="w-full justify-start mb-1 hover-scale glass-button shadow gap-2" size="sm">
-                        <Monitor className="h-4 w-4 text-blue-700" />
+                      <Button variant="outline" className="w-full justify-start mb-1 hover-scale shadow" size="sm">
                         {link.label}
                         <ArrowRight className="h-4 w-4 ml-1" />
                       </Button>
@@ -172,4 +175,3 @@ const AdminSettingsPage: React.FC = () => {
 };
 
 export default AdminSettingsPage;
-
