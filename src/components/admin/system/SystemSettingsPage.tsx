@@ -54,7 +54,7 @@ const TILES = [
 
 // Компонент актуальной информации о системе
 const SystemInfo = () => (
-  <div className="bg-muted border rounded-md p-4 flex flex-col md:flex-row md:items-center gap-4 mb-6">
+  <div className="bg-gradient-to-br from-blue-600/5 to-indigo-600/5 border rounded-md p-4 flex flex-col md:flex-row md:items-center gap-4 mb-6">
     <Info className="h-6 w-6 text-primary" />
     <div>
       <div className="text-md font-medium mb-1">Краткая информация о системе:</div>
@@ -88,7 +88,7 @@ const SystemSettingsPage: React.FC = () => {
         {TILES.map(tile => (
           <Card 
             key={tile.label}
-            className="cursor-pointer group hover:scale-[1.03] transition-transform shadow border"
+            className="cursor-pointer group hover:scale-[1.03] transition-transform shadow border bg-gradient-to-br from-blue-600/5 to-indigo-600/5"
             onClick={() => handleTileClick(tile.to)}
             tabIndex={0}
             role="button"
