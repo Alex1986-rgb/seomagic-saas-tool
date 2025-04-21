@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -26,6 +27,7 @@ const WebsiteAnalyzerPage: React.FC = () => {
   const [scanError, setScanError] = useState<string | null>(null);
   const [sitemap, setSitemap] = useState<string | null>(null);
   const [maxPages, setMaxPages] = useState<number>(15000000); // Устанавливаем максимум по умолчанию
+  const [taskId, setTaskId] = useState<string>('');
   const { toast } = useToast();
 
   // Функция для запуска полного сканирования сайта
@@ -56,16 +58,19 @@ const WebsiteAnalyzerPage: React.FC = () => {
       });
 
       // Запускаем процесс сканирования через firecrawlService
-      const taskId = await firecrawlService.startCrawl(normalizedUrl, maxPages);
+      const task = await firecrawlService.startCrawl(normalizedUrl, maxPages);
       
-      if (!taskId) {
+      // Store the task ID
+      setTaskId(task.id);
+      
+      if (!task.id) {
         throw new Error("Не удалось запустить задачу сканирования");
       }
       
       // Настраиваем интервал опроса статуса сканирования
       const intervalId = setInterval(async () => {
         try {
-          const status = await firecrawlService.getStatus(taskId);
+          const status = await firecrawlService.getStatus(task.id);
           
           // Обновляем информацию о прогрессе
           const progress = status.progress || 0;
@@ -84,7 +89,7 @@ const WebsiteAnalyzerPage: React.FC = () => {
             
             // Пытаемся загрузить sitemap
             try {
-              const sitemapContent = await firecrawlService.downloadSitemap(taskId);
+              const sitemapContent = await firecrawlService.downloadSitemap(task.id);
               if (sitemapContent) {
                 setSitemap(sitemapContent);
                 
