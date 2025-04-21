@@ -1,4 +1,10 @@
 
-import AdminDashboard from "./Dashboard";
+import React from 'react';
+import { Navigate } from 'react-router-dom';
 
-export default AdminDashboard;
+const AdminPanel: React.FC = () => {
+  // Redirect to the admin dashboard
+  return <Navigate to="/admin" replace />;
+};
+
+export default AdminPanel;
