@@ -32,7 +32,7 @@ import {
   scanWebsite, 
   generateSitemap, 
   calculateScannerOptimizationMetrics, 
-  createOptimizedSite as createScannerOptimizedSite,
+  createScannerOptimizedSite,
   downloadAuditPdfReport,
   downloadErrorReport
 } from './scanner';
