@@ -55,45 +55,46 @@ const AdminSettingsPage: React.FC = () => {
       <Helmet>
         <title>Настройки | Админ панель</title>
       </Helmet>
-      <div className="container mx-auto px-4 md:px-8 py-10 max-w-6xl">
-        <div className="mb-8 px-8 py-10 rounded-3xl bg-gradient-to-br from-purple-50 via-white/80 to-blue-50 shadow-2xl flex flex-col md:flex-row items-center gap-8 border border-primary/15 animate-fade-in">
-          <div className="flex-shrink-0 bg-primary/20 text-primary rounded-full p-6 glass-morphism shadow-lg">
-            <Settings className="h-12 w-12" />
-          </div>
-          <div className="flex-1 min-w-[210px]">
-            <h1 className="text-4xl font-extrabold mb-2 tracking-tight text-gradient-primary">Настройки администратора</h1>
-            <p className="text-muted-foreground text-lg">
-              Управление всеми ключевыми настройками и конфигурацией платформы.
-            </p>
-            <div className="flex flex-wrap gap-3 mt-6">
-              <Link to="/admin">
-                <Button variant="outline" className="hover-scale">На главную</Button>
-              </Link>
-              <Link to="/admin/monitoring">
-                <Button variant="outline" className="hover-scale"> <Gauge className="h-4 w-4 mr-1" />Мониторинг</Button>
-              </Link>
-              <Link to="/admin/users">
-                <Button variant="outline" className="hover-scale"><UserCheck className="h-4 w-4 mr-1" />Пользователи</Button>
-              </Link>
-              <Link to="/admin/analytics">
-                <Button variant="outline" className="hover-scale"><BarChart2 className="h-4 w-4 mr-1" />Аналитика</Button>
-              </Link>
-              <Link to="/admin/website-analyzer">
-                <Button variant="outline" className="hover-scale">Анализатор сайтов</Button>
-              </Link>
+      
+      <div className="container mx-auto px-4 md:px-6 py-10 max-w-6xl">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6 mb-8">
+          <div className="flex items-center gap-4">
+            <div className="bg-yellow-100 text-primary p-4 rounded-2xl shadow hover:scale-110 transition">
+              <Settings className="h-8 w-8" />
+            </div>
+            <div>
+              <h1 className="text-3xl font-extrabold tracking-tight text-gradient-primary mb-0.5">
+                Настройки администратора
+              </h1>
+              <p className="text-muted-foreground">
+                Управление всеми ключевыми настройками и конфигурацией платформы.
+              </p>
             </div>
           </div>
+          <div className="flex flex-wrap gap-2">
+            {navSettings.map((item) => (
+              <Link to={item.to} key={item.to}>
+                <Button variant="outline" className="flex items-center gap-2 hover-scale shadow border-primary/20" size="sm">
+                  {item.icon}
+                  {item.label}
+                  <ArrowRight className="h-4 w-4 ml-1" />
+                </Button>
+              </Link>
+            ))}
+          </div>
         </div>
+
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-6">
           <div className="lg:col-span-2 flex flex-col gap-6">
-            <Card className="bg-gradient-to-br from-purple-50 via-white/80 to-indigo-50 border-0 shadow-2xl">
+            <Card className="bg-gradient-to-br from-yellow-50 to-white/80 border-0 shadow-xl">
               <CardContent className="p-0">
                 <AdminSettings />
               </CardContent>
             </Card>
           </div>
+          
           <div className="space-y-8">
-            <Card className="bg-gradient-to-br from-green-50 to-white/90 border-0 shadow hover:scale-105 transition-transform">
+            <Card className="bg-gradient-to-br from-green-50 to-white/80 border-0 shadow hover:scale-105 transition-transform">
               <CardContent className="p-6">
                 <div className="flex items-center gap-2 mb-4">
                   <BellRing className="h-5 w-5 text-primary" />
@@ -121,6 +122,7 @@ const AdminSettingsPage: React.FC = () => {
                 </Link>
               </CardContent>
             </Card>
+            
             <Card className="bg-gradient-to-br from-blue-50 to-white/90 border-0 shadow hover:scale-105 transition-transform">
               <CardContent className="p-6">
                 <div className="flex items-center gap-2 mb-4">
