@@ -1,41 +1,41 @@
 
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap');
 
-/* Темный мод: стильные глубокие цвета и модные варианты */
 :root {
-  --background: 240 11% 12%;          /* Темный синий — фон */
-  --foreground: 210 40% 97%;          /* Светлый текст */
-  --card: 240 13% 15%;                /* Более светлый для карточек */
+  --background: 225 71% 5%;
+  --foreground: 210 40% 98%;
+
+  --card: 224 71% 4%;
   --card-foreground: 210 40% 98%;
 
-  --popover: 240 13% 13%;
+  --popover: 224 71% 4%;
   --popover-foreground: 210 40% 98%;
 
-  --primary: 262 70% 66%;
-  --primary-foreground: 240 40% 98%;
+  --primary: 30 85% 50%;
+  --primary-foreground: 210 40% 98%;
 
-  --secondary: 220 16% 25%;
-  --secondary-foreground: 210 40% 97%;
+  --secondary: 222.2 47.4% 11.2%;
+  --secondary-foreground: 210 40% 98%;
 
-  --muted: 240 8% 22%;
-  --muted-foreground: 215.4 16.3% 65.9%;
+  --muted: 223 47% 11%;
+  --muted-foreground: 215.4 16.3% 56.9%;
 
-  --accent: 270 60% 55%;
+  --accent: 30 85% 50%;
   --accent-foreground: 210 40% 98%;
 
-  --destructive: 0 68% 43%;
+  --destructive: 0 63% 31%;
   --destructive-foreground: 210 40% 98%;
 
-  --border: 240 7% 23%;
-  --input: 240 7% 23%;
-  --ring: 262 70% 66%;
+  --border: 216 34% 17%;
+  --input: 216 34% 17%;
+  --ring: 30 85% 50%;
 
-  --sidebar-background: 238 17% 21%;
-  --sidebar-foreground: 210 40% 97%;
-  --sidebar-primary: 262 70% 66%;
-  --sidebar-primary-foreground: 210 40% 98%;
-  --sidebar-accent: 270 60% 55%;
+  --sidebar-background: 225 71% 5%;
+  --sidebar-foreground: 210 40% 98%;
+  --sidebar-primary: 210 40% 98%;
+  --sidebar-primary-foreground: 222.2 47.4% 11.2%;
+  --sidebar-accent: 216 34% 17%;
   --sidebar-accent-foreground: 210 40% 98%;
-  --sidebar-border: 240 7% 23%;
-  --sidebar-ring: 262 70% 66%;
+  --sidebar-border: 216 34% 17%;
+  --sidebar-ring: 213 31% 91%;
 }
