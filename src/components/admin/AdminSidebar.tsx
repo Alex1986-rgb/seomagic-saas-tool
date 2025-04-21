@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { 
@@ -12,8 +11,8 @@ import {
   Database,
   Shield,
   Bell,
-  Analytics,
-  Hosting,
+  BarChart,
+  Server,
   Globe,
   ChartBar,
 } from 'lucide-react';
@@ -154,13 +153,13 @@ const AdminSidebar: React.FC = () => {
           />
           <SidebarLink 
             to="/admin/analytics" 
-            icon={<Analytics className="h-4 w-4" />} 
+            icon={<BarChart className="h-4 w-4" />} 
             label="Аналитика" 
             active={currentPath === "/admin/analytics"}
           />
           <SidebarLink 
             to="/admin/hosting" 
-            icon={<Hosting className="h-4 w-4" />} 
+            icon={<Server className="h-4 w-4" />} 
             label="Хостинг" 
             active={currentPath === "/admin/hosting"}
           />
@@ -199,7 +198,7 @@ const AdminSidebar: React.FC = () => {
           />
           <SidebarLink 
             to="/admin/system/analytics" 
-            icon={<Analytics className="h-4 w-4" />} 
+            icon={<BarChart className="h-4 w-4" />} 
             label="Настройки аналитики" 
             active={currentPath === "/admin/system/analytics"}
           />

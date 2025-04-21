@@ -3,13 +3,13 @@ import React from 'react';
 import { 
   LayoutDashboard,
   Search,
-  SystemStatus,
+  ChartBar, // Instead of SystemStatus
   Bell,
   Monitor,
   Settings,
   Users,
-  Analytics,
-  Hosting,
+  BarChart, // Instead of Analytics
+  Server, // Instead of Hosting
   Globe
 } from 'lucide-react';
 import { Card, CardContent } from "@/components/ui/card";
@@ -32,7 +32,7 @@ const adminCards = [
   {
     to: "/admin/system-status",
     title: "Статус системы",
-    icon: <SystemStatus className="h-6 w-6" />,
+    icon: <ChartBar className="h-6 w-6" />,
     desc: "Актуальное состояние сервисов и инфраструктуры."
   },
   {
@@ -62,13 +62,13 @@ const adminCards = [
   {
     to: "/admin/analytics",
     title: "Аналитика",
-    icon: <Analytics className="h-6 w-6" />,
+    icon: <BarChart className="h-6 w-6" />,
     desc: "Сбор, визуализация и анализ платформенных данных."
   },
   {
     to: "/admin/hosting",
     title: "Хостинг",
-    icon: <Hosting className="h-6 w-6" />,
+    icon: <Server className="h-6 w-6" />,
     desc: "Управление хостингами сайтов."
   },
   {
