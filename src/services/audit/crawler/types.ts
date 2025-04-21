@@ -1,95 +1,34 @@
-export interface CrawlResult {
-  urls: string[];
-  pageCount: number;
-  metadata?: {
-    title?: string;
-    description?: string;
-    keywords?: string[];
-    links?: {
-      internal: number;
-      external: number;
-      broken: number;
-    };
-  };
-  brokenLinks?: {url: string; statusCode: number}[];
-  redirects?: {from: string; to: string}[];
-  errors?: string[];
-}
 
 export interface DeepCrawlerOptions {
-  maxPages: number; // Required to match firecrawl/types
+  maxPages?: number;
   maxDepth?: number;
-  includeQuery?: boolean;
-  respectRobotsTxt?: boolean;
-  userAgent?: string;
-  followRedirects?: boolean;
-  timeout?: number;
-  ignorePatterns?: string[];
-  onProgress?: (progress: { pagesScanned: number; currentUrl: string; totalUrls: number; }) => void; // Updated to match firecrawl type
+  onProgress?: (progress: { pagesScanned: number; currentUrl: string; totalUrls: number; }) => void;
+}
+
+export interface CrawlResult {
+  urls: string[];
+  metadata?: {
+    startTime: string;
+    endTime: string;
+    totalTime: number;
+    totalPages: number;
+    domain: string;
+    sitemap?: string;
+  };
+  brokenLinks?: string[];
 }
 
 export interface PageData {
-  url: string;
-  title: string | null;
-  headings: {
-    h1: string[];
-    h2: string[];
-  };
-  metaDescription: string | null;
+  title: string;
+  description: string;
+  h1s: string[];
+  headings: {h1: string[]; h2: string[]; h3: string[]; h4: string[]; h5: string[]; h6: string[];};
+  wordCount: number;
+  links: {internal: string[]; external: string[];};
+  images: {src: string; alt: string; title?: string;}[];
   statusCode: number;
-  contentType: string | null;
-  contentLength: number | null;
-  internalLinks: string[];
-  externalLinks: string[];
-  images: Array<{
-    url: string;
-    alt: string | null;
-  }>;
-  hasCanonical: boolean;
-  canonicalUrl: string | null;
-  html?: string;
+  contentType: string;
+  loadTime: number;
 }
 
-export interface CrawlSummary {
-  crawlSummary: {
-    url: string;
-    domain: string;
-    startTime: string;
-    endTime: string;
-    duration: string;
-    totalPages: number;
-    crawlRate: string;
-  };
-  pageStats: {
-    totalInternalLinks: number;
-    totalExternalLinks: number;
-    totalImages: number;
-    avgInternalLinksPerPage: string;
-    avgExternalLinksPerPage: string;
-    avgImagesPerPage: string;
-  };
-  seoIssues: {
-    pagesWithoutTitle: number;
-    pagesWithoutDescription: number;
-    pagesWithoutH1: number;
-    percentWithoutTitle: string;
-    percentWithoutDescription: string;
-    percentWithoutH1: string;
-  };
-}
-
-export interface RequestManager {
-  delayBetweenRequests: number;
-  maxConcurrentRequests: number;
-  requestQueue: Array<() => Promise<void>>;
-  activeRequests: number;
-  pause: () => void;
-  resume: () => void;
-  addToQueue: (request: () => Promise<void>) => void;
-  processQueue: () => void;
-}
-
-export interface SiteStructureAnalysis {
-  levels: Record<number, number>;
-  pathCounts: Record<string, number>;
-}
+export type ExtractorFunction = (html: string, url: string) => string[];

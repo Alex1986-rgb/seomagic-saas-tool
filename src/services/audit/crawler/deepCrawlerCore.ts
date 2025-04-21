@@ -6,16 +6,16 @@
 import * as cheerio from 'cheerio';
 import axios from 'axios';
 import { QueueManager } from './queueManager';
-import { normalizePath, normalizeUrl, isUrlFromSameDomain, isExternalUrl } from './urlUtils';
-import { CrawlResult, DeepCrawlerOptions, ExtractorFunction } from './types';
+import { normalizePath, normalizeUrl, isUrlFromSameDomain, isExternalUrl, createUrlObject, getUrlPriority } from './urlUtils';
+import { CrawlResult, DeepCrawlerOptions } from './types';
 
 export class DeepCrawlerCore {
-  private url: string;
-  private baseUrl: string;
-  private domain: string;
-  private options: DeepCrawlerOptions;
-  private queue: { url: string; depth: number }[] = [];
-  private visited = new Set<string>();
+  protected url: string;
+  protected baseUrl: string;
+  protected domain: string;
+  protected options: DeepCrawlerOptions;
+  protected queue: { url: string; depth: number }[] = [];
+  protected visited = new Set<string>();
   private queueManager: QueueManager;
   private isCancelled = false;
   private robotsTxtAllowed: { [key: string]: boolean } = {};
@@ -255,7 +255,7 @@ export class DeepCrawlerCore {
       // Extract links from the page
       const links = this.extractLinks(response.data, url);
       
-      // Filter by priority
+      // Filter and sort by priority
       const sortedLinks = this.sortLinksByPriority(links);
 
       // Process the sorted links
@@ -282,36 +282,9 @@ export class DeepCrawlerCore {
    */
   private sortLinksByPriority(links: string[]): string[] {
     return links.sort((a, b) => {
-      let aPriority = 0;
-      let bPriority = 0;
-      
-      try {
-        const aUrl = new URL(a);
-        const bUrl = new URL(b);
-        
-        // Higher priority for URLs with fewer path segments
-        const aPathDepth = aUrl.pathname.split('/').filter(Boolean).length;
-        const bPathDepth = bUrl.pathname.split('/').filter(Boolean).length;
-        
-        aPriority -= aPathDepth;
-        bPriority -= bPathDepth;
-        
-        // Higher priority for URLs without query params
-        if (!aUrl.search) aPriority += 2;
-        if (!bUrl.search) bPriority += 2;
-        
-        // Higher priority for URLs that look like product pages
-        if (aUrl.pathname.includes('product') || aUrl.pathname.includes('item')) aPriority += 3;
-        if (bUrl.pathname.includes('product') || bUrl.pathname.includes('item')) bPriority += 3;
-        
-        // Higher priority for category pages
-        if (aUrl.pathname.includes('category') || aUrl.pathname.includes('catalog')) aPriority += 2;
-        if (bUrl.pathname.includes('category') || bUrl.pathname.includes('catalog')) bPriority += 2;
-        
-        return bPriority - aPriority;
-      } catch (error) {
-        return 0;
-      }
+      const aPriority = getUrlPriority(a);
+      const bPriority = getUrlPriority(b);
+      return bPriority - aPriority;
     });
   }
 

@@ -14,7 +14,6 @@ import { PageProcessor } from './pageProcessor';
 export class AdvancedCrawler extends CrawlerBase {
   private requestManager = createRequestManager();
   private pageProcessor: PageProcessor;
-  // Add the missing productPatterns property
   protected productPatterns: RegExp[] = [
     /\/product\//i, 
     /\/products\//i, 
@@ -25,7 +24,7 @@ export class AdvancedCrawler extends CrawlerBase {
 
   constructor(url: string, options: any) {
     super(url, options);
-    this.pageProcessor = new PageProcessor(this.domain, this.baseUrl, this.userAgent);
+    this.pageProcessor = new PageProcessor(this.getDomain(), this.getBaseUrl(), this.userAgent);
   }
 
   protected async processUrl(url: string, depth: number): Promise<void> {
@@ -64,20 +63,20 @@ export class AdvancedCrawler extends CrawlerBase {
     const summary = this.generateSummaryReport();
     const pagesData = Array.from(this.pageData.values());
     
-    return ReportGenerator.createCrawlDataZip(this.domain, sitemap, summary, pagesData);
+    return ReportGenerator.createCrawlDataZip(this.getDomain(), sitemap, summary, pagesData);
   }
   
   // Generate a sitemap based on discovered URLs
   generateSitemap(): string {
-    return ReportGenerator.generateSitemap(this.domain, this.visited, this.excludePatterns);
+    return ReportGenerator.generateSitemap(this.getDomain(), this.visited, this.excludePatterns);
   }
   
   // Generate a summary report of the crawl
   generateSummaryReport() {
     return ReportGenerator.generateSummaryReport(
       this.pageData, 
-      this.domain, 
-      this.baseUrl, 
+      this.getDomain(), 
+      this.getBaseUrl(), 
       this.crawlStartTime, 
       this.crawlEndTime
     );
@@ -85,6 +84,6 @@ export class AdvancedCrawler extends CrawlerBase {
   
   // Enhanced site structure analysis
   analyzeSiteStructure() {
-    return SiteAnalyzer.analyzeSiteStructure(this.visited, this.domain);
+    return SiteAnalyzer.analyzeSiteStructure(this.visited, this.getDomain());
   }
 }

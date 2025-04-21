@@ -94,3 +94,44 @@ export function isValidHttpUrl(url: string): boolean {
     return false;
   }
 }
+
+/**
+ * Prioritizes a URL based on various factors
+ * Higher score means higher priority
+ */
+export function getUrlPriority(url: string): number {
+  try {
+    const urlObj = new URL(url);
+    let priority = 0;
+    
+    // URLs with fewer path segments have higher priority
+    const pathSegments = urlObj.pathname.split('/').filter(Boolean).length;
+    priority -= pathSegments;
+    
+    // URLs without query parameters have higher priority
+    if (!urlObj.search) priority += 2;
+    
+    // Product and category pages have higher priority
+    if (urlObj.pathname.includes('product') || urlObj.pathname.includes('item')) priority += 3;
+    if (urlObj.pathname.includes('category') || urlObj.pathname.includes('catalog')) priority += 2;
+    
+    return priority;
+  } catch (error) {
+    return -999; // Very low priority for invalid URLs
+  }
+}
+
+/**
+ * Create a safe URL object with error handling
+ */
+export function createUrlObject(url: string): URL | null {
+  try {
+    // Ensure URL has a protocol
+    if (!url.startsWith('http://') && !url.startsWith('https://')) {
+      url = `https://${url}`;
+    }
+    return new URL(url);
+  } catch (error) {
+    return null;
+  }
+}

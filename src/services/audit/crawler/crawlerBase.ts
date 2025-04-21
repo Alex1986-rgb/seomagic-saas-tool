@@ -3,11 +3,11 @@
  * Base crawler class with common functionality for all crawler types
  */
 
-import { DeepCrawler } from '../deepCrawler';
+import { DeepCrawlerCore } from '../deepCrawlerCore';
 import { RobotsTxtParser } from './robotsTxtParser';
 import { PageData } from './types';
 
-export class CrawlerBase extends DeepCrawler {
+export class CrawlerBase extends DeepCrawlerCore {
   protected pageData: Map<string, PageData> = new Map();
   protected userAgent: string = 'Mozilla/5.0 (compatible; AdvancedSEOBot/2.0; +https://example.com/bot)';
   protected crawlStartTime: number = 0;
@@ -20,12 +20,12 @@ export class CrawlerBase extends DeepCrawler {
 
   constructor(url: string, options: any) {
     super(url, options);
-    this.robotsTxtParser = new RobotsTxtParser(this.baseUrl, this.userAgent, this.excludePatterns);
+    this.robotsTxtParser = new RobotsTxtParser(this.getBaseUrl(), this.userAgent, this.excludePatterns);
   }
 
   async startCrawling() {
     this.crawlStartTime = Date.now();
-    console.log(`Starting crawl of ${this.baseUrl}`);
+    console.log(`Starting crawl of ${this.getBaseUrl()}`);
     
     // Try to read robots.txt first
     this.excludePatterns = await this.robotsTxtParser.readRobotsTxt();
