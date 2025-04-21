@@ -3,7 +3,7 @@ import React from 'react';
 import { Helmet } from 'react-helmet-async';
 import AdminSettings from '@/components/admin/AdminSettings';
 import { Card, CardContent } from "@/components/ui/card";
-import { Settings, UserCheck, Globe, Shield, BellRing, Server, BarChart2, Gauge, ArrowRight } from 'lucide-react';
+import { Settings, User, UserCheck, Globe, Shield, BellRing, Server, BarChart2, Gauge, ArrowRight, Monitor, BarChart } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 
@@ -56,7 +56,7 @@ const AdminSettingsPage: React.FC = () => {
         <title>Настройки | Админ панель</title>
       </Helmet>
       <div className="container mx-auto px-4 md:px-8 py-10 max-w-6xl">
-        <div className="mb-8 px-8 py-10 rounded-3xl bg-gradient-to-br from-purple-50 via-white/80 to-blue-50 shadow-2xl flex flex-col md:flex-row items-center gap-8 border border-primary/15 animate-fade-in">
+        <div className="mb-8 px-8 py-10 rounded-3xl bg-gradient-to-br from-blue-50 via-white/80 to-purple-50 shadow-2xl flex flex-col md:flex-row items-center gap-8 border border-primary/15 animate-fade-in">
           <div className="flex-shrink-0 bg-primary/20 text-primary rounded-full p-6 glass-morphism shadow-lg">
             <Settings className="h-12 w-12" />
           </div>
@@ -67,26 +67,42 @@ const AdminSettingsPage: React.FC = () => {
             </p>
             <div className="flex flex-wrap gap-3 mt-6">
               <Link to="/admin">
-                <Button variant="outline" className="hover-scale">На главную</Button>
+                <Button variant="outline" className="hover-scale">Главная</Button>
               </Link>
               <Link to="/admin/monitoring">
-                <Button variant="outline" className="hover-scale"> <Gauge className="h-4 w-4 mr-1" />Мониторинг</Button>
+                <Button variant="outline" className="hover-scale"><Gauge className="h-4 w-4 mr-1" />Мониторинг</Button>
               </Link>
               <Link to="/admin/users">
-                <Button variant="outline" className="hover-scale"><UserCheck className="h-4 w-4 mr-1" />Пользователи</Button>
+                <Button variant="outline" className="hover-scale"><User className="h-4 w-4 mr-1" />Пользователи</Button>
               </Link>
               <Link to="/admin/analytics">
-                <Button variant="outline" className="hover-scale"><BarChart2 className="h-4 w-4 mr-1" />Аналитика</Button>
+                <Button variant="outline" className="hover-scale"><BarChart className="h-4 w-4 mr-1" />Аналитика</Button>
               </Link>
               <Link to="/admin/website-analyzer">
-                <Button variant="outline" className="hover-scale">Анализатор сайтов</Button>
+                <Button variant="outline" className="hover-scale"><Monitor className="h-4 w-4 mr-1" />Анализатор сайтов</Button>
               </Link>
+              <Link to="/admin/system-status">
+                <Button variant="outline" className="hover-scale"><Shield className="h-4 w-4 mr-1" />Статус системы</Button>
+              </Link>
+            </div>
+          </div>
+          <div className="flex flex-col gap-3 mt-6 md:mt-0">
+            <div className="flex items-center gap-3 bg-orange-50/80 text-orange-700 rounded-xl border border-orange-200 shadow px-5 py-3">
+              <Gauge className="h-5 w-5 mr-1" />
+              <div className="text-sm">
+                <div className="font-medium">Мониторинг сервера</div>
+                <div className="text-xs text-orange-500">CPU 32%, RAM 68%</div>
+              </div>
+            </div>
+            <div className="flex items-center gap-3 bg-primary/5 rounded-xl border border-primary/10 shadow px-4 py-2">
+              <BarChart className="h-5 w-5 mr-1 text-primary" />
+              <span>Трафик: 72 тыс/мес</span>
             </div>
           </div>
         </div>
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-6">
           <div className="lg:col-span-2 flex flex-col gap-6">
-            <Card className="bg-gradient-to-br from-purple-50 via-white/80 to-indigo-50 border-0 shadow-2xl">
+            <Card className="bg-gradient-to-br from-blue-50 via-white/80 to-indigo-50 border-0 shadow-2xl transition-transform hover:scale-105 duration-200">
               <CardContent className="p-0">
                 <AdminSettings />
               </CardContent>

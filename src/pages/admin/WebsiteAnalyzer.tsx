@@ -3,10 +3,9 @@ import React from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import WebsiteScanner from '@/components/website-scanner/WebsiteScanner';
-import { DeepCrawlProgressDialog } from '@/components/audit/deep-crawl';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import VideoDemo from '@/components/video/VideoDemo';
-import { Globe, Search, BarChart2, Rocket, AlertCircle } from 'lucide-react';
+import { Monitor, Search, BarChart2, Rocket, AlertCircle } from 'lucide-react';
 
 const WebsiteAnalyzerPage: React.FC = () => {
   return (
@@ -17,7 +16,7 @@ const WebsiteAnalyzerPage: React.FC = () => {
       <div className="container mx-auto px-4 md:px-8 py-10 max-w-6xl">
         <div className="mb-8 px-8 py-10 rounded-3xl bg-gradient-to-br from-purple-50 via-white/80 to-blue-50 shadow-2xl flex flex-col md:flex-row items-center gap-8 border border-primary/15 animate-fade-in">
           <div className="flex-shrink-0 bg-primary/20 text-primary rounded-full p-6 glass-morphism shadow-lg">
-            <Globe className="h-12 w-12" />
+            <Monitor className="h-12 w-12" />
           </div>
           <div className="flex-1 min-w-[210px]">
             <h1 className="text-4xl font-extrabold mb-2 tracking-tight text-gradient-primary">Анализатор сайтов</h1>
