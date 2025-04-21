@@ -1,6 +1,6 @@
 
 import React from "react";
-import { AlertTriangle, Info } from "lucide-react";
+import { AlertTriangle, Info, AlertCircle } from "lucide-react";
 
 export interface SystemWarning {
   type: "warning" | "error" | "info";
@@ -19,19 +19,22 @@ const SystemWarnings: React.FC<Props> = ({ warnings }) => {
           <div
             key={i}
             className={
-              "rounded-lg p-4 flex items-center gap-3 " +
+              "rounded-lg p-4 flex items-center gap-3 border shadow-sm hover:shadow-md transition-shadow " +
               (w.type === "warning"
-                ? "bg-amber-50 text-amber-800 border border-amber-200"
+                ? "bg-amber-50 text-amber-800 border-amber-200"
                 : w.type === "error"
-                ? "bg-red-50 text-red-700 border border-red-200"
-                : "bg-blue-50 text-blue-800 border border-blue-200"
+                ? "bg-red-50 text-red-700 border-red-200"
+                : "bg-blue-50 text-blue-800 border-blue-200"
               )
             }
           >
-            {w.type === "error" ? <AlertTriangle className="h-5 w-5 flex-shrink-0" /> :
-             w.type === "warning" ? <AlertTriangle className="h-5 w-5 flex-shrink-0" /> :
-             <Info className="h-5 w-5 flex-shrink-0" />}
-            <span className="text-sm">{w.message}</span>
+            {w.type === "error" ? 
+              <AlertCircle className="h-6 w-6 flex-shrink-0 text-red-500" /> :
+             w.type === "warning" ? 
+              <AlertTriangle className="h-6 w-6 flex-shrink-0 text-amber-500" /> :
+              <Info className="h-6 w-6 flex-shrink-0 text-blue-500" />
+            }
+            <span className="text-sm font-medium">{w.message}</span>
           </div>
         ))}
       </div>
