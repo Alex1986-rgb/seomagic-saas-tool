@@ -37,8 +37,14 @@ export function useSimpleSitemapCreator({ url, maxPages = 10000, maxDepth = 5 }:
         maxPages,
         maxDepth,
         includeStylesheet: true,
-        requestDelay: 300
+        requestDelay: 300,
+        timeout: 15000
       });
+
+      // Set base URL and enable debug mode
+      scanner.setBaseUrl(url);
+      scanner.enableDebugMode(true);
+      scanner.logCrawlSettings();
 
       const progressCallback = (scanned: number, total: number, url: string) => {
         const percentage = total > 0 ? Math.min(Math.round((scanned / total) * 100), 100) : 0;
