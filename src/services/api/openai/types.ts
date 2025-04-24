@@ -26,4 +26,3 @@ export interface OptimizationResult {
   optimizedHtml: string | null;
   suggestions: string[];
 }
-

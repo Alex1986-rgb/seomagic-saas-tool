@@ -23,15 +23,17 @@ class OpenAIApiClient {
     return null;
   }
 
-  async makeRequest(messages: { role: string; content: string; }[], model = 'gpt-4-turbo-preview'): Promise<any> {
+  async makeRequest(messages: { role: string; content: string; }[], model?: string): Promise<any> {
     if (!this.apiKey) {
       throw new Error('OpenAI API key not set');
     }
 
+    const selectedModel = model || localStorage.getItem('openai_model') || 'gpt-4o-mini';
+
     const response = await axios.post(
       'https://api.openai.com/v1/chat/completions',
       {
-        model,
+        model: selectedModel,
         messages,
         temperature: 0.7,
         max_tokens: 2500
@@ -49,4 +51,3 @@ class OpenAIApiClient {
 }
 
 export const openAIApiClient = new OpenAIApiClient();
-
