@@ -94,13 +94,13 @@ const AdminSettings: React.FC = () => {
 
   return (
     <div>
-      <Card className="backdrop-blur-sm bg-card/80 border-primary/10 shadow-lg">
+      <Card className="backdrop-blur-sm bg-card/80 border border-primary/10 shadow-sm">
         <CardContent className="p-6">
           <TabLayout
             tabs={tabs}
             activeTab={activeTab}
             onTabChange={setActiveTab}
-            tabsListClassName="mb-6 flex flex-wrap gap-2 border-b pb-px"
+            tabsListClassName="mb-6 flex flex-wrap gap-2"
           />
         </CardContent>
       </Card>

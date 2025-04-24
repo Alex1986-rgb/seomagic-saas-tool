@@ -2,18 +2,17 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap');
 
 :root {
-  /* Обновленная цветовая схема для темной темы с более мягкими оттенками */
-  --background: 222 47% 11%;
-  --foreground: 213 31% 91%;
+  --background: 225 71% 5%;
+  --foreground: 210 40% 98%;
 
-  --card: 223 47% 11%;
-  --card-foreground: 213 31% 91%;
+  --card: 224 71% 4%;
+  --card-foreground: 210 40% 98%;
 
   --popover: 224 71% 4%;
-  --popover-foreground: 215 20.2% 65.1%;
+  --popover-foreground: 210 40% 98%;
 
-  --primary: 210 40% 98%;
-  --primary-foreground: 222.2 47.4% 11.2%;
+  --primary: 30 85% 50%;
+  --primary-foreground: 210 40% 98%;
 
   --secondary: 222.2 47.4% 11.2%;
   --secondary-foreground: 210 40% 98%;
@@ -21,7 +20,7 @@
   --muted: 223 47% 11%;
   --muted-foreground: 215.4 16.3% 56.9%;
 
-  --accent: 216 34% 17%;
+  --accent: 30 85% 50%;
   --accent-foreground: 210 40% 98%;
 
   --destructive: 0 63% 31%;
@@ -29,11 +28,10 @@
 
   --border: 216 34% 17%;
   --input: 216 34% 17%;
-  --ring: 216 34% 17%;
+  --ring: 30 85% 50%;
 
-  /* Обновленные цвета для боковой панели */
-  --sidebar-background: 222 47% 11%;
-  --sidebar-foreground: 213 31% 91%;
+  --sidebar-background: 225 71% 5%;
+  --sidebar-foreground: 210 40% 98%;
   --sidebar-primary: 210 40% 98%;
   --sidebar-primary-foreground: 222.2 47.4% 11.2%;
   --sidebar-accent: 216 34% 17%;
