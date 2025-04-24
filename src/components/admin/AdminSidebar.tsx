@@ -14,7 +14,11 @@ import {
   BarChart,
   Server,
   Globe,
-  ChartBar
+  ChartBar,
+  DatabaseBackup,
+  Key,
+  Mail,
+  FileText as LogsIcon
 } from 'lucide-react';
 import SidebarLink from './SidebarLink';
 import SidebarGroup from './SidebarGroup';
@@ -140,6 +144,30 @@ const AdminSidebar: React.FC = () => {
             icon={Shield}
           >
             Безопасность
+          </SidebarLink>
+          <SidebarLink
+            to="/admin/system/backup"
+            icon={DatabaseBackup}
+          >
+            Резервное копирование
+          </SidebarLink>
+          <SidebarLink
+            to="/admin/system/api-keys"
+            icon={Key}
+          >
+            API ключи и доступ
+          </SidebarLink>
+          <SidebarLink
+            to="/admin/system/email"
+            icon={Mail}
+          >
+            Настройки почты
+          </SidebarLink>
+          <SidebarLink
+            to="/admin/system/logs"
+            icon={LogsIcon}
+          >
+            Логирование событий
           </SidebarLink>
           <SidebarLink
             to="/admin/system/users"
