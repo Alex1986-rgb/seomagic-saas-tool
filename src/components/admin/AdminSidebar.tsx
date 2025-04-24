@@ -14,10 +14,7 @@ import {
   BarChart,
   Server,
   Globe,
-  ChartBar,
-  Clock,
-  Edit,
-  Zap
+  ChartBar
 } from 'lucide-react';
 import SidebarLink from './SidebarLink';
 import SidebarGroup from './SidebarGroup';
@@ -61,11 +58,6 @@ const AdminSidebar: React.FC = () => {
             icon={<Bell className="h-4 w-4" />}
             label="Уведомления"
           />
-          <SidebarLink
-            to="/admin/logs"
-            icon={<Clock className="h-4 w-4" />}
-            label="Логи системы"
-          />
         </SidebarGroup>
 
         <SidebarGroup 
@@ -83,14 +75,9 @@ const AdminSidebar: React.FC = () => {
             label="Аудиты"
           />
           <SidebarLink
-            to="/admin/site-management"
-            icon={<Edit className="h-4 w-4" />}
-            label="Управление сайтами"
-          />
-          <SidebarLink
-            to="/admin/optimization-process"
-            icon={<Zap className="h-4 w-4" />}
-            label="Процесс оптимизации"
+            to="/admin/positions"
+            icon={<Search className="h-4 w-4" />}
+            label="Позиции"
           />
           <SidebarLink
             to="/admin/payments"

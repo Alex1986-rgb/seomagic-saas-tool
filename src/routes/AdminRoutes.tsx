@@ -13,11 +13,6 @@ import AdminUsersPage from '@/pages/admin/AdminUsersPage';
 import AdminAnalyticsPage from '@/pages/admin/AdminAnalyticsPage';
 import HostingPage from '@/pages/admin/HostingPage';
 import SitesPage from '@/pages/admin/SitesPage';
-import AdminAuditsPage from '@/pages/admin/AdminAuditsPage';
-import AdminLogsPage from '@/pages/admin/AdminLogsPage';
-import AdminSiteManagementPage from '@/pages/admin/AdminSiteManagementPage';
-import OptimizationProcess from '@/pages/admin/OptimizationProcess';
-import ProtectedAdminRoute from '@/components/admin/ProtectedAdminRoute';
 
 // system settings sections
 import DatabaseSettingsPage from '@/pages/admin/system/DatabaseSettingsPage';
@@ -30,33 +25,27 @@ import PerformanceSettingsPage from '@/pages/admin/system/PerformanceSettingsPag
 const AdminRoutes: React.FC = () => {
   return (
     <Routes>
-      <Route element={<ProtectedAdminRoute />}>
-        <Route path="/" element={<AdminLayout />}>
-          <Route index element={<Dashboard />} />
-          <Route path="website-analyzer" element={<WebsiteAnalyzer />} />
-          <Route path="system-status" element={<SystemStatusPage />} />
-          <Route path="notifications" element={<AdminNotificationsPage />} />
-          <Route path="monitoring" element={<AdminMonitoringPage />} />
-          <Route path="settings" element={<AdminSettingsPage />} />
-          <Route path="users" element={<AdminUsersPage />} />
-          <Route path="analytics" element={<AdminAnalyticsPage />} />
-          <Route path="hosting" element={<HostingPage />} />
-          <Route path="sites" element={<SitesPage />} />
-          <Route path="audits" element={<AdminAuditsPage />} />
-          <Route path="logs" element={<AdminLogsPage />} />
-          <Route path="site-management" element={<AdminSiteManagementPage />} />
-          <Route path="optimization-process" element={<OptimizationProcess />} />
+      <Route path="/" element={<AdminLayout />}>
+        <Route index element={<Dashboard />} />
+        <Route path="website-analyzer" element={<WebsiteAnalyzer />} />
+        <Route path="system-status" element={<SystemStatusPage />} />
+        <Route path="notifications" element={<AdminNotificationsPage />} />
+        <Route path="monitoring" element={<AdminMonitoringPage />} />
+        <Route path="settings" element={<AdminSettingsPage />} />
+        <Route path="users" element={<AdminUsersPage />} />
+        <Route path="analytics" element={<AdminAnalyticsPage />} />
+        <Route path="hosting" element={<HostingPage />} />
+        <Route path="sites" element={<SitesPage />} />
 
-          {/* System Settings subroutes */}
-          <Route path="system/database" element={<DatabaseSettingsPage />} />
-          <Route path="system/security" element={<SecuritySettingsPage />} />
-          <Route path="system/users" element={<UsersManagementPage />} />
-          <Route path="system/notifications" element={<NotificationsSettingsPage />} />
-          <Route path="system/analytics" element={<AnalyticsSettingsPage />} />
-          <Route path="system/performance" element={<PerformanceSettingsPage />} />
+        {/* System Settings subroutes */}
+        <Route path="system/database" element={<DatabaseSettingsPage />} />
+        <Route path="system/security" element={<SecuritySettingsPage />} />
+        <Route path="system/users" element={<UsersManagementPage />} />
+        <Route path="system/notifications" element={<NotificationsSettingsPage />} />
+        <Route path="system/analytics" element={<AnalyticsSettingsPage />} />
+        <Route path="system/performance" element={<PerformanceSettingsPage />} />
 
-          <Route path="*" element={<NotFound />} />
-        </Route>
+        <Route path="*" element={<NotFound />} />
       </Route>
     </Routes>
   );
