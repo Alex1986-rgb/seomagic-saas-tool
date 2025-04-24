@@ -7,7 +7,6 @@ import { Settings, User, UserCheck, Globe, Shield, BellRing, Server, BarChart2, 
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 
-// Единая цветовая палитра блоков для яркого современного впечатления
 const recentChanges = [
   { action: "Изменены настройки SMTP", user: "Анна С.", time: "20 мин назад" },
   { action: "Обновлены параметры кеширования", user: "Василий П.", time: "2 ч назад" },
@@ -61,20 +60,22 @@ const AdminSettingsPage: React.FC = () => {
       <Helmet>
         <title>Настройки | Админ панель</title>
       </Helmet>
-      <div className="container mx-auto px-4 md:px-8 py-10 max-w-6xl">
-        <div className="mb-8 px-8 py-10 rounded-3xl bg-white shadow-lg flex flex-col md:flex-row items-center gap-8 border border-gray-200">
-          <div className="flex-shrink-0 bg-primary/10 text-primary rounded-full p-6 shadow-sm">
+      <div className="container mx-auto px-4 md:px-8 py-10 max-w-6xl text-black">
+        <div className="mb-8 px-8 py-10 rounded-3xl bg-gradient-to-br from-[#222222] to-[#1a1a1a] text-white shadow-lg flex flex-col md:flex-row items-center gap-8 border border-white/10">
+          <div className="flex-shrink-0 bg-primary/20 text-primary rounded-full p-6 shadow-inner border border-primary/20">
             <Settings className="h-12 w-12" />
           </div>
           <div className="flex-1 min-w-[210px]">
-            <h1 className="text-4xl font-extrabold mb-2 tracking-tight text-gray-900">Настройки администратора</h1>
-            <p className="text-gray-600 text-lg">
+            <h1 className="text-4xl font-extrabold mb-2 tracking-tight bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">
+              Настройки администратора
+            </h1>
+            <p className="text-gray-400 text-lg">
               Управление всеми ключевыми настройками и конфигурацией платформы с интеграцией мониторинга, аналитики и системы безопасности.
             </p>
             <div className="flex flex-wrap gap-3 mt-6">
               {navSettings.map((nav) => (
                 <Link key={nav.to} to={nav.to}>
-                  <Button variant="outline" className="hover:bg-gray-50 font-semibold gap-2">
+                  <Button variant="outline" className="hover:bg-white/5 border-white/10 text-white hover:text-primary font-semibold gap-2">
                     <span>{nav.icon}</span>
                     <span>{nav.label}</span>
                   </Button>
@@ -83,41 +84,41 @@ const AdminSettingsPage: React.FC = () => {
             </div>
           </div>
           <div className="flex flex-col gap-3 mt-6 md:mt-0 w-full md:w-auto">
-            <div className="flex items-center gap-3 bg-white border border-gray-200 rounded-xl shadow-sm px-5 py-3">
+            <div className="flex items-center gap-3 bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl shadow-sm px-5 py-3">
               <Gauge className="h-5 w-5 mr-1 text-primary" />
               <div className="text-sm">
-                <div className="font-medium text-gray-800">Мониторинг сервера</div>
-                <div className="text-xs text-gray-500">CPU 32%, RAM 68%</div>
+                <div className="font-medium text-white">Мониторинг сервера</div>
+                <div className="text-xs text-gray-400">CPU 32%, RAM 68%</div>
               </div>
             </div>
-            <div className="flex items-center gap-3 bg-white rounded-xl border border-gray-200 shadow-sm px-4 py-2">
+            <div className="flex items-center gap-3 bg-white/5 backdrop-blur-sm rounded-xl border border-white/10 shadow-sm px-4 py-2">
               <BarChart2 className="h-5 w-5 mr-1 text-primary" />
-              <span className="text-gray-700">Трафик: 72 тыс/мес</span>
+              <span className="text-gray-300">Трафик: 72 тыс/мес</span>
             </div>
           </div>
         </div>
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-6">
           <div className="lg:col-span-2 flex flex-col gap-6">
-            <Card className="bg-white border border-gray-200 shadow-lg">
+            <Card className="bg-gradient-to-br from-[#222222] to-[#1a1a1a] border border-white/10 shadow-lg">
               <CardContent className="p-0">
                 <AdminSettings />
               </CardContent>
             </Card>
           </div>
           <div className="space-y-8">
-            <Card className="bg-white border border-gray-200 shadow-lg">
+            <Card className="bg-gradient-to-br from-[#222222] to-[#1a1a1a] border border-white/10 shadow-lg text-white">
               <CardContent className="p-6">
                 <div className="flex items-center gap-2 mb-4">
                   <BellRing className="h-5 w-5 text-primary" />
-                  <h3 className="font-semibold text-gray-900">Недавние изменения</h3>
+                  <h3 className="font-semibold">Недавние изменения</h3>
                 </div>
                 <div className="space-y-4">
                   {recentChanges.map((change, index) => (
-                    <div key={index} className="flex items-start gap-3 py-2 border-b last:border-0 border-gray-200">
+                    <div key={index} className="flex items-start gap-3 py-2 border-b last:border-0 border-white/10">
                       <div className="h-2 w-2 rounded-full bg-primary mt-1.5" />
                       <div className="flex-1">
-                        <p className="text-sm font-medium text-gray-800">{change.action}</p>
-                        <div className="flex items-center text-xs text-gray-500 mt-1 gap-1">
+                        <p className="text-sm font-medium text-gray-200">{change.action}</p>
+                        <div className="flex items-center text-xs text-gray-400 mt-1 gap-1">
                           <span>{change.user}</span>
                           <span>•</span>
                           <span>{change.time}</span>
@@ -127,22 +128,22 @@ const AdminSettingsPage: React.FC = () => {
                   ))}
                 </div>
                 <Link to="/admin/history">
-                  <Button variant="outline" className="w-full mt-4" size="sm">
+                  <Button variant="outline" className="w-full mt-4 border-white/10 text-white hover:bg-white/5" size="sm">
                     Просмотреть историю изменений
                   </Button>
                 </Link>
               </CardContent>
             </Card>
-            <Card className="bg-white border border-gray-200 shadow-lg">
+            <Card className="bg-gradient-to-br from-[#222222] to-[#1a1a1a] border border-white/10 shadow-lg text-white">
               <CardContent className="p-6">
                 <div className="flex items-center gap-2 mb-4">
                   <Shield className="h-5 w-5 text-primary" />
-                  <h3 className="font-semibold text-gray-900">Важные настройки</h3>
+                  <h3 className="font-semibold">Важные настройки</h3>
                 </div>
                 <div className="space-y-3 text-sm">
                   {hotSettings.map(link => (
                     <Link key={link.to} to={link.to}>
-                      <Button variant="outline" className="w-full justify-start mb-1" size="sm">
+                      <Button variant="outline" className="w-full justify-start mb-1 border-white/10 text-white hover:bg-white/5" size="sm">
                         <Monitor className="h-4 w-4 text-primary mr-2" />
                         {link.label}
                         <ArrowRight className="h-4 w-4 ml-auto" />
@@ -154,7 +155,7 @@ const AdminSettingsPage: React.FC = () => {
             </Card>
           </div>
         </div>
-        <div className="mt-10 text-sm text-gray-600 space-y-3 max-w-3xl">
+        <div className="mt-10 text-sm text-gray-400 space-y-3 max-w-3xl">
           <p className="flex items-center gap-2">
             <Settings className="h-4 w-4 text-primary" />
             <b>Возможности:</b> расширенное управление платформой, пользователи, интеграции, безопасность, уведомления.
@@ -172,4 +173,3 @@ const AdminSettingsPage: React.FC = () => {
 };
 
 export default AdminSettingsPage;
-
