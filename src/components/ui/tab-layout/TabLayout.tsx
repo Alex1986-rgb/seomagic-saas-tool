@@ -1,66 +1,61 @@
 
-import React, { ReactNode } from 'react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import React from 'react';
+import { cn } from "@/lib/utils";
 
 export interface TabItem {
   id: string;
-  label: ReactNode;
-  icon?: ReactNode;
-  content: ReactNode;
-  badge?: ReactNode;
+  label: string;
+  icon?: React.ReactNode;
+  content: React.ReactNode;
 }
 
 interface TabLayoutProps {
   tabs: TabItem[];
   activeTab: string;
   onTabChange: (tabId: string) => void;
-  orientation?: 'horizontal' | 'vertical';
-  tabsClassName?: string;
   tabsListClassName?: string;
-  tabsTriggerClassName?: string;
-  tabsContentClassName?: string;
 }
 
 const TabLayout: React.FC<TabLayoutProps> = ({
   tabs,
   activeTab,
   onTabChange,
-  orientation = 'horizontal',
-  tabsClassName = '',
-  tabsListClassName = '',
-  tabsTriggerClassName = '',
-  tabsContentClassName = '',
+  tabsListClassName
 }) => {
   return (
-    <Tabs 
-      defaultValue={tabs[0]?.id} 
-      value={activeTab} 
-      onValueChange={onTabChange}
-      className={tabsClassName}
-      orientation={orientation === 'vertical' ? 'vertical' : 'horizontal'}
-    >
-      <div className={`overflow-x-auto pb-2 ${orientation === 'vertical' ? 'float-left mr-4' : ''}`}>
-        <TabsList className={`${tabsListClassName} ${orientation === 'vertical' ? 'flex-col' : 'flex flex-wrap md:flex-nowrap'}`}>
-          {tabs.map(tab => (
-            <TabsTrigger 
-              key={tab.id}
-              value={tab.id} 
-              className={`flex items-center gap-2 text-xs md:text-sm ${tabsTriggerClassName}`}
-            >
-              {tab.icon && <span className="hidden md:inline-block">{tab.icon}</span>}
-              <span>{tab.label}</span>
-              {tab.badge && <span>{tab.badge}</span>}
-            </TabsTrigger>
-          ))}
-        </TabsList>
+    <div className="space-y-6">
+      <div className={cn("flex space-x-2 overflow-x-auto", tabsListClassName)}>
+        {tabs.map((tab) => (
+          <button
+            key={tab.id}
+            onClick={() => onTabChange(tab.id)}
+            className={cn(
+              "flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-200",
+              "hover:bg-primary/5 focus:outline-none focus:ring-2 focus:ring-primary/20",
+              activeTab === tab.id
+                ? "bg-primary/10 text-primary font-medium"
+                : "text-muted-foreground hover:text-primary"
+            )}
+          >
+            {tab.icon}
+            <span>{tab.label}</span>
+          </button>
+        ))}
       </div>
-      
-      {tabs.map(tab => (
-        <TabsContent key={tab.id} value={tab.id} className={tabsContentClassName}>
-          {tab.content}
-        </TabsContent>
-      ))}
-    </Tabs>
+      <div className="py-4">
+        {tabs.map((tab) => (
+          <div
+            key={tab.id}
+            className={cn(
+              "transition-opacity duration-200",
+              activeTab === tab.id ? "block" : "hidden"
+            )}
+          >
+            {tab.content}
+          </div>
+        ))}
+      </div>
+    </div>
   );
 };
 
