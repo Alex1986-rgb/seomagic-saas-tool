@@ -1,11 +1,10 @@
 
-import React, { useEffect } from 'react';
+import React from 'react';
 import Navbar from './navbar';
 import Footer from './Footer';
 import StarryBackground from './backgrounds/StarryBackground';
 import { cn } from '@/lib/utils';
 import { useLocation } from 'react-router-dom';
-import { AppErrorBoundary } from './ErrorBoundary';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -31,16 +30,14 @@ const Layout: React.FC<LayoutProps> = ({
   const shouldHideFooter = hideFooter || isAdminRoute;
 
   return (
-    <AppErrorBoundary>
-      <div className={cn("flex flex-col min-h-screen relative", className)}>
-        <div className="fixed inset-0 z-[-1]">
-          <StarryBackground />
-        </div>
-        {!shouldHideNavbar && <Navbar />}
-        <main className="flex-grow relative z-10 w-full">{children}</main>
-        {!shouldHideFooter && <Footer />}
+    <div className={cn("flex flex-col min-h-screen relative", className)}>
+      <div className="fixed inset-0 z-[-1]">
+        <StarryBackground />
       </div>
-    </AppErrorBoundary>
+      {!shouldHideNavbar && <Navbar />}
+      <main className="flex-grow relative z-10 w-full">{children}</main>
+      {!shouldHideFooter && <Footer />}
+    </div>
   );
 };
 

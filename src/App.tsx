@@ -60,15 +60,15 @@ function App() {
   }, []);
   
   if (isLoading) {
-    return <LoadingSpinner size="large" />;
+    return <LoadingSpinner />;
   }
   
   return (
     <HelmetProvider>
-      <AppErrorBoundary>
-        <Router>
-          <AuthProvider>
-            <Suspense fallback={<LoadingSpinner size="large" />}>
+      <Router>
+        <AuthProvider>
+          <AppErrorBoundary>
+            <Suspense fallback={<LoadingSpinner />}>
               <Routes>
                 <Route path="/" element={<HomePage />} />
                 <Route path="/audit" element={<AuditPage />} />
@@ -103,9 +103,9 @@ function App() {
               </Routes>
               <Toaster />
             </Suspense>
-          </AuthProvider>
-        </Router>
-      </AppErrorBoundary>
+          </AppErrorBoundary>
+        </AuthProvider>
+      </Router>
     </HelmetProvider>
   );
 }
