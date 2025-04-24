@@ -1,9 +1,12 @@
-
 export interface CategoryData {
   score: number;
   passed: number;
   warning: number;
   failed: number;
+  previousScore?: number;
+  items: AuditItemData[];
+  name?: string;
+  description?: string;
 }
 
 export interface AuditItemData {
@@ -40,7 +43,7 @@ export interface AuditDetailsData {
   performance: CategoryData;
   technical: CategoryData;
   mobile: CategoryData;
-  usability: CategoryData; // Include the usability property
+  usability: CategoryData;
 }
 
 export interface IssuesData {

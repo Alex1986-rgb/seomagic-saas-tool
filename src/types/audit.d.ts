@@ -1,3 +1,4 @@
+
 export interface AuditData {
   id: string;
   url: string;
@@ -16,14 +17,7 @@ export interface AuditDetailsData {
   performance: CategoryData;
   technical: CategoryData;
   mobile: CategoryData;
-  usability: CategoryData; // Ensure the usability property exists
-}
-
-export interface IssuesData {
-  critical: number;
-  important: number;
-  minor: number;
-  passed: number;
+  usability: CategoryData;
 }
 
 export interface CategoryData {
@@ -31,6 +25,17 @@ export interface CategoryData {
   passed: number;
   warning: number;
   failed: number;
+  previousScore?: number;
+  items: AuditItemData[];
+  name?: string;
+  description?: string;
+}
+
+export interface IssuesData {
+  critical: number;
+  important: number;
+  minor: number;
+  passed: number;
 }
 
 export interface AuditHistoryItem {
@@ -41,3 +46,4 @@ export interface AuditHistoryItem {
   changes?: number;
   categoryScores?: Record<string, number>;
 }
+
