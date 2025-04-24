@@ -35,29 +35,34 @@ const AdminSidebar: React.FC = () => {
         >
           <SidebarLink
             to="/admin"
-            icon={<LayoutDashboard className="h-4 w-4" />}
-            label="Дашборд"
-          />
+            icon={LayoutDashboard}
+          >
+            Дашборд
+          </SidebarLink>
           <SidebarLink
             to="/admin/monitoring"
-            icon={<Monitor className="h-4 w-4" />}
-            label="Мониторинг"
-          />
+            icon={Monitor}
+          >
+            Мониторинг
+          </SidebarLink>
           <SidebarLink
             to="/admin/website-analyzer"
-            icon={<Search className="h-4 w-4" />}
-            label="Анализатор веб-сайтов"
-          />
+            icon={Search}
+          >
+            Анализатор веб-сайтов
+          </SidebarLink>
           <SidebarLink
             to="/admin/system-status"
-            icon={<ChartBar className="h-4 w-4" />}
-            label="Статус системы"
-          />
+            icon={ChartBar}
+          >
+            Статус системы
+          </SidebarLink>
           <SidebarLink
             to="/admin/notifications"
-            icon={<Bell className="h-4 w-4" />}
-            label="Уведомления"
-          />
+            icon={Bell}
+          >
+            Уведомления
+          </SidebarLink>
         </SidebarGroup>
 
         <SidebarGroup 
@@ -66,24 +71,28 @@ const AdminSidebar: React.FC = () => {
         >
           <SidebarLink
             to="/admin/users"
-            icon={<Users className="h-4 w-4" />}
-            label="Пользователи"
-          />
+            icon={Users}
+          >
+            Пользователи
+          </SidebarLink>
           <SidebarLink
             to="/admin/audits"
-            icon={<FileText className="h-4 w-4" />}
-            label="Аудиты"
-          />
+            icon={FileText}
+          >
+            Аудиты
+          </SidebarLink>
           <SidebarLink
             to="/admin/positions"
-            icon={<Search className="h-4 w-4" />}
-            label="Позиции"
-          />
+            icon={Search}
+          >
+            Позиции
+          </SidebarLink>
           <SidebarLink
             to="/admin/payments"
-            icon={<CreditCard className="h-4 w-4" />}
-            label="Платежи"
-          />
+            icon={CreditCard}
+          >
+            Платежи
+          </SidebarLink>
         </SidebarGroup>
 
         <SidebarGroup 
@@ -92,24 +101,28 @@ const AdminSidebar: React.FC = () => {
         >
           <SidebarLink
             to="/admin/settings"
-            icon={<Settings className="h-4 w-4" />}
-            label="Настройки"
-          />
+            icon={Settings}
+          >
+            Настройки
+          </SidebarLink>
           <SidebarLink
             to="/admin/analytics"
-            icon={<BarChart className="h-4 w-4" />}
-            label="Аналитика"
-          />
+            icon={BarChart}
+          >
+            Аналитика
+          </SidebarLink>
           <SidebarLink
             to="/admin/hosting"
-            icon={<Server className="h-4 w-4" />}
-            label="Хостинг"
-          />
+            icon={Server}
+          >
+            Хостинг
+          </SidebarLink>
           <SidebarLink
             to="/admin/sites"
-            icon={<Globe className="h-4 w-4" />}
-            label="Сайты"
-          />
+            icon={Globe}
+          >
+            Сайты
+          </SidebarLink>
         </SidebarGroup>
 
         <SidebarGroup 
@@ -118,34 +131,40 @@ const AdminSidebar: React.FC = () => {
         >
           <SidebarLink
             to="/admin/system/database"
-            icon={<Database className="h-4 w-4" />}
-            label="База данных"
-          />
+            icon={Database}
+          >
+            База данных
+          </SidebarLink>
           <SidebarLink
             to="/admin/system/security"
-            icon={<Shield className="h-4 w-4" />}
-            label="Безопасность"
-          />
+            icon={Shield}
+          >
+            Безопасность
+          </SidebarLink>
           <SidebarLink
             to="/admin/system/users"
-            icon={<Users className="h-4 w-4" />}
-            label="Управление пользователями"
-          />
+            icon={Users}
+          >
+            Управление пользователями
+          </SidebarLink>
           <SidebarLink
             to="/admin/system/notifications"
-            icon={<Bell className="h-4 w-4" />}
-            label="Настройки уведомлений"
-          />
+            icon={Bell}
+          >
+            Настройки уведомлений
+          </SidebarLink>
           <SidebarLink
             to="/admin/system/analytics"
-            icon={<BarChart className="h-4 w-4" />}
-            label="Настройки аналитики"
-          />
+            icon={BarChart}
+          >
+            Настройки аналитики
+          </SidebarLink>
           <SidebarLink
             to="/admin/system/performance"
-            icon={<ChartBar className="h-4 w-4" />}
-            label="Настройки производительности"
-          />
+            icon={ChartBar}
+          >
+            Настройки производительности
+          </SidebarLink>
         </SidebarGroup>
       </div>
       
