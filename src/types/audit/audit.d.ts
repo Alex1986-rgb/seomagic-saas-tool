@@ -1,5 +1,4 @@
 
-// Type definitions for audit module
 export interface AuditData {
   id: string;
   url: string;
@@ -31,7 +30,7 @@ export interface CategoryData {
   items: AuditItemData[];
   name?: string;
   description?: string;
-  id?: string;
+  id?: string; // Add id property to match AuditCategoryData
 }
 
 export interface AuditItemData {
@@ -70,6 +69,8 @@ export interface AuditHistoryItem {
     performance: { score: number; };
     content: { score: number; };
     technical: { score: number; };
+    mobile?: { score: number; };
+    usability?: { score: number; };
   };
   issues?: {
     critical: number;

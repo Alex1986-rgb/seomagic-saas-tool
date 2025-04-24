@@ -1,4 +1,3 @@
-
 export interface OptimizationItem {
   name: string;
   description: string;

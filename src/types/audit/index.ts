@@ -7,3 +7,6 @@ export * from './optimization';
 export * from './page-data';
 export * from './recommendations';
 export * from './crawl-options';
+
+// Re-export explicitly to resolve ambiguity
+export { CrawlOptions, OptimizationOptions } from './crawl-options';
