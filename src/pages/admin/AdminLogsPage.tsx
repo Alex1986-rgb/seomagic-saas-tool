@@ -73,7 +73,7 @@ const AdminLogsPage: React.FC = () => {
   const getLevelBadge = (level: string) => {
     switch(level) {
       case 'info': return <Badge variant="default">Инфо</Badge>;
-      case 'warning': return <Badge variant="outline" className="bg-yellow-500 text-white">Предупреждение</Badge>;
+      case 'warning': return <Badge variant="warning" className="bg-yellow-500">Предупреждение</Badge>;
       case 'error': return <Badge variant="destructive">Ошибка</Badge>;
       default: return <Badge>{level}</Badge>;
     }

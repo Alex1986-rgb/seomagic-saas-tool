@@ -1,9 +1,7 @@
-
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
 import './index.css';
-import { AppErrorBoundary } from './components/ErrorBoundary';
 
 // Add preconnect links for external resources
 const preconnectLinks = [
@@ -32,22 +30,73 @@ preconnectLinks.forEach(link => {
 const root = ReactDOM.createRoot(document.getElementById('root')!);
 root.render(
   <React.StrictMode>
-    <AppErrorBoundary>
-      <App />
-    </AppErrorBoundary>
+    <App />
   </React.StrictMode>
 );
 
 // Register service worker after app load for faster startup
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    // Simple registration without background sync to avoid errors
     navigator.serviceWorker.register('/service-worker.js')
       .then(registration => {
         console.log('ServiceWorker registration successful');
+        
+        // Enable background sync if supported
+        if ('sync' in registration) {
+          try {
+            // TypeScript doesn't know about the sync API by default
+            // Using type assertion to tell TypeScript that we know what we're doing
+            (registration as any).sync.register('sync-data');
+          } catch (err) {
+            console.error('Background sync registration failed:', err);
+          }
+        }
       })
       .catch(err => {
         console.error('ServiceWorker registration failed:', err);
       });
   });
+}
+
+// Add performance monitoring
+if (process.env.NODE_ENV === 'production') {
+  // Report Web Vitals
+  const reportWebVitals = () => {
+    const vitalsUrl = 'https://vitals.vercel-analytics.com/v1/vitals';
+    const reportVital = ({ id, name, value }: any) => {
+      fetch(vitalsUrl, {
+        body: JSON.stringify({
+          dsn: '', // Add your analytics DSN here
+          id,
+          page: window.location.pathname,
+          href: window.location.href,
+          event_name: name,
+          value: Math.round(name === 'CLS' ? value * 1000 : value),
+          speed: navigator.connection?.effectiveType || ''
+        }),
+        method: 'POST',
+        keepalive: true
+      });
+    };
+
+    try {
+      // We need to import the web-vitals library to use these functions
+      // Since they're not imported, we'll comment them out for now
+      // If you want to use web-vitals, uncomment this and add the library
+      
+      /*
+      webVitals.getCLS(reportVital);
+      webVitals.getFID(reportVital);
+      webVitals.getLCP(reportVital);
+      webVitals.getFCP(reportVital);
+      webVitals.getTTFB(reportVital);
+      */
+      
+      console.log('Web vitals reporting is disabled. Import web-vitals to enable.');
+    } catch (err) {
+      console.error('Error reporting web vitals:', err);
+    }
+  };
+
+  reportWebVitals();
 }
