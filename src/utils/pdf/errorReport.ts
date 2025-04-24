@@ -1,4 +1,3 @@
-
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { pdfColors } from './styles/colors';
@@ -49,7 +48,7 @@ export const generateErrorReportPdf = async (options: ErrorReportOptions): Promi
   });
   
   // Add header
-  doc.setFillColor(pdfColors.error[0], pdfColors.error[1], pdfColors.error[2]); // Red for error report
+  doc.setFillColor(pdfColors.danger[0], pdfColors.danger[1], pdfColors.danger[2]); // Changed from error to danger
   doc.rect(0, 0, 210, 30, 'F');
   
   doc.setFontSize(24);
@@ -105,7 +104,7 @@ export const generateErrorReportPdf = async (options: ErrorReportOptions): Promi
       2: { cellWidth: 80 },
       3: { cellWidth: 20 }
     },
-    headStyles: { fillColor: [pdfColors.error[0], pdfColors.error[1], pdfColors.error[2]] }
+    headStyles: { fillColor: [pdfColors.danger[0], pdfColors.danger[1], pdfColors.danger[2]] }
   });
   
   // Add recommendations

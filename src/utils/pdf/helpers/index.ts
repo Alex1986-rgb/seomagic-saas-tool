@@ -30,3 +30,21 @@ export const getCategoryStatus = (score: number): string => {
   if (score >= 50) return 'Удовлетворительно';
   return 'Требует улучшений';
 };
+
+// jsPDF helper methods polyfill - used if the methods don't exist
+export const extendJsPDF = (doc: any): void => {
+  // Add translatePoint if not exists
+  if (!doc.translatePoint) {
+    doc.translatePoint = function(x: number, y: number) {
+      this.text("", x, y);
+    };
+  }
+  
+  // Add rotatePoint if not exists
+  if (!doc.rotatePoint) {
+    doc.rotatePoint = function(angle: number) {
+      const rad = angle * (Math.PI / 180);
+      this.text("", 0, 0, { angle: rad });
+    };
+  }
+};

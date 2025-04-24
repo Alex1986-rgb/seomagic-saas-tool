@@ -58,7 +58,7 @@ export const pdfTableStyles = {
   
   error: {
     headStyles: {
-      fillColor: pdfColors.error,
+      fillColor: pdfColors.danger, // Changed from error to danger
       textColor: [255, 255, 255],
       fontSize: 10,
       fontStyle: 'bold',

@@ -42,7 +42,7 @@ export function drawGauge(doc: any, score: number, x: number, y: number, radius:
 function getScoreColor(score: number): [number, number, number] {
   if (score >= 80) return pdfColors.success;
   if (score >= 60) return pdfColors.warning;
-  return pdfColors.error;
+  return pdfColors.danger; // Use danger instead of error
 }
 
 /**

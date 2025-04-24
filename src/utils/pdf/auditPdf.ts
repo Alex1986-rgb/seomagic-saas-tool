@@ -3,7 +3,7 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { AuditData } from '@/types/audit';
 import type { OptimizationItem } from '@/components/audit/results/components/optimization';
-import { addPaginationFooters, addTimestamp } from './helpers';
+import { addPaginationFooters, addTimestamp, extendJsPDF } from './helpers';
 import { pdfColors, getScoreColorRGB } from './styles/colors';
 import { generatePieChart, generateBarChart, generateScoreGauge, generateRadarChart } from './helpers/charts';
 
@@ -15,6 +15,17 @@ export interface GenerateAuditPdfOptions {
   optimizationCost?: number;
   optimizationItems?: OptimizationItem[];
   date?: string;
+}
+
+// Define the issue interface to match the actual data structure
+interface AuditIssue {
+  title: string;
+  description: string;
+  impact: string;
+  recommendation: string;
+  url?: string;
+  urls?: string[];
+  solution?: string;
 }
 
 // Функция для генерации полного PDF-отчета
@@ -35,6 +46,9 @@ export const generateAuditPdf = async (options: GenerateAuditPdfOptions): Promis
     unit: 'mm',
     format: 'a4'
   });
+
+  // Extend jsPDF with additional methods if needed
+  extendJsPDF(doc);
   
   // Форматирование даты
   const formattedDate = new Date(date).toLocaleDateString('ru-RU', {
@@ -97,7 +111,7 @@ export const generateAuditPdf = async (options: GenerateAuditPdfOptions): Promis
   generateRadarChart(doc, categoryScores, 105, 160, 50, {
     title: 'Оценки по категориям',
     maxValue: 100,
-    fillColor: [...pdfColors.primary, 0.3],
+    fillColor: [...pdfColors.primary, 0.3] as [number, number, number],
     lineColor: pdfColors.primary,
     showValues: true
   });
@@ -164,8 +178,28 @@ export const generateAuditPdf = async (options: GenerateAuditPdfOptions): Promis
   doc.setTextColor(...pdfColors.danger);
   doc.text('Критические проблемы', 20, 45);
   
-  if (auditData.issues.critical.length > 0) {
-    const criticalIssuesData = auditData.issues.critical.map(issue => [
+  // Parse issues as objects if they are strings
+  const getCriticalIssues = (): AuditIssue[] => {
+    if (auditData.issues.critical.length === 0) return [];
+    
+    // If the first item is a string, convert all to objects
+    if (typeof auditData.issues.critical[0] === 'string') {
+      return auditData.issues.critical.map((issue: string) => ({
+        title: issue,
+        description: issue,
+        impact: 'Высокий',
+        recommendation: 'Рекомендуется исправить'
+      }));
+    }
+    
+    // Already objects
+    return auditData.issues.critical as unknown as AuditIssue[];
+  };
+  
+  const criticalIssues = getCriticalIssues();
+  
+  if (criticalIssues.length > 0) {
+    const criticalIssuesData = criticalIssues.map(issue => [
       issue.title,
       issue.impact || 'Высокий',
       issue.recommendation || 'Рекомендуется исправить'
@@ -191,7 +225,7 @@ export const generateAuditPdf = async (options: GenerateAuditPdfOptions): Promis
   }
   
   // Получаем Y-позицию после таблицы или текста
-  let currentY = auditData.issues.critical.length > 0 ? 
+  let currentY = criticalIssues.length > 0 ? 
     (doc as any).lastAutoTable.finalY + 15 : 60;
   
   // Проверяем, достаточно ли места для следующей таблицы
@@ -205,8 +239,28 @@ export const generateAuditPdf = async (options: GenerateAuditPdfOptions): Promis
   doc.setTextColor(...pdfColors.warning);
   doc.text('Важные проблемы', 20, currentY);
   
-  if (auditData.issues.important.length > 0) {
-    const importantIssuesData = auditData.issues.important.map(issue => [
+  // Parse important issues
+  const getImportantIssues = (): AuditIssue[] => {
+    if (auditData.issues.important.length === 0) return [];
+    
+    // If the first item is a string, convert all to objects
+    if (typeof auditData.issues.important[0] === 'string') {
+      return auditData.issues.important.map((issue: string) => ({
+        title: issue,
+        description: issue,
+        impact: 'Средний',
+        recommendation: 'Рекомендуется исправить'
+      }));
+    }
+    
+    // Already objects
+    return auditData.issues.important as unknown as AuditIssue[];
+  };
+  
+  const importantIssues = getImportantIssues();
+  
+  if (importantIssues.length > 0) {
+    const importantIssuesData = importantIssues.map(issue => [
       issue.title,
       issue.impact || 'Средний',
       issue.recommendation || 'Рекомендуется исправить'
@@ -245,8 +299,28 @@ export const generateAuditPdf = async (options: GenerateAuditPdfOptions): Promis
   doc.setTextColor(...pdfColors.info);
   doc.text('Рекомендации по улучшению', 20, currentY);
   
-  if (auditData.issues.opportunities.length > 0) {
-    const opportunitiesData = auditData.issues.opportunities.map(issue => [
+  // Parse opportunity issues
+  const getOpportunityIssues = (): AuditIssue[] => {
+    if (auditData.issues.opportunities.length === 0) return [];
+    
+    // If the first item is a string, convert all to objects
+    if (typeof auditData.issues.opportunities[0] === 'string') {
+      return auditData.issues.opportunities.map((issue: string) => ({
+        title: issue,
+        description: issue,
+        impact: 'Низкий',
+        recommendation: 'Рекомендуется улучшить'
+      }));
+    }
+    
+    // Already objects
+    return auditData.issues.opportunities as unknown as AuditIssue[];
+  };
+  
+  const opportunityIssues = getOpportunityIssues();
+  
+  if (opportunityIssues.length > 0) {
+    const opportunitiesData = opportunityIssues.map(issue => [
       issue.title,
       issue.impact || 'Низкий',
       issue.recommendation || 'Рекомендуется улучшить'

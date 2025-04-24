@@ -1,6 +1,6 @@
-
 import jsPDF from 'jspdf';
 import { pdfColors } from '../styles/colors';
+import { extendJsPDF } from '../helpers';
 
 /**
  * Генерирует круговую диаграмму в PDF документе
@@ -196,6 +196,9 @@ export function generateBarChart(
     valueSuffix?: string;
   } = {}
 ): void {
+  // Extend jsPDF with required methods
+  extendJsPDF(doc);
+  
   // Проверяем наличие данных
   const labels = Object.keys(data);
   if (labels.length === 0) return;
@@ -321,6 +324,9 @@ export function generateLineChart(
     labelRotation?: number;
   } = {}
 ): void {
+  // Extend jsPDF with required methods
+  extendJsPDF(doc);
+  
   // Проверяем наличие данных
   if (data.length === 0) return;
   
@@ -633,24 +639,24 @@ export function generateScoreGauge(
   width: number,
   height: number
 ): void {
-  // Нормализуем оценку
+  // Normalize score
   const normalizedScore = Math.max(0, Math.min(100, score)) / 100;
   
-  // Определяем цвета градиента
+  // Define gradient colors
   const gradientColors = [
-    { pos: 0, color: [239, 68, 68] }, // Красный
-    { pos: 0.4, color: [249, 115, 22] }, // Оранжевый
-    { pos: 0.7, color: [234, 179, 8] }, // Желтый
-    { pos: 1, color: [34, 197, 94] } // Зеленый
+    { pos: 0, color: [239, 68, 68] }, // Red
+    { pos: 0.4, color: [249, 115, 22] }, // Orange
+    { pos: 0.7, color: [234, 179, 8] }, // Yellow
+    { pos: 1, color: [34, 197, 94] } // Green
   ];
   
-  // Рисуем фоновую шкалу (серый фон)
+  // Draw background scale
   doc.setFillColor(230, 230, 230);
   doc.roundedRect(x, y, width, height, height / 2, height / 2, 'F');
   
-  // Рисуем заполненную часть шкалы
+  // Draw filled part of scale
   if (normalizedScore > 0) {
-    // Определяем цвет для текущего значения
+    // Define color for current value
     let color = gradientColors[0].color;
     
     for (let i = 0; i < gradientColors.length - 1; i++) {
@@ -668,28 +674,30 @@ export function generateScoreGauge(
       }
     }
     
-    // Рисуем заполненную часть
+    // Draw filled part
     doc.setFillColor(color[0], color[1], color[2]);
     
-    // Используем roundedRect только для левого края, если шкала не полная
+    // Fix the roundedRect call - it had too many arguments
     if (normalizedScore < 1) {
-      doc.roundedRect(x, y, width * normalizedScore, height, height / 2, height / 2, 'F', [1, 0, 1, 0]);
+      // For partially filled gauge, round only left side
+      doc.roundedRect(x, y, width * normalizedScore, height, height / 2, height / 2, 'F');
     } else {
+      // For completely filled gauge, round both ends
       doc.roundedRect(x, y, width, height, height / 2, height / 2, 'F');
     }
   }
   
-  // Добавляем процент
+  // Add percentage text
   doc.setFontSize(12);
   doc.setTextColor(255, 255, 255);
   
-  // Если заполненная часть достаточно большая для текста
+  // If filled part is large enough for text
   if (normalizedScore > 0.2) {
     doc.text(`${score}%`, x + width * normalizedScore * 0.5, y + height * 0.65, {
       align: 'center'
     });
   } else {
-    // Иначе размещаем текст справа от шкалы
+    // If too small, place text outside
     doc.setTextColor(60, 60, 60);
     doc.text(`${score}%`, x + width + 5, y + height * 0.65);
   }

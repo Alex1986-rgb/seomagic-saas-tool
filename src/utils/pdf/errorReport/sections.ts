@@ -1,4 +1,3 @@
-
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { pdfColors, pdfFonts } from '../styles';
@@ -142,7 +141,7 @@ export function addCriticalErrorsSection(
     theme: 'grid',
     styles: { cellPadding: 4 },
     headStyles: {
-      fillColor: pdfColors.error as [number, number, number],
+      fillColor: pdfColors.danger as [number, number, number],
       textColor: [255, 255, 255],
       fontStyle: 'bold'
     },
@@ -305,7 +304,7 @@ export function addErrorDetailsSection(
     // Error header with color indication
     let errorColor: [number, number, number];
     if (data.critical.includes(error)) {
-      errorColor = pdfColors.error as [number, number, number];
+      errorColor = pdfColors.danger as [number, number, number];
     } else if (data.major.includes(error)) {
       errorColor = pdfColors.warning as [number, number, number];
     } else {
@@ -444,7 +443,7 @@ export function addRecommendationsSection(
   };
   
   // Add recommendations by priority
-  addRecommendationGroup('Критические исправления', data.critical, pdfColors.error as [number, number, number]);
+  addRecommendationGroup('Критические исправления', data.critical, pdfColors.danger as [number, number, number]);
   addRecommendationGroup('Важные исправления', data.major, pdfColors.warning as [number, number, number]);
   addRecommendationGroup('Улучшения', data.minor, pdfColors.info as [number, number, number]);
   

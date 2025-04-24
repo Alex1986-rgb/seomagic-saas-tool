@@ -10,11 +10,13 @@ export const pdfColors = {
   tertiary: [110, 89, 165] as [number, number, number],      // #6E59A5 - Tertiary purple
   warning: [249, 115, 22] as [number, number, number],       // #F97316 - Orange
   danger: [239, 68, 68] as [number, number, number],         // #EF4444 - Red
+  error: [239, 68, 68] as [number, number, number],          // #EF4444 - Red (alias for danger)
   success: [34, 197, 94] as [number, number, number],        // #22C55E - Green
   info: [14, 165, 233] as [number, number, number],          // #0EA5E9 - Blue
   dark: [26, 31, 44] as [number, number, number],            // #1A1F2C - Dark background
   light: [241, 245, 249] as [number, number, number],        // #F1F5F9 - Light background
   gray: [142, 145, 150] as [number, number, number],         // #8E9196 - Neutral gray
+  muted: [142, 145, 150] as [number, number, number],        // #8E9196 - Muted color (alias for gray)
   background: [249, 250, 251] as [number, number, number],   // #F9FAFB - Background color
   text: [17, 24, 39] as [number, number, number],            // #111827 - Text color
   

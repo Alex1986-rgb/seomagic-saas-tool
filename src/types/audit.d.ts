@@ -16,7 +16,8 @@ export interface AuditDetailsData {
   content: CategoryData;
   performance: CategoryData;
   technical: CategoryData;
-  mobile: CategoryData; 
+  mobile: CategoryData;
+  usability?: CategoryData; // Add the missing usability field
 }
 
 export interface IssuesData {
