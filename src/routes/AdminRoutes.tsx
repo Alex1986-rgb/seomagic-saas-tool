@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Route, Routes } from 'react-router-dom';
 import AdminLayout from '@/layouts/AdminLayout';
@@ -23,6 +22,7 @@ import UsersManagementPage from '@/pages/admin/system/UsersManagementPage';
 import NotificationsSettingsPage from '@/pages/admin/system/NotificationsSettingsPage';
 import AnalyticsSettingsPage from '@/pages/admin/system/AnalyticsSettingsPage';
 import PerformanceSettingsPage from '@/pages/admin/system/PerformanceSettingsPage';
+import AdminPaymentsPage from '@/pages/admin/AdminPaymentsPage';
 
 const AdminRoutes: React.FC = () => {
   return (
@@ -48,7 +48,7 @@ const AdminRoutes: React.FC = () => {
         <Route path="system/notifications" element={<NotificationsSettingsPage />} />
         <Route path="system/analytics" element={<AnalyticsSettingsPage />} />
         <Route path="system/performance" element={<PerformanceSettingsPage />} />
-
+        <Route path="payments" element={<AdminPaymentsPage />} />
         <Route path="*" element={<NotFound />} />
       </Route>
     </Routes>
