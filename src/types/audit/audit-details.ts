@@ -17,4 +17,3 @@ export interface IssuesData {
   passed: number;
   opportunities: string[];
 }
-
