@@ -24,4 +24,3 @@ export interface AuditCategoryData {
   warning: number;
   failed: number;
 }
-

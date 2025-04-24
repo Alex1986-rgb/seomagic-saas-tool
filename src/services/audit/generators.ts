@@ -117,7 +117,8 @@ const generateAuditCategoryData = (category: string, score: number): CategoryDat
     previousScore,
     items: generateAuditItems(category, itemsCount, { passed, warning, failed }),
     name: category,
-    description: `Analysis of ${category.toLowerCase()} aspects of the website`
+    description: `Analysis of ${category.toLowerCase()} aspects of the website`,
+    id: faker.string.uuid()
   };
 };
 

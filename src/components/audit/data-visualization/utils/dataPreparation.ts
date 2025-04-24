@@ -1,14 +1,14 @@
 
-import { AuditCategoryData } from '@/types/audit';
+import { CategoryData } from '@/types/audit';
 
 /**
  * Prepares score data for visualization
  */
 export const prepareScoreData = (auditData: {
-  seo: AuditCategoryData;
-  performance: AuditCategoryData;
-  content: AuditCategoryData;
-  technical: AuditCategoryData;
+  seo: CategoryData;
+  performance: CategoryData;
+  content: CategoryData;
+  technical: CategoryData;
 }) => {
   return [
     { name: 'SEO', score: auditData.seo.score },
@@ -22,10 +22,10 @@ export const prepareScoreData = (auditData: {
  * Prepares issues data for visualization
  */
 export const prepareIssuesData = (auditData: {
-  seo: AuditCategoryData;
-  performance: AuditCategoryData;
-  content: AuditCategoryData;
-  technical: AuditCategoryData;
+  seo: CategoryData;
+  performance: CategoryData;
+  content: CategoryData;
+  technical: CategoryData;
 }) => {
   const issuesByCategory = [
     { name: 'SEO', value: countIssues(auditData.seo) },
@@ -40,6 +40,6 @@ export const prepareIssuesData = (auditData: {
 /**
  * Counts issues by category
  */
-export const countIssues = (category: AuditCategoryData) => {
+export const countIssues = (category: CategoryData) => {
   return category.items.filter(item => item.status !== 'good').length;
 };

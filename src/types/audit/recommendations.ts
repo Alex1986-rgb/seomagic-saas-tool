@@ -15,4 +15,3 @@ export interface RecommendationData {
   important: string[];
   opportunities: string[];
 }
-
