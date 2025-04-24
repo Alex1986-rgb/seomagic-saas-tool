@@ -14,4 +14,3 @@ export interface AuditItemData {
   value?: number | string;
   helpText?: string;
 }
-

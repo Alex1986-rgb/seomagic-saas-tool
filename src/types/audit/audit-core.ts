@@ -14,7 +14,7 @@ export interface AuditData {
   issues: {
     critical: string[];
     important: string[];
-    opportunities?: string[];
+    opportunities: string[];
     minor?: number;
     passed?: number;
   };
@@ -36,16 +36,16 @@ export interface AuditHistoryItem {
   score: number;
   pageCount?: number;
   url: string;
-  issues?: {
-    critical: number;
-    important: number;
-    opportunities?: number;
-  };
   details?: {
     seo: { score: number; };
     performance: { score: number; };
     content: { score: number; };
     technical: { score: number; };
+  };
+  issues?: {
+    critical: number;
+    important: number;
+    opportunities?: number;
   };
   changes?: number;
   categoryScores?: Record<string, number>;
@@ -55,3 +55,4 @@ export interface AuditHistoryData {
   url: string;
   items: AuditHistoryItem[];
 }
+

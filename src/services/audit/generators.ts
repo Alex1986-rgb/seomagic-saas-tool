@@ -1,5 +1,5 @@
 import { faker } from '@faker-js/faker';
-import { AuditData, AuditItemData, CategoryData, IssuesData } from '@/types/audit';
+import { AuditData, CategoryData, IssuesData } from '@/types/audit';
 
 /**
  * Generate random audit data for a URL

@@ -1,31 +1,30 @@
 
 export interface PageData {
   url: string;
-  title: string | null;
-  html: string;
-  content: string;
-  headings: {
-    h1: string[];
-    h2: string[];
-    h3: string[];
+  title: string;
+  meta: {
+    description?: string;
+    keywords?: string;
   };
-  metaTags: {
-    description: string | null;
-    keywords: string | null;
-  };
-  links: {
-    internal: string[];
-    external: string[];
-  };
-  images: {
-    url: string;
-    alt: string | null;
-    size?: number;
-  }[];
-  issues: {
-    critical: string[];
-    important: string[];
-    opportunities: string[];
-  };
+  content?: string;
+  score?: number;
+  issues?: string[];
+  lastModified?: string;
+  status?: number;
+  contentLength?: number;
 }
 
+export interface PageAnalysisData {
+  url: string;
+  title: string;
+  scoreDetails: {
+    seo: number;
+    performance: number;
+    content: number;
+    technical: number;
+  };
+  totalScore: number;
+  status: 'success' | 'warning' | 'error' | 'info';
+  issueCount: number;
+  lastChecked: string;
+}
