@@ -1,4 +1,3 @@
-
 import axios from 'axios';
 import { PageData } from './crawlerService';
 
@@ -6,7 +5,7 @@ export interface OptimizationOptions {
   optimizeMetaTags: boolean;
   optimizeHeadings: boolean;
   optimizeContent: boolean;
-  optimizeImages: boolean; // Added this property to fix the type error
+  optimizeImages: boolean;
   language: string;
   prompt?: string;
   temperature?: number;
@@ -36,13 +35,24 @@ class OpenAIService {
    */
   setApiKey(key: string): void {
     this.apiKey = key;
+    localStorage.setItem('openai_api_key', key);
   }
   
   /**
    * Get the OpenAI API key
    */
   getApiKey(): string | null {
-    return this.apiKey;
+    if (this.apiKey) {
+      return this.apiKey;
+    }
+    
+    const storedKey = localStorage.getItem('openai_api_key');
+    if (storedKey) {
+      this.apiKey = storedKey;
+      return storedKey;
+    }
+    
+    return null;
   }
   
   /**
@@ -57,13 +67,12 @@ class OpenAIService {
     }
     
     try {
-      // Create a concise version of the page data to reduce token usage
       const pageContext = {
         url: pageData.url,
         title: pageData.title,
         metaTags: pageData.metaTags,
         headings: pageData.headings,
-        content: pageData.content.substring(0, 2000), // Limit content length
+        content: pageData.content.substring(0, 2000),
         links: {
           internal: pageData.links.internal.length,
           external: pageData.links.external.length
@@ -71,11 +80,9 @@ class OpenAIService {
         issues: pageData.issues
       };
       
-      // Create the optimization prompt
       const systemPrompt = this.createSystemPrompt(options);
       const userPrompt = this.createUserPrompt(pageContext, options);
       
-      // Call OpenAI API
       const response = await axios.post(
         'https://api.openai.com/v1/chat/completions',
         {
@@ -101,14 +108,12 @@ class OpenAIService {
         }
       );
       
-      // Parse the response
       const content = response.data.choices[0].message.content;
       
       return this.parseOptimizationResponse(content, pageData);
     } catch (error) {
       console.error('Error optimizing page with OpenAI:', error);
       
-      // Return empty optimization result
       return {
         title: pageData.title,
         metaTags: {
@@ -219,7 +224,6 @@ Please provide your optimization suggestions in the following JSON format:
     originalPage: PageData
   ): OptimizationResult {
     try {
-      // Extract JSON from the response
       const jsonMatch = content.match(/\{[\s\S]*\}/);
       
       if (!jsonMatch) {
@@ -228,7 +232,6 @@ Please provide your optimization suggestions in the following JSON format:
       
       const json = JSON.parse(jsonMatch[0]);
       
-      // Apply the optimizations to the original HTML
       const optimizedHtml = this.applyOptimizationsToHtml(
         originalPage.html,
         json
@@ -278,7 +281,6 @@ Please provide your optimization suggestions in the following JSON format:
     try {
       let optimizedHtml = html;
       
-      // Replace title
       if (optimizations.title) {
         optimizedHtml = optimizedHtml.replace(
           /<title>.*?<\/title>/i,
@@ -286,7 +288,6 @@ Please provide your optimization suggestions in the following JSON format:
         );
       }
       
-      // Replace meta description
       if (optimizations.metaDescription) {
         if (optimizedHtml.includes('<meta name="description"')) {
           optimizedHtml = optimizedHtml.replace(
@@ -301,7 +302,6 @@ Please provide your optimization suggestions in the following JSON format:
         }
       }
       
-      // Replace meta keywords
       if (optimizations.keywords) {
         if (optimizedHtml.includes('<meta name="keywords"')) {
           optimizedHtml = optimizedHtml.replace(
@@ -316,7 +316,6 @@ Please provide your optimization suggestions in the following JSON format:
         }
       }
       
-      // Replace H1
       if (optimizations.h1) {
         const h1Count = (optimizedHtml.match(/<h1/g) || []).length;
         

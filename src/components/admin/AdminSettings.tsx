@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { 
   Globe, 
@@ -24,6 +23,7 @@ import SecuritySettings from './settings/SecuritySettings';
 import SiteManagementSettings from './settings/SiteManagementSettings';
 import ContentManagementSettings from './settings/ContentManagementSettings';
 import SystemSettings from './SystemSettings';
+import AISettings from './settings/AISettings';
 
 const AdminSettings: React.FC = () => {
   const [activeTab, setActiveTab] = useState("general");
@@ -49,6 +49,12 @@ const AdminSettings: React.FC = () => {
       label: "Общие",
       icon: <SettingsIcon className="h-4 w-4" />,
       content: <GeneralSettings />
+    },
+    {
+      id: "ai",
+      label: "Настройки ИИ",
+      icon: <SettingsIcon className="h-4 w-4" />,
+      content: <AISettings />
     },
     {
       id: "payment",
