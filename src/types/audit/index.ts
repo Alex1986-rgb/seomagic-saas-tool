@@ -6,3 +6,4 @@ export * from './category-data';
 export * from './optimization';
 export * from './page-data';
 export * from './recommendations';
+export * from './crawl-options';

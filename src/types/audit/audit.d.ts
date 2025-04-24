@@ -55,7 +55,7 @@ export interface IssuesData {
   important: string[];
   minor: number;
   passed: number;
-  opportunities?: string[];
+  opportunities: string[];
 }
 
 export interface AuditHistoryItem {

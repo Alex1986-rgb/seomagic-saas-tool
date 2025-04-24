@@ -1,0 +1,19 @@
+
+export interface CrawlOptions {
+  maxPages: number;
+  maxDepth: number;
+  followExternalLinks?: boolean;
+  userAgent?: string;
+  checkImages?: boolean;
+  checkPerformance?: boolean;
+}
+
+export interface OptimizationOptions {
+  optimizeMetaTags: boolean;
+  optimizeHeadings: boolean;
+  optimizeContent: boolean;
+  optimizeImages?: boolean;
+  temperature?: number;
+  language?: string;
+  model?: string;
+}

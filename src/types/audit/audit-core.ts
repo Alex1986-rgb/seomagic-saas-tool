@@ -41,6 +41,8 @@ export interface AuditHistoryItem {
     performance: { score: number; };
     content: { score: number; };
     technical: { score: number; };
+    mobile?: { score: number; };
+    usability?: { score: number; };
   };
   issues?: {
     critical: number;
