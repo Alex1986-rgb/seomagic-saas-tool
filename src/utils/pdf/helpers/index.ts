@@ -1,16 +1,35 @@
 
-// Re-export all helpers
-export * from './colors';
-export * from './pagination';
-export * from './formatting';
-export * from './qrcode';
-export * from './seo';
-export * from './charts';
+import jsPDF from 'jspdf';
 
-// Adds a timestamp to the document
-export const addTimestamp = (doc: any, x: number, y: number): void => {
+/**
+ * Extends jsPDF with additional methods
+ */
+export function extendJsPDF(doc: jsPDF): void {
+  // This function is a placeholder for any extensions
+  // In a real implementation, this would extend jsPDF with custom methods
+  // But for now we're just using it as a hook for consistency
+}
+
+/**
+ * Adds pagination footers to all pages
+ */
+export function addPaginationFooters(doc: jsPDF): void {
+  const numPages = doc.getNumberOfPages();
+  
+  for (let i = 1; i <= numPages; i++) {
+    doc.setPage(i);
+    doc.setFontSize(8);
+    doc.setTextColor(100, 100, 100);
+    doc.text(`Страница ${i} из ${numPages}`, 105, 290, { align: 'center' });
+  }
+}
+
+/**
+ * Adds a timestamp to the document
+ */
+export function addTimestamp(doc: jsPDF, x: number, y: number): void {
   const now = new Date();
-  const formattedDate = now.toLocaleDateString('ru-RU', {
+  const timestamp = now.toLocaleDateString('ru-RU', {
     year: 'numeric',
     month: 'long',
     day: 'numeric',
@@ -19,32 +38,6 @@ export const addTimestamp = (doc: any, x: number, y: number): void => {
   });
   
   doc.setFontSize(8);
-  doc.setTextColor(100, 100, 100);
-  doc.text(`Сгенерировано: ${formattedDate}`, x, y);
-};
-
-// Get category status based on score
-export const getCategoryStatus = (score: number): string => {
-  if (score >= 90) return 'Отлично';
-  if (score >= 70) return 'Хорошо';
-  if (score >= 50) return 'Удовлетворительно';
-  return 'Требует улучшений';
-};
-
-// jsPDF helper methods polyfill - used if the methods don't exist
-export const extendJsPDF = (doc: any): void => {
-  // Add translatePoint if not exists
-  if (!doc.translatePoint) {
-    doc.translatePoint = function(x: number, y: number) {
-      this.text("", x, y);
-    };
-  }
-  
-  // Add rotatePoint if not exists
-  if (!doc.rotatePoint) {
-    doc.rotatePoint = function(angle: number) {
-      const rad = angle * (Math.PI / 180);
-      this.text("", 0, 0, { angle: rad });
-    };
-  }
-};
+  doc.setTextColor(150, 150, 150);
+  doc.text(`Отчет создан: ${timestamp}`, x, y, { align: 'left' });
+}

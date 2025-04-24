@@ -366,7 +366,7 @@ export const generateAuditPdf = async (options: GenerateAuditPdfOptions): Promis
     doc.text('Оптимизация включает:', 20, (doc as any).lastAutoTable.finalY + 15);
     
     const includedItems = [
-      'Оптимизация всех мета-те��ов',
+      'Оптими��ация всех мета-те��ов',
       'Исправление проблем с изображениями',
       'Улучшение скорости загрузки',
       'Исправление технических проблем',

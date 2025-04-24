@@ -1,6 +1,5 @@
 import jsPDF from 'jspdf';
 import { pdfColors } from '../styles/colors';
-import { extendJsPDF } from '../helpers/index';
 
 /**
  * Генерирует круговую диаграмму в PDF документе
@@ -280,21 +279,18 @@ export function generateBarChart(
     if (labelRotation !== 0) {
       doc.saveGraphicsState();
       
-      // Handle translatePoint and rotatePoint conditionally
+      // Safely handle translatePoint and rotatePoint - these methods might not exist
       try {
-        if (typeof doc.translatePoint === 'function') {
-          doc.translatePoint(barX + barWidth / 2, y + 8);
-        }
-        if (typeof doc.rotatePoint === 'function') {
-          doc.rotatePoint(labelRotation);
-        }
-        doc.text(displayLabel, 0, 0, { align: 'center' });
-      } catch (e) {
-        // Fallback method if the functions are not available
-        doc.text(displayLabel, barX + barWidth / 2, y + 8, { 
+        const barXMiddle = barX + barWidth / 2;
+        
+        // For older versions of jsPDF that might not have these methods
+        doc.text(displayLabel, barXMiddle, y + 8, { 
           align: 'center',
           angle: labelRotation * (Math.PI / 180)
         });
+      } catch (e) {
+        // Fallback in case of error
+        doc.text(displayLabel, barX + barWidth / 2, y + 8, { align: 'center' });
       }
       
       doc.restoreGraphicsState();
@@ -468,21 +464,15 @@ export function generateLineChart(
     if (labelRotation !== 0) {
       doc.saveGraphicsState();
       
-      // Handle translatePoint and rotatePoint conditionally
+      // Safely handle rotation without specific methods
       try {
-        if (typeof doc.translatePoint === 'function') {
-          doc.translatePoint(pointX, y + 8);
-        }
-        if (typeof doc.rotatePoint === 'function') {
-          doc.rotatePoint(labelRotation);
-        }
-        doc.text(displayLabel, 0, 0, { align: 'center' });
-      } catch (e) {
-        // Fallback method if the functions are not available
         doc.text(displayLabel, pointX, y + 8, { 
           align: 'center',
           angle: labelRotation * (Math.PI / 180)
         });
+      } catch (e) {
+        // Fallback in case of error
+        doc.text(displayLabel, pointX, y + 8, { align: 'center' });
       }
       
       doc.restoreGraphicsState();
