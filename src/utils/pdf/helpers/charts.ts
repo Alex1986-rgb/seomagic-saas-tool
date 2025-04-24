@@ -1,5 +1,6 @@
 import jsPDF from 'jspdf';
 import { pdfColors } from '../styles/colors';
+import { extendJsPDF } from './index';
 
 /**
  * Генерирует круговую диаграмму в PDF документе
@@ -279,7 +280,7 @@ export function generateBarChart(
     if (labelRotation !== 0) {
       doc.saveGraphicsState();
       
-      // Safely handle translatePoint and rotatePoint - these methods might not exist
+      // Handle rotation safely
       try {
         const barXMiddle = barX + barWidth / 2;
         
@@ -464,7 +465,7 @@ export function generateLineChart(
     if (labelRotation !== 0) {
       doc.saveGraphicsState();
       
-      // Safely handle rotation without specific methods
+      // Handle rotation safely
       try {
         doc.text(displayLabel, pointX, y + 8, { 
           align: 'center',
@@ -582,7 +583,7 @@ export function generateRadarChart(
     };
   });
   
-  // Рисуем заполненный полигон
+  // Рисуем заполненный полиго��
   doc.setFillColor(fillColor[0], fillColor[1], fillColor[2], fillColor[3] || 0.2);
   doc.setDrawColor(lineColor[0], lineColor[1], lineColor[2]);
   doc.setLineWidth(1.5);
