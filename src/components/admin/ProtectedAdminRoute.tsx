@@ -2,7 +2,7 @@
 import React from 'react';
 import { Navigate, Outlet } from 'react-router-dom';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
-import { LoadingSpinner } from '@/components/LoadingSpinner';
+import LoadingSpinner from '@/components/LoadingSpinner';
 
 const ProtectedAdminRoute: React.FC = () => {
   const { isAdmin, isLoading } = useAdminAuth();
