@@ -4,6 +4,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { Toaster } from "@/components/ui/toaster";
 import { HelmetProvider } from 'react-helmet-async';
 import LoadingSpinner from '@/components/LoadingSpinner';
+import { AppErrorBoundary } from '@/components/ErrorBoundary';
 
 // Lazy load pages
 const HomePage = React.lazy(() => import('@/pages/Index'));
@@ -66,41 +67,43 @@ function App() {
     <HelmetProvider>
       <Router>
         <AuthProvider>
-          <Suspense fallback={<LoadingSpinner />}>
-            <Routes>
-              <Route path="/" element={<HomePage />} />
-              <Route path="/audit" element={<AuditPage />} />
-              <Route path="/site-audit" element={<SiteAudit />} />
-              <Route path="/admin/*" element={<AdminRoutes />} />
-              <Route path="/seo-optimization" element={<SeoOptimizationPage />} />
-              <Route path="/blog" element={<BlogPage />} />
-              <Route path="/blog/:id" element={<BlogPostPage />} />
-              <Route path="/profile" element={<ClientProfile />} />
-              <Route path="/position-tracking" element={<PositionTracking />} />
-              <Route path="/reports" element={<Reports />} />
-              <Route path="/audit-history" element={<AuditHistory />} />
-              <Route path="/settings" element={<Settings />} />
-              <Route path="/about" element={<About />} />
-              <Route path="/pricing" element={<Pricing />} />
-              <Route path="/position-pricing" element={<PositionPricing />} />
-              <Route path="/auth" element={<Auth />} />
-              <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/support" element={<Support />} />
-              <Route path="/contact" element={<Contact />} />
-              <Route path="/guides" element={<Guides />} />
-              <Route path="/guides/:id" element={<GuidePost />} />
-              <Route path="/demo" element={<Demo />} />
-              <Route path="/privacy" element={<Privacy />} />
-              <Route path="/terms" element={<Terms />} />
-              <Route path="/features" element={<Features />} />
-              <Route path="/documentation" element={<Documentation />} />
-              <Route path="/documentation/:tab" element={<Documentation />} />
-              <Route path="/ip-info" element={<IPInfo />} />
-              <Route path="/partnership" element={<Partnership />} />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-            <Toaster />
-          </Suspense>
+          <AppErrorBoundary>
+            <Suspense fallback={<LoadingSpinner />}>
+              <Routes>
+                <Route path="/" element={<HomePage />} />
+                <Route path="/audit" element={<AuditPage />} />
+                <Route path="/site-audit" element={<SiteAudit />} />
+                <Route path="/admin/*" element={<AdminRoutes />} />
+                <Route path="/seo-optimization" element={<SeoOptimizationPage />} />
+                <Route path="/blog" element={<BlogPage />} />
+                <Route path="/blog/:id" element={<BlogPostPage />} />
+                <Route path="/profile" element={<ClientProfile />} />
+                <Route path="/position-tracking" element={<PositionTracking />} />
+                <Route path="/reports" element={<Reports />} />
+                <Route path="/audit-history" element={<AuditHistory />} />
+                <Route path="/settings" element={<Settings />} />
+                <Route path="/about" element={<About />} />
+                <Route path="/pricing" element={<Pricing />} />
+                <Route path="/position-pricing" element={<PositionPricing />} />
+                <Route path="/auth" element={<Auth />} />
+                <Route path="/dashboard" element={<Dashboard />} />
+                <Route path="/support" element={<Support />} />
+                <Route path="/contact" element={<Contact />} />
+                <Route path="/guides" element={<Guides />} />
+                <Route path="/guides/:id" element={<GuidePost />} />
+                <Route path="/demo" element={<Demo />} />
+                <Route path="/privacy" element={<Privacy />} />
+                <Route path="/terms" element={<Terms />} />
+                <Route path="/features" element={<Features />} />
+                <Route path="/documentation" element={<Documentation />} />
+                <Route path="/documentation/:tab" element={<Documentation />} />
+                <Route path="/ip-info" element={<IPInfo />} />
+                <Route path="/partnership" element={<Partnership />} />
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+              <Toaster />
+            </Suspense>
+          </AppErrorBoundary>
         </AuthProvider>
       </Router>
     </HelmetProvider>
