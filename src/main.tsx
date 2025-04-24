@@ -1,3 +1,4 @@
+
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
@@ -37,24 +38,28 @@ root.render(
 // Register service worker after app load for faster startup
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/service-worker.js')
-      .then(registration => {
-        console.log('ServiceWorker registration successful');
-        
-        // Enable background sync if supported
-        if ('sync' in registration) {
-          try {
-            // TypeScript doesn't know about the sync API by default
-            // Using type assertion to tell TypeScript that we know what we're doing
-            (registration as any).sync.register('sync-data');
-          } catch (err) {
-            console.error('Background sync registration failed:', err);
+    try {
+      navigator.serviceWorker.register('/service-worker.js')
+        .then(registration => {
+          console.log('ServiceWorker registration successful');
+          
+          // Enable background sync if supported
+          if ('sync' in registration) {
+            try {
+              // TypeScript doesn't know about the sync API by default
+              // Using type assertion to tell TypeScript that we know what we're doing
+              (registration as any).sync.register('sync-data');
+            } catch (err) {
+              console.error('Background sync registration failed:', err);
+            }
           }
-        }
-      })
-      .catch(err => {
-        console.error('ServiceWorker registration failed:', err);
-      });
+        })
+        .catch(err => {
+          console.error('ServiceWorker registration failed:', err);
+        });
+    } catch (error) {
+      console.error('Error registering service worker:', error);
+    }
   });
 }
 
