@@ -1,4 +1,3 @@
-
 export interface AuditData {
   id: string;
   url: string;
@@ -17,7 +16,7 @@ export interface AuditDetailsData {
   performance: CategoryData;
   technical: CategoryData;
   mobile: CategoryData;
-  usability: CategoryData; // Added the missing usability property
+  usability: CategoryData; // Ensure the usability property exists
 }
 
 export interface IssuesData {
