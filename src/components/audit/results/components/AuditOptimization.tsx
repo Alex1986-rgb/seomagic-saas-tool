@@ -2,7 +2,6 @@
 import React from 'react';
 import { OptimizationCost } from './optimization';
 import ContentOptimizationPrompt from './ContentOptimizationPrompt';
-import ContentOptimizationAI from './ContentOptimizationAI';
 import { OptimizationItem } from './optimization/CostDetailsTable';
 
 interface AuditOptimizationProps {
@@ -18,8 +17,6 @@ interface AuditOptimizationProps {
   onDownloadOptimizedSite: () => void;
   onGeneratePdfReport: () => void;
   setContentOptimizationPrompt: (prompt: string) => void;
-  onAIOptimizationStart?: () => void;
-  onAIOptimizationComplete?: (results: any) => void;
 }
 
 const AuditOptimization: React.FC<AuditOptimizationProps> = ({
@@ -34,9 +31,7 @@ const AuditOptimization: React.FC<AuditOptimizationProps> = ({
   onOptimize,
   onDownloadOptimizedSite,
   onGeneratePdfReport,
-  setContentOptimizationPrompt,
-  onAIOptimizationStart,
-  onAIOptimizationComplete
+  setContentOptimizationPrompt
 }) => {
   if (!optimizationCost && !showPrompt) return null;
   
@@ -52,26 +47,16 @@ const AuditOptimization: React.FC<AuditOptimizationProps> = ({
       )}
       
       {optimizationCost && (
-        <>
-          <OptimizationCost 
-            optimizationCost={optimizationCost}
-            pageCount={pageCount}
-            url={url}
-            onDownloadOptimized={onDownloadOptimizedSite}
-            isOptimized={isOptimized}
-            optimizationItems={optimizationItems}
-            onGeneratePdfReport={onGeneratePdfReport}
-            className="mb-4"
-          />
-          
-          {onAIOptimizationStart && onAIOptimizationComplete && (
-            <ContentOptimizationAI
-              url={url}
-              onOptimizationStart={onAIOptimizationStart}
-              onOptimizationComplete={onAIOptimizationComplete}
-            />
-          )}
-        </>
+        <OptimizationCost 
+          optimizationCost={optimizationCost}
+          pageCount={pageCount}
+          url={url}
+          onDownloadOptimized={onDownloadOptimizedSite}
+          isOptimized={isOptimized}
+          optimizationItems={optimizationItems}
+          onGeneratePdfReport={onGeneratePdfReport}
+          className="mb-4"
+        />
       )}
     </>
   );

@@ -6,7 +6,7 @@ export interface OptimizationOptions {
   optimizeMetaTags: boolean;
   optimizeHeadings: boolean;
   optimizeContent: boolean;
-  optimizeImages: boolean;
+  optimizeImages: boolean; // Added this property to fix the type error
   language: string;
   prompt?: string;
   temperature?: number;
@@ -43,41 +43,6 @@ class OpenAIService {
    */
   getApiKey(): string | null {
     return this.apiKey;
-  }
-  
-  /**
-   * Verify the OpenAI API key
-   */
-  async verifyApiKey(): Promise<boolean> {
-    if (!this.apiKey) {
-      return false;
-    }
-    
-    try {
-      // Делаем простой запрос к API для проверки ключа
-      const response = await axios.post(
-        'https://api.openai.com/v1/chat/completions',
-        {
-          model: 'gpt-3.5-turbo',
-          messages: [
-            { role: 'system', content: 'You are a helpful assistant.' },
-            { role: 'user', content: 'API key verification test. Reply with "Valid".' }
-          ],
-          max_tokens: 5
-        },
-        {
-          headers: {
-            'Authorization': `Bearer ${this.apiKey}`,
-            'Content-Type': 'application/json'
-          }
-        }
-      );
-      
-      return !!response.data.choices && response.data.choices.length > 0;
-    } catch (error) {
-      console.error('Error verifying OpenAI API key:', error);
-      return false;
-    }
   }
   
   /**

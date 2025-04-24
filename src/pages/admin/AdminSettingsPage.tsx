@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Helmet } from 'react-helmet-async';
 import AdminSettings from '@/components/admin/AdminSettings';
@@ -21,8 +22,7 @@ import {
   Briefcase,
   Megaphone,
   HelpCircle,
-  ArrowRight,
-  Sparkles
+  ArrowRight
 } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
@@ -72,7 +72,6 @@ const hotSettings = [
   { to: "/admin/system/api", label: "API ключи и доступ" },
   { to: "/admin/system/email", label: "Настройки почты" },
   { to: "/admin/system/logging", label: "Логирование событий" },
-  { to: "/admin/settings/openai", label: "Настройки OpenAI" },
 ];
 
 const managedPages = [
@@ -117,12 +116,6 @@ const managedPages = [
     label: "Помощь",
     icon: <HelpCircle className="h-5 w-5" />,
     description: "Редактирование справочных материалов"
-  },
-  {
-    to: "/admin/settings/openai",
-    label: "OpenAI",
-    icon: <Sparkles className="h-5 w-5" />,
-    description: "Настройки интеграции с OpenAI"
   }
 ];
 
