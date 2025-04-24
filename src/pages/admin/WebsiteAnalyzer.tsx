@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -8,7 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { openaiService } from '@/services/api/openaiService';
 import { useToast } from '@/hooks/use-toast';
 import { Search, Link2, Download, FileText, AlertTriangle, Sparkles } from 'lucide-react';
-import ContentOptimizationAI from '../components/audit/results/components/ContentOptimizationAI';
+import ContentOptimizationAI from '@/components/audit/results/components/ContentOptimizationAI';
 
 const WebsiteAnalyzer: React.FC = () => {
   const [url, setUrl] = useState<string>('');
