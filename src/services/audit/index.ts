@@ -57,7 +57,8 @@ export const fetchAuditData = async (url?: string): Promise<AuditData> => {
   return new Promise((resolve) => {
     setTimeout(() => {
       const data = generateAuditData(url || "example.com");
-      resolve(data as AuditData);
+      // Use type assertion to handle the conversion
+      resolve(data as unknown as AuditData);
     }, 1000);
   });
 };
