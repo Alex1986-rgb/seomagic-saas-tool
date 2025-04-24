@@ -1,6 +1,5 @@
-
 import { faker } from '@faker-js/faker';
-import { AuditData, AuditItemData, CategoryData, AuditCategoryData } from '@/types/audit';
+import { AuditData, AuditItemData, CategoryData } from '@/types/audit';
 
 /**
  * Generate random audit data for a URL
@@ -40,60 +39,13 @@ export const generateAuditData = (url: string): AuditData => {
       important: generateIssues('important', importantCount),
       opportunities: generateIssues('opportunities', opportunitiesCount)
     },
-    pageSpeed: {
-      desktop: faker.number.int({ min: 30, max: 100 }),
-      mobile: faker.number.int({ min: 20, max: 90 })
-    },
-    mobileFriendliness: faker.number.int({ min: 0, max: 100 }),
-    security: faker.number.int({ min: 0, max: 100 }),
-    technologies: [
-      'WordPress',
-      'Google Analytics',
-      'Google Tag Manager',
-      'jQuery',
-      'Bootstrap'
-    ],
-    structuredData: [
-      'Organization',
-      'WebPage',
-      'BreadcrumbList'
-    ],
-    contentQuality: faker.number.int({ min: 0, max: 100 }),
-    keywords: [
-      'best seo tools',
-      'seo optimization',
-      'seo audit',
-      'website optimization'
-    ],
-    competitors: [
-      'competitor1.com',
-      'competitor2.com',
-      'competitor3.com'
-    ],
-    backlinks: faker.number.int({ min: 0, max: 1000 }),
-    socialShares: faker.number.int({ min: 0, max: 500 }),
-    traffic: faker.number.int({ min: 0, max: 10000 }),
-    organicTraffic: faker.number.int({ min: 0, max: 8000 }),
-    paidTraffic: faker.number.int({ min: 0, max: 2000 }),
-    bounceRate: faker.number.float({ min: 20, max: 80, fractionDigits: 1 }),
-    timeOnSite: faker.number.float({ min: 30, max: 300, fractionDigits: 1 }),
-    demographics: {
-      age: '25-34',
-      gender: 'Mixed',
-      location: 'United States'
-    },
-    deviceTypes: {
-      desktop: faker.number.int({ min: 30, max: 70 }),
-      mobile: faker.number.int({ min: 20, max: 60 }),
-      tablet: faker.number.int({ min: 5, max: 20 })
-    },
     details: {
       seo: generateAuditCategoryData('SEO', seoScore),
       performance: generateAuditCategoryData('Performance', performanceScore),
       content: generateAuditCategoryData('Content', contentScore),
       technical: generateAuditCategoryData('Technical', technicalScore),
       mobile: generateAuditCategoryData('Mobile', mobileScore),
-      usability: generateAuditCategoryData('Usability', usabilityScore) // Add the usability category
+      usability: generateAuditCategoryData('Usability', usabilityScore)
     },
     status: 'completed'
   };
@@ -146,7 +98,7 @@ const generateIssues = (type: string, count: number): string[] => {
 /**
  * Generate category data for audit details
  */
-const generateAuditCategoryData = (category: string, score: number): AuditCategoryData => {
+const generateAuditCategoryData = (category: string, score: number): CategoryData => {
   const previousScore = faker.number.int({ min: Math.max(0, score - 20), max: Math.min(100, score + 20) });
   const itemsCount = faker.number.int({ min: 5, max: 10 });
   
@@ -158,15 +110,14 @@ const generateAuditCategoryData = (category: string, score: number): AuditCatego
   const failed = total - passed - warning;
   
   return {
-    id: faker.string.uuid(), // Set id consistently
-    name: category,
-    description: `Analysis of ${category.toLowerCase()} aspects of the website`,
     score,
-    previousScore,
-    items: generateAuditItems(category, itemsCount, { passed, warning, failed }),
     passed,
     warning,
-    failed
+    failed,
+    previousScore,
+    items: generateAuditItems(category, itemsCount, { passed, warning, failed }),
+    name: category,
+    description: `Analysis of ${category.toLowerCase()} aspects of the website`
   };
 };
 

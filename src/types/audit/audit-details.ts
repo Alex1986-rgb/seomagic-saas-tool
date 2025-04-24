@@ -15,5 +15,6 @@ export interface IssuesData {
   important: number;
   minor: number;
   passed: number;
+  opportunities?: string[];
 }
 

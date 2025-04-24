@@ -1,4 +1,6 @@
 
+import { AuditDetailsData } from './audit-details';
+
 export interface AuditData {
   id: string;
   url: string;
@@ -10,9 +12,9 @@ export interface AuditData {
   date: string;
   status: 'completed' | 'in-progress' | 'failed';
   issues: {
-    critical: any[];
-    important: any[];
-    opportunities?: any[];
+    critical: string[];
+    important: string[];
+    opportunities?: string[];
     minor?: number;
     passed?: number;
   };
