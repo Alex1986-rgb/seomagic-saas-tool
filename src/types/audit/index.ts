@@ -6,7 +6,6 @@ export * from './category-data';
 export * from './optimization';
 export * from './page-data';
 export * from './recommendations';
-export * from './crawl-options';
 
-// Re-export explicitly to resolve ambiguity
-export { CrawlOptions, OptimizationOptions } from './crawl-options';
+// Export crawl options with type keyword to fix TS1205 error
+export type { CrawlOptions, OptimizationOptions } from './crawl-options';

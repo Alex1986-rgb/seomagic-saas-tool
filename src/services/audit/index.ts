@@ -56,7 +56,8 @@ export const fetchAuditData = async (url?: string): Promise<AuditData> => {
   // Simulate an API call
   return new Promise((resolve) => {
     setTimeout(() => {
-      resolve(generateAuditData(url || "example.com"));
+      const data = generateAuditData(url || "example.com");
+      resolve(data as AuditData);
     }, 1000);
   });
 };

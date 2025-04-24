@@ -1,9 +1,10 @@
+
 import { AuditData } from "@/types/audit/audit-core";
 import { AuditDetailsData } from "@/types/audit/audit-details";
 import { CategoryData } from "@/types/audit/category-data";
 import { PageData } from "@/types/audit/page-data";
-import { generateRandomId } from "@/utils";
 import { AuditItemData } from '@/types/audit/audit-items';
+import { generateRandomId } from "@/utils";
 
 const generateRandomScore = (): number => {
   return Math.floor(Math.random() * 100);

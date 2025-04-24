@@ -4,6 +4,7 @@ export interface CrawlOptions {
   maxDepth: number;
   followExternalLinks?: boolean;
   userAgent?: string;
+  delay?: number;
   checkImages?: boolean;
   checkPerformance?: boolean;
 }
@@ -16,4 +17,9 @@ export interface OptimizationOptions {
   temperature?: number;
   language?: string;
   model?: string;
+  fixMetaTags?: boolean;
+  improveContent?: boolean;
+  fixLinks?: boolean;
+  improveStructure?: boolean;
+  optimizeSpeed?: boolean;
 }

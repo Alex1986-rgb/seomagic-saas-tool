@@ -30,7 +30,7 @@ export interface CategoryData {
   items: AuditItemData[];
   name?: string;
   description?: string;
-  id?: string; // Add id property to match AuditCategoryData
+  id?: string;
 }
 
 export interface AuditItemData {
