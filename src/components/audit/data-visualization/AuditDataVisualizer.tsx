@@ -1,16 +1,21 @@
+
 import React from 'react';
 import { motion } from 'framer-motion';
-import { ChartContainer } from './components/ChartContainer';
-import { ScoresBarChart } from './components/ScoresBarChart';
-import { TrendsAreaChart } from './components/TrendsAreaChart';
-import { IssuesPieChart } from './components/IssuesPieChart';
-import { AuditDetailsData, CategoryData } from '@/types/audit';
+import ChartContainer from './components/ChartContainer';
+import ScoresBarChart from './components/ScoresBarChart';
+import TrendsAreaChart from './components/TrendsAreaChart';
+import IssuesPieChart from './components/IssuesPieChart';
+import { AuditDetailsData } from '@/types/audit';
+import { prepareScoreData, prepareIssuesData } from './utils/dataPreparation';
 
 interface AuditDataVisualizerProps {
   auditData: AuditDetailsData;
 }
 
 const AuditDataVisualizer: React.FC<AuditDataVisualizerProps> = ({ auditData }) => {
+  const scoreData = prepareScoreData(auditData);
+  const issuesData = prepareIssuesData(auditData);
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
       <motion.div
@@ -20,13 +25,7 @@ const AuditDataVisualizer: React.FC<AuditDataVisualizerProps> = ({ auditData }) 
         transition={{ duration: 0.5 }}
       >
         <ChartContainer title="Оценка категорий">
-          <ScoresBarChart
-            seo={auditData.seo.score}
-            performance={auditData.performance.score}
-            content={auditData.content.score}
-            technical={auditData.technical.score}
-            usability={auditData.usability.score}
-          />
+          <ScoresBarChart data={scoreData} />
         </ChartContainer>
       </motion.div>
 
@@ -37,13 +36,7 @@ const AuditDataVisualizer: React.FC<AuditDataVisualizerProps> = ({ auditData }) 
         transition={{ duration: 0.5, delay: 0.2 }}
       >
         <ChartContainer title="Тренды изменений">
-          <TrendsAreaChart
-            seo={auditData.seo.score}
-            performance={auditData.performance.score}
-            content={auditData.content.score}
-            technical={auditData.technical.score}
-            usability={auditData.usability.score}
-          />
+          <TrendsAreaChart auditData={auditData} />
         </ChartContainer>
       </motion.div>
 
@@ -54,13 +47,7 @@ const AuditDataVisualizer: React.FC<AuditDataVisualizerProps> = ({ auditData }) 
         transition={{ duration: 0.5, delay: 0.4 }}
       >
         <ChartContainer title="Соотношение проблем">
-          <IssuesPieChart
-            seo={{ passed: auditData.seo.passed, warning: auditData.seo.warning, failed: auditData.seo.failed }}
-            performance={{ passed: auditData.performance.passed, warning: auditData.performance.warning, failed: auditData.performance.failed }}
-            content={{ passed: auditData.content.passed, warning: auditData.content.warning, failed: auditData.content.failed }}
-            technical={{ passed: auditData.technical.passed, warning: auditData.technical.warning, failed: auditData.technical.failed }}
-            usability={{ passed: auditData.usability.passed, warning: auditData.usability.warning, failed: auditData.usability.failed }}
-          />
+          <IssuesPieChart data={issuesData} />
         </ChartContainer>
       </motion.div>
     </div>
@@ -68,3 +55,4 @@ const AuditDataVisualizer: React.FC<AuditDataVisualizerProps> = ({ auditData }) 
 };
 
 export default AuditDataVisualizer;
+
