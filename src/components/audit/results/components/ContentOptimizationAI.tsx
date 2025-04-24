@@ -54,22 +54,22 @@ const ContentOptimizationAI: React.FC<ContentOptimizationAIProps> = ({
 
   return (
     <Card>
-      <CardHeader className="border-b border-white/10 bg-black/20">
+      <CardHeader className="border-b border-border">
         <CardTitle className="flex items-center gap-2">
           <Sparkles className="h-5 w-5 text-primary" />
-          AI Оптимизация
+          AI Анализ сайта
         </CardTitle>
       </CardHeader>
       <CardContent className="p-6">
         <p className="text-sm text-muted-foreground mb-4">
-          Используйте мощь искусственного интеллекта для анализа и оптимизации контента вашего сайта.
+          Используйте искусственный интеллект для анализа и получения рекомендаций по оптимизации контента вашего сайта.
         </p>
         <Button 
           onClick={handleOptimize}
           className="w-full"
         >
           <Sparkles className="mr-2 h-4 w-4" />
-          Запустить AI оптимизацию
+          Запустить AI анализ
         </Button>
       </CardContent>
     </Card>

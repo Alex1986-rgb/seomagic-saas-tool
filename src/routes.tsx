@@ -2,9 +2,9 @@
 import React from 'react';
 import { RouteObject } from 'react-router-dom';
 import OpenAISettingsPage from './pages/admin/settings/OpenAISettingsPage';
+import WebsiteAnalyzer from './pages/admin/WebsiteAnalyzer';
 import AdminLayout from './pages/admin/AdminLayout';
 
-// Это частичный список маршрутов, который мы добавим к существующим
 export const additionalRoutes: RouteObject[] = [
   {
     path: '/admin/settings/openai',
@@ -13,6 +13,10 @@ export const additionalRoutes: RouteObject[] = [
         <OpenAISettingsPage />
       </AdminLayout>
     ),
+  },
+  {
+    path: '/admin/website-analyzer',
+    element: <WebsiteAnalyzer />
   }
 ];
 
