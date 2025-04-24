@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { useSortable } from '@dnd-kit/sortable';
+import { useDraggable } from '@dnd-kit/core';
 import { CSS } from '@dnd-kit/utilities';
 import { Feature } from './types';
 import FeatureCard from './FeatureCard';
@@ -21,13 +21,12 @@ export const SortableFeatureItem: React.FC<SortableFeatureItemProps> = ({
     listeners,
     setNodeRef,
     transform,
-    transition,
     isDragging
-  } = useSortable({ id: feature.id });
+  } = useDraggable({ id: feature.id });
 
   const style = {
     transform: CSS.Transform.toString(transform),
-    transition,
+    transition: 'transform 250ms ease',
     opacity: isDragging ? 0.5 : 1,
   };
 

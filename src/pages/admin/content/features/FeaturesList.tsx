@@ -7,7 +7,6 @@ import { PlusCircle, Search, ArrowUpDown } from 'lucide-react';
 import { Feature } from './types';
 import FeatureCard from './FeatureCard';
 import { DndContext, DragEndEvent, closestCenter } from '@dnd-kit/core';
-import { SortableContext, verticalListSortingStrategy, arrayMove } from '@dnd-kit/sortable';
 import { SortableFeatureItem } from './SortableFeatureItem';
 
 interface FeaturesListProps {
@@ -47,12 +46,18 @@ const FeaturesList: React.FC<FeaturesListProps> = ({
       const oldIndex = features.findIndex((item) => item.id === active.id);
       const newIndex = features.findIndex((item) => item.id === over.id);
       
-      const newFeatures = arrayMove(features, oldIndex, newIndex).map((feature, index) => ({
+      // Create new array with reordered items
+      const newFeatures = [...features];
+      const movedItem = newFeatures.splice(oldIndex, 1)[0];
+      newFeatures.splice(newIndex, 0, movedItem);
+      
+      // Update order property for each feature
+      const updatedFeatures = newFeatures.map((feature, index) => ({
         ...feature,
         order: index + 1
       }));
       
-      onFeaturesReorder(newFeatures);
+      onFeaturesReorder(updatedFeatures);
     }
   };
 
@@ -96,19 +101,14 @@ const FeaturesList: React.FC<FeaturesListProps> = ({
             collisionDetection={closestCenter}
             onDragEnd={handleDragEnd}
           >
-            <SortableContext 
-              items={filteredFeatures.map(f => f.id)}
-              strategy={verticalListSortingStrategy}
-            >
-              {filteredFeatures.map((feature) => (
-                <SortableFeatureItem
-                  key={feature.id}
-                  feature={feature}
-                  onUpdate={onFeatureUpdate}
-                  onRemove={onFeatureRemove}
-                />
-              ))}
-            </SortableContext>
+            {filteredFeatures.map((feature) => (
+              <SortableFeatureItem
+                key={feature.id}
+                feature={feature}
+                onUpdate={onFeatureUpdate}
+                onRemove={onFeatureRemove}
+              />
+            ))}
           </DndContext>
           
           {features.length === 0 && (
