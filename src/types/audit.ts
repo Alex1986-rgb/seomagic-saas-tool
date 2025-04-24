@@ -1,3 +1,4 @@
+
 export interface CategoryData {
   score: number;
   passed: number;
@@ -7,6 +8,7 @@ export interface CategoryData {
   items: AuditItemData[];
   name?: string;
   description?: string;
+  id?: string; // Add id property to match AuditCategoryData
 }
 
 export interface AuditItemData {

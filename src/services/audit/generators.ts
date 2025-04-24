@@ -24,6 +24,7 @@ export const generateAuditData = (url: string): AuditData => {
   const contentScore = faker.number.int({ min: 0, max: 100 });
   const technicalScore = faker.number.int({ min: 0, max: 100 });
   const mobileScore = faker.number.int({ min: 0, max: 100 });
+  const usabilityScore = faker.number.int({ min: 0, max: 100 });
   
   // Generate audit data
   return {
@@ -91,7 +92,8 @@ export const generateAuditData = (url: string): AuditData => {
       performance: generateAuditCategoryData('Performance', performanceScore),
       content: generateAuditCategoryData('Content', contentScore),
       technical: generateAuditCategoryData('Technical', technicalScore),
-      mobile: generateAuditCategoryData('Mobile', mobileScore)
+      mobile: generateAuditCategoryData('Mobile', mobileScore),
+      usability: generateAuditCategoryData('Usability', usabilityScore) // Add the usability category
     },
     status: 'completed'
   };

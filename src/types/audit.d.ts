@@ -29,6 +29,23 @@ export interface CategoryData {
   items: AuditItemData[];
   name?: string;
   description?: string;
+  id?: string; // Add id property to match AuditCategoryData
+}
+
+export interface AuditItemData {
+  id: string;
+  title: string;
+  description: string;
+  status: 'error' | 'warning' | 'good';
+  score: number;
+  previousScore?: number;
+  trend: 'up' | 'down' | 'neutral';
+  impact: 'high' | 'medium' | 'low';
+  solution?: string;
+  recommendation?: string;
+  affectedUrls?: string[];
+  value?: number | string;
+  helpText?: string;
 }
 
 export interface IssuesData {
@@ -46,4 +63,3 @@ export interface AuditHistoryItem {
   changes?: number;
   categoryScores?: Record<string, number>;
 }
-

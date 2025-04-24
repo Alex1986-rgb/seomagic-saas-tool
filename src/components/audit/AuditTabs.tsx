@@ -60,6 +60,16 @@ const AuditTabs: React.FC<AuditTabsProps> = ({ details }) => {
             description="Анализ технических аспектов сайта, влияющих на индексацию и работу поисковых систем."
           />
         </TabsContent>
+        
+        <TabsContent value="usability">
+          <AuditCategorySection 
+            title="Удобство использования"
+            score={details.usability.score}
+            previousScore={details.usability.previousScore}
+            items={details.usability.items}
+            description="Анализ удобства использования сайта для посетителей, что влияет на конверсию и вовлеченность."
+          />
+        </TabsContent>
       </Tabs>
     </div>
   );
