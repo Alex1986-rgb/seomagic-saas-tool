@@ -13,19 +13,24 @@ interface FeatureCardProps {
   feature: Feature;
   onUpdate: (id: string, field: string, value: string | boolean) => void;
   onRemove: (id: string) => void;
+  dragHandleProps?: Record<string, any>;
 }
 
 const FeatureCard: React.FC<FeatureCardProps> = ({
   feature,
   onUpdate,
-  onRemove
+  onRemove,
+  dragHandleProps = {}
 }) => {
   return (
     <Card className="border-white/10 bg-black/30">
       <CardContent className="p-4">
         <div className="flex justify-between mb-3">
           <div className="flex items-center gap-2">
-            <Move className="h-4 w-4 text-gray-400 cursor-move" />
+            <Move 
+              className="h-4 w-4 text-gray-400 cursor-move" 
+              {...dragHandleProps}
+            />
             <Input 
               value={feature.name}
               onChange={(e) => onUpdate(feature.id, 'name', e.target.value)}

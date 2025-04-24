@@ -79,6 +79,15 @@ const FeaturesEditor: React.FC = () => {
     ));
   };
 
+  const handleFeaturesReorder = (reorderedFeatures: Feature[]) => {
+    setFeatures(reorderedFeatures);
+    
+    toast({
+      title: "Порядок обновлен",
+      description: "Новый порядок возможностей сохранен"
+    });
+  };
+
   return (
     <>
       <Helmet>
@@ -101,6 +110,7 @@ const FeaturesEditor: React.FC = () => {
             onFeatureUpdate={updateFeature}
             onFeatureRemove={removeFeature}
             onFeatureAdd={addFeature}
+            onFeaturesReorder={handleFeaturesReorder}
           />
         </div>
       </BaseContentEditor>
