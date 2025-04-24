@@ -38,4 +38,16 @@
   --sidebar-accent-foreground: 210 40% 98%;
   --sidebar-border: 216 34% 17%;
   --sidebar-ring: 213 31% 91%;
+  
+  /* PDF Report Colors - Matching Admin Panel */
+  --pdf-primary: 264 80% 74%;       /* #9b87f5 - Primary purple */
+  --pdf-secondary: 262 26% 54%;     /* #7E69AB - Secondary purple */
+  --pdf-tertiary: 262 31% 50%;      /* #6E59A5 - Tertiary purple */
+  --pdf-warning: 25 95% 53%;        /* #F97316 - Orange */
+  --pdf-danger: 0 84% 60%;          /* #EF4444 - Red */
+  --pdf-success: 142 72% 45%;       /* #22C55E - Green */
+  --pdf-info: 199 89% 48%;          /* #0EA5E9 - Blue */
+  --pdf-dark: 222 28% 14%;          /* #1A1F2C - Dark background */
+  --pdf-light: 210 20% 96%;         /* #F1F5F9 - Light background */
+  --pdf-gray: 220 3% 57%;           /* #8E9196 - Neutral gray */
 }

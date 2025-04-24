@@ -1,143 +1,106 @@
 
 /**
- * Analyzes common URL path patterns in the crawl results
+ * Calculate SEO health score based on issues
  */
-export function analyzeCommonPaths(urls: string[]): { path: string; count: number }[] {
-  const pathCounts: Record<string, number> = {};
+export function calculateSeoHealthScore(
+  critical: number,
+  important: number,
+  opportunities: number,
+  baseScore: number = 100
+): number {
+  // Weight penalties for each issue type
+  const criticalPenalty = 10;
+  const importantPenalty = 4;
+  const opportunityPenalty = 1;
   
-  urls.forEach(url => {
-    try {
-      const parsedUrl = new URL(url);
-      const path = parsedUrl.pathname;
-      
-      // Skip empty paths
-      if (!path || path === '/') return;
-      
-      if (pathCounts[path]) {
-        pathCounts[path]++;
-      } else {
-        pathCounts[path] = 1;
-      }
-    } catch (error) {
-      console.error('Error parsing URL:', error);
-    }
-  });
+  // Calculate total penalty
+  let totalPenalty = 
+    (critical * criticalPenalty) + 
+    (important * importantPenalty) + 
+    (opportunities * opportunityPenalty);
   
-  // Convert to array and sort by count (descending)
-  return Object.entries(pathCounts)
-    .map(([path, count]) => ({ path, count }))
-    .sort((a, b) => b.count - a.count);
+  // Cap penalties to ensure score doesn't go below 0
+  totalPenalty = Math.min(totalPenalty, baseScore);
+  
+  // Return final score
+  return Math.max(0, baseScore - totalPenalty);
 }
 
 /**
- * Generates SEO recommendations based on crawl data
+ * Get issue impact level description
  */
-export function getSeoRecommendations(
-  brokenLinksCount: number,
-  duplicatesCount: number,
-  totalUrls: number,
-  depthData: { level: number; count: number }[] = []
-): Array<{ title: string; description: string; priority: string }> {
-  const recommendations = [];
-  
-  // Broken links recommendations
-  if (brokenLinksCount > 0) {
-    const priority = brokenLinksCount > 10 ? 'high' : (brokenLinksCount > 5 ? 'medium' : 'low');
-    recommendations.push({
-      title: 'Исправьте битые ссылки',
-      description: `Обнаружено ${brokenLinksCount} битых ссылок. Исправьте их для улучшения пользовательского опыта и SEO.`,
-      priority
-    });
+export function getIssueImpactLevel(impact: number | string): string {
+  if (typeof impact === 'string') {
+    const lowerImpact = impact.toLowerCase();
+    if (['critical', 'высокий', 'критический'].includes(lowerImpact)) return 'Критический';
+    if (['high', 'высокий'].includes(lowerImpact)) return 'Высокий';
+    if (['medium', 'средний'].includes(lowerImpact)) return 'Средний';
+    if (['low', 'низкий'].includes(lowerImpact)) return 'Низкий';
+    return impact;
   }
   
-  // Duplicates recommendations
-  if (duplicatesCount > 0) {
-    const priority = duplicatesCount > 10 ? 'high' : (duplicatesCount > 5 ? 'medium' : 'low');
-    recommendations.push({
-      title: 'Устраните дубликаты страниц',
-      description: `Обнаружено ${duplicatesCount} групп дублирующихся страниц. Используйте каноническую ссылку или редиректы для улучшения SEO.`,
-      priority
-    });
+  if (typeof impact === 'number') {
+    if (impact >= 90) return 'Критический';
+    if (impact >= 70) return 'Высокий';
+    if (impact >= 40) return 'Средний';
+    return 'Низкий';
   }
   
-  // Depth recommendations
-  if (depthData.length > 0) {
-    const deepPages = depthData.filter(d => d.level > 4).reduce((sum, d) => sum + d.count, 0);
-    if (deepPages > 0) {
-      const percentage = (deepPages / totalUrls) * 100;
-      const priority = percentage > 30 ? 'high' : (percentage > 15 ? 'medium' : 'low');
-      recommendations.push({
-        title: 'Оптимизируйте глубину вложенности',
-        description: `${deepPages} страниц (${percentage.toFixed(1)}%) находятся на глубине более 4 уровней. Упростите структуру сайта для улучшения индексации.`,
-        priority
-      });
-    }
-  }
-  
-  // Additional standard recommendations
-  recommendations.push({
-    title: 'Оптимизируйте структуру URL',
-    description: 'Создайте четкую, понятную структуру URL с использованием ключевых слов для улучшения SEO.',
-    priority: 'medium'
-  });
-  
-  recommendations.push({
-    title: 'Создайте и обновите XML-карту сайта',
-    description: 'Создайте и регулярно обновляйте XML-карту сайта, чтобы улучшить индексацию страниц поисковыми системами.',
-    priority: 'medium'
-  });
-  
-  recommendations.push({
-    title: 'Проверьте мобильную оптимизацию',
-    description: 'Убедитесь, что ваш сайт оптимизирован для мобильных устройств и имеет адаптивный дизайн.',
-    priority: 'high'
-  });
-  
-  recommendations.push({
-    title: 'Улучшите скорость загрузки страниц',
-    description: 'Оптимизируйте изображения, минимизируйте код и используйте кэширование для улучшения скорости загрузки страниц.',
-    priority: 'high'
-  });
-  
-  return recommendations;
+  return 'Средний';
 }
 
 /**
- * Generates a comprehensive site summary based on analysis results
+ * Get SEO recommendation priority
  */
-export function getSiteSummary(
-  score: number,
-  brokenLinksCount: number,
-  duplicatesCount: number,
-  totalUrls: number
-): string {
-  let summary = '';
-  
-  if (score >= 90) {
-    summary = `Общая оценка сайта: ${score}/100. Отличный результат! `;
-  } else if (score >= 70) {
-    summary = `Общая оценка сайта: ${score}/100. Хороший результат, но есть возможности для улучшения. `;
-  } else if (score >= 50) {
-    summary = `Общая оценка сайта: ${score}/100. Удовлетворительный результат, требуется работа над оптимизацией. `;
-  } else {
-    summary = `Общая оценка сайта: ${score}/100. Требуется значительная оптимизация. `;
+export function getRecommendationPriority(type: string): string {
+  switch (type.toLowerCase()) {
+    case 'critical':
+    case 'критический':
+      return 'Требуется немедленное исправление';
+    case 'high':
+    case 'высокий':
+      return 'Высокий приоритет';
+    case 'medium':
+    case 'средний':
+      return 'Средний приоритет';
+    case 'low':
+    case 'низкий':
+      return 'Низкий приоритет';
+    default:
+      return 'Стандартный приоритет';
   }
-  
-  if (brokenLinksCount > 0) {
-    const percentage = (brokenLinksCount / totalUrls) * 100;
-    summary += `Обнаружено ${brokenLinksCount} битых ссылок (${percentage.toFixed(1)}% от общего числа URL). `;
-  } else {
-    summary += 'Битых ссылок не обнаружено. ';
+}
+
+/**
+ * Calculate estimated implementation time for an issue
+ */
+export function getEstimatedImplementationTime(issueType: string): string {
+  switch (issueType.toLowerCase()) {
+    case 'meta_tags':
+    case 'duplicate_title':
+    case 'missing_title':
+    case 'missing_description':
+    case 'short_description':
+      return '1-2 часа';
+      
+    case 'images_optimization':
+    case 'missing_alt':
+    case 'broken_images':
+      return '2-4 часа';
+      
+    case 'slow_page':
+    case 'performance':
+      return '4-8 часов';
+      
+    case 'mobile_optimization':
+    case 'responsive':
+      return '8-16 часов';
+      
+    case 'broken_links':
+    case 'redirect_chains':
+      return '2-6 часов';
+      
+    default:
+      return '2-4 часа';
   }
-  
-  if (duplicatesCount > 0) {
-    const percentage = (duplicatesCount / totalUrls) * 100;
-    summary += `Обнаружено ${duplicatesCount} групп дублирующихся страниц (затрагивает примерно ${percentage.toFixed(1)}% контента). `;
-  } else {
-    summary += 'Дублирующихся страниц не обнаружено. ';
-  }
-  
-  summary += `Всего просканировано ${totalUrls} уникальных URL.`;
-  
-  return summary;
 }
