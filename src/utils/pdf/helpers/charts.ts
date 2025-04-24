@@ -1,6 +1,6 @@
 import jsPDF from 'jspdf';
 import { pdfColors } from '../styles/colors';
-import { extendJsPDF } from '../helpers';
+import { extendJsPDF } from '../helpers/index';
 
 /**
  * Генерирует круговую диаграмму в PDF документе
@@ -291,7 +291,7 @@ export function generateBarChart(
         doc.text(displayLabel, 0, 0, { align: 'center' });
       } catch (e) {
         // Fallback method if the functions are not available
-        doc.text(displayLabel, pointX, y + 8, { 
+        doc.text(displayLabel, barX + barWidth / 2, y + 8, { 
           align: 'center',
           angle: labelRotation * (Math.PI / 180)
         });

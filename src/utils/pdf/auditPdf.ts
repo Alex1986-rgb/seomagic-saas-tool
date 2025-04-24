@@ -2,7 +2,7 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { AuditData } from '@/types/audit';
 import type { OptimizationItem } from '@/components/audit/results/components/optimization';
-import { addPaginationFooters, addTimestamp, extendJsPDF } from './helpers';
+import { addPaginationFooters, addTimestamp, extendJsPDF } from './helpers/index';
 import { pdfColors, getScoreColorRGB } from './styles/colors';
 import { generatePieChart, generateBarChart, generateScoreGauge, generateRadarChart } from './helpers/charts';
 
@@ -366,7 +366,7 @@ export const generateAuditPdf = async (options: GenerateAuditPdfOptions): Promis
     doc.text('Оптимизация включает:', 20, (doc as any).lastAutoTable.finalY + 15);
     
     const includedItems = [
-      'Оптимизация всех мета-тегов',
+      'Оптимизация всех мета-те��ов',
       'Исправление проблем с изображениями',
       'Улучшение скорости загрузки',
       'Исправление технических проблем',
