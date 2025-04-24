@@ -1,6 +1,7 @@
 import React from 'react';
 import { Route, Routes } from 'react-router-dom';
 import AdminLayout from '@/layouts/AdminLayout';
+
 import Dashboard from '@/pages/admin/Dashboard';
 import WebsiteAnalyzer from '@/pages/admin/WebsiteAnalyzer';
 import NotFound from '@/pages/NotFound';
@@ -23,6 +24,15 @@ import NotificationsSettingsPage from '@/pages/admin/system/NotificationsSetting
 import AnalyticsSettingsPage from '@/pages/admin/system/AnalyticsSettingsPage';
 import PerformanceSettingsPage from '@/pages/admin/system/PerformanceSettingsPage';
 import AdminPaymentsPage from '@/pages/admin/AdminPaymentsPage';
+
+// New content management pages
+import HomePageEditor from '@/pages/admin/content/HomePageEditor';
+import AboutPageEditor from '@/pages/admin/content/AboutPageEditor';
+import BlogEditor from '@/pages/admin/content/BlogEditor';
+import FeaturesEditor from '@/pages/admin/content/FeaturesEditor';
+import ClientCabinetEditor from '@/pages/admin/content/ClientCabinetEditor';
+import MarketingEditor from '@/pages/admin/content/MarketingEditor';
+import HelpEditor from '@/pages/admin/content/HelpEditor';
 
 const AdminRoutes: React.FC = () => {
   return (
@@ -49,6 +59,16 @@ const AdminRoutes: React.FC = () => {
         <Route path="system/analytics" element={<AnalyticsSettingsPage />} />
         <Route path="system/performance" element={<PerformanceSettingsPage />} />
         <Route path="payments" element={<AdminPaymentsPage />} />
+
+        {/* Content Management Routes */}
+        <Route path="content/home" element={<HomePageEditor />} />
+        <Route path="content/about" element={<AboutPageEditor />} />
+        <Route path="content/blog" element={<BlogEditor />} />
+        <Route path="content/features" element={<FeaturesEditor />} />
+        <Route path="content/client-cabinet" element={<ClientCabinetEditor />} />
+        <Route path="content/marketing" element={<MarketingEditor />} />
+        <Route path="content/help" element={<HelpEditor />} />
+
         <Route path="*" element={<NotFound />} />
       </Route>
     </Routes>

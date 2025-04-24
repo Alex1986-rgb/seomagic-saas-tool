@@ -1,9 +1,27 @@
-
 import React from 'react';
 import { Helmet } from 'react-helmet-async';
 import AdminSettings from '@/components/admin/AdminSettings';
 import { Card, CardContent } from "@/components/ui/card";
-import { Settings, User, UserCheck, Globe, Shield, BellRing, Server, BarChart2, Gauge, ArrowRight, Monitor, BarChart, LayoutDashboard } from 'lucide-react';
+import { 
+  Settings, 
+  UserCheck, 
+  Globe, 
+  Shield, 
+  BellRing, 
+  Gauge, 
+  BarChart2, 
+  Monitor, 
+  LayoutDashboard,
+  FileText,
+  Palette,
+  Layout,
+  User,
+  Home,
+  Newspaper,
+  Briefcase,
+  Megaphone,
+  HelpCircle
+} from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 
@@ -54,23 +72,68 @@ const hotSettings = [
   { to: "/admin/system/logging", label: "Логирование событий" },
 ];
 
+const managedPages = [
+  {
+    to: "/admin/content/home",
+    label: "Главная страница",
+    icon: <Home className="h-5 w-5" />,
+    description: "Редактирование контента главной страницы"
+  },
+  {
+    to: "/admin/content/about",
+    label: "О нас",
+    icon: <Briefcase className="h-5 w-5" />,
+    description: "Управление информацией о компании"
+  },
+  {
+    to: "/admin/content/blog",
+    label: "Блог",
+    icon: <Newspaper className="h-5 w-5" />,
+    description: "Управление статьями и постами"
+  },
+  {
+    to: "/admin/content/features",
+    label: "Возможности",
+    icon: <Layout className="h-5 w-5" />,
+    description: "Редактирование функций и возможностей"
+  },
+  {
+    to: "/admin/content/client-cabinet",
+    label: "Кабинет клиента",
+    icon: <User className="h-5 w-5" />,
+    description: "Настройка интерфейса кабинета"
+  },
+  {
+    to: "/admin/content/marketing",
+    label: "Маркетинг",
+    icon: <Megaphone className="h-5 w-5" />,
+    description: "Управление маркетинговыми материалами"
+  },
+  {
+    to: "/admin/content/help",
+    label: "Помощь",
+    icon: <HelpCircle className="h-5 w-5" />,
+    description: "Редактирование справочных материалов"
+  }
+];
+
 const AdminSettingsPage: React.FC = () => {
   return (
     <>
       <Helmet>
         <title>Настройки | Админ панель</title>
       </Helmet>
-      <div className="container mx-auto px-4 md:px-8 py-10 max-w-6xl text-black">
+      <div className="container mx-auto px-4 md:px-8 py-10 max-w-6xl text-white">
         <div className="mb-8 px-8 py-10 rounded-3xl bg-gradient-to-br from-[#222222] to-[#1a1a1a] text-white shadow-lg flex flex-col md:flex-row items-center gap-8 border border-white/10">
           <div className="flex-shrink-0 bg-primary/20 text-primary rounded-full p-6 shadow-inner border border-primary/20">
             <Settings className="h-12 w-12" />
           </div>
           <div className="flex-1 min-w-[210px]">
             <h1 className="text-4xl font-extrabold mb-2 tracking-tight bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">
-              Настройки администратора
+              Управление контентом
             </h1>
             <p className="text-gray-400 text-lg">
-              Управление всеми ключевыми настройками и конфигурацией платформы с интеграцией мониторинга, аналитики и системы безопасности.
+              Редактируйте и настраивайте контент всех страниц сайта, SEO-параметры и элементы интерфейса.
             </p>
             <div className="flex flex-wrap gap-3 mt-6">
               {navSettings.map((nav) => (
@@ -97,6 +160,27 @@ const AdminSettingsPage: React.FC = () => {
             </div>
           </div>
         </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+          {managedPages.map((page) => (
+            <Link key={page.to} to={page.to}>
+              <Card className="hover:scale-[1.02] transition-all duration-200 bg-gradient-to-br from-[#222222] to-[#1a1a1a] border border-white/10 shadow-lg text-white h-full">
+                <CardContent className="p-6">
+                  <div className="flex items-center gap-4 mb-4">
+                    <div className="p-3 rounded-lg bg-primary/20 text-primary">
+                      {page.icon}
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-semibold text-white">{page.label}</h3>
+                      <p className="text-sm text-gray-400">{page.description}</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </Link>
+          ))}
+        </div>
+
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-6">
           <div className="lg:col-span-2 flex flex-col gap-6">
             <Card className="bg-gradient-to-br from-[#222222] to-[#1a1a1a] border border-white/10 shadow-lg">
@@ -155,6 +239,7 @@ const AdminSettingsPage: React.FC = () => {
             </Card>
           </div>
         </div>
+
         <div className="mt-10 text-sm text-gray-400 space-y-3 max-w-3xl">
           <p className="flex items-center gap-2">
             <Settings className="h-4 w-4 text-primary" />
