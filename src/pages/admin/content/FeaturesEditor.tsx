@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import BaseContentEditor from '@/components/admin/content/BaseContentEditor';
@@ -184,7 +183,6 @@ const FeaturesEditor: React.FC = () => {
                             <Switch
                               checked={feature.enabled}
                               onCheckedChange={(checked) => updateFeature(feature.id, 'enabled', checked)}
-                              size="sm"
                             />
                           </div>
                           <div className="flex items-center space-x-2">
@@ -192,7 +190,6 @@ const FeaturesEditor: React.FC = () => {
                             <Switch
                               checked={feature.highlight}
                               onCheckedChange={(checked) => updateFeature(feature.id, 'highlight', checked)}
-                              size="sm"
                             />
                           </div>
                           <Button 
