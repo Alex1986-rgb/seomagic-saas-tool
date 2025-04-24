@@ -8,7 +8,7 @@ export interface CategoryData {
   items: AuditItemData[];
   name?: string;
   description?: string;
-  id?: string; // Add id property to match AuditCategoryData
+  id?: string; // Keep id optional
 }
 
 export interface AuditItemData {
@@ -28,7 +28,7 @@ export interface AuditItemData {
 }
 
 export interface AuditCategoryData {
-  id: string;
+  id?: string; // Make id optional to match CategoryData
   name: string;
   description: string;
   score: number;

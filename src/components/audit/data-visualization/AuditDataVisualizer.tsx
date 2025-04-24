@@ -1,75 +1,67 @@
-
-import React, { useState } from 'react';
+import React from 'react';
 import { motion } from 'framer-motion';
-import { ChevronDown, ChevronUp, BarChart as BarChartIcon, PieChart as PieChartIcon, LineChart as LineChartIcon } from 'lucide-react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { AuditCategoryData } from '@/types/audit';
-import { prepareScoreData, prepareIssuesData } from './utils/dataPreparation';
-import ScoresBarChart from './components/ScoresBarChart';
-import IssuesPieChart from './components/IssuesPieChart';
-import TrendsAreaChart from './components/TrendsAreaChart';
+import { ChartContainer } from './components/ChartContainer';
+import { ScoresBarChart } from './components/ScoresBarChart';
+import { TrendsAreaChart } from './components/TrendsAreaChart';
+import { IssuesPieChart } from './components/IssuesPieChart';
+import { AuditDetailsData, CategoryData } from '@/types/audit';
 
 interface AuditDataVisualizerProps {
-  auditData: {
-    seo: AuditCategoryData;
-    performance: AuditCategoryData;
-    content: AuditCategoryData;
-    technical: AuditCategoryData;
-  };
+  auditData: AuditDetailsData;
 }
 
 const AuditDataVisualizer: React.FC<AuditDataVisualizerProps> = ({ auditData }) => {
-  const [expanded, setExpanded] = useState(false);
-
   return (
-    <div className="neo-card p-6 mb-8">
-      <div 
-        className="flex justify-between items-center mb-4 cursor-pointer"
-        onClick={() => setExpanded(!expanded)}
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <motion.div
+        className="neo-card p-4 sm:p-6"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
       >
-        <h2 className="text-xl font-semibold flex items-center gap-2">
-          Визуализация данных аудита
-          {expanded ? 
-            <ChevronUp className="h-5 w-5 text-muted-foreground" /> : 
-            <ChevronDown className="h-5 w-5 text-muted-foreground" />
-          }
-        </h2>
-      </div>
+        <ChartContainer title="Оценка категорий">
+          <ScoresBarChart
+            seo={auditData.seo.score}
+            performance={auditData.performance.score}
+            content={auditData.content.score}
+            technical={auditData.technical.score}
+            usability={auditData.usability.score}
+          />
+        </ChartContainer>
+      </motion.div>
 
       <motion.div
-        className="overflow-hidden"
-        initial={{ height: 0 }}
-        animate={{ height: expanded ? 'auto' : 0 }}
-        transition={{ duration: 0.3 }}
+        className="neo-card p-4 sm:p-6"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.2 }}
       >
-        <Tabs defaultValue="bars" className="mt-4">
-          <TabsList className="mb-4 grid grid-cols-3 max-w-md mx-auto">
-            <TabsTrigger value="bars" className="flex items-center gap-2">
-              <BarChartIcon className="h-4 w-4" />
-              <span>Оценки</span>
-            </TabsTrigger>
-            <TabsTrigger value="pie" className="flex items-center gap-2">
-              <PieChartIcon className="h-4 w-4" />
-              <span>Проблемы</span>
-            </TabsTrigger>
-            <TabsTrigger value="line" className="flex items-center gap-2">
-              <LineChartIcon className="h-4 w-4" />
-              <span>Тренды</span>
-            </TabsTrigger>
-          </TabsList>
+        <ChartContainer title="Тренды изменений">
+          <TrendsAreaChart
+            seo={auditData.seo.score}
+            performance={auditData.performance.score}
+            content={auditData.content.score}
+            technical={auditData.technical.score}
+            usability={auditData.usability.score}
+          />
+        </ChartContainer>
+      </motion.div>
 
-          <TabsContent value="bars" className="mt-2">
-            <ScoresBarChart data={prepareScoreData(auditData)} />
-          </TabsContent>
-
-          <TabsContent value="pie" className="mt-2">
-            <IssuesPieChart data={prepareIssuesData(auditData)} />
-          </TabsContent>
-
-          <TabsContent value="line" className="mt-2">
-            <TrendsAreaChart auditData={auditData} />
-          </TabsContent>
-        </Tabs>
+      <motion.div
+        className="neo-card p-4 sm:p-6"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.4 }}
+      >
+        <ChartContainer title="Соотношение проблем">
+          <IssuesPieChart
+            seo={{ passed: auditData.seo.passed, warning: auditData.seo.warning, failed: auditData.seo.failed }}
+            performance={{ passed: auditData.performance.passed, warning: auditData.performance.warning, failed: auditData.performance.failed }}
+            content={{ passed: auditData.content.passed, warning: auditData.content.warning, failed: auditData.content.failed }}
+            technical={{ passed: auditData.technical.passed, warning: auditData.technical.warning, failed: auditData.technical.failed }}
+            usability={{ passed: auditData.usability.passed, warning: auditData.usability.warning, failed: auditData.usability.failed }}
+          />
+        </ChartContainer>
       </motion.div>
     </div>
   );

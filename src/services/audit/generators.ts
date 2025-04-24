@@ -158,7 +158,7 @@ const generateAuditCategoryData = (category: string, score: number): AuditCatego
   const failed = total - passed - warning;
   
   return {
-    id: faker.string.uuid(),
+    id: faker.string.uuid(), // Set id consistently
     name: category,
     description: `Analysis of ${category.toLowerCase()} aspects of the website`,
     score,
