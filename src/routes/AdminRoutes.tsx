@@ -13,6 +13,7 @@ import AdminUsersPage from '@/pages/admin/AdminUsersPage';
 import AdminAnalyticsPage from '@/pages/admin/AdminAnalyticsPage';
 import HostingPage from '@/pages/admin/HostingPage';
 import SitesPage from '@/pages/admin/SitesPage';
+import AdminAuditsPage from '@/pages/admin/AdminAuditsPage';
 
 // system settings sections
 import DatabaseSettingsPage from '@/pages/admin/system/DatabaseSettingsPage';
@@ -36,6 +37,7 @@ const AdminRoutes: React.FC = () => {
         <Route path="analytics" element={<AdminAnalyticsPage />} />
         <Route path="hosting" element={<HostingPage />} />
         <Route path="sites" element={<SitesPage />} />
+        <Route path="audits" element={<AdminAuditsPage />} />
 
         {/* System Settings subroutes */}
         <Route path="system/database" element={<DatabaseSettingsPage />} />
