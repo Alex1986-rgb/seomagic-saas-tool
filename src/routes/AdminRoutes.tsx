@@ -24,6 +24,10 @@ import NotificationsSettingsPage from '@/pages/admin/system/NotificationsSetting
 import AnalyticsSettingsPage from '@/pages/admin/system/AnalyticsSettingsPage';
 import PerformanceSettingsPage from '@/pages/admin/system/PerformanceSettingsPage';
 import AdminPaymentsPage from '@/pages/admin/AdminPaymentsPage';
+import BackupSettingsPage from '@/pages/admin/system/BackupSettingsPage';
+import ApiKeysPage from '@/pages/admin/system/ApiKeysPage';
+import EmailSettingsPage from '@/pages/admin/system/EmailSettingsPage';
+import LogSettingsPage from '@/pages/admin/system/LogSettingsPage';
 
 // New content management pages
 import HomePageEditor from '@/pages/admin/content/HomePageEditor';
@@ -54,6 +58,10 @@ const AdminRoutes: React.FC = () => {
         {/* System Settings subroutes */}
         <Route path="system/database" element={<DatabaseSettingsPage />} />
         <Route path="system/security" element={<SecuritySettingsPage />} />
+        <Route path="system/backup" element={<BackupSettingsPage />} />
+        <Route path="system/api-keys" element={<ApiKeysPage />} />
+        <Route path="system/email" element={<EmailSettingsPage />} />
+        <Route path="system/logs" element={<LogSettingsPage />} />
         <Route path="system/users" element={<UsersManagementPage />} />
         <Route path="system/notifications" element={<NotificationsSettingsPage />} />
         <Route path="system/analytics" element={<AnalyticsSettingsPage />} />
