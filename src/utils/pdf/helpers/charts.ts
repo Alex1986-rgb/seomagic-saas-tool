@@ -279,9 +279,24 @@ export function generateBarChart(
     // Применяем поворот, если нужно
     if (labelRotation !== 0) {
       doc.saveGraphicsState();
-      doc.translatePoint(barX + barWidth / 2, y + 8);
-      doc.rotatePoint(labelRotation * Math.PI / 180);
-      doc.text(displayLabel, 0, 0, { align: 'center' });
+      
+      // Handle translatePoint and rotatePoint conditionally
+      try {
+        if (typeof doc.translatePoint === 'function') {
+          doc.translatePoint(barX + barWidth / 2, y + 8);
+        }
+        if (typeof doc.rotatePoint === 'function') {
+          doc.rotatePoint(labelRotation);
+        }
+        doc.text(displayLabel, 0, 0, { align: 'center' });
+      } catch (e) {
+        // Fallback method if the functions are not available
+        doc.text(displayLabel, pointX, y + 8, { 
+          align: 'center',
+          angle: labelRotation * (Math.PI / 180)
+        });
+      }
+      
       doc.restoreGraphicsState();
     } else {
       doc.text(displayLabel, barX + barWidth / 2, y + 8, { align: 'center' });
@@ -452,9 +467,24 @@ export function generateLineChart(
     // Применяем поворот, если нужно
     if (labelRotation !== 0) {
       doc.saveGraphicsState();
-      doc.translatePoint(pointX, y + 8);
-      doc.rotatePoint(labelRotation * Math.PI / 180);
-      doc.text(displayLabel, 0, 0, { align: 'center' });
+      
+      // Handle translatePoint and rotatePoint conditionally
+      try {
+        if (typeof doc.translatePoint === 'function') {
+          doc.translatePoint(pointX, y + 8);
+        }
+        if (typeof doc.rotatePoint === 'function') {
+          doc.rotatePoint(labelRotation);
+        }
+        doc.text(displayLabel, 0, 0, { align: 'center' });
+      } catch (e) {
+        // Fallback method if the functions are not available
+        doc.text(displayLabel, pointX, y + 8, { 
+          align: 'center',
+          angle: labelRotation * (Math.PI / 180)
+        });
+      }
+      
       doc.restoreGraphicsState();
     } else {
       doc.text(displayLabel, pointX, y + 8, { align: 'center' });
@@ -480,7 +510,7 @@ export function generateRadarChart(
   options: {
     title?: string;
     maxValue?: number;
-    fillColor?: [number, number, number];
+    fillColor?: [number, number, number] | [number, number, number, number];
     lineColor?: [number, number, number];
     gridLines?: boolean;
     axisLabels?: boolean;
@@ -495,7 +525,7 @@ export function generateRadarChart(
   const {
     title,
     maxValue = Math.max(...Object.values(data)),
-    fillColor = [pdfColors.primary[0], pdfColors.primary[1], pdfColors.primary[2], 0.2],
+    fillColor = [pdfColors.primary[0], pdfColors.primary[1], pdfColors.primary[2], 0.2] as [number, number, number, number],
     lineColor = pdfColors.primary,
     gridLines = true,
     axisLabels = true,

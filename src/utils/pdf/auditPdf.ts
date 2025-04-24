@@ -1,4 +1,3 @@
-
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { AuditData } from '@/types/audit';
@@ -17,7 +16,6 @@ export interface GenerateAuditPdfOptions {
   date?: string;
 }
 
-// Define the issue interface to match the actual data structure
 interface AuditIssue {
   title: string;
   description: string;
@@ -28,7 +26,6 @@ interface AuditIssue {
   solution?: string;
 }
 
-// Функция для генерации полного PDF-отчета
 export const generateAuditPdf = async (options: GenerateAuditPdfOptions): Promise<Blob> => {
   const { 
     auditData, 
@@ -40,28 +37,23 @@ export const generateAuditPdf = async (options: GenerateAuditPdfOptions): Promis
     date = auditData.date
   } = options;
   
-  // Создаем новый PDF документ
   const doc = new jsPDF({
     orientation: 'portrait',
     unit: 'mm',
     format: 'a4'
   });
 
-  // Extend jsPDF with additional methods if needed
   extendJsPDF(doc);
   
-  // Форматирование даты
   const formattedDate = new Date(date).toLocaleDateString('ru-RU', {
     year: 'numeric',
     month: 'long',
     day: 'numeric'
   });
   
-  // Добавляем заголовок с градиентным баннером
   doc.setFillColor(...pdfColors.dark);
   doc.rect(0, 0, 210, 40, 'F');
   
-  // Добавляем логотип или название продукта
   doc.setFontSize(24);
   doc.setTextColor(255, 255, 255);
   doc.text('SEO Аудит', 105, 20, { align: 'center' });
@@ -69,7 +61,6 @@ export const generateAuditPdf = async (options: GenerateAuditPdfOptions): Promis
   doc.setFontSize(12);
   doc.text(`URL: ${url}`, 105, 30, { align: 'center' });
   
-  // Добавляем блок с основной информацией
   doc.setFillColor(...pdfColors.light);
   doc.roundedRect(15, 50, 180, 50, 3, 3, 'F');
   
@@ -77,46 +68,38 @@ export const generateAuditPdf = async (options: GenerateAuditPdfOptions): Promis
   doc.setFontSize(14);
   doc.text('Общая информация о сайте', 105, 60, { align: 'center' });
   
-  // Добавляем линию под заголовком секции
   doc.setDrawColor(...pdfColors.primary);
   doc.setLineWidth(0.5);
   doc.line(30, 64, 180, 64);
   
-  // Добавляем основную информацию
   doc.setFontSize(10);
   doc.text(`Дата аудита: ${formattedDate}`, 25, 72);
   doc.text(`Проанализировано страниц: ${auditData.pageCount || 'N/A'}`, 25, 80);
   
-  // Общая SEO оценка с визуализацией
   doc.setFontSize(12);
   doc.text('Общая SEO оценка:', 25, 90);
   
-  // Рисуем градиентную шкалу для общей оценки
   generateScoreGauge(doc, auditData.score, 90, 86, 80, 8);
   
-  // Добавляем категории аудита с визуализацией в виде радарной диаграммы
   doc.setFontSize(16);
   doc.text('Категории аудита', 105, 115, { align: 'center' });
   
-  // Подготовка данных для радарной диаграммы
   const categoryScores = {
     'SEO': auditData.details.seo.score || 0,
     'Производительность': auditData.details.performance.score || 0,
     'Контент': auditData.details.content.score || 0,
     'Технические аспекты': auditData.details.technical.score || 0,
-    'Юзабилити': auditData.details.usability?.score || 70 // Примерное значение, если нет данных
+    'Юзабилити': auditData.details.usability?.score || 0
   };
   
-  // Создаем радарную диаграмму с категориями
   generateRadarChart(doc, categoryScores, 105, 160, 50, {
     title: 'Оценки по категориям',
     maxValue: 100,
-    fillColor: [...pdfColors.primary, 0.3] as [number, number, number],
+    fillColor: [pdfColors.primary[0], pdfColors.primary[1], pdfColors.primary[2], 0.3] as [number, number, number, number],
     lineColor: pdfColors.primary,
     showValues: true
   });
   
-  // Добавляем страницу для распределения проблем
   doc.addPage();
   
   doc.setFillColor(...pdfColors.dark);
@@ -126,14 +109,12 @@ export const generateAuditPdf = async (options: GenerateAuditPdfOptions): Promis
   doc.setFontSize(16);
   doc.text('Распределение проблем', 105, 14, { align: 'center' });
   
-  // Распределение проблем по категориям
   const issuesByCategory = {
     'Критические': auditData.issues.critical.length,
     'Важные': auditData.issues.important.length,
     'Рекомендации': auditData.issues.opportunities.length
   };
   
-  // Рисуем круговую диаграмму с распределением проблем
   generatePieChart(doc, issuesByCategory, 105, 70, 40, {
     title: 'Распределение проблем по важности',
     showLegend: true,
@@ -146,9 +127,7 @@ export const generateAuditPdf = async (options: GenerateAuditPdfOptions): Promis
     ]
   });
   
-  // Далее распределение страниц по типам, если доступно
   if (pageStats && pageStats.subpages) {
-    // Создаем гистограмму с распределением страниц по типам
     generateBarChart(doc, pageStats.subpages, 30, 170, 150, 60, {
       title: 'Распределение страниц по типам',
       barColor: pdfColors.info,
@@ -156,7 +135,6 @@ export const generateAuditPdf = async (options: GenerateAuditPdfOptions): Promis
     });
   }
   
-  // Добавляем детальный анализ проблем
   doc.addPage();
   
   doc.setFillColor(...pdfColors.dark);
@@ -166,23 +144,15 @@ export const generateAuditPdf = async (options: GenerateAuditPdfOptions): Promis
   doc.setFontSize(16);
   doc.text('Детальный анализ проблем', 105, 14, { align: 'center' });
   
-  // Рассчет общего количества проблем
   const totalIssues = auditData.issues.critical.length + auditData.issues.important.length + auditData.issues.opportunities.length;
   
   doc.setTextColor(...pdfColors.dark);
   doc.setFontSize(12);
   doc.text(`Всего обнаружено проблем: ${totalIssues}`, 20, 30);
   
-  // Таблица с критическими проблемами
-  doc.setFontSize(14);
-  doc.setTextColor(...pdfColors.danger);
-  doc.text('Критические проблемы', 20, 45);
-  
-  // Parse issues as objects if they are strings
   const getCriticalIssues = (): AuditIssue[] => {
-    if (auditData.issues.critical.length === 0) return [];
+    if (!auditData.issues.critical || auditData.issues.critical.length === 0) return [];
     
-    // If the first item is a string, convert all to objects
     if (typeof auditData.issues.critical[0] === 'string') {
       return auditData.issues.critical.map((issue: string) => ({
         title: issue,
@@ -192,7 +162,6 @@ export const generateAuditPdf = async (options: GenerateAuditPdfOptions): Promis
       }));
     }
     
-    // Already objects
     return auditData.issues.critical as unknown as AuditIssue[];
   };
   
@@ -224,26 +193,21 @@ export const generateAuditPdf = async (options: GenerateAuditPdfOptions): Promis
     doc.text('Критических проблем не обнаружено', 20, 55);
   }
   
-  // Получаем Y-позицию после таблицы или текста
   let currentY = criticalIssues.length > 0 ? 
     (doc as any).lastAutoTable.finalY + 15 : 60;
   
-  // Проверяем, достаточно ли места для следующей таблицы
   if (currentY > 200) {
     doc.addPage();
     currentY = 30;
   }
   
-  // Таблица с важными проблемами
   doc.setFontSize(14);
   doc.setTextColor(...pdfColors.warning);
   doc.text('Важные проблемы', 20, currentY);
   
-  // Parse important issues
   const getImportantIssues = (): AuditIssue[] => {
-    if (auditData.issues.important.length === 0) return [];
+    if (!auditData.issues.important || auditData.issues.important.length === 0) return [];
     
-    // If the first item is a string, convert all to objects
     if (typeof auditData.issues.important[0] === 'string') {
       return auditData.issues.important.map((issue: string) => ({
         title: issue,
@@ -253,7 +217,6 @@ export const generateAuditPdf = async (options: GenerateAuditPdfOptions): Promis
       }));
     }
     
-    // Already objects
     return auditData.issues.important as unknown as AuditIssue[];
   };
   
@@ -288,22 +251,18 @@ export const generateAuditPdf = async (options: GenerateAuditPdfOptions): Promis
     currentY += 20;
   }
   
-  // Проверяем, достаточно ли места для следующей таблицы
   if (currentY > 200) {
     doc.addPage();
     currentY = 30;
   }
   
-  // Таблица с рекомендациями
   doc.setFontSize(14);
   doc.setTextColor(...pdfColors.info);
   doc.text('Рекомендации по улучшению', 20, currentY);
   
-  // Parse opportunity issues
   const getOpportunityIssues = (): AuditIssue[] => {
-    if (auditData.issues.opportunities.length === 0) return [];
+    if (!auditData.issues.opportunities || auditData.issues.opportunities.length === 0) return [];
     
-    // If the first item is a string, convert all to objects
     if (typeof auditData.issues.opportunities[0] === 'string') {
       return auditData.issues.opportunities.map((issue: string) => ({
         title: issue,
@@ -313,7 +272,6 @@ export const generateAuditPdf = async (options: GenerateAuditPdfOptions): Promis
       }));
     }
     
-    // Already objects
     return auditData.issues.opportunities as unknown as AuditIssue[];
   };
   
@@ -345,7 +303,6 @@ export const generateAuditPdf = async (options: GenerateAuditPdfOptions): Promis
     doc.text('Рекомендаций не обнаружено', 20, currentY + 10);
   }
   
-  // Добавляем отчет о стоимости оптимизации, если данные доступны
   if (optimizationCost && optimizationItems) {
     doc.addPage();
     
@@ -361,14 +318,12 @@ export const generateAuditPdf = async (options: GenerateAuditPdfOptions): Promis
     doc.text(`Общая стоимость: ${new Intl.NumberFormat('ru-RU').format(optimizationCost)} ₽`, 20, 30);
     doc.text(`Количество страниц: ${auditData.pageCount}`, 20, 40);
     
-    // Создаем данные для круговой диаграммы распределения стоимости
     const costDistribution: Record<string, number> = {};
     
     optimizationItems.forEach(item => {
       costDistribution[item.type] = item.totalPrice;
     });
     
-    // Рисуем круговую диаграмму с распределением стоимости
     generatePieChart(doc, costDistribution, 105, 80, 40, {
       title: 'Распределение затрат на оптимизацию',
       showLegend: true,
@@ -407,10 +362,8 @@ export const generateAuditPdf = async (options: GenerateAuditPdfOptions): Promis
       }
     });
     
-    // Добавляем список что включено
-    const includesY = (doc as any).lastAutoTable.finalY + 15;
     doc.setFontSize(14);
-    doc.text('Оптимизация включает:', 20, includesY);
+    doc.text('Оптимизация включает:', 20, (doc as any).lastAutoTable.finalY + 15);
     
     const includedItems = [
       'Оптимизация всех мета-тегов',
@@ -420,7 +373,7 @@ export const generateAuditPdf = async (options: GenerateAuditPdfOptions): Promis
       'Оптимизация контента для SEO'
     ];
     
-    let yPos = includesY + 10;
+    let yPos = (doc as any).lastAutoTable.finalY + 20;
     includedItems.forEach(item => {
       doc.setFontSize(12);
       doc.text(`• ${item}`, 30, yPos);
@@ -428,17 +381,13 @@ export const generateAuditPdf = async (options: GenerateAuditPdfOptions): Promis
     });
   }
   
-  // Добавляем информацию о сгенерированном отчете
   doc.setFontSize(8);
   const lastPage = doc.getNumberOfPages();
   doc.setPage(lastPage);
   
-  // Добавляем время генерации и другую информацию в футер
   addTimestamp(doc, 20, 285);
   
-  // Add pagination footers
   addPaginationFooters(doc);
   
-  // Преобразуем документ в Blob и возвращаем
   return doc.output('blob');
 };

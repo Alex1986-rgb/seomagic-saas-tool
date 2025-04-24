@@ -48,7 +48,7 @@ export const generateErrorReportPdf = async (options: ErrorReportOptions): Promi
   });
   
   // Add header
-  doc.setFillColor(pdfColors.danger[0], pdfColors.danger[1], pdfColors.danger[2]); // Changed from error to danger
+  doc.setFillColor(pdfColors.danger[0], pdfColors.danger[1], pdfColors.danger[2]);
   doc.rect(0, 0, 210, 30, 'F');
   
   doc.setFontSize(24);

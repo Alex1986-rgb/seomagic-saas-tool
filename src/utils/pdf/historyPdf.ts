@@ -1,7 +1,7 @@
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { AuditHistoryItem } from '@/types/audit';
-import { pdfColors, pdfFonts } from './styles';
+import { pdfColors } from './styles';
 import { formatDateString } from './helpers/formatting';
 import { addPaginationFooters, addTimestamp } from './helpers';
 
@@ -178,10 +178,10 @@ function createErrorTrendsSection(doc: jsPDF, history: AuditHistoryItem[]): void
     opportunities: item.issues?.opportunities || 0
   }));
   
-  // Colors for each issue type
-  const criticalColor = pdfColors.danger; // Changed from error to danger
+  // Colors for each issue type - fix the error/muted references
+  const criticalColor = pdfColors.danger; // Use danger instead of error
   const importantColor = pdfColors.warning;
-  const opportunityColor = pdfColors.gray; // Changed from muted to gray
+  const opportunityColor = pdfColors.gray; // Use gray instead of muted
   
   const errorRows = errorData.map(item => [
     item.date,

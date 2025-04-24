@@ -37,7 +37,7 @@ export function drawGauge(doc: any, score: number, x: number, y: number, radius:
 }
 
 /**
- * Gets color based on score value
+ * Gets color based on score value - fix error reference
  */
 function getScoreColor(score: number): [number, number, number] {
   if (score >= 80) return pdfColors.success;
