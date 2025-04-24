@@ -6,39 +6,46 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
+import { useToast } from '@/hooks/use-toast';
 
 const ClientCabinetEditor: React.FC = () => {
+  const { toast } = useToast();
+  
   const handleSave = (data: any) => {
     console.log('Saving client cabinet data:', data);
+    toast({
+      title: "Изменения сохранены",
+      description: "Настройки кабинета клиента успешно обновлены"
+    });
   };
 
   return (
     <>
       <Helmet>
-        <title>Настройка кабинета клиента | Админ панель</title>
+        <title>Редактирование кабинета клиента | Админ панель</title>
       </Helmet>
       
       <BaseContentEditor
-        title="Настройка кабинета клиента"
-        description="Управление интерфейсом и функциями личного кабинета пользователей"
+        title="Редактирование кабинета клиента"
+        description="Настройка интерфейса и функций личного кабинета пользователя"
         onSave={handleSave}
       >
         <div className="space-y-6">
           <Card className="bg-black/20 border-white/10">
             <CardContent className="p-6">
-              <h3 className="text-lg font-semibold mb-4">Общие настройки</h3>
+              <h3 className="text-lg font-semibold mb-4">Основные настройки</h3>
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium mb-2">Приветственный заголовок</label>
+                  <label className="block text-sm font-medium mb-2">Заголовок панели</label>
                   <Input 
-                    defaultValue="Добро пожаловать в личный кабинет" 
+                    defaultValue="Личный кабинет" 
                     className="bg-black/20 border-white/10"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-2">Описание</label>
+                  <label className="block text-sm font-medium mb-2">Приветственное сообщение</label>
                   <Textarea 
-                    defaultValue="Управляйте проектами, просматривайте отчеты и оптимизируйте сайты" 
+                    defaultValue="Добро пожаловать в ваш личный кабинет! Здесь вы можете управлять вашими проектами и настройками." 
                     className="bg-black/20 border-white/10"
                   />
                 </div>
@@ -48,78 +55,44 @@ const ClientCabinetEditor: React.FC = () => {
 
           <Card className="bg-black/20 border-white/10">
             <CardContent className="p-6">
-              <h3 className="text-lg font-semibold mb-4">Доступные разделы</h3>
+              <h3 className="text-lg font-semibold mb-4">Видимость разделов</h3>
               <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium">Аудиты</p>
-                    <p className="text-xs text-gray-400">Просмотр истории и результатов аудитов</p>
+                {[
+                  { id: 'dashboard', label: 'Дашборд', desc: 'Основная панель управления' },
+                  { id: 'projects', label: 'Проекты', desc: 'Управление проектами пользователя' },
+                  { id: 'audits', label: 'Аудиты', desc: 'История и результаты аудитов' },
+                  { id: 'analytics', label: 'Аналитика', desc: 'Статистика и графики' },
+                  { id: 'billing', label: 'Оплата', desc: 'История платежей и подписки' },
+                  { id: 'support', label: 'Поддержка', desc: 'Связь с технической поддержкой' }
+                ].map(section => (
+                  <div key={section.id} className="flex items-start justify-between py-3 border-b last:border-0 border-white/10">
+                    <div>
+                      <h4 className="font-medium">{section.label}</h4>
+                      <p className="text-sm text-gray-400">{section.desc}</p>
+                    </div>
+                    <Switch defaultChecked={true} />
                   </div>
-                  <Switch defaultChecked />
-                </div>
-                
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium">Мониторинг позиций</p>
-                    <p className="text-xs text-gray-400">Отслеживание позиций сайта в поисковых системах</p>
-                  </div>
-                  <Switch defaultChecked />
-                </div>
-                
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium">Отчеты</p>
-                    <p className="text-xs text-gray-400">История и статистика роста позиций</p>
-                  </div>
-                  <Switch defaultChecked />
-                </div>
-                
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium">Подписки</p>
-                    <p className="text-xs text-gray-400">Управление тарифным планом</p>
-                  </div>
-                  <Switch defaultChecked />
-                </div>
-                
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium">Настройки профиля</p>
-                    <p className="text-xs text-gray-400">Изменение личных данных и настроек безопасности</p>
-                  </div>
-                  <Switch defaultChecked />
-                </div>
+                ))}
               </div>
             </CardContent>
           </Card>
 
           <Card className="bg-black/20 border-white/10">
             <CardContent className="p-6">
-              <h3 className="text-lg font-semibold mb-4">Настройки оповещений</h3>
+              <h3 className="text-lg font-semibold mb-4">Дополнительные функции</h3>
               <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium">Оповещения о завершении аудита</p>
-                    <p className="text-xs text-gray-400">Уведомления при завершении сканирования сайта</p>
+                {[
+                  { id: 'notifications', label: 'Email-уведомления', default: true },
+                  { id: 'reports', label: 'Еженедельные отчеты', default: false },
+                  { id: 'alerts', label: 'Оповещения о важных событиях', default: true },
+                  { id: 'recommendations', label: 'Персональные рекомендации', default: true },
+                  { id: 'feedback', label: 'Сбор обратной связи', default: false }
+                ].map(feature => (
+                  <div key={feature.id} className="flex items-center justify-between">
+                    <label className="text-sm">{feature.label}</label>
+                    <Switch defaultChecked={feature.default} />
                   </div>
-                  <Switch defaultChecked />
-                </div>
-                
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium">Изменение позиций</p>
-                    <p className="text-xs text-gray-400">Уведомления об изменении позиций сайта</p>
-                  </div>
-                  <Switch defaultChecked />
-                </div>
-                
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium">Статус подписки</p>
-                    <p className="text-xs text-gray-400">Уведомления о скором истечении срока подписки</p>
-                  </div>
-                  <Switch defaultChecked />
-                </div>
+                ))}
               </div>
             </CardContent>
           </Card>
