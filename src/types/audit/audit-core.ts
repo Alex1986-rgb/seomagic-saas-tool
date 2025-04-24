@@ -6,15 +6,15 @@ export interface AuditData {
   url: string;
   title?: string;
   score: number;
-  previousScore?: number;
+  previousScore?: number; // Added this to match usage in components
   pageCount?: number;
   crawledPages?: number;
   date: string;
   status: 'completed' | 'in-progress' | 'failed';
   issues: {
-    critical: string[];
-    important: string[];
-    opportunities: string[];
+    critical: string[]; // Changed to string[] from number
+    important: string[]; // Changed to string[] from number
+    opportunities: string[]; // Added opportunities property
     minor?: number;
     passed?: number;
   };
@@ -36,7 +36,7 @@ export interface AuditHistoryItem {
   score: number;
   pageCount?: number;
   url: string;
-  details?: {
+  details?: { // Added details property to match usage
     seo: { score: number; };
     performance: { score: number; };
     content: { score: number; };
@@ -44,7 +44,7 @@ export interface AuditHistoryItem {
     mobile?: { score: number; };
     usability?: { score: number; };
   };
-  issues?: {
+  issues?: { // Added issues property to match usage
     critical: number;
     important: number;
     opportunities?: number;

@@ -4,6 +4,7 @@ export interface AuditData {
   url: string;
   date: string;
   score: number;
+  previousScore?: number;
   issues: IssuesData;
   details: AuditDetailsData;
   pageCount?: number;
@@ -29,7 +30,7 @@ export interface CategoryData {
   items: AuditItemData[];
   name?: string;
   description?: string;
-  id?: string; // Add id property to match AuditCategoryData
+  id?: string;
 }
 
 export interface AuditItemData {
@@ -49,10 +50,11 @@ export interface AuditItemData {
 }
 
 export interface IssuesData {
-  critical: number;
-  important: number;
+  critical: string[];
+  important: string[];
   minor: number;
   passed: number;
+  opportunities: string[];
 }
 
 export interface AuditHistoryItem {
@@ -62,4 +64,39 @@ export interface AuditHistoryItem {
   score: number;
   changes?: number;
   categoryScores?: Record<string, number>;
+  details?: {
+    seo: { score: number; };
+    performance: { score: number; };
+    content: { score: number; };
+    technical: { score: number; };
+    mobile?: { score: number; };
+    usability?: { score: number; };
+  };
+  issues?: {
+    critical: number;
+    important: number;
+    opportunities?: number;
+  };
+}
+
+export interface AuditHistoryData {
+  url: string;
+  items: AuditHistoryItem[];
+}
+
+export interface RecommendationData {
+  url: string;
+  title: string;
+  description: string;
+  priority: string;
+  category: string;
+  affectedAreas: string[];
+  estimatedEffort: string;
+  potentialImpact: string;
+  status: string;
+  details: string;
+  resources: string[];
+  critical: string[];
+  important: string[];
+  opportunities: string[];
 }

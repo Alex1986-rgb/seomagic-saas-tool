@@ -56,9 +56,21 @@ export const fetchAuditData = async (url?: string): Promise<AuditData> => {
   // Simulate an API call
   return new Promise((resolve) => {
     setTimeout(() => {
+      // First generate the data
       const data = generateAuditData(url || "example.com");
-      // Use type assertion to handle the conversion
-      resolve(data as unknown as AuditData);
+      // Convert to the expected type using type assertion
+      const auditData = {
+        ...data,
+        // Ensure the issues property has the right structure
+        issues: {
+          critical: data.issues.critical,
+          important: data.issues.important,
+          opportunities: data.issues.opportunities,
+          minor: data.issues.minor,
+          passed: data.issues.passed
+        }
+      };
+      resolve(auditData as AuditData);
     }, 1000);
   });
 };

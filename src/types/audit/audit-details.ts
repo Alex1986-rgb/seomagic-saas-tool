@@ -11,9 +11,9 @@ export interface AuditDetailsData {
 }
 
 export interface IssuesData {
-  critical: string[];
-  important: string[];
+  critical: string[]; // Changed from number to string[]
+  important: string[]; // Changed from number to string[]
   minor: number;
   passed: number;
-  opportunities: string[];
+  opportunities: string[]; // Added opportunities property
 }
