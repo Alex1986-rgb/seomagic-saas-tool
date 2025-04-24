@@ -1,60 +1,57 @@
 import { faker } from '@faker-js/faker';
-import { AuditData, AuditItemData, CategoryData } from '@/types/audit';
+import { AuditData, AuditItemData, CategoryData, IssuesData } from '@/types/audit';
 
 /**
  * Generate random audit data for a URL
  */
 export const generateAuditData = (url: string): AuditData => {
-  // Generate a random score between 0 and 100
-  const score = faker.number.int({ min: 0, max: 100 });
-  const previousScore = faker.number.int({ min: Math.max(0, score - 20), max: Math.min(100, score + 20) });
+  const id = faker.string.uuid();
+  const date = new Date().toISOString();
+  const score = faker.number.int({ min: 40, max: 95 });
+  const previousScore = score - faker.number.int({ min: -15, max: 15 });
+  const pageCount = faker.number.int({ min: 5, max: 100 });
   
-  // Generate random counts for different issue types
-  const criticalCount = faker.number.int({ min: 0, max: 5 });
-  const importantCount = faker.number.int({ min: 0, max: 10 });
-  const opportunitiesCount = faker.number.int({ min: 0, max: 15 });
+  const seoItems = generateCategoryData('SEO', faker.number.int({ min: 10, max: 20 }));
+  const contentItems = generateCategoryData('Content', faker.number.int({ min: 8, max: 18 }));
+  const performanceItems = generateCategoryData('Performance', faker.number.int({ min: 12, max: 25 }));
+  const technicalItems = generateCategoryData('Technical', faker.number.int({ min: 15, max: 30 }));
+  const mobileItems = generateCategoryData('Mobile', faker.number.int({ min: 7, max: 15 }));
+  const usabilityItems = generateCategoryData('Usability', faker.number.int({ min: 9, max: 22 }));
   
-  // Generate random page count
-  const pageCount = faker.number.int({ min: 10, max: 100 });
+  const criticalIssues = generateIssueList('critical', faker.number.int({ min: 2, max: 6 }));
+  const importantIssues = generateIssueList('important', faker.number.int({ min: 3, max: 8 }));
+  const opportunitiesIssues = generateIssueList('opportunity', faker.number.int({ min: 4, max: 10 }));
   
-  // Generate category scores
-  const seoScore = faker.number.int({ min: 0, max: 100 });
-  const performanceScore = faker.number.int({ min: 0, max: 100 });
-  const contentScore = faker.number.int({ min: 0, max: 100 });
-  const technicalScore = faker.number.int({ min: 0, max: 100 });
-  const mobileScore = faker.number.int({ min: 0, max: 100 });
-  const usabilityScore = faker.number.int({ min: 0, max: 100 });
-  
-  // Generate audit data
   return {
-    id: faker.string.uuid(),
-    url: url.startsWith('http') ? url : `https://${url}`,
-    title: `SEO Audit for ${url}`,
+    id,
+    url,
     score,
     previousScore,
+    date,
+    status: 'completed',
     pageCount,
-    date: new Date().toISOString(),
     issues: {
-      critical: generateIssues('critical', criticalCount),
-      important: generateIssues('important', importantCount),
-      opportunities: generateIssues('opportunities', opportunitiesCount)
+      critical: criticalIssues,
+      important: importantIssues,
+      opportunities: opportunitiesIssues,
+      minor: faker.number.int({ min: 5, max: 15 }),
+      passed: faker.number.int({ min: 20, max: 50 })
     },
     details: {
-      seo: generateAuditCategoryData('SEO', seoScore),
-      performance: generateAuditCategoryData('Performance', performanceScore),
-      content: generateAuditCategoryData('Content', contentScore),
-      technical: generateAuditCategoryData('Technical', technicalScore),
-      mobile: generateAuditCategoryData('Mobile', mobileScore),
-      usability: generateAuditCategoryData('Usability', usabilityScore)
-    },
-    status: 'completed'
+      seo: seoItems,
+      content: contentItems,
+      performance: performanceItems,
+      technical: technicalItems,
+      mobile: mobileItems,
+      usability: usabilityItems
+    }
   };
 };
 
 /**
  * Generate random issues
  */
-const generateIssues = (type: string, count: number): string[] => {
+const generateIssueList = (type: string, count: number): string[] => {
   const issues: string[] = [];
   
   for (let i = 0; i < count; i++) {
@@ -98,7 +95,7 @@ const generateIssues = (type: string, count: number): string[] => {
 /**
  * Generate category data for audit details
  */
-const generateAuditCategoryData = (category: string, score: number): CategoryData => {
+const generateCategoryData = (category: string, score: number): CategoryData => {
   const previousScore = faker.number.int({ min: Math.max(0, score - 20), max: Math.min(100, score + 20) });
   const itemsCount = faker.number.int({ min: 5, max: 10 });
   

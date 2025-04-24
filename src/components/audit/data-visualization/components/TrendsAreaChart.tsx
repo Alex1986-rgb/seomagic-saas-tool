@@ -1,18 +1,17 @@
-
 import React from 'react';
 import { 
   AreaChart, Area, CartesianGrid, 
   Tooltip, XAxis, YAxis, Legend, 
   ResponsiveContainer 
 } from 'recharts';
-import { AuditCategoryData } from '@/types/audit';
+import { CategoryData } from '@/types/audit';
 
 interface TrendsAreaChartProps {
   auditData: {
-    seo: AuditCategoryData;
-    performance: AuditCategoryData;
-    content: AuditCategoryData;
-    technical: AuditCategoryData;
+    seo: CategoryData;
+    performance: CategoryData;
+    content: CategoryData;
+    technical: CategoryData;
   };
 }
 

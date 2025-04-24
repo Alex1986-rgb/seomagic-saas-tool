@@ -15,6 +15,8 @@ export interface CrawlOptions {
   followRobotsTxt?: boolean;
   userAgent?: string;
   delay?: number;
+  maxDepth?: number;
+  checkPerformance?: boolean;
 }
 
 export interface OptimizationOptions {
