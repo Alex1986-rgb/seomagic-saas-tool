@@ -1,5 +1,5 @@
 
-import { CrawlOptions, OptimizationOptions } from '@/types/audit';
+import { CrawlOptions, OptimizationOptions } from '@/types/audit/crawl-options';
 import { openaiService } from './openaiService';
 
 class SeoOptimizationController {
