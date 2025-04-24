@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Route, Routes } from 'react-router-dom';
 import AdminLayout from '@/layouts/AdminLayout';
@@ -28,6 +29,7 @@ import BackupSettingsPage from '@/pages/admin/system/BackupSettingsPage';
 import ApiKeysPage from '@/pages/admin/system/ApiKeysPage';
 import EmailSettingsPage from '@/pages/admin/system/EmailSettingsPage';
 import LogSettingsPage from '@/pages/admin/system/LogSettingsPage';
+import SystemSettingsPage from '@/pages/admin/system/SystemSettingsPage';
 
 // New content management pages
 import HomePageEditor from '@/pages/admin/content/HomePageEditor';
@@ -56,6 +58,7 @@ const AdminRoutes: React.FC = () => {
         <Route path="positions" element={<AdminPositionsPage />} />
 
         {/* System Settings subroutes */}
+        <Route path="system" element={<SystemSettingsPage />} />
         <Route path="system/database" element={<DatabaseSettingsPage />} />
         <Route path="system/security" element={<SecuritySettingsPage />} />
         <Route path="system/backup" element={<BackupSettingsPage />} />

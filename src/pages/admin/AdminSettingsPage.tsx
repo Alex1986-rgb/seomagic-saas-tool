@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Helmet } from 'react-helmet-async';
 import AdminSettings from '@/components/admin/AdminSettings';
@@ -69,9 +68,9 @@ const navSettings = [
 const hotSettings = [
   { to: "/admin/system/security", label: "Параметры безопасности" },
   { to: "/admin/system/backup", label: "Резервное копирование" },
-  { to: "/admin/system/api", label: "API ключи и доступ" },
+  { to: "/admin/system/api-keys", label: "API ключи и доступ" },
   { to: "/admin/system/email", label: "Настройки почты" },
-  { to: "/admin/system/logging", label: "Логирование событий" },
+  { to: "/admin/system/logs", label: "Логирование событий" },
 ];
 
 const managedPages = [
