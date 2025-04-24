@@ -65,9 +65,9 @@ function App() {
   
   return (
     <HelmetProvider>
-      <AppErrorBoundary>
-        <Router>
-          <AuthProvider>
+      <Router>
+        <AuthProvider>
+          <AppErrorBoundary>
             <Suspense fallback={<LoadingSpinner />}>
               <Routes>
                 <Route path="/" element={<HomePage />} />
@@ -103,9 +103,9 @@ function App() {
               </Routes>
               <Toaster />
             </Suspense>
-          </AuthProvider>
-        </Router>
-      </AppErrorBoundary>
+          </AppErrorBoundary>
+        </AuthProvider>
+      </Router>
     </HelmetProvider>
   );
 }
