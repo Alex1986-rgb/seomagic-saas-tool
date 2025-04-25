@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import { Search, Download } from 'lucide-react';
@@ -6,6 +7,8 @@ import { CardContent } from "@/components/ui/card";
 import ScannerHeader from './components/ScannerHeader';
 import ScannerTabs from './components/ScannerTabs';
 import ScanForm from '@/components/admin/website-analyzer/ScanForm';
+import { generateAuditData } from '@/services/audit/generators';
+import { downloadAuditPdfReport, downloadErrorReport } from '@/services/audit/scanner';
 
 const WebsiteScanner = () => {
   const [url, setUrl] = useState('');
