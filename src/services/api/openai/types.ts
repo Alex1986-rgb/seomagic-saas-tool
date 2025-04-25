@@ -12,3 +12,18 @@ export interface OptimizationOptions {
   maxTokens?: number;   // Keeping camelCase version for TypeScript compatibility
   contentQuality?: 'standard' | 'premium' | 'ultimate';
 }
+
+export interface OptimizationResult {
+  title: string;
+  metaTags: {
+    description: string | null;
+    keywords: string | null;
+  };
+  headings: {
+    h1: string[];
+    h2: string[];
+    h3: string[];
+  };
+  optimizedHtml: string | null;
+  suggestions: string[];
+}

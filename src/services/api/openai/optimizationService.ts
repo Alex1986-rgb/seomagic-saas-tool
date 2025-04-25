@@ -1,4 +1,3 @@
-
 import { PageData } from '../crawlerService';
 import { OptimizationOptions, OptimizationResult } from './types';
 import { openAIApiClient } from './apiClient';
@@ -101,4 +100,3 @@ class OptimizationService {
 }
 
 export const optimizationService = new OptimizationService();
-
