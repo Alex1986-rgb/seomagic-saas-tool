@@ -23,14 +23,32 @@ export class ProxyCollector {
         if (onProgress) onProgress(sourceName, 0);
         
         const response = await axios.get(sourceConfig.url, {
-          timeout: 10000,
+          timeout: 15000, // Increased timeout
           headers: {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
-          }
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.110 Safari/537.36',
+            'Accept': 'text/html,application/xhtml+xml,application/xml,application/json;q=0.9,image/webp,*/*;q=0.8',
+            'Accept-Language': 'en-US,en;q=0.5',
+            'Connection': 'keep-alive',
+            'Upgrade-Insecure-Requests': '1',
+            'Cache-Control': 'max-age=0'
+          },
+          // Add retry mechanism
+          validateStatus: status => (status >= 200 && status < 300) || status === 404
         });
         
-        const parsedProxies = sourceConfig.parseFunction(response.data);
-        console.log(`Найдено ${parsedProxies.length} прокси в источнике ${sourceName}`);
+        let parsedProxies: Proxy[] = [];
+        
+        // Check if we got a response
+        if (response.status >= 200 && response.status < 300 && response.data) {
+          try {
+            parsedProxies = sourceConfig.parseFunction(response.data);
+            console.log(`Найдено ${parsedProxies.length} прокси в источнике ${sourceName}`);
+          } catch (parseError) {
+            console.error(`Ошибка при парсинге прокси из ${sourceName}:`, parseError);
+            parsedProxies = this.fallbackParse(response.data, sourceName);
+            console.log(`Применен запасной парсер, найдено ${parsedProxies.length} прокси в источнике ${sourceName}`);
+          }
+        }
         
         newProxies.push(...parsedProxies);
         
@@ -39,9 +57,62 @@ export class ProxyCollector {
         console.error(`Ошибка при сборе прокси из ${sourceName}:`, error);
         if (onProgress) onProgress(sourceName, -1); // Ошибка
       }
+      
+      // Add delay between requests to avoid rate limiting
+      await new Promise(resolve => setTimeout(resolve, 1000));
     }
     
     return newProxies;
+  }
+
+  // Fallback parser when the main parser fails
+  private fallbackParse(data: any, sourceName: string): Proxy[] {
+    const proxies: Proxy[] = [];
+    try {
+      // Universal regex for IP:PORT format
+      const content = typeof data === 'string' ? data : JSON.stringify(data);
+      const ipPortRegex = /(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}):(\d{1,5})/g;
+      let match;
+      
+      while ((match = ipPortRegex.exec(content)) !== null) {
+        const ip = match[1];
+        const port = parseInt(match[2], 10);
+        
+        if (this.isValidIpPort(ip, port)) {
+          proxies.push({
+            id: `${ip}:${port}`,
+            ip,
+            port,
+            protocol: 'http',
+            status: 'testing',
+            lastChecked: new Date(),
+            source: sourceName
+          });
+        }
+      }
+    } catch (e) {
+      console.error('Fallback parser error:', e);
+    }
+    
+    return proxies;
+  }
+  
+  // Validate IP and port
+  private isValidIpPort(ip: string, port: number): boolean {
+    // Validate IP format
+    const ipPattern = /^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/;
+    const ipMatch = ip.match(ipPattern);
+    
+    if (!ipMatch) return false;
+    
+    // Check each octet is between 0-255
+    for (let i = 1; i <= 4; i++) {
+      const octet = parseInt(ipMatch[i], 10);
+      if (isNaN(octet) || octet < 0 || octet > 255) return false;
+    }
+    
+    // Check port is valid
+    return !isNaN(port) && port > 0 && port <= 65535;
   }
 
   importProxySourcesFromPython(sources: string[]): number {

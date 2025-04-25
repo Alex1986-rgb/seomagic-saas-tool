@@ -13,6 +13,12 @@ import { proxyManager } from '@/services/proxy/proxyManager';
 import type { ProxySources } from '@/services/proxy/types';
 import { pythonProxySources, createProxySources, loadCustomProxySources, saveCustomProxySources } from '@/services/proxy/proxySourceManager';
 
+interface SourceConfig {
+  url: string;
+  enabled: boolean;
+  parseFunction: (data: string) => any[];
+}
+
 const ProxySourcesManager: React.FC = () => {
   const [sources, setSources] = useState<ProxySources>({});
   const [newSourceUrl, setNewSourceUrl] = useState('');
@@ -227,11 +233,7 @@ const ProxySourcesManager: React.FC = () => {
                     </TableHeader>
                     <TableBody>
                       {Object.entries(sources).map(([name, source]) => {
-                        const typedSource = source as {
-                          url: string;
-                          enabled: boolean;
-                          parseFunction: (data: string) => any[];
-                        };
+                        const typedSource = source as SourceConfig;
                         
                         return (
                           <TableRow key={name}>

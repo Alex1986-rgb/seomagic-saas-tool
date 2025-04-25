@@ -1,3 +1,4 @@
+
 import { Proxy } from './types';
 import { ProxyStorage } from './proxyStorage';
 import type { PingResult } from './types';
@@ -59,38 +60,33 @@ export class PingService {
     concurrency: number
   ): Promise<T[]> {
     const results: T[] = [];
-    let activePromises: Array<Promise<void> & { completed?: boolean }> = [];
+    let activePromises: Array<{ promise: Promise<void>, completed: boolean }> = [];
     
     for (const promise of promises) {
       if (activePromises.filter(p => !p.completed).length >= concurrency) {
         // Ждем завершения любого из активных промисов
-        await Promise.race(activePromises);
-        // Фильтруем завершенные промисы
-        activePromises = activePromises.filter(p => !p.completed);
+        await Promise.race(activePromises.filter(p => !p.completed).map(p => p.promise));
       }
       
-      const promiseWithTracking = (async () => {
-        try {
-          const result = await promise;
-          results.push(result);
-        } catch (error) {
-          console.error('Error executing promise:', error);
-        }
-      })();
+      const promiseInfo = {
+        promise: (async () => {
+          try {
+            const result = await promise;
+            results.push(result);
+          } catch (error) {
+            console.error('Error executing promise:', error);
+          } finally {
+            promiseInfo.completed = true;
+          }
+        })(),
+        completed: false
+      };
       
-      // Добавляем свойство для отслеживания статуса
-      const trackedPromise = promiseWithTracking as Promise<void> & { completed?: boolean };
-      trackedPromise.completed = false;
-      
-      trackedPromise.then(() => {
-        trackedPromise.completed = true;
-      });
-      
-      activePromises.push(trackedPromise);
+      activePromises.push(promiseInfo);
     }
     
     // Ждем завершения всех оставшихся промисов
-    await Promise.all(activePromises);
+    await Promise.all(activePromises.map(p => p.promise));
     
     return results;
   }
