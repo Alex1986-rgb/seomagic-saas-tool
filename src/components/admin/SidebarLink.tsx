@@ -1,13 +1,13 @@
 
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { LucideIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface SidebarLinkProps {
   to: string;
-  icon: LucideIcon;
+  icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
   children: React.ReactNode;
+  active?: boolean;
   badge?: React.ReactNode;
   className?: string;
   onClick?: () => void;
@@ -17,6 +17,7 @@ const SidebarLink: React.FC<SidebarLinkProps> = ({
   to,
   icon: Icon,
   children,
+  active,
   badge,
   className,
   onClick,
@@ -27,7 +28,7 @@ const SidebarLink: React.FC<SidebarLinkProps> = ({
       className={({ isActive }) =>
         cn(
           "flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-all hover:bg-accent",
-          isActive ? "bg-accent text-accent-foreground" : "text-muted-foreground hover:text-foreground",
+          (isActive || active) ? "bg-accent text-accent-foreground" : "text-muted-foreground hover:text-foreground",
           className
         )
       }

@@ -9,6 +9,9 @@ import SidebarGroup from './SidebarGroup';
 import SidebarLink from './SidebarLink';
 import { ScrollArea } from "../ui/scroll-area";
 
+// Define icon component type
+type IconType = React.ComponentType<React.SVGProps<SVGSVGElement>>;
+
 const AdminSidebar: React.FC = () => {
   const location = useLocation();
   const currentPath = location.pathname;
@@ -28,7 +31,7 @@ const AdminSidebar: React.FC = () => {
         <nav className="space-y-2 px-2">
           <SidebarLink 
             to="/admin" 
-            icon={<LayoutDashboard size={18} />} 
+            icon={LayoutDashboard} 
             active={currentPath === '/admin'}
           >
             Дашборд
@@ -37,28 +40,28 @@ const AdminSidebar: React.FC = () => {
           <SidebarGroup title="Анализ">
             <SidebarLink 
               to="/admin/website-analyzer" 
-              icon={<Globe size={18} />} 
+              icon={Globe} 
               active={currentPath.includes('/admin/website-analyzer')}
             >
               Анализатор сайтов
             </SidebarLink>
             <SidebarLink 
               to="/admin/positions" 
-              icon={<Search size={18} />} 
+              icon={Search} 
               active={currentPath.includes('/admin/positions')}
             >
               Позиции
             </SidebarLink>
             <SidebarLink 
               to="/admin/audits" 
-              icon={<File size={18} />} 
+              icon={File} 
               active={currentPath.includes('/admin/audits')}
             >
               Аудиты
             </SidebarLink>
             <SidebarLink 
               to="/admin/proxies" 
-              icon={<Webhook size={18} />} 
+              icon={Webhook} 
               active={currentPath.includes('/admin/proxies')}
             >
               Управление прокси
@@ -68,28 +71,28 @@ const AdminSidebar: React.FC = () => {
           <SidebarGroup title="Управление">
             <SidebarLink 
               to="/admin/sites" 
-              icon={<Globe size={18} />} 
+              icon={Globe} 
               active={currentPath.includes('/admin/sites')}
             >
               Сайты
             </SidebarLink>
             <SidebarLink 
               to="/admin/hosting" 
-              icon={<Server size={18} />} 
+              icon={Server} 
               active={currentPath.includes('/admin/hosting')}
             >
               Хостинг
             </SidebarLink>
             <SidebarLink 
               to="/admin/users" 
-              icon={<Users size={18} />} 
+              icon={Users} 
               active={currentPath.includes('/admin/users')}
             >
               Пользователи
             </SidebarLink>
             <SidebarLink 
               to="/admin/payments" 
-              icon={<CreditCard size={18} />} 
+              icon={CreditCard} 
               active={currentPath.includes('/admin/payments')}
             >
               Платежи
@@ -99,28 +102,28 @@ const AdminSidebar: React.FC = () => {
           <SidebarGroup title="Мониторинг">
             <SidebarLink 
               to="/admin/analytics" 
-              icon={<BarChart size={18} />} 
+              icon={BarChart} 
               active={currentPath.includes('/admin/analytics')}
             >
               Аналитика
             </SidebarLink>
             <SidebarLink 
               to="/admin/monitoring" 
-              icon={<Activity size={18} />} 
+              icon={Activity} 
               active={currentPath.includes('/admin/monitoring')}
             >
               Мониторинг
             </SidebarLink>
             <SidebarLink 
               to="/admin/system-status" 
-              icon={<MonitorCheck size={18} />} 
+              icon={MonitorCheck} 
               active={currentPath.includes('/admin/system-status')}
             >
               Статус системы
             </SidebarLink>
             <SidebarLink 
               to="/admin/notifications" 
-              icon={<Bell size={18} />} 
+              icon={Bell} 
               active={currentPath.includes('/admin/notifications')}
             >
               Уведомления
@@ -130,21 +133,21 @@ const AdminSidebar: React.FC = () => {
           <SidebarGroup title="Настройки">
             <SidebarLink 
               to="/admin/settings" 
-              icon={<Settings size={18} />} 
+              icon={Settings} 
               active={currentPath === '/admin/settings'}
             >
               Настройки
             </SidebarLink>
             <SidebarLink 
               to="/admin/system" 
-              icon={<Database size={18} />} 
+              icon={Database} 
               active={currentPath.includes('/admin/system')}
             >
               Система
             </SidebarLink>
             <SidebarLink 
               to="/admin/system/security" 
-              icon={<Shield size={18} />} 
+              icon={Shield} 
               active={currentPath.includes('/admin/system/security')}
             >
               Безопасность

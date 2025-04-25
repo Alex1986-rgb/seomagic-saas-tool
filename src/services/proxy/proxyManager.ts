@@ -1,4 +1,3 @@
-
 import axios from 'axios';
 
 // Типы для прокси
@@ -52,7 +51,7 @@ export const defaultProxySources: ProxySources = {
                 ip,
                 port,
                 protocol,
-                anonymity: anonymity as any,
+                anonymity: anonymity as 'transparent' | 'anonymous' | 'elite',
                 status: 'testing',
                 lastChecked: new Date()
               });
@@ -325,7 +324,7 @@ export class ProxyManager {
         if (trimmedLine.includes('://')) {
           // Формат protocol://ip:port
           const parts = trimmedLine.split('://');
-          protocol = parts[0] as any;
+          protocol = parts[0] as 'http' | 'https' | 'socks4' | 'socks5';
           const ipPort = parts[1].split(':');
           ip = ipPort[0];
           port = parseInt(ipPort[1], 10);
@@ -450,6 +449,10 @@ export class ProxyManager {
       console.error('Ошибка при решении капчи:', error);
       throw new Error(`Ошибка при решении капчи: ${error.message}`);
     }
+  }
+
+  get defaultProxySources(): ProxySources {
+    return defaultProxySources;
   }
 }
 

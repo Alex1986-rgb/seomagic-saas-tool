@@ -100,8 +100,12 @@ export const PositionTrackerForm: React.FC<PositionTrackerFormProps> = ({
 
     try {
       const results = await checkPositions({
-        ...data,
+        domain: data.domain, // Ensure domain is explicitly passed
         keywords,
+        searchEngine: data.searchEngine,
+        region: data.region,
+        depth: data.depth,
+        scanFrequency: data.scanFrequency,
         useProxy: useProxies && activeProxies.length > 0
       });
       

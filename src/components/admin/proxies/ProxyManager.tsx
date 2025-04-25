@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -35,14 +34,12 @@ const ProxyManager: React.FC = () => {
   const { toast } = useToast();
   const isMobile = useMobile();
 
-  // Загрузка прокси при монтировании
   useEffect(() => {
     loadProxies();
     setCaptchaApiKey(proxyManager.getCaptchaApiKey());
     setBotableApiKey(proxyManager.getBotableApiKey());
   }, []);
 
-  // Применение фильтров при изменении списка прокси или фильтров
   useEffect(() => {
     applyFilters();
   }, [proxies, filterStatus, searchTerm]);
@@ -55,12 +52,10 @@ const ProxyManager: React.FC = () => {
   const applyFilters = () => {
     let filtered = [...proxies];
     
-    // Фильтрация по статусу
     if (filterStatus !== 'all') {
       filtered = filtered.filter(proxy => proxy.status === filterStatus);
     }
     
-    // Фильтрация по поисковому запросу
     if (searchTerm) {
       const term = searchTerm.toLowerCase();
       filtered = filtered.filter(proxy => 
@@ -92,7 +87,7 @@ const ProxyManager: React.FC = () => {
           completedSources++;
           setProgress(Math.round((completedSources / sourcesCount) * 100));
         } else {
-          setStatusMessage(`Ошибка при сборе прокси из ${source}`);
+          setStatusMessage(`Ошибка при сбор прокси из ${source}`);
         }
       });
       
@@ -145,7 +140,6 @@ const ProxyManager: React.FC = () => {
         description: `Проверено ${proxyList.length} прокси`,
       });
       
-      // Обновляем список после проверки
       loadProxies();
     } catch (error) {
       console.error("Ошибка при проверке прокси:", error);
@@ -211,13 +205,11 @@ const ProxyManager: React.FC = () => {
     }
     
     try {
-      // Форматирование прокси для экспорта (только активные)
       const activeProxies = proxyList.filter(proxy => proxy.status === 'active');
       const exportText = activeProxies
         .map(proxy => `${proxy.protocol}://${proxy.ip}:${proxy.port}`)
         .join('\n');
       
-      // Создание файла для скачивания
       const blob = new Blob([exportText], { type: 'text/plain' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -315,7 +307,6 @@ const ProxyManager: React.FC = () => {
         setProgress(Math.round((checkedCount / urls.length) * 100));
         setStatusMessage(`Проверено ${checkedCount}/${urls.length} URL`);
         
-        // Добавляем результат в список результатов
         setTestResults(prev => [...prev, { url, status, proxy }]);
       });
       
@@ -607,7 +598,7 @@ const ProxyManager: React.FC = () => {
                           <TableRow>
                             <TableHead>URL</TableHead>
                             <TableHead>Статус</TableHead>
-                            {useProxiesForTesting && <TableHead>Прокси</TableHead>}
+                            {useProxiesForTesting && <TableHead>Прокс��</TableHead>}
                           </TableRow>
                         </TableHeader>
                         <TableBody>
