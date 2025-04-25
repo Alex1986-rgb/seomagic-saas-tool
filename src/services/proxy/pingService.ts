@@ -63,6 +63,7 @@ export class PingService {
     let activePromises: Array<{ promise: Promise<void>, completed: boolean }> = [];
     
     for (const promise of promises) {
+      // Дожидаемся, когда количество активных промисов будет меньше concurrency
       if (activePromises.filter(p => !p.completed).length >= concurrency) {
         // Ждем завершения любого из активных промисов
         await Promise.race(activePromises.filter(p => !p.completed).map(p => p.promise));

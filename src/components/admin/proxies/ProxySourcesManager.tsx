@@ -10,7 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Plus, Trash2, Link, RefreshCw, Globe, Database } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { proxyManager } from '@/services/proxy/proxyManager';
-import type { ProxySources } from '@/services/proxy/types';
+import { ProxySources } from '@/services/proxy/types';
 import { pythonProxySources, createProxySources, loadCustomProxySources, saveCustomProxySources } from '@/services/proxy/proxySourceManager';
 
 interface SourceConfig {

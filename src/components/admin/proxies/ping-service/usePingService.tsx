@@ -1,8 +1,7 @@
-
 import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { proxyManager } from '@/services/proxy/proxyManager';
-import { PingResult } from './PingResults';
+import type { PingResult } from '@/services/proxy/types';
 
 export function usePingService() {
   const [pingResults, setPingResults] = useState<PingResult[]>([]);

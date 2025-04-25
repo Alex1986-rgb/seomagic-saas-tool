@@ -1,3 +1,5 @@
+
+// Исправляем только импорт Proxy
 import React, { useState, useEffect } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -10,7 +12,8 @@ import { Switch } from "@/components/ui/switch";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Download, Upload, Plus, Trash2, RefreshCw, CheckCircle, XCircle, Clock, Search, Globe, Filter, Send, Database } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { Proxy, proxyManager } from '@/services/proxy/proxyManager';
+import { proxyManager } from '@/services/proxy/proxyManager';
+import type { Proxy } from '@/services/proxy/types';
 import { Progress } from "@/components/ui/progress";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useMobile } from '@/hooks/use-mobile';
