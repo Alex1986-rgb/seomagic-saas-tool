@@ -1,4 +1,3 @@
-
 import { PageData } from './crawlerService';
 import { OptimizationOptions, OptimizationResult } from './openai/types';
 import { openAIApiClient } from './openai/apiClient';
@@ -68,7 +67,7 @@ class OpenAIService {
       ...options, 
       model,
       temperature: this.systemSettings.temperature,
-      maxTokens: this.systemSettings.max_tokens,
+      max_tokens: this.systemSettings.max_tokens,
     });
   }
   
