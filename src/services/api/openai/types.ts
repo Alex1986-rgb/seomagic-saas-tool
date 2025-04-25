@@ -8,7 +8,7 @@ export interface OptimizationOptions {
   language?: string;
   model?: string;
   temperature?: number;
-  maxTokens?: number;
+  maxTokens?: number;  // Added this line
   contentQuality?: 'standard' | 'premium' | 'ultimate';
 }
 
