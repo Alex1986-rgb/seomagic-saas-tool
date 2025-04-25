@@ -70,6 +70,23 @@ export function useProxyManager({ initialTestUrl = 'https://api.ipify.org/' }: U
     return activeProxiesList[Math.floor(Math.random() * activeProxiesList.length)];
   }, []);
 
+  // Add captcha API methods that were missing
+  const getCaptchaApiKey = useCallback(() => {
+    return proxyManager.getCaptchaApiKey();
+  }, []);
+
+  const setBotableApiKey = useCallback((apiKey: string) => {
+    proxyManager.setBotableApiKey(apiKey);
+  }, []);
+
+  const setCaptchaApiKey = useCallback((apiKey: string) => {
+    proxyManager.setCaptchaApiKey(apiKey);
+  }, []);
+
+  const getBotableApiKey = useCallback(() => {
+    return proxyManager.getBotableApiKey();
+  }, []);
+
   return {
     // State
     proxies,
@@ -89,6 +106,12 @@ export function useProxyManager({ initialTestUrl = 'https://api.ipify.org/' }: U
     importProxies,
     getRandomActiveProxy,
     testUrls,
+    
+    // Captcha API methods that were missing before
+    getCaptchaApiKey,
+    setBotableApiKey,
+    setCaptchaApiKey,
+    getBotableApiKey,
     
     // Direct access to manager
     proxyManager

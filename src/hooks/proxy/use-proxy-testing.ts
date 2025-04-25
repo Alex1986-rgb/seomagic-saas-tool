@@ -10,8 +10,11 @@ export function useProxyTesting() {
   const [statusMessage, setStatusMessage] = useState('');
   const { toast } = useToast();
 
-  const testProxies = useCallback(async (proxyList: Proxy[], testUrl: string) => {
-    if (proxyList.length === 0) {
+  const testProxies = useCallback(async (proxyList?: Proxy[], testUrl: string = 'https://api.ipify.org/') => {
+    // If no proxyList is provided, get all proxies from the manager
+    const proxiesToTest = proxyList || proxyManager.getAllProxies();
+    
+    if (proxiesToTest.length === 0) {
       toast({
         title: "Нет прокси для проверки",
         description: "Сначала соберите или импортируйте прокси",
@@ -27,15 +30,15 @@ export function useProxyTesting() {
       
       let checkedCount = 0;
       
-      const testedProxies = await proxyManager.checkProxies(proxyList, testUrl, (proxy) => {
+      const testedProxies = await proxyManager.checkProxies(proxiesToTest, testUrl, (proxy) => {
         checkedCount++;
-        setProgress(Math.round((checkedCount / proxyList.length) * 100));
-        setStatusMessage(`Проверено ${checkedCount}/${proxyList.length} прокси`);
+        setProgress(Math.round((checkedCount / proxiesToTest.length) * 100));
+        setStatusMessage(`Проверено ${checkedCount}/${proxiesToTest.length} прокси`);
       });
       
       toast({
         title: "Проверка прокси завершена",
-        description: `Проверено ${proxyList.length} прокси`,
+        description: `Проверено ${proxiesToTest.length} прокси`,
       });
       
       return testedProxies.filter(p => p.status === 'active').length;

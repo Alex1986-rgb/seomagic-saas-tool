@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -24,13 +23,15 @@ export const PositionTrackerSettings: React.FC<PositionTrackerSettingsProps> = (
     getCaptchaApiKey,
     setBotableApiKey,
     setCaptchaApiKey,
-    getBotableApiKey
+    getBotableApiKey,
+    proxyManager
   } = useProxyManager();
   
   const [captchaApiKey, setCaptchaKey] = useState('');
   const [botableApiKey, setBotableKey] = useState('');
   const [useProxy, setUseProxy] = useState(true);
   const [checkInterval, setCheckInterval] = useState(60);
+  const [testUrl, setTestUrl] = useState('https://api.ipify.org/');
   const { toast } = useToast();
 
   useEffect(() => {
@@ -91,7 +92,8 @@ export const PositionTrackerSettings: React.FC<PositionTrackerSettingsProps> = (
   };
 
   const handleTestProxies = async () => {
-    await testProxies();
+    // Fix: pass the required arguments - activeProxies list and test URL
+    await testProxies(proxyManager.getAllProxies(), testUrl);
   };
 
   return (
