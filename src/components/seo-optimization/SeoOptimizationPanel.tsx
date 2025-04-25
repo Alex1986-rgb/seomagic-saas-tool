@@ -121,7 +121,7 @@ const SeoOptimizationPanel: React.FC = () => {
           optimizeContent: advancedOptions.optimizeContent,
           optimizeImages: advancedOptions.optimizeImages,
           temperature: aiSettings.temperature,
-          maxTokens: aiSettings.max_tokens, // <- Make sure this property name matches the interface
+          maxTokens: aiSettings.max_tokens,
           contentQuality: aiSettings.content_quality,
           language: 'ru',
           model: openaiService.getModel() || 'gpt-4o'
