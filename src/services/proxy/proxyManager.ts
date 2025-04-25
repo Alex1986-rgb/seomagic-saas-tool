@@ -26,7 +26,16 @@ export class ProxyManager {
   }
 
   // Сбор прокси из всех активных источников
-  async collectProxies(onProgress?: (source: string, count: number) => void): Promise<Proxy[]> {
+  async collectProxies(
+    onProgress?: (source: string, count: number) => void,
+    clearBeforeCollect: boolean = false
+  ): Promise<Proxy[]> {
+    // Очищаем список перед сбором, если требуется
+    if (clearBeforeCollect) {
+      console.log('Очистка всех прокси перед новым сбором');
+      this.proxyStorage.clearAllProxies();
+    }
+    
     const newProxies = await this.proxyCollector.collectProxies(onProgress);
     
     // Обновляем существующие или добавляем новые прокси

@@ -9,9 +9,10 @@ export function useProxyCollection() {
   const [progress, setProgress] = useState(0);
   const [statusMessage, setStatusMessage] = useState('');
   const [collectedProxies, setCollectedProxies] = useState<number>(0);
+  const [clearBeforeCollect, setClearBeforeCollect] = useState(true); // По умолчанию очищаем список
   const { toast } = useToast();
 
-  const collectProxies = useCallback(async () => {
+  const collectProxies = useCallback(async (shouldClear: boolean = clearBeforeCollect) => {
     try {
       setIsCollecting(true);
       setProgress(0);
@@ -36,6 +37,7 @@ export function useProxyCollection() {
       let completedSources = 0;
       let totalCollected = 0;
       
+      // Вызываем collectProxies с новым параметром clearBeforeCollect
       const newProxies = await proxyManager.collectProxies((source, count) => {
         if (count >= 0) {
           totalCollected += count;
@@ -46,11 +48,11 @@ export function useProxyCollection() {
         } else {
           setStatusMessage(`Ошибка при сборе прокси из ${source}`);
         }
-      });
+      }, shouldClear); // Передаем параметр очистки
       
       toast({
         title: "Сбор прокси завершен",
-        description: `Найдено ${newProxies.length} новых прокси`,
+        description: `Найдено ${newProxies.length} ${shouldClear ? 'новых' : 'дополнительных'} прокси`,
       });
       
       return newProxies.length;
@@ -66,13 +68,15 @@ export function useProxyCollection() {
       setIsCollecting(false);
       setStatusMessage('');
     }
-  }, [toast]);
+  }, [toast, clearBeforeCollect]);
 
   return {
     isCollecting,
     progress,
     statusMessage,
     collectedProxies,
+    clearBeforeCollect,
+    setClearBeforeCollect,
     collectProxies
   };
 }

@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -6,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Settings, RefreshCw, Shield } from 'lucide-react';
+import { Settings, RefreshCw, Shield, TrashIcon } from 'lucide-react';
 import { useProxyManager } from '@/hooks/use-proxy-manager';
 import { useToast } from '@/hooks/use-toast';
 
@@ -32,6 +33,7 @@ export const PositionTrackerSettings: React.FC<PositionTrackerSettingsProps> = (
   const [useProxy, setUseProxy] = useState(true);
   const [checkInterval, setCheckInterval] = useState(60);
   const [testUrl, setTestUrl] = useState('https://api.ipify.org/');
+  const [clearBeforeCollect, setClearBeforeCollect] = useState(true);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -42,6 +44,7 @@ export const PositionTrackerSettings: React.FC<PositionTrackerSettingsProps> = (
         const settings = JSON.parse(savedSettings);
         setUseProxy(settings.useProxy !== undefined ? settings.useProxy : true);
         setCheckInterval(settings.checkInterval || 60);
+        setClearBeforeCollect(settings.clearBeforeCollect !== undefined ? settings.clearBeforeCollect : true);
       } catch (error) {
         console.error('Ошибка загрузки настроек:', error);
       }
@@ -56,7 +59,8 @@ export const PositionTrackerSettings: React.FC<PositionTrackerSettingsProps> = (
     try {
       const settings = {
         useProxy,
-        checkInterval
+        checkInterval,
+        clearBeforeCollect
       };
       
       localStorage.setItem('position_tracker_settings', JSON.stringify(settings));
@@ -88,12 +92,27 @@ export const PositionTrackerSettings: React.FC<PositionTrackerSettingsProps> = (
   };
 
   const handleCollectProxies = async () => {
-    await collectProxies();
+    await collectProxies(clearBeforeCollect);
   };
 
   const handleTestProxies = async () => {
-    // Fix: pass the required arguments - activeProxies list and test URL
     await testProxies(proxyManager.getAllProxies(), testUrl);
+  };
+
+  const handleClearProxies = async () => {
+    try {
+      proxyManager.clearAllProxies();
+      toast({
+        title: "Список прокси очищен",
+        description: "Все прокси успешно удалены",
+      });
+    } catch (error) {
+      toast({
+        title: "Ошибка очистки прокси",
+        description: error instanceof Error ? error.message : "Неизвестная ошибка",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
@@ -152,7 +171,22 @@ export const PositionTrackerSettings: React.FC<PositionTrackerSettingsProps> = (
                   {activeProxies.length}
                 </Badge>
               </div>
-              <div className="flex gap-2">
+              
+              <div className="flex flex-col space-y-1.5 pt-2 mb-4">
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="clear-before-collect">Очищать список перед сбором</Label>
+                  <Switch 
+                    id="clear-before-collect" 
+                    checked={clearBeforeCollect}
+                    onCheckedChange={setClearBeforeCollect}
+                  />
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Если включено, старые прокси будут удалены перед сбором новых
+                </p>
+              </div>
+              
+              <div className="flex flex-wrap gap-2">
                 <Button
                   variant="outline"
                   onClick={handleCollectProxies}
@@ -171,7 +205,30 @@ export const PositionTrackerSettings: React.FC<PositionTrackerSettingsProps> = (
                   <Shield className="h-4 w-4 mr-2" />
                   Проверить прокси
                 </Button>
+                <Button
+                  variant="outline"
+                  onClick={handleClearProxies}
+                  disabled={isLoading}
+                  className="w-full mt-2"
+                >
+                  <TrashIcon className="h-4 w-4 mr-2" />
+                  Очистить все прокси
+                </Button>
               </div>
+              
+              <div>
+                <Label>URL для тестирования прокси</Label>
+                <Input 
+                  value={testUrl}
+                  onChange={(e) => setTestUrl(e.target.value)}
+                  placeholder="https://api.ipify.org/"
+                  className="mt-1"
+                />
+                <p className="text-xs text-muted-foreground mt-1">
+                  URL для проверки работоспособности прокси
+                </p>
+              </div>
+              
               <p className="text-xs text-muted-foreground">
                 {isLoading 
                   ? "Выполняется операция с прокси..." 
