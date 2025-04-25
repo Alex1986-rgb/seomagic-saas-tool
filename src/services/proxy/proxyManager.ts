@@ -1,26 +1,28 @@
 
-import { Proxy, PingResult, ProxySources } from './types';
+import type { Proxy, PingResult, ProxySources } from './types';
 import { ProxyCollector } from './proxyCollector';
 import { ProxyValidator } from './proxyValidator';
 import { ProxyStorage } from './proxyStorage';
-import { CaptchaService } from './captchaService';
-import { PingService } from './pingService';
+import { PingManager } from './pingManager';
+import { CaptchaManager } from './captchaManager';
 import { defaultProxySources } from './proxySourcesConfig';
 
-// Класс для управления прокси
+/**
+ * Класс для управления прокси
+ */
 export class ProxyManager {
   private proxyCollector: ProxyCollector;
   private proxyValidator: ProxyValidator;
   private proxyStorage: ProxyStorage;
-  private captchaService: CaptchaService;
-  private pingService: PingService;
+  private captchaManager: CaptchaManager;
+  private pingManager: PingManager;
 
   constructor(captchaApiKey?: string, botableApiKey?: string) {
     this.proxyStorage = new ProxyStorage();
     this.proxyCollector = new ProxyCollector();
     this.proxyValidator = new ProxyValidator();
-    this.captchaService = new CaptchaService(captchaApiKey, botableApiKey);
-    this.pingService = new PingService(this.proxyStorage);
+    this.captchaManager = new CaptchaManager(captchaApiKey, botableApiKey);
+    this.pingManager = new PingManager(this.proxyStorage);
   }
 
   // Сбор прокси из всех активных источников
@@ -94,30 +96,30 @@ export class ProxyManager {
     return results;
   }
 
-  // Методы для работы с капчей
+  // Методы для работы с капчей - делегируем CaptchaManager
   setCaptchaApiKey(apiKey: string): void {
-    this.captchaService.setCaptchaApiKey(apiKey);
+    this.captchaManager.setCaptchaApiKey(apiKey);
   }
   
   setBotableApiKey(apiKey: string): void {
-    this.captchaService.setBotableApiKey(apiKey);
+    this.captchaManager.setBotableApiKey(apiKey);
   }
   
   getCaptchaApiKey(): string {
-    return this.captchaService.getCaptchaApiKey();
+    return this.captchaManager.getCaptchaApiKey();
   }
   
   getBotableApiKey(): string {
-    return this.captchaService.getBotableApiKey();
+    return this.captchaManager.getBotableApiKey();
   }
   
-  // Реализация решения капчи через API
+  // Решение капчи через API - делегируем CaptchaManager
   async solveCaptcha(
     imageOrSiteKey: string, 
     type: 'image' | 'recaptcha' | 'hcaptcha' = 'image', 
     websiteUrl?: string
   ): Promise<string> {
-    return this.captchaService.solveCaptcha(imageOrSiteKey, type, websiteUrl);
+    return this.captchaManager.solveCaptcha(imageOrSiteKey, type, websiteUrl);
   }
 
   get defaultProxySources() {
@@ -129,7 +131,7 @@ export class ProxyManager {
     return this.proxyCollector.importProxySourcesFromPython(sources);
   }
   
-  // Метод для пинга URL-ов через XML-RPC
+  // Метод для пинга URL-ов через XML-RPC - делегируем PingManager
   async pingUrlsWithRpc(
     urls: string[], 
     siteTitle: string, 
@@ -138,7 +140,7 @@ export class ProxyManager {
     batchSize: number = 10,
     concurrency: number = 5
   ): Promise<PingResult[]> {
-    return this.pingService.pingUrlsWithRpc(
+    return this.pingManager.pingUrlsWithRpc(
       urls, 
       siteTitle, 
       feedUrl, 
