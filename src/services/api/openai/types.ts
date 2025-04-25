@@ -1,4 +1,3 @@
-
 export interface OptimizationOptions {
   optimizeMetaTags?: boolean;
   optimizeHeadings?: boolean;
@@ -8,7 +7,7 @@ export interface OptimizationOptions {
   language?: string;
   model?: string;
   temperature?: number;
-  maxTokens?: number;  // This is the property causing issues
+  max_tokens?: number;  // Changed from maxTokens to max_tokens to match the API
   contentQuality?: 'standard' | 'premium' | 'ultimate';
 }
 
