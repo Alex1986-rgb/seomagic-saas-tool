@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import { seoOptimizationController } from "@/services/api/seoOptimizationController";
@@ -114,7 +113,7 @@ export const useSeoOptimization = () => {
           optimizeContent: advancedOptions.optimizeContent,
           optimizeImages: advancedOptions.optimizeImages,
           temperature: aiSettings.temperature,
-          max_tokens: aiSettings.max_tokens,  // Changed to max_tokens to match interface
+          maxTokens: aiSettings.max_tokens,
           contentQuality: aiSettings.content_quality,
           language: 'ru',
           model: openaiService.getModel() || 'gpt-4o'
