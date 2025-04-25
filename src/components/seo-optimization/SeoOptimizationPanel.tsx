@@ -11,8 +11,7 @@ import { openaiService } from "@/services/api/openaiService";
 import { CheckCircle2, ExternalLink, Globe, Key, Loader2, RefreshCw, Search } from "lucide-react";
 import OptimizationProgress from "./OptimizationProgress";
 import DeploymentPanel from "./DeploymentPanel";
-import Alert from "@/components/ui/alert";
-import AlertDescription from "@/components/ui/alert-description";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 const SeoOptimizationPanel: React.FC = () => {
   const { toast } = useToast();
