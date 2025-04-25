@@ -1,25 +1,21 @@
 
 export interface CrawlOptions {
-  maxPages: number;
-  maxDepth: number;
-  followExternalLinks?: boolean;
+  maxPages?: number;
+  includeExternalLinks?: boolean;
+  followRobotsTxt?: boolean;
   userAgent?: string;
   delay?: number;
-  checkImages?: boolean;
+  maxDepth?: number;
   checkPerformance?: boolean;
 }
 
 export interface OptimizationOptions {
-  optimizeMetaTags: boolean;
-  optimizeHeadings: boolean;
-  optimizeContent: boolean;
-  optimizeImages?: boolean;
-  temperature?: number;
-  language?: string;
-  model?: string;
   fixMetaTags?: boolean;
   improveContent?: boolean;
+  optimizeImages?: boolean;
   fixLinks?: boolean;
   improveStructure?: boolean;
   optimizeSpeed?: boolean;
+  maxTokens?: number;
+  max_tokens?: number; // Adding snake_case version for API compatibility
 }
