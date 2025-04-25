@@ -1,3 +1,4 @@
+
 export interface OptimizationItem {
   name: string;
   description: string;
@@ -25,4 +26,5 @@ export interface OptimizationOptions {
   fixLinks?: boolean;
   improveStructure?: boolean;
   optimizeSpeed?: boolean;
+  maxTokens?: number; // Adding this property to match what's used in the code
 }

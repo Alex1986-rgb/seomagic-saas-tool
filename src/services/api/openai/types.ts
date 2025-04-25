@@ -1,3 +1,4 @@
+
 export interface OptimizationOptions {
   optimizeMetaTags?: boolean;
   optimizeHeadings?: boolean;
@@ -7,7 +8,8 @@ export interface OptimizationOptions {
   language?: string;
   model?: string;
   temperature?: number;
-  max_tokens?: number;  // Changed from maxTokens to max_tokens to match the API
+  max_tokens?: number;  // This is the correct name as per previous fixes
+  maxTokens?: number;   // Adding this as an alias to maintain compatibility
   contentQuality?: 'standard' | 'premium' | 'ultimate';
 }
 

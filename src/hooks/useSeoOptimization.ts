@@ -114,7 +114,7 @@ export const useSeoOptimization = () => {
           optimizeContent: advancedOptions.optimizeContent,
           optimizeImages: advancedOptions.optimizeImages,
           temperature: aiSettings.temperature,
-          max_tokens: aiSettings.max_tokens,
+          max_tokens: aiSettings.max_tokens,  // Changed to max_tokens to match interface
           contentQuality: aiSettings.content_quality,
           language: 'ru',
           model: openaiService.getModel() || 'gpt-4o'
