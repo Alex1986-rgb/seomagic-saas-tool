@@ -37,15 +37,21 @@ export function useUrlTesting() {
     
     try {
       let checkedCount = 0;
-      const results = await proxyManager.testUrls(urls, useProxies, (url, status, proxy) => {
+      
+      // Предварительно обрабатываем URL
+      const cleanUrls = urls.map(url => url.trim()).filter(url => url);
+      console.log("Тестируемые URL:", cleanUrls);
+      
+      const results = await proxyManager.testUrls(cleanUrls, useProxies, (url, status, proxy) => {
         checkedCount++;
-        setProgress(Math.round((checkedCount / urls.length) * 100));
-        setStatusMessage(`Проверено ${checkedCount}/${urls.length} URL`);
+        setProgress(Math.round((checkedCount / cleanUrls.length) * 100));
+        setStatusMessage(`Проверено ${checkedCount}/${cleanUrls.length} URL`);
+        console.log(`Результат проверки URL ${url}: статус ${status}, прокси ${proxy || 'не использовался'}`);
       });
       
       toast({
         title: "Проверка URL завершена",
-        description: `Проверено ${urls.length} URL`,
+        description: `Проверено ${cleanUrls.length} URL`,
       });
       
       return results;

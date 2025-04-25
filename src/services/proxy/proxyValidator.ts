@@ -89,14 +89,34 @@ export class ProxyValidator {
           proxy = activeProxies[Math.floor(Math.random() * activeProxies.length)];
         }
         
+        // Корректно обрабатываем кириллические URL
+        let encodedUrl = url;
+        try {
+          // Проверяем, что URL уже не закодирован
+          if (url.includes('http') && !url.includes('%')) {
+            // Разбиваем URL на части и кодируем только путь и параметры, сохраняя домен
+            const urlObj = new URL(url);
+            urlObj.pathname = encodeURIComponent(urlObj.pathname.replace(/^\//, '')).replace(/%2F/g, '/');
+            encodedUrl = urlObj.toString();
+          }
+        } catch (e) {
+          console.log('Ошибка при кодировании URL:', e);
+          encodedUrl = url; // Используем оригинальный URL если что-то пошло не так
+        }
+        
         const config: any = {
           method: 'get',
-          url,
-          timeout: 15000,
+          url: encodedUrl,
+          timeout: 30000, // Увеличиваем тайм-аут до 30 секунд
           validateStatus: (status: number) => true, // Принимаем любой статус
           headers: {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
-          }
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+            'Accept-Language': 'ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7',
+            'Referer': 'https://www.google.com/'
+          },
+          maxRedirects: 5,
+          decompress: true
         };
         
         if (useProxies && proxy) {
@@ -107,6 +127,7 @@ export class ProxyValidator {
           };
         }
         
+        console.log(`Тестирование URL: ${encodedUrl} через прокси: ${proxy ? `${proxy.ip}:${proxy.port}` : 'без прокси'}`);
         const response = await axios(config);
         
         if (onProgress) onProgress(url, response.status, proxy ? `${proxy.ip}:${proxy.port}` : undefined);
@@ -129,8 +150,8 @@ export class ProxyValidator {
         });
       }
       
-      // Небольшая задержка между запросами
-      await new Promise(resolve => setTimeout(resolve, 500));
+      // Увеличиваем задержку между запросами
+      await new Promise(resolve => setTimeout(resolve, 1000));
     }
     
     return results;
