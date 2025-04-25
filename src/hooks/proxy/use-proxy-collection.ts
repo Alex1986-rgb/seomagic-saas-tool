@@ -31,13 +31,14 @@ export function useProxyCollection() {
           description: "Необходимо активировать источники во вкладке 'Источники'",
           variant: "destructive",
         });
+        setIsCollecting(false);
         return 0;
       }
       
       let completedSources = 0;
       let totalCollected = 0;
       
-      // Вызываем collectProxies с новым параметром clearBeforeCollect
+      // Вызываем collectProxies с параметром shouldClear
       const newProxies = await proxyManager.collectProxies((source, count) => {
         if (count >= 0) {
           totalCollected += count;
@@ -48,7 +49,7 @@ export function useProxyCollection() {
         } else {
           setStatusMessage(`Ошибка при сборе прокси из ${source}`);
         }
-      }, shouldClear); // Передаем параметр очистки
+      }, shouldClear);
       
       toast({
         title: "Сбор прокси завершен",

@@ -1,6 +1,5 @@
 
 import axios from 'axios';
-import puppeteer from 'puppeteer';
 import { Proxy, ProxySources } from './types';
 import { defaultProxySources } from './proxySourcesConfig';
 
@@ -13,7 +12,7 @@ export class ProxyCollector {
   
   async collectProxies(
     onProgress?: (source: string, count: number) => void,
-    clearExisting: boolean = false // Новый параметр для очистки списка перед сбором
+    clearExisting: boolean = false
   ): Promise<Proxy[]> {
     const newProxies: Proxy[] = [];
     const enabledSources = Object.entries(this.proxySources).filter(([_, config]) => config.enabled);
@@ -25,78 +24,29 @@ export class ProxyCollector {
     
     console.log(`Начинаем сбор прокси из ${enabledSources.length} источников`);
     
-    // Инициализируем puppeteer для источников, требующих эмуляцию браузера
-    let browser;
-    try {
-      browser = await puppeteer.launch({
-        headless: 'new',
-        args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage']
-      });
-      console.log('Браузер puppeteer успешно запущен');
-    } catch (browserError) {
-      console.error('Не удалось запустить puppeteer:', browserError);
-      console.log('Продолжаем сбор только с помощью axios');
-    }
-    
     for (const [sourceName, sourceConfig] of enabledSources) {
       try {
         console.log(`Сбор прокси из источника: ${sourceName}, URL: ${sourceConfig.url}`);
         if (onProgress) onProgress(sourceName, 0);
         
-        let responseData;
-        const usesBrowserEmulation = sourceConfig.url.includes('hidemy.name') || 
-                                    sourceConfig.url.includes('free-proxy-list') ||
-                                    sourceConfig.url.includes('sslproxies') ||
-                                    sourceConfig.url.includes('proxylist.org');
-        
-        if (browser && usesBrowserEmulation) {
-          // Для сайтов с защитой от ботов используем puppeteer
-          console.log(`Используем эмуляцию браузера для ${sourceName}`);
-          const page = await browser.newPage();
-          
-          // Устанавливаем пользовательский агент
-          await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36');
-          
-          // Устанавливаем заголовки запроса
-          await page.setExtraHTTPHeaders({
-            'Accept-Language': 'ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7',
+        // Используем axios для всех запросов с расширенными настройками для обхода простой защиты
+        const response = await axios.get(sourceConfig.url, {
+          timeout: 60000, // Increased timeout to 60 seconds
+          headers: {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+            'Accept': 'text/html,application/xhtml+xml,application/xml,application/json;q=0.9,image/webp,*/*;q=0.8',
+            'Accept-Language': 'en-US,en;q=0.5',
+            'Accept-Encoding': 'gzip, deflate, br',
+            'Connection': 'keep-alive',
             'Upgrade-Insecure-Requests': '1',
             'Cache-Control': 'no-cache',
             'Pragma': 'no-cache'
-          });
-          
-          // Отключаем JavaScript для некоторых сайтов с тяжелыми скриптами
-          if (sourceName === 'hidemy-name') {
-            await page.setJavaScriptEnabled(false);
-          }
-          
-          await page.goto(sourceConfig.url, { waitUntil: 'networkidle2', timeout: 60000 });
-          
-          // Получаем содержимое страницы
-          responseData = await page.content();
-          await page.close();
-          console.log(`Получена страница из ${sourceName} через puppeteer, размер: ${responseData.length}`);
-          
-        } else {
-          // Для остальных сайтов используем axios
-          const response = await axios.get(sourceConfig.url, {
-            timeout: 60000, // Increased timeout to 60 seconds
-            headers: {
-              'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-              'Accept': 'text/html,application/xhtml+xml,application/xml,application/json;q=0.9,image/webp,*/*;q=0.8',
-              'Accept-Language': 'en-US,en;q=0.5',
-              'Accept-Encoding': 'gzip, deflate, br',
-              'Connection': 'keep-alive',
-              'Upgrade-Insecure-Requests': '1',
-              'Cache-Control': 'no-cache',
-              'Pragma': 'no-cache'
-            },
-            validateStatus: status => (status >= 200 && status < 300) || status === 404,
-            maxRedirects: 5
-          });
-          responseData = response.data;
-        }
+          },
+          validateStatus: status => (status >= 200 && status < 300) || status === 404,
+          maxRedirects: 5
+        });
         
+        let responseData = response.data;
         let parsedProxies: Proxy[] = [];
         
         if (responseData) {
@@ -142,12 +92,6 @@ export class ProxyCollector {
       // Increased delay between requests to avoid rate limits
       console.log(`Добавляем задержку перед следующим запросом: 5000ms`);
       await new Promise(resolve => setTimeout(resolve, 5000));
-    }
-    
-    // Закрываем браузер, если он был открыт
-    if (browser) {
-      await browser.close();
-      console.log('Браузер puppeteer закрыт');
     }
     
     console.log(`Всего собрано ${newProxies.length} прокси из всех источников`);
