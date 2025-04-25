@@ -27,4 +27,5 @@ export interface OptimizationOptions {
   temperature?: number;
   language?: string;
   model?: string;
+  contentQuality?: 'standard' | 'premium' | 'ultimate';
 }
