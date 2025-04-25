@@ -77,11 +77,11 @@ export class ProxyValidator {
     
     for (const url of urls) {
       try {
-        let proxy: Proxy | undefined;
+        let currentProxy: Proxy | undefined;
         
         if (useProxies) {
           // Выбираем случайный прокси из активных
-          proxy = activeProxies[Math.floor(Math.random() * activeProxies.length)];
+          currentProxy = activeProxies[Math.floor(Math.random() * activeProxies.length)];
         }
         
         const config: any = {
@@ -100,37 +100,37 @@ export class ProxyValidator {
           }
         };
 
-        if (useProxies && proxy) {
+        if (useProxies && currentProxy) {
           config.proxy = {
-            host: proxy.ip,
-            port: proxy.port,
-            protocol: proxy.protocol,
-            auth: proxy.username && proxy.password ? {
-              username: proxy.username,
-              password: proxy.password
+            host: currentProxy.ip,
+            port: currentProxy.port,
+            protocol: currentProxy.protocol,
+            auth: currentProxy.username && currentProxy.password ? {
+              username: currentProxy.username,
+              password: currentProxy.password
             } : undefined
           };
         }
 
-        console.log(`Тестирование URL: ${url} через прокси: ${proxy ? `${proxy.ip}:${proxy.port}` : 'без прокси'}`);
+        console.log(`Тестирование URL: ${url} через прокси: ${currentProxy ? `${currentProxy.ip}:${currentProxy.port}` : 'без прокси'}`);
         const response = await axios.get(url, config);
 
         if (onProgress) {
           onProgress(
             url, 
             response.status, 
-            proxy ? `${proxy.ip}:${proxy.port}` : undefined
+            currentProxy ? `${currentProxy.ip}:${currentProxy.port}` : undefined
           );
         }
 
         results.push({
           url,
           status: response.status,
-          proxy: proxy ? `${proxy.ip}:${proxy.port}` : undefined
+          proxy: currentProxy ? `${currentProxy.ip}:${currentProxy.port}` : undefined
         });
       } catch (error) {
         console.error(`Ошибка при проверке URL ${url}:`, error);
-
+        
         const errorDetails = error.code === 'ECONNABORTED' 
           ? 'Превышено время ожидания'
           : error.code === 'ECONNREFUSED'
@@ -143,7 +143,7 @@ export class ProxyValidator {
           onProgress(
             url, 
             error.response?.status || 0,
-            proxy ? `${proxy.ip}:${proxy.port}` : undefined,
+            currentProxy ? `${currentProxy.ip}:${currentProxy.port}` : undefined,
             errorDetails
           );
         }
@@ -153,7 +153,7 @@ export class ProxyValidator {
           status: error.response?.status || 0,
           error: error.message,
           errorDetails: errorDetails,
-          proxy: proxy ? `${proxy.ip}:${proxy.port}` : undefined
+          proxy: currentProxy ? `${currentProxy.ip}:${currentProxy.port}` : undefined
         });
       }
 
