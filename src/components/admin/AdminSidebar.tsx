@@ -1,207 +1,157 @@
 
 import React from 'react';
-import {
-  LayoutDashboard,
-  Monitor,
-  Users,
-  FileText,
-  Search,
-  CreditCard,
-  Settings,
-  Database,
-  Shield,
-  Bell,
-  BarChart,
-  Server,
-  Globe,
-  ChartBar,
-  DatabaseBackup,
-  Key,
-  Mail,
-  FileText as LogsIcon
+import { Link, useLocation } from 'react-router-dom';
+import { 
+  LayoutDashboard, Globe, Bell, MonitorCheck, Settings, Users, BarChart, 
+  Server, Database, File, Search, Activity, CreditCard, Shield, Webhook
 } from 'lucide-react';
-import SidebarLink from './SidebarLink';
 import SidebarGroup from './SidebarGroup';
+import SidebarLink from './SidebarLink';
+import { ScrollArea } from "../ui/scroll-area";
 
 const AdminSidebar: React.FC = () => {
+  const location = useLocation();
+  const currentPath = location.pathname;
+  
   return (
-    <div className="w-64 h-full bg-background border-r flex flex-col overflow-auto">
+    <div className="h-full bg-card border-r flex flex-col">
       <div className="p-4 border-b">
-        <h2 className="text-xl font-bold">Панель администратора</h2>
-        <p className="text-sm text-muted-foreground">Управление SeoMarket</p>
+        <Link to="/" className="flex items-center gap-2">
+          <div className="bg-primary text-white p-1 rounded-sm">
+            <LayoutDashboard size={18} />
+          </div>
+          <span className="font-medium text-lg">SeoMarket</span>
+        </Link>
       </div>
       
-      <div className="p-4 flex-1 space-y-4">
-        <SidebarGroup 
-          title="Основные разделы" 
-          defaultOpen={true}
-          icon={<LayoutDashboard className="h-4 w-4 text-primary/70" />}
-        >
-          <SidebarLink
-            to="/admin"
-            icon={LayoutDashboard}
+      <ScrollArea className="flex-1 py-4">
+        <nav className="space-y-2 px-2">
+          <SidebarLink 
+            to="/admin" 
+            icon={<LayoutDashboard size={18} />} 
+            active={currentPath === '/admin'}
           >
             Дашборд
           </SidebarLink>
-          <SidebarLink
-            to="/admin/monitoring"
-            icon={Monitor}
-          >
-            Мониторинг
-          </SidebarLink>
-          <SidebarLink
-            to="/admin/website-analyzer"
-            icon={Search}
-          >
-            Анализатор веб-сайтов
-          </SidebarLink>
-          <SidebarLink
-            to="/admin/system-status"
-            icon={ChartBar}
-          >
-            Статус системы
-          </SidebarLink>
-          <SidebarLink
-            to="/admin/notifications"
-            icon={Bell}
-          >
-            Уведомления
-          </SidebarLink>
-        </SidebarGroup>
-
-        <SidebarGroup 
-          title="Управление"
-          icon={<Users className="h-4 w-4 text-primary/70" />}
-        >
-          <SidebarLink
-            to="/admin/users"
-            icon={Users}
-          >
-            Пользователи
-          </SidebarLink>
-          <SidebarLink
-            to="/admin/audits"
-            icon={FileText}
-          >
-            Аудиты
-          </SidebarLink>
-          <SidebarLink
-            to="/admin/positions"
-            icon={Search}
-          >
-            Позиции
-          </SidebarLink>
-          <SidebarLink
-            to="/admin/payments"
-            icon={CreditCard}
-          >
-            Платежи
-          </SidebarLink>
-        </SidebarGroup>
-
-        <SidebarGroup 
-          title="Система"
-          icon={<Settings className="h-4 w-4 text-primary/70" />}
-        >
-          <SidebarLink
-            to="/admin/settings"
-            icon={Settings}
-          >
-            Настройки
-          </SidebarLink>
-          <SidebarLink
-            to="/admin/analytics"
-            icon={BarChart}
-          >
-            Аналитика
-          </SidebarLink>
-          <SidebarLink
-            to="/admin/hosting"
-            icon={Server}
-          >
-            Хостинг
-          </SidebarLink>
-          <SidebarLink
-            to="/admin/sites"
-            icon={Globe}
-          >
-            Сайты
-          </SidebarLink>
-        </SidebarGroup>
-
-        <SidebarGroup 
-          title="Системные настройки"
-          icon={<Database className="h-4 w-4 text-primary/70" />}
-        >
-          <SidebarLink
-            to="/admin/system/database"
-            icon={Database}
-          >
-            База данных
-          </SidebarLink>
-          <SidebarLink
-            to="/admin/system/security"
-            icon={Shield}
-          >
-            Безопасность
-          </SidebarLink>
-          <SidebarLink
-            to="/admin/system/backup"
-            icon={DatabaseBackup}
-          >
-            Резервное копирование
-          </SidebarLink>
-          <SidebarLink
-            to="/admin/system/api-keys"
-            icon={Key}
-          >
-            API ключи и доступ
-          </SidebarLink>
-          <SidebarLink
-            to="/admin/system/email"
-            icon={Mail}
-          >
-            Настройки почты
-          </SidebarLink>
-          <SidebarLink
-            to="/admin/system/logs"
-            icon={LogsIcon}
-          >
-            Логирование событий
-          </SidebarLink>
-          <SidebarLink
-            to="/admin/system/users"
-            icon={Users}
-          >
-            Управление пользователями
-          </SidebarLink>
-          <SidebarLink
-            to="/admin/system/notifications"
-            icon={Bell}
-          >
-            Настройки уведомлений
-          </SidebarLink>
-          <SidebarLink
-            to="/admin/system/analytics"
-            icon={BarChart}
-          >
-            Настройки аналитики
-          </SidebarLink>
-          <SidebarLink
-            to="/admin/system/performance"
-            icon={ChartBar}
-          >
-            Настройки производительности
-          </SidebarLink>
-        </SidebarGroup>
-      </div>
-      
-      <div className="p-4 border-t bg-primary/5 mt-auto">
-        <div className="text-xs text-muted-foreground">
-          <p>Версия: 2.8.1</p>
-          <p>SeoMarket © 2025</p>
-        </div>
-      </div>
+          
+          <SidebarGroup title="Анализ">
+            <SidebarLink 
+              to="/admin/website-analyzer" 
+              icon={<Globe size={18} />} 
+              active={currentPath.includes('/admin/website-analyzer')}
+            >
+              Анализатор сайтов
+            </SidebarLink>
+            <SidebarLink 
+              to="/admin/positions" 
+              icon={<Search size={18} />} 
+              active={currentPath.includes('/admin/positions')}
+            >
+              Позиции
+            </SidebarLink>
+            <SidebarLink 
+              to="/admin/audits" 
+              icon={<File size={18} />} 
+              active={currentPath.includes('/admin/audits')}
+            >
+              Аудиты
+            </SidebarLink>
+            <SidebarLink 
+              to="/admin/proxies" 
+              icon={<Webhook size={18} />} 
+              active={currentPath.includes('/admin/proxies')}
+            >
+              Управление прокси
+            </SidebarLink>
+          </SidebarGroup>
+          
+          <SidebarGroup title="Управление">
+            <SidebarLink 
+              to="/admin/sites" 
+              icon={<Globe size={18} />} 
+              active={currentPath.includes('/admin/sites')}
+            >
+              Сайты
+            </SidebarLink>
+            <SidebarLink 
+              to="/admin/hosting" 
+              icon={<Server size={18} />} 
+              active={currentPath.includes('/admin/hosting')}
+            >
+              Хостинг
+            </SidebarLink>
+            <SidebarLink 
+              to="/admin/users" 
+              icon={<Users size={18} />} 
+              active={currentPath.includes('/admin/users')}
+            >
+              Пользователи
+            </SidebarLink>
+            <SidebarLink 
+              to="/admin/payments" 
+              icon={<CreditCard size={18} />} 
+              active={currentPath.includes('/admin/payments')}
+            >
+              Платежи
+            </SidebarLink>
+          </SidebarGroup>
+          
+          <SidebarGroup title="Мониторинг">
+            <SidebarLink 
+              to="/admin/analytics" 
+              icon={<BarChart size={18} />} 
+              active={currentPath.includes('/admin/analytics')}
+            >
+              Аналитика
+            </SidebarLink>
+            <SidebarLink 
+              to="/admin/monitoring" 
+              icon={<Activity size={18} />} 
+              active={currentPath.includes('/admin/monitoring')}
+            >
+              Мониторинг
+            </SidebarLink>
+            <SidebarLink 
+              to="/admin/system-status" 
+              icon={<MonitorCheck size={18} />} 
+              active={currentPath.includes('/admin/system-status')}
+            >
+              Статус системы
+            </SidebarLink>
+            <SidebarLink 
+              to="/admin/notifications" 
+              icon={<Bell size={18} />} 
+              active={currentPath.includes('/admin/notifications')}
+            >
+              Уведомления
+            </SidebarLink>
+          </SidebarGroup>
+          
+          <SidebarGroup title="Настройки">
+            <SidebarLink 
+              to="/admin/settings" 
+              icon={<Settings size={18} />} 
+              active={currentPath === '/admin/settings'}
+            >
+              Настройки
+            </SidebarLink>
+            <SidebarLink 
+              to="/admin/system" 
+              icon={<Database size={18} />} 
+              active={currentPath.includes('/admin/system')}
+            >
+              Система
+            </SidebarLink>
+            <SidebarLink 
+              to="/admin/system/security" 
+              icon={<Shield size={18} />} 
+              active={currentPath.includes('/admin/system/security')}
+            >
+              Безопасность
+            </SidebarLink>
+          </SidebarGroup>
+        </nav>
+      </ScrollArea>
     </div>
   );
 };

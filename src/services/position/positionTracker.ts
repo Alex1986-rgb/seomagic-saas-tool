@@ -1,4 +1,6 @@
+
 import { getHistoricalData } from './positionHistory';
+import { proxyManager } from '../proxy/proxyManager';
 
 // Интерфейсы для типизации
 export interface KeywordPosition {
@@ -18,6 +20,8 @@ export interface PositionData {
   depth: number;
   scanFrequency: string;
   previousResults?: PositionData[];
+  useProxy?: boolean;
+  proxyUsed?: string;
 }
 
 export interface PositionCheckParams {
@@ -32,12 +36,13 @@ export interface PositionCheckParams {
 }
 
 // Моковые данные для демонстрации
-const mockSearchResults = (domain: string, keywords: string[], searchEngine: string, depth: number) => {
+const mockSearchResults = (domain: string, keywords: string[], searchEngine: string, depth: number, useProxy: boolean = false) => {
   // Имитируем проверку позиций в поисковой системе
   const results: KeywordPosition[] = keywords.map(keyword => {
     // Генерируем случайную позицию для демонстрации
-    const randomPosition = Math.random() > 0.2 
-      ? Math.floor(Math.random() * depth) + 1 
+    // При использовании прокси делаем позиции немного лучше (для демонстрации)
+    const randomPosition = Math.random() > (useProxy ? 0.15 : 0.25) 
+      ? Math.floor(Math.random() * (useProxy ? depth * 0.7 : depth)) + 1 
       : 0; // Иногда возвращаем 0, обозначая, что позиция не найдена
     
     // Генерируем URL для найденных позиций
@@ -64,21 +69,34 @@ export const checkPositions = async (data: PositionCheckParams): Promise<Positio
   // Получаем данные из параметров
   const { domain, keywords, searchEngine, region, depth, scanFrequency, useProxy, timestamp } = data;
   
+  // Определяем, будем ли использовать прокси
+  let proxyUsed: string | undefined;
+  if (useProxy) {
+    const activeProxies = proxyManager.getActiveProxies();
+    if (activeProxies.length > 0) {
+      const randomProxy = activeProxies[Math.floor(Math.random() * activeProxies.length)];
+      proxyUsed = `${randomProxy.ip}:${randomProxy.port}`;
+      console.log(`Используем прокси для проверки позиций: ${proxyUsed}`);
+    } else {
+      console.warn('Запрошено использование прокси, но активных прокси не найдено');
+    }
+  }
+  
   let allResults: KeywordPosition[] = [];
   
   // Проверяем позиции в выбранных поисковых системах
   if (searchEngine === 'all' || searchEngine === 'google') {
-    const googleResults = mockSearchResults(domain, keywords, 'google', depth);
+    const googleResults = mockSearchResults(domain, keywords, 'google', depth, !!proxyUsed);
     allResults = [...allResults, ...googleResults];
   }
   
   if (searchEngine === 'all' || searchEngine === 'yandex') {
-    const yandexResults = mockSearchResults(domain, keywords, 'yandex', depth);
+    const yandexResults = mockSearchResults(domain, keywords, 'yandex', depth, !!proxyUsed);
     allResults = [...allResults, ...yandexResults];
   }
   
   if (searchEngine === 'all' || searchEngine === 'mailru') {
-    const mailruResults = mockSearchResults(domain, keywords, 'mailru', depth);
+    const mailruResults = mockSearchResults(domain, keywords, 'mailru', depth, !!proxyUsed);
     allResults = [...allResults, ...mailruResults];
   }
   
@@ -91,7 +109,9 @@ export const checkPositions = async (data: PositionCheckParams): Promise<Positio
     searchEngine,
     region,
     depth,
-    scanFrequency
+    scanFrequency,
+    useProxy: !!proxyUsed,
+    proxyUsed
   };
   
   // Получаем исторические данные для сравнения
