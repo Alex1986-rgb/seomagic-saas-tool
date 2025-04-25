@@ -1,15 +1,13 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
-import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Settings, RefreshCw, Shield, TrashIcon } from 'lucide-react';
+import { Settings } from 'lucide-react';
 import { useProxyManager } from '@/hooks/use-proxy-manager';
 import { useToast } from '@/hooks/use-toast';
+import { GeneralSettingsTab } from './settings/GeneralSettingsTab';
+import { ProxySettingsTab } from './settings/ProxySettingsTab';
+import { ApiSettingsSection } from './settings/ApiSettingsSection';
 
 interface PositionTrackerSettingsProps {
   onClose?: () => void;
@@ -134,138 +132,33 @@ export const PositionTrackerSettings: React.FC<PositionTrackerSettingsProps> = (
           </TabsList>
           
           <TabsContent value="general" className="space-y-4 pt-4">
-            <div className="space-y-2">
-              <Label>Интервал проверки позиций (минуты)</Label>
-              <Input 
-                type="number"
-                value={checkInterval}
-                onChange={(e) => setCheckInterval(Number(e.target.value))}
-                min={5}
-                max={1440}
-              />
-              <p className="text-xs text-muted-foreground">
-                Минимальный интервал между автоматическими проверками позиций
-              </p>
-            </div>
-
-            <div className="flex flex-col space-y-1.5 pt-2">
-              <div className="flex items-center justify-between">
-                <Label htmlFor="use-proxy">Использовать прокси</Label>
-                <Switch 
-                  id="use-proxy" 
-                  checked={useProxy}
-                  onCheckedChange={setUseProxy}
-                />
-              </div>
-              <p className="text-xs text-muted-foreground">
-                Использование прокси помогает избежать блокировок и получать более точные результаты
-              </p>
-            </div>
+            <GeneralSettingsTab
+              checkInterval={checkInterval}
+              setCheckInterval={setCheckInterval}
+              useProxy={useProxy}
+              setUseProxy={setUseProxy}
+            />
           </TabsContent>
           
           <TabsContent value="proxy" className="space-y-4 pt-4">
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <Label>Активные прокси</Label>
-                <Badge variant="outline" className="bg-green-50 text-green-700">
-                  {activeProxies.length}
-                </Badge>
-              </div>
-              
-              <div className="flex flex-col space-y-1.5 pt-2 mb-4">
-                <div className="flex items-center justify-between">
-                  <Label htmlFor="clear-before-collect">Очищать список перед сбором</Label>
-                  <Switch 
-                    id="clear-before-collect" 
-                    checked={clearBeforeCollect}
-                    onCheckedChange={setClearBeforeCollect}
-                  />
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  Если включено, старые прокси будут удалены перед сбором новых
-                </p>
-              </div>
-              
-              <div className="flex flex-wrap gap-2">
-                <Button
-                  variant="outline"
-                  onClick={handleCollectProxies}
-                  disabled={isLoading}
-                  className="flex-1"
-                >
-                  <RefreshCw className="h-4 w-4 mr-2" />
-                  Собрать прокси
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={handleTestProxies}
-                  disabled={isLoading}
-                  className="flex-1"
-                >
-                  <Shield className="h-4 w-4 mr-2" />
-                  Проверить прокси
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={handleClearProxies}
-                  disabled={isLoading}
-                  className="w-full mt-2"
-                >
-                  <TrashIcon className="h-4 w-4 mr-2" />
-                  Очистить все прокси
-                </Button>
-              </div>
-              
-              <div>
-                <Label>URL для тестирования прокси</Label>
-                <Input 
-                  value={testUrl}
-                  onChange={(e) => setTestUrl(e.target.value)}
-                  placeholder="https://api.ipify.org/"
-                  className="mt-1"
-                />
-                <p className="text-xs text-muted-foreground mt-1">
-                  URL для проверки работоспособности прокси
-                </p>
-              </div>
-              
-              <p className="text-xs text-muted-foreground">
-                {isLoading 
-                  ? "Выполняется операция с прокси..." 
-                  : activeProxies.length > 0 
-                    ? `Доступно ${activeProxies.length} прокси для использования`
-                    : "Нет активных прокси. Нажмите 'Собрать прокси' для автоматического сбора"}
-              </p>
-              <p className="text-xs text-muted-foreground mt-2">
-                Для более детальной настройки прокси перейдите в <a href="/admin/proxies" className="text-primary hover:underline">раздел управления прокси</a>
-              </p>
-            </div>
+            <ProxySettingsTab
+              activeProxies={activeProxies.length}
+              isLoading={isLoading}
+              clearBeforeCollect={clearBeforeCollect}
+              setClearBeforeCollect={setClearBeforeCollect}
+              testUrl={testUrl}
+              setTestUrl={setTestUrl}
+              onCollectProxies={handleCollectProxies}
+              onTestProxies={handleTestProxies}
+              onClearProxies={handleClearProxies}
+            />
             
-            <div className="space-y-2 pt-2 border-t">
-              <Label>IP Captcha Guru API ключ</Label>
-              <Input
-                type="password"
-                value={captchaApiKey}
-                onChange={(e) => setCaptchaKey(e.target.value)}
-                placeholder="Введите API ключ для IPCaptchaGuru"
-              />
-              <p className="text-xs text-muted-foreground">
-                Используется для обхода капчи при проверке позиций
-              </p>
-            </div>
-            
-            <div className="space-y-2">
-              <Label>Botable API ключ</Label>
-              <Input
-                type="password"
-                value={botableApiKey}
-                onChange={(e) => setBotableKey(e.target.value)}
-                placeholder="Введите API ключ для Botable"
-              />
-              <p className="text-xs text-muted-foreground">
-                Используется для обхода защиты от ботов
-              </p>
-            </div>
+            <ApiSettingsSection
+              captchaApiKey={captchaApiKey}
+              setCaptchaKey={setCaptchaKey}
+              botableApiKey={botableApiKey}
+              setBotableKey={setBotableKey}
+            />
           </TabsContent>
         </Tabs>
         
