@@ -87,7 +87,7 @@ const PingService: React.FC = () => {
           toast({
             title: "Внимание",
             description: "Нет активных прокси. Рекомендуется сначала собрать и проверить прокси.",
-            variant: "warning",
+            variant: "default", // Changed from "warning" to "default"
           });
         }
       }
