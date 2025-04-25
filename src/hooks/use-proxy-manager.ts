@@ -1,5 +1,7 @@
+
 import { useState, useEffect, useCallback } from 'react';
-import { Proxy, proxyManager } from '@/services/proxy/proxyManager';
+import { proxyManager } from '@/services/proxy/proxyManager';
+import type { Proxy } from '@/services/proxy/types';
 import { useToast } from './use-toast';
 
 interface UseProxyManagerProps {

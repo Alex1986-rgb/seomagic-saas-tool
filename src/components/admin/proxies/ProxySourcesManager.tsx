@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -8,9 +7,10 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Plus, Trash2, Check, X, Globe, Database, Link, RefreshCw } from "lucide-react";
+import { Plus, Trash2, Link, RefreshCw, Globe, Database } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { proxyManager, ProxySources } from '@/services/proxy/proxyManager';
+import { proxyManager } from '@/services/proxy/proxyManager';
+import type { ProxySources } from '@/services/proxy/types';
 import { pythonProxySources, createProxySources, loadCustomProxySources, saveCustomProxySources } from '@/services/proxy/proxySourceManager';
 
 const ProxySourcesManager: React.FC = () => {
@@ -20,16 +20,13 @@ const ProxySourcesManager: React.FC = () => {
   const [isAdding, setIsAdding] = useState(false);
   const { toast } = useToast();
 
-  // Загрузка источников прокси
   useEffect(() => {
-    // Начальная загрузка: встроенные + пользовательские источники
     const defaultSources = proxyManager.defaultProxySources;
     const customSources = loadCustomProxySources();
     
     setSources({...defaultSources, ...customSources});
   }, []);
   
-  // Добавление одного источника
   const handleAddSource = () => {
     if (!newSourceUrl.trim()) {
       toast({
@@ -41,7 +38,6 @@ const ProxySourcesManager: React.FC = () => {
     }
     
     try {
-      // Проверяем валидность URL (или хотя бы формат)
       if (!newSourceUrl.startsWith('http://') && !newSourceUrl.startsWith('https://')) {
         toast({
           title: "Ошибка",
@@ -51,11 +47,9 @@ const ProxySourcesManager: React.FC = () => {
         return;
       }
       
-      // Создаем новый источник
       const newSources = createProxySources([newSourceUrl]);
       const updatedSources = {...sources, ...newSources};
       
-      // Обновляем состояние
       setSources(updatedSources);
       saveCustomProxySources(updatedSources);
       
@@ -75,7 +69,6 @@ const ProxySourcesManager: React.FC = () => {
     }
   };
   
-  // Добавление нескольких источников из текста
   const handleAddSourcesFromText = () => {
     if (!sourcesText.trim()) {
       toast({
@@ -89,7 +82,6 @@ const ProxySourcesManager: React.FC = () => {
     try {
       setIsAdding(true);
       
-      // Разбиваем текст на строки и фильтруем пустые
       const urls = sourcesText
         .split('\n')
         .map(url => url.trim())
@@ -104,11 +96,9 @@ const ProxySourcesManager: React.FC = () => {
         return;
       }
       
-      // Создаем новые источники
       const newSources = createProxySources(urls);
       const updatedSources = {...sources, ...newSources};
       
-      // Обновляем состояние
       setSources(updatedSources);
       saveCustomProxySources(updatedSources);
       
@@ -130,16 +120,13 @@ const ProxySourcesManager: React.FC = () => {
     }
   };
   
-  // Импорт источников из Python-скрипта
   const handleImportFromPython = () => {
     try {
       setIsAdding(true);
       
-      // Создаем источники из Python-массива
       const pythonSources = createProxySources(pythonProxySources);
       const updatedSources = {...sources, ...pythonSources};
       
-      // Обновляем состояние
       setSources(updatedSources);
       saveCustomProxySources(updatedSources);
       
@@ -159,7 +146,6 @@ const ProxySourcesManager: React.FC = () => {
     }
   };
 
-  // Удаление источника
   const handleDeleteSource = (sourceName: string) => {
     try {
       const updatedSources = {...sources};
@@ -182,7 +168,6 @@ const ProxySourcesManager: React.FC = () => {
     }
   };
   
-  // Изменение статуса источника (включен/выключен)
   const handleToggleSource = (sourceName: string, enabled: boolean) => {
     try {
       const updatedSources = {...sources};
@@ -241,35 +226,43 @@ const ProxySourcesManager: React.FC = () => {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {Object.entries(sources).map(([name, source]) => (
-                        <TableRow key={name}>
-                          <TableCell className="font-medium">{name}</TableCell>
-                          <TableCell className="max-w-[300px] truncate">
-                            <a href={source.url} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline flex items-center gap-1">
-                              <Link className="h-3 w-3" />
-                              {source.url}
-                            </a>
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex items-center gap-2">
-                              <Switch
-                                checked={source.enabled}
-                                onCheckedChange={(checked) => handleToggleSource(name, checked)}
-                              />
-                              <span>{source.enabled ? 'Включен' : 'Выключен'}</span>
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            <Button 
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => handleDeleteSource(name)}
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </TableCell>
-                        </TableRow>
-                      ))}
+                      {Object.entries(sources).map(([name, source]) => {
+                        const typedSource = source as {
+                          url: string;
+                          enabled: boolean;
+                          parseFunction: (data: string) => any[];
+                        };
+                        
+                        return (
+                          <TableRow key={name}>
+                            <TableCell className="font-medium">{name}</TableCell>
+                            <TableCell className="max-w-[300px] truncate">
+                              <a href={typedSource.url} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline flex items-center gap-1">
+                                <Link className="h-3 w-3" />
+                                {typedSource.url}
+                              </a>
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex items-center gap-2">
+                                <Switch
+                                  checked={typedSource.enabled}
+                                  onCheckedChange={(checked) => handleToggleSource(name, checked)}
+                                />
+                                <span>{typedSource.enabled ? 'Включен' : 'Выключен'}</span>
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              <Button 
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => handleDeleteSource(name)}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
                     </TableBody>
                   </Table>
                 </div>

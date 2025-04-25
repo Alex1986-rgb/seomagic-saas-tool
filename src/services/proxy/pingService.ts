@@ -1,4 +1,3 @@
-
 import { Proxy } from './types';
 import { ProxyStorage } from './proxyStorage';
 import type { PingResult } from './types';
@@ -60,14 +59,14 @@ export class PingService {
     concurrency: number
   ): Promise<T[]> {
     const results: T[] = [];
-    let activePromises: Promise<void>[] = [];
+    let activePromises: Array<Promise<void> & { completed?: boolean }> = [];
     
     for (const promise of promises) {
-      if (activePromises.length >= concurrency) {
+      if (activePromises.filter(p => !p.completed).length >= concurrency) {
         // Ждем завершения любого из активных промисов
         await Promise.race(activePromises);
         // Фильтруем завершенные промисы
-        activePromises = activePromises.filter(p => p.isPending);
+        activePromises = activePromises.filter(p => !p.completed);
       }
       
       const promiseWithTracking = (async () => {
@@ -80,16 +79,14 @@ export class PingService {
       })();
       
       // Добавляем свойство для отслеживания статуса
-      Object.defineProperty(promiseWithTracking, 'isPending', {
-        value: true,
-        writable: true
+      const trackedPromise = promiseWithTracking as Promise<void> & { completed?: boolean };
+      trackedPromise.completed = false;
+      
+      trackedPromise.then(() => {
+        trackedPromise.completed = true;
       });
       
-      promiseWithTracking.then(() => {
-        (promiseWithTracking as any).isPending = false;
-      });
-      
-      activePromises.push(promiseWithTracking);
+      activePromises.push(trackedPromise);
     }
     
     // Ждем завершения всех оставшихся промисов

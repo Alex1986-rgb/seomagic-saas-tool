@@ -1,5 +1,4 @@
-
-import { ProxySources } from './proxyManager';
+import { ProxySources } from './types';
 
 // Массив URL-источников для сбора прокси из Python-скрипта
 export const pythonProxySources = [

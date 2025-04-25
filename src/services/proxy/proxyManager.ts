@@ -1,5 +1,5 @@
 
-import { Proxy, PingResult } from './types';
+import { Proxy, PingResult, ProxySources } from './types';
 import { ProxyCollector } from './proxyCollector';
 import { ProxyValidator } from './proxyValidator';
 import { ProxyStorage } from './proxyStorage';
@@ -151,3 +151,6 @@ export class ProxyManager {
 
 // Создаем экземпляр для использования в приложении
 export const proxyManager = new ProxyManager();
+
+// Export the types for use in other files
+export type { Proxy, ProxySources, PingResult };
