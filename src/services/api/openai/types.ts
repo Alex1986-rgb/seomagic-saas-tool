@@ -1,19 +1,19 @@
 
-import { PageData } from '../crawlerService';
-
 export interface OptimizationOptions {
-  optimizeMetaTags: boolean;
-  optimizeHeadings: boolean;
-  optimizeContent: boolean;
-  optimizeImages: boolean;
-  language: string;
+  optimizeMetaTags?: boolean;
+  optimizeHeadings?: boolean;
+  optimizeContent?: boolean;
+  optimizeImages?: boolean;
   prompt?: string;
-  temperature?: number;
+  language?: string;
   model?: string;
+  temperature?: number;
+  maxTokens?: number;
+  contentQuality?: 'standard' | 'premium' | 'ultimate';
 }
 
 export interface OptimizationResult {
-  title: string | null;
+  title: string;
   metaTags: {
     description: string | null;
     keywords: string | null;
@@ -25,4 +25,12 @@ export interface OptimizationResult {
   };
   optimizedHtml: string | null;
   suggestions: string[];
+}
+
+export interface AISystemOptions {
+  autoOptimize: boolean;
+  autoFixErrors: boolean;
+  contentQuality: 'standard' | 'premium' | 'ultimate';
+  maxTokens: number;
+  temperature: number;
 }

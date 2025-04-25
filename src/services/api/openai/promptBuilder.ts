@@ -4,8 +4,24 @@ import { OptimizationOptions } from './types';
 export class PromptBuilder {
   static createSystemPrompt(options: OptimizationOptions): string {
     const language = options.language || 'en';
+    const quality = options.contentQuality || 'premium';
     
-    let prompt = `You are an expert SEO content optimizer. Your task is to optimize website content for better search engine rankings while maintaining readability and user engagement.
+    let qualityPrompt = '';
+    switch (quality) {
+      case 'standard':
+        qualityPrompt = 'Provide practical optimization focusing on essential SEO elements.';
+        break;
+      case 'premium':
+        qualityPrompt = 'Provide detailed optimization with a balance of SEO effectiveness and high-quality content.';
+        break;
+      case 'ultimate':
+        qualityPrompt = 'Provide expert-level comprehensive optimization with perfect SEO, excellent readability, and fully detailed information.';
+        break;
+      default:
+        qualityPrompt = 'Provide detailed optimization with a balance of SEO effectiveness and high-quality content.';
+    }
+    
+    let prompt = `You are an expert SEO content optimizer. Your task is to optimize website content for better search engine rankings while maintaining readability and user engagement. ${qualityPrompt}
 
 Please respond in ${language} language.
 
@@ -78,5 +94,39 @@ Please provide your optimization suggestions in the following JSON format:
   ]
 }`;
   }
-}
+  
+  static createHtmlFixPrompt(html: string, errors: string[]): string {
+    return `Please fix the following errors in this HTML:
+${errors.join('\n')}
 
+HTML:
+${html}
+
+Please return only the fixed HTML code.`;
+  }
+  
+  static createContentImprovePrompt(content: string, keywords: string[] = [], quality: string = 'premium'): string {
+    let qualityPrompt = '';
+    
+    switch (quality) {
+      case 'standard':
+        qualityPrompt = 'Make SEO-focused improvements while keeping the content concise.';
+        break;
+      case 'premium':
+        qualityPrompt = 'Make comprehensive improvements with a balance of SEO and user experience, adding details where appropriate.';
+        break;
+      case 'ultimate':
+        qualityPrompt = 'Make expert-level improvements with perfect SEO, excellent readability, and fully detailed information.';
+        break;
+      default:
+        qualityPrompt = 'Make comprehensive improvements with a balance of SEO and user experience.';
+    }
+    
+    return `Please improve this content. ${qualityPrompt} ${keywords.length > 0 ? 'Focus on these keywords: ' + keywords.join(', ') : ''}
+    
+Content:
+${content}
+
+Please return the improved content only.`;
+  }
+}
