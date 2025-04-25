@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -120,7 +121,7 @@ const SeoOptimizationPanel: React.FC = () => {
           optimizeContent: advancedOptions.optimizeContent,
           optimizeImages: advancedOptions.optimizeImages,
           temperature: aiSettings.temperature,
-          maxTokens: aiSettings.max_tokens,
+          maxTokens: aiSettings.max_tokens, // <- Make sure this property name matches the interface
           contentQuality: aiSettings.content_quality,
           language: 'ru',
           model: openaiService.getModel() || 'gpt-4o'
