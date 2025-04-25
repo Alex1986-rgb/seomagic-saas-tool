@@ -8,7 +8,7 @@ export interface OptimizationOptions {
   language?: string;
   model?: string;
   temperature?: number;
-  maxTokens?: number;  // Added this line
+  maxTokens?: number;  // This is the property causing issues
   contentQuality?: 'standard' | 'premium' | 'ultimate';
 }
 

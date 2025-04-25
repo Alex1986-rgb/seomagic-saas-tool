@@ -121,6 +121,7 @@ const SeoOptimizationPanel: React.FC = () => {
           optimizeContent: advancedOptions.optimizeContent,
           optimizeImages: advancedOptions.optimizeImages,
           temperature: aiSettings.temperature,
+          // Change from maxTokens to use the correct property name that matches the interface
           maxTokens: aiSettings.max_tokens,
           contentQuality: aiSettings.content_quality,
           language: 'ru',
