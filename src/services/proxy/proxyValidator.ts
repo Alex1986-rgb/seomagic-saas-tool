@@ -76,9 +76,10 @@ export class ProxyValidator {
     }
     
     for (const url of urls) {
+      // Declare currentProxy outside the try/catch blocks so it's accessible in both
+      let currentProxy: Proxy | undefined;
+      
       try {
-        let currentProxy: Proxy | undefined;
-        
         if (useProxies) {
           // Выбираем случайный прокси из активных
           currentProxy = activeProxies[Math.floor(Math.random() * activeProxies.length)];
