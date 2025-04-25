@@ -1,9 +1,15 @@
+
 import React from 'react';
 import { Helmet } from 'react-helmet-async';
+import { Globe, Monitor, BarChart } from 'lucide-react';
 import WebsiteAnalyzerHeader from '@/components/admin/website-analyzer/WebsiteAnalyzerHeader';
 import SupabaseWarning from '@/components/admin/website-analyzer/SupabaseWarning';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useWebsiteAnalyzer } from '@/hooks/use-website-analyzer';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import ScanForm from '@/components/admin/website-analyzer/ScanForm';
+import WebsiteScanner from '@/components/website-scanner/WebsiteScanner';
+import VideoDemo from '@/components/video/VideoDemo';
 
 const WebsiteAnalyzerPage: React.FC = () => {
   const {
