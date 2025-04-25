@@ -50,8 +50,8 @@ export class ProxyManager {
   async testUrls(
     urls: string[], 
     useProxies: boolean = true, 
-    onProgress?: (url: string, status: number, proxy?: string) => void
-  ): Promise<{url: string, status: number, error?: string, proxy?: string}[]> {
+    onProgress?: (url: string, status: number, proxy?: string, errorDetails?: string) => void
+  ): Promise<{url: string, status: number, error?: string, errorDetails?: string, proxy?: string}[]> {
     const activeProxies = this.proxyStorage.getActiveProxies();
     if (useProxies && activeProxies.length === 0) {
       throw new Error('Нет активных прокси для использования');

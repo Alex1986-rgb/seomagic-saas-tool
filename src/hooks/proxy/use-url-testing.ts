@@ -42,16 +42,31 @@ export function useUrlTesting() {
       const cleanUrls = urls.map(url => url.trim()).filter(url => url);
       console.log("Тестируемые URL:", cleanUrls);
       
-      const results = await proxyManager.testUrls(cleanUrls, useProxies, (url, status, proxy) => {
+      // Добавляем автопротокол для URL без http/https
+      const processedUrls = cleanUrls.map(url => {
+        if (!url.startsWith('http://') && !url.startsWith('https://')) {
+          return `https://${url}`;
+        }
+        return url;
+      });
+      
+      console.log("Обработанные URL для тестирования:", processedUrls);
+      
+      const results = await proxyManager.testUrls(processedUrls, useProxies, (url, status, proxy, errorDetails) => {
         checkedCount++;
-        setProgress(Math.round((checkedCount / cleanUrls.length) * 100));
-        setStatusMessage(`Проверено ${checkedCount}/${cleanUrls.length} URL`);
-        console.log(`Результат проверки URL ${url}: статус ${status}, прокси ${proxy || 'не использовался'}`);
+        setProgress(Math.round((checkedCount / processedUrls.length) * 100));
+        setStatusMessage(`Проверено ${checkedCount}/${processedUrls.length} URL`);
+        
+        const statusInfo = status > 0 
+          ? `статус ${status}` 
+          : `ошибка: ${errorDetails || 'неизвестная ошибка'}`;
+        
+        console.log(`Результат проверки URL ${url}: ${statusInfo}, прокси ${proxy || 'не использовался'}`);
       });
       
       toast({
         title: "Проверка URL завершена",
-        description: `Проверено ${cleanUrls.length} URL`,
+        description: `Проверено ${processedUrls.length} URL`,
       });
       
       return results;

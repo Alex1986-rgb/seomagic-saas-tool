@@ -1,5 +1,3 @@
-
-// Исправляем только импорт Proxy
 import React, { useState, useEffect } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -307,12 +305,17 @@ const ProxyManager: React.FC = () => {
       
       let checkedCount = 0;
       
-      const results = await proxyManager.testUrls(urls, useProxiesForTesting, (url, status, proxy) => {
+      const results = await proxyManager.testUrls(urls, useProxiesForTesting, (url, status, proxy, errorDetails) => {
         checkedCount++;
         setProgress(Math.round((checkedCount / urls.length) * 100));
         setStatusMessage(`Проверено ${checkedCount}/${urls.length} URL`);
         
-        setTestResults(prev => [...prev, { url, status, proxy }]);
+        setTestResults(prev => [...prev, { 
+          url, 
+          status, 
+          proxy,
+          errorDetails 
+        }]);
       });
       
       toast({
@@ -605,7 +608,8 @@ const ProxyManager: React.FC = () => {
                           <TableRow>
                             <TableHead>URL</TableHead>
                             <TableHead>Статус</TableHead>
-                            {useProxiesForTesting && <TableHead>Прокс��</TableHead>}
+                            {useProxiesForTesting && <TableHead>Прокси</TableHead>}
+                            <TableHead>Детали</TableHead>
                           </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -636,6 +640,9 @@ const ProxyManager: React.FC = () => {
                               {useProxiesForTesting && (
                                 <TableCell>{result.proxy || '-'}</TableCell>
                               )}
+                              <TableCell>
+                                {result.status > 0 ? 'Успешно' : result.errorDetails || 'Ошибка соединения'}
+                              </TableCell>
                             </TableRow>
                           ))}
                         </TableBody>
