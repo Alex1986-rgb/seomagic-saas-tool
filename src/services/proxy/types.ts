@@ -1,4 +1,3 @@
-
 // Типы для прокси-сервисов
 export interface Proxy {
   id: string;
@@ -12,6 +11,8 @@ export interface Proxy {
   lastChecked: Date;
   status: 'active' | 'inactive' | 'testing';
   source?: string;
+  username?: string; // Добавляем опциональное поле для имени пользователя
+  password?: string; // Добавляем опциональное поле для пароля
 }
 
 export interface ProxySources {
