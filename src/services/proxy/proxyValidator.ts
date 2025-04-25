@@ -171,17 +171,17 @@ export class ProxyValidator {
   ): Promise<Proxy[]> {
     const results: Proxy[] = [];
     
-    for (const proxy of proxyList) {
+    for (const currentProxy of proxyList) {
       try {
-        const checkedProxy = await this.checkProxy(proxy, testUrl);
+        const checkedProxy = await this.checkProxy(currentProxy, testUrl);
         results.push(checkedProxy);
         
         if (onProgress) onProgress(checkedProxy);
       } catch (error) {
-        console.error(`Ошибка при проверке прокси ${proxy.ip}:${proxy.port}:`, error);
-        proxy.status = 'inactive';
-        if (onProgress) onProgress(proxy);
-        results.push(proxy);
+        console.error(`Ошибка при проверке прокси ${currentProxy.ip}:${currentProxy.port}:`, error);
+        currentProxy.status = 'inactive';
+        if (onProgress) onProgress(currentProxy);
+        results.push(currentProxy);
       }
       
       // Add delay between checks
