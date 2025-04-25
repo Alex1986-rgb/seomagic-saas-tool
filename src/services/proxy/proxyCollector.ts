@@ -23,7 +23,7 @@ export class ProxyCollector {
         if (onProgress) onProgress(sourceName, 0);
         
         const response = await axios.get(sourceConfig.url, {
-          timeout: 15000, // Increased timeout
+          timeout: 20000, // Increased timeout to 20 seconds
           headers: {
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.110 Safari/537.36',
             'Accept': 'text/html,application/xhtml+xml,application/xml,application/json;q=0.9,image/webp,*/*;q=0.8',
@@ -32,13 +32,11 @@ export class ProxyCollector {
             'Upgrade-Insecure-Requests': '1',
             'Cache-Control': 'max-age=0'
           },
-          // Add retry mechanism
           validateStatus: status => (status >= 200 && status < 300) || status === 404
         });
         
         let parsedProxies: Proxy[] = [];
         
-        // Check if we got a response
         if (response.status >= 200 && response.status < 300 && response.data) {
           try {
             parsedProxies = sourceConfig.parseFunction(response.data);
@@ -46,20 +44,25 @@ export class ProxyCollector {
           } catch (parseError) {
             console.error(`Ошибка при парсинге прокси из ${sourceName}:`, parseError);
             parsedProxies = this.fallbackParse(response.data, sourceName);
-            console.log(`Применен запасной парсер, найдено ${parsedProxies.length} прокси в источнике ${sourceName}`);
           }
         }
         
-        newProxies.push(...parsedProxies);
+        // Фильтрация дубликатов
+        const uniqueProxies = parsedProxies.filter(
+          (proxy, index, self) => 
+            index === self.findIndex((t) => t.ip === proxy.ip && t.port === proxy.port)
+        );
         
-        if (onProgress) onProgress(sourceName, parsedProxies.length);
+        newProxies.push(...uniqueProxies);
+        
+        if (onProgress) onProgress(sourceName, uniqueProxies.length);
       } catch (error) {
         console.error(`Ошибка при сборе прокси из ${sourceName}:`, error);
         if (onProgress) onProgress(sourceName, -1); // Ошибка
       }
       
-      // Add delay between requests to avoid rate limiting
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Добавляем задержку между запросами
+      await new Promise(resolve => setTimeout(resolve, 1500));
     }
     
     return newProxies;
