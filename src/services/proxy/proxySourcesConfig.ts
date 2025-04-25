@@ -1,4 +1,3 @@
-
 import { ProxySources, Proxy } from './types';
 
 export const defaultProxySources: ProxySources = {
@@ -8,7 +7,6 @@ export const defaultProxySources: ProxySources = {
     parseFunction: (html: string) => {
       const proxies: Proxy[] = [];
       try {
-        // Improved parsing logic
         const rows = html.split('<tr>').slice(1);
         for (const row of rows) {
           const cells = row.split('<td>');
@@ -48,7 +46,6 @@ export const defaultProxySources: ProxySources = {
     parseFunction: (data: string) => {
       const proxies: Proxy[] = [];
       try {
-        // Handle response being already parsed as an object
         const jsonData = typeof data === 'object' ? data : JSON.parse(data);
         if (jsonData.data && Array.isArray(jsonData.data)) {
           for (const item of jsonData.data) {
@@ -106,53 +103,17 @@ export const defaultProxySources: ProxySources = {
       return proxies;
     }
   },
-  'pubproxy': {
-    url: 'http://pubproxy.com/api/proxy?limit=20&format=txt&https=true',
-    enabled: true,
-    parseFunction: (data: string) => {
-      const proxies: Proxy[] = [];
-      try {
-        if (typeof data === 'string') {
-          const lines = data.split('\n');
-          for (const line of lines) {
-            const trimmedLine = line.trim();
-            if (!trimmedLine) continue;
-            
-            const [ip, portStr] = trimmedLine.split(':');
-            const port = parseInt(portStr, 10);
-            
-            if (ip && !isNaN(port)) {
-              proxies.push({
-                id: `${ip}:${port}`,
-                ip,
-                port,
-                protocol: 'https',
-                status: 'testing',
-                lastChecked: new Date(),
-                source: 'pubproxy'
-              });
-            }
-          }
-        }
-      } catch (error) {
-        console.error('Ошибка при парсинге pubproxy данных:', error);
-      }
-      return proxies;
-    }
-  },
-  'spys-one': {
-    url: 'https://spys.one/en/free-proxy-list/',
+  'proxylist-org': {
+    url: 'https://proxy-list.org/english/index.php',
     enabled: true,
     parseFunction: (html: string) => {
       const proxies: Proxy[] = [];
       try {
-        // More complex parsing of the spys.one site
-        const ipPortRegex = /(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}).*?:(\d{1,5})/g;
-        let match;
-        
-        while ((match = ipPortRegex.exec(html)) !== null) {
-          const ip = match[1];
-          const port = parseInt(match[2], 10);
+        const rows = html.match(/Proxy\('([^']+)'\)/g) || [];
+        for (const row of rows) {
+          const decodedProxy = atob(row.match(/Proxy\('([^']+)'\)/)?.[1] || '');
+          const [ip, portStr] = decodedProxy.split(':');
+          const port = parseInt(portStr, 10);
           
           if (ip && !isNaN(port)) {
             proxies.push({
@@ -162,12 +123,70 @@ export const defaultProxySources: ProxySources = {
               protocol: 'http',
               status: 'testing',
               lastChecked: new Date(),
-              source: 'spys-one'
+              source: 'proxylist-org'
             });
           }
         }
       } catch (error) {
-        console.error('Ошибка при парсинге spys.one данных:', error);
+        console.error('Ошибка при парсинге proxylist.org:', error);
+      }
+      return proxies;
+    }
+  },
+  'hidemy-name': {
+    url: 'https://hidemy.name/en/proxy-list/',
+    enabled: true,
+    parseFunction: (html: string) => {
+      const proxies: Proxy[] = [];
+      try {
+        const rows = html.match(/\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\s*:\s*\d{2,5}/g) || [];
+        for (const row of rows) {
+          const [ip, portStr] = row.split(':').map(s => s.trim());
+          const port = parseInt(portStr, 10);
+          
+          if (ip && !isNaN(port)) {
+            proxies.push({
+              id: `${ip}:${port}`,
+              ip,
+              port,
+              protocol: 'http',
+              status: 'testing',
+              lastChecked: new Date(),
+              source: 'hidemy-name'
+            });
+          }
+        }
+      } catch (error) {
+        console.error('Ошибка при парсинге hidemy.name:', error);
+      }
+      return proxies;
+    }
+  },
+  'sslproxies': {
+    url: 'https://www.sslproxies.org/',
+    enabled: true,
+    parseFunction: (html: string) => {
+      const proxies: Proxy[] = [];
+      try {
+        const rows = html.match(/\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\s*:\s*\d{2,5}/g) || [];
+        for (const row of rows) {
+          const [ip, portStr] = row.split(':').map(s => s.trim());
+          const port = parseInt(portStr, 10);
+          
+          if (ip && !isNaN(port)) {
+            proxies.push({
+              id: `${ip}:${port}`,
+              ip,
+              port,
+              protocol: 'https',
+              status: 'testing',
+              lastChecked: new Date(),
+              source: 'sslproxies'
+            });
+          }
+        }
+      } catch (error) {
+        console.error('Ошибка при парсинге sslproxies.org:', error);
       }
       return proxies;
     }

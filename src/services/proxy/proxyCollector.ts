@@ -1,4 +1,3 @@
-
 import axios from 'axios';
 import { Proxy, ProxySources } from './types';
 import { defaultProxySources } from './proxySourcesConfig';
@@ -29,16 +28,19 @@ export class ProxyCollector {
         if (onProgress) onProgress(sourceName, 0);
         
         const response = await axios.get(sourceConfig.url, {
-          timeout: 30000, // Increased timeout to 30 seconds for slower proxy lists
+          timeout: 60000, // Increased timeout to 60 seconds
           headers: {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36',
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
             'Accept': 'text/html,application/xhtml+xml,application/xml,application/json;q=0.9,image/webp,*/*;q=0.8',
             'Accept-Language': 'en-US,en;q=0.5',
+            'Accept-Encoding': 'gzip, deflate, br',
             'Connection': 'keep-alive',
             'Upgrade-Insecure-Requests': '1',
-            'Cache-Control': 'no-cache'
+            'Cache-Control': 'no-cache',
+            'Pragma': 'no-cache'
           },
-          validateStatus: status => (status >= 200 && status < 300) || status === 404
+          validateStatus: status => (status >= 200 && status < 300) || status === 404,
+          maxRedirects: 5
         });
         
         let parsedProxies: Proxy[] = [];
@@ -52,7 +54,6 @@ export class ProxyCollector {
             parsedProxies = sourceConfig.parseFunction(response.data);
             console.log(`Найдено ${parsedProxies.length} прокси в источнике ${sourceName}`);
             
-            // Log first few proxies for debugging
             if (parsedProxies.length > 0) {
               console.log(`Примеры прокси из ${sourceName}:`, 
                 parsedProxies.slice(0, 3).map(p => `${p.ip}:${p.port}`));
@@ -66,11 +67,14 @@ export class ProxyCollector {
           console.error(`Ошибка при запросе к ${sourceName}. Статус: ${response.status}`);
         }
         
-        // Фильтрация дубликатов
-        const uniqueProxies = parsedProxies.filter(
-          (proxy, index, self) => 
-            index === self.findIndex((t) => t.ip === proxy.ip && t.port === proxy.port)
-        );
+        // Enhanced duplicate filtering
+        const uniqueProxies = parsedProxies.filter((proxy, index, self) => {
+          return index === self.findIndex((t) => (
+            t.ip === proxy.ip && 
+            t.port === proxy.port &&
+            (!proxy.protocol || t.protocol === proxy.protocol)
+          ));
+        });
         
         console.log(`После фильтрации дубликатов: ${uniqueProxies.length} уникальных прокси из ${sourceName}`);
         newProxies.push(...uniqueProxies);
@@ -78,12 +82,12 @@ export class ProxyCollector {
         if (onProgress) onProgress(sourceName, uniqueProxies.length);
       } catch (error) {
         console.error(`Ошибка при сборе прокси из ${sourceName}:`, error);
-        if (onProgress) onProgress(sourceName, -1); // Ошибка
+        if (onProgress) onProgress(sourceName, -1);
       }
       
-      // Добавляем задержку между запросами для избежания блокировок
-      console.log(`Добавляем задержку перед следующим запросом: 2500ms`);
-      await new Promise(resolve => setTimeout(resolve, 2500));
+      // Increased delay between requests to avoid rate limits
+      console.log(`Добавляем задержку перед следующим запросом: 5000ms`);
+      await new Promise(resolve => setTimeout(resolve, 5000));
     }
     
     console.log(`Всего собрано ${newProxies.length} прокси из всех источников`);
