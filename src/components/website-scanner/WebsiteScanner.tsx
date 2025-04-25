@@ -9,6 +9,7 @@ import ScannerTabs from './components/ScannerTabs';
 import ScanForm from '@/components/admin/website-analyzer/ScanForm';
 import { generateAuditData } from '@/services/audit/generators';
 import { downloadAuditPdfReport, downloadErrorReport } from '@/services/audit/scanner';
+import { useMobile } from '@/hooks/use-mobile';
 
 const WebsiteScanner = () => {
   const [url, setUrl] = useState('');
@@ -20,6 +21,7 @@ const WebsiteScanner = () => {
   const [auditData, setAuditData] = useState<any>(null);
   const [hasAuditResults, setHasAuditResults] = useState(false);
   const { toast } = useToast();
+  const isMobile = useMobile();
 
   const handleUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setUrl(e.target.value);
@@ -174,9 +176,9 @@ const WebsiteScanner = () => {
   };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-4 md:space-y-8">
       <ScannerHeader />
-      <CardContent>
+      <CardContent className="p-3 md:p-6">
         <ScanForm
           url={url}
           isScanning={isScanning}
