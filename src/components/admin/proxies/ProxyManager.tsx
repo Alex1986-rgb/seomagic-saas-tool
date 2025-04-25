@@ -8,12 +8,14 @@ import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Download, Upload, Plus, Trash2, RefreshCw, CheckCircle, XCircle, Clock, Search, Globe, Filter } from "lucide-react";
+import { Download, Upload, Plus, Trash2, RefreshCw, CheckCircle, XCircle, Clock, Search, Globe, Filter, Send, Database } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Proxy, proxyManager } from '@/services/proxy/proxyManager';
 import { Progress } from "@/components/ui/progress";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useMobile } from '@/hooks/use-mobile';
+import PingService from './PingService';
+import ProxySourcesManager from './ProxySourcesManager';
 
 const ProxyManager: React.FC = () => {
   const [proxies, setProxies] = useState<Proxy[]>([]);
@@ -87,7 +89,7 @@ const ProxyManager: React.FC = () => {
           completedSources++;
           setProgress(Math.round((completedSources / sourcesCount) * 100));
         } else {
-          setStatusMessage(`Ошибка при сбор прокси из ${source}`);
+          setStatusMessage(`Оши��ка при сбор прокси из ${source}`);
         }
       });
       
@@ -385,10 +387,12 @@ const ProxyManager: React.FC = () => {
       )}
 
       <Tabs defaultValue="list">
-        <TabsList className="grid grid-cols-2 md:grid-cols-4">
+        <TabsList className="grid grid-cols-3 md:grid-cols-6">
           <TabsTrigger value="list">Список прокси</TabsTrigger>
           <TabsTrigger value="import">Импорт/Экспорт</TabsTrigger>
           <TabsTrigger value="test">Тест URL</TabsTrigger>
+          <TabsTrigger value="ping">XML-RPC Пинг</TabsTrigger>
+          <TabsTrigger value="sources">Источники</TabsTrigger>
           <TabsTrigger value="captcha">API ключи</TabsTrigger>
         </TabsList>
 
@@ -639,6 +643,14 @@ const ProxyManager: React.FC = () => {
               </div>
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="ping">
+          <PingService />
+        </TabsContent>
+        
+        <TabsContent value="sources">
+          <ProxySourcesManager />
         </TabsContent>
 
         <TabsContent value="captcha">

@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from 'react';
 import { Proxy, proxyManager } from '@/services/proxy/proxyManager';
 import { useToast } from './use-toast';
@@ -39,7 +38,8 @@ export function useProxyManager({ initialTestUrl = 'https://api.ipify.org/' }: U
 
     try {
       let sourcesCount = 0;
-      Object.values(proxyManager.defaultProxySources).forEach(source => {
+      const defaultProxySources = proxyManager.defaultProxySources;
+      Object.values(defaultProxySources).forEach(source => {
         if (source.enabled) sourcesCount++;
       });
       

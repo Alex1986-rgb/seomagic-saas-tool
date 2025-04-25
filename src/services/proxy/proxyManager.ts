@@ -184,7 +184,11 @@ export class ProxyManager {
 
   // Проверка прокси
   async checkProxy(proxy: Proxy, testUrl: string = 'https://api.ipify.org/'): Promise<Proxy> {
-    const updatedProxy = { ...proxy, status: 'testing' as const, lastChecked: new Date() };
+    const updatedProxy: Proxy = { 
+      ...proxy, 
+      status: 'testing', 
+      lastChecked: new Date() 
+    };
     
     try {
       const startTime = Date.now();
@@ -455,7 +459,84 @@ export class ProxyManager {
   get defaultProxySources(): ProxySources {
     return defaultProxySources;
   }
+  
+  // Метод для использования прокси из Python-скрипта
+  async importProxySourcesFromPython(sources: string[]): Promise<number> {
+    let importedCount = 0;
+    
+    for (const source of sources) {
+      if (!this.proxySources[source] && source.startsWith('http')) {
+        this.proxySources[`custom-${Date.now()}-${importedCount}`] = {
+          url: source,
+          enabled: true,
+          parseFunction: (html: string) => {
+            // Простой парсер для обработки текстового или HTML-контента
+            const proxies: Proxy[] = [];
+            const ipPortRegex = /(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}):(\d{1,5})/g;
+            let match;
+            
+            while ((match = ipPortRegex.exec(html)) !== null) {
+              const ip = match[1];
+              const port = parseInt(match[2], 10);
+              
+              if (ip && !isNaN(port)) {
+                proxies.push({
+                  id: `${ip}:${port}`,
+                  ip,
+                  port,
+                  protocol: 'http',
+                  status: 'testing',
+                  lastChecked: new Date()
+                });
+              }
+            }
+            
+            return proxies;
+          }
+        };
+        
+        importedCount++;
+      }
+    }
+    
+    return importedCount;
+  }
+  
+  // Метод для пинга URL-ов через XML-RPC
+  async pingUrlsWithRpc(urls: string[], siteTitle: string, feedUrl: string, rpcEndpoints: string[]): Promise<{url: string, rpc: string, success: boolean, message: string}[]> {
+    // Этот метод симулирует пинг через XML-RPC сервисы
+    // В реальной реализации здесь был бы XMLHttpRequest или fetch запрос к RPC endpoint
+    const results = [];
+    
+    for (const url of urls) {
+      for (const rpc of rpcEndpoints) {
+        try {
+          // Симуляция пинга (в реальном приложении здесь был бы запрос к RPC)
+          await new Promise(resolve => setTimeout(resolve, 100 + Math.random() * 500));
+          
+          const success = Math.random() > 0.3; // 70% успешных пингов для демонстрации
+          
+          results.push({
+            url,
+            rpc,
+            success,
+            message: success 
+              ? `Успешно пингован URL ${url} через ${rpc}` 
+              : `Ошибка при пинге URL ${url} через ${rpc}`
+          });
+        } catch (error) {
+          results.push({
+            url,
+            rpc,
+            success: false,
+            message: `Ошибка при пинге URL ${url} через ${rpc}: ${error.message}`
+          });
+        }
+      }
+    }
+    
+    return results;
+  }
 }
 
 export const proxyManager = new ProxyManager();
-

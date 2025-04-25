@@ -2,10 +2,11 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { cn } from '@/lib/utils';
+import { LucideIcon } from 'lucide-react';
 
 interface SidebarLinkProps {
   to: string;
-  icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
+  icon: LucideIcon;
   children: React.ReactNode;
   active?: boolean;
   badge?: React.ReactNode;
