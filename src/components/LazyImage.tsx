@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useCallback, memo } from 'react';
 import { LazyLoadImage } from 'react-lazy-load-image-component';
 import 'react-lazy-load-image-component/src/effects/blur.css';
 
@@ -11,7 +11,7 @@ interface LazyImageProps {
   height?: number;
 }
 
-export const LazyImage: React.FC<LazyImageProps> = ({
+export const LazyImage: React.FC<LazyImageProps> = memo(({
   src,
   alt,
   className,
@@ -21,23 +21,22 @@ export const LazyImage: React.FC<LazyImageProps> = ({
   const [isLoaded, setIsLoaded] = useState(false);
   const [hasError, setHasError] = useState(false);
 
-  const handleLoad = () => {
+  const handleLoad = useCallback(() => {
     setIsLoaded(true);
-  };
+  }, []);
 
-  const handleError = () => {
+  const handleError = useCallback(() => {
     setHasError(true);
-  };
+  }, []);
 
-  // Generate smaller image sizes for responsive loading
-  const generateSrcSet = (src: string) => {
-    if (src.startsWith('data:') || src.startsWith('blob:')) return undefined;
+  const generateSrcSet = useCallback((imageSrc: string) => {
+    if (imageSrc.startsWith('data:') || imageSrc.startsWith('blob:')) return undefined;
     
-    return `${src} 300w,
-            ${src} 600w,
-            ${src} 900w,
-            ${src} 1200w`;
-  };
+    return `${imageSrc} 300w,
+            ${imageSrc} 600w,
+            ${imageSrc} 900w,
+            ${imageSrc} 1200w`;
+  }, []);
 
   return (
     <div className={`relative overflow-hidden ${className}`}>
@@ -67,4 +66,6 @@ export const LazyImage: React.FC<LazyImageProps> = ({
       />
     </div>
   );
-};
+});
+
+LazyImage.displayName = 'LazyImage';

@@ -1,16 +1,8 @@
-
-import React, { useState } from 'react';
-import { Search, Download, CreditCard, CheckCircle, AlertCircle, CircleEllipsis } from 'lucide-react';
-import { Input } from "@/components/ui/input";
+import React, { useState, useMemo, useCallback } from 'react';
+import { Download, Calendar, FileText } from 'lucide-react';
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
-} from "@/components/ui/select";
+import PaymentTableRow from './payments/PaymentTableRow';
+import PaymentFilters from './payments/PaymentFilters';
 
 // Мок-данные платежей
 const mockPayments = [
@@ -64,81 +56,47 @@ const mockPayments = [
 const AdminPayments: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
-  const [planFilter, setPlanFilter] = useState('all');
   
-  // Фильтрация платежей
-  const filteredPayments = mockPayments.filter(payment => {
-    const matchesSearch = 
-      payment.id.toLowerCase().includes(searchTerm.toLowerCase()) || 
-      payment.user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      payment.user.email.toLowerCase().includes(searchTerm.toLowerCase());
-    
-    const matchesStatus = statusFilter === 'all' || payment.status === statusFilter;
-    const matchesPlan = planFilter === 'all' || payment.plan === planFilter;
-    
-    return matchesSearch && matchesStatus && matchesPlan;
-  });
+  const handleSearchChange = useCallback((value: string) => {
+    setSearchTerm(value);
+  }, []);
 
-  const getStatusIcon = (status) => {
-    switch(status) {
-      case 'completed': return <CheckCircle className="h-4 w-4 text-green-500" />;
-      case 'pending': return <CircleEllipsis className="h-4 w-4 text-amber-500" />;
-      case 'failed': return <AlertCircle className="h-4 w-4 text-red-500" />;
-      default: return null;
-    }
-  };
-
-  const formatCurrency = (amount) => {
-    return new Intl.NumberFormat('ru-RU', {
-      style: 'currency',
-      currency: 'RUB',
-      minimumFractionDigits: 0,
-    }).format(amount);
-  };
+  const handleStatusChange = useCallback((value: string) => {
+    setStatusFilter(value);
+  }, []);
+  
+  const filteredPayments = useMemo(() => {
+    return mockPayments.filter(payment => {
+      const matchesSearch = 
+        payment.id.toLowerCase().includes(searchTerm.toLowerCase()) || 
+        payment.user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        payment.user.email.toLowerCase().includes(searchTerm.toLowerCase());
+      
+      const matchesStatus = statusFilter === 'all' || payment.status === statusFilter;
+      
+      return matchesSearch && matchesStatus;
+    });
+  }, [searchTerm, statusFilter]);
 
   return (
     <div>
-      <div className="flex flex-col md:flex-row gap-4 mb-6 items-end">
-        <div className="flex-1">
-          <div className="relative">
-            <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Поиск по ID или клиенту..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10"
-            />
-          </div>
-        </div>
+      <div className="flex flex-col md:flex-row gap-4 mb-6 items-end justify-between">
+        <PaymentFilters
+          searchTerm={searchTerm}
+          statusFilter={statusFilter}
+          onSearchChange={handleSearchChange}
+          onStatusChange={handleStatusChange}
+        />
         
-        <div className="flex gap-2 flex-wrap">
-          <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Статус платежа" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Все статусы</SelectItem>
-              <SelectItem value="completed">Завершены</SelectItem>
-              <SelectItem value="pending">В обработке</SelectItem>
-              <SelectItem value="failed">Отклонены</SelectItem>
-            </SelectContent>
-          </Select>
-          
-          <Select value={planFilter} onValueChange={setPlanFilter}>
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Тариф" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Все тарифы</SelectItem>
-              <SelectItem value="basic">Базовый</SelectItem>
-              <SelectItem value="pro">Про</SelectItem>
-              <SelectItem value="agency">Агентский</SelectItem>
-            </SelectContent>
-          </Select>
+        <div className="flex gap-2">
+          <Button variant="outline" className="gap-2">
+            <Calendar className="h-4 w-4" />
+            <span>Фильтр по дате</span>
+          </Button>
 
           <Button className="gap-2">
-            <Download className="h-4 w-4" />
-            <span>Скачать отчет</span>
+            <FileText className="h-4 w-4" />
+            <span>Экспорт</span>
           </Button>
         </div>
       </div>
@@ -148,7 +106,7 @@ const AdminPayments: React.FC = () => {
           <thead>
             <tr className="border-b">
               <th className="text-left py-3 px-4 font-medium">ID</th>
-              <th className="text-left py-3 px-4 font-medium">Клиент</th>
+              <th className="text-left py-3 px-4 font-medium">Пользователь</th>
               <th className="text-left py-3 px-4 font-medium">Сумма</th>
               <th className="text-left py-3 px-4 font-medium">Дата</th>
               <th className="text-left py-3 px-4 font-medium">Статус</th>
@@ -159,58 +117,7 @@ const AdminPayments: React.FC = () => {
           </thead>
           <tbody>
             {filteredPayments.map(payment => (
-              <tr key={payment.id} className="border-b">
-                <td className="py-4 px-4 font-mono">{payment.id}</td>
-                <td className="py-4 px-4">
-                  <div>
-                    <div className="font-medium">{payment.user.name}</div>
-                    <div className="text-sm text-muted-foreground">{payment.user.email}</div>
-                  </div>
-                </td>
-                <td className="py-4 px-4 font-medium">
-                  {formatCurrency(payment.amount)}
-                </td>
-                <td className="py-4 px-4">
-                  {new Date(payment.date).toLocaleDateString('ru-RU')}
-                </td>
-                <td className="py-4 px-4">
-                  <div className="flex items-center gap-2">
-                    {getStatusIcon(payment.status)}
-                    <Badge 
-                      variant={
-                        payment.status === 'completed' ? 'default' : 
-                        payment.status === 'pending' ? 'secondary' : 'destructive'
-                      }
-                    >
-                      {payment.status === 'completed' && 'Оплачено'}
-                      {payment.status === 'pending' && 'В обработке'}
-                      {payment.status === 'failed' && 'Отклонено'}
-                    </Badge>
-                  </div>
-                </td>
-                <td className="py-4 px-4">
-                  <Badge variant="outline">
-                    {payment.plan === 'basic' && 'Базовый'}
-                    {payment.plan === 'pro' && 'Про'}
-                    {payment.plan === 'agency' && 'Агентский'}
-                  </Badge>
-                </td>
-                <td className="py-4 px-4">
-                  <div className="flex items-center gap-2">
-                    <CreditCard className="h-4 w-4 text-muted-foreground" />
-                    <span>
-                      {payment.method === 'card' && 'Карта'}
-                      {payment.method === 'paypal' && 'PayPal'}
-                      {payment.method === 'bank' && 'Банк. перевод'}
-                    </span>
-                  </div>
-                </td>
-                <td className="py-4 px-4">
-                  <Button variant="ghost" size="sm">
-                    <Download className="h-4 w-4" />
-                  </Button>
-                </td>
-              </tr>
+              <PaymentTableRow key={payment.id} payment={payment} />
             ))}
           </tbody>
         </table>
