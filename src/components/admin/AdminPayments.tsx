@@ -1,82 +1,19 @@
-import React, { useState, useMemo, useCallback } from 'react';
-import { Download, Calendar, FileText } from 'lucide-react';
-import { Button } from "@/components/ui/button";
-import PaymentTableRow from './payments/PaymentTableRow';
-import PaymentFilters from './payments/PaymentFilters';
 
-// Мок-данные платежей
-const mockPayments = [
-  {
-    id: 'INV-001',
-    user: { name: 'Иван Петров', email: 'ivan@example.com' },
-    amount: 2900,
-    date: '2023-06-05T10:30:00Z',
-    status: 'completed',
-    plan: 'pro',
-    method: 'card',
-  },
-  {
-    id: 'INV-002',
-    user: { name: 'Анна Сидорова', email: 'anna@example.com' },
-    amount: 990,
-    date: '2023-06-02T14:15:00Z',
-    status: 'completed',
-    plan: 'basic',
-    method: 'card',
-  },
-  {
-    id: 'INV-003',
-    user: { name: 'Петр Иванов', email: 'petr@example.com' },
-    amount: 990,
-    date: '2023-06-01T09:45:00Z',
-    status: 'failed',
-    plan: 'basic',
-    method: 'card',
-  },
-  {
-    id: 'INV-004',
-    user: { name: 'Ольга Смирнова', email: 'olga@example.com' },
-    amount: 2900,
-    date: '2023-05-28T16:20:00Z',
-    status: 'completed',
-    plan: 'pro',
-    method: 'paypal',
-  },
-  {
-    id: 'INV-005',
-    user: { name: 'Алексей Козлов', email: 'alex@example.com' },
-    amount: 9900,
-    date: '2023-05-25T11:10:00Z',
-    status: 'pending',
-    plan: 'agency',
-    method: 'bank',
-  },
-];
+import React from 'react';
+import { Calendar, FileText } from 'lucide-react';
+import { Button } from "@/components/ui/button";
+import PaymentTable from './payments/PaymentTable';
+import PaymentFilters from './payments/PaymentFilters';
+import { usePayments } from './payments/usePayments';
 
 const AdminPayments: React.FC = () => {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState('all');
-  
-  const handleSearchChange = useCallback((value: string) => {
-    setSearchTerm(value);
-  }, []);
-
-  const handleStatusChange = useCallback((value: string) => {
-    setStatusFilter(value);
-  }, []);
-  
-  const filteredPayments = useMemo(() => {
-    return mockPayments.filter(payment => {
-      const matchesSearch = 
-        payment.id.toLowerCase().includes(searchTerm.toLowerCase()) || 
-        payment.user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        payment.user.email.toLowerCase().includes(searchTerm.toLowerCase());
-      
-      const matchesStatus = statusFilter === 'all' || payment.status === statusFilter;
-      
-      return matchesSearch && matchesStatus;
-    });
-  }, [searchTerm, statusFilter]);
+  const {
+    searchTerm,
+    statusFilter,
+    handleSearchChange,
+    handleStatusChange,
+    filteredPayments
+  } = usePayments();
 
   return (
     <div>
@@ -101,27 +38,7 @@ const AdminPayments: React.FC = () => {
         </div>
       </div>
       
-      <div className="overflow-x-auto">
-        <table className="w-full">
-          <thead>
-            <tr className="border-b">
-              <th className="text-left py-3 px-4 font-medium">ID</th>
-              <th className="text-left py-3 px-4 font-medium">Пользователь</th>
-              <th className="text-left py-3 px-4 font-medium">Сумма</th>
-              <th className="text-left py-3 px-4 font-medium">Дата</th>
-              <th className="text-left py-3 px-4 font-medium">Статус</th>
-              <th className="text-left py-3 px-4 font-medium">Тариф</th>
-              <th className="text-left py-3 px-4 font-medium">Метод</th>
-              <th className="text-left py-3 px-4 font-medium">Действия</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredPayments.map(payment => (
-              <PaymentTableRow key={payment.id} payment={payment} />
-            ))}
-          </tbody>
-        </table>
-      </div>
+      <PaymentTable payments={filteredPayments} />
     </div>
   );
 };
