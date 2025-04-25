@@ -1,3 +1,4 @@
+
 import axios from 'axios';
 
 // Типы для прокси
@@ -183,7 +184,7 @@ export class ProxyManager {
 
   // Проверка прокси
   async checkProxy(proxy: Proxy, testUrl: string = 'https://api.ipify.org/'): Promise<Proxy> {
-    const updatedProxy = { ...proxy, status: 'testing', lastChecked: new Date() };
+    const updatedProxy = { ...proxy, status: 'testing' as const, lastChecked: new Date() };
     
     try {
       const startTime = Date.now();
@@ -457,3 +458,4 @@ export class ProxyManager {
 }
 
 export const proxyManager = new ProxyManager();
+
