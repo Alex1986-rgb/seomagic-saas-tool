@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -82,6 +83,16 @@ const ProxyManager: React.FC = () => {
         if (source.enabled) sourcesCount++;
       });
       
+      if (sourcesCount === 0) {
+        toast({
+          title: "Нет активных источников",
+          description: "Активируйте источники прокси во вкладке 'Источники'",
+          variant: "destructive",
+        });
+        setIsCollecting(false);
+        return;
+      }
+      
       let completedSources = 0;
       
       const newProxies = await proxyManager.collectProxies((source, count) => {
@@ -90,7 +101,7 @@ const ProxyManager: React.FC = () => {
           completedSources++;
           setProgress(Math.round((completedSources / sourcesCount) * 100));
         } else {
-          setStatusMessage(`Оши��ка при сбор прокси из ${source}`);
+          setStatusMessage(`Ошибка при сборе прокси из ${source}`);
         }
       });
       
@@ -131,16 +142,19 @@ const ProxyManager: React.FC = () => {
       setStatusMessage('Подготовка к проверке прокси...');
       
       let checkedCount = 0;
+      let activeCount = 0;
       
       await proxyManager.checkProxies(proxyList, testUrlValue, (proxy) => {
         checkedCount++;
+        if (proxy.status === 'active') activeCount++;
+        
         setProgress(Math.round((checkedCount / proxyList.length) * 100));
-        setStatusMessage(`Проверено ${checkedCount}/${proxyList.length} прокси`);
+        setStatusMessage(`Проверено ${checkedCount}/${proxyList.length} прокси (Найдено рабочих: ${activeCount})`);
       });
       
       toast({
         title: "Проверка прокси завершена",
-        description: `Проверено ${proxyList.length} прокси`,
+        description: `Проверено ${proxyList.length} прокси, найдено рабочих: ${activeCount}`,
       });
       
       loadProxies();

@@ -12,22 +12,34 @@ export class ProxyValidator {
     
     try {
       const startTime = Date.now();
+      
+      // Try to get the external IP through the proxy
       const response = await axios.get(testUrl, {
         proxy: {
           host: proxy.ip,
           port: proxy.port,
           protocol: proxy.protocol
         },
-        timeout: 10000
+        timeout: 15000, // Extended timeout to 15 seconds for slower proxies
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.110 Safari/537.36',
+          'Accept': 'text/html,application/xhtml+xml,application/xml,application/json;q=0.9,image/webp,*/*;q=0.8',
+          'Accept-Language': 'en-US,en;q=0.5',
+        }
       });
       
       const endTime = Date.now();
       const speed = endTime - startTime;
       
-      updatedProxy.status = 'active';
-      updatedProxy.speed = speed;
-      
-      console.log(`Прокси ${proxy.ip}:${proxy.port} работает, скорость: ${speed}ms`);
+      // Check if we actually got a valid response
+      if (response.status >= 200 && response.status < 300 && response.data) {
+        updatedProxy.status = 'active';
+        updatedProxy.speed = speed;
+        console.log(`Прокси ${proxy.ip}:${proxy.port} работает, скорость: ${speed}ms, ответ: ${response.data.substring(0, 50)}...`);
+      } else {
+        updatedProxy.status = 'inactive';
+        console.log(`Прокси ${proxy.ip}:${proxy.port} вернул некорректный ответ, статус: ${response.status}`);
+      }
     } catch (error) {
       console.error(`Прокси ${proxy.ip}:${proxy.port} не работает:`, error.message);
       updatedProxy.status = 'inactive';

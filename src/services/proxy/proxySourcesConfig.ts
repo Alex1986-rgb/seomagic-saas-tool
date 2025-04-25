@@ -6,10 +6,9 @@ export const defaultProxySources: ProxySources = {
     url: 'https://free-proxy-list.net/',
     enabled: true,
     parseFunction: (html: string) => {
-      // Пример парсинга HTML
       const proxies: Proxy[] = [];
       try {
-        // Простой парсинг на основе строк (в реальном приложении лучше использовать cheerio или другой HTML парсер)
+        // Improved parsing logic
         const rows = html.split('<tr>').slice(1);
         for (const row of rows) {
           const cells = row.split('<td>');
@@ -31,13 +30,14 @@ export const defaultProxySources: ProxySources = {
                 protocol,
                 anonymity: anonymity as 'transparent' | 'anonymous' | 'elite',
                 status: 'testing',
-                lastChecked: new Date()
+                lastChecked: new Date(),
+                source: 'free-proxy-list'
               });
             }
           }
         }
       } catch (error) {
-        console.error('Ошибка при парсинге прокси:', error);
+        console.error('Ошибка при парсинге free-proxy-list:', error);
       }
       return proxies;
     }
@@ -63,13 +63,14 @@ export const defaultProxySources: ProxySources = {
                 speed: item.speed,
                 uptime: item.upTime,
                 lastChecked: new Date(),
-                status: 'testing'
+                status: 'testing',
+                source: 'geonode'
               });
             }
           }
         }
       } catch (error) {
-        console.error('Ошибка при парсинге JSON прокси:', error);
+        console.error('Ошибка при парсинге JSON geonode:', error);
       }
       return proxies;
     }
@@ -101,6 +102,72 @@ export const defaultProxySources: ProxySources = {
         }
       } catch (error) {
         console.error('Ошибка при парсинге proxyscrape данных:', error);
+      }
+      return proxies;
+    }
+  },
+  'pubproxy': {
+    url: 'http://pubproxy.com/api/proxy?limit=20&format=txt&https=true',
+    enabled: true,
+    parseFunction: (data: string) => {
+      const proxies: Proxy[] = [];
+      try {
+        if (typeof data === 'string') {
+          const lines = data.split('\n');
+          for (const line of lines) {
+            const trimmedLine = line.trim();
+            if (!trimmedLine) continue;
+            
+            const [ip, portStr] = trimmedLine.split(':');
+            const port = parseInt(portStr, 10);
+            
+            if (ip && !isNaN(port)) {
+              proxies.push({
+                id: `${ip}:${port}`,
+                ip,
+                port,
+                protocol: 'https',
+                status: 'testing',
+                lastChecked: new Date(),
+                source: 'pubproxy'
+              });
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Ошибка при парсинге pubproxy данных:', error);
+      }
+      return proxies;
+    }
+  },
+  'spys-one': {
+    url: 'https://spys.one/en/free-proxy-list/',
+    enabled: true,
+    parseFunction: (html: string) => {
+      const proxies: Proxy[] = [];
+      try {
+        // More complex parsing of the spys.one site
+        const ipPortRegex = /(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}).*?:(\d{1,5})/g;
+        let match;
+        
+        while ((match = ipPortRegex.exec(html)) !== null) {
+          const ip = match[1];
+          const port = parseInt(match[2], 10);
+          
+          if (ip && !isNaN(port)) {
+            proxies.push({
+              id: `${ip}:${port}`,
+              ip,
+              port,
+              protocol: 'http',
+              status: 'testing',
+              lastChecked: new Date(),
+              source: 'spys-one'
+            });
+          }
+        }
+      } catch (error) {
+        console.error('Ошибка при парсинге spys.one данных:', error);
       }
       return proxies;
     }

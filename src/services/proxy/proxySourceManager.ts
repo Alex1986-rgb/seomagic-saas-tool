@@ -1,120 +1,136 @@
+
 import { ProxySources } from './types';
 
-// Массив URL-источников для сбора прокси из Python-скрипта
+// List of proxy sources from Python scripts
 export const pythonProxySources = [
-    'https://www.sslproxies.org/',
-    'https://free-proxy-list.net/',
-    'https://www.us-proxy.org/',
-    'https://spys.me/proxy.txt',
-    'https://www.proxy-list.download/HTTPS',
-    'https://www.proxy-list.download/HTTP',
-    'https://www.proxy-list.download/SOCKS4',
-    'https://www.proxy-list.download/SOCKS5',
-    'https://raw.githubusercontent.com/clarketm/proxy-list/master/proxy-list-raw.txt',
-    'https://best-proxies.ru/proxylist/free/',
-    'https://proxycompass.com/ru/free-proxy/',
-    'https://advanced.name/ru/freeproxy',
-    'https://spys.one/proxies/',
-    'https://ru.proxy-tools.com/',
-    'https://htmlweb.ru/analiz/proxy_list.php',
-    'https://trustytech.io/ru/tools/free-proxy/',
-    'https://hidemy.name/ru/proxy-list/',
-    'https://www.proxynova.com/proxy-server-list/',
-    'https://www.freeproxylists.net/',
-    'https://www.socks-proxy.net/',
-    'https://www.my-proxy.com/free-proxy-list.html',
-    'https://www.cool-proxy.net/',
-    'https://proxy-list.org/english/index.php',
-    'https://www.geonode.com/free-proxy-list/',
-    'https://www.ip-adress.com/proxy_list/',
-    'https://www.proxyscan.io/',
-    'https://www.freeproxy.world/',
-    'https://proxy-daily.com/',
-    'https://hidemy.name/en/proxy-list/',
-    'https://free-proxy.cz/en/',
-    'http://www.proxylisty.com/',
-    'http://www.workingproxies.org/'
+  'https://raw.githubusercontent.com/TheSpeedX/PROXY-List/master/http.txt',
+  'https://raw.githubusercontent.com/ShiftyTR/Proxy-List/master/http.txt',
+  'https://raw.githubusercontent.com/monosans/proxy-list/main/proxies/http.txt',
+  'https://raw.githubusercontent.com/jetkai/proxy-list/main/online-proxies/txt/proxies-http.txt',
+  'https://raw.githubusercontent.com/mertguvencli/http-proxy-list/main/proxy-list/data.txt'
 ];
 
-// Массив XML-RPC сервисов для пинга из Python-скрипта
-export const xmlRpcServices = [
-    'http://rpc.pingomatic.com',
-    'http://ping.feedburner.com',
-    'http://rpc.weblogs.com/RPC2',
-    'http://bing.com/webmaster/ping.aspx',
-    'https://ping.blogs.yandex.ru/RPC2',
-    'http://ping.blo.gs/',
-    'http://blog.goo.ne.jp/XMLRPC',
-    'http://blog.with2.net/ping.php',
-    'http://blogping.unidatum.com/RPC2',
-    'http://blogpingr.de/ping/rpc2',
-    'http://api.my.yahoo.com/rss/ping',
-    'http://api.my.yahoo.com/RPC2',
-    'http://blogsearch.google.com/ping/RPC2'
-];
-
-// Функция для создания источников прокси из URL-массива
-export const createProxySources = (urls: string[]): ProxySources => {
-    const sources: ProxySources = {};
+// Create proxy sources from list of URLs
+export function createProxySources(urls: string[]): ProxySources {
+  const sources: ProxySources = {};
+  
+  urls.forEach((url, index) => {
+    // Create a unique name for each source
+    const name = `source-${Date.now()}-${index}`;
     
-    urls.forEach((url, index) => {
-        // Создаем уникальное имя для источника
-        const sourceName = url.includes('://') 
-            ? new URL(url).hostname.replace('www.', '')
-            : `custom-source-${index}`;
+    sources[name] = {
+      url,
+      enabled: true,
+      parseFunction: (data: string) => {
+        try {
+          const proxies = [];
+          const lines = data.split('\n');
+          
+          for (const line of lines) {
+            const trimmedLine = line.trim();
+            if (!trimmedLine) continue;
             
-        sources[sourceName] = {
-            url,
-            enabled: true,
-            parseFunction: (html: string) => {
-                // Универсальный парсер для извлечения IP:PORT из HTML и текста
-                const ipPortRegex = /(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}):(\d{1,5})/g;
-                const matches = html.matchAll(ipPortRegex);
-                const result = [];
-                
-                for (const match of matches) {
-                    const ip = match[1];
-                    const port = parseInt(match[2], 10);
-                    
-                    if (ip && !isNaN(port)) {
-                        result.push({
-                            id: `${ip}:${port}`,
-                            ip,
-                            port,
-                            protocol: 'http',
-                            status: 'testing',
-                            lastChecked: new Date(),
-                            source: sourceName
-                        });
-                    }
-                }
-                
-                return result;
+            // Handle different formats
+            let ip, port;
+            
+            if (trimmedLine.includes(':')) {
+              const parts = trimmedLine.split(':');
+              ip = parts[0];
+              port = parseInt(parts[1], 10);
+              
+              if (ip && !isNaN(port)) {
+                proxies.push({
+                  id: `${ip}:${port}`,
+                  ip,
+                  port,
+                  protocol: 'http',
+                  status: 'testing',
+                  lastChecked: new Date(),
+                  source: name
+                });
+              }
             }
+          }
+          
+          return proxies;
+        } catch (error) {
+          console.error(`Error parsing proxies from ${url}:`, error);
+          return [];
+        }
+      }
+    };
+  });
+  
+  return sources;
+}
+
+// Load custom sources from localStorage
+export function loadCustomProxySources(): ProxySources {
+  try {
+    const stored = localStorage.getItem('customProxySources');
+    if (stored) {
+      // We need to handle the parseFunction which can't be stored as JSON
+      const parsedSources = JSON.parse(stored);
+      
+      // Add the parseFunction to each source
+      Object.keys(parsedSources).forEach(key => {
+        parsedSources[key].parseFunction = (data: string) => {
+          try {
+            const proxies = [];
+            const ipPortRegex = /(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}):(\d{1,5})/g;
+            let match;
+            
+            while ((match = ipPortRegex.exec(data)) !== null) {
+              const ip = match[1];
+              const port = parseInt(match[2], 10);
+              
+              if (ip && !isNaN(port)) {
+                proxies.push({
+                  id: `${ip}:${port}`,
+                  ip,
+                  port,
+                  protocol: 'http',
+                  status: 'testing',
+                  lastChecked: new Date(),
+                  source: key
+                });
+              }
+            }
+            
+            return proxies;
+          } catch (error) {
+            console.error(`Error parsing proxies:`, error);
+            return [];
+          }
         };
+      });
+      
+      return parsedSources;
+    }
+  } catch (error) {
+    console.error('Error loading custom proxy sources:', error);
+  }
+  
+  return {};
+}
+
+// Save custom sources to localStorage
+export function saveCustomProxySources(sources: ProxySources): void {
+  try {
+    // We need to filter out the parseFunction as it can't be stored as JSON
+    const sourcesForStorage = {};
+    
+    Object.keys(sources).forEach(key => {
+      if (key.startsWith('custom-') || key.startsWith('source-')) {
+        sourcesForStorage[key] = {
+          url: sources[key].url,
+          enabled: sources[key].enabled
+        };
+      }
     });
     
-    return sources;
-};
-
-// Функция для загрузки дополнительных источников прокси из localStorage
-export const loadCustomProxySources = (): ProxySources => {
-    try {
-        const savedSources = localStorage.getItem('custom_proxy_sources');
-        if (savedSources) {
-            return JSON.parse(savedSources);
-        }
-    } catch (error) {
-        console.error('Ошибка загрузки пользовательских источников прокси:', error);
-    }
-    return {};
-};
-
-// Функция для сохранения дополнительных источников прокси в localStorage
-export const saveCustomProxySources = (sources: ProxySources): void => {
-    try {
-        localStorage.setItem('custom_proxy_sources', JSON.stringify(sources));
-    } catch (error) {
-        console.error('Ошибка сохранения пользовательских источников прокси:', error);
-    }
-};
+    localStorage.setItem('customProxySources', JSON.stringify(sourcesForStorage));
+  } catch (error) {
+    console.error('Error saving custom proxy sources:', error);
+  }
+}

@@ -8,6 +8,7 @@ export function useProxyCollection() {
   const [isCollecting, setIsCollecting] = useState(false);
   const [progress, setProgress] = useState(0);
   const [statusMessage, setStatusMessage] = useState('');
+  const [collectedProxies, setCollectedProxies] = useState<number>(0);
   const { toast } = useToast();
 
   const collectProxies = useCallback(async () => {
@@ -15,21 +16,35 @@ export function useProxyCollection() {
       setIsCollecting(true);
       setProgress(0);
       setStatusMessage('Подготовка к сбору прокси...');
+      setCollectedProxies(0);
       
+      // Count enabled sources
       let sourcesCount = 0;
       Object.values(proxyManager.defaultProxySources).forEach(source => {
         if (source.enabled) sourcesCount++;
       });
       
+      if (sourcesCount === 0) {
+        toast({
+          title: "Нет активных источников",
+          description: "Необходимо активировать источники во вкладке 'Источники'",
+          variant: "destructive",
+        });
+        return 0;
+      }
+      
       let completedSources = 0;
+      let totalCollected = 0;
       
       const newProxies = await proxyManager.collectProxies((source, count) => {
         if (count >= 0) {
-          setStatusMessage(`Собрано ${count} прокси из источника ${source}`);
+          totalCollected += count;
+          setCollectedProxies(totalCollected);
+          setStatusMessage(`Собрано ${count} прокси из источника ${source} (всего: ${totalCollected})`);
           completedSources++;
           setProgress(Math.round((completedSources / sourcesCount) * 100));
         } else {
-          setStatusMessage(`Ошибка при сбор прокси из ${source}`);
+          setStatusMessage(`Ошибка при сборе прокси из ${source}`);
         }
       });
       
@@ -57,6 +72,7 @@ export function useProxyCollection() {
     isCollecting,
     progress,
     statusMessage,
+    collectedProxies,
     collectProxies
   };
 }
