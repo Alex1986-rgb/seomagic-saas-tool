@@ -1,8 +1,27 @@
-
 import axios from 'axios';
 import { Proxy } from './types';
 
 export class ProxyValidator {
+  private async setupAxiosInstance(proxy: Proxy, testUrl: string = 'https://api.ipify.org/') {
+    const axiosInstance = axios.create({
+      timeout: 10000, // Increased timeout to 10 seconds
+      proxy: {
+        host: proxy.ip,
+        port: proxy.port,
+        protocol: proxy.protocol,
+      },
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Accept': 'text/plain,*/*;q=0.01',
+        'Accept-Language': 'en-US,en;q=0.9',
+        'Connection': 'keep-alive',
+        'DNT': '1',
+      }
+    });
+
+    return axiosInstance;
+  }
+
   async checkProxy(proxy: Proxy, testUrl: string = 'https://api.ipify.org/'): Promise<Proxy> {
     const updatedProxy: Proxy = { 
       ...proxy, 
@@ -12,51 +31,25 @@ export class ProxyValidator {
     
     try {
       const startTime = Date.now();
+      const axiosInstance = await this.setupAxiosInstance(proxy, testUrl);
       
-      const response = await axios.get(testUrl, {
-        proxy: {
-          host: proxy.ip,
-          port: proxy.port,
-          protocol: proxy.protocol,
-          auth: proxy.username && proxy.password ? {
-            username: proxy.username,
-            password: proxy.password
-          } : undefined
-        },
-        timeout: 30000, // Increased timeout to 30 seconds
-        maxRedirects: 5,
-        validateStatus: (status) => status < 600, // Accept any status < 600
-        headers: {
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-          'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
-          'Accept-Language': 'en-US,en;q=0.5',
-          'Accept-Encoding': 'gzip, deflate, br',
-          'Connection': 'keep-alive',
-          'Upgrade-Insecure-Requests': '1',
-          'Sec-Fetch-Dest': 'document',
-          'Sec-Fetch-Mode': 'navigate',
-          'Sec-Fetch-Site': 'none',
-          'Sec-Fetch-User': '?1',
-          'Cache-Control': 'no-cache',
-          'Pragma': 'no-cache'
-        }
+      const response = await axiosInstance.get(testUrl, {
+        validateStatus: (status) => status >= 200 && status < 300,
+        maxRedirects: 3,
       });
       
       const endTime = Date.now();
       const speed = endTime - startTime;
       
-      // Consider the proxy active if we get any response
-      if (response) {
-        updatedProxy.status = 'active';
-        updatedProxy.speed = speed;
-        console.log(`Прокси ${proxy.ip}:${proxy.port} работает, скорость: ${speed}ms, статус: ${response.status}`);
-      } else {
-        updatedProxy.status = 'inactive';
-        console.log(`Прокси ${proxy.ip}:${proxy.port} не вернул ответ`);
-      }
+      updatedProxy.status = 'active';
+      updatedProxy.speed = speed;
+      
+      console.log(`Прокси ${proxy.ip}:${proxy.port} работает, скорость: ${speed}ms, статус: ${response.status}`);
+      
     } catch (error) {
       console.error(`Прокси ${proxy.ip}:${proxy.port} не работает:`, error.message);
       updatedProxy.status = 'inactive';
+      updatedProxy.speed = undefined;
     }
     
     return updatedProxy;
