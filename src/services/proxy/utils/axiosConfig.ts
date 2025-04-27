@@ -4,7 +4,7 @@ import type { Proxy } from '../types';
 
 export function setupAxiosInstance(proxy: Proxy, testUrl: string = 'https://api.ipify.org/'): AxiosInstance {
   return axios.create({
-    timeout: 15000,
+    timeout: 30000, // Increased timeout to 30 seconds
     proxy: {
       host: proxy.ip,
       port: proxy.port,

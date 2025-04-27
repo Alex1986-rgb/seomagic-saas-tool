@@ -16,7 +16,7 @@ export async function testProxy(proxy: Proxy, testUrl: string = 'https://api.ipi
     const response = await axiosInstance.get(testUrl, {
       validateStatus: (status) => true,
       maxRedirects: 5,
-      timeout: 15000,
+      timeout: 30000, // Increased timeout to 30 seconds
     });
     
     const endTime = Date.now();
