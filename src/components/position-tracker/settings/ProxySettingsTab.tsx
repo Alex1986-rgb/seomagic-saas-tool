@@ -6,10 +6,14 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { RefreshCw, Shield, TrashIcon } from 'lucide-react';
+import { Progress } from "@/components/ui/progress";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface ProxySettingsTabProps {
   activeProxies: number;
   isLoading: boolean;
+  progress?: number;
+  statusMessage?: string;
   clearBeforeCollect: boolean;
   setClearBeforeCollect: (value: boolean) => void;
   testUrl: string;
@@ -22,6 +26,8 @@ interface ProxySettingsTabProps {
 export function ProxySettingsTab({
   activeProxies,
   isLoading,
+  progress = 0,
+  statusMessage = '',
   clearBeforeCollect,
   setClearBeforeCollect,
   testUrl,
@@ -35,7 +41,11 @@ export function ProxySettingsTab({
       <div className="space-y-2">
         <div className="flex items-center justify-between">
           <Label>Активные прокси</Label>
-          <Badge variant="outline" className="bg-green-50 text-green-700">
+          <Badge variant="outline" className={
+            activeProxies > 0 
+              ? "bg-green-50 text-green-700" 
+              : "bg-yellow-50 text-yellow-700"
+          }>
             {activeProxies}
           </Badge>
         </div>
@@ -54,6 +64,13 @@ export function ProxySettingsTab({
           </p>
         </div>
         
+        {isLoading && progress > 0 && (
+          <div className="space-y-2 my-4">
+            <Progress value={progress} className="w-full h-2" />
+            <p className="text-sm text-center">{statusMessage}</p>
+          </div>
+        )}
+        
         <div className="flex flex-wrap gap-2">
           <Button
             variant="outline"
@@ -61,7 +78,7 @@ export function ProxySettingsTab({
             disabled={isLoading}
             className="flex-1"
           >
-            <RefreshCw className="h-4 w-4 mr-2" />
+            <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
             Собрать прокси
           </Button>
           <Button
@@ -96,6 +113,14 @@ export function ProxySettingsTab({
             URL для проверки работоспособности прокси
           </p>
         </div>
+        
+        {activeProxies === 0 && !isLoading && (
+          <Alert variant="warning" className="mt-2">
+            <AlertDescription>
+              Нет активных прокси. Рекомендуется собрать и проверить прокси для корректной работы сервиса.
+            </AlertDescription>
+          </Alert>
+        )}
         
         <p className="text-xs text-muted-foreground">
           {isLoading 

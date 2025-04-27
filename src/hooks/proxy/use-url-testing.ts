@@ -7,9 +7,13 @@ export function useUrlTesting() {
   const [isTesting, setIsTesting] = useState(false);
   const [progress, setProgress] = useState(0);
   const [statusMessage, setStatusMessage] = useState('');
+  const [testResults, setTestResults] = useState<any[]>([]);
   const { toast } = useToast();
 
   const testUrls = useCallback(async (urls: string[], useProxies: boolean = true) => {
+    // Очищаем предыдущие результаты
+    setTestResults([]);
+    
     if (urls.length === 0) {
       toast({
         title: "Нет URL для проверки",
@@ -62,6 +66,15 @@ export function useUrlTesting() {
           : `ошибка: ${errorDetails || 'неизвестная ошибка'}`;
         
         console.log(`Результат проверки URL ${url}: ${statusInfo}, прокси ${proxy || 'не использовался'}`);
+        
+        // Добавляем результат в состояние для отображения в интерфейсе
+        setTestResults(prev => [...prev, {
+          url,
+          status,
+          proxy,
+          errorDetails,
+          timestamp: new Date().toISOString()
+        }]);
       });
       
       toast({
@@ -84,10 +97,16 @@ export function useUrlTesting() {
     }
   }, [toast]);
 
+  const clearResults = useCallback(() => {
+    setTestResults([]);
+  }, []);
+
   return {
     isTesting,
     progress,
     statusMessage,
-    testUrls
+    testUrls,
+    testResults,
+    clearResults
   };
 }
