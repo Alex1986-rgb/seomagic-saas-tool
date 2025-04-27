@@ -17,6 +17,8 @@ export function useProxyCollection() {
       setIsCollecting(true);
       setProgress(0);
       setStatusMessage('Подготовка к сбору прокси...');
+      
+      // Reset the counter to 0, regardless of clear option
       setCollectedProxies(0);
       
       // Count enabled sources

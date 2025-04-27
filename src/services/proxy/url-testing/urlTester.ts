@@ -2,6 +2,7 @@
 import type { Proxy } from '../types';
 import axios from 'axios';
 import { testProxy } from '../proxy-testing/proxyTester';
+import { setupAxiosInstance } from '../utils/axiosConfig';
 
 export async function testUrls(
   urls: string[], 
@@ -18,58 +19,25 @@ export async function testUrls(
   
   for (const url of urls) {
     let currentProxy: Proxy | undefined;
+    let usedProxies: string[] = []; // Track which proxies we've already tried for this URL
     
     try {
       if (useProxies) {
-        // Randomly select a proxy from active proxies
-        currentProxy = activeProxies[Math.floor(Math.random() * activeProxies.length)];
-        console.log(`Используем прокси ${currentProxy.ip}:${currentProxy.port} для URL ${url}`);
+        // Randomly select a proxy from active proxies that we haven't tried yet for this URL
+        const availableProxies = activeProxies.filter(p => !usedProxies.includes(`${p.ip}:${p.port}`));
         
-        // Quick check to verify the proxy is still working
-        try {
-          const testResult = await testProxy(currentProxy, 'https://api.ipify.org/');
-          if (testResult.status !== 'active') {
-            console.log(`Прокси ${currentProxy.ip}:${currentProxy.port} оказался недоступен при перепроверке, выбираем другой`);
-            // Try another proxy
-            const remainingProxies = activeProxies.filter(p => p.ip !== currentProxy?.ip);
-            if (remainingProxies.length > 0) {
-              currentProxy = remainingProxies[Math.floor(Math.random() * remainingProxies.length)];
-              console.log(`Выбран новый прокси ${currentProxy.ip}:${currentProxy.port}`);
-            }
-          }
-        } catch (error) {
-          console.error(`Ошибка при проверке прокси ${currentProxy.ip}:${currentProxy.port}:`, error);
-          // Continue with this proxy anyway, but log the error
+        // If we've tried all proxies, reset and try again
+        if (availableProxies.length === 0 && activeProxies.length > 0) {
+          currentProxy = activeProxies[Math.floor(Math.random() * activeProxies.length)];
+        } else if (availableProxies.length > 0) {
+          currentProxy = availableProxies[Math.floor(Math.random() * availableProxies.length)];
+        }
+        
+        if (currentProxy) {
+          usedProxies.push(`${currentProxy.ip}:${currentProxy.port}`);
+          console.log(`Используем прокси ${currentProxy.ip}:${currentProxy.port} для URL ${url}`);
         }
       }
-      
-      const config: any = {
-        timeout: 60000, // Increase timeout to 60 seconds
-        maxRedirects: 5,
-        validateStatus: (status: number) => true, // Accept any status code
-        headers: {
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-          'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
-          'Accept-Language': 'ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7',
-          'Accept-Encoding': 'gzip, deflate, br',
-          'Cache-Control': 'no-cache',
-          'Pragma': 'no-cache'
-        }
-      };
-
-      if (useProxies && currentProxy) {
-        config.proxy = {
-          host: currentProxy.ip,
-          port: currentProxy.port,
-          protocol: currentProxy.protocol || 'http',
-          auth: currentProxy.username && currentProxy.password ? {
-            username: currentProxy.username,
-            password: currentProxy.password
-          } : undefined
-        };
-      }
-
-      console.log(`Тестирование URL: ${url} через прокси: ${currentProxy ? `${currentProxy.ip}:${currentProxy.port}` : 'без прокси'}`);
       
       let retries = 3; // Increase retries to 3
       let response;
@@ -77,39 +45,40 @@ export async function testUrls(
       
       while (retries >= 0) {
         try {
-          // Direct axios call for better control over the request
-          const axiosInstance = axios.create({
-            timeout: 60000,
-            validateStatus: () => true,
-            maxRedirects: 5
-          });
-          
-          if (useProxies && currentProxy) {
-            axiosInstance.defaults.proxy = {
-              host: currentProxy.ip,
-              port: currentProxy.port,
-              protocol: currentProxy.protocol || 'http',
-              auth: currentProxy.username && currentProxy.password ? {
-                username: currentProxy.username,
-                password: currentProxy.password
-              } : undefined
-            };
-          }
-          
-          // Add headers
-          axiosInstance.defaults.headers.common = {
-            ...config.headers
-          };
-          
           console.log(`Отправка запроса к ${url}, осталось попыток: ${retries}`);
           
-          response = await axiosInstance.get(url);
+          // Use our configured axios instance
+          let axiosInstance;
+          
+          if (useProxies && currentProxy) {
+            axiosInstance = setupAxiosInstance(currentProxy);
+          } else {
+            axiosInstance = axios.create({
+              timeout: 60000,
+              validateStatus: () => true,
+              maxRedirects: 5,
+              headers: {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
+                'Accept-Language': 'ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7',
+                'Accept-Encoding': 'gzip, deflate, br',
+                'Cache-Control': 'no-cache',
+                'Pragma': 'no-cache'
+              }
+            });
+          }
+          
+          response = await axiosInstance.get(url, {
+            timeout: 60000, // Increased timeout
+            validateStatus: () => true
+          });
+          
           console.log(`Успешный ответ от ${url}: статус ${response.status}`);
           break;
         } catch (e) {
           error = e;
           const errorMessage = e.message || 'Неизвестная ошибка';
-          console.error(`Ошибка при попытке запроса к ${url}:`, errorMessage);
+          console.error(`Ошибка при попытке запроса к ${url} через ${currentProxy?.ip}:${currentProxy?.port}:`, errorMessage);
           retries--;
           
           if (retries >= 0) {
@@ -118,13 +87,15 @@ export async function testUrls(
             
             if (useProxies && activeProxies.length > 1) {
               // Try a different proxy
-              let newProxy;
-              do {
-                newProxy = activeProxies[Math.floor(Math.random() * activeProxies.length)];
-              } while (newProxy.ip === currentProxy?.ip && activeProxies.length > 1);
+              const availableProxies = activeProxies.filter(p => 
+                !usedProxies.includes(`${p.ip}:${p.port}`) || usedProxies.length >= activeProxies.length
+              );
               
-              currentProxy = newProxy;
-              console.log(`Меняем прокси на ${currentProxy.ip}:${currentProxy.port} для повторной попытки`);
+              if (availableProxies.length > 0) {
+                currentProxy = availableProxies[Math.floor(Math.random() * availableProxies.length)];
+                usedProxies.push(`${currentProxy.ip}:${currentProxy.port}`);
+                console.log(`Меняем прокси на ${currentProxy.ip}:${currentProxy.port} для повторной попытки`);
+              }
             }
           }
         }
