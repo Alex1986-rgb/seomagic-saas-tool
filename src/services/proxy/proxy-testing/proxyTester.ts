@@ -2,6 +2,10 @@
 import type { Proxy } from '../types';
 import { setupAxiosInstance } from '../utils/axiosConfig';
 
+// Пул активных проверок для управления параллелизмом
+const MAX_CONCURRENT_TESTS = 20;
+let activeTests = 0;
+
 export async function testProxy(proxy: Proxy, testUrl: string = 'https://api.ipify.org/'): Promise<Proxy> {
   const updatedProxy: Proxy = { 
     ...proxy, 
@@ -13,10 +17,11 @@ export async function testProxy(proxy: Proxy, testUrl: string = 'https://api.ipi
     const startTime = Date.now();
     const axiosInstance = setupAxiosInstance(proxy, testUrl);
     
+    // Оптимизированные настройки запроса
     const response = await axiosInstance.get(testUrl, {
       validateStatus: (status) => true,
       maxRedirects: 5,
-      timeout: 30000, // Increased timeout to 30 seconds
+      timeout: 15000, // Сокращаем таймаут для ускорения проверки
     });
     
     const endTime = Date.now();
@@ -25,11 +30,9 @@ export async function testProxy(proxy: Proxy, testUrl: string = 'https://api.ipi
     if (response.status >= 200 && response.status < 400) {
       updatedProxy.status = 'active';
       updatedProxy.speed = speed;
-      console.log(`Прокси ${proxy.ip}:${proxy.port} работает, скорость: ${speed}ms, статус: ${response.status}`);
     } else {
       updatedProxy.status = 'inactive';
       updatedProxy.speed = speed;
-      console.log(`Прокси ${proxy.ip}:${proxy.port} ответил с неприемлемым статусом: ${response.status}`);
     }
     
   } catch (error) {
@@ -43,10 +46,67 @@ export async function testProxy(proxy: Proxy, testUrl: string = 'https://api.ipi
       errorMessage = 'DNS не смог разрешить хост';
     }
     
-    console.error(`Прокси ${proxy.ip}:${proxy.port} не работает: ${errorMessage}`);
     updatedProxy.status = 'inactive';
     updatedProxy.speed = undefined;
   }
   
   return updatedProxy;
+}
+
+// Функция для пакетной проверки прокси с контролем параллельных запросов
+export async function batchTestProxies(
+  proxies: Proxy[], 
+  testUrl: string = 'https://api.ipify.org/', 
+  onProgress?: (proxy: Proxy) => void
+): Promise<Proxy[]> {
+  const results: Proxy[] = [];
+  
+  // Функция для управления параллелизмом
+  const throttledTest = async (proxy: Proxy): Promise<Proxy> => {
+    while (activeTests >= MAX_CONCURRENT_TESTS) {
+      await new Promise(resolve => setTimeout(resolve, 100));
+    }
+    activeTests++;
+    try {
+      return await testProxy(proxy, testUrl);
+    } finally {
+      activeTests--;
+    }
+  };
+  
+  // Разбиваем список прокси на группы для более эффективного выполнения
+  const batchSize = 50;
+  const batches = [];
+  for (let i = 0; i < proxies.length; i += batchSize) {
+    batches.push(proxies.slice(i, i + batchSize));
+  }
+  
+  // Последовательно обрабатываем пакеты с параллельной проверкой внутри пакета
+  for (const batch of batches) {
+    const batchPromises = batch.map(async (proxy) => {
+      try {
+        const testedProxy = await throttledTest(proxy);
+        if (onProgress) {
+          onProgress(testedProxy);
+        }
+        return testedProxy;
+      } catch (error) {
+        // Обработка критических ошибок
+        proxy.status = 'inactive';
+        if (onProgress) {
+          onProgress(proxy);
+        }
+        return proxy;
+      }
+    });
+    
+    // Ожидаем завершения текущего пакета
+    const batchResults = await Promise.all(batchPromises);
+    results.push(...batchResults);
+    
+    // Небольшая пауза между пакетами для снижения нагрузки
+    await new Promise(resolve => setTimeout(resolve, 500));
+  }
+  
+  return results;
 }

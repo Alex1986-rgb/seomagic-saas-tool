@@ -1,6 +1,6 @@
 
 import type { Proxy } from './types';
-import { testProxy } from './proxy-testing/proxyTester';
+import { testProxy, batchTestProxies } from './proxy-testing/proxyTester';
 import { testUrls } from './url-testing/urlTester';
 
 export class ProxyValidator {
@@ -22,33 +22,7 @@ export class ProxyValidator {
     testUrl: string = 'https://api.ipify.org/',
     onProgress?: (proxy: Proxy) => void
   ): Promise<Proxy[]> {
-    const results: Proxy[] = [];
-    let successCount = 0;
-    
-    for (const currentProxy of proxyList) {
-      try {
-        const checkedProxy = await this.checkProxy(currentProxy, testUrl);
-        
-        if (checkedProxy.status === 'active') {
-          successCount++;
-          console.log(`Успешно проверен прокси ${currentProxy.ip}:${currentProxy.port}, всего работающих: ${successCount}`);
-        }
-        
-        results.push(checkedProxy);
-        
-        if (onProgress) onProgress(checkedProxy);
-      } catch (error) {
-        console.error(`Ошибка при проверке прокси ${currentProxy.ip}:${currentProxy.port}:`, error);
-        currentProxy.status = 'inactive';
-        if (onProgress) onProgress(currentProxy);
-        results.push(currentProxy);
-      }
-      
-      await new Promise(resolve => setTimeout(resolve, 1000));
-    }
-    
-    console.log(`Проверка прокси завершена. Всего проверено: ${proxyList.length}, работающих: ${successCount}`);
-    
-    return results;
+    // Используем оптимизированный метод пакетной проверки
+    return batchTestProxies(proxyList, testUrl, onProgress);
   }
 }

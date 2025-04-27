@@ -1,8 +1,11 @@
 
 import type { Proxy } from '../types';
-import axios from 'axios';
-import { testProxy } from '../proxy-testing/proxyTester';
+import axios, { AxiosResponse } from 'axios';
 import { setupAxiosInstance } from '../utils/axiosConfig';
+
+// Пул активных запросов для управления параллелизмом
+const MAX_CONCURRENT_REQUESTS = 10;
+let activeRequests = 0;
 
 export async function testUrls(
   urls: string[], 
@@ -16,88 +19,104 @@ export async function testUrls(
   if (useProxies && activeProxies.length === 0) {
     throw new Error('Нет активных прокси для использования');
   }
+
+  // Функция для контроля параллельных запросов
+  const throttledRequest = async (fn: () => Promise<any>) => {
+    while (activeRequests >= MAX_CONCURRENT_REQUESTS) {
+      await new Promise(resolve => setTimeout(resolve, 100));
+    }
+    activeRequests++;
+    try {
+      return await fn();
+    } finally {
+      activeRequests--;
+    }
+  };
   
-  for (const url of urls) {
+  // Создаем map для быстрого доступа к прокси
+  const proxyMap = new Map<string, Proxy[]>();
+  activeProxies.forEach(proxy => {
+    const key = `${proxy.protocol}`;
+    if (!proxyMap.has(key)) {
+      proxyMap.set(key, []);
+    }
+    proxyMap.get(key)?.push(proxy);
+  });
+  
+  // Улучшаем функцию для выбора прокси с балансировкой нагрузки
+  const getRandomProxy = (usedProxies: Set<string>): Proxy | undefined => {
+    if (activeProxies.length === 0) return undefined;
+    
+    // Если все прокси уже использовались, сбрасываем
+    if (usedProxies.size >= activeProxies.length) {
+      usedProxies.clear();
+    }
+    
+    // Пробуем найти неиспользованный прокси
+    const availableProxies = activeProxies.filter(p => !usedProxies.has(`${p.ip}:${p.port}`));
+    
+    if (availableProxies.length > 0) {
+      const proxy = availableProxies[Math.floor(Math.random() * availableProxies.length)];
+      usedProxies.add(`${proxy.ip}:${proxy.port}`);
+      return proxy;
+    }
+    
+    // Если все использованы, берем любой
+    const proxy = activeProxies[Math.floor(Math.random() * activeProxies.length)];
+    usedProxies.add(`${proxy.ip}:${proxy.port}`);
+    return proxy;
+  };
+  
+  // Параллельное тестирование URL
+  const testPromises = urls.map(url => throttledRequest(async () => {
+    let usedProxies = new Set<string>();
     let currentProxy: Proxy | undefined;
-    let usedProxies: string[] = []; // Track which proxies we've already tried for this URL
     
     try {
       if (useProxies) {
-        // Randomly select a proxy from active proxies that we haven't tried yet for this URL
-        const availableProxies = activeProxies.filter(p => !usedProxies.includes(`${p.ip}:${p.port}`));
-        
-        // If we've tried all proxies, reset and try again
-        if (availableProxies.length === 0 && activeProxies.length > 0) {
-          currentProxy = activeProxies[Math.floor(Math.random() * activeProxies.length)];
-        } else if (availableProxies.length > 0) {
-          currentProxy = availableProxies[Math.floor(Math.random() * availableProxies.length)];
-        }
-        
-        if (currentProxy) {
-          usedProxies.push(`${currentProxy.ip}:${currentProxy.port}`);
-          console.log(`Используем прокси ${currentProxy.ip}:${currentProxy.port} для URL ${url}`);
-        }
+        currentProxy = getRandomProxy(usedProxies);
       }
       
-      let retries = 3; // Increase retries to 3
-      let response;
+      let retries = 2;
+      let response: AxiosResponse | undefined;
       let error;
       
       while (retries >= 0) {
         try {
-          console.log(`Отправка запроса к ${url}, осталось попыток: ${retries}`);
-          
-          // Use our configured axios instance
           let axiosInstance;
           
           if (useProxies && currentProxy) {
             axiosInstance = setupAxiosInstance(currentProxy);
           } else {
             axiosInstance = axios.create({
-              timeout: 60000,
+              timeout: 20000,
               validateStatus: () => true,
               maxRedirects: 5,
               headers: {
                 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
+                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
                 'Accept-Language': 'ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7',
-                'Accept-Encoding': 'gzip, deflate, br',
                 'Cache-Control': 'no-cache',
-                'Pragma': 'no-cache'
               }
             });
           }
           
           response = await axiosInstance.get(url, {
-            timeout: 60000, // Increased timeout
+            timeout: 20000,
             validateStatus: () => true
           });
           
-          console.log(`Успешный ответ от ${url}: статус ${response.status}`);
           break;
         } catch (e) {
           error = e;
-          const errorMessage = e.message || 'Неизвестная ошибка';
-          console.error(`Ошибка при попытке запроса к ${url} через ${currentProxy?.ip}:${currentProxy?.port}:`, errorMessage);
           retries--;
           
-          if (retries >= 0) {
-            console.log(`Повторная попытка для URL ${url}, осталось попыток: ${retries}`);
-            await new Promise(resolve => setTimeout(resolve, 3000)); // Longer delay between retries
-            
-            if (useProxies && activeProxies.length > 1) {
-              // Try a different proxy
-              const availableProxies = activeProxies.filter(p => 
-                !usedProxies.includes(`${p.ip}:${p.port}`) || usedProxies.length >= activeProxies.length
-              );
-              
-              if (availableProxies.length > 0) {
-                currentProxy = availableProxies[Math.floor(Math.random() * availableProxies.length)];
-                usedProxies.push(`${currentProxy.ip}:${currentProxy.port}`);
-                console.log(`Меняем прокси на ${currentProxy.ip}:${currentProxy.port} для повторной попытки`);
-              }
-            }
+          if (retries >= 0 && useProxies) {
+            // При ошибке пробуем другой прокси
+            currentProxy = getRandomProxy(usedProxies);
           }
+          
+          await new Promise(resolve => setTimeout(resolve, 1000));
         }
       }
       
@@ -109,7 +128,7 @@ export async function testUrls(
             currentProxy ? `${currentProxy.ip}:${currentProxy.port}` : undefined
           );
         }
-
+        
         results.push({
           url,
           status: response.status,
@@ -119,8 +138,6 @@ export async function testUrls(
         throw error;
       }
     } catch (error) {
-      console.error(`Ошибка при проверке URL ${url}:`, error);
-      
       const errorDetails = error.code === 'ECONNABORTED' 
         ? 'Превышено время ожидания'
         : error.code === 'ECONNREFUSED'
@@ -128,7 +145,7 @@ export async function testUrls(
         : error.code === 'ENOTFOUND'
         ? 'Не найден хост'
         : error.message || 'Неизвестная ошибка';
-
+        
       if (onProgress) {
         onProgress(
           url, 
@@ -137,7 +154,7 @@ export async function testUrls(
           errorDetails
         );
       }
-
+      
       results.push({
         url,
         status: error.response?.status || 0,
@@ -146,10 +163,13 @@ export async function testUrls(
         proxy: currentProxy ? `${currentProxy.ip}:${currentProxy.port}` : undefined
       });
     }
-
-    // Add delay between URL tests
-    await new Promise(resolve => setTimeout(resolve, 2000));
-  }
+    
+    // Короткая пауза между запросами к одному URL
+    await new Promise(resolve => setTimeout(resolve, 500));
+  }));
+  
+  // Ожидаем завершения всех запросов
+  await Promise.all(testPromises);
   
   return results;
 }

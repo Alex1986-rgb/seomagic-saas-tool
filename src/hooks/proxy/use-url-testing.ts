@@ -45,7 +45,6 @@ export function useUrlTesting() {
       
       // Предварительно обрабатываем URL
       const cleanUrls = urls.map(url => url.trim()).filter(url => url);
-      console.log("Тестируемые URL:", cleanUrls);
       
       // Добавляем автопротокол для URL без http/https
       const processedUrls = cleanUrls.map(url => {
@@ -55,18 +54,11 @@ export function useUrlTesting() {
         return url;
       });
       
-      console.log("Обработанные URL для тестирования:", processedUrls);
-      
+      // Устанавливаем максимальное количество одновременных проверок
       const results = await proxyManager.testUrls(processedUrls, useProxies, (url, status, proxy, errorDetails) => {
         checkedCount++;
         setProgress(Math.round((checkedCount / processedUrls.length) * 100));
         setStatusMessage(`Проверено ${checkedCount}/${processedUrls.length} URL`);
-        
-        const statusInfo = status > 0 
-          ? `статус ${status}` 
-          : `ошибка: ${errorDetails || 'неизвестная ошибка'}`;
-        
-        console.log(`Результат проверки URL ${url}: ${statusInfo}, прокси ${proxy || 'не использовался'}`);
         
         // Добавляем результат в состояние для отображения в интерфейсе
         setTestResults(prev => [...prev, {
