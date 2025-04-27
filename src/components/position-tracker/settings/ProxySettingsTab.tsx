@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -115,7 +114,7 @@ export function ProxySettingsTab({
         </div>
         
         {activeProxies === 0 && !isLoading && (
-          <Alert variant="warning" className="mt-2">
+          <Alert variant="destructive" className="mt-2">
             <AlertDescription>
               Нет активных прокси. Рекомендуется собрать и проверить прокси для корректной работы сервиса.
             </AlertDescription>
