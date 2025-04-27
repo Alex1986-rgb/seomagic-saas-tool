@@ -28,11 +28,12 @@ export function useUrlTesting() {
       if (activeProxiesList.length === 0) {
         toast({
           title: "Нет активных прокси",
-          description: "Для использования прокси необходимо иметь активные прокси",
+          description: "Для использования прокси необходимо собрать и проверить прокси",
           variant: "destructive",
         });
         return [];
       }
+      console.log(`Доступно ${activeProxiesList.length} активных прокси для тестирования URL`);
     }
     
     setIsTesting(true);
@@ -77,9 +78,12 @@ export function useUrlTesting() {
         }]);
       });
       
+      // Подсчитываем успешные запросы
+      const successfulRequests = results.filter(r => r.status >= 200 && r.status < 400).length;
+      
       toast({
         title: "Проверка URL завершена",
-        description: `Проверено ${processedUrls.length} URL`,
+        description: `Проверено ${processedUrls.length} URL. Успешно: ${successfulRequests}, с ошибками: ${processedUrls.length - successfulRequests}`,
       });
       
       return results;

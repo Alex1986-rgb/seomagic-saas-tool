@@ -107,10 +107,17 @@ export class ProxyValidator {
           // Выбираем случайный прокси из активных, с механизмом ротации
           currentProxy = activeProxies[Math.floor(Math.random() * activeProxies.length)];
           console.log(`Используем прокси ${currentProxy.ip}:${currentProxy.port} для URL ${url}`);
+          
+          // Проверяем, что прокси действительно доступен
+          const testResult = await this.checkProxy(currentProxy, 'https://api.ipify.org/');
+          if (testResult.status !== 'active') {
+            console.log(`Прокси ${currentProxy.ip}:${currentProxy.port} оказался недоступен при перепроверке, пропускаем`);
+            throw new Error(`Прокси ${currentProxy.ip}:${currentProxy.port} недоступен`);
+          }
         }
         
         const config: any = {
-          timeout: 60000, // Увеличили таймаут до 60 секунд
+          timeout: 30000, // Уменьшили таймаут до 30 секунд для более быстрой проверки
           maxRedirects: 5,
           validateStatus: (status: number) => status < 600, // Принимаем любой статус до 600
           headers: {
@@ -118,17 +125,8 @@ export class ProxyValidator {
             'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
             'Accept-Language': 'ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7',
             'Accept-Encoding': 'gzip, deflate, br',
-            'Connection': 'keep-alive',
-            'Upgrade-Insecure-Requests': '1',
-            'Cache-Control': 'max-age=0',
-            'Pragma': 'no-cache',
-            'Sec-CH-UA': '"Google Chrome";v="120", "Chromium";v="120"',
-            'Sec-CH-UA-Mobile': '?0',
-            'Sec-CH-UA-Platform': '"Windows"',
-            'Sec-Fetch-Dest': 'document',
-            'Sec-Fetch-Mode': 'navigate',
-            'Sec-Fetch-Site': 'none',
-            'Sec-Fetch-User': '?1'
+            'Cache-Control': 'no-cache',
+            'Pragma': 'no-cache'
           }
         };
 
@@ -136,32 +134,65 @@ export class ProxyValidator {
           config.proxy = {
             host: currentProxy.ip,
             port: currentProxy.port,
-            protocol: currentProxy.protocol,
+            protocol: currentProxy.protocol || 'http',
             auth: currentProxy.username && currentProxy.password ? {
               username: currentProxy.username,
               password: currentProxy.password
             } : undefined
           };
+          
+          // Логируем использование прокси
+          console.log(`Настроен прокси для запроса к ${url}:`, {
+            host: currentProxy.ip,
+            port: currentProxy.port,
+            protocol: currentProxy.protocol || 'http'
+          });
         }
 
         console.log(`Тестирование URL: ${url} через прокси: ${currentProxy ? `${currentProxy.ip}:${currentProxy.port}` : 'без прокси'}`);
         
         // Добавляем повторные попытки при ошибках соединения
-        let retries = 3;
+        let retries = 2;
         let response;
         let error;
         
-        while (retries > 0) {
+        while (retries >= 0) {
           try {
+            // Используем прямой axios.get вместо создания инстанса для более простого управления запросом
             response = await axios.get(url, config);
+            console.log(`Успешный ответ от ${url}: статус ${response.status}`);
             break; // Успешный запрос, выходим из цикла
           } catch (e) {
             error = e;
+            console.error(`Ошибка при попытке запроса к ${url}:`, e.message || 'Неизвестная ошибка');
             retries--;
-            if (retries > 0) {
+            if (retries >= 0) {
               console.log(`Повторная попытка для URL ${url}, осталось попыток: ${retries}`);
               // Задержка перед следующей попыткой
               await new Promise(resolve => setTimeout(resolve, 2000));
+              
+              // Если есть другие прокси, пробуем использовать другой прокси
+              if (useProxies && activeProxies.length > 1) {
+                let newProxy;
+                do {
+                  newProxy = activeProxies[Math.floor(Math.random() * activeProxies.length)];
+                } while (newProxy.ip === currentProxy?.ip);
+                
+                currentProxy = newProxy;
+                console.log(`Меняем прокси на ${currentProxy.ip}:${currentProxy.port} для повторной попытки`);
+                
+                if (currentProxy) {
+                  config.proxy = {
+                    host: currentProxy.ip,
+                    port: currentProxy.port,
+                    protocol: currentProxy.protocol || 'http',
+                    auth: currentProxy.username && currentProxy.password ? {
+                      username: currentProxy.username,
+                      password: currentProxy.password
+                    } : undefined
+                  };
+                }
+              }
             }
           }
         }
@@ -227,10 +258,17 @@ export class ProxyValidator {
     onProgress?: (proxy: Proxy) => void
   ): Promise<Proxy[]> {
     const results: Proxy[] = [];
+    let successCount = 0;
     
     for (const currentProxy of proxyList) {
       try {
         const checkedProxy = await this.checkProxy(currentProxy, testUrl);
+        
+        if (checkedProxy.status === 'active') {
+          successCount++;
+          console.log(`Успешно проверен прокси ${currentProxy.ip}:${currentProxy.port}, всего работающих: ${successCount}`);
+        }
+        
         results.push(checkedProxy);
         
         if (onProgress) onProgress(checkedProxy);
@@ -244,6 +282,9 @@ export class ProxyValidator {
       // Добавляем задержку между проверками
       await new Promise(resolve => setTimeout(resolve, 1000));
     }
+    
+    // Финальная статистика
+    console.log(`Проверка прокси завершена. Всего проверено: ${proxyList.length}, работающих: ${successCount}`);
     
     return results;
   }

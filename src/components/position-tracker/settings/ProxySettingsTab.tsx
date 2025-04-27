@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -78,7 +79,7 @@ export function ProxySettingsTab({
             className="flex-1"
           >
             <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
-            Собрать прокси
+            {clearBeforeCollect ? 'Очистить и собрать прокси' : 'Собрать новые прокси'}
           </Button>
           <Button
             variant="outline"
