@@ -4,10 +4,16 @@ import { testProxy, batchTestProxies } from './proxy-testing/proxyTester';
 import { testUrls } from './url-testing/urlTester';
 
 export class ProxyValidator {
+  /**
+   * Проверка одиночного прокси
+   */
   async checkProxy(proxy: Proxy, testUrl: string = 'https://api.ipify.org/'): Promise<Proxy> {
     return testProxy(proxy, testUrl);
   }
 
+  /**
+   * Тестирование URL через прокси
+   */
   async testUrls(
     urls: string[], 
     proxies: Proxy[], 
@@ -17,6 +23,9 @@ export class ProxyValidator {
     return testUrls(urls, proxies, useProxies, onProgress);
   }
 
+  /**
+   * Пакетная проверка списка прокси
+   */
   async checkProxies(
     proxyList: Proxy[],
     testUrl: string = 'https://api.ipify.org/',
