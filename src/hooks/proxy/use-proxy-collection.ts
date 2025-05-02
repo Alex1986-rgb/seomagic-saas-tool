@@ -41,7 +41,7 @@ export function useProxyCollection() {
       
       let completedSources = 0;
       
-      // Вызываем collectProxies с параметром shouldClear
+      // Fix here: Pass a single callback function instead of two arguments
       const newProxies = await proxyManager.collectProxies((source, count) => {
         if (count >= 0) {
           // Теперь count представляет общее количество прокси
@@ -52,7 +52,7 @@ export function useProxyCollection() {
         } else {
           setStatusMessage(`Ошибка при сборе прокси из ${source}`);
         }
-      }, shouldClear);
+      });
       
       toast({
         title: "Сбор прокси завершен",

@@ -84,4 +84,9 @@ export class ProxyStorage {
     this.proxies.clear();
     this.saveToStorage();
   }
+  
+  // Add the missing getActiveProxies method
+  getActiveProxies(): Proxy[] {
+    return Array.from(this.proxies.values()).filter(proxy => proxy.status === 'active');
+  }
 }
