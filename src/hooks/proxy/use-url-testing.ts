@@ -74,8 +74,15 @@ export function useUrlTesting() {
         }]);
       });
       
-      // Подсчитываем успешные запросы
-      const successfulRequests = results.filter(r => r.success).length;
+      // Подсчитываем успешные запросы - здесь мы должны убедиться, что каждый элемент в results имеет свойство success
+      const successfulRequests = results.filter(r => {
+        // Проверяем, есть ли свойство success, если нет, определяем успех на основе статуса
+        if (r.success !== undefined) {
+          return r.success;
+        }
+        // Если свойство success отсутствует, добавляем логику определения успеха
+        return r.status >= 200 && r.status < 400;
+      }).length;
       
       toast({
         title: "Проверка URL завершена",
