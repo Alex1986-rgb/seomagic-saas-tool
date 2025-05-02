@@ -45,7 +45,7 @@ export interface PingOptions {
   retryDelay?: number;
   useProxy?: boolean;
   fallbackToDirect?: boolean;
-  forceDirect?: boolean; // Добавлено для принудительного использования прямого соединения
+  forceDirect?: boolean; // Added for forcing direct connections
 }
 
 /**
@@ -59,7 +59,7 @@ export interface PingResult {
   proxy?: string;
   time?: number;
   error?: string;
-  direct?: boolean; // Добавлен флаг для прямого соединения
+  direct?: boolean; // Added flag for direct connection
 }
 
 /**
@@ -78,6 +78,10 @@ export interface Proxy {
   lastChecked: Date;
   lastSeen?: Date;
   source?: string;
+  lastError?: string;
+  checkedUrl?: string;
+  anonymity?: 'transparent' | 'anonymous' | 'elite'; // Add anonymity level
+  uptime?: number;
 }
 
 /**
