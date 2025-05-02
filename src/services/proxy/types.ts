@@ -61,3 +61,32 @@ export interface PingResult {
   error?: string;
   direct?: boolean; // Добавлен флаг для прямого соединения
 }
+
+/**
+ * Proxy interface defining a proxy configuration
+ */
+export interface Proxy {
+  id: string;
+  ip: string;
+  port: number;
+  protocol: 'http' | 'https' | 'socks4' | 'socks5';
+  status: 'active' | 'inactive' | 'testing';
+  username?: string;
+  password?: string;
+  country?: string;
+  speed?: number;
+  lastChecked: Date;
+  lastSeen?: Date;
+  source?: string;
+}
+
+/**
+ * Structure for proxy sources configuration
+ */
+export interface ProxySources {
+  [key: string]: {
+    url: string;
+    enabled: boolean;
+    parseFunction: (data: string) => any[];
+  };
+}
