@@ -1,4 +1,3 @@
-
 import { Proxy } from './types';
 
 export class ProxyStorage {
@@ -136,7 +135,7 @@ export class ProxyStorage {
           // Формат ip:port
           const ipPort = trimmedLine.split(':');
           ip = ipPort[0];
-          port = parseInt(ipPort[1], 10);
+          port = parseInt(ipPort[1], 10); // Convert to number explicitly
         } else {
           continue; // Неверный формат
         }
@@ -149,7 +148,7 @@ export class ProxyStorage {
             const proxy: Proxy = {
               id: proxyId,
               ip,
-              port,
+              port, // Now correctly a number
               protocol,
               status: 'testing',
               lastChecked: new Date(),

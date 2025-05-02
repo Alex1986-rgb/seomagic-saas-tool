@@ -30,7 +30,7 @@ export async function testProxy(proxy: Proxy, testUrl: string = 'https://api.ipi
     if (response.status >= 200 && response.status < 400) {
       updatedProxy.status = 'active';
       updatedProxy.speed = speed;
-      updatedProxy.lastSeen = new Date();
+      updatedProxy.lastSeen = new Date(); // lastSeen is now in the Proxy interface
     } else {
       updatedProxy.status = 'inactive';
       updatedProxy.speed = speed;
@@ -48,7 +48,7 @@ export async function testProxy(proxy: Proxy, testUrl: string = 'https://api.ipi
     
     updatedProxy.status = 'inactive';
     updatedProxy.speed = undefined;
-    updatedProxy.lastError = errorMessage;
+    updatedProxy.lastError = errorMessage; // lastError is now in the Proxy interface
   }
   
   return updatedProxy;

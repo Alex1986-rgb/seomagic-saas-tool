@@ -141,14 +141,17 @@ export class PingService {
           timeout: 15000
         });
       } else {
-        // No proxy
-        const axios = setupAxiosInstance({
+        // No proxy - fix by adding required lastChecked property
+        const directProxy: Proxy = {
           id: 'direct',
           ip: 'direct',
           port: 0,
           protocol: 'http',
-          status: 'active'
-        }, rpcEndpoint);
+          status: 'active',
+          lastChecked: new Date()  // Added missing required property
+        };
+        
+        const axios = setupAxiosInstance(directProxy, rpcEndpoint);
         
         response = await axios.post(rpcEndpoint, xmlrpcRequest, {
           headers: {
@@ -172,8 +175,8 @@ export class PingService {
         message: success 
           ? `Успешно пингован URL ${url} через ${rpcEndpoint} за ${pingTime}мс` 
           : `Ошибка при пинге URL ${url} через ${rpcEndpoint}`,
-        proxy: proxy ? `${proxy.ip}:${proxy.port}` : undefined,
-        time: pingTime
+        proxy: proxy ? `${proxy.ip}:${proxy.port}` : undefined,  // This is now allowed in PingResult
+        time: pingTime                                           // This is now allowed in PingResult
       };
       
     } catch (error) {
@@ -184,7 +187,7 @@ export class PingService {
         rpc: rpcEndpoint,
         success: false,
         message: `Ошибка при пинге URL ${url} через ${rpcEndpoint}: ${error.message || 'Unknown error'}`,
-        error: error.message || 'Unknown error'
+        error: error.message || 'Unknown error'                  // This is now allowed in PingResult
       };
     } finally {
       this.activeRequests--;
