@@ -1,4 +1,3 @@
-
 // Типы для прокси-сервисов
 export interface Proxy {
   id: string;
@@ -16,6 +15,7 @@ export interface Proxy {
   password?: string; // Добавляем опциональное поле для пароля
   lastSeen?: Date;   // Добавляем опциональное поле для последнего успешного подключения
   lastError?: string; // Добавляем опциональное поле для описания ошибки
+  checkedUrl?: string; // Добавляем опциональное поле для URL, который был проверен
 }
 
 export interface ProxySources {
@@ -35,4 +35,3 @@ export interface PingResult {
   time?: number;      // Добавляем время выполнения запроса
   error?: string;     // Добавляем информацию об ошибке
 }
-
