@@ -1,10 +1,11 @@
+
 import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { AlertCircle, InfoIcon, RefreshCw, Send, Settings } from 'lucide-react';
+import { AlertCircle, InfoIcon, RefreshCw, Send, Settings, Wifi, WifiOff } from 'lucide-react';
 import { Progress } from "@/components/ui/progress";
 import { useToast } from '@/hooks/use-toast';
 import BatchProcessingConfig from './BatchProcessingConfig';
@@ -23,7 +24,7 @@ export const DEFAULT_RPC_SERVICES = [
 ];
 
 interface PingFormProps {
-  onStartPing: (urls: string[], rpcServices: string[], siteTitle: string, feedUrl: string, useProxies: boolean) => Promise<void>;
+  onStartPing: (urls: string[], rpcServices: string[], siteTitle: string, feedUrl: string, useProxies: boolean, forceDirect: boolean) => Promise<void>;
   isLoading: boolean;
   progress: number;
   batchSize: number;
@@ -49,6 +50,7 @@ const PingForm: React.FC<PingFormProps> = ({
   const [siteTitle, setSiteTitle] = useState<string>('');
   const [feedUrl, setFeedUrl] = useState<string>('');
   const [useProxies, setUseProxies] = useState<boolean>(true);
+  const [forceDirect, setForceDirect] = useState<boolean>(false);
   const [rpcServices, setRpcServices] = useState<string>(DEFAULT_RPC_SERVICES.join('\n'));
   const [advancedOptionsOpen, setAdvancedOptionsOpen] = useState<boolean>(false);
   const [activeProxiesCount, setActiveProxiesCount] = useState<number>(0);
@@ -68,6 +70,13 @@ const PingForm: React.FC<PingFormProps> = ({
       checkActiveProxies();
     }
   }, [useProxies]);
+
+  // Отключаем использование прокси если выбран принудительный прямой режим
+  useEffect(() => {
+    if (forceDirect) {
+      setUseProxies(false);
+    }
+  }, [forceDirect]);
 
   const handleSubmit = async () => {
     const urlList = urls.split('\n').filter(url => url.trim());
@@ -109,7 +118,7 @@ const PingForm: React.FC<PingFormProps> = ({
       return;
     }
     
-    await onStartPing(urlList, rpcList, siteTitle, feedUrl, useProxies);
+    await onStartPing(urlList, rpcList, siteTitle, feedUrl, useProxies, forceDirect);
   };
 
   return (
@@ -183,13 +192,32 @@ const PingForm: React.FC<PingFormProps> = ({
         </CollapsibleContent>
       </Collapsible>
       
-      <div className="flex items-center space-x-2">
-        <Switch
-          id="use-proxies"
-          checked={useProxies}
-          onCheckedChange={setUseProxies}
-        />
-        <Label htmlFor="use-proxies">Использовать прокси для пинга</Label>
+      <div className="flex flex-col gap-2">
+        <div className="flex items-center space-x-2">
+          <Switch
+            id="use-proxies"
+            checked={useProxies}
+            onCheckedChange={setUseProxies}
+            disabled={forceDirect}
+          />
+          <Label htmlFor="use-proxies" className={forceDirect ? "text-muted-foreground" : ""}>
+            Использовать прокси для пинга
+          </Label>
+        </div>
+        
+        <div className="flex items-center space-x-2">
+          <Switch
+            id="force-direct"
+            checked={forceDirect}
+            onCheckedChange={(checked) => {
+              setForceDirect(checked);
+              if (checked) setUseProxies(false);
+            }}
+          />
+          <Label htmlFor="force-direct">
+            Принудительно использовать прямое соединение
+          </Label>
+        </div>
       </div>
       
       {useProxies && activeProxiesCount === 0 && (
@@ -198,6 +226,15 @@ const PingForm: React.FC<PingFormProps> = ({
           <AlertDescription>
             Нет активных прокси. Будет использоваться прямое подключение. 
             Для лучших результатов рекомендуется сначала собрать и проверить прокси.
+          </AlertDescription>
+        </Alert>
+      )}
+      
+      {forceDirect && (
+        <Alert variant="default" className="bg-blue-50">
+          <Wifi className="h-4 w-4" />
+          <AlertDescription>
+            Активирован режим прямого соединения. Прокси использоваться не будут.
           </AlertDescription>
         </Alert>
       )}
@@ -219,6 +256,31 @@ const PingForm: React.FC<PingFormProps> = ({
             </>
           )}
         </Button>
+        
+        {useProxies && (
+          <Button 
+            variant="outline" 
+            onClick={() => setForceDirect(true)}
+            disabled={isLoading || forceDirect}
+          >
+            <WifiOff className="mr-2 h-4 w-4" />
+            Отключить прокси
+          </Button>
+        )}
+        
+        {forceDirect && (
+          <Button 
+            variant="outline" 
+            onClick={() => {
+              setForceDirect(false);
+              setUseProxies(true);
+            }}
+            disabled={isLoading}
+          >
+            <Wifi className="mr-2 h-4 w-4" />
+            Включить прокси
+          </Button>
+        )}
       </div>
 
       {isLoading && (

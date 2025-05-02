@@ -1,42 +1,63 @@
 
-// Типы для прокси-сервисов
-export interface Proxy {
-  id: string;
-  ip: string;
-  port: number;
-  protocol: 'http' | 'https' | 'socks4' | 'socks5';
-  country?: string;
-  anonymity?: 'transparent' | 'anonymous' | 'elite';
-  speed?: number; // в миллисекундах
-  uptime?: number; // процент работоспособности
-  lastChecked: Date;
-  status: 'active' | 'inactive' | 'testing';
-  source?: string;
-  username?: string; // Добавляем опциональное поле для имени пользователя
-  password?: string; // Добавляем опциональное поле для пароля
-  lastSeen?: Date;   // Добавляем опциональное поле для последнего успешного подключения
-  lastError?: string; // Добавляем опциональное поле для описания ошибки
-  checkedUrl?: string; // Добавляем опциональное поле для URL, который был проверен
-}
+/**
+ * Types for URL testing functionality
+ */
 
-export interface ProxySources {
-  [key: string]: {
-    url: string;
-    enabled: boolean;
-    parseFunction: (data: string) => Proxy[];
+/**
+ * Result of testing a URL
+ */
+export interface UrlTestResult {
+  url: string;
+  status: number;
+  error?: string;
+  errorDetails?: string;
+  proxy?: string;
+  success: boolean;
+  timestamp?: string;
+  responseData?: string; // Added to store the response body for debugging
+  retryCount?: number;   // Added to track retries
+  direct?: boolean;      // Added to indicate if this was a direct connection (no proxy)
+  timing?: {             // Added to track timing information
+    start: number;
+    end: number;
+    duration: number;
   }
 }
 
+/**
+ * Configuration for URL testing
+ */
+export interface UrlTestConfig {
+  timeout?: number;
+  maxRedirects?: number;
+  retries?: number;
+  retryDelay?: number;
+  maxConcurrentRequests?: number;
+  failoverToDirect?: boolean; // Added to allow falling back to direct connections
+}
+
+/**
+ * Options for ping requests
+ */
+export interface PingOptions {
+  timeout?: number;
+  retries?: number;
+  retryDelay?: number;
+  useProxy?: boolean;
+  fallbackToDirect?: boolean;
+  forceDirect?: boolean; // Добавлено для принудительного использования прямого соединения
+}
+
+/**
+ * Результат пинга
+ */
 export interface PingResult {
   url: string;
   rpc: string;
   success: boolean;
   message: string;
-  proxy?: string;     // Добавляем информацию об использованном прокси
-  time?: number;      // Добавляем время выполнения запроса
-  error?: string;     // Добавляем информацию об ошибке
+  proxy?: string;
+  time?: number;
+  error?: string;
+  direct?: boolean; // Добавлен флаг для прямого соединения
 }
-
-// Реэкспортируем UrlTestResult из модуля url-testing для согласованности
-// Fix: use export type instead of export for type re-export
-export type { UrlTestResult } from './url-testing/urlTester';

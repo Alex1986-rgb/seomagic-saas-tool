@@ -18,15 +18,18 @@ export function usePingService() {
     rpcList: string[],
     siteTitle: string,
     feedUrl: string,
-    useProxies: boolean
+    useProxies: boolean,
+    forceDirect: boolean = false
   ) => {
     setIsLoading(true);
     setPingResults([]);
     setProgress(0);
     
     try {
+      const actuallyUseProxies = useProxies && !forceDirect;
+      
       // Проверяем наличие активных прокси если требуется их использование
-      if (useProxies) {
+      if (actuallyUseProxies) {
         const activeProxies = proxyManager.getActiveProxies();
         if (activeProxies.length === 0) {
           toast({
@@ -37,6 +40,8 @@ export function usePingService() {
         } else {
           console.log(`Доступно ${activeProxies.length} активных прокси для пинга`);
         }
+      } else {
+        console.log('Использование прокси отключено, будет использоваться прямое соединение');
       }
       
       // Пингуем URL-ы через RPC сервисы
@@ -50,7 +55,7 @@ export function usePingService() {
         rpcList,
         batchSize,
         concurrency,
-        useProxies
+        actuallyUseProxies
       );
       
       // Добавляем результаты постепенно для лучшего UX

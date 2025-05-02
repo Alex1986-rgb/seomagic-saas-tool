@@ -51,6 +51,7 @@ export class PingService {
     }
     
     console.log(`Processing ${queue.length} ping requests in ${batches.length} batches`);
+    console.log(`Using proxies: ${useProxies}, Available proxies: ${activeProxies.length}`);
     
     // Process batches sequentially
     for (let i = 0; i < batches.length; i++) {
@@ -126,22 +127,11 @@ export class PingService {
       // Format the ping request
       const xmlrpcRequest = this.createXmlRpcRequest(siteTitle, url, feedUrl);
       
-      // Use the enhanced XML-RPC request function with retry logic
+      // Track timing
       const startTime = Date.now();
       
-      // First try with proxy if available
-      let response;
-      if (proxy) {
-        response = await makeXmlRpcRequest(rpcEndpoint, xmlrpcRequest, proxy, 15000, 2);
-      }
-      
-      // If proxy connection failed or no proxy available, try direct connection as fallback
-      if (!proxy || !response || !response.success) {
-        if (proxy) {
-          console.log(`Proxy connection failed for ${url} to ${rpcEndpoint}, trying direct connection`);
-        }
-        response = await makeXmlRpcRequest(rpcEndpoint, xmlrpcRequest, null, 20000, 1);
-      }
+      // Try direct connection first for better stability
+      const response = await makeXmlRpcRequest(rpcEndpoint, xmlrpcRequest, null, 20000, 1);
       
       const endTime = Date.now();
       const pingTime = endTime - startTime;
@@ -156,7 +146,8 @@ export class PingService {
           : `Ошибка при пинге URL ${url} через ${rpcEndpoint}: ${response.errorDetails || response.error || 'Unknown error'}`,
         proxy: proxy ? `${proxy.ip}:${proxy.port}` : undefined,
         time: pingTime,
-        error: response.success ? undefined : (response.error || response.errorDetails || 'Unknown error')
+        error: response.success ? undefined : (response.error || response.errorDetails || 'Unknown error'),
+        direct: true // Указываем что это было прямое соединение
       };
     } catch (error) {
       console.error(`Error in pingUrl for ${url} via ${rpcEndpoint}:`, error);
@@ -166,7 +157,8 @@ export class PingService {
         rpc: rpcEndpoint,
         success: false,
         message: `Ошибка при пинге URL ${url} через ${rpcEndpoint}: ${error.message || 'Unknown error'}`,
-        error: error.message || 'Unknown error'
+        error: error.message || 'Unknown error',
+        direct: true
       };
     }
   }
