@@ -38,4 +38,5 @@ export interface PingResult {
 }
 
 // Реэкспортируем UrlTestResult из модуля url-testing для согласованности
-export { UrlTestResult } from './url-testing/urlTester';
+// Fix: use export type instead of export for type re-export
+export type { UrlTestResult } from './url-testing/urlTester';
