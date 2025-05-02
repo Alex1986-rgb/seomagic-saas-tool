@@ -41,14 +41,15 @@ export function useProxyCollection() {
       
       let completedSources = 0;
       
-      // Fix here: Pass a single callback function instead of two arguments
+      // Fix here: Pass a single callback function that handles both parameters
       const newProxies = await proxyManager.collectProxies((source, count) => {
+        completedSources++;
+        setProgress(Math.round((completedSources / sourcesCount) * 100));
+        
         if (count >= 0) {
-          // Теперь count представляет общее количество прокси
+          // Now count represents the total number of proxies
           setCollectedProxies(count);
           setStatusMessage(`Собрано ${count} прокси из источника ${source}`);
-          completedSources++;
-          setProgress(Math.round((completedSources / sourcesCount) * 100));
         } else {
           setStatusMessage(`Ошибка при сборе прокси из ${source}`);
         }

@@ -20,6 +20,7 @@ export class ProxySources {
     );
     
     const newProxies: Proxy[] = [];
+    let totalCollected = 0;
     
     for (const [sourceName, source] of Object.entries(this.proxySources)) {
       if (!source.enabled) continue;
@@ -27,7 +28,7 @@ export class ProxySources {
       try {
         // In a real implementation, we would fetch data from the source URL
         // For this mock version, we'll generate some random proxies
-        const mockData = this.generateMockResponse();
+        const mockData = this.generateMockResponse(sourceName);
         
         // Parse the proxies using the source's parseFunction
         const parsedProxies = this.parseMockData(mockData, sourceName);
@@ -42,11 +43,12 @@ export class ProxySources {
             newProxies.push(proxy);
             existingProxies.add(proxyKey);
             count++;
+            totalCollected++;
           }
         }
         
         if (progressCallback) {
-          progressCallback(sourceName, count);
+          progressCallback(sourceName, totalCollected);
         }
       } catch (error) {
         console.error(`Error collecting proxies from ${sourceName}:`, error);
@@ -59,24 +61,79 @@ export class ProxySources {
     return newProxies;
   }
   
-  // Mock data generation for testing
-  private generateMockResponse(): string {
-    return `
-      <table>
-        <tr><td>192.168.1.1</td><td>8080</td><td>HTTP</td><td>Elite</td></tr>
-        <tr><td>10.0.0.1</td><td>3128</td><td>HTTPS</td><td>Anonymous</td></tr>
-        <tr><td>172.16.0.1</td><td>1080</td><td>SOCKS5</td><td>Transparent</td></tr>
-      </table>
-    `;
+  // Enhanced mock data generation for testing
+  private generateMockResponse(source: string): string {
+    // Different templates for different sources to simulate variety
+    switch (source) {
+      case 'freeproxylists':
+        return `
+          <table>
+            <tr><td>192.168.1.1</td><td>8080</td><td>HTTP</td><td>Elite</td></tr>
+            <tr><td>10.0.0.1</td><td>3128</td><td>HTTPS</td><td>Anonymous</td></tr>
+            <tr><td>172.16.0.1</td><td>1080</td><td>SOCKS5</td><td>Transparent</td></tr>
+            <tr><td>192.168.5.5</td><td>8888</td><td>HTTP</td><td>Anonymous</td></tr>
+          </table>
+        `;
+      case 'sslproxies':
+        return `
+          <table>
+            <tr><th>IP Address</th><th>Port</th><th>Code</th><th>Country</th><th>Anonymity</th><th>Google</th><th>Https</th><th>Last Checked</th></tr>
+            <tr><td>203.0.113.1</td><td>80</td><td>US</td><td>United States</td><td>elite proxy</td><td>no</td><td>yes</td><td>1 minute ago</td></tr>
+            <tr><td>203.0.113.2</td><td>3128</td><td>CA</td><td>Canada</td><td>anonymous</td><td>no</td><td>yes</td><td>5 minutes ago</td></tr>
+            <tr><td>203.0.113.3</td><td>8080</td><td>UK</td><td>United Kingdom</td><td>transparent</td><td>no</td><td>no</td><td>10 minutes ago</td></tr>
+            <tr><td>203.0.113.4</td><td>443</td><td>DE</td><td>Germany</td><td>elite proxy</td><td>yes</td><td>yes</td><td>2 minutes ago</td></tr>
+          </table>
+        `;
+      default:
+        return `
+          <div class="proxy-list">
+            <div class="proxy-item">
+              <span class="ip">45.67.89.10</span>:<span class="port">8080</span>
+              <span class="type">HTTP</span>
+              <span class="country">Russia</span>
+            </div>
+            <div class="proxy-item">
+              <span class="ip">98.76.54.32</span>:<span class="port">3128</span>
+              <span class="type">HTTPS</span>
+              <span class="country">Brazil</span>
+            </div>
+            <div class="proxy-item">
+              <span class="ip">11.22.33.44</span>:<span class="port">1080</span>
+              <span class="type">SOCKS5</span>
+              <span class="country">China</span>
+            </div>
+          </div>
+        `;
+    }
   }
   
   private parseMockData(data: string, source: string): Proxy[] {
-    // Simple mock implementation that creates random proxies
+    // Enhanced mock implementation that creates more random proxies
     const proxies: Proxy[] = [];
     
-    for (let i = 0; i < 5; i++) {
-      const ip = `${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}`;
-      const port = Math.floor(Math.random() * 65000) + 1000;
+    // Increase the number of proxies generated for each source
+    const proxyCount = source === 'freeproxylists' || source === 'sslproxies' ? 20 : 15;
+    
+    for (let i = 0; i < proxyCount; i++) {
+      // Generate more realistic-looking IPs for different sources
+      let ip: string;
+      
+      if (source === 'freeproxylists') {
+        ip = `103.${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}`;
+      } else if (source === 'sslproxies') {
+        ip = `45.${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}`;
+      } else if (source === 'free-proxy.cz') {
+        ip = `185.${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}`;
+      } else {
+        ip = `${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}`;
+      }
+      
+      // Make port numbers more realistic based on common proxy ports
+      const commonPorts = [80, 443, 1080, 3128, 8080, 8888, 9090];
+      const port = i < commonPorts.length 
+        ? commonPorts[i] 
+        : commonPorts[Math.floor(Math.random() * commonPorts.length)];
+      
       const protocols = ['http', 'https', 'socks4', 'socks5'] as const;
       const statuses = ['active', 'inactive', 'testing'] as const;
       const anonymityLevels = ['transparent', 'anonymous', 'elite'] as const;
@@ -172,7 +229,7 @@ export class ProxySources {
     return !isNaN(port) && port > 0 && port <= 65535;
   }
   
-  // Mock parser methods for different proxy sources
+  // Enhanced parser methods for different proxy sources
   parseFreeProxyLists(data: string): any[] {
     // In a real implementation, this would parse HTML from the freeproxylists.net site
     return this.parseMockData(data, 'freeproxylists');
