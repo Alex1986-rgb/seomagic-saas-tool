@@ -1,3 +1,4 @@
+
 import axios, { AxiosInstance } from 'axios';
 import type { Proxy } from '../types';
 import https from 'https';
@@ -8,22 +9,22 @@ export function setupAxiosInstance(proxy: Proxy, testUrl: string = 'https://api.
   const httpsAgent = new https.Agent({ 
     keepAlive: true,
     keepAliveMsecs: 3000,
-    maxSockets: 100,
-    maxFreeSockets: 10,
-    timeout: 30000
+    maxSockets: 200,     // Увеличиваем со 100 до 200
+    maxFreeSockets: 20,  // Увеличиваем с 10 до 20
+    timeout: 20000       // Сокращаем с 30000 до 20000
   });
   
   const httpAgent = new http.Agent({ 
     keepAlive: true,
     keepAliveMsecs: 3000,
-    maxSockets: 100,
-    maxFreeSockets: 10,
-    timeout: 30000
+    maxSockets: 200,     // Увеличиваем со 100 до 200
+    maxFreeSockets: 20,  // Увеличиваем с 10 до 20
+    timeout: 20000       // Сокращаем с 30000 до 20000
   });
   
   // Создаем кастомный экземпляр с улучшенными настройками
   const axiosInstance = axios.create({
-    timeout: 30000, // Более оптимальный таймаут
+    timeout: 20000,      // Сокращаем с 30000 до 20000
     httpAgent,
     httpsAgent,
     proxy: {
@@ -48,11 +49,15 @@ export function setupAxiosInstance(proxy: Proxy, testUrl: string = 'https://api.
     validateStatus: null, // Позволяем обрабатывать все статусы ответа
     maxRedirects: 5,
     decompress: true,
+    responseType: 'text'  // Добавляем явное указание типа ответа для повышения производительности
   });
   
-  // Сокращаем логирование для повышения производительности
+  // Оптимизируем перехватчики для повышения производительности
   axiosInstance.interceptors.request.use(
     config => {
+      // Добавляем случайное число к URL, чтобы избежать кэширования
+      const separator = config.url?.includes('?') ? '&' : '?';
+      config.url = `${config.url}${separator}_=${Date.now()}`;
       return config;
     },
     error => {
@@ -65,7 +70,26 @@ export function setupAxiosInstance(proxy: Proxy, testUrl: string = 'https://api.
       return response;
     },
     error => {
-      return Promise.reject(error);
+      // Усовершенствованная обработка ошибок
+      if (error.response) {
+        return Promise.reject({
+          status: error.response.status,
+          message: `HTTP Error: ${error.response.status}`,
+          details: error.response.data
+        });
+      } else if (error.code === 'ECONNABORTED') {
+        return Promise.reject({
+          status: null,
+          message: 'Timeout Error: Превышен таймаут соединения',
+          details: error.message
+        });
+      } else {
+        return Promise.reject({
+          status: null,
+          message: 'Network Error: Ошибка сети',
+          details: error.message
+        });
+      }
     }
   );
 

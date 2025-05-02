@@ -74,8 +74,8 @@ export async function batchTestProxies(
     }
   };
   
-  // Разбиваем список прокси на группы для более эффективного выполнения
-  const batchSize = 50;
+  // Оптимизация: увеличиваем размер батча для более эффективной обработки
+  const batchSize = 100; // Увеличиваем с 50 до 100
   const batches = [];
   for (let i = 0; i < proxies.length; i += batchSize) {
     batches.push(proxies.slice(i, i + batchSize));
@@ -104,8 +104,8 @@ export async function batchTestProxies(
     const batchResults = await Promise.all(batchPromises);
     results.push(...batchResults);
     
-    // Небольшая пауза между пакетами для снижения нагрузки
-    await new Promise(resolve => setTimeout(resolve, 500));
+    // Сокращаем паузу между пакетами для ускорения всего процесса
+    await new Promise(resolve => setTimeout(resolve, 200)); // Сокращаем с 500 до 200 мс
   }
   
   return results;

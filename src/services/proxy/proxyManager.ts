@@ -35,17 +35,26 @@ export class ProxyManager {
       console.log('Очистка всех прокси перед новым сбором');
       this.proxyStorage.clearAllProxies();
     }
-    
-    const newProxies = await this.proxyCollector.collectProxies(onProgress);
-    
-    // Обновляем существующие или добавляем новые прокси
-    for (const proxy of newProxies) {
-      if (!this.proxyStorage.getProxy(proxy.id)) {
-        this.proxyStorage.addProxy(proxy);
+
+    try {
+      // Запускаем сбор прокси
+      const newProxies = await this.proxyCollector.collectProxies(onProgress);
+      
+      // Обновляем существующие или добавляем новые прокси
+      for (const proxy of newProxies) {
+        if (!this.proxyStorage.getProxy(proxy.id)) {
+          this.proxyStorage.addProxy(proxy);
+        }
       }
+
+      // Явно логируем количество собранных прокси
+      console.log(`Всего собрано ${newProxies.length} прокси из всех источников`);
+      
+      return newProxies;
+    } catch (error) {
+      console.error("Ошибка при сборе прокси:", error);
+      throw error;
     }
-    
-    return newProxies;
   }
 
   // Проверка прокси

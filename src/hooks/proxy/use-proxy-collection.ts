@@ -43,8 +43,8 @@ export function useProxyCollection() {
       // Вызываем collectProxies с параметром shouldClear
       const newProxies = await proxyManager.collectProxies((source, count) => {
         if (count >= 0) {
-          // Прибавляем только число новых прокси от текущего источника
-          totalCollected += count;
+          // Добавляем только новые прокси к счетчику, не накапливаем старые
+          totalCollected = count; // Заменяем накопление (+=) на присвоение (=)
           setCollectedProxies(totalCollected);
           setStatusMessage(`Собрано ${count} прокси из источника ${source} (всего: ${totalCollected})`);
           completedSources++;
