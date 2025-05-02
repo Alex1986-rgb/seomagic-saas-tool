@@ -5,8 +5,8 @@ import { ProxySelector } from './proxySelector';
 import { ConcurrencyManager } from './concurrencyManager';
 import { makeRequest } from './requestManager';
 
-// Re-export type for compatibility
-export type { UrlTestResult } from '../types';
+// Re-export types for compatibility
+export type { UrlTestResult, UrlTestConfig } from '../types';
 
 // Default configuration values
 const DEFAULT_CONFIG: UrlTestConfig = {

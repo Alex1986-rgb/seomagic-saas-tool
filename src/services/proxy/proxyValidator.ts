@@ -1,7 +1,8 @@
 
 import type { Proxy } from './types';
 import { testProxy, batchTestProxies } from './proxy-testing/proxyTester';
-import { UrlTestResult, testUrls, UrlTestConfig } from './url-testing/urlTester'; // Import UrlTestConfig
+import { testUrls } from './url-testing/urlTester'; 
+import type { UrlTestResult, UrlTestConfig } from './types';
 
 export class ProxyValidator {
   /**

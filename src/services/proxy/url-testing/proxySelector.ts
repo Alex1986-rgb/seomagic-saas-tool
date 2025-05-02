@@ -1,43 +1,33 @@
 
 import type { Proxy } from '../types';
 
-/**
- * Manages proxy selection and load balancing for URL testing
- */
 export class ProxySelector {
-  private usedProxies: Set<string> = new Set();
-  private activeProxies: Proxy[];
-  
-  constructor(activeProxies: Proxy[]) {
-    this.activeProxies = [...activeProxies];
+  private proxies: Proxy[];
+  private lastIndex: number = -1;
+
+  constructor(proxies: Proxy[]) {
+    this.proxies = proxies;
   }
-  
-  /**
-   * Gets a random proxy with load balancing
-   */
-  getRandomProxy(): Proxy | undefined {
-    if (this.activeProxies.length === 0) return undefined;
-    
-    // If all proxies have been used, reset tracking
-    if (this.usedProxies.size >= this.activeProxies.length) {
-      this.usedProxies.clear();
+
+  getRandomProxy(): Proxy {
+    if (this.proxies.length === 0) {
+      throw new Error('No proxies available');
     }
-    
-    // Try to find an unused proxy
-    const availableProxies = this.activeProxies.filter(
-      p => !this.usedProxies.has(`${p.ip}:${p.port}`)
-    );
-    
-    let proxy: Proxy;
-    
-    if (availableProxies.length > 0) {
-      proxy = availableProxies[Math.floor(Math.random() * availableProxies.length)];
-    } else {
-      // If all are used, pick any
-      proxy = this.activeProxies[Math.floor(Math.random() * this.activeProxies.length)];
+
+    const randomIndex = Math.floor(Math.random() * this.proxies.length);
+    return this.proxies[randomIndex];
+  }
+
+  getNextProxy(): Proxy {
+    if (this.proxies.length === 0) {
+      throw new Error('No proxies available');
     }
-    
-    this.usedProxies.add(`${proxy.ip}:${proxy.port}`);
-    return proxy;
+
+    this.lastIndex = (this.lastIndex + 1) % this.proxies.length;
+    return this.proxies[this.lastIndex];
+  }
+
+  getProxyById(id: string): Proxy | undefined {
+    return this.proxies.find(p => p.id === id);
   }
 }

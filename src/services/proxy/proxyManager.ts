@@ -1,3 +1,4 @@
+
 import { ProxyStorage } from './proxyStorage';
 import { ProxyValidator } from './proxyValidator';
 import { ProxySources } from './proxySources';
@@ -231,3 +232,6 @@ export class ProxyManager {
     return this.proxyValidator.testUrls(urls, proxiesList, useProxies && !forceDirect, onProgress, config);
   }
 }
+
+// Create a singleton instance and export it
+export const proxyManager = new ProxyManager();

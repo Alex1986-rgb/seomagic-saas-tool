@@ -1,39 +1,42 @@
 
-/**
- * Manages concurrency for URL testing to prevent overloading
- */
 export class ConcurrencyManager {
-  private activeRequests: number = 0;
-  private readonly maxConcurrentRequests: number;
-  
-  constructor(maxConcurrentRequests: number = 10) {
-    this.maxConcurrentRequests = maxConcurrentRequests;
+  private maxConcurrentTasks: number;
+  private runningTasks: number = 0;
+  private taskQueue: (() => Promise<void>)[] = [];
+
+  constructor(maxConcurrentTasks: number = 10) {
+    this.maxConcurrentTasks = maxConcurrentTasks;
   }
-  
-  /**
-   * Executes a function with concurrency control
-   */
-  async executeWithThrottle<T>(fn: () => Promise<T>): Promise<T> {
-    // Wait until we're below the concurrency limit
-    while (this.activeRequests >= this.maxConcurrentRequests) {
-      await new Promise(resolve => setTimeout(resolve, 100));
+
+  async executeWithThrottle(task: () => Promise<void>): Promise<void> {
+    if (this.runningTasks < this.maxConcurrentTasks) {
+      return this.executeTask(task);
+    } else {
+      return new Promise<void>(resolve => {
+        this.taskQueue.push(async () => {
+          await this.executeTask(task);
+          resolve();
+        });
+      });
     }
-    
-    this.activeRequests++;
+  }
+
+  private async executeTask(task: () => Promise<void>): Promise<void> {
+    this.runningTasks++;
     try {
-      return await fn();
-    } catch (error) {
-      console.error("Error in throttled execution:", error);
-      throw error;
+      await task();
     } finally {
-      this.activeRequests--;
+      this.runningTasks--;
+      this.executeNextTask();
     }
   }
-  
-  /**
-   * Gets the current number of active requests
-   */
-  get currentLoad(): number {
-    return this.activeRequests;
+
+  private executeNextTask(): void {
+    if (this.taskQueue.length > 0 && this.runningTasks < this.maxConcurrentTasks) {
+      const nextTask = this.taskQueue.shift();
+      if (nextTask) {
+        nextTask();
+      }
+    }
   }
 }
