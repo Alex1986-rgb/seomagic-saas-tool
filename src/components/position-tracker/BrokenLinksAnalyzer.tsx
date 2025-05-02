@@ -16,10 +16,11 @@ interface BrokenLink {
 
 interface BrokenLinksAnalyzerProps {
   domain?: string;
-  urls: string[];
+  urls?: string[];
+  className?: string;
 }
 
-export function BrokenLinksAnalyzer({ domain = '', urls = [] }: BrokenLinksAnalyzerProps) {
+export function BrokenLinksAnalyzer({ domain = '', urls = [], className }: BrokenLinksAnalyzerProps) {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [inputDomain, setInputDomain] = useState(domain);
   const [brokenLinks, setBrokenLinks] = useState<BrokenLink[]>([]);
@@ -104,7 +105,7 @@ export function BrokenLinksAnalyzer({ domain = '', urls = [] }: BrokenLinksAnaly
   };
 
   return (
-    <div className="space-y-4">
+    <div className={className ? `space-y-4 ${className}` : "space-y-4"}>
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
