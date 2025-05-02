@@ -105,7 +105,7 @@ export class ProxyStorage {
       try {
         // Улучшенная обработка различных форматов
         let ip: string;
-        let port: number;
+        let port: number; // Explicitly defined as number
         let protocol: 'http' | 'https' | 'socks4' | 'socks5' = 'http';
         let username: string | undefined;
         let password: string | undefined;
@@ -117,7 +117,7 @@ export class ProxyStorage {
         if (match) {
           // Handle format with username:password
           [, ip, port, username, password] = match;
-          // Fix: Convert port string to number
+          // Convert port string to number explicitly
           port = parseInt(port, 10);
           
           // Check for protocol prefix
@@ -132,20 +132,18 @@ export class ProxyStorage {
           protocol = parts[0] as 'http' | 'https' | 'socks4' | 'socks5';
           const ipPort = parts[1].split(':');
           ip = ipPort[0];
-          // Fix: Convert port string to number
           port = parseInt(ipPort[1], 10);
         } else if (trimmedLine.includes(':')) {
           // Формат ip:port
           const ipPort = trimmedLine.split(':');
           ip = ipPort[0];
-          // Fix: Convert port string to number explicitly
           port = parseInt(ipPort[1], 10);
         } else {
           continue; // Неверный формат
         }
         
         if (ip && !isNaN(port)) {
-          // Fix: Generate proxyId using the port as a number
+          // Create proxyId with string concatenation after ensuring port is a number
           const proxyId = `${ip}:${port}`;
           
           // Проверяем, не существует ли уже
