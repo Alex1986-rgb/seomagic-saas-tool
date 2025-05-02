@@ -2,6 +2,7 @@
 import axios from 'axios';
 import { Proxy, ProxySources } from './types';
 import { defaultProxySources } from './proxySourcesConfig';
+import { setupAxiosInstance } from './utils/axiosConfig';
 
 export class ProxyCollector {
   private proxySources: ProxySources;
@@ -29,9 +30,9 @@ export class ProxyCollector {
     
     console.log(`Начинаем сбор прокси из ${enabledSources.length} источников`);
     
-    // Improved concurrency with max parallelism of 5
+    // Improved concurrency with max parallelism of 10 (increased from 5)
     const sourcePromises = [];
-    const sourceChunks = this.chunkArray(enabledSources, 5); // Process 5 sources in parallel
+    const sourceChunks = this.chunkArray(enabledSources, 10); // Увеличено до 10 параллельных источников
 
     for (const chunk of sourceChunks) {
       const chunkPromises = chunk.map(([sourceName, sourceConfig]) => 
@@ -43,7 +44,7 @@ export class ProxyCollector {
       sourcePromises.push(...results);
       
       // Brief pause between chunks to avoid rate limiting
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await new Promise(resolve => setTimeout(resolve, 500)); // Уменьшено с 1000 до 500
     }
     
     // Convert the Map to an array for return
@@ -61,21 +62,47 @@ export class ProxyCollector {
       console.log(`Сбор прокси из источника: ${sourceName}, URL: ${sourceConfig.url}`);
       if (onProgress) onProgress(sourceName, 0);
       
-      const response = await axios.get(sourceConfig.url, {
-        timeout: 30000, // Increased timeout for slower sources
-        headers: {
-          'User-Agent': this.getRandomUserAgent(),
-          'Accept': 'text/html,application/xhtml+xml,application/xml,application/json;q=0.9,image/webp,*/*;q=0.8',
-          'Accept-Language': 'en-US,en;q=0.5',
-          'Accept-Encoding': 'gzip, deflate, br',
-          'Connection': 'keep-alive',
-          'Cache-Control': 'max-age=0'
-        },
-        validateStatus: status => (status >= 200 && status < 300) || status === 404,
-        maxRedirects: 5
-      });
+      // Улучшенное получение данных с разными User-Agent и retry логикой
+      let responseData: any = null;
+      let retries = 0;
+      const maxRetries = 3;
       
-      let responseData = response.data;
+      while (retries < maxRetries && !responseData) {
+        try {
+          const response = await axios.get(sourceConfig.url, {
+            timeout: 40000, // Increased timeout for slower sources (40 seconds)
+            headers: {
+              'User-Agent': this.getRandomUserAgent(),
+              'Accept': 'text/html,application/xhtml+xml,application/xml,application/json;q=0.9,image/webp,*/*;q=0.8',
+              'Accept-Language': 'en-US,en;q=0.5',
+              'Accept-Encoding': 'gzip, deflate, br',
+              'Connection': 'keep-alive',
+              'Cache-Control': 'no-cache',
+              'Pragma': 'no-cache'
+            },
+            validateStatus: status => (status >= 200 && status < 300) || status === 403 || status === 404,
+            maxRedirects: 5
+          });
+          
+          if (response.status >= 200 && response.status < 300) {
+            responseData = response.data;
+          } else {
+            console.log(`Попытка ${retries + 1}: Источник ${sourceName} вернул статус ${response.status}`);
+            retries++;
+            
+            // Exponential backoff for retries
+            await new Promise(resolve => setTimeout(resolve, 1000 * (retries * retries)));
+          }
+        } catch (retryError) {
+          console.error(`Попытка ${retries + 1}: Ошибка при обращении к ${sourceName}:`, retryError.message);
+          retries++;
+          
+          if (retries < maxRetries) {
+            await new Promise(resolve => setTimeout(resolve, 1000 * (retries * retries)));
+          }
+        }
+      }
+      
       let parsedProxies: Proxy[] = [];
       
       if (responseData) {
@@ -93,9 +120,13 @@ export class ProxyCollector {
         }
       }
       
+      // Проверка и фильтрация прокси перед добавлением
+      const validProxies = parsedProxies.filter(proxy => this.isValidIpPort(proxy.ip, proxy.port));
+      console.log(`${sourceName}: ${validProxies.length} из ${parsedProxies.length} прокси валидны`);
+      
       // Add proxies to our collection map (automatically dedupes by ID)
       let newProxiesCount = 0;
-      for (const proxy of parsedProxies) {
+      for (const proxy of validProxies) {
         if (!this.collectedProxies.has(proxy.id)) {
           this.collectedProxies.set(proxy.id, proxy);
           newProxiesCount++;
@@ -105,7 +136,7 @@ export class ProxyCollector {
       console.log(`Добавлено ${newProxiesCount} новых прокси из источника ${sourceName}`);
       if (onProgress) onProgress(sourceName, this.collectedProxies.size);
       
-      return parsedProxies;
+      return validProxies;
     } catch (error) {
       console.error(`Ошибка при сборе прокси из ${sourceName}:`, error);
       if (onProgress) onProgress(sourceName, -1);
@@ -132,27 +163,38 @@ export class ProxyCollector {
       'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:122.0) Gecko/20100101 Firefox/122.0',
       'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36 Edg/121.0.2277.106',
       'Mozilla/5.0 (iPhone; CPU iPhone OS 16_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.6 Mobile/15E148 Safari/604.1',
-      'Mozilla/5.0 (iPad; CPU OS 16_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.6 Mobile/15E148 Safari/604.1'
+      'Mozilla/5.0 (iPad; CPU OS 16_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.6 Mobile/15E148 Safari/604.1',
+      // Добавим больше разнообразных User-Agent
+      'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36',
+      'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:121.0) Gecko/20100101 Firefox/121.0',
+      'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 OPR/106.0.0.0',
+      'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Safari/605.1.15'
     ];
     return userAgents[Math.floor(Math.random() * userAgents.length)];
   }
 
-  // Улучшенный fallback parser с более сложной регулярной логикой для извлечения прокси
+  // Улучшенный и более агрессивный fallback parser для извлечения прокси
   private fallbackParse(data: any, sourceName: string): Proxy[] {
     const proxies: Proxy[] = [];
     try {
       // Convert data to string if it's not already
       const content = typeof data === 'string' ? data : JSON.stringify(data);
       
-      // Расширенное регулярное выражение для поиска различных форматов прокси
+      // Улучшенные регулярные выражения для поиска различных форматов прокси
       const ipPortPatterns = [
-        // Основной паттерн для IP:PORT
+        // Основной паттерн для IP:PORT с более точным распознаванием
         /(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})[^\d\w]?[:|\s]+(\d{2,5})/g,
         // Паттерн для поиска в HTML-таблицах
-        /<td[^>]*>(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})<\/td>.*?<td[^>]*>(\d{2,5})<\/td>/g,
+        /<td[^>]*>(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})<\/td>.*?<td[^>]*>(\d{2,5})<\/td>/gs,
         // Паттерн с протоколом в формате protocol://ip:port
-        /(?:http|https|socks4|socks5):\/\/(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}):(\d{2,5})/g
+        /(?:http|https|socks4|socks5):\/\/(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}):(\d{2,5})/g,
+        // Паттерн для поиска IP и порта, разделенных различными символами
+        /(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})[^0-9a-zA-Z](\d{2,5})/g
       ];
+      
+      // Экстракция всех потенциальных IP-адресов
+      const ipAddresses = content.match(/\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b/g) || [];
+      const potentialPorts = content.match(/\b\d{2,5}\b/g) || [];
       
       // Проходим по всем паттернам и собираем результаты
       for (const pattern of ipPortPatterns) {
@@ -185,6 +227,41 @@ export class ProxyCollector {
           }
         }
       }
+      
+      // Если традиционные методы не сработали, попробуем более агрессивный подход
+      if (proxies.length === 0 && ipAddresses.length > 0) {
+        for (const ip of ipAddresses) {
+          // Ищем порты рядом с IP адресом
+          const ipIdx = content.indexOf(ip);
+          const nearby = content.substr(Math.max(0, ipIdx - 50), 100);
+          
+          // Ищем ближайший порт
+          const portMatch = nearby.match(/\b(\d{2,5})\b/);
+          if (portMatch && portMatch[1]) {
+            const port = parseInt(portMatch[1], 10);
+            if (port > 0 && port < 65536) { 
+              if (this.isValidIpPort(ip, port)) {
+                proxies.push({
+                  id: `${ip}:${port}`,
+                  ip,
+                  port,
+                  protocol: 'http', // Предположительно HTTP
+                  status: 'testing',
+                  lastChecked: new Date(),
+                  source: sourceName + '-aggressive'
+                });
+              }
+            }
+          }
+        }
+      }
+      
+      // Дедупликация прокси по id
+      const uniqueProxies = Array.from(
+        new Map(proxies.map(proxy => [proxy.id, proxy])).values()
+      );
+      
+      return uniqueProxies;
     } catch (e) {
       console.error('Fallback parser error:', e);
     }
@@ -206,9 +283,24 @@ export class ProxyCollector {
       if (isNaN(octet) || octet < 0 || octet > 255) return false;
     }
     
-    // Проверка специальных IP, которые не могут быть прокси
-    if (ip === '0.0.0.0' || ip === '127.0.0.1' || ip.startsWith('169.254.') || 
-        ip.startsWith('172.16.') || ip.startsWith('192.168.') || ip === '255.255.255.255') {
+    // Расширенная проверка специальных IP-адресов, которые не могут быть прокси
+    if (
+      ip === '0.0.0.0' || 
+      ip === '127.0.0.1' || 
+      ip.startsWith('169.254.') || 
+      ip.startsWith('172.16.') || 
+      ip.startsWith('172.17.') || 
+      ip.startsWith('172.18.') || 
+      ip.startsWith('172.19.') || 
+      ip.startsWith('172.2') || 
+      ip.startsWith('172.3') || 
+      ip.startsWith('192.168.') || 
+      ip.startsWith('10.') ||
+      ip.startsWith('224.') ||
+      ip.startsWith('239.') ||
+      ip.startsWith('240.') ||
+      ip === '255.255.255.255'
+    ) {
       return false;
     }
     
@@ -216,11 +308,12 @@ export class ProxyCollector {
     return !isNaN(port) && port > 0 && port <= 65535;
   }
 
+  // Импорт источников прокси из Python-скрипта
   importProxySourcesFromPython(sources: string[]): number {
     let importedCount = 0;
     
     for (const source of sources) {
-      if (!this.proxySources[source] && source.startsWith('http')) {
+      if (!Object.values(this.proxySources).some(s => s.url === source) && source.startsWith('http')) {
         const sourceName = `custom-${Date.now()}-${importedCount}`;
         console.log(`Импортирован источник прокси: ${source} -> ${sourceName}`);
         
@@ -237,7 +330,7 @@ export class ProxyCollector {
               const ip = match[1];
               const port = parseInt(match[2], 10);
               
-              if (ip && !isNaN(port)) {
+              if (this.isValidIpPort(ip, port)) {
                 proxies.push({
                   id: `${ip}:${port}`,
                   ip,
@@ -264,5 +357,75 @@ export class ProxyCollector {
   
   getProxySources(): ProxySources {
     return this.proxySources;
+  }
+  
+  // Добавление нового API источника
+  addApiSource(name: string, url: string): boolean {
+    if (this.proxySources[name]) {
+      console.log(`Источник с именем ${name} уже существует`);
+      return false;
+    }
+    
+    this.proxySources[name] = {
+      url,
+      enabled: true,
+      parseFunction: (data: any) => {
+        try {
+          const proxies: Proxy[] = [];
+          // Пытаемся распарсить как JSON
+          let jsonData = data;
+          if (typeof data === 'string') {
+            try {
+              jsonData = JSON.parse(data);
+            } catch (e) {
+              // Если не JSON, применяем fallback parser
+              return this.fallbackParse(data, name);
+            }
+          }
+          
+          // Обработка данных API
+          if (Array.isArray(jsonData)) {
+            for (const item of jsonData) {
+              let ip, port;
+              
+              if (typeof item === 'string' && item.includes(':')) {
+                [ip, port] = item.split(':');
+              } else if (item.ip && item.port) {
+                ip = item.ip;
+                port = item.port;
+              } else if (item.host && item.port) {
+                ip = item.host;
+                port = item.port;
+              }
+              
+              if (ip && port) {
+                const portNum = parseInt(port.toString(), 10);
+                if (this.isValidIpPort(ip, portNum)) {
+                  proxies.push({
+                    id: `${ip}:${portNum}`,
+                    ip,
+                    port: portNum,
+                    protocol: item.protocol || 'http',
+                    status: 'testing',
+                    lastChecked: new Date(),
+                    source: name
+                  });
+                }
+              }
+            }
+          } else {
+            // Применяем fallback parser
+            return this.fallbackParse(data, name);
+          }
+          
+          return proxies;
+        } catch (e) {
+          console.error(`Ошибка при парсинге API источника ${name}:`, e);
+          return this.fallbackParse(data, name);
+        }
+      }
+    };
+    
+    return true;
   }
 }

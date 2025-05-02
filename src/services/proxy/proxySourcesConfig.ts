@@ -1,3 +1,4 @@
+
 import { ProxySources, Proxy } from './types';
 
 export const defaultProxySources: ProxySources = {
@@ -41,7 +42,7 @@ export const defaultProxySources: ProxySources = {
     }
   },
   'geonode': {
-    url: 'https://proxylist.geonode.com/api/proxy-list?limit=300&page=1&sort_by=lastChecked&sort_type=desc',
+    url: 'https://proxylist.geonode.com/api/proxy-list?limit=500&page=1&sort_by=lastChecked&sort_type=desc',
     enabled: true,
     parseFunction: (data: string) => {
       const proxies: Proxy[] = [];
@@ -187,6 +188,271 @@ export const defaultProxySources: ProxySources = {
         }
       } catch (error) {
         console.error('Ошибка при парсинге sslproxies.org:', error);
+      }
+      return proxies;
+    }
+  },
+  // Добавим новые источники
+  'proxy-list-download-http': {
+    url: 'https://www.proxy-list.download/api/v1/get?type=http',
+    enabled: true,
+    parseFunction: (data: string) => {
+      const proxies: Proxy[] = [];
+      try {
+        if (typeof data === 'string') {
+          const lines = data.split('\r\n');
+          for (const line of lines) {
+            if (!line.trim()) continue;
+            
+            const [ip, portStr] = line.split(':');
+            const port = parseInt(portStr, 10);
+            
+            if (ip && !isNaN(port)) {
+              proxies.push({
+                id: `${ip}:${port}`,
+                ip,
+                port,
+                protocol: 'http',
+                status: 'testing',
+                lastChecked: new Date(),
+                source: 'proxy-list-download'
+              });
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Ошибка при парсинге proxy-list.download:', error);
+      }
+      return proxies;
+    }
+  },
+  'proxy-list-download-https': {
+    url: 'https://www.proxy-list.download/api/v1/get?type=https',
+    enabled: true,
+    parseFunction: (data: string) => {
+      const proxies: Proxy[] = [];
+      try {
+        if (typeof data === 'string') {
+          const lines = data.split('\r\n');
+          for (const line of lines) {
+            if (!line.trim()) continue;
+            
+            const [ip, portStr] = line.split(':');
+            const port = parseInt(portStr, 10);
+            
+            if (ip && !isNaN(port)) {
+              proxies.push({
+                id: `${ip}:${port}`,
+                ip,
+                port,
+                protocol: 'https',
+                status: 'testing',
+                lastChecked: new Date(),
+                source: 'proxy-list-download'
+              });
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Ошибка при парсинге proxy-list.download HTTPS:', error);
+      }
+      return proxies;
+    }
+  },
+  'github-clarketm': {
+    url: 'https://raw.githubusercontent.com/clarketm/proxy-list/master/proxy-list-raw.txt',
+    enabled: true,
+    parseFunction: (data: string) => {
+      const proxies: Proxy[] = [];
+      try {
+        if (typeof data === 'string') {
+          const lines = data.split('\n');
+          for (const line of lines) {
+            if (!line.trim()) continue;
+            
+            const [ip, portStr] = line.split(':');
+            const port = parseInt(portStr, 10);
+            
+            if (ip && !isNaN(port)) {
+              proxies.push({
+                id: `${ip}:${port}`,
+                ip,
+                port,
+                protocol: 'http',
+                status: 'testing',
+                lastChecked: new Date(),
+                source: 'github-clarketm'
+              });
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Ошибка при парсинге github-clarketm:', error);
+      }
+      return proxies;
+    }
+  },
+  'github-TheSpeedX': {
+    url: 'https://raw.githubusercontent.com/TheSpeedX/PROXY-List/master/http.txt',
+    enabled: true,
+    parseFunction: (data: string) => {
+      const proxies: Proxy[] = [];
+      try {
+        if (typeof data === 'string') {
+          const lines = data.split('\n');
+          for (const line of lines) {
+            if (!line.trim()) continue;
+            
+            const [ip, portStr] = line.split(':');
+            const port = parseInt(portStr, 10);
+            
+            if (ip && !isNaN(port)) {
+              proxies.push({
+                id: `${ip}:${port}`,
+                ip,
+                port,
+                protocol: 'http',
+                status: 'testing',
+                lastChecked: new Date(),
+                source: 'github-TheSpeedX'
+              });
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Ошибка при парсинге github-TheSpeedX:', error);
+      }
+      return proxies;
+    }
+  },
+  'github-ShiftyTR': {
+    url: 'https://raw.githubusercontent.com/ShiftyTR/Proxy-List/master/http.txt',
+    enabled: true,
+    parseFunction: (data: string) => {
+      const proxies: Proxy[] = [];
+      try {
+        if (typeof data === 'string') {
+          const lines = data.split('\n');
+          for (const line of lines) {
+            if (!line.trim()) continue;
+            
+            const [ip, portStr] = line.split(':');
+            const port = parseInt(portStr, 10);
+            
+            if (ip && !isNaN(port)) {
+              proxies.push({
+                id: `${ip}:${port}`,
+                ip,
+                port,
+                protocol: 'http',
+                status: 'testing',
+                lastChecked: new Date(),
+                source: 'github-ShiftyTR'
+              });
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Ошибка при парсинге github-ShiftyTR:', error);
+      }
+      return proxies;
+    }
+  },
+  'github-monosans': {
+    url: 'https://raw.githubusercontent.com/monosans/proxy-list/main/proxies/http.txt',
+    enabled: true,
+    parseFunction: (data: string) => {
+      const proxies: Proxy[] = [];
+      try {
+        if (typeof data === 'string') {
+          const lines = data.split('\n');
+          for (const line of lines) {
+            if (!line.trim()) continue;
+            
+            const [ip, portStr] = line.split(':');
+            const port = parseInt(portStr, 10);
+            
+            if (ip && !isNaN(port)) {
+              proxies.push({
+                id: `${ip}:${port}`,
+                ip,
+                port,
+                protocol: 'http',
+                status: 'testing',
+                lastChecked: new Date(),
+                source: 'github-monosans'
+              });
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Ошибка при парсинге github-monosans:', error);
+      }
+      return proxies;
+    }
+  },
+  'github-jetkai': {
+    url: 'https://raw.githubusercontent.com/jetkai/proxy-list/main/online-proxies/txt/proxies-http.txt',
+    enabled: true,
+    parseFunction: (data: string) => {
+      const proxies: Proxy[] = [];
+      try {
+        if (typeof data === 'string') {
+          const lines = data.split('\n');
+          for (const line of lines) {
+            if (!line.trim()) continue;
+            
+            const [ip, portStr] = line.split(':');
+            const port = parseInt(portStr, 10);
+            
+            if (ip && !isNaN(port)) {
+              proxies.push({
+                id: `${ip}:${port}`,
+                ip,
+                port,
+                protocol: 'http',
+                status: 'testing',
+                lastChecked: new Date(),
+                source: 'github-jetkai'
+              });
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Ошибка при парсинге github-jetkai:', error);
+      }
+      return proxies;
+    }
+  },
+  'github-mertguvencli': {
+    url: 'https://raw.githubusercontent.com/mertguvencli/http-proxy-list/main/proxy-list/data.txt',
+    enabled: true,
+    parseFunction: (data: string) => {
+      const proxies: Proxy[] = [];
+      try {
+        if (typeof data === 'string') {
+          const lines = data.split('\n');
+          for (const line of lines) {
+            if (!line.trim()) continue;
+            
+            const [ip, portStr] = line.split(':');
+            const port = parseInt(portStr, 10);
+            
+            if (ip && !isNaN(port)) {
+              proxies.push({
+                id: `${ip}:${port}`,
+                ip,
+                port,
+                protocol: 'http',
+                status: 'testing',
+                lastChecked: new Date(),
+                source: 'github-mertguvencli'
+              });
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Ошибка при парсинге github-mertguvencli:', error);
       }
       return proxies;
     }
