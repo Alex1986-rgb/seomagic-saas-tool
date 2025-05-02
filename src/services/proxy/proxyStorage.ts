@@ -1,4 +1,3 @@
-
 import { Proxy } from './types';
 
 export class ProxyStorage {
@@ -116,9 +115,10 @@ export class ProxyStorage {
         
         if (match) {
           // Handle format with username:password
-          [, ip, port, username, password] = match;
-          // Convert port string to number explicitly
-          port = parseInt(port, 10);
+          ip = match[1];
+          port = parseInt(match[2], 10); // Convert to number
+          username = match[3];
+          password = match[4];
           
           // Check for protocol prefix
           if (ip.includes('://')) {
