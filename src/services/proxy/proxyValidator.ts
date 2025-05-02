@@ -1,7 +1,6 @@
-
 import type { Proxy } from './types';
 import { testProxy, batchTestProxies } from './proxy-testing/proxyTester';
-import { testUrls } from './url-testing/urlTester';
+import { UrlTestResult } from './url-testing/urlTester';
 
 export class ProxyValidator {
   /**
@@ -19,7 +18,7 @@ export class ProxyValidator {
     proxies: Proxy[], 
     useProxies: boolean = true, 
     onProgress?: (url: string, status: number, proxy?: string, errorDetails?: string) => void
-  ): Promise<{url: string, status: number, error?: string, errorDetails?: string, proxy?: string}[]> {
+  ): Promise<UrlTestResult[]> {
     return testUrls(urls, proxies, useProxies, onProgress);
   }
 

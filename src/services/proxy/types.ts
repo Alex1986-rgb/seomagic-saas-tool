@@ -1,3 +1,4 @@
+
 // Типы для прокси-сервисов
 export interface Proxy {
   id: string;
@@ -35,3 +36,6 @@ export interface PingResult {
   time?: number;      // Добавляем время выполнения запроса
   error?: string;     // Добавляем информацию об ошибке
 }
+
+// Реэкспортируем UrlTestResult из модуля url-testing для согласованности
+export { UrlTestResult } from './url-testing/urlTester';

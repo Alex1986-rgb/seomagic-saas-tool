@@ -6,6 +6,7 @@ import { ProxyStorage } from './proxyStorage';
 import { PingManager } from './pingManager';
 import { CaptchaManager } from './captchaManager';
 import { defaultProxySources } from './proxySourcesConfig';
+import { UrlTestResult } from './url-testing/urlTester';
 
 /**
  * Класс для управления прокси
@@ -73,7 +74,7 @@ export class ProxyManager {
     urls: string[], 
     useProxies: boolean = true, 
     onProgress?: (url: string, status: number, proxy?: string, errorDetails?: string) => void
-  ): Promise<{url: string, status: number, error?: string, errorDetails?: string, proxy?: string}[]> {
+  ): Promise<UrlTestResult[]> {
     const activeProxies = this.proxyStorage.getActiveProxies();
     if (useProxies && activeProxies.length === 0) {
       throw new Error('Нет активных прокси для использования');
@@ -184,5 +185,6 @@ export const proxyManager = new ProxyManager();
 export type { 
   Proxy, 
   ProxySources, 
-  PingResult 
+  PingResult,
+  UrlTestResult
 } from './types';
