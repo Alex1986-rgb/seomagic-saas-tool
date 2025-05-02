@@ -1,156 +1,176 @@
 
 import React, { useState } from 'react';
-import { Card } from '@/components/ui/card';
-import { StatCard } from '@/components/position-tracker/analytics/StatCard';
-import { KeywordPositionTrend } from '@/components/position-tracker/analytics';
-import { BarChart, TrendingUp, Calendar } from 'lucide-react';
+import { Card, CardContent } from "@/components/ui/card";
 import { PositionData } from '@/services/position/positionTracker';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Button } from '@/components/ui/button';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { StatCard } from '@/components/position-tracker/analytics';
+import { KeywordPositionTrend } from '@/components/position-tracker/analytics';
+import { TrendingUp, Search, ArrowUp, ArrowDown } from 'lucide-react';
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface TrendsTabProps {
   history: PositionData[];
 }
 
 const TrendsTab: React.FC<TrendsTabProps> = ({ history }) => {
-  const [timeRange, setTimeRange] = useState('30days');
-  const [selectedKeywords, setSelectedKeywords] = useState<string[]>([]);
+  const [selectedKeyword, setSelectedKeyword] = useState<string>('');
+  const [searchTerm, setSearchTerm] = useState<string>('');
   
-  // Подготовка данных для графика тренда позиций
-  const prepareTrendData = () => {
-    if (history.length === 0) return [];
+  // Get available keywords from history
+  const getAvailableKeywords = () => {
+    const keywordsSet = new Set<string>();
     
-    const trendData: any[] = [];
-    const dateMap = new Map<string, any>();
-    
-    // Получить все уникальные ключевые слова
-    const allKeywords = history.length > 0 
-      ? Array.from(new Set(history[0].keywords.map(k => k.keyword)))
-      : [];
-    
-    // Если нет выбранных ключевых слов, выберем первые 5
-    const keysToShow = selectedKeywords.length > 0 
-      ? selectedKeywords 
-      : allKeywords.slice(0, 5);
-    
-    // Собираем данные для каждой даты
-    history.forEach(entry => {
-      const date = new Date(entry.date || entry.timestamp).toISOString().split('T')[0];
-      
-      if (!dateMap.has(date)) {
-        dateMap.set(date, { date });
-      }
-      
-      const dateEntry = dateMap.get(date);
-      
-      keysToShow.forEach(keyword => {
-        const keywordData = entry.keywords.find(k => k.keyword === keyword && k.searchEngine === 'google');
-        if (keywordData) {
-          dateEntry[keyword] = keywordData.position > 0 ? keywordData.position : null;
-        }
+    history.forEach(item => {
+      item.keywords.forEach(keyword => {
+        keywordsSet.add(keyword.keyword);
       });
     });
     
-    // Преобразуем Map в массив и сортируем по дате
-    Array.from(dateMap.values())
-      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
-      .forEach(entry => trendData.push(entry));
+    return Array.from(keywordsSet);
+  };
+  
+  const availableKeywords = getAvailableKeywords();
+  
+  // Filter keywords by search term
+  const filteredKeywords = searchTerm 
+    ? availableKeywords.filter(keyword => 
+        keyword.toLowerCase().includes(searchTerm.toLowerCase())
+      )
+    : availableKeywords;
+  
+  // Calculate position changes for stats
+  const calculatePositionChanges = () => {
+    // If no history or only one entry, return defaults
+    if (history.length < 2) {
+      return { improved: 0, worsened: 0, unchanged: 0 };
+    }
     
-    return trendData;
+    let improved = 0, worsened = 0, unchanged = 0;
+    const latestEntry = history[0];
+    const previousEntry = history[1];
+    
+    // Map of keywords in previous entry
+    const prevKeywords = new Map();
+    previousEntry.keywords.forEach(k => {
+      prevKeywords.set(k.keyword, k.position);
+    });
+    
+    // Compare positions
+    latestEntry.keywords.forEach(keyword => {
+      const prevPos = prevKeywords.get(keyword.keyword);
+      if (prevPos === undefined) return;
+      
+      if (keyword.position === 0 || prevPos === 0) {
+        // Skip not found positions
+        return;
+      }
+      
+      if (keyword.position < prevPos) {
+        improved++;
+      } else if (keyword.position > prevPos) {
+        worsened++;
+      } else {
+        unchanged++;
+      }
+    });
+    
+    return { improved, worsened, unchanged };
   };
   
-  const trendData = prepareTrendData();
+  const changes = calculatePositionChanges();
   
-  const getColorForIndex = (index: number) => {
-    const colors = ['#3498db', '#e74c3c', '#2ecc71', '#f39c12', '#9b59b6', '#1abc9c', '#d35400'];
-    return colors[index % colors.length];
+  // Get average position change
+  const getAveragePositionChange = () => {
+    if (history.length < 2) return 0;
+    
+    const latestEntry = history[0];
+    const previousEntry = history[1];
+    let totalChange = 0;
+    let count = 0;
+    
+    // Map of keywords in previous entry
+    const prevKeywords = new Map();
+    previousEntry.keywords.forEach(k => {
+      prevKeywords.set(k.keyword, k.position);
+    });
+    
+    // Calculate changes
+    latestEntry.keywords.forEach(keyword => {
+      const prevPos = prevKeywords.get(keyword.keyword);
+      if (prevPos === undefined || keyword.position === 0 || prevPos === 0) return;
+      
+      totalChange += (prevPos - keyword.position);
+      count++;
+    });
+    
+    return count > 0 ? totalChange / count : 0;
   };
+  
+  const avgChange = getAveragePositionChange();
   
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h2 className="text-xl font-medium">Тренды позиций</h2>
-        <div className="flex gap-2">
-          <Select value={timeRange} onValueChange={setTimeRange}>
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Период" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="7days">7 дней</SelectItem>
-              <SelectItem value="30days">30 дней</SelectItem>
-              <SelectItem value="90days">90 дней</SelectItem>
-              <SelectItem value="all">Все время</SelectItem>
-            </SelectContent>
-          </Select>
-          <Button variant="outline" className="flex items-center gap-2">
-            <Calendar className="h-4 w-4" />
-            <span>Выбрать даты</span>
-          </Button>
-        </div>
-      </div>
-      
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <StatCard
-          title="Изменение за 30 дней"
-          value="+8.3"
-          icon={<TrendingUp className="h-5 w-5" />}
-          trend={{ value: 12, isUp: true }}
+        <StatCard 
+          title="Улучшили позиции" 
+          value={changes.improved}
+          icon={<ArrowUp className="h-4 w-4 text-green-500" />}
+          trend="up"
+          trendValue={`${Math.round((changes.improved / (changes.improved + changes.worsened + changes.unchanged || 1)) * 100)}%`}
         />
-        <StatCard
-          title="Топ растущие ключи"
-          value="7"
-          icon={<BarChart className="h-5 w-5" />}
-          trend={{ value: 2, isUp: true }}
+        <StatCard 
+          title="Ухудшили позиции" 
+          value={changes.worsened}
+          icon={<ArrowDown className="h-4 w-4 text-red-500" />}
+          trend="down"
+          trendValue={`${Math.round((changes.worsened / (changes.improved + changes.worsened + changes.unchanged || 1)) * 100)}%`}
         />
-        <StatCard
-          title="Снижающиеся ключи"
-          value="3"
-          icon={<BarChart className="h-5 w-5" />}
-          trend={{ value: 1, isUp: false }}
+        <StatCard 
+          title="Средний прирост" 
+          value={avgChange > 0 ? `+${avgChange.toFixed(1)}` : avgChange.toFixed(1)}
+          icon={<TrendingUp className="h-4 w-4 text-blue-500" />}
+          trend={avgChange > 0 ? "up" : avgChange < 0 ? "down" : "neutral"}
+          trendValue="позиций"
         />
       </div>
       
-      <Card className="p-6">
-        <h3 className="text-lg font-medium mb-4">Динамика позиций ключевых слов</h3>
-        <div className="h-[400px]">
-          {trendData.length > 0 ? (
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={trendData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                <XAxis dataKey="date" />
-                <YAxis domain={[1, 'dataMax']} reversed />
-                <Tooltip 
-                  formatter={(value) => [`Позиция: ${value}`, ""]}
-                  labelFormatter={(label) => `Дата: ${new Date(label).toLocaleDateString('ru-RU')}`}
-                />
-                <Legend />
-                {Object.keys(trendData[0] || {})
-                  .filter(key => key !== 'date')
-                  .map((keyword, index) => (
-                    <Line
-                      key={keyword}
-                      type="monotone"
-                      dataKey={keyword}
-                      name={keyword}
-                      stroke={getColorForIndex(index)}
-                      activeDot={{ r: 8 }}
-                      connectNulls
-                    />
-                  ))}
-              </LineChart>
-            </ResponsiveContainer>
-          ) : (
-            <div className="flex items-center justify-center h-full text-muted-foreground">
-              Недостаточно данных для построения графика
+      <Card>
+        <CardContent className="p-6">
+          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-6">
+            <div className="w-full md:w-1/2 relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+              <Input 
+                placeholder="Поиск ключевых слов..." 
+                className="pl-10"
+                value={searchTerm}
+                onChange={e => setSearchTerm(e.target.value)}
+              />
             </div>
-          )}
-        </div>
-      </Card>
-      
-      <Card className="p-6">
-        <h3 className="text-lg font-medium mb-4">Тренд ключевого слова</h3>
-        <KeywordPositionTrend history={history} />
+            <div className="w-full md:w-1/3">
+              <Select 
+                value={selectedKeyword} 
+                onValueChange={setSelectedKeyword}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Выберите ключевое слово" />
+                </SelectTrigger>
+                <SelectContent className="max-h-[300px]">
+                  {filteredKeywords.map((keyword, index) => (
+                    <SelectItem key={index} value={keyword}>
+                      {keyword}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          
+          <KeywordPositionTrend 
+            history={history}
+            keyword={selectedKeyword}
+          />
+        </CardContent>
       </Card>
     </div>
   );

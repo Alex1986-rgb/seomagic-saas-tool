@@ -1,16 +1,30 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import Layout from '@/components/Layout';
-import { PositionTrackerForm } from '@/components/position-tracker';
+import { PositionTrackerForm, PositionTrackerHistory } from '@/components/position-tracker';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Search, History } from 'lucide-react';
 
+interface SearchResult {
+  domain: string;
+  keywords: string[];
+  searchEngine: string;
+  region: string;
+  timestamp: string;
+  positions: Array<{
+    keyword: string;
+    position: number;
+    url: string;
+    searchEngine: string;
+  }>;
+}
+
 const PositionTracking: React.FC = () => {
-  const [activeTab, setActiveTab] = React.useState('search');
-  const [searchResults, setSearchResults] = React.useState(null);
+  const [activeTab, setActiveTab] = useState('search');
+  const [searchResults, setSearchResults] = useState<SearchResult | null>(null);
   
-  const handleSearchComplete = (results) => {
+  const handleSearchComplete = (results: SearchResult) => {
     setSearchResults(results);
     setActiveTab('results');
   };
@@ -43,9 +57,7 @@ const PositionTracking: React.FC = () => {
                 </TabsContent>
                 
                 <TabsContent value="history">
-                  <div className="text-center py-12">
-                    <p>История проверок позиций будет отображаться здесь.</p>
-                  </div>
+                  <PositionTrackerHistory />
                 </TabsContent>
               </Tabs>
             </CardContent>

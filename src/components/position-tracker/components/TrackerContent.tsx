@@ -5,10 +5,24 @@ import { PositionTrackerForm } from '@/components/position-tracker/PositionTrack
 import { PositionTrackerResults } from '@/components/position-tracker/PositionTrackerResults';
 import { PositionTrackerHistory } from '@/components/position-tracker/PositionTrackerHistory';
 
+interface SearchResult {
+  domain: string;
+  keywords: string[];
+  searchEngine: string;
+  region: string;
+  timestamp: string;
+  positions: Array<{
+    keyword: string;
+    position: number;
+    url: string;
+    searchEngine: string;
+  }>;
+}
+
 interface TrackerContentProps {
   activeTab: string;
-  searchResults: any;
-  onSearchComplete: (results: any) => void;
+  searchResults: SearchResult | null;
+  onSearchComplete: (results: SearchResult) => void;
 }
 
 const TrackerContent: React.FC<TrackerContentProps> = ({ 

@@ -31,28 +31,28 @@ export function StatsOverview({ history }: StatsOverviewProps) {
         title="Среднее положение"
         value={stats.avgPosition || '-'}
         icon={<TrendingUp className="h-4 w-4 sm:h-5 sm:w-5 text-blue-500" />}
-        footer={`По ${stats.totalKeywords} ключевым словам`}
+        description={`По ${stats.totalKeywords} ключевым словам`}
       />
       
       <StatCard
         title="Проверенные домены"
         value={stats.totalDomains.size}
         icon={<Globe className="h-4 w-4 sm:h-5 sm:w-5 text-emerald-500" />}
-        footer="Уникальные сайты"
+        description="Уникальные сайты"
       />
       
       <StatCard
         title="Проверки позиций"
         value={stats.totalSearches}
         icon={<FileText className="h-4 w-4 sm:h-5 sm:w-5 text-amber-500" />}
-        footer="Всего выполнено"
+        description="Всего выполнено"
       />
       
       <StatCard
         title="Последняя проверка"
         value={formatDate(stats.lastCheck)}
         icon={<Clock className="h-4 w-4 sm:h-5 sm:w-5 text-purple-500" />}
-        footer={`Время: ${formatTime(stats.lastCheck)}`}
+        description={`Время: ${formatTime(stats.lastCheck)}`}
       />
     </div>
   );

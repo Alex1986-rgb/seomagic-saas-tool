@@ -1,200 +1,188 @@
 
 import React, { useState } from 'react';
-import { CopyX, RefreshCw } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Badge } from '@/components/ui/badge';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Textarea } from '@/components/ui/textarea';
+import { Loader2, AlertTriangle, FileCheck, Copy } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
-interface DuplicatePage {
-  url: string;
-  duplicateUrl: string;
-  similarity: number; // процент схожести
-  type: 'content' | 'title' | 'description';
-}
-
-interface DuplicatesDetectorProps {
-  domain?: string;
-  urls: string[];
-}
-
-export function DuplicatesDetector({ domain = '', urls = [] }: DuplicatesDetectorProps) {
-  const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [inputDomain, setInputDomain] = useState(domain);
-  const [duplicates, setDuplicates] = useState<DuplicatePage[]>([]);
-  const [progress, setProgress] = useState(0);
+export function DuplicatesDetector() {
+  const [url, setUrl] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [results, setResults] = useState<{
+    duplicateCount: number;
+    duplicateContent: { url: string; similarity: number }[];
+    originalContent: string;
+  } | null>(null);
   const { toast } = useToast();
 
-  React.useEffect(() => {
-    if (domain) {
-      setInputDomain(domain);
-    }
-  }, [domain]);
-
-  const detectDuplicates = async () => {
-    if (!inputDomain) {
+  const handleCheck = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!url) {
       toast({
         title: "Ошибка",
-        description: "Пожалуйста, укажите домен для анализа",
-        variant: "destructive",
+        description: "Введите URL страницы для проверки",
+        variant: "destructive"
       });
       return;
     }
 
-    setIsAnalyzing(true);
-    setProgress(0);
-    setDuplicates([]);
-
+    setIsLoading(true);
     try {
-      // Здесь в реальном приложении был бы настоящий анализ
-      // Для демо генерируем моковые данные
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 2000));
       
-      // Последовательно обновляем прогресс для реалистичности
-      for (let i = 1; i <= 10; i++) {
-        setProgress(i * 10);
-        await new Promise(resolve => setTimeout(resolve, 400));
-      }
-
-      // Генерируем фиктивные данные о дубликатах
-      const mockDuplicates: DuplicatePage[] = [
-        {
-          url: `https://${inputDomain}/product/item-1`,
-          duplicateUrl: `https://${inputDomain}/item-1`,
-          similarity: 95,
-          type: 'content'
-        },
-        {
-          url: `https://${inputDomain}/blog/post-1`,
-          duplicateUrl: `https://${inputDomain}/articles/article-1`,
-          similarity: 87,
-          type: 'content'
-        },
-        {
-          url: `https://${inputDomain}/category/shoes`,
-          duplicateUrl: `https://${inputDomain}/products/shoes`,
-          similarity: 92,
-          type: 'title'
-        },
-        {
-          url: `https://${inputDomain}/about`,
-          duplicateUrl: `https://${inputDomain}/about-us`,
-          similarity: 78,
-          type: 'description'
-        }
-      ];
-      
-      setDuplicates(mockDuplicates);
+      // Mock data for demonstration
+      setResults({
+        duplicateCount: Math.floor(Math.random() * 5),
+        duplicateContent: [
+          { url: 'https://example.com/page1', similarity: 87 },
+          { url: 'https://example2.org/similar', similarity: 65 },
+          { url: 'https://competitor.com/article', similarity: 42 }
+        ].slice(0, Math.floor(Math.random() * 3) + 1),
+        originalContent: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla facilisi. Sed euismod, nisl vel ultricies lacinia, nisl nisl aliquam nisl, eget aliquam nisl nisl vel nisl.'
+      });
       
       toast({
         title: "Анализ завершен",
-        description: `Обнаружено ${mockDuplicates.length} дублированных страниц`,
+        description: "Проверка на дубликаты контента завершена",
       });
     } catch (error) {
-      console.error('Ошибка анализа:', error);
       toast({
         title: "Ошибка",
-        description: "Не удалось выполнить анализ дубликатов",
-        variant: "destructive",
+        description: "Не удалось выполнить проверку на дубликаты",
+        variant: "destructive"
       });
     } finally {
-      setIsAnalyzing(false);
+      setIsLoading(false);
     }
   };
 
-  const getDuplicateTypeBadge = (type: string) => {
-    switch (type) {
-      case 'content':
-        return <Badge variant="destructive">Контент</Badge>;
-      case 'title':
-        return <Badge variant="warning">Заголовок</Badge>;
-      case 'description':
-        return <Badge variant="outline">Описание</Badge>;
-      default:
-        return null;
-    }
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text);
+    toast({
+      title: "Скопировано",
+      description: "Текст скопирован в буфер обмена",
+    });
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <CopyX className="h-5 w-5 text-amber-500" />
-            Поиск дубликатов контента
-          </CardTitle>
-          <CardDescription>
-            Находит страницы с дублирующимся содержимым, которые могут негативно влиять на SEO
-          </CardDescription>
+          <CardTitle>Проверка на дубликаты контента</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex items-end gap-2 mb-4">
-            <div className="flex-1">
-              <label htmlFor="domain" className="block text-sm font-medium mb-1">Домен для анализа</label>
-              <Input
-                id="domain"
-                value={inputDomain}
-                onChange={(e) => setInputDomain(e.target.value)}
-                placeholder="Введите домен, например example.com"
-              />
-            </div>
-            <Button 
-              onClick={detectDuplicates} 
-              disabled={isAnalyzing || !inputDomain}
-              className="gap-2"
-            >
-              {isAnalyzing ? (
-                <RefreshCw className="h-4 w-4 animate-spin" />
-              ) : (
-                <CopyX className="h-4 w-4" />
-              )}
-              {isAnalyzing ? 'Анализируем...' : 'Найти дубликаты'}
-            </Button>
-          </div>
-
-          {isAnalyzing && (
-            <div className="my-4">
-              <div className="text-sm mb-1">Прогресс анализа: {progress}%</div>
-              <div className="w-full h-2 bg-secondary rounded-full">
-                <div
-                  className="h-2 bg-primary rounded-full"
-                  style={{ width: `${progress}%` }}
+          <form onSubmit={handleCheck} className="space-y-4">
+            <div>
+              <label htmlFor="url" className="block text-sm font-medium mb-1">
+                URL страницы
+              </label>
+              <div className="flex gap-2">
+                <Input
+                  id="url"
+                  placeholder="https://example.com/page"
+                  value={url}
+                  onChange={(e) => setUrl(e.target.value)}
                 />
+                <Button type="submit" disabled={isLoading}>
+                  {isLoading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Проверка...
+                    </>
+                  ) : (
+                    'Проверить'
+                  )}
+                </Button>
               </div>
             </div>
-          )}
-
-          {duplicates.length > 0 ? (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Оригинальный URL</TableHead>
-                  <TableHead>Дублирующийся URL</TableHead>
-                  <TableHead className="text-center">Схожесть</TableHead>
-                  <TableHead>Тип дубликата</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {duplicates.map((item, index) => (
-                  <TableRow key={index}>
-                    <TableCell className="font-medium max-w-[200px] truncate">{item.url}</TableCell>
-                    <TableCell className="max-w-[200px] truncate">{item.duplicateUrl}</TableCell>
-                    <TableCell className="text-center">
-                      {item.similarity}%
-                    </TableCell>
-                    <TableCell>{getDuplicateTypeBadge(item.type)}</TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          ) : !isAnalyzing && (
-            <div className="text-center py-6 text-muted-foreground">
-              {inputDomain ? 'Запустите анализ для поиска дубликатов' : 'Введите домен для начала анализа'}
-            </div>
-          )}
+          </form>
         </CardContent>
       </Card>
+
+      {results && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Результаты проверки</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {results.duplicateCount > 0 ? (
+              <Alert variant="destructive">
+                <AlertTriangle className="h-4 w-4" />
+                <AlertTitle>Обнаружены дубликаты контента</AlertTitle>
+                <AlertDescription>
+                  Найдено {results.duplicateCount} страниц с похожим содержимым
+                </AlertDescription>
+              </Alert>
+            ) : (
+              <Alert>
+                <FileCheck className="h-4 w-4" />
+                <AlertTitle>Дубликатов не обнаружено</AlertTitle>
+                <AlertDescription>
+                  Контент на проверяемой странице уникален
+                </AlertDescription>
+              </Alert>
+            )}
+
+            {results.duplicateCount > 0 && (
+              <div>
+                <h3 className="text-sm font-medium mb-2">Страницы с похожим контентом:</h3>
+                <ul className="space-y-2">
+                  {results.duplicateContent.map((item, index) => (
+                    <li key={index} className="p-2 border rounded-md">
+                      <div className="flex justify-between items-center">
+                        <a 
+                          href={item.url} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="text-blue-500 hover:underline"
+                        >
+                          {item.url}
+                        </a>
+                        <span className="text-sm text-muted-foreground">
+                          Схожесть: {item.similarity}%
+                        </span>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            <div>
+              <h3 className="text-sm font-medium mb-2">Оригинальный контент:</h3>
+              <div className="relative">
+                <Textarea 
+                  value={results.originalContent} 
+                  readOnly 
+                  className="resize-none h-32"
+                />
+                <Button 
+                  variant="secondary"
+                  size="sm" 
+                  className="absolute right-2 top-2"
+                  onClick={() => copyToClipboard(results.originalContent)}
+                >
+                  <Copy className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+
+            <div className="mt-4">
+              <h3 className="text-sm font-medium mb-2">Рекомендации:</h3>
+              <ul className="list-disc pl-5 text-sm space-y-1">
+                <li>Убедитесь, что контент на вашей странице уникален</li>
+                <li>Используйте канонические URL для страниц с похожим содержимым</li>
+                <li>Добавьте больше уникального контента на страницу</li>
+                <li>Избегайте использования шаблонных текстов на разных страницах</li>
+              </ul>
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }
