@@ -1,3 +1,4 @@
+
 import { Proxy } from './types';
 
 export class ProxyStorage {
@@ -116,6 +117,7 @@ export class ProxyStorage {
         if (match) {
           // Handle format with username:password
           [, ip, port, username, password] = match;
+          // Fix here: Convert port string to number
           port = parseInt(port, 10);
           
           // Check for protocol prefix
@@ -130,17 +132,20 @@ export class ProxyStorage {
           protocol = parts[0] as 'http' | 'https' | 'socks4' | 'socks5';
           const ipPort = parts[1].split(':');
           ip = ipPort[0];
+          // Fix: Convert port string to number
           port = parseInt(ipPort[1], 10);
         } else if (trimmedLine.includes(':')) {
           // Формат ip:port
           const ipPort = trimmedLine.split(':');
           ip = ipPort[0];
-          port = parseInt(ipPort[1], 10); // Convert to number explicitly
+          // Fix: Convert port string to number explicitly
+          port = parseInt(ipPort[1], 10);
         } else {
           continue; // Неверный формат
         }
         
         if (ip && !isNaN(port)) {
+          // Fix: Generate proxyId using the port as a number (toString conversion happens internally)
           const proxyId = `${ip}:${port}`;
           
           // Проверяем, не существует ли уже
