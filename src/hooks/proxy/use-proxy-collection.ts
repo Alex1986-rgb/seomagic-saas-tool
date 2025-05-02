@@ -21,6 +21,8 @@ export function useProxyCollection() {
       // Если очищаем перед сбором, сбрасываем счетчик
       if (shouldClear) {
         setCollectedProxies(0);
+        // Clear the existing proxies
+        proxyManager.clearAllProxies();
       }
       
       // Подсчет активных источников
@@ -41,13 +43,12 @@ export function useProxyCollection() {
       
       let completedSources = 0;
       
-      // Fix here: Pass a single callback function that handles both parameters
+      // Pass a callback that correctly handles both source and count parameters
       const newProxies = await proxyManager.collectProxies((source, count) => {
         completedSources++;
         setProgress(Math.round((completedSources / sourcesCount) * 100));
         
         if (count >= 0) {
-          // Now count represents the total number of proxies
           setCollectedProxies(count);
           setStatusMessage(`Собрано ${count} прокси из источника ${source}`);
         } else {

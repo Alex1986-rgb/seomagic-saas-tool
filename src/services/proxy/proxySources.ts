@@ -72,6 +72,10 @@ export class ProxySources {
             <tr><td>10.0.0.1</td><td>3128</td><td>HTTPS</td><td>Anonymous</td></tr>
             <tr><td>172.16.0.1</td><td>1080</td><td>SOCKS5</td><td>Transparent</td></tr>
             <tr><td>192.168.5.5</td><td>8888</td><td>HTTP</td><td>Anonymous</td></tr>
+            <tr><td>172.16.10.1</td><td>3000</td><td>HTTP</td><td>Elite</td></tr>
+            <tr><td>192.168.15.1</td><td>8080</td><td>HTTPS</td><td>Anonymous</td></tr>
+            <tr><td>10.10.10.1</td><td>1080</td><td>SOCKS5</td><td>Elite</td></tr>
+            <tr><td>192.168.20.1</td><td>9090</td><td>HTTP</td><td>Transparent</td></tr>
           </table>
         `;
       case 'sslproxies':
@@ -82,6 +86,10 @@ export class ProxySources {
             <tr><td>203.0.113.2</td><td>3128</td><td>CA</td><td>Canada</td><td>anonymous</td><td>no</td><td>yes</td><td>5 minutes ago</td></tr>
             <tr><td>203.0.113.3</td><td>8080</td><td>UK</td><td>United Kingdom</td><td>transparent</td><td>no</td><td>no</td><td>10 minutes ago</td></tr>
             <tr><td>203.0.113.4</td><td>443</td><td>DE</td><td>Germany</td><td>elite proxy</td><td>yes</td><td>yes</td><td>2 minutes ago</td></tr>
+            <tr><td>203.0.113.5</td><td>8888</td><td>JP</td><td>Japan</td><td>anonymous</td><td>no</td><td>yes</td><td>3 minutes ago</td></tr>
+            <tr><td>203.0.113.6</td><td>80</td><td>FR</td><td>France</td><td>elite proxy</td><td>yes</td><td>yes</td><td>7 minutes ago</td></tr>
+            <tr><td>203.0.113.7</td><td>3128</td><td>BR</td><td>Brazil</td><td>transparent</td><td>no</td><td>no</td><td>15 minutes ago</td></tr>
+            <tr><td>203.0.113.8</td><td>8080</td><td>AU</td><td>Australia</td><td>anonymous</td><td>yes</td><td>yes</td><td>4 minutes ago</td></tr>
           </table>
         `;
       default:
@@ -102,17 +110,38 @@ export class ProxySources {
               <span class="type">SOCKS5</span>
               <span class="country">China</span>
             </div>
+            <div class="proxy-item">
+              <span class="ip">55.66.77.88</span>:<span class="port">8888</span>
+              <span class="type">HTTP</span>
+              <span class="country">India</span>
+            </div>
+            <div class="proxy-item">
+              <span class="ip">12.34.56.78</span>:<span class="port">443</span>
+              <span class="type">HTTPS</span>
+              <span class="country">Germany</span>
+            </div>
+            <div class="proxy-item">
+              <span class="ip">90.12.34.56</span>:<span class="port">3128</span>
+              <span class="type">HTTP</span>
+              <span class="country">France</span>
+            </div>
+            <div class="proxy-item">
+              <span class="ip">21.43.65.87</span>:<span class="port">9090</span>
+              <span class="type">SOCKS4</span>
+              <span class="country">Spain</span>
+            </div>
           </div>
         `;
     }
   }
   
   private parseMockData(data: string, source: string): Proxy[] {
-    // Enhanced mock implementation that creates more random proxies
+    // Improved mock implementation that creates more unique proxies
     const proxies: Proxy[] = [];
     
     // Increase the number of proxies generated for each source
-    const proxyCount = source === 'freeproxylists' || source === 'sslproxies' ? 20 : 15;
+    // Generate 25-50 proxies per source for better testing
+    const proxyCount = Math.floor(Math.random() * 25) + 25;
     
     for (let i = 0; i < proxyCount; i++) {
       // Generate more realistic-looking IPs for different sources
@@ -168,7 +197,7 @@ export class ProxySources {
         let protocol: 'http' | 'https' | 'socks4' | 'socks5' = 'http';
         
         // Try to match protocol://ip:port format
-        const protocolMatch = trimmedLine.match(/^(https?|socks[45]):\/\/([^:]+):(\d+)/i);
+        const protocolMatch = trimmedLine.match(/^(https?|socks[45]?):\/\/([^:]+):(\d+)/i);
         
         if (protocolMatch) {
           const protocolStr = protocolMatch[1].toLowerCase();
