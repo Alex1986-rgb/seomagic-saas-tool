@@ -2,12 +2,13 @@
 import { useState, useCallback } from 'react';
 import { proxyManager } from '@/services/proxy/proxyManager';
 import { useToast } from '../use-toast';
+import { UrlTestResult } from '@/services/proxy/url-testing/urlTester';
 
 export function useUrlTesting() {
   const [isTesting, setIsTesting] = useState(false);
   const [progress, setProgress] = useState(0);
   const [statusMessage, setStatusMessage] = useState('');
-  const [testResults, setTestResults] = useState<any[]>([]);
+  const [testResults, setTestResults] = useState<UrlTestResult[]>([]);
   const { toast } = useToast();
 
   const testUrls = useCallback(async (urls: string[], useProxies: boolean = true) => {
@@ -74,15 +75,8 @@ export function useUrlTesting() {
         }]);
       });
       
-      // Подсчитываем успешные запросы - здесь мы должны убедиться, что каждый элемент в results имеет свойство success
-      const successfulRequests = results.filter(r => {
-        // Проверяем, есть ли свойство success, если нет, определяем успех на основе статуса
-        if (r.success !== undefined) {
-          return r.success;
-        }
-        // Если свойство success отсутствует, добавляем логику определения успеха
-        return r.status >= 200 && r.status < 400;
-      }).length;
+      // Подсчитываем успешные запросы
+      const successfulRequests = results.filter(r => r.success).length;
       
       toast({
         title: "Проверка URL завершена",

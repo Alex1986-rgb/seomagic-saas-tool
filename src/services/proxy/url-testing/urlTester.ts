@@ -26,13 +26,23 @@ function getStatusDescription(status: number): string {
   return 'Неизвестный статус';
 }
 
+// Определяем тип результата тестирования URL
+export interface UrlTestResult {
+  url: string;
+  status: number;
+  error?: string;
+  errorDetails?: string;
+  proxy?: string;
+  success: boolean; // Добавляем обязательное поле success
+}
+
 export async function testUrls(
   urls: string[], 
   proxies: Proxy[], 
   useProxies: boolean = true, 
   onProgress?: (url: string, status: number, proxy?: string, errorDetails?: string) => void
-): Promise<{url: string, status: number, error?: string, errorDetails?: string, proxy?: string, success: boolean}[]> {
-  const results = [];
+): Promise<UrlTestResult[]> {
+  const results: UrlTestResult[] = [];
   const activeProxies = proxies.filter(p => p.status === 'active');
   
   if (useProxies && activeProxies.length === 0) {
