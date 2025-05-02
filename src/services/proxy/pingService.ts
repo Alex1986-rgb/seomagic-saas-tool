@@ -21,13 +21,20 @@ export class PingService {
     feedUrl: string, 
     rpcEndpoints: string[],
     batchSize: number = 20,
-    concurrency: number = 10
+    concurrency: number = 10,
+    useProxies: boolean = true
   ): Promise<PingResult[]> {
     const results: PingResult[] = [];
-    const activeProxies = this.proxyStorage.getActiveProxies();
+    const activeProxies = useProxies ? this.proxyStorage.getActiveProxies() : [];
     
     // Update concurrency manager with new concurrency setting
     this.concurrencyManager = new ConcurrencyManager(concurrency * 3);
+    
+    // Check if we have proxies available
+    const hasProxies = activeProxies.length > 0;
+    if (useProxies && !hasProxies) {
+      console.log('No active proxies available, will attempt direct connections');
+    }
     
     // Create a queue of work to be done
     const queue: Array<{url: string, rpc: string}> = [];
@@ -53,7 +60,7 @@ export class PingService {
       // Execute batch with improved concurrency control
       const batchResults = await this.processRequestsWithConcurrencyControl(
         batch.map(({url, rpc}) => () => 
-          this.pingUrl(url, rpc, siteTitle, feedUrl, activeProxies)
+          this.pingUrl(url, rpc, siteTitle, feedUrl, useProxies ? activeProxies : [])
         ),
         concurrency
       );
@@ -121,7 +128,21 @@ export class PingService {
       
       // Use the enhanced XML-RPC request function with retry logic
       const startTime = Date.now();
-      const response = await makeXmlRpcRequest(rpcEndpoint, xmlrpcRequest, proxy, 15000, 2);
+      
+      // First try with proxy if available
+      let response;
+      if (proxy) {
+        response = await makeXmlRpcRequest(rpcEndpoint, xmlrpcRequest, proxy, 15000, 2);
+      }
+      
+      // If proxy connection failed or no proxy available, try direct connection as fallback
+      if (!proxy || !response || !response.success) {
+        if (proxy) {
+          console.log(`Proxy connection failed for ${url} to ${rpcEndpoint}, trying direct connection`);
+        }
+        response = await makeXmlRpcRequest(rpcEndpoint, xmlrpcRequest, null, 20000, 1);
+      }
+      
       const endTime = Date.now();
       const pingTime = endTime - startTime;
       

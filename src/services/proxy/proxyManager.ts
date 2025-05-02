@@ -1,4 +1,3 @@
-
 import type { Proxy, PingResult, ProxySources } from './types';
 import { ProxyCollector } from './proxyCollector';
 import { ProxyValidator } from './proxyValidator';
@@ -165,7 +164,8 @@ export class ProxyManager {
     feedUrl: string, 
     rpcEndpoints: string[],
     batchSize: number = 10,
-    concurrency: number = 5
+    concurrency: number = 5,
+    useProxies: boolean = true
   ): Promise<PingResult[]> {
     return this.pingManager.pingUrlsWithRpc(
       urls, 
@@ -173,7 +173,8 @@ export class ProxyManager {
       feedUrl, 
       rpcEndpoints,
       batchSize,
-      concurrency
+      concurrency,
+      useProxies
     );
   }
 }

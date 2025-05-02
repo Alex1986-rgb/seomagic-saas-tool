@@ -22,7 +22,8 @@ export class PingManager {
     feedUrl: string, 
     rpcEndpoints: string[],
     batchSize: number = 10,
-    concurrency: number = 5
+    concurrency: number = 5,
+    useProxies: boolean = true
   ): Promise<PingResult[]> {
     return this.pingService.pingUrlsWithRpc(
       urls, 
@@ -30,7 +31,8 @@ export class PingManager {
       feedUrl, 
       rpcEndpoints,
       batchSize,
-      concurrency
+      concurrency,
+      useProxies
     );
   }
 }

@@ -1,15 +1,17 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { RefreshCw, Send, Settings } from 'lucide-react';
+import { AlertCircle, InfoIcon, RefreshCw, Send, Settings } from 'lucide-react';
 import { Progress } from "@/components/ui/progress";
 import { useToast } from '@/hooks/use-toast';
 import BatchProcessingConfig from './BatchProcessingConfig';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { proxyManager } from '@/services/proxy/proxyManager';
 
 export const DEFAULT_RPC_SERVICES = [
     'http://rpc.pingomatic.com',
@@ -50,7 +52,23 @@ const PingForm: React.FC<PingFormProps> = ({
   const [useProxies, setUseProxies] = useState<boolean>(true);
   const [rpcServices, setRpcServices] = useState<string>(DEFAULT_RPC_SERVICES.join('\n'));
   const [advancedOptionsOpen, setAdvancedOptionsOpen] = useState<boolean>(false);
+  const [activeProxiesCount, setActiveProxiesCount] = useState<number>(0);
   const { toast } = useToast();
+
+  // Check for active proxies when component loads
+  useEffect(() => {
+    const checkActiveProxies = () => {
+      const activeProxies = proxyManager.getActiveProxies();
+      setActiveProxiesCount(activeProxies.length);
+    };
+    
+    checkActiveProxies();
+    
+    // Check again when useProxies changes
+    if (useProxies) {
+      checkActiveProxies();
+    }
+  }, [useProxies]);
 
   const handleSubmit = async () => {
     const urlList = urls.split('\n').filter(url => url.trim());
@@ -175,6 +193,16 @@ const PingForm: React.FC<PingFormProps> = ({
         <Label htmlFor="use-proxies">Использовать прокси для пинга</Label>
       </div>
       
+      {useProxies && activeProxiesCount === 0 && (
+        <Alert variant="warning" className="bg-yellow-50">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>
+            Нет активных прокси. Будет использоваться прямое подключение. 
+            Для лучших результатов рекомендуется сначала собрать и проверить прокси.
+          </AlertDescription>
+        </Alert>
+      )}
+      
       <div className="flex flex-wrap gap-2">
         <Button 
           onClick={handleSubmit} 
@@ -201,6 +229,15 @@ const PingForm: React.FC<PingFormProps> = ({
             {progress < 100 ? "Выполняем пинг..." : "Пинг выполнен!"}
           </p>
         </div>
+      )}
+      
+      {!isLoading && (
+        <Alert>
+          <InfoIcon className="h-4 w-4" />
+          <AlertDescription>
+            Если возникают проблемы с пингом через прокси, попробуйте отключить использование прокси или собрать новые прокси.
+          </AlertDescription>
+        </Alert>
       )}
     </div>
   );

@@ -16,6 +16,12 @@ export interface UrlTestResult {
   timestamp?: string;
   responseData?: string; // Added to store the response body for debugging
   retryCount?: number;   // Added to track retries
+  direct?: boolean;      // Added to indicate if this was a direct connection (no proxy)
+  timing?: {             // Added to track timing information
+    start: number;
+    end: number;
+    duration: number;
+  }
 }
 
 /**
@@ -27,6 +33,7 @@ export interface UrlTestConfig {
   retries?: number;
   retryDelay?: number;
   maxConcurrentRequests?: number;
+  failoverToDirect?: boolean; // Added to allow falling back to direct connections
 }
 
 /**
@@ -37,4 +44,5 @@ export interface PingOptions {
   retries?: number;
   retryDelay?: number;
   useProxy?: boolean;
+  fallbackToDirect?: boolean;
 }

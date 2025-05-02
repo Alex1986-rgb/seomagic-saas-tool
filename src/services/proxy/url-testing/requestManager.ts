@@ -73,8 +73,8 @@ export async function makeRequest(
   
   return {
     url,
-    status: lastError.response?.status || 0,
-    error: lastError.message || 'Maximum retry attempts reached',
+    status: lastError?.response?.status || 0,
+    error: lastError?.message || 'Maximum retry attempts reached',
     errorDetails,
     proxy: proxy ? `${proxy.ip}:${proxy.port}` : undefined,
     success: false,
@@ -104,10 +104,11 @@ export async function makeXmlRpcRequest(
         maxRedirects: 5,
         headers: {
           'Content-Type': 'text/xml',
-          'User-Agent': 'Mozilla/5.0 (compatible; SeoToolkit/1.0; +http://example.com)',
+          'User-Agent': 'Mozilla/5.0 (compatible; PingTool/1.0; +http://example.com)',
           'Accept': 'text/xml,application/xml,application/xhtml+xml,text/html;q=0.9,text/plain;q=0.8',
-          'Accept-Language': 'ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7',
+          'Accept-Language': 'en-US,en;q=0.5',
           'Cache-Control': 'no-cache',
+          'Connection': 'close' // Try adding connection: close to prevent socket hang ups
         }
       };
       
@@ -116,6 +117,8 @@ export async function makeXmlRpcRequest(
       } else {
         axiosInstance = axios.create(config);
       }
+      
+      console.log(`Sending XML-RPC ping to ${url}${proxy ? ' via proxy ' + proxy.ip + ':' + proxy.port : ''}`);
       
       const response = await axiosInstance.post(url, xmlData, config);
       
@@ -150,6 +153,9 @@ export async function makeXmlRpcRequest(
       lastError = error;
       retryCount++;
       
+      // More detailed error logging
+      console.log(`XML-RPC error (attempt ${retryCount}/${retries}): ${error.message} to ${url}${proxy ? ' via proxy ' + proxy.ip + ':' + proxy.port : ''}`);
+      
       // Only retry if we haven't exceeded max retries
       if (retryCount <= retries) {
         console.log(`Retrying XML-RPC request to ${url} (${retryCount}/${retries})`);
@@ -158,14 +164,26 @@ export async function makeXmlRpcRequest(
     }
   }
   
-  // If all retries failed, return error result
-  const errorDetails = formatErrorDetail(lastError);
+  // If all retries failed, return error result with more specific error messages
+  let errorMessage = lastError?.message || 'Maximum retry attempts reached';
+  let errorDetails = formatErrorDetail(lastError);
+  
+  // More specific error messages for common network errors
+  if (errorMessage.includes('ECONNREFUSED')) {
+    errorDetails = 'Сервер отклонил соединение';
+  } else if (errorMessage.includes('ECONNABORTED') || errorMessage.includes('timeout')) {
+    errorDetails = 'Превышено время ожидания ответа';
+  } else if (errorMessage.includes('ENOTFOUND')) {
+    errorDetails = 'Сервер не найден (ошибка DNS)';
+  } else if (errorMessage.includes('ETIMEDOUT')) {
+    errorDetails = 'Истекло время ожидания сетевого подключения';
+  }
   
   return {
     url,
     status: lastError?.response?.status || 0,
-    error: lastError?.message || 'Maximum retry attempts reached',
-    errorDetails: errorDetails || 'Network Error',
+    error: errorMessage,
+    errorDetails: errorDetails || 'Сетевая ошибка',
     proxy: proxy ? `${proxy.ip}:${proxy.port}` : undefined,
     success: false,
     retryCount

@@ -31,9 +31,11 @@ export function usePingService() {
         if (activeProxies.length === 0) {
           toast({
             title: "Внимание",
-            description: "Нет активных прокси. Рекомендуется сначала собрать и проверить прокси.",
+            description: "Нет активных прокси. Будет использоваться прямое соединение.",
             variant: "default",
           });
+        } else {
+          console.log(`Доступно ${activeProxies.length} активных прокси для пинга`);
         }
       }
       
@@ -47,7 +49,8 @@ export function usePingService() {
         feedUrl, 
         rpcList,
         batchSize,
-        concurrency
+        concurrency,
+        useProxies
       );
       
       // Добавляем результаты постепенно для лучшего UX
@@ -60,10 +63,14 @@ export function usePingService() {
         // Небольшая задержка для эмуляции постепенного добавления результатов
         await new Promise(resolve => setTimeout(resolve, delay / 10));
       }
+
+      // Подсчитаем успешные результаты
+      const successfulPings = results.filter(r => r.success).length;
       
       toast({
-        title: "Операция завершена",
-        description: `Обработано ${urlList.length} URL через ${rpcList.length} RPC сервисов`,
+        title: successfulPings > 0 ? "Операция завершена успешно" : "Операция завершена с ошибками",
+        description: `Обработано ${urlList.length} URL через ${rpcList.length} RPC сервисов. Успешных пингов: ${successfulPings}`,
+        variant: successfulPings > 0 ? "default" : "destructive",
       });
     } catch (error) {
       console.error("Ошибка при пинге URL:", error);
