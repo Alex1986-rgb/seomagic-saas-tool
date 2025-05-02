@@ -34,6 +34,7 @@ export interface UrlTestConfig {
   retryDelay?: number;
   maxConcurrentRequests?: number;
   failoverToDirect?: boolean; // Added to allow falling back to direct connections
+  forceDirect?: boolean;      // Added to force direct connections without proxies
 }
 
 /**

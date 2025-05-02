@@ -34,6 +34,7 @@ const ProxyManager: React.FC = () => {
   const [testResults, setTestResults] = useState<any[]>([]);
   const [testUrlsInput, setTestUrlsInput] = useState('');
   const [useProxiesForTesting, setUseProxiesForTesting] = useState(true);
+  const [forceDirect, setForceDirect] = useState(false);
   const { toast } = useToast();
   const isMobile = useMobile();
 
@@ -299,22 +300,22 @@ const ProxyManager: React.FC = () => {
         return;
       }
       
-      if (useProxiesForTesting) {
+      if (useProxiesForTesting && !forceDirect) {
         const activeProxies = proxyManager.getActiveProxies();
         if (activeProxies.length === 0) {
           toast({
             title: "Нет активных прокси",
-            description: "Для использования прокси необходимо иметь активные прокси",
-            variant: "destructive",
+            description: forceDirect ? "Будет использовано прямое соединение" : "Для использования прокси необходимо иметь активные прокси",
+            variant: forceDirect ? "default" : "destructive",
           });
-          return;
+          if (!forceDirect) return;
         }
       }
       
       setIsTesting(true);
       setProgress(0);
       setTestResults([]);
-      setStatusMessage(`Подготовка к проверке ${urls.length} URL...`);
+      setStatusMessage(`Подготовка к проверке ${urls.length} URL...${forceDirect ? ' (принудительное прямое соединение)' : ''}`);
       
       let checkedCount = 0;
       
@@ -329,7 +330,7 @@ const ProxyManager: React.FC = () => {
           proxy,
           errorDetails 
         }]);
-      });
+      }, forceDirect);
       
       toast({
         title: "Проверка URL завершена",
@@ -594,13 +595,31 @@ const ProxyManager: React.FC = () => {
                   />
                 </div>
                 
-                <div className="flex items-center space-x-2">
-                  <Switch 
-                    id="use-proxies" 
-                    checked={useProxiesForTesting} 
-                    onCheckedChange={setUseProxiesForTesting}
-                  />
-                  <Label htmlFor="use-proxies">Использовать прокси для проверки</Label>
+                <div className="flex flex-col space-y-2">
+                  <div className="flex items-center space-x-2">
+                    <Switch 
+                      id="use-proxies" 
+                      checked={useProxiesForTesting} 
+                      onCheckedChange={setUseProxiesForTesting}
+                      disabled={forceDirect}
+                    />
+                    <Label htmlFor="use-proxies">Использовать прокси для проверки</Label>
+                  </div>
+                  
+                  <div className="flex items-center space-x-2">
+                    <Switch 
+                      id="force-direct" 
+                      checked={forceDirect} 
+                      onCheckedChange={(checked) => {
+                        setForceDirect(checked);
+                        if (checked) {
+                          // If forcing direct connection, disable proxy use
+                          setUseProxiesForTesting(false);
+                        }
+                      }}
+                    />
+                    <Label htmlFor="force-direct">Принудительное прямое соединение (без прокси)</Label>
+                  </div>
                 </div>
                 
                 <div className="flex justify-end gap-2">
@@ -621,7 +640,7 @@ const ProxyManager: React.FC = () => {
                           <TableRow>
                             <TableHead>URL</TableHead>
                             <TableHead>Статус</TableHead>
-                            {useProxiesForTesting && <TableHead>Прокси</TableHead>}
+                            <TableHead>Соединение</TableHead>
                             <TableHead>Детали</TableHead>
                           </TableRow>
                         </TableHeader>
@@ -652,9 +671,11 @@ const ProxyManager: React.FC = () => {
                                   </Badge>
                                 )}
                               </TableCell>
-                              {useProxiesForTesting && (
-                                <TableCell>{result.proxy || '-'}</TableCell>
-                              )}
+                              <TableCell>
+                                {result.proxy && result.proxy !== 'Direct connection' 
+                                  ? result.proxy 
+                                  : <Badge variant="outline" className="bg-blue-100 text-blue-800">Прямое</Badge>}
+                              </TableCell>
                               <TableCell>
                                 {result.status > 0 ? 
                                   (result.status >= 200 && result.status < 400 

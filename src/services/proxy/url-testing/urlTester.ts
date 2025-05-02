@@ -1,12 +1,12 @@
 
 import type { Proxy } from '../types';
-import { UrlTestResult, UrlTestConfig } from './types';
+import { UrlTestResult, UrlTestConfig } from '../types';
 import { ProxySelector } from './proxySelector';
 import { ConcurrencyManager } from './concurrencyManager';
 import { makeRequest } from './requestManager';
 
 // Re-export type for compatibility
-export type { UrlTestResult } from './types';
+export type { UrlTestResult } from '../types';
 
 // Default configuration values
 const DEFAULT_CONFIG: UrlTestConfig = {
@@ -23,7 +23,7 @@ const DEFAULT_CONFIG: UrlTestConfig = {
 export async function testUrls(
   urls: string[], 
   proxies: Proxy[], 
-  useProxies: boolean = true, 
+  useProxies: boolean = true,
   onProgress?: (url: string, status: number, proxy?: string, errorDetails?: string) => void,
   config?: Partial<UrlTestConfig>
 ): Promise<UrlTestResult[]> {
@@ -32,6 +32,12 @@ export async function testUrls(
   
   // Merge provided config with defaults
   const mergedConfig = { ...DEFAULT_CONFIG, ...config };
+  
+  // Override useProxies if forceDirect is specified
+  if (mergedConfig.forceDirect === true) {
+    useProxies = false;
+    console.log('Forced direct connection mode enabled, ignoring proxies');
+  }
   
   if (useProxies && activeProxies.length === 0) {
     throw new Error('Нет активных прокси для использования');
@@ -62,6 +68,11 @@ export async function testUrls(
         // Make the request
         result = await makeRequest(url, currentProxy, mergedConfig.timeout);
         
+        // Flag direct connections
+        if (!currentProxy) {
+          result.direct = true;
+        }
+        
         // Report progress
         if (onProgress) {
           onProgress(
@@ -80,6 +91,47 @@ export async function testUrls(
         if (retries > 0 && useProxies) {
           retries--;
           await new Promise(resolve => setTimeout(resolve, mergedConfig.retryDelay));
+        } else if (mergedConfig.failoverToDirect && useProxies) {
+          // Try direct connection as last resort
+          console.log(`Failing over to direct connection for ${url} after proxy attempts failed`);
+          try {
+            result = await makeRequest(url, undefined, mergedConfig.timeout);
+            result.direct = true;
+            
+            if (onProgress) {
+              onProgress(
+                url, 
+                result.status,
+                'Direct connection',
+                result.errorDetails
+              );
+            }
+            
+            results.push(result);
+          } catch (directError) {
+            // Both proxy and direct failed
+            const errorResult: UrlTestResult = {
+              url,
+              status: 0,
+              error: directError.message || "Unknown error",
+              errorDetails: directError.message || "Unknown error",
+              proxy: "Direct connection failed",
+              success: false,
+              direct: true
+            };
+            
+            if (onProgress) {
+              onProgress(
+                url, 
+                errorResult.status,
+                errorResult.proxy,
+                errorResult.errorDetails
+              );
+            }
+            
+            results.push(errorResult);
+          }
+          break;
         } else {
           // No more retries, add error result
           const errorResult: UrlTestResult = {
@@ -87,8 +139,9 @@ export async function testUrls(
             status: 0,
             error: error.message || "Unknown error",
             errorDetails: error.message || "Unknown error",
-            proxy: currentProxy ? `${currentProxy.ip}:${currentProxy.port}` : undefined,
-            success: false
+            proxy: currentProxy ? `${currentProxy.ip}:${currentProxy.port}` : "Direct connection",
+            success: false,
+            direct: !currentProxy
           };
           
           if (onProgress) {

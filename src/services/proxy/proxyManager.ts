@@ -1,163 +1,161 @@
-import type { Proxy, PingResult, ProxySources } from './types';
-import { ProxyCollector } from './proxyCollector';
-import { ProxyValidator } from './proxyValidator';
 import { ProxyStorage } from './proxyStorage';
+import { ProxyValidator } from './proxyValidator';
+import { ProxySources } from './proxySources';
 import { PingManager } from './pingManager';
-import { CaptchaManager } from './captchaManager';
-import { defaultProxySources } from './proxySourcesConfig';
+import type { Proxy, ProxySources as ProxySourcesType } from './types';
 import { UrlTestResult } from './url-testing/urlTester';
 
-/**
- * Класс для управления прокси
- */
 export class ProxyManager {
-  private proxyCollector: ProxyCollector;
-  private proxyValidator: ProxyValidator;
   private proxyStorage: ProxyStorage;
-  private captchaManager: CaptchaManager;
+  private proxyValidator: ProxyValidator;
+  private proxySources: ProxySources;
   private pingManager: PingManager;
-
-  constructor(captchaApiKey?: string, botableApiKey?: string) {
+  
+  public defaultProxySources: ProxySourcesType = {
+    'freeproxylists': {
+      url: 'https://www.freeproxylists.net/',
+      enabled: true,
+      parseFunction: this.parseFreeProxyLists
+    },
+    'sslproxies': {
+      url: 'https://sslproxies.net/',
+      enabled: true,
+      parseFunction: this.parseSSLProxies
+    },
+    'free-proxy.cz': {
+      url: 'http://free-proxy.cz/en/proxylist/country/all/http/ping/all',
+      enabled: false,
+      parseFunction: this.parseFreeProxyCZ
+    },
+    'proxylist.me': {
+      url: 'https://proxylist.me/api/v1/getProxy?anon=2,3,4&country=any',
+      enabled: false,
+      parseFunction: this.parseProxylistMe
+    },
+    'proxyscan.io': {
+      url: 'https://www.proxyscan.io/',
+      enabled: false,
+      parseFunction: this.parseProxyScanIO
+    }
+  };
+  
+  constructor() {
     this.proxyStorage = new ProxyStorage();
-    this.proxyCollector = new ProxyCollector();
     this.proxyValidator = new ProxyValidator();
-    this.captchaManager = new CaptchaManager(captchaApiKey, botableApiKey);
+    this.proxySources = new ProxySources(this.defaultProxySources, this.proxyStorage);
     this.pingManager = new PingManager(this.proxyStorage);
-  }
-
-  // Сбор прокси из всех активных источников
-  async collectProxies(
-    onProgress?: (source: string, count: number) => void,
-    clearBeforeCollect: boolean = false
-  ): Promise<Proxy[]> {
-    // Очищаем список перед сбором, если требуется
-    if (clearBeforeCollect) {
-      console.log('Очистка всех прокси перед новым сбором');
-      this.proxyStorage.clearAllProxies();
-    }
-
-    try {
-      // Запускаем сбор прокси с более точным отслеживанием прогресса
-      const newProxies = await this.proxyCollector.collectProxies(
-        (source, count) => {
-          if (onProgress) {
-            // Передаем реальное количество собранных прокси
-            onProgress(source, count);
-          }
-        }, 
-        clearBeforeCollect
-      );
-      
-      // Обновляем существующие или добавляем новые прокси
-      const actuallyAdded = this.proxyStorage.addProxies(newProxies);
-      
-      // Явно логируем количество собранных прокси
-      console.log(`Всего собрано ${newProxies.length} прокси, добавлено ${actuallyAdded} новых прокси`);
-      
-      return newProxies;
-    } catch (error) {
-      console.error("Ошибка при сборе прокси:", error);
-      throw error;
-    }
-  }
-
-  // Проверка прокси
-  async checkProxy(proxy: Proxy, testUrl: string = 'https://api.ipify.org/'): Promise<Proxy> {
-    const updatedProxy = await this.proxyValidator.checkProxy(proxy, testUrl);
-    this.proxyStorage.updateProxy(updatedProxy);
-    return updatedProxy;
-  }
-
-  // Тестирование списка URL через прокси
-  async testUrls(
-    urls: string[], 
-    useProxies: boolean = true, 
-    onProgress?: (url: string, status: number, proxy?: string, errorDetails?: string) => void
-  ): Promise<UrlTestResult[]> {
-    const activeProxies = this.proxyStorage.getActiveProxies();
-    if (useProxies && activeProxies.length === 0) {
-      throw new Error('Нет активных прокси для использования');
-    }
     
-    return this.proxyValidator.testUrls(urls, activeProxies, useProxies, onProgress);
+    // Load proxy sources from localStorage
+    const storedSources = localStorage.getItem('proxySources');
+    if (storedSources) {
+      try {
+        this.defaultProxySources = JSON.parse(storedSources);
+        this.proxySources.proxySources = this.defaultProxySources;
+      } catch (error) {
+        console.error('Ошибка при загрузке источников прокси из localStorage:', error);
+      }
+    }
+  }
+  
+  /**
+   * Get all proxies
+   */
+  getProxies(): Proxy[] {
+    return this.proxyStorage.getAll();
   }
 
-  // Получение списка всех прокси
+  /**
+   * Get all proxies
+   */
   getAllProxies(): Proxy[] {
-    return this.proxyStorage.getAllProxies();
+    return this.proxyStorage.getAll();
   }
-
-  // Получение списка активных прокси
+  
+  /**
+   * Get active proxies
+   */
   getActiveProxies(): Proxy[] {
-    return this.proxyStorage.getActiveProxies();
+    return this.proxyStorage.getAll().filter(proxy => proxy.status === 'active');
   }
-
-  // Удаление прокси по ID
-  removeProxy(id: string): boolean {
-    return this.proxyStorage.removeProxy(id);
+  
+  /**
+   * Collect proxies from sources
+   */
+  async collectProxies(
+    progressCallback?: (source: string, count: number) => void
+  ): Promise<Proxy[]> {
+    return this.proxySources.collectProxies(progressCallback);
   }
-
-  // Очистка всех прокси
-  clearAllProxies(): void {
-    this.proxyStorage.clearAllProxies();
-  }
-
-  // Импорт списка прокси
-  importProxies(proxyList: string): Proxy[] {
-    return this.proxyStorage.importProxies(proxyList);
-  }
-
-  // Проверка группы прокси
+  
+  /**
+   * Check a list of proxies
+   */
   async checkProxies(
-    proxyList: Proxy[], 
-    testUrl: string = 'https://api.ipify.org/', 
+    proxyList: Proxy[],
+    testUrl: string = 'https://api.ipify.org/',
     onProgress?: (proxy: Proxy) => void
   ): Promise<Proxy[]> {
-    const results = await this.proxyValidator.checkProxies(proxyList, testUrl, onProgress);
-    
-    // Сохраняем результаты проверки в хранилище
-    const updatedCount = this.proxyStorage.updateProxies(results);
-    console.log(`Обновлено ${updatedCount} прокси после проверки`);
-    
-    return results;
-  }
-
-  // Методы для работы с капчей - делегируем CaptchaManager
-  setCaptchaApiKey(apiKey: string): void {
-    this.captchaManager.setCaptchaApiKey(apiKey);
+    return this.proxyValidator.checkProxies(proxyList, testUrl, onProgress);
   }
   
-  setBotableApiKey(apiKey: string): void {
-    this.captchaManager.setBotableApiKey(apiKey);
+  /**
+   * Remove a proxy
+   */
+  removeProxy(id: string): boolean {
+    return this.proxyStorage.remove(id);
   }
   
+  /**
+   * Clear all proxies
+   */
+  clearAllProxies(): void {
+    this.proxyStorage.clear();
+  }
+  
+  /**
+   * Import proxies from a text
+   */
+  importProxies(proxyText: string): Proxy[] {
+    const importedProxies = this.proxySources.parseProxiesFromText(proxyText);
+    importedProxies.forEach(proxy => {
+      if (!this.proxyStorage.exists(proxy.ip, proxy.port)) {
+        this.proxyStorage.add(proxy);
+      }
+    });
+    return importedProxies;
+  }
+  
+  /**
+   * Get captcha API key
+   */
   getCaptchaApiKey(): string {
-    return this.captchaManager.getCaptchaApiKey();
-  }
-  
-  getBotableApiKey(): string {
-    return this.captchaManager.getBotableApiKey();
-  }
-  
-  // Решение капчи через API - делегируем CaptchaManager
-  async solveCaptcha(
-    imageOrSiteKey: string, 
-    type: 'image' | 'recaptcha' | 'hcaptcha' = 'image', 
-    websiteUrl?: string
-  ): Promise<string> {
-    return this.captchaManager.solveCaptcha(imageOrSiteKey, type, websiteUrl);
+    return localStorage.getItem('captchaApiKey') || '';
   }
 
-  get defaultProxySources() {
-    return defaultProxySources;
+  /**
+   * Set Botable API key
+   */
+  setBotableApiKey(apiKey: string): void {
+    localStorage.setItem('botableApiKey', apiKey);
   }
   
-  // Метод для использования прокси из Python-скрипта
-  async importProxySourcesFromPython(sources: string[]): Promise<number> {
-    return this.proxyCollector.importProxySourcesFromPython(sources);
+  /**
+   * Set captcha API key
+   */
+  setCaptchaApiKey(apiKey: string): void {
+    localStorage.setItem('captchaApiKey', apiKey);
+  }
+
+  /**
+   * Get Botable API key
+   */
+  getBotableApiKey(): string {
+    return localStorage.getItem('botableApiKey') || '';
   }
   
-  // Метод для пинга URL-ов через XML-RPC - делегируем PingManager
+  /**
+   * Ping URLs with XML-RPC
+   */
   async pingUrlsWithRpc(
     urls: string[], 
     siteTitle: string, 
@@ -166,7 +164,7 @@ export class ProxyManager {
     batchSize: number = 10,
     concurrency: number = 5,
     useProxies: boolean = true
-  ): Promise<PingResult[]> {
+  ): Promise<any> {
     return this.pingManager.pingUrlsWithRpc(
       urls, 
       siteTitle, 
@@ -177,15 +175,59 @@ export class ProxyManager {
       useProxies
     );
   }
+  
+  /**
+   * Parse proxies from FreeProxyLists
+   */
+  parseFreeProxyLists(data: string): any[] {
+    return this.proxySources.parseFreeProxyLists(data);
+  }
+  
+  /**
+   * Parse proxies from SSLProxies
+   */
+  parseSSLProxies(data: string): any[] {
+    return this.proxySources.parseSSLProxies(data);
+  }
+  
+  /**
+   * Parse proxies from Free-Proxy.cz
+   */
+  parseFreeProxyCZ(data: string): any[] {
+    return this.proxySources.parseFreeProxyCZ(data);
+  }
+  
+  /**
+   * Parse proxies from Proxylist.me
+   */
+  parseProxylistMe(data: string): any[] {
+    return this.proxySources.parseProxylistMe(data);
+  }
+  
+  /**
+   * Parse proxies from Proxyscan.io
+   */
+  parseProxyScanIO(data: string): any[] {
+    return this.proxySources.parseProxyScanIO(data);
+  }
+
+  /**
+   * Проверка списка URL с прокси
+   */
+  async testUrls(
+    urls: string[], 
+    useProxies: boolean = true, 
+    onProgress?: (url: string, status: number, proxy?: string, errorDetails?: string) => void,
+    forceDirect: boolean = false
+  ): Promise<UrlTestResult[]> {
+    const proxiesList = this.getProxies();
+    const config = {
+      forceDirect,
+      failoverToDirect: true, // Always allow fallback to direct connections
+      timeout: 20000, // Increased timeout for better chances
+      retries: 2
+    };
+    
+    return this.proxyValidator.testUrls(urls, proxiesList, useProxies && !forceDirect, onProgress, config);
+  }
 }
-
-// Создаем экземпляр для использования в приложении
-export const proxyManager = new ProxyManager();
-
-// Correctly export types
-export type { 
-  Proxy, 
-  ProxySources, 
-  PingResult,
-  UrlTestResult
-} from './types';

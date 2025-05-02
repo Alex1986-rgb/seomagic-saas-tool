@@ -11,7 +11,7 @@ export function useUrlTesting() {
   const [testResults, setTestResults] = useState<UrlTestResult[]>([]);
   const { toast } = useToast();
 
-  const testUrls = useCallback(async (urls: string[], useProxies: boolean = true) => {
+  const testUrls = useCallback(async (urls: string[], useProxies: boolean = true, forceDirect: boolean = false) => {
     // Очищаем предыдущие результаты
     setTestResults([]);
     
@@ -24,22 +24,24 @@ export function useUrlTesting() {
       return [];
     }
     
-    if (useProxies) {
+    if (useProxies && !forceDirect) {
       const activeProxiesList = proxyManager.getActiveProxies();
       if (activeProxiesList.length === 0) {
         toast({
           title: "Нет активных прокси",
-          description: "Для использования прокси необходимо собрать и проверить прокси",
-          variant: "destructive",
+          description: forceDirect ? "Будет использовано прямое соединение" : "Для использования прокси необходимо собрать и проверить прокси",
+          variant: forceDirect ? "default" : "destructive",
         });
-        return [];
+        // If forceDirect is true, we'll continue even without proxies
+        if (!forceDirect) return [];
+      } else {
+        console.log(`Доступно ${activeProxiesList.length} активных прокси для тестирования URL`);
       }
-      console.log(`Доступно ${activeProxiesList.length} активных прокси для тестирования URL`);
     }
     
     setIsTesting(true);
     setProgress(0);
-    setStatusMessage(`Подготовка к проверке ${urls.length} URL...`);
+    setStatusMessage(`Подготовка к проверке ${urls.length} URL...${forceDirect ? ' (принудительное прямое соединение)' : ''}`);
     
     try {
       let checkedCount = 0;
@@ -71,9 +73,10 @@ export function useUrlTesting() {
           proxy,
           errorDetails,
           timestamp: new Date().toISOString(),
-          success: isSuccessStatus
+          success: isSuccessStatus,
+          direct: proxy === 'Direct connection' || !proxy
         }]);
-      });
+      }, forceDirect);
       
       // Подсчитываем успешные запросы
       const successfulRequests = results.filter(r => r.success).length;
