@@ -1,3 +1,4 @@
+
 import { Proxy } from './types';
 
 export class ProxyStorage {
@@ -14,6 +15,9 @@ export class ProxyStorage {
         const parsedProxies: Proxy[] = JSON.parse(savedProxies);
         parsedProxies.forEach(proxy => {
           proxy.lastChecked = new Date(proxy.lastChecked);
+          if (proxy.lastSeen && typeof proxy.lastSeen === 'string') {
+            proxy.lastSeen = new Date(proxy.lastSeen);
+          }
           this.proxies.set(proxy.id, proxy);
         });
         console.log(`Загружено ${this.proxies.size} прокси из хранилища`);
@@ -104,46 +108,69 @@ export class ProxyStorage {
       try {
         // Улучшенная обработка различных форматов
         let ip: string;
-        let port: number; // Explicitly defined as number
+        let port: number;
         let protocol: 'http' | 'https' | 'socks4' | 'socks5' = 'http';
         let username: string | undefined;
         let password: string | undefined;
         
-        // Regular expression to match IP:PORT:USERNAME:PASSWORD or IP:PORT format
-        const fullPattern = /^(.+?):(\d+)(?::(.+?)(?::(.+))?)?$/;
-        const match = trimmedLine.match(fullPattern);
-        
-        if (match) {
-          // Handle format with username:password
-          ip = match[1];
-          port = parseInt(match[2], 10); // Convert to number
-          username = match[3];
-          password = match[4];
+        // Обработка разных форматов
+        if (trimmedLine.includes('://')) {
+          // Формат protocol://ip:port или protocol://user:pass@ip:port
+          const protocolSplit = trimmedLine.split('://');
+          protocol = protocolSplit[0] as 'http' | 'https' | 'socks4' | 'socks5';
           
-          // Check for protocol prefix
-          if (ip.includes('://')) {
-            const protocolParts = ip.split('://');
-            protocol = protocolParts[0] as 'http' | 'https' | 'socks4' | 'socks5';
-            ip = protocolParts[1];
+          let hostPart = protocolSplit[1];
+          
+          // Проверка на наличие user:pass@
+          if (hostPart.includes('@')) {
+            const userPassHostSplit = hostPart.split('@');
+            const userPassPart = userPassHostSplit[0];
+            hostPart = userPassHostSplit[1];
+            
+            // Разбор user:pass
+            if (userPassPart.includes(':')) {
+              const userPassSplit = userPassPart.split(':');
+              username = userPassSplit[0];
+              password = userPassSplit[1];
+            }
           }
-        } else if (trimmedLine.includes('://')) {
-          // Формат protocol://ip:port
-          const parts = trimmedLine.split('://');
-          protocol = parts[0] as 'http' | 'https' | 'socks4' | 'socks5';
-          const ipPort = parts[1].split(':');
-          ip = ipPort[0];
-          port = parseInt(ipPort[1], 10);
-        } else if (trimmedLine.includes(':')) {
-          // Формат ip:port
-          const ipPort = trimmedLine.split(':');
-          ip = ipPort[0];
-          port = parseInt(ipPort[1], 10);
+          
+          // Разбор ip:port
+          if (hostPart.includes(':')) {
+            const ipPortSplit = hostPart.split(':');
+            ip = ipPortSplit[0];
+            port = parseInt(ipPortSplit[1], 10);
+          } else {
+            continue; // Неверный формат
+          }
         } else {
-          continue; // Неверный формат
+          // Обработка формата IP:PORT:USERNAME:PASSWORD или IP:PORT
+          const fullPattern = /^(.+?):(\d+)(?::(.+?)(?::(.+))?)?$/;
+          const match = trimmedLine.match(fullPattern);
+          
+          if (match) {
+            // Handle format with username:password
+            ip = match[1];
+            port = parseInt(match[2], 10); // Convert to number
+            username = match[3];
+            password = match[4];
+          } else if (trimmedLine.includes(':')) {
+            // Простой формат ip:port
+            const parts = trimmedLine.split(':');
+            ip = parts[0];
+            port = parseInt(parts[1], 10);
+          } else {
+            continue; // Неверный формат
+          }
         }
         
         if (ip && !isNaN(port)) {
-          // Create proxyId with string concatenation after ensuring port is a number
+          // Валидация IP и порта
+          if (!this.isValidIp(ip) || port <= 0 || port > 65535) {
+            continue;
+          }
+          
+          // Создаем ID прокси
           const proxyId = `${ip}:${port}`;
           
           // Проверяем, не существует ли уже
@@ -151,7 +178,7 @@ export class ProxyStorage {
             const proxy: Proxy = {
               id: proxyId,
               ip,
-              port, // Now correctly a number
+              port,
               protocol,
               status: 'testing',
               lastChecked: new Date(),
@@ -172,5 +199,28 @@ export class ProxyStorage {
     this.saveProxiesToStorage();
     
     return importedProxies;
+  }
+
+  // Вспомогательный метод для валидации IP-адреса
+  private isValidIp(ip: string): boolean {
+    // Проверяем формат IP
+    const ipPattern = /^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/;
+    const match = ip.match(ipPattern);
+    
+    if (!match) return false;
+    
+    // Проверяем, что каждый октет между 0 и 255
+    for (let i = 1; i <= 4; i++) {
+      const octet = parseInt(match[i], 10);
+      if (isNaN(octet) || octet < 0 || octet > 255) return false;
+    }
+    
+    // Проверяем специальные IP, которые не могут быть прокси
+    if (ip === '0.0.0.0' || ip === '127.0.0.1' || ip.startsWith('169.254.') || 
+        ip.startsWith('172.16.') || ip.startsWith('192.168.') || ip === '255.255.255.255') {
+      return false;
+    }
+    
+    return true;
   }
 }

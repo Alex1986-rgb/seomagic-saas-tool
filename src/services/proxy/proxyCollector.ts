@@ -130,36 +130,59 @@ export class ProxyCollector {
       'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:122.0) Gecko/20100101 Firefox/122.0',
       'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
       'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:122.0) Gecko/20100101 Firefox/122.0',
-      'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36 Edg/121.0.2277.106'
+      'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36 Edg/121.0.2277.106',
+      'Mozilla/5.0 (iPhone; CPU iPhone OS 16_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.6 Mobile/15E148 Safari/604.1',
+      'Mozilla/5.0 (iPad; CPU OS 16_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.6 Mobile/15E148 Safari/604.1'
     ];
     return userAgents[Math.floor(Math.random() * userAgents.length)];
   }
 
-  // Fallback parser when the main parser fails
+  // Улучшенный fallback parser с более сложной регулярной логикой для извлечения прокси
   private fallbackParse(data: any, sourceName: string): Proxy[] {
     const proxies: Proxy[] = [];
     try {
-      // Universal regex for IP:PORT format
+      // Convert data to string if it's not already
       const content = typeof data === 'string' ? data : JSON.stringify(data);
       
-      // Improved regex to catch more proxy formats
-      const ipPortRegex = /(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})[^\d\w]?[:|\s]+(\d{2,5})/g;
-      let match;
+      // Расширенное регулярное выражение для поиска различных форматов прокси
+      const ipPortPatterns = [
+        // Основной паттерн для IP:PORT
+        /(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})[^\d\w]?[:|\s]+(\d{2,5})/g,
+        // Паттерн для поиска в HTML-таблицах
+        /<td[^>]*>(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})<\/td>.*?<td[^>]*>(\d{2,5})<\/td>/g,
+        // Паттерн с протоколом в формате protocol://ip:port
+        /(?:http|https|socks4|socks5):\/\/(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}):(\d{2,5})/g
+      ];
       
-      while ((match = ipPortRegex.exec(content)) !== null) {
-        const ip = match[1];
-        const port = parseInt(match[2], 10);
-        
-        if (this.isValidIpPort(ip, port)) {
-          proxies.push({
-            id: `${ip}:${port}`,
-            ip,
-            port,
-            protocol: 'http',
-            status: 'testing',
-            lastChecked: new Date(),
-            source: sourceName
-          });
+      // Проходим по всем паттернам и собираем результаты
+      for (const pattern of ipPortPatterns) {
+        let match;
+        while ((match = pattern.exec(content)) !== null) {
+          const ip = match[1];
+          const port = parseInt(match[2], 10);
+          
+          if (this.isValidIpPort(ip, port)) {
+            let protocol: 'http' | 'https' | 'socks4' | 'socks5' = 'http';
+            
+            // Определение протокола по контексту, если возможно
+            if (content.includes('socks5') || sourceName.toLowerCase().includes('socks5')) {
+              protocol = 'socks5';
+            } else if (content.includes('socks4') || sourceName.toLowerCase().includes('socks4')) {
+              protocol = 'socks4';
+            } else if (content.includes('https') || sourceName.toLowerCase().includes('https')) {
+              protocol = 'https';
+            }
+            
+            proxies.push({
+              id: `${ip}:${port}`,
+              ip,
+              port,
+              protocol,
+              status: 'testing',
+              lastChecked: new Date(),
+              source: sourceName
+            });
+          }
         }
       }
     } catch (e) {
@@ -169,7 +192,7 @@ export class ProxyCollector {
     return proxies;
   }
   
-  // Validate IP and port
+  // Улучшенная валидация IP и порта
   private isValidIpPort(ip: string, port: number): boolean {
     // Validate IP format
     const ipPattern = /^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/;
@@ -181,6 +204,12 @@ export class ProxyCollector {
     for (let i = 1; i <= 4; i++) {
       const octet = parseInt(ipMatch[i], 10);
       if (isNaN(octet) || octet < 0 || octet > 255) return false;
+    }
+    
+    // Проверка специальных IP, которые не могут быть прокси
+    if (ip === '0.0.0.0' || ip === '127.0.0.1' || ip.startsWith('169.254.') || 
+        ip.startsWith('172.16.') || ip.startsWith('192.168.') || ip === '255.255.255.255') {
+      return false;
     }
     
     // Check port is valid
