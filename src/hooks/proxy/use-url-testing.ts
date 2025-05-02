@@ -60,18 +60,22 @@ export function useUrlTesting() {
         setProgress(Math.round((checkedCount / processedUrls.length) * 100));
         setStatusMessage(`Проверено ${checkedCount}/${processedUrls.length} URL`);
         
+        // Определяем, является ли статус успешным
+        const isSuccessStatus = status >= 200 && status < 400;
+        
         // Добавляем результат в состояние для отображения в интерфейсе
         setTestResults(prev => [...prev, {
           url,
           status,
           proxy,
           errorDetails,
-          timestamp: new Date().toISOString()
+          timestamp: new Date().toISOString(),
+          success: isSuccessStatus
         }]);
       });
       
       // Подсчитываем успешные запросы
-      const successfulRequests = results.filter(r => r.status >= 200 && r.status < 400).length;
+      const successfulRequests = results.filter(r => r.success).length;
       
       toast({
         title: "Проверка URL завершена",

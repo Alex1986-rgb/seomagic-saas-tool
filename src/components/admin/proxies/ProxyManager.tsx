@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -641,7 +640,9 @@ const ProxyManager: React.FC = () => {
                                       ? "bg-green-100 text-green-800"
                                       : result.status >= 300 && result.status < 400
                                         ? "bg-yellow-100 text-yellow-800"
-                                        : "bg-red-100 text-red-800"
+                                        : result.status === 408
+                                          ? "bg-yellow-100 text-yellow-800"
+                                          : "bg-red-100 text-red-800"
                                   }>
                                     {result.status}
                                   </Badge>
@@ -655,7 +656,13 @@ const ProxyManager: React.FC = () => {
                                 <TableCell>{result.proxy || '-'}</TableCell>
                               )}
                               <TableCell>
-                                {result.status > 0 ? 'Успешно' : result.errorDetails || 'Ошибка соединения'}
+                                {result.status > 0 ? 
+                                  (result.status >= 200 && result.status < 400 
+                                    ? 'Успешно' 
+                                    : result.status === 408 
+                                      ? 'Таймаут' 
+                                      : `Ошибка ${result.status}`) 
+                                  : result.errorDetails || 'Ошибка соединения'}
                               </TableCell>
                             </TableRow>
                           ))}

@@ -4,13 +4,16 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
-import { CheckCircle, List, XCircle } from 'lucide-react';
+import { CheckCircle, List, XCircle, AlertTriangle, RefreshCw } from 'lucide-react';
 
 export interface PingResult {
   url: string;
   rpc: string;
   success: boolean;
   message?: string;
+  proxy?: string;     // Прокси, через который был выполнен запрос
+  time?: number;      // Время выполнения запроса
+  error?: string;     // Информация об ошибке
 }
 
 interface PingResultsProps {
@@ -59,6 +62,8 @@ const PingResults: React.FC<PingResultsProps> = ({ results, onClear, isLoading }
                 <TableHead>URL</TableHead>
                 <TableHead>RPC-сервис</TableHead>
                 <TableHead>Статус</TableHead>
+                {results.some(r => r.proxy) && <TableHead>Прокси</TableHead>}
+                <TableHead>Детали</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -72,6 +77,11 @@ const PingResults: React.FC<PingResultsProps> = ({ results, onClear, isLoading }
                         <CheckCircle className="h-4 w-4 text-green-500" />
                         <span>Успешно</span>
                       </div>
+                    ) : result.message?.includes('таймаут') || result.message?.includes('timeout') ? (
+                      <div className="flex items-center gap-2">
+                        <RefreshCw className="h-4 w-4 text-yellow-500" />
+                        <span>Таймаут</span>
+                      </div>
                     ) : (
                       <div className="flex items-center gap-2">
                         <XCircle className="h-4 w-4 text-red-500" />
@@ -79,6 +89,8 @@ const PingResults: React.FC<PingResultsProps> = ({ results, onClear, isLoading }
                       </div>
                     )}
                   </TableCell>
+                  {results.some(r => r.proxy) && <TableCell>{result.proxy || '-'}</TableCell>}
+                  <TableCell>{result.message || '-'}</TableCell>
                 </TableRow>
               ))}
             </TableBody>

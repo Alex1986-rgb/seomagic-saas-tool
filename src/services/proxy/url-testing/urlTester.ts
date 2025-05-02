@@ -7,12 +7,31 @@ import { setupAxiosInstance } from '../utils/axiosConfig';
 const MAX_CONCURRENT_REQUESTS = 10;
 let activeRequests = 0;
 
+/**
+ * Определяет, является ли HTTP статус кодом успешным
+ */
+function isSuccessStatus(status: number): boolean {
+  return status >= 200 && status < 400;
+}
+
+/**
+ * Преобразует HTTP статус в понятное описание
+ */
+function getStatusDescription(status: number): string {
+  if (status >= 200 && status < 300) return 'Успешно';
+  if (status >= 300 && status < 400) return 'Перенаправление';
+  if (status === 408) return 'Таймаут';
+  if (status >= 400 && status < 500) return 'Ошибка клиента';
+  if (status >= 500) return 'Ошибка сервера';
+  return 'Неизвестный статус';
+}
+
 export async function testUrls(
   urls: string[], 
   proxies: Proxy[], 
   useProxies: boolean = true, 
   onProgress?: (url: string, status: number, proxy?: string, errorDetails?: string) => void
-): Promise<{url: string, status: number, error?: string, errorDetails?: string, proxy?: string}[]> {
+): Promise<{url: string, status: number, error?: string, errorDetails?: string, proxy?: string, success: boolean}[]> {
   const results = [];
   const activeProxies = proxies.filter(p => p.status === 'active');
   
@@ -121,18 +140,24 @@ export async function testUrls(
       }
       
       if (response) {
+        const statusDescription = getStatusDescription(response.status);
+        const isSuccess = isSuccessStatus(response.status);
+        
         if (onProgress) {
           onProgress(
             url, 
             response.status, 
-            currentProxy ? `${currentProxy.ip}:${currentProxy.port}` : undefined
+            currentProxy ? `${currentProxy.ip}:${currentProxy.port}` : undefined,
+            statusDescription
           );
         }
         
         results.push({
           url,
           status: response.status,
-          proxy: currentProxy ? `${currentProxy.ip}:${currentProxy.port}` : undefined
+          proxy: currentProxy ? `${currentProxy.ip}:${currentProxy.port}` : undefined,
+          success: isSuccess,
+          errorDetails: isSuccess ? undefined : statusDescription
         });
       } else if (error) {
         throw error;
@@ -160,7 +185,8 @@ export async function testUrls(
         status: error.response?.status || 0,
         error: error.message,
         errorDetails: errorDetails,
-        proxy: currentProxy ? `${currentProxy.ip}:${currentProxy.port}` : undefined
+        proxy: currentProxy ? `${currentProxy.ip}:${currentProxy.port}` : undefined,
+        success: false
       });
     }
     
