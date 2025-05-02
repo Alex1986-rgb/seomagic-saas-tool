@@ -1,369 +1,382 @@
+
 import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import { FolderTree, BarChart3, Download, Network, ArrowRight } from 'lucide-react';
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
-import { useToast } from "@/hooks/use-toast";
-import { analyzeSiteStructure, type PageNode } from '@/services/audit/siteAnalysis';
-import { ResponsiveContainer, Treemap, Tooltip as RechartsTooltip } from 'recharts';
+import { FolderTree, RefreshCw } from 'lucide-react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { useToast } from '@/hooks/use-toast';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { cn } from '@/lib/utils';
+
+interface SiteNode {
+  id: string;
+  name: string;
+  url: string;
+  type: 'page' | 'directory' | 'image' | 'document' | 'other';
+  children?: SiteNode[];
+}
 
 interface SiteStructureVisualizationProps {
   domain?: string;
   className?: string;
 }
 
-export function SiteStructureVisualization({ domain, className = '' }: SiteStructureVisualizationProps) {
-  const [domainInput, setDomainInput] = useState(domain || '');
-  const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [progress, setProgress] = useState(0);
-  const [nodes, setNodes] = useState<PageNode[]>([]);
-  const [filter, setFilter] = useState('');
+export function SiteStructureVisualization({ domain = '', className }: SiteStructureVisualizationProps) {
+  const [isLoading, setIsLoading] = useState(false);
+  const [inputDomain, setInputDomain] = useState(domain);
+  const [structure, setStructure] = useState<SiteNode | null>(null);
+  const [viewType, setViewType] = useState<'tree' | 'list' | 'graph'>('tree');
   const { toast } = useToast();
 
-  const analyzeSiteStructure = async () => {
-    if (!domainInput) {
+  useEffect(() => {
+    if (domain) {
+      setInputDomain(domain);
+      if (!structure) {
+        loadStructure(domain);
+      }
+    }
+  }, [domain]);
+
+  const loadStructure = async (domainToLoad: string) => {
+    if (!domainToLoad) {
       toast({
         title: "Ошибка",
-        description: "Пожалуйста, введите домен для анализа",
+        description: "Пожалуйста, укажите домен для визуализации",
         variant: "destructive",
       });
       return;
     }
 
-    setIsAnalyzing(true);
-    setProgress(0);
-    setNodes([]);
+    setIsLoading(true);
 
     try {
-      await simulateAnalysis();
+      // Здесь в реальном приложении был бы настоящий запрос к API
+      await new Promise(resolve => setTimeout(resolve, 2000));
+
+      // Генерируем пример структуры сайта для демо
+      const mockStructure: SiteNode = {
+        id: 'root',
+        name: domainToLoad,
+        url: `https://${domainToLoad}/`,
+        type: 'directory',
+        children: [
+          {
+            id: 'home',
+            name: 'Главная',
+            url: `https://${domainToLoad}/`,
+            type: 'page'
+          },
+          {
+            id: 'about',
+            name: 'О компании',
+            url: `https://${domainToLoad}/about`,
+            type: 'page',
+            children: [
+              {
+                id: 'team',
+                name: 'Команда',
+                url: `https://${domainToLoad}/about/team`,
+                type: 'page'
+              },
+              {
+                id: 'history',
+                name: 'История',
+                url: `https://${domainToLoad}/about/history`,
+                type: 'page'
+              }
+            ]
+          },
+          {
+            id: 'products',
+            name: 'Продукты',
+            url: `https://${domainToLoad}/products`,
+            type: 'directory',
+            children: [
+              {
+                id: 'product1',
+                name: 'Продукт 1',
+                url: `https://${domainToLoad}/products/product1`,
+                type: 'page'
+              },
+              {
+                id: 'product2',
+                name: 'Продукт 2',
+                url: `https://${domainToLoad}/products/product2`,
+                type: 'page'
+              },
+              {
+                id: 'product3',
+                name: 'Продукт 3',
+                url: `https://${domainToLoad}/products/product3`,
+                type: 'page'
+              }
+            ]
+          },
+          {
+            id: 'blog',
+            name: 'Блог',
+            url: `https://${domainToLoad}/blog`,
+            type: 'directory',
+            children: [
+              {
+                id: 'post1',
+                name: 'Пост 1',
+                url: `https://${domainToLoad}/blog/post1`,
+                type: 'page'
+              },
+              {
+                id: 'post2',
+                name: 'Пост 2',
+                url: `https://${domainToLoad}/blog/post2`,
+                type: 'page'
+              }
+            ]
+          },
+          {
+            id: 'contact',
+            name: 'Контакты',
+            url: `https://${domainToLoad}/contact`,
+            type: 'page'
+          },
+          {
+            id: 'images',
+            name: 'Изображения',
+            url: `https://${domainToLoad}/images`,
+            type: 'directory',
+            children: Array(5).fill(0).map((_, index) => ({
+              id: `image-${index}`,
+              name: `image-${index}.jpg`,
+              url: `https://${domainToLoad}/images/image-${index}.jpg`,
+              type: 'image' as const
+            }))
+          },
+          {
+            id: 'documents',
+            name: 'Документы',
+            url: `https://${domainToLoad}/documents`,
+            type: 'directory',
+            children: [
+              {
+                id: 'doc1',
+                name: 'Документ 1.pdf',
+                url: `https://${domainToLoad}/documents/doc1.pdf`,
+                type: 'document'
+              },
+              {
+                id: 'doc2',
+                name: 'Документ 2.pdf',
+                url: `https://${domainToLoad}/documents/doc2.pdf`,
+                type: 'document'
+              }
+            ]
+          }
+        ]
+      };
+      
+      setStructure(mockStructure);
       
       toast({
-        title: "Анализ завершен",
-        description: "Структура сайта успешно проанализирована",
+        title: "Структура загружена",
+        description: `Визуализация структуры сайта готова`,
       });
     } catch (error) {
-      console.error("Ошибка анализа:", error);
+      console.error('Ошибка загрузки структуры:', error);
       toast({
-        title: "Ошибка анализа",
-        description: "Произошла ошибка при анализе структуры сайта",
+        title: "Ошибка",
+        description: "Не удалось загрузить структуру сайта",
         variant: "destructive",
       });
     } finally {
-      setIsAnalyzing(false);
-      setProgress(100);
+      setIsLoading(false);
     }
   };
 
-  const simulateAnalysis = async () => {
-    const sectionNames = ['about', 'products', 'services', 'blog', 'contact', 'careers', 'support'];
-    const generatedNodes: PageNode[] = [];
-    
-    generatedNodes.push({
-      url: `https://${domainInput}/`,
-      title: `${domainInput} - Главная страница`,
-      incomingLinks: 0,
-      outgoingLinks: sectionNames.length,
-      pageRank: 100,
-      level: 0
-    });
-    
-    for (const section of sectionNames) {
-      const pagesInSection = Math.floor(Math.random() * 5) + 2;
-      const pageRank = Math.floor(Math.random() * 40) + 30;
-      
-      generatedNodes.push({
-        url: `https://${domainInput}/${section}/`,
-        title: `${section.charAt(0).toUpperCase() + section.slice(1)} - ${domainInput}`,
-        incomingLinks: 1,
-        outgoingLinks: pagesInSection,
-        pageRank: pageRank,
-        level: 1
-      });
-      
-      for (let i = 1; i <= pagesInSection; i++) {
-        const subPageRank = Math.floor(Math.random() * 20) + 10;
-        generatedNodes.push({
-          url: `https://${domainInput}/${section}/page-${i}/`,
-          title: `${section} Page ${i} - ${domainInput}`,
-          incomingLinks: 1,
-          outgoingLinks: Math.floor(Math.random() * 3),
-          pageRank: subPageRank,
-          level: 2
-        });
-        
-        setProgress(Math.min(100, Math.round((generatedNodes.length / (sectionNames.length * 6)) * 100)));
-        await new Promise(resolve => setTimeout(resolve, 100));
-      }
+  const getIconForNodeType = (type: string) => {
+    switch (type) {
+      case 'page':
+        return <div className="h-4 w-4 rounded-full bg-blue-500"></div>;
+      case 'directory':
+        return <div className="h-4 w-4 rounded-sm bg-amber-500"></div>;
+      case 'image':
+        return <div className="h-4 w-4 rounded-full bg-green-500"></div>;
+      case 'document':
+        return <div className="h-4 w-4 rounded-sm bg-red-500"></div>;
+      default:
+        return <div className="h-4 w-4 rounded-full bg-gray-500"></div>;
     }
-    
-    generatedNodes.sort((a, b) => b.pageRank - a.pageRank);
-    setNodes(generatedNodes);
   };
 
-  const prepareTreemapData = () => {
-    const data = nodes.map(node => ({
-      name: node.title,
-      url: node.url,
-      size: node.pageRank,
-      level: node.level,
-      incomingLinks: node.incomingLinks,
-      outgoingLinks: node.outgoingLinks
-    }));
-    
-    return [{
-      name: 'Структура сайта',
-      children: data
-    }];
+  const renderTreeNode = (node: SiteNode, level = 0) => {
+    return (
+      <div key={node.id} className="ml-4">
+        <div className="flex items-center py-1">
+          {getIconForNodeType(node.type)}
+          <span className="ml-2 text-sm">{node.name}</span>
+        </div>
+        {node.children && node.children.length > 0 && (
+          <div className="border-l-2 border-gray-200 pl-2">
+            {node.children.map(child => renderTreeNode(child, level + 1))}
+          </div>
+        )}
+      </div>
+    );
   };
 
-  const filteredNodes = filter
-    ? nodes.filter(node => 
-        node.url.toLowerCase().includes(filter.toLowerCase()) || 
-        node.title.toLowerCase().includes(filter.toLowerCase())
-      )
-    : nodes;
+  const renderListNode = (nodes: SiteNode[], level = 0) => {
+    return (
+      <ul className={`pl-${level > 0 ? '4' : '0'} space-y-1`}>
+        {nodes.map(node => (
+          <li key={node.id}>
+            <div className="flex items-center py-1">
+              {getIconForNodeType(node.type)}
+              <span className="ml-2 text-sm truncate" title={node.url}>
+                {node.name}
+              </span>
+            </div>
+            {node.children && node.children.length > 0 && renderListNode(node.children, level + 1)}
+          </li>
+        ))}
+      </ul>
+    );
+  };
 
-  const getLevelData = () => {
-    const levelCounts: Record<number, number> = {};
-    nodes.forEach(node => {
-      if (!levelCounts[node.level]) {
-        levelCounts[node.level] = 0;
-      }
-      levelCounts[node.level]++;
-    });
-    
-    return Object.entries(levelCounts).map(([level, count]) => ({
-      name: `Уровень ${level}`,
-      value: count
-    }));
+  const renderGraph = (rootNode: SiteNode) => {
+    // Упрощенная визуализация графа для демонстрации
+    return (
+      <div className="flex flex-col items-center pt-8">
+        <div className="w-16 h-16 rounded-full bg-primary flex items-center justify-center text-white text-sm">
+          Root
+        </div>
+        <div className="w-0.5 h-8 bg-gray-300 my-2"></div>
+        <div className="flex flex-wrap gap-4 justify-center">
+          {rootNode.children?.map((child, i) => (
+            <div key={i} className="flex flex-col items-center">
+              <div className="w-12 h-12 rounded-full bg-secondary flex items-center justify-center text-xs">
+                {child.name.substring(0, 6)}
+              </div>
+              {child.children && child.children.length > 0 && (
+                <>
+                  <div className="w-0.5 h-6 bg-gray-300 my-1"></div>
+                  <div className="flex flex-wrap gap-2 justify-center max-w-xs">
+                    {child.children.map((grandchild, j) => (
+                      <div key={j} className="w-8 h-8 rounded-full bg-muted flex items-center justify-center text-xs">
+                        {grandchild.name.substring(0, 2)}
+                      </div>
+                    ))}
+                  </div>
+                </>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+    );
   };
 
   return (
-    <div className={className}>
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.3 }}
-      >
-        <Card>
-          <CardHeader>
-            <div className="flex items-center gap-2">
-              <FolderTree className="h-5 w-5 text-primary" />
-              <CardTitle>Визуализация структуры сайта</CardTitle>
+    <div className={cn("space-y-4", className)}>
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <FolderTree className="h-5 w-5 text-blue-500" />
+            Визуализация структуры сайта
+          </CardTitle>
+          <CardDescription>
+            Наглядное представление иерархии страниц и разделов сайта
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-end gap-2 mb-6">
+            <div className="flex-1">
+              <label htmlFor="domain" className="block text-sm font-medium mb-1">Домен для визуализации</label>
+              <Input
+                id="domain"
+                value={inputDomain}
+                onChange={(e) => setInputDomain(e.target.value)}
+                placeholder="Введите домен, например example.com"
+              />
             </div>
-            {nodes.length > 0 && (
-              <Button
-                variant="outline"
-                size="sm"
-                className="gap-1"
-                onClick={() => {
-                  toast({
-                    title: "Экспорт структуры",
-                    description: "Функция будет доступна в полной версии",
-                  });
-                }}
-              >
-                <Download className="h-4 w-4" />
-                Экспорт структуры
-              </Button>
-            )}
-          </CardHeader>
-          <CardContent>
-            <div className="mb-6 grid grid-cols-1 md:grid-cols-4 gap-3">
-              <div className="md:col-span-3">
-                <Input
-                  type="text"
-                  placeholder="Введите домен (например, example.com)"
-                  value={domainInput}
-                  onChange={(e) => setDomainInput(e.target.value)}
-                  disabled={isAnalyzing}
-                />
-              </div>
-              <Button 
-                onClick={analyzeSiteStructure}
-                disabled={isAnalyzing || !domainInput}
-                className="gap-1"
-              >
-                {isAnalyzing ? 'Анализ...' : 'Визуализировать'}
-                {!isAnalyzing && <ArrowRight className="h-4 w-4" />}
-              </Button>
-            </div>
+            <Button 
+              onClick={() => loadStructure(inputDomain)} 
+              disabled={isLoading || !inputDomain}
+              className="gap-2"
+            >
+              {isLoading ? (
+                <RefreshCw className="h-4 w-4 animate-spin" />
+              ) : (
+                <FolderTree className="h-4 w-4" />
+              )}
+              {isLoading ? 'Загрузка...' : 'Показать структуру'}
+            </Button>
+          </div>
 
-            {isAnalyzing && (
-              <div className="mb-6">
-                <div className="flex justify-between text-sm mb-1">
-                  <span>Анализ структуры сайта...</span>
-                  <span>{progress}%</span>
+          {structure && (
+            <>
+              <div className="flex items-center justify-between mb-4">
+                <div className="text-sm font-medium">Структура сайта {structure.name}</div>
+                <Select
+                  value={viewType}
+                  onValueChange={(value: 'tree' | 'list' | 'graph') => setViewType(value)}
+                >
+                  <SelectTrigger className="w-[180px]">
+                    <SelectValue placeholder="Выберите вид" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="tree">Дерево</SelectItem>
+                    <SelectItem value="list">Список</SelectItem>
+                    <SelectItem value="graph">График</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="border rounded-lg p-4 max-h-[400px] overflow-auto">
+                {viewType === 'tree' && (
+                  <div>
+                    <div className="flex items-center py-1">
+                      {getIconForNodeType('directory')}
+                      <span className="ml-2 font-medium">{structure.name}</span>
+                    </div>
+                    {structure.children?.map(child => renderTreeNode(child))}
+                  </div>
+                )}
+                {viewType === 'list' && structure.children && renderListNode([structure])}
+                {viewType === 'graph' && renderGraph(structure)}
+              </div>
+
+              <div className="flex items-center gap-6 mt-4 text-xs">
+                <div className="flex items-center gap-1">
+                  <div className="h-3 w-3 rounded-full bg-blue-500"></div>
+                  <span>Страница</span>
                 </div>
-                <Progress value={progress} className="w-full" />
+                <div className="flex items-center gap-1">
+                  <div className="h-3 w-3 rounded-sm bg-amber-500"></div>
+                  <span>Раздел</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <div className="h-3 w-3 rounded-full bg-green-500"></div>
+                  <span>Изображение</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <div className="h-3 w-3 rounded-sm bg-red-500"></div>
+                  <span>Документ</span>
+                </div>
               </div>
-            )}
+            </>
+          )}
 
-            {nodes.length > 0 && (
-              <div className="mt-6">
-                <Tabs defaultValue="treemap">
-                  <TabsList className="mb-4">
-                    <TabsTrigger value="treemap" className="flex items-center gap-1">
-                      <BarChart3 className="h-4 w-4" />
-                      Карта структуры
-                    </TabsTrigger>
-                    <TabsTrigger value="table" className="flex items-center gap-1">
-                      <Network className="h-4 w-4" />
-                      Таблица PageRank
-                    </TabsTrigger>
-                  </TabsList>
-
-                  <TabsContent value="treemap">
-                    <Card>
-                      <CardContent className="pt-6">
-                        <div className="mb-4">
-                          <h3 className="text-lg font-medium mb-2">Структура сайта и PageRank</h3>
-                          <p className="text-sm text-muted-foreground mb-4">
-                            Размер блоков соответствует значению PageRank страницы. Чем больше блок, тем выше значимость страницы.
-                          </p>
-                        </div>
-                        
-                        <div className="h-96 w-full">
-                          <ResponsiveContainer width="100%" height="100%">
-                            <Treemap
-                              data={prepareTreemapData()}
-                              dataKey="size"
-                              nameKey="name"
-                              stroke="#fff"
-                              fill="#8884d8"
-                            >
-                              <RechartsTooltip 
-                                formatter={(value, name, props) => {
-                                  if (props?.payload?.url) {
-                                    return [
-                                      <div key="tooltip">
-                                        <div><strong>URL:</strong> {props.payload.url}</div>
-                                        <div><strong>PageRank:</strong> {props.payload.size}</div>
-                                        <div><strong>Уровень:</strong> {props.payload.level}</div>
-                                        <div><strong>Входящие ссылки:</strong> {props.payload.incomingLinks}</div>
-                                        <div><strong>Исходящие ссылки:</strong> {props.payload.outgoingLinks}</div>
-                                      </div>,
-                                      props.payload.name
-                                    ];
-                                  }
-                                  return [value, name];
-                                }}
-                                wrapperStyle={{ maxWidth: '300px' }}
-                              />
-                            </Treemap>
-                          </ResponsiveContainer>
-                        </div>
-                        
-                        <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
-                          {getLevelData().map((item, index) => (
-                            <Card key={index}>
-                              <CardContent className="py-4">
-                                <div className="text-center">
-                                  <h4 className="text-sm font-medium">{item.name}</h4>
-                                  <p className="text-2xl font-bold">{item.value}</p>
-                                  <p className="text-xs text-muted-foreground">страниц</p>
-                                </div>
-                              </CardContent>
-                            </Card>
-                          ))}
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </TabsContent>
-
-                  <TabsContent value="table">
-                    <div className="mb-4">
-                      <Input
-                        type="text"
-                        placeholder="Фильтр по URL или заголовку..."
-                        value={filter}
-                        onChange={(e) => setFilter(e.target.value)}
-                        className="max-w-md"
-                      />
-                    </div>
-
-                    <div className="rounded-md border">
-                      <Table>
-                        <TableHeader>
-                          <TableRow>
-                            <TableHead>URL</TableHead>
-                            <TableHead>Заголовок</TableHead>
-                            <TableHead className="text-center">PageRank</TableHead>
-                            <TableHead className="text-center">Уровень</TableHead>
-                            <TableHead className="text-center">Вх. ссылки</TableHead>
-                            <TableHead className="text-center">Исх. ссылки</TableHead>
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                          {filteredNodes.length > 0 ? (
-                            filteredNodes.map((node, index) => (
-                              <TableRow key={index}>
-                                <TableCell className="font-medium max-w-xs truncate">
-                                  <a 
-                                    href={node.url} 
-                                    target="_blank" 
-                                    rel="noreferrer"
-                                    className="hover:underline text-primary"
-                                  >
-                                    {node.url}
-                                  </a>
-                                </TableCell>
-                                <TableCell>{node.title}</TableCell>
-                                <TableCell className="text-center">
-                                  <Badge 
-                                    variant={node.pageRank > 70 ? "default" : node.pageRank > 30 ? "outline" : "secondary"}
-                                  >
-                                    {node.pageRank.toFixed(1)}
-                                  </Badge>
-                                </TableCell>
-                                <TableCell className="text-center">{node.level}</TableCell>
-                                <TableCell className="text-center">{node.incomingLinks}</TableCell>
-                                <TableCell className="text-center">{node.outgoingLinks}</TableCell>
-                              </TableRow>
-                            ))
-                          ) : (
-                            <TableRow>
-                              <TableCell colSpan={6} className="text-center py-6">
-                                {filter 
-                                  ? 'Нет результатов по вашему фильтру' 
-                                  : 'Нет данных о структуре сайта'
-                                }
-                              </TableCell>
-                            </TableRow>
-                          )}
-                        </TableBody>
-                      </Table>
-                    </div>
-                  </TabsContent>
-                </Tabs>
-              </div>
-            )}
-
-            {!isAnalyzing && nodes.length === 0 && (
-              <Card className="bg-muted/50 border-dashed">
-                <CardContent className="flex flex-col items-center justify-center py-10">
-                  <FolderTree className="h-10 w-10 text-muted-foreground mb-3" />
-                  <p className="text-center text-muted-foreground mb-4">
-                    Введите домен и запустите анализ, чтобы визуализировать структуру сайта и рассчитать внутренний PageRank
-                  </p>
-                  <Button 
-                    variant="default" 
-                    onClick={analyzeSiteStructure}
-                    disabled={!domainInput}
-                  >
-                    Запустить анализ
-                  </Button>
-                </CardContent>
-              </Card>
-            )}
-          </CardContent>
-        </Card>
-      </motion.div>
+          {!structure && !isLoading && (
+            <div className="text-center py-12 text-muted-foreground">
+              {inputDomain ? 'Нажмите кнопку для загрузки структуры сайта' : 'Введите домен для начала анализа'}
+            </div>
+          )}
+          
+          {isLoading && (
+            <div className="flex justify-center items-center py-12">
+              <RefreshCw className="h-8 w-8 animate-spin text-primary" />
+            </div>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }
