@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -194,7 +193,7 @@ const PingForm: React.FC<PingFormProps> = ({
       </div>
       
       {useProxies && activeProxiesCount === 0 && (
-        <Alert variant="warning" className="bg-yellow-50">
+        <Alert variant="default" className="bg-yellow-50">
           <AlertCircle className="h-4 w-4" />
           <AlertDescription>
             Нет активных прокси. Будет использоваться прямое подключение. 
