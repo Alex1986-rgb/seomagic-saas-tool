@@ -35,13 +35,35 @@ export class ProxyStorage {
   addProxy(proxy: Proxy) {
     this.proxies.set(proxy.id, proxy);
     this.saveProxiesToStorage();
+    return true;
   }
 
-  addProxies(proxies: Proxy[]) {
+  addProxies(proxies: Proxy[]): number {
+    let addedCount = 0;
     for (const proxy of proxies) {
-      this.proxies.set(proxy.id, proxy);
+      if (!this.proxies.has(proxy.id)) {
+        this.proxies.set(proxy.id, proxy);
+        addedCount++;
+      }
     }
     this.saveProxiesToStorage();
+    return addedCount;
+  }
+
+  updateProxies(proxies: Proxy[]): number {
+    let updatedCount = 0;
+    for (const proxy of proxies) {
+      if (this.proxies.has(proxy.id)) {
+        this.proxies.set(proxy.id, proxy);
+        updatedCount++;
+      } else {
+        // If proxy doesn't exist, add it
+        this.proxies.set(proxy.id, proxy);
+        updatedCount++;
+      }
+    }
+    this.saveProxiesToStorage();
+    return updatedCount;
   }
 
   getProxy(id: string): Proxy | undefined {
@@ -81,13 +103,29 @@ export class ProxyStorage {
       if (!trimmedLine) continue;
       
       try {
-        // Проверяем различные форматы
+        // Улучшенная обработка различных форматов
         let ip: string;
         let port: number;
         let protocol: 'http' | 'https' | 'socks4' | 'socks5' = 'http';
+        let username: string | undefined;
+        let password: string | undefined;
         
-        // Обрабатываем различные форматы
-        if (trimmedLine.includes('://')) {
+        // Regular expression to match IP:PORT:USERNAME:PASSWORD or IP:PORT format
+        const fullPattern = /^(.+?):(\d+)(?::(.+?)(?::(.+))?)?$/;
+        const match = trimmedLine.match(fullPattern);
+        
+        if (match) {
+          // Handle format with username:password
+          [, ip, port, username, password] = match;
+          port = parseInt(port, 10);
+          
+          // Check for protocol prefix
+          if (ip.includes('://')) {
+            const protocolParts = ip.split('://');
+            protocol = protocolParts[0] as 'http' | 'https' | 'socks4' | 'socks5';
+            ip = protocolParts[1];
+          }
+        } else if (trimmedLine.includes('://')) {
           // Формат protocol://ip:port
           const parts = trimmedLine.split('://');
           protocol = parts[0] as 'http' | 'https' | 'socks4' | 'socks5';
@@ -115,7 +153,9 @@ export class ProxyStorage {
               protocol,
               status: 'testing',
               lastChecked: new Date(),
-              source: 'imported'
+              source: 'imported',
+              username,
+              password
             };
             
             this.proxies.set(proxyId, proxy);

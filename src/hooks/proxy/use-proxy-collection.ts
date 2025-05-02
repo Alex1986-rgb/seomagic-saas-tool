@@ -18,8 +18,10 @@ export function useProxyCollection() {
       setProgress(0);
       setStatusMessage('Подготовка к сбору прокси...');
       
-      // Всегда сбрасываем счетчик в начале сбора
-      setCollectedProxies(0);
+      // Если очищаем перед сбором, сбрасываем счетчик
+      if (shouldClear) {
+        setCollectedProxies(0);
+      }
       
       // Подсчет активных источников
       let sourcesCount = 0;
@@ -38,15 +40,13 @@ export function useProxyCollection() {
       }
       
       let completedSources = 0;
-      let totalCollected = 0;
       
       // Вызываем collectProxies с параметром shouldClear
       const newProxies = await proxyManager.collectProxies((source, count) => {
         if (count >= 0) {
-          // Добавляем только новые прокси к счетчику, не накапливаем старые
-          totalCollected = count; // Заменяем накопление (+=) на присвоение (=)
-          setCollectedProxies(totalCollected);
-          setStatusMessage(`Собрано ${count} прокси из источника ${source} (всего: ${totalCollected})`);
+          // Теперь count представляет общее количество прокси
+          setCollectedProxies(count);
+          setStatusMessage(`Собрано ${count} прокси из источника ${source}`);
           completedSources++;
           setProgress(Math.round((completedSources / sourcesCount) * 100));
         } else {

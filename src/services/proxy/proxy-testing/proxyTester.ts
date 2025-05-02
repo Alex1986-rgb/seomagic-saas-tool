@@ -2,8 +2,8 @@
 import type { Proxy } from '../types';
 import { setupAxiosInstance } from '../utils/axiosConfig';
 
-// Пул активных проверок для управления параллелизмом
-const MAX_CONCURRENT_TESTS = 20;
+// Enhanced configuration for parallel testing
+const MAX_CONCURRENT_TESTS = 40; // Increased from 20 to 40
 let activeTests = 0;
 
 export async function testProxy(proxy: Proxy, testUrl: string = 'https://api.ipify.org/'): Promise<Proxy> {
@@ -17,11 +17,11 @@ export async function testProxy(proxy: Proxy, testUrl: string = 'https://api.ipi
     const startTime = Date.now();
     const axiosInstance = setupAxiosInstance(proxy, testUrl);
     
-    // Оптимизированные настройки запроса
+    // Optimized request settings
     const response = await axiosInstance.get(testUrl, {
       validateStatus: (status) => true,
       maxRedirects: 5,
-      timeout: 15000, // Сокращаем таймаут для ускорения проверки
+      timeout: 12000, // Further reduced for faster testing
     });
     
     const endTime = Date.now();
@@ -30,11 +30,11 @@ export async function testProxy(proxy: Proxy, testUrl: string = 'https://api.ipi
     if (response.status >= 200 && response.status < 400) {
       updatedProxy.status = 'active';
       updatedProxy.speed = speed;
+      updatedProxy.lastSeen = new Date();
     } else {
       updatedProxy.status = 'inactive';
       updatedProxy.speed = speed;
     }
-    
   } catch (error) {
     let errorMessage = error.message || 'Неизвестная ошибка';
     
@@ -48,6 +48,7 @@ export async function testProxy(proxy: Proxy, testUrl: string = 'https://api.ipi
     
     updatedProxy.status = 'inactive';
     updatedProxy.speed = undefined;
+    updatedProxy.lastError = errorMessage;
   }
   
   return updatedProxy;
@@ -61,10 +62,16 @@ export async function batchTestProxies(
 ): Promise<Proxy[]> {
   const results: Proxy[] = [];
   
-  // Функция для управления параллелизмом
-  const throttledTest = async (proxy: Proxy): Promise<Proxy> => {
+  // Функция для управления параллелизмом с таймаутом
+  const throttledTest = async (proxy: Proxy, timeout: number = 100): Promise<Proxy> => {
+    const startAttempt = Date.now();
     while (activeTests >= MAX_CONCURRENT_TESTS) {
-      await new Promise(resolve => setTimeout(resolve, 100));
+      // Добавляем таймаут к ожиданию, чтобы предотвратить блокировку
+      if (Date.now() - startAttempt > 10000) {
+        console.log(`Превышено время ожидания слота для теста прокси ${proxy.id}, выполняем принудительно`);
+        break;
+      }
+      await new Promise(resolve => setTimeout(resolve, timeout));
     }
     activeTests++;
     try {
@@ -74,38 +81,52 @@ export async function batchTestProxies(
     }
   };
   
-  // Оптимизация: увеличиваем размер батча для более эффективной обработки
-  const batchSize = 100; // Увеличиваем с 50 до 100
+  // Оптимизация: увеличиваем размер партии для более эффективной обработки
+  const batchSize = 200; // Increased from 100 to 200
   const batches = [];
   for (let i = 0; i < proxies.length; i += batchSize) {
     batches.push(proxies.slice(i, i + batchSize));
   }
   
-  // Последовательно обрабатываем пакеты с параллельной проверкой внутри пакета
+  // Используем Promise.all для улучшения параллелизма внутри каждой партии
+  let processedCount = 0;
+  const totalProxies = proxies.length;
+  
   for (const batch of batches) {
+    // Prepare promises for the batch
     const batchPromises = batch.map(async (proxy) => {
       try {
         const testedProxy = await throttledTest(proxy);
+        processedCount++;
+        
         if (onProgress) {
           onProgress(testedProxy);
         }
+        
         return testedProxy;
       } catch (error) {
-        // Обработка критических ошибок
+        // Process critical errors
+        console.error(`Critical error testing proxy ${proxy.id}:`, error);
         proxy.status = 'inactive';
+        proxy.lastError = `Critical error: ${error.message || 'Unknown error'}`;
+        
+        processedCount++;
         if (onProgress) {
           onProgress(proxy);
         }
+        
         return proxy;
       }
     });
     
-    // Ожидаем завершения текущего пакета
+    // Execute all promises in the batch concurrently
     const batchResults = await Promise.all(batchPromises);
     results.push(...batchResults);
     
-    // Сокращаем паузу между пакетами для ускорения всего процесса
-    await new Promise(resolve => setTimeout(resolve, 200)); // Сокращаем с 500 до 200 мс
+    // Minimal pause between batches - reduced to speed up the process
+    await new Promise(resolve => setTimeout(resolve, 50)); // Reduced from 200ms to 50ms
+    
+    console.log(`Processed ${processedCount}/${totalProxies} proxies (${Math.round(processedCount/totalProxies*100)}%)`);
   }
   
   return results;

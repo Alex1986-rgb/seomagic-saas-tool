@@ -37,18 +37,22 @@ export class ProxyManager {
     }
 
     try {
-      // Запускаем сбор прокси
-      const newProxies = await this.proxyCollector.collectProxies(onProgress);
+      // Запускаем сбор прокси с более точным отслеживанием прогресса
+      const newProxies = await this.proxyCollector.collectProxies(
+        (source, count) => {
+          if (onProgress) {
+            // Передаем реальное количество собранных прокси
+            onProgress(source, count);
+          }
+        }, 
+        clearBeforeCollect
+      );
       
       // Обновляем существующие или добавляем новые прокси
-      for (const proxy of newProxies) {
-        if (!this.proxyStorage.getProxy(proxy.id)) {
-          this.proxyStorage.addProxy(proxy);
-        }
-      }
-
+      const actuallyAdded = this.proxyStorage.addProxies(newProxies);
+      
       // Явно логируем количество собранных прокси
-      console.log(`Всего собрано ${newProxies.length} прокси из всех источников`);
+      console.log(`Всего собрано ${newProxies.length} прокси, добавлено ${actuallyAdded} новых прокси`);
       
       return newProxies;
     } catch (error) {
@@ -110,7 +114,11 @@ export class ProxyManager {
     onProgress?: (proxy: Proxy) => void
   ): Promise<Proxy[]> {
     const results = await this.proxyValidator.checkProxies(proxyList, testUrl, onProgress);
-    this.proxyStorage.addProxies(results);
+    
+    // Сохраняем результаты проверки в хранилище
+    const updatedCount = this.proxyStorage.updateProxies(results);
+    console.log(`Обновлено ${updatedCount} прокси после проверки`);
+    
     return results;
   }
 
