@@ -56,7 +56,7 @@ export function useUrlTesting() {
       });
       
       // Устанавливаем максимальное количество одновременных проверок
-      const results = await proxyManager.testUrls(processedUrls, useProxies, (url, status, proxy, errorDetails) => {
+      const results: UrlTestResult[] = await proxyManager.testUrls(processedUrls, useProxies, (url, status, proxy, errorDetails) => {
         checkedCount++;
         setProgress(Math.round((checkedCount / processedUrls.length) * 100));
         setStatusMessage(`Проверено ${checkedCount}/${processedUrls.length} URL`);
