@@ -5,10 +5,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { RefreshCw, Send } from 'lucide-react';
+import { RefreshCw, Send, Settings } from 'lucide-react';
 import { Progress } from "@/components/ui/progress";
 import { useToast } from '@/hooks/use-toast';
 import BatchProcessingConfig from './BatchProcessingConfig';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 
 export const DEFAULT_RPC_SERVICES = [
     'http://rpc.pingomatic.com',
@@ -48,6 +49,7 @@ const PingForm: React.FC<PingFormProps> = ({
   const [feedUrl, setFeedUrl] = useState<string>('');
   const [useProxies, setUseProxies] = useState<boolean>(true);
   const [rpcServices, setRpcServices] = useState<string>(DEFAULT_RPC_SERVICES.join('\n'));
+  const [advancedOptionsOpen, setAdvancedOptionsOpen] = useState<boolean>(false);
   const { toast } = useToast();
 
   const handleSubmit = async () => {
@@ -141,14 +143,28 @@ const PingForm: React.FC<PingFormProps> = ({
         </p>
       </div>
       
-      <BatchProcessingConfig
-        batchSize={batchSize}
-        setBatchSize={setBatchSize}
-        concurrency={concurrency}
-        setConcurrency={setConcurrency}
-        delay={delay}
-        setDelay={setDelay}
-      />
+      <Collapsible open={advancedOptionsOpen} onOpenChange={setAdvancedOptionsOpen}>
+        <div className="flex items-center justify-between">
+          <h4 className="text-sm font-medium">Расширенные настройки</h4>
+          <CollapsibleTrigger asChild>
+            <Button variant="ghost" size="sm" className="h-9 w-9 p-0">
+              <Settings className="h-4 w-4" />
+              <span className="sr-only">Toggle advanced options</span>
+            </Button>
+          </CollapsibleTrigger>
+        </div>
+        
+        <CollapsibleContent className="pt-2">
+          <BatchProcessingConfig
+            batchSize={batchSize}
+            setBatchSize={setBatchSize}
+            concurrency={concurrency}
+            setConcurrency={setConcurrency}
+            delay={delay}
+            setDelay={setDelay}
+          />
+        </CollapsibleContent>
+      </Collapsible>
       
       <div className="flex items-center space-x-2">
         <Switch

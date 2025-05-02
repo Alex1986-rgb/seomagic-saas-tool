@@ -22,8 +22,18 @@ export class ConcurrencyManager {
     this.activeRequests++;
     try {
       return await fn();
+    } catch (error) {
+      console.error("Error in throttled execution:", error);
+      throw error;
     } finally {
       this.activeRequests--;
     }
+  }
+  
+  /**
+   * Gets the current number of active requests
+   */
+  get currentLoad(): number {
+    return this.activeRequests;
   }
 }

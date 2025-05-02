@@ -14,6 +14,8 @@ export interface UrlTestResult {
   proxy?: string;
   success: boolean;
   timestamp?: string;
+  responseData?: string; // Added to store the response body for debugging
+  retryCount?: number;   // Added to track retries
 }
 
 /**
@@ -25,4 +27,14 @@ export interface UrlTestConfig {
   retries?: number;
   retryDelay?: number;
   maxConcurrentRequests?: number;
+}
+
+/**
+ * Options for ping requests
+ */
+export interface PingOptions {
+  timeout?: number;
+  retries?: number;
+  retryDelay?: number;
+  useProxy?: boolean;
 }

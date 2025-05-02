@@ -3,14 +3,16 @@ import { Proxy } from './types';
 import { ProxyStorage } from './proxyStorage';
 import type { PingResult } from './types';
 import { setupAxiosInstance } from './utils/axiosConfig';
+import { makeXmlRpcRequest } from './url-testing/requestManager';
+import { ConcurrencyManager } from './url-testing/concurrencyManager';
 
 export class PingService {
   private proxyStorage: ProxyStorage;
-  private activeRequests: number = 0;
-  private maxConcurrentRequests: number = 30; // Increased concurrency
+  private concurrencyManager: ConcurrencyManager;
   
   constructor(proxyStorage: ProxyStorage) {
     this.proxyStorage = proxyStorage;
+    this.concurrencyManager = new ConcurrencyManager(30); // Increased concurrency
   }
   
   async pingUrlsWithRpc(
@@ -18,14 +20,14 @@ export class PingService {
     siteTitle: string, 
     feedUrl: string, 
     rpcEndpoints: string[],
-    batchSize: number = 20, // Increased from 10 to 20
-    concurrency: number = 10 // Increased from 5 to 10
+    batchSize: number = 20,
+    concurrency: number = 10
   ): Promise<PingResult[]> {
     const results: PingResult[] = [];
     const activeProxies = this.proxyStorage.getActiveProxies();
     
-    // Update max concurrent requests based on input
-    this.maxConcurrentRequests = concurrency * 3;
+    // Update concurrency manager with new concurrency setting
+    this.concurrencyManager = new ConcurrencyManager(concurrency * 3);
     
     // Create a queue of work to be done
     const queue: Array<{url: string, rpc: string}> = [];
@@ -61,30 +63,19 @@ export class PingService {
       
       // Brief pause between batches
       if (i < batches.length - 1) {
-        await new Promise(resolve => setTimeout(resolve, 300)); // Reduced from 500ms
+        await new Promise(resolve => setTimeout(resolve, 300));
       }
     }
     
     return results;
   }
   
-  // Improved concurrency control with queue processing
   private async processRequestsWithConcurrencyControl<T>(
     taskFunctions: Array<() => Promise<T>>, 
     concurrency: number
   ): Promise<T[]> {
     const results: T[] = [];
     const runningTasks = new Set<Promise<void>>();
-    
-    // Create a function to process the next task
-    async function processTask(taskFn: () => Promise<T>): Promise<void> {
-      try {
-        const result = await taskFn();
-        results.push(result);
-      } catch (error) {
-        console.error('Error executing task:', error);
-      }
-    }
     
     // Process all tasks with concurrency control
     for (const taskFn of taskFunctions) {
@@ -94,7 +85,14 @@ export class PingService {
       }
       
       // Create and start a new task
-      const task = processTask(taskFn).then(() => {
+      const task = this.concurrencyManager.executeWithThrottle(async () => {
+        try {
+          const result = await taskFn();
+          results.push(result);
+        } catch (error) {
+          console.error('Error executing task:', error);
+        }
+      }).then(() => {
         runningTasks.delete(task);
       });
       
@@ -114,97 +112,41 @@ export class PingService {
     feedUrl: string, 
     proxies: Proxy[]
   ): Promise<PingResult> {
-    // Implementation improved for XML-RPC ping with proxy support
     try {
-      // Wait for a slot if needed
-      await this.waitForRequestSlot();
-      this.activeRequests++;
-      
       // Select a random proxy from the active ones
       const proxy = proxies.length > 0 ? this.getRandomProxy(proxies) : null;
       
       // Format the ping request
       const xmlrpcRequest = this.createXmlRpcRequest(siteTitle, url, feedUrl);
       
-      // Direct ping through axios with or without proxy
+      // Use the enhanced XML-RPC request function with retry logic
       const startTime = Date.now();
-      let response;
-      
-      if (proxy) {
-        // Use proxy
-        const axios = setupAxiosInstance(proxy, rpcEndpoint);
-        response = await axios.post(rpcEndpoint, xmlrpcRequest, {
-          headers: {
-            'Content-Type': 'text/xml',
-            'User-Agent': 'Mozilla/5.0 (compatible; SeoToolkit/1.0; +http://example.com)'
-          },
-          timeout: 15000
-        });
-      } else {
-        // No proxy - fix by adding required lastChecked property
-        const directProxy: Proxy = {
-          id: 'direct',
-          ip: 'direct',
-          port: 0,
-          protocol: 'http',
-          status: 'active',
-          lastChecked: new Date()  // Added missing required property
-        };
-        
-        const axios = setupAxiosInstance(directProxy, rpcEndpoint);
-        
-        response = await axios.post(rpcEndpoint, xmlrpcRequest, {
-          headers: {
-            'Content-Type': 'text/xml',
-            'User-Agent': 'Mozilla/5.0 (compatible; SeoToolkit/1.0; +http://example.com)'
-          },
-          timeout: 15000
-        });
-      }
-      
+      const response = await makeXmlRpcRequest(rpcEndpoint, xmlrpcRequest, proxy, 15000, 2);
       const endTime = Date.now();
       const pingTime = endTime - startTime;
       
-      // Parse the response
-      const success = response.status >= 200 && response.status < 300 && !response.data.includes('<fault>');
-      
+      // Convert to PingResult format
       return {
         url,
         rpc: rpcEndpoint,
-        success,
-        message: success 
+        success: response.success,
+        message: response.success 
           ? `Успешно пингован URL ${url} через ${rpcEndpoint} за ${pingTime}мс` 
-          : `Ошибка при пинге URL ${url} через ${rpcEndpoint}`,
-        proxy: proxy ? `${proxy.ip}:${proxy.port}` : undefined,  // This is now allowed in PingResult
-        time: pingTime                                           // This is now allowed in PingResult
+          : `Ошибка при пинге URL ${url} через ${rpcEndpoint}: ${response.errorDetails || response.error || 'Unknown error'}`,
+        proxy: proxy ? `${proxy.ip}:${proxy.port}` : undefined,
+        time: pingTime,
+        error: response.success ? undefined : (response.error || response.errorDetails || 'Unknown error')
       };
-      
     } catch (error) {
-      console.error(`Error pinging ${url} via ${rpcEndpoint}:`, error);
+      console.error(`Error in pingUrl for ${url} via ${rpcEndpoint}:`, error);
       
       return {
         url,
         rpc: rpcEndpoint,
         success: false,
         message: `Ошибка при пинге URL ${url} через ${rpcEndpoint}: ${error.message || 'Unknown error'}`,
-        error: error.message || 'Unknown error'                  // This is now allowed in PingResult
+        error: error.message || 'Unknown error'
       };
-    } finally {
-      this.activeRequests--;
-    }
-  }
-  
-  // Helper method to wait for available request slot
-  private async waitForRequestSlot(maxWaitTime: number = 30000): Promise<void> {
-    const startTime = Date.now();
-    while (this.activeRequests >= this.maxConcurrentRequests) {
-      // Check if we've waited too long
-      if (Date.now() - startTime > maxWaitTime) {
-        console.warn(`Превышено время ожидания запроса (${maxWaitTime}мс), продолжаем выполнение`);
-        return;
-      }
-      // Wait a bit and check again
-      await new Promise(resolve => setTimeout(resolve, 100));
     }
   }
   
@@ -233,16 +175,21 @@ export class PingService {
   
   // Helper to create XML-RPC request
   private createXmlRpcRequest(blogName: string, pageUrl: string, feedUrl?: string): string {
+    // Escape special characters in XML
+    const escapedBlogName = this.escapeXml(blogName);
+    const escapedPageUrl = this.escapeXml(pageUrl);
+    const escapedFeedUrl = feedUrl ? this.escapeXml(feedUrl) : '';
+    
     if (feedUrl) {
       // Extended ping with feed URL
       return `<?xml version="1.0"?>
 <methodCall>
   <methodName>weblogUpdates.extendedPing</methodName>
   <params>
-    <param><value><string>${blogName}</string></value></param>
-    <param><value><string>${pageUrl}</string></value></param>
-    <param><value><string>${pageUrl}</string></value></param>
-    <param><value><string>${feedUrl}</string></value></param>
+    <param><value><string>${escapedBlogName}</string></value></param>
+    <param><value><string>${escapedPageUrl}</string></value></param>
+    <param><value><string>${escapedPageUrl}</string></value></param>
+    <param><value><string>${escapedFeedUrl}</string></value></param>
   </params>
 </methodCall>`;
     } else {
@@ -251,10 +198,20 @@ export class PingService {
 <methodCall>
   <methodName>weblogUpdates.ping</methodName>
   <params>
-    <param><value><string>${blogName}</string></value></param>
-    <param><value><string>${pageUrl}</string></value></param>
+    <param><value><string>${escapedBlogName}</string></value></param>
+    <param><value><string>${escapedPageUrl}</string></value></param>
   </params>
 </methodCall>`;
     }
+  }
+  
+  // Helper to escape XML special characters
+  private escapeXml(str: string): string {
+    return str
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&apos;');
   }
 }
