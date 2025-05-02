@@ -114,8 +114,15 @@ export class ProxySources {
         const protocolMatch = trimmedLine.match(/^(https?|socks[45]):\/\/([^:]+):(\d+)/i);
         
         if (protocolMatch) {
-          protocol = protocolMatch[1].toLowerCase() as 'http' | 'https' | 'socks4' | 'socks5';
-          if (protocol === 'socks') protocol = 'socks5';
+          const protocolStr = protocolMatch[1].toLowerCase();
+          // Fix for the type error: Check protocol value and map correctly to allowed types
+          if (protocolStr === 'http' || protocolStr === 'https') {
+            protocol = protocolStr;
+          } else if (protocolStr === 'socks4') {
+            protocol = 'socks4';
+          } else if (protocolStr === 'socks5' || protocolStr === 'socks') {
+            protocol = 'socks5'; // Map 'socks' to 'socks5'
+          }
           ip = protocolMatch[2];
           port = parseInt(protocolMatch[3], 10);
         } else {
