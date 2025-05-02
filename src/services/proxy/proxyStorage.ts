@@ -117,7 +117,7 @@ export class ProxyStorage {
         if (match) {
           // Handle format with username:password
           [, ip, port, username, password] = match;
-          // Fix here: Convert port string to number
+          // Fix: Convert port string to number
           port = parseInt(port, 10);
           
           // Check for protocol prefix
@@ -145,7 +145,7 @@ export class ProxyStorage {
         }
         
         if (ip && !isNaN(port)) {
-          // Fix: Generate proxyId using the port as a number (toString conversion happens internally)
+          // Fix: Generate proxyId using the port as a number
           const proxyId = `${ip}:${port}`;
           
           // Проверяем, не существует ли уже
