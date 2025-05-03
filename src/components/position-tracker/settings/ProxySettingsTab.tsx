@@ -5,9 +5,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { RefreshCw, Shield, TrashIcon } from 'lucide-react';
+import { RefreshCw, Shield, TrashIcon, ChevronRight } from 'lucide-react';
 import { Progress } from "@/components/ui/progress";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Link } from "react-router-dom";
 
 interface ProxySettingsTabProps {
   activeProxies: number;
@@ -43,8 +44,8 @@ export function ProxySettingsTab({
           <Label>Активные прокси</Label>
           <Badge variant="outline" className={
             activeProxies > 0 
-              ? "bg-green-50 text-green-700" 
-              : "bg-yellow-50 text-yellow-700"
+              ? activeProxies >= 100 ? "bg-green-50 text-green-700" : "bg-yellow-50 text-yellow-700"
+              : "bg-red-50 text-red-700"
           }>
             {activeProxies}
           </Badge>
@@ -122,6 +123,14 @@ export function ProxySettingsTab({
           </Alert>
         )}
         
+        {activeProxies > 0 && activeProxies < 100 && !isLoading && (
+          <Alert variant="warning" className="mt-2">
+            <AlertDescription>
+              Рекомендуется собрать больше прокси для лучшей производительности. Текущее количество ({activeProxies}) может быть недостаточным.
+            </AlertDescription>
+          </Alert>
+        )}
+        
         <p className="text-xs text-muted-foreground">
           {isLoading 
             ? "Выполняется операция с прокси..." 
@@ -129,9 +138,10 @@ export function ProxySettingsTab({
               ? `Доступно ${activeProxies} прокси для использования`
               : "Нет активных прокси. Нажмите 'Собрать прокси' для автоматического сбора"}
         </p>
-        <p className="text-xs text-muted-foreground mt-2">
-          Для более детальной настройки прокси перейдите в <a href="/admin/proxies" className="text-primary hover:underline">раздел управления прокси</a>
-        </p>
+        <Link to="/admin/proxies" className="flex items-center text-sm text-primary hover:underline mt-2">
+          <span>Перейти в раздел управления прокси</span>
+          <ChevronRight className="h-4 w-4 ml-1" />
+        </Link>
       </div>
     </div>
   );

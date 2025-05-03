@@ -40,13 +40,15 @@ export function useProxyCollection() {
         setIsCollecting(false);
         return 0;
       }
-      
+
+      // First round of collection
+      setStatusMessage('Сбор прокси из основных источников...');
       let completedSources = 0;
       
       // Pass a callback that correctly handles both source and count parameters
-      const newProxies = await proxyManager.collectProxies((source, count) => {
+      let newProxies = await proxyManager.collectProxies((source, count) => {
         completedSources++;
-        setProgress(Math.round((completedSources / sourcesCount) * 100));
+        setProgress(Math.round((completedSources / (sourcesCount * 2)) * 100)); // Adjusted for two rounds
         
         if (count >= 0) {
           setCollectedProxies(count);
@@ -54,14 +56,30 @@ export function useProxyCollection() {
         } else {
           setStatusMessage(`Ошибка при сборе прокси из ${source}`);
         }
-      });
+      }, shouldClear);
+
+      // Second round with more aggressive collection from secondary sources
+      setStatusMessage('Сбор прокси из дополнительных источников...');
+      const secondRoundProxies = await proxyManager.collectAdditionalProxies((source, count) => {
+        completedSources++;
+        setProgress(Math.round((completedSources / (sourcesCount * 2)) * 100));
+        
+        if (count >= 0) {
+          setCollectedProxies(prev => prev + count);
+          setStatusMessage(`Собрано дополнительно ${count} прокси из источника ${source}`);
+        } else {
+          setStatusMessage(`Ошибка при сборе дополнительных прокси из ${source}`);
+        }
+      }, false); // Don't clear existing proxies in the second round
+
+      const totalProxies = newProxies.length + secondRoundProxies.length;
       
       toast({
         title: "Сбор прокси завершен",
-        description: `Найдено ${newProxies.length} ${shouldClear ? 'новых' : 'дополнительных'} прокси`,
+        description: `Найдено ${totalProxies} ${shouldClear ? 'новых' : 'дополнительных'} прокси`,
       });
       
-      return newProxies.length;
+      return totalProxies;
     } catch (error) {
       console.error("Ошибка при сборе прокси:", error);
       toast({

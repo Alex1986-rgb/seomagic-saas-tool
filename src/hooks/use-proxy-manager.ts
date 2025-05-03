@@ -17,9 +17,28 @@ export function useProxyManager({ initialTestUrl = 'https://api.ipify.org/' }: U
   const [testUrl, setTestUrl] = useState(initialTestUrl);
   const { toast } = useToast();
 
-  const { isCollecting, progress: collectionProgress, statusMessage: collectionStatus, collectProxies } = useProxyCollection();
-  const { isTesting: isTestingProxies, progress: testingProgress, statusMessage: testingStatus, testProxies } = useProxyTesting();
-  const { isTesting: isTestingUrls, progress: urlTestProgress, statusMessage: urlTestStatus, testUrls } = useUrlTesting();
+  const { 
+    isCollecting, 
+    progress: collectionProgress, 
+    statusMessage: collectionStatus, 
+    collectProxies,
+    clearBeforeCollect,
+    setClearBeforeCollect
+  } = useProxyCollection();
+  
+  const { 
+    isTesting: isTestingProxies, 
+    progress: testingProgress, 
+    statusMessage: testingStatus, 
+    testProxies 
+  } = useProxyTesting();
+  
+  const { 
+    isTesting: isTestingUrls, 
+    progress: urlTestProgress, 
+    statusMessage: urlTestStatus, 
+    testUrls 
+  } = useUrlTesting();
 
   const isLoading = isCollecting || isTestingProxies || isTestingUrls;
   const progress = isCollecting ? collectionProgress : (isTestingProxies ? testingProgress : urlTestProgress);
@@ -98,6 +117,9 @@ export function useProxyManager({ initialTestUrl = 'https://api.ipify.org/' }: U
     progress,
     statusMessage,
     testUrl,
+    setTestUrl,
+    clearBeforeCollect,
+    setClearBeforeCollect,
     
     // Methods
     loadProxies,
