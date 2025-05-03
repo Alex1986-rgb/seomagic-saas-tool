@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { Plus } from 'lucide-react';
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
 
 interface KeywordInputProps {
   inputKeyword: string;
@@ -69,7 +70,7 @@ export const KeywordInput: React.FC<KeywordInputProps> = ({
             }}
           />
         ) : (
-          <Input
+          <Textarea
             placeholder="Введите несколько ключевых слов (разделяйте запятыми, точкой с запятой или новой строкой)"
             value={inputKeyword}
             onChange={(e) => setInputKeyword(e.target.value)}
@@ -79,7 +80,7 @@ export const KeywordInput: React.FC<KeywordInputProps> = ({
                 handleAddKeyword();
               }
             }}
-            className="min-h-[80px]"
+            className="min-h-[100px]"
           />
         )}
         <Button type="button" onClick={handleAddKeyword} size="icon">

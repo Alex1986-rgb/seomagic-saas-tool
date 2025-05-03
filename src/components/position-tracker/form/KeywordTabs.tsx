@@ -58,12 +58,14 @@ export const KeywordTabs: React.FC<KeywordTabsProps> = ({
           value={bulkKeywords}
           onChange={(e) => setBulkKeywords(e.target.value)}
           disabled={isLoading}
-          rows={5}
+          rows={8}
+          className="min-h-[150px]"
         />
         <Button
           type="button"
           onClick={handleBulkSubmit}
           disabled={isLoading || !bulkKeywords.trim()}
+          className="w-full"
         >
           Добавить список
         </Button>

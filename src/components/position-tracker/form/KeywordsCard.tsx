@@ -28,14 +28,14 @@ export const KeywordsCard: React.FC<KeywordsCardProps> = ({
   isLoading
 }) => {
   return (
-    <Card>
+    <Card className="relative">
       <CardHeader>
         <CardTitle className="text-xl">Ключевые слова</CardTitle>
         <CardDescription>
           Добавьте ключевые слова для проверки позиций
         </CardDescription>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-6">
         <KeywordTabs
           inputKeyword={inputKeyword}
           setInputKeyword={setInputKeyword}
@@ -46,10 +46,15 @@ export const KeywordsCard: React.FC<KeywordsCardProps> = ({
           isLoading={isLoading}
         />
 
-        <KeywordsList 
-          keywords={keywords} 
-          removeKeyword={(index) => removeKeyword(keywords[index])}
-        />
+        {keywords.length > 0 && (
+          <div className="mt-6">
+            <h3 className="text-sm font-medium mb-2">Добавленные ключевые слова ({keywords.length})</h3>
+            <KeywordsList 
+              keywords={keywords} 
+              removeKeyword={(index) => removeKeyword(keywords[index])}
+            />
+          </div>
+        )}
       </CardContent>
     </Card>
   );
