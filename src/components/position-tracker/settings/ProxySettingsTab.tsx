@@ -124,7 +124,7 @@ export function ProxySettingsTab({
         )}
         
         {activeProxies > 0 && activeProxies < 100 && !isLoading && (
-          <Alert variant="warning" className="mt-2">
+          <Alert className="mt-2 border-yellow-200 bg-yellow-50 text-yellow-800">
             <AlertDescription>
               Рекомендуется собрать больше прокси для лучшей производительности. Текущее количество ({activeProxies}) может быть недостаточным.
             </AlertDescription>
