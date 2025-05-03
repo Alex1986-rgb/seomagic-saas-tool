@@ -22,7 +22,7 @@ import { getPositionHistory, getHistoricalData } from '@/services/position/posit
 import { exportHistoryToExcel } from '@/services/position/exportService';
 import { useProxyManager } from '@/hooks/use-proxy-manager';
 
-const AdminPositions = () => {
+const AdminPositions: React.FC = () => {
   const [history, setHistory] = useState<PositionData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('history');

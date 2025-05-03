@@ -1,8 +1,17 @@
-
-import React from 'react';
-import { PositionData } from '@/services/position/positionTracker';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowUp, ArrowDown } from 'lucide-react';
+import React, { useState, useMemo } from 'react';
+import { 
+  Table, 
+  TableBody, 
+  TableCell, 
+  TableHead, 
+  TableHeader, 
+  TableRow 
+} from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { ArrowUpDown, Search, TrendingUp, TrendingDown, Minus } from "lucide-react";
+import { PositionData, KeywordPosition } from '@/services/position/positionTracker';
 
 interface TopKeywordsTableProps {
   history: PositionData[];
@@ -12,133 +21,127 @@ interface TopKeywordsTableProps {
   filterBy?: 'all' | 'top10' | 'top30' | 'notIndexed';
 }
 
-export function TopKeywordsTable({ 
-  history, 
-  limit = 10, 
+export const TopKeywordsTable: React.FC<TopKeywordsTableProps> = ({
+  history,
+  limit,
   searchTerm = '',
   sortBy = 'position',
   filterBy = 'all'
-}: TopKeywordsTableProps) {
-  const getTopKeywords = () => {
-    const keywordStats: Record<string, { count: number, avgPosition: number }> = {};
-    
+}) => {
+  const [search, setSearch] = useState(searchTerm);
+
+  const filteredKeywords = useMemo(() => {
+    let keywords: KeywordPosition[] = [];
+
     history.forEach(item => {
-      item.keywords.forEach(keyword => {
-        if (!keywordStats[keyword.keyword]) {
-          keywordStats[keyword.keyword] = { count: 0, avgPosition: 0 };
-        }
-        
-        keywordStats[keyword.keyword].count++;
-        
-        // Учитываем только найденные позиции (не равные 0)
-        if (keyword.position > 0) {
-          keywordStats[keyword.keyword].avgPosition = 
-            (keywordStats[keyword.keyword].avgPosition * (keywordStats[keyword.keyword].count - 1) + keyword.position) / 
-            keywordStats[keyword.keyword].count;
-        }
-      });
+      keywords = keywords.concat(item.keywords.map(keyword => ({
+        ...keyword,
+        date: item.timestamp || item.date,
+        searchEngine: item.searchEngine
+      })));
     });
-    
-    let keywordsArray = Object.entries(keywordStats)
-      .map(([keyword, stats]) => ({ 
-        keyword, 
-        count: stats.count, 
-        avgPosition: stats.avgPosition > 0 ? Math.round(stats.avgPosition) : 'Не найдено'
-      }));
-      
-    // Apply search filter if provided
-    if (searchTerm) {
-      keywordsArray = keywordsArray.filter(item => 
-        item.keyword.toLowerCase().includes(searchTerm.toLowerCase())
+
+    // Apply search filter
+    if (search) {
+      keywords = keywords.filter(keyword =>
+        keyword.keyword.toLowerCase().includes(search.toLowerCase())
       );
     }
-    
-    // Apply position filter if provided
-    if (filterBy !== 'all') {
-      keywordsArray = keywordsArray.filter(item => {
-        if (typeof item.avgPosition === 'string') return filterBy === 'notIndexed';
-        
-        if (filterBy === 'top10') return item.avgPosition <= 10;
-        if (filterBy === 'top30') return item.avgPosition <= 30;
-        return true;
+
+    // Apply position filter
+    if (filterBy === 'top10') {
+      keywords = keywords.filter(keyword => keyword.position > 0 && keyword.position <= 10);
+    } else if (filterBy === 'top30') {
+      keywords = keywords.filter(keyword => keyword.position > 0 && keyword.position <= 30);
+    } else if (filterBy === 'notIndexed') {
+      keywords = keywords.filter(keyword => keyword.position === 0);
+    }
+
+    // Apply sorting
+    if (sortBy === 'position') {
+      keywords.sort((a, b) => a.position - b.position);
+    } else if (sortBy === 'alphabetical') {
+      keywords.sort((a, b) => a.keyword.localeCompare(b.keyword));
+    } else if (sortBy === 'change') {
+      keywords.sort((a, b) => {
+        const changeA = (a.previousPosition || 999) - a.position;
+        const changeB = (b.previousPosition || 999) - b.position;
+        return changeB - changeA;
       });
     }
+
+    return keywords;
+  }, [history, search, sortBy, filterBy]);
+
+  // Определяем тренд позиции
+  const getPositionTrend = (position: number, prevPosition?: number) => {
+    if (!prevPosition || position === 0) return null;
     
-    // Apply sorting
-    keywordsArray.sort((a, b) => {
-      if (sortBy === 'alphabetical') {
-        return a.keyword.localeCompare(b.keyword);
-      } else if (sortBy === 'position') {
-        if (typeof a.avgPosition === 'string' && typeof b.avgPosition === 'string') return 0;
-        if (typeof a.avgPosition === 'string') return 1;
-        if (typeof b.avgPosition === 'string') return -1;
-        return a.avgPosition - b.avgPosition;
-      } else {
-        // Default to count (most frequent)
-        return b.count - a.count;
-      }
-    });
+    if (position < prevPosition) {
+      return <TrendingUp className="h-4 w-4 text-green-500" />;
+    } else if (position > prevPosition) {
+      return <TrendingDown className="h-4 w-4 text-red-500" />;
+    } else {
+      return <Minus className="h-4 w-4 text-gray-400" />;
+    }
+  };
+  
+  // Форматируем изменение позиции для отображения
+  const formatPositionChange = (position: number, prevPosition?: number) => {
+    if (!prevPosition || position === 0) return null;
     
-    return keywordsArray.slice(0, limit);
+    const change = prevPosition - position;
+    if (change > 0) {
+      return <Badge variant="outline" className="text-green-600 border-green-200 bg-green-50">+{change}</Badge>;
+    } else if (change < 0) {
+      return <Badge variant="outline" className="text-red-600 border-red-200 bg-red-50">{change}</Badge>;
+    } else {
+      return <Badge variant="outline" className="text-gray-600 border-gray-200 bg-gray-50">0</Badge>;
+    }
   };
 
-  const topKeywords = getTopKeywords();
-  
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Топ-{limit} ключевых слов</CardTitle>
-        <CardDescription>
-          {searchTerm ? 'Отфильтрованные' : 'Наиболее часто проверяемые'} ключевые слова
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <div className="rounded-md border">
-          <table className="w-full">
-            <thead>
-              <tr className="border-b">
-                <th className="py-3 px-4 text-left">Ключевое слово</th>
-                <th className="py-3 px-4 text-center">Количество проверок</th>
-                <th className="py-3 px-4 text-center">Средняя позиция</th>
-              </tr>
-            </thead>
-            <tbody>
-              {topKeywords.length > 0 ? (
-                topKeywords.map((item, index) => (
-                  <tr key={index} className={index % 2 === 0 ? "bg-muted/30" : ""}>
-                    <td className="py-3 px-4 font-medium">{item.keyword}</td>
-                    <td className="py-3 px-4 text-center">{item.count}</td>
-                    <td className="py-3 px-4 text-center">
-                      <div className="flex items-center justify-center">
-                        {typeof item.avgPosition === 'number' ? (
-                          <>
-                            {item.avgPosition <= 10 ? (
-                              <ArrowUp className="h-4 w-4 text-green-500 mr-1" />
-                            ) : (
-                              <ArrowDown className="h-4 w-4 text-amber-500 mr-1" />
-                            )}
-                            <span className={item.avgPosition <= 10 ? "text-green-500" : "text-amber-500"}>
-                              {item.avgPosition}
-                            </span>
-                          </>
-                        ) : (
-                          <span className="text-red-500">{item.avgPosition}</span>
-                        )}
-                      </div>
-                    </td>
-                  </tr>
-                ))
+    <Table>
+      <TableHeader>
+        <TableRow>
+          <TableHead>Ключевое слово</TableHead>
+          <TableHead className="text-right">Позиция</TableHead>
+          <TableHead className="text-center">Предыдущая</TableHead>
+          <TableHead className="text-right">Изменение</TableHead>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {filteredKeywords.slice(0, limit).map((keyword, index) => (
+          <TableRow key={index}>
+            <TableCell>{keyword.keyword}</TableCell>
+            <TableCell className="text-right">
+              {keyword.position === 0 ? (
+                <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-200">
+                  Не найдено
+                </Badge>
               ) : (
-                <tr>
-                  <td colSpan={3} className="py-6 text-center text-muted-foreground">
-                    {searchTerm ? "Ключевые слова не найдены" : "Нет данных о ключевых словах"}
-                  </td>
-                </tr>
+                <Badge variant={keyword.position <= 10 ? "default" : "secondary"}>
+                  {keyword.position}
+                </Badge>
               )}
-            </tbody>
-          </table>
-        </div>
-      </CardContent>
-    </Card>
+            </TableCell>
+            <TableCell className="text-center">{keyword.previousPosition || '-'}</TableCell>
+            <TableCell className="text-right">
+              <div className="flex items-center justify-end gap-1">
+                {getPositionTrend(keyword.position, keyword.previousPosition)}
+                {formatPositionChange(keyword.position, keyword.previousPosition)}
+              </div>
+            </TableCell>
+          </TableRow>
+        ))}
+        {filteredKeywords.length === 0 && (
+          <TableRow>
+            <TableCell colSpan={4} className="text-center py-8 text-muted-foreground">
+              Нет данных для отображения
+            </TableCell>
+          </TableRow>
+        )}
+      </TableBody>
+    </Table>
   );
-}
+};

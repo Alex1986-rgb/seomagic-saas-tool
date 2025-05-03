@@ -1,8 +1,7 @@
-
 import React, { useState, useEffect } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { BarChart, FileText, Search, TrendingUp } from 'lucide-react';
-import { getPositionHistory } from '@/services/position/positionHistory';
+import { getHistoricalData } from '@/services/position/positionHistory';
 import { PositionData, checkPositions } from '@/services/position/positionTracker';
 import { useToast } from "@/hooks/use-toast";
 import {
@@ -28,7 +27,7 @@ const ClientPositionTracker: React.FC = () => {
   const loadHistory = async () => {
     setIsLoading(true);
     try {
-      const data = await getPositionHistory();
+      const data = await getHistoricalData();
       setHistory(data);
     } catch (error) {
       console.error('Error loading position history:', error);
@@ -86,7 +85,7 @@ const ClientPositionTracker: React.FC = () => {
       const result = await checkPositions(testData);
       
       // Reload history to show the new check
-      const updatedHistory = await getPositionHistory();
+      const updatedHistory = await getHistoricalData();
       setHistory(updatedHistory);
       
       toast({

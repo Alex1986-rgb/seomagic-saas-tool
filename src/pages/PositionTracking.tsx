@@ -1,30 +1,16 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Layout from '@/components/Layout';
-import { PositionTrackerForm, PositionTrackerHistory } from '@/components/position-tracker';
-import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Search, History } from 'lucide-react';
-
-interface SearchResult {
-  domain: string;
-  keywords: string[];
-  searchEngine: string;
-  region: string;
-  timestamp: string;
-  positions: Array<{
-    keyword: string;
-    position: number;
-    url: string;
-    searchEngine: string;
-  }>;
-}
+import { Search, History, Tools, FileText } from 'lucide-react';
+import TrackerContent from '@/components/position-tracker/components/TrackerContent';
+import { PositionData } from '@/services/position/positionTracker';
 
 const PositionTracking: React.FC = () => {
   const [activeTab, setActiveTab] = useState('search');
-  const [searchResults, setSearchResults] = useState<SearchResult | null>(null);
+  const [searchResults, setSearchResults] = useState<PositionData | null>(null);
   
-  const handleSearchComplete = (results: SearchResult) => {
+  const handleSearchComplete = (results: PositionData) => {
     setSearchResults(results);
     setActiveTab('results');
   };
@@ -38,30 +24,32 @@ const PositionTracking: React.FC = () => {
             Отслеживайте позиции вашего сайта в поисковых системах
           </p>
           
-          <Card>
-            <CardContent className="p-6">
-              <Tabs value={activeTab} onValueChange={setActiveTab}>
-                <TabsList className="mb-6">
-                  <TabsTrigger value="search" className="flex items-center gap-2">
-                    <Search className="h-4 w-4" />
-                    <span>Проверка позиций</span>
-                  </TabsTrigger>
-                  <TabsTrigger value="history" className="flex items-center gap-2">
-                    <History className="h-4 w-4" />
-                    <span>История проверок</span>
-                  </TabsTrigger>
-                </TabsList>
-                
-                <TabsContent value="search">
-                  <PositionTrackerForm onSearchComplete={handleSearchComplete} />
-                </TabsContent>
-                
-                <TabsContent value="history">
-                  <PositionTrackerHistory />
-                </TabsContent>
-              </Tabs>
-            </CardContent>
-          </Card>
+          <Tabs value={activeTab} onValueChange={setActiveTab}>
+            <TabsList className="mb-6">
+              <TabsTrigger value="search" className="flex items-center gap-2">
+                <Search className="h-4 w-4" />
+                <span>Проверка позиций</span>
+              </TabsTrigger>
+              <TabsTrigger value="results" className="flex items-center gap-2">
+                <FileText className="h-4 w-4" />
+                <span>Результаты</span>
+              </TabsTrigger>
+              <TabsTrigger value="history" className="flex items-center gap-2">
+                <History className="h-4 w-4" />
+                <span>История проверок</span>
+              </TabsTrigger>
+              <TabsTrigger value="tools" className="flex items-center gap-2">
+                <Tools className="h-4 w-4" />
+                <span>Инструменты</span>
+              </TabsTrigger>
+            </TabsList>
+            
+            <TrackerContent
+              activeTab={activeTab}
+              searchResults={searchResults}
+              onSearchComplete={handleSearchComplete}
+            />
+          </Tabs>
         </div>
       </div>
     </Layout>
