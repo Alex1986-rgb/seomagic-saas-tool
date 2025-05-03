@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import Layout from '@/components/Layout';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Search, History, Tools, FileText } from 'lucide-react';
+import { Search, History, FileText, Settings } from 'lucide-react';
 import TrackerContent from '@/components/position-tracker/components/TrackerContent';
 import { PositionData } from '@/services/position/positionTracker';
 
@@ -39,7 +39,7 @@ const PositionTracking: React.FC = () => {
                 <span>История проверок</span>
               </TabsTrigger>
               <TabsTrigger value="tools" className="flex items-center gap-2">
-                <Tools className="h-4 w-4" />
+                <Settings className="h-4 w-4" />
                 <span>Инструменты</span>
               </TabsTrigger>
             </TabsList>
