@@ -38,6 +38,17 @@ const ProxyList: React.FC<ProxyListProps> = ({ proxies }) => {
     }
   };
 
+  const handleSearch = () => {
+    // The search is already reactive through the filteredProxies calculation,
+    // but we can provide feedback to the user
+    toast({
+      title: "Поиск выполнен",
+      description: searchTerm 
+        ? `Найдено ${filteredProxies.length} прокси по запросу "${searchTerm}"`
+        : `Показаны все ${filteredProxies.length} прокси`,
+    });
+  };
+
   const filteredProxies = proxies
     .filter(proxy => {
       // Фильтрация по статусу
@@ -74,17 +85,27 @@ const ProxyList: React.FC<ProxyListProps> = ({ proxies }) => {
   return (
     <Card className="p-4">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
-        <div className="flex items-center w-full md:w-auto">
-          <Input
-            placeholder="Поиск прокси..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="max-w-sm"
-            prefix={<Search className="h-4 w-4 text-muted-foreground" />}
-          />
+        <div className="flex items-center gap-2 w-full md:w-auto">
+          <div className="relative flex-grow md:flex-grow-0">
+            <Input
+              placeholder="Поиск прокси..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="md:w-80"
+              prefix={<Search className="h-4 w-4 text-muted-foreground" />}
+            />
+          </div>
+          <Button 
+            onClick={handleSearch}
+            size="sm"
+            className="whitespace-nowrap"
+          >
+            <Search className="h-4 w-4 mr-2" />
+            Поиск прокси
+          </Button>
         </div>
         
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center space-x-2 w-full md:w-auto justify-end">
           <Button 
             variant={filteredStatus === 'all' ? 'default' : 'outline'} 
             onClick={() => setFilteredStatus('all')}
