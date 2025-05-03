@@ -18,6 +18,9 @@ export const getHistoricalData = async (domain?: string): Promise<PositionData[]
   }
 };
 
+// Alias getHistoricalData as getPositionHistory for backward compatibility
+export const getPositionHistory = getHistoricalData;
+
 // Save a new position check result to history
 export const saveToHistory = (result: PositionData): void => {
   try {
