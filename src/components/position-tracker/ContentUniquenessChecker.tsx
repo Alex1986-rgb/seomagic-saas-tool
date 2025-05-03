@@ -229,7 +229,7 @@ export const ContentUniquenessChecker: React.FC<ContentUniquenessCheckerProps> =
                   </div>
                   
                   {results.some(item => item.uniqueness < 70) && (
-                    <Alert className="mt-4" variant="warning">
+                    <Alert className="mt-4">
                       <AlertCircle className="h-4 w-4" />
                       <AlertDescription>
                         Обнаружены страницы с низкой уникальностью контента. Рекомендуется переработать

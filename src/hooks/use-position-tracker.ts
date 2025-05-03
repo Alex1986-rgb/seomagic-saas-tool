@@ -1,6 +1,7 @@
 
 import { useState } from 'react';
 import { checkPositions, KeywordPosition, PositionData } from '@/services/position/positionTracker';
+import { useProxyManager } from './use-proxy-manager';
 import { useToast } from './use-toast';
 
 interface UsePositionTrackerProps {
@@ -26,6 +27,7 @@ export function usePositionTracker({
   const [error, setError] = useState<string | null>(null);
   
   const { toast } = useToast();
+  const { getRandomActiveProxy, activeProxies } = useProxyManager();
   
   const trackPositions = async () => {
     if (!domain) {
@@ -50,16 +52,31 @@ export function usePositionTracker({
     setError(null);
     
     try {
+      // Проверяем наличие прокси
+      const hasActiveProxies = activeProxies.length > 0;
+      
+      if (!hasActiveProxies) {
+        toast({
+          title: "Внимание",
+          description: "Нет активных прокси. Проверка может быть менее точной.",
+          variant: "default",
+        });
+      }
+      
       const data = {
         domain,
         keywords,
         searchEngine,
         region,
         depth,
-        scanFrequency
+        scanFrequency,
+        useProxy: hasActiveProxies // Используем прокси только если они есть
       };
       
+      // Запускаем проверку позиций с использованием актуальных данных
+      console.log('Запуск проверки позиций с параметрами:', data);
       const positionData = await checkPositions(data);
+      console.log('Получены результаты проверки:', positionData);
       setResults(positionData);
       
       toast({
@@ -67,7 +84,9 @@ export function usePositionTracker({
         description: `Проверено ${keywords.length} ключевых слов для ${domain}`,
       });
     } catch (err) {
-      setError(err.message || "Произошла ошибка при проверке позиций");
+      const errorMessage = err instanceof Error ? err.message : "Произошла ошибка при проверке позиций";
+      console.error('Ошибка проверки позиций:', errorMessage);
+      setError(errorMessage);
       toast({
         title: "Ошибка",
         description: "Не удалось проверить позиции",
@@ -106,6 +125,7 @@ export function usePositionTracker({
     isLoading,
     results,
     error,
-    trackPositions
+    trackPositions,
+    hasActiveProxies: activeProxies.length > 0
   };
 }
