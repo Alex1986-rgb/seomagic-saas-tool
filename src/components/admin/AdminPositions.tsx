@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Bar, BarChart, CartesianGrid, Legend, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { Search, Users, Download, ArrowDown, ArrowUp, History, FileText, Webhook, Link2Off, CopyX, FolderTree } from 'lucide-react';
@@ -449,14 +448,12 @@ const AdminPositions = () => {
         <TabsContent value="linkAnalysis">
           <BrokenLinksAnalyzer 
             domain={selectedDomain || ''} 
-            urls={[]}
           />
         </TabsContent>
 
         <TabsContent value="duplicates">
           <DuplicatesDetector
             domain={selectedDomain || ''}
-            urls={[]}
           />
         </TabsContent>
 

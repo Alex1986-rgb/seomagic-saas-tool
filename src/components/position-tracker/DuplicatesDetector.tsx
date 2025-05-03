@@ -1,142 +1,126 @@
 
-import React, { useState, useEffect } from 'react';
-import { Copy, RefreshCw } from 'lucide-react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Loader2, CopyX, RefreshCw } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Badge } from '@/components/ui/badge';
 
 interface DuplicatesDetectorProps {
   domain: string;
-  className?: string;
 }
 
-export function DuplicatesDetector({ domain, className }: DuplicatesDetectorProps) {
-  const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [inputDomain, setInputDomain] = useState(domain);
+export function DuplicatesDetector({ domain }: DuplicatesDetectorProps) {
+  const [isChecking, setIsChecking] = useState(false);
+  const [inputDomain, setInputDomain] = useState(domain || '');
   const [progress, setProgress] = useState(0);
-  const [duplicates, setDuplicates] = useState<Array<{
-    url1: string;
-    url2: string;
+  const [duplicatesFound, setDuplicatesFound] = useState<Array<{
+    url: string;
+    duplicateUrl: string;
     similarity: number;
-    type: 'content' | 'title' | 'meta';
-  }>>([]);
+  }> | null>(null);
+  
   const { toast } = useToast();
   
-  useEffect(() => {
-    setInputDomain(domain);
-  }, [domain]);
-
-  const detectDuplicates = async () => {
+  const checkDuplicates = async () => {
     if (!inputDomain) {
       toast({
         title: "Ошибка",
-        description: "Пожалуйста, укажите домен для анализа",
+        description: "Пожалуйста, укажите домен для проверки",
         variant: "destructive",
       });
       return;
     }
-
-    setIsAnalyzing(true);
+    
+    setIsChecking(true);
     setProgress(0);
-    setDuplicates([]);
-
+    setDuplicatesFound(null);
+    
+    // Эмулируем процесс проверки
     try {
-      // Эмуляция процесса анализа
       for (let i = 0; i <= 100; i += 5) {
         setProgress(i);
         await new Promise(resolve => setTimeout(resolve, 150));
       }
       
-      // Генерируем демо-данные по дубликатам
-      const mockDuplicates = [
+      // Симулируем ответ
+      const demoResults = [
         {
-          url1: `https://${inputDomain}/services`,
-          url2: `https://${inputDomain}/service-overview`,
-          similarity: 92,
-          type: 'content' as const
+          url: `https://${inputDomain}/about-us`,
+          duplicateUrl: `https://${inputDomain}/about`,
+          similarity: 92
         },
         {
-          url1: `https://${inputDomain}/about`,
-          url2: `https://${inputDomain}/about-us`,
-          similarity: 87,
-          type: 'content' as const
+          url: `https://${inputDomain}/services/web-design`,
+          duplicateUrl: `https://${inputDomain}/web-design-services`,
+          similarity: 88
         },
         {
-          url1: `https://${inputDomain}/product1`,
-          url2: `https://${inputDomain}/product-a`,
-          similarity: 75,
-          type: 'title' as const
-        },
-        {
-          url1: `https://${inputDomain}/contact`,
-          url2: `https://${inputDomain}/contact-us`,
-          similarity: 95,
-          type: 'meta' as const
+          url: `https://${inputDomain}/contact`,
+          duplicateUrl: `https://${inputDomain}/contact-us`,
+          similarity: 95
         }
       ];
       
-      setDuplicates(mockDuplicates);
+      setDuplicatesFound(demoResults);
       
       toast({
-        title: "Анализ завершен",
-        description: `Обнаружено ${mockDuplicates.length} дублей на сайте`,
+        title: "Проверка завершена",
+        description: `Найдено ${demoResults.length} дубликатов на сайте ${inputDomain}`,
       });
     } catch (error) {
-      console.error('Ошибка при анализе дублей:', error);
+      console.error('Ошибка при проверке дубликатов:', error);
       toast({
         title: "Ошибка",
-        description: "Не удалось выполнить анализ дублей",
+        description: "Не удалось проверить сайт на дубликаты",
         variant: "destructive",
       });
     } finally {
-      setIsAnalyzing(false);
+      setIsChecking(false);
     }
   };
 
   return (
-    <div className={className ? `space-y-4 ${className}` : "space-y-4"}>
+    <div className="space-y-4">
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Copy className="h-5 w-5 text-yellow-500" />
-            Поиск дублей
+            <CopyX className="h-5 w-5 text-orange-500" />
+            Обнаружение дублей контента
           </CardTitle>
           <CardDescription>
-            Помогает найти похожие страницы на вашем сайте, которые могут ухудшать SEO
+            Анализирует сайт на наличие дублирующихся страниц и похожего контента
           </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="flex items-end gap-2 mb-6">
             <div className="flex-1">
-              <label htmlFor="duplicates-domain" className="block text-sm font-medium mb-1">Домен для анализа</label>
+              <label htmlFor="duplicates-domain" className="block text-sm font-medium mb-1">Домен для проверки</label>
               <Input
                 id="duplicates-domain"
                 value={inputDomain}
                 onChange={(e) => setInputDomain(e.target.value)}
                 placeholder="Введите домен, например example.com"
-                disabled={isAnalyzing}
+                disabled={isChecking}
               />
             </div>
             <Button 
-              onClick={detectDuplicates} 
-              disabled={isAnalyzing || !inputDomain}
+              onClick={checkDuplicates} 
+              disabled={isChecking || !inputDomain}
               className="gap-2"
             >
-              {isAnalyzing ? (
-                <RefreshCw className="h-4 w-4 animate-spin" />
+              {isChecking ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
               ) : (
-                <Copy className="h-4 w-4" />
+                <CopyX className="h-4 w-4" />
               )}
-              {isAnalyzing ? 'Анализ...' : 'Найти дубли'}
+              {isChecking ? 'Проверка...' : 'Найти дубли'}
             </Button>
           </div>
 
-          {isAnalyzing && (
+          {isChecking ? (
             <div className="my-4">
-              <div className="text-sm mb-1">Прогресс анализа: {progress}%</div>
+              <div className="text-sm mb-1">Анализ страниц сайта: {progress}%</div>
               <div className="w-full h-2 bg-secondary rounded-full">
                 <div
                   className="h-2 bg-primary rounded-full"
@@ -144,54 +128,63 @@ export function DuplicatesDetector({ domain, className }: DuplicatesDetectorProp
                 />
               </div>
             </div>
-          )}
-
-          {duplicates.length > 0 && (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Первая страница</TableHead>
-                  <TableHead>Вторая страница</TableHead>
-                  <TableHead className="text-center">Сходство</TableHead>
-                  <TableHead className="text-center">Тип</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {duplicates.map((item, index) => (
-                  <TableRow key={index}>
-                    <TableCell className="font-medium">
-                      <div className="max-w-[200px] truncate">{item.url1}</div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="max-w-[200px] truncate">{item.url2}</div>
-                    </TableCell>
-                    <TableCell className="text-center">
-                      <Badge 
-                        variant="outline" 
-                        className={
-                          item.similarity > 90
-                            ? "bg-red-50 text-red-800"
-                            : item.similarity > 80
-                              ? "bg-yellow-50 text-yellow-800"
-                              : "bg-blue-50 text-blue-800"
-                        }
-                      >
-                        {item.similarity}%
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-center">
-                      {item.type === 'content' ? 'Содержимое' : 
-                       item.type === 'title' ? 'Заголовок' : 'Мета-теги'}
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          )}
-
-          {!isAnalyzing && duplicates.length === 0 && (
-            <div className="text-center py-6 text-muted-foreground">
-              {inputDomain ? 'Запустите анализ для поиска дублей' : 'Введите домен для начала анализа'}
+          ) : duplicatesFound ? (
+            <div className="border rounded-lg overflow-hidden">
+              <table className="w-full text-sm">
+                <thead className="bg-muted">
+                  <tr>
+                    <th className="px-4 py-2 text-left">URL страницы</th>
+                    <th className="px-4 py-2 text-left">Дубликат</th>
+                    <th className="px-4 py-2 text-center">Сходство</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {duplicatesFound.map((item, index) => (
+                    <tr key={index} className="border-t">
+                      <td className="px-4 py-3 truncate max-w-[180px]">
+                        <a href={item.url} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">
+                          {item.url}
+                        </a>
+                      </td>
+                      <td className="px-4 py-3 truncate max-w-[180px]">
+                        <a href={item.duplicateUrl} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">
+                          {item.duplicateUrl}
+                        </a>
+                      </td>
+                      <td className="px-4 py-3 text-center">
+                        <span className={`font-medium ${
+                          item.similarity > 90 ? 'text-red-500' : 
+                          item.similarity > 80 ? 'text-orange-500' : 
+                          'text-yellow-500'
+                        }`}>
+                          {item.similarity}%
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              
+              <div className="bg-muted/50 p-4 border-t">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <span className="text-sm text-muted-foreground">Найдено дубликатов: {duplicatesFound.length}</span>
+                  </div>
+                  <Button variant="outline" size="sm" onClick={checkDuplicates} className="gap-1">
+                    <RefreshCw className="h-3 w-3" />
+                    Повторить проверку
+                  </Button>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="text-center py-10">
+              <CopyX className="h-16 w-16 mx-auto text-muted-foreground opacity-30 mb-4" />
+              <p className="text-muted-foreground">
+                {inputDomain 
+                  ? "Нажмите «Найти дубли», чтобы начать проверку содержимого сайта на дубликаты" 
+                  : "Укажите домен для начала проверки"}
+              </p>
             </div>
           )}
         </CardContent>

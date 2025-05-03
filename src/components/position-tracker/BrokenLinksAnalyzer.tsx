@@ -1,149 +1,156 @@
 
-import React, { useState, useEffect } from 'react';
-import { Link2Off, RefreshCw } from 'lucide-react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Link2Off, Loader2, Download, RefreshCw } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-
-interface BrokenLink {
-  url: string;
-  status: number;
-  referrer: string;
-  found: string; // датавремя обнаружения
-}
+import { Badge } from '@/components/ui/badge';
 
 interface BrokenLinksAnalyzerProps {
-  domain?: string;
-  urls?: string[];
-  className?: string;
+  domain: string;
 }
 
-export function BrokenLinksAnalyzer({ domain = '', urls = [], className }: BrokenLinksAnalyzerProps) {
-  const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [inputDomain, setInputDomain] = useState(domain);
-  const [brokenLinks, setBrokenLinks] = useState<BrokenLink[]>([]);
+export function BrokenLinksAnalyzer({ domain }: BrokenLinksAnalyzerProps) {
+  const [isChecking, setIsChecking] = useState(false);
+  const [inputDomain, setInputDomain] = useState(domain || '');
   const [progress, setProgress] = useState(0);
+  const [results, setResults] = useState<Array<{
+    url: string;
+    statusCode: number;
+    statusText: string;
+    type: 'internal' | 'external';
+    sourceUrl: string;
+  }> | null>(null);
+  
   const { toast } = useToast();
-
-  useEffect(() => {
-    if (domain) {
-      setInputDomain(domain);
-    }
-  }, [domain]);
-
-  const analyzeBrokenLinks = async () => {
+  
+  const checkBrokenLinks = async () => {
     if (!inputDomain) {
       toast({
         title: "Ошибка",
-        description: "Пожалуйста, укажите домен для анализа",
+        description: "Пожалуйста, укажите домен для проверки",
         variant: "destructive",
       });
       return;
     }
-
-    setIsAnalyzing(true);
+    
+    setIsChecking(true);
     setProgress(0);
-    setBrokenLinks([]);
-
+    setResults(null);
+    
+    // Эмулируем процесс проверки
     try {
-      // Здесь в реальном приложении был бы настоящий анализ
-      // Для демо генерируем моковые данные
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      // Последовательно обновляем прогресс для реалистичности
-      for (let i = 1; i <= 5; i++) {
-        setProgress(i * 20);
-        await new Promise(resolve => setTimeout(resolve, 800));
+      for (let i = 0; i <= 100; i += 5) {
+        setProgress(i);
+        await new Promise(resolve => setTimeout(resolve, 150));
       }
-
-      // Генерируем фиктивные данные о битых ссылках
-      const mockBrokenLinks: BrokenLink[] = [
+      
+      // Симулируем ответ
+      const demoResults = [
         {
-          url: `https://${inputDomain}/broken-page-1`,
-          status: 404,
-          referrer: `https://${inputDomain}/about`,
-          found: new Date().toISOString()
+          url: `https://${inputDomain}/broken-link`,
+          statusCode: 404,
+          statusText: "Not Found",
+          type: 'internal' as const,
+          sourceUrl: `https://${inputDomain}/about-us`
         },
         {
-          url: `https://${inputDomain}/old-product`,
-          status: 410,
-          referrer: `https://${inputDomain}/catalog`,
-          found: new Date().toISOString()
+          url: `https://${inputDomain}/old-page`,
+          statusCode: 301,
+          statusText: "Moved Permanently",
+          type: 'internal' as const,
+          sourceUrl: `https://${inputDomain}/blog/post-1`
         },
         {
-          url: `https://${inputDomain}/services/unavailable`,
-          status: 503,
-          referrer: `https://${inputDomain}/services`,
-          found: new Date().toISOString()
+          url: `https://external-site.com/broken-resource`,
+          statusCode: 404,
+          statusText: "Not Found",
+          type: 'external' as const,
+          sourceUrl: `https://${inputDomain}/partners`
         },
         {
-          url: `https://${inputDomain}/images/missing.jpg`,
-          status: 404,
-          referrer: `https://${inputDomain}/gallery`,
-          found: new Date().toISOString()
+          url: `https://${inputDomain}/products/discontinued`,
+          statusCode: 410,
+          statusText: "Gone",
+          type: 'internal' as const,
+          sourceUrl: `https://${inputDomain}/catalog`
+        },
+        {
+          url: `https://api.example.org/data`,
+          statusCode: 403,
+          statusText: "Forbidden",
+          type: 'external' as const,
+          sourceUrl: `https://${inputDomain}/dashboard`
         }
       ];
       
-      setBrokenLinks(mockBrokenLinks);
+      setResults(demoResults);
       
       toast({
-        title: "Анализ завершен",
-        description: `Обнаружено ${mockBrokenLinks.length} битых ссылок на сайте`,
+        title: "Проверка завершена",
+        description: `Найдено ${demoResults.length} проблемных ссылок на сайте ${inputDomain}`,
       });
     } catch (error) {
-      console.error('Ошибка анализа:', error);
+      console.error('Ошибка при проверке битых ссылок:', error);
       toast({
         title: "Ошибка",
-        description: "Не удалось выполнить анализ битых ссылок",
+        description: "Не удалось проверить сайт на наличие битых ссылок",
         variant: "destructive",
       });
     } finally {
-      setIsAnalyzing(false);
+      setIsChecking(false);
     }
   };
 
+  const getStatusBadgeColor = (statusCode: number) => {
+    if (statusCode >= 200 && statusCode < 300) return "bg-green-100 text-green-800";
+    if (statusCode >= 300 && statusCode < 400) return "bg-yellow-100 text-yellow-800";
+    if (statusCode >= 400 && statusCode < 500) return "bg-red-100 text-red-800";
+    return "bg-gray-100 text-gray-800";
+  };
+
   return (
-    <div className={className ? `space-y-4 ${className}` : "space-y-4"}>
+    <div className="space-y-4">
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Link2Off className="h-5 w-5 text-destructive" />
-            Анализатор битых ссылок
+            <Link2Off className="h-5 w-5 text-red-500" />
+            Проверка битых ссылок
           </CardTitle>
           <CardDescription>
-            Сканирует сайт на наличие неработающих ссылок, которые могут ухудшать пользовательский опыт и SEO
+            Сканирует сайт и находит все неработающие ссылки, помогая улучшить пользовательский опыт
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="flex items-end gap-2 mb-4">
+          <div className="flex items-end gap-2 mb-6">
             <div className="flex-1">
-              <label htmlFor="domain" className="block text-sm font-medium mb-1">Домен для анализа</label>
+              <label htmlFor="links-domain" className="block text-sm font-medium mb-1">Домен для проверки</label>
               <Input
-                id="domain"
+                id="links-domain"
                 value={inputDomain}
                 onChange={(e) => setInputDomain(e.target.value)}
                 placeholder="Введите домен, например example.com"
+                disabled={isChecking}
               />
             </div>
             <Button 
-              onClick={analyzeBrokenLinks} 
-              disabled={isAnalyzing || !inputDomain}
+              onClick={checkBrokenLinks} 
+              disabled={isChecking || !inputDomain}
               className="gap-2"
             >
-              {isAnalyzing ? (
-                <RefreshCw className="h-4 w-4 animate-spin" />
+              {isChecking ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
               ) : (
                 <Link2Off className="h-4 w-4" />
               )}
-              {isAnalyzing ? 'Анализируем...' : 'Найти битые ссылки'}
+              {isChecking ? 'Проверка...' : 'Найти битые ссылки'}
             </Button>
           </div>
 
-          {isAnalyzing && (
+          {isChecking ? (
             <div className="my-4">
-              <div className="text-sm mb-1">Прогресс анализа: {progress}%</div>
+              <div className="text-sm mb-1">Сканирование ссылок: {progress}%</div>
               <div className="w-full h-2 bg-secondary rounded-full">
                 <div
                   className="h-2 bg-primary rounded-full"
@@ -151,34 +158,71 @@ export function BrokenLinksAnalyzer({ domain = '', urls = [], className }: Broke
                 />
               </div>
             </div>
-          )}
-
-          {brokenLinks.length > 0 ? (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>URL</TableHead>
-                  <TableHead className="text-center">Код ошибки</TableHead>
-                  <TableHead>Откуда ссылка</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {brokenLinks.map((link, index) => (
-                  <TableRow key={index}>
-                    <TableCell className="font-medium">{link.url}</TableCell>
-                    <TableCell className="text-center">
-                      <span className="inline-flex items-center justify-center bg-red-100 text-red-800 text-xs font-medium px-2.5 py-1 rounded">
-                        {link.status}
-                      </span>
-                    </TableCell>
-                    <TableCell>{link.referrer}</TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          ) : !isAnalyzing && (
-            <div className="text-center py-6 text-muted-foreground">
-              {inputDomain ? 'Запустите анализ для поиска битых ссылок' : 'Введите домен для начала анализа'}
+          ) : results ? (
+            <div className="border rounded-lg overflow-hidden">
+              <table className="w-full text-sm">
+                <thead className="bg-muted">
+                  <tr>
+                    <th className="px-4 py-2 text-left">URL ссылки</th>
+                    <th className="px-4 py-2 text-center">Статус</th>
+                    <th className="px-4 py-2 text-left">Тип</th>
+                    <th className="px-4 py-2 text-left">Найдено на</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {results.map((item, index) => (
+                    <tr key={index} className="border-t">
+                      <td className="px-4 py-3 truncate max-w-[220px]">
+                        <a href={item.url} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">
+                          {item.url}
+                        </a>
+                      </td>
+                      <td className="px-4 py-3 text-center">
+                        <Badge className={getStatusBadgeColor(item.statusCode)}>
+                          {item.statusCode} {item.statusText}
+                        </Badge>
+                      </td>
+                      <td className="px-4 py-3">
+                        <Badge variant={item.type === 'internal' ? 'default' : 'outline'}>
+                          {item.type === 'internal' ? 'Внутренняя' : 'Внешняя'}
+                        </Badge>
+                      </td>
+                      <td className="px-4 py-3 truncate max-w-[220px]">
+                        <a href={item.sourceUrl} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">
+                          {item.sourceUrl}
+                        </a>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              
+              <div className="bg-muted/50 p-4 border-t">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <span className="text-sm text-muted-foreground">Найдено битых ссылок: {results.length}</span>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button variant="outline" size="sm" className="gap-1">
+                      <Download className="h-3 w-3" />
+                      Экспорт
+                    </Button>
+                    <Button variant="outline" size="sm" onClick={checkBrokenLinks} className="gap-1">
+                      <RefreshCw className="h-3 w-3" />
+                      Повторить проверку
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="text-center py-10">
+              <Link2Off className="h-16 w-16 mx-auto text-muted-foreground opacity-30 mb-4" />
+              <p className="text-muted-foreground">
+                {inputDomain 
+                  ? "Нажмите «Найти битые ссылки», чтобы начать проверку" 
+                  : "Укажите домен для начала проверки"}
+              </p>
             </div>
           )}
         </CardContent>

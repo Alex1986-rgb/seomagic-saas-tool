@@ -1,64 +1,45 @@
 
-import React, { useState, useEffect } from 'react';
-import { Fingerprint, RefreshCw } from 'lucide-react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { useToast } from '@/hooks/use-toast';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Progress } from '@/components/ui/progress';
+import { Textarea } from '@/components/ui/textarea';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { AlertTriangle, CheckCircle, Search } from 'lucide-react';
 
 interface ContentUniquenessCheckerProps {
   domain: string;
-  className?: string;
 }
 
-export function ContentUniquenessChecker({ domain, className }: ContentUniquenessCheckerProps) {
+export function ContentUniquenessChecker({ domain }: ContentUniquenessCheckerProps) {
+  const [url, setUrl] = useState(domain || '');
+  const [content, setContent] = useState('');
   const [isChecking, setIsChecking] = useState(false);
-  const [inputDomain, setInputDomain] = useState(domain);
-  const [progress, setProgress] = useState(0);
-  const [uniquenessScore, setUniquenessScore] = useState<number | null>(null);
-  const { toast } = useToast();
-  
-  useEffect(() => {
-    setInputDomain(domain);
-  }, [domain]);
+  const [result, setResult] = useState<{
+    isUnique: boolean;
+    score: number;
+    matches?: Array<{url: string, similarity: number}>
+  } | null>(null);
 
-  const checkContentUniqueness = async () => {
-    if (!inputDomain) {
-      toast({
-        title: "Ошибка",
-        description: "Пожалуйста, укажите домен для проверки",
-        variant: "destructive",
-      });
-      return;
-    }
-
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
     setIsChecking(true);
-    setProgress(0);
-    setUniquenessScore(null);
-
+    setResult(null);
+    
     try {
-      // Эмуляция процесса проверки
-      for (let i = 0; i <= 100; i += 5) {
-        setProgress(i);
-        await new Promise(resolve => setTimeout(resolve, 150));
-      }
+      // Симуляция проверки контента
+      await new Promise((resolve) => setTimeout(resolve, 2500));
       
-      // Генерируем случайный балл уникальности от 50 до 100
-      const score = Math.floor(Math.random() * 51) + 50;
-      setUniquenessScore(score);
-      
-      toast({
-        title: "Проверка завершена",
-        description: `Уникальность контента: ${score}%`,
-      });
-    } catch (error) {
-      console.error('Ошибка при проверке уникальности контента:', error);
-      toast({
-        title: "Ошибка",
-        description: "Не удалось проверить уникальность контента",
-        variant: "destructive",
+      // Демонстрационные данные
+      const demoScore = Math.random() * 100;
+      setResult({
+        isUnique: demoScore > 70,
+        score: Math.round(demoScore),
+        matches: demoScore < 90 ? [
+          { url: 'https://example.com/similar-page', similarity: Math.round(Math.random() * 60) },
+          { url: 'https://another-site.com/content', similarity: Math.round(Math.random() * 40) },
+        ] : []
       });
     } finally {
       setIsChecking(false);
@@ -66,137 +47,116 @@ export function ContentUniquenessChecker({ domain, className }: ContentUniquenes
   };
 
   return (
-    <div className={className ? `space-y-4 ${className}` : "space-y-4"}>
+    <div className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Fingerprint className="h-5 w-5 text-primary" />
-            Уникальность контента
-          </CardTitle>
+          <CardTitle>Проверка уникальности контента</CardTitle>
           <CardDescription>
-            Проверяет уникальность текстового содержимого вашего сайта и выявляет возможные дубликаты
+            Анализ текста на уникальность и сравнение с другими источниками в интернете
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="flex items-end gap-2 mb-6">
-            <div className="flex-1">
-              <label htmlFor="uniqueness-domain" className="block text-sm font-medium mb-1">Домен для проверки</label>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <label htmlFor="url" className="block text-sm font-medium mb-1">
+                URL страницы или домен
+              </label>
               <Input
-                id="uniqueness-domain"
-                value={inputDomain}
-                onChange={(e) => setInputDomain(e.target.value)}
-                placeholder="Введите домен, например example.com"
-                disabled={isChecking}
+                id="url"
+                value={url}
+                onChange={(e) => setUrl(e.target.value)}
+                placeholder="Например, example.com"
               />
             </div>
+            
+            <div>
+              <label htmlFor="content" className="block text-sm font-medium mb-1">
+                Контент для проверки
+              </label>
+              <Textarea
+                id="content"
+                value={content}
+                onChange={(e) => setContent(e.target.value)}
+                placeholder="Вставьте текст для проверки уникальности..."
+                rows={6}
+              />
+            </div>
+            
             <Button 
-              onClick={checkContentUniqueness} 
-              disabled={isChecking || !inputDomain}
-              className="gap-2"
+              type="submit" 
+              className="w-full" 
+              disabled={isChecking || !content || !url}
             >
               {isChecking ? (
-                <RefreshCw className="h-4 w-4 animate-spin" />
+                <>
+                  <span className="animate-spin mr-2">◌</span>
+                  Проверка...
+                </>
               ) : (
-                <Fingerprint className="h-4 w-4" />
+                <>
+                  <Search className="mr-2 h-4 w-4" />
+                  Проверить уникальность
+                </>
               )}
-              {isChecking ? 'Проверка...' : 'Проверить уникальность'}
             </Button>
-          </div>
-
-          {isChecking && (
-            <div className="my-4">
-              <div className="text-sm mb-1">Анализ контента: {progress}%</div>
-              <Progress value={progress} className="h-2" />
-            </div>
-          )}
-
-          {uniquenessScore !== null && !isChecking && (
-            <div className="space-y-6">
-              <div className="text-center">
-                <div className="relative inline-block">
-                  <svg className="w-32 h-32">
-                    <circle
-                      className="text-muted stroke-current"
-                      strokeWidth="8"
-                      stroke="currentColor"
-                      fill="transparent"
-                      r="58"
-                      cx="64"
-                      cy="64"
-                    />
-                    <circle
-                      className={`${
-                        uniquenessScore >= 80
-                          ? "text-green-500"
-                          : uniquenessScore >= 60
-                          ? "text-yellow-500"
-                          : "text-red-500"
-                      } stroke-current`}
-                      strokeWidth="8"
-                      strokeLinecap="round"
-                      stroke="currentColor"
-                      fill="transparent"
-                      r="58"
-                      cx="64"
-                      cy="64"
-                      strokeDasharray={`${uniquenessScore * 3.6} 1000`}
-                    />
-                  </svg>
-                  <div className="absolute inset-0 flex items-center justify-center text-2xl font-bold">
-                    {uniquenessScore}%
-                  </div>
+          </form>
+          
+          {result && (
+            <div className="mt-6 space-y-4">
+              <Alert variant={result.isUnique ? "default" : "destructive"}>
+                <div className="flex items-center gap-2">
+                  {result.isUnique ? (
+                    <CheckCircle className="h-4 w-4 text-green-500" />
+                  ) : (
+                    <AlertTriangle className="h-4 w-4" />
+                  )}
+                  <AlertDescription>
+                    {result.isUnique 
+                      ? "Контент является достаточно уникальным!" 
+                      : "Обнаружены совпадения с другими источниками."}
+                  </AlertDescription>
                 </div>
-                <h3 className="text-xl font-medium mt-4">Уникальность контента</h3>
-                <p className="text-muted-foreground mt-1">
-                  {uniquenessScore >= 80
-                    ? "Отличный результат! Большая часть вашего контента уникальна."
-                    : uniquenessScore >= 60
-                    ? "Хороший результат, но есть возможности для улучшения."
-                    : "Требуется улучшение уникальности контента."}
-                </p>
-              </div>
-
-              <Tabs defaultValue="recommendations">
-                <TabsList className="grid w-full grid-cols-2">
-                  <TabsTrigger value="recommendations">Рекомендации</TabsTrigger>
-                  <TabsTrigger value="details">Детали проверки</TabsTrigger>
-                </TabsList>
-                <TabsContent value="recommendations" className="p-4 border rounded-md mt-2">
-                  <ul className="space-y-2 list-disc pl-5">
-                    <li>Проверяйте новый контент на уникальность перед публикацией</li>
-                    <li>Переработайте страницы с низкой уникальностью</li>
-                    <li>Используйте канонические URL для страниц с похожим содержанием</li>
-                    <li>Создавайте более глубокие, информативные материалы по вашей тематике</li>
-                  </ul>
-                </TabsContent>
-                <TabsContent value="details" className="p-4 border rounded-md mt-2">
-                  <div className="space-y-4">
-                    <div>
-                      <div className="text-sm font-medium">Проверено страниц</div>
-                      <div className="text-xl">24</div>
-                    </div>
-                    <div>
-                      <div className="text-sm font-medium">Проверено текста</div>
-                      <div className="text-xl">~14,500 слов</div>
-                    </div>
-                    <div>
-                      <div className="text-sm font-medium">Похожий контент найден на</div>
-                      <div className="text-xl text-amber-500">3 страницах</div>
-                    </div>
+              </Alert>
+              
+              <div className="p-4 border rounded-md">
+                <div className="text-lg font-semibold mb-2">
+                  Уникальность: {result.score}%
+                </div>
+                
+                <div className="w-full h-3 bg-gray-200 rounded-full overflow-hidden">
+                  <div 
+                    className={`h-3 rounded-full ${
+                      result.score > 90 
+                        ? "bg-green-500" 
+                        : result.score > 70 
+                        ? "bg-yellow-500" 
+                        : "bg-red-500"
+                    }`}
+                    style={{ width: `${result.score}%` }}
+                  />
+                </div>
+                
+                {result.matches && result.matches.length > 0 && (
+                  <div className="mt-4">
+                    <h4 className="font-medium text-sm mb-2">Найденные совпадения:</h4>
+                    <ul className="space-y-2 text-sm">
+                      {result.matches.map((match, index) => (
+                        <li key={index} className="flex justify-between">
+                          <a 
+                            href={match.url} 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="text-blue-500 hover:underline truncate"
+                          >
+                            {match.url}
+                          </a>
+                          <span>{match.similarity}% совпадение</span>
+                        </li>
+                      ))}
+                    </ul>
                   </div>
-                </TabsContent>
-              </Tabs>
-            </div>
-          )}
-
-          {!isChecking && uniquenessScore === null && (
-            <div className="text-center py-10">
-              <Fingerprint className="h-16 w-16 mx-auto text-muted-foreground opacity-30 mb-4" />
-              <p className="text-muted-foreground">
-                {inputDomain 
-                  ? "Нажмите «Проверить уникальность», чтобы начать анализ" 
-                  : "Укажите домен для начала проверки"}
-              </p>
+                )}
+              </div>
             </div>
           )}
         </CardContent>
