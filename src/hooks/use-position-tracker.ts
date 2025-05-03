@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { checkPositions, KeywordPosition, PositionData } from '@/services/position/positionTracker';
 import { useProxyManager } from './use-proxy-manager';
 import { useToast } from './use-toast';
@@ -25,9 +25,24 @@ export function usePositionTracker({
   const [isLoading, setIsLoading] = useState(false);
   const [results, setResults] = useState<PositionData | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [historyUpdated, setHistoryUpdated] = useState(false);
   
   const { toast } = useToast();
   const { getRandomActiveProxy, activeProxies } = useProxyManager();
+  
+  // Слушаем события обновления истории
+  useEffect(() => {
+    const handleHistoryUpdated = () => {
+      console.log('Получено событие обновления истории позиций');
+      setHistoryUpdated(prev => !prev);
+    };
+    
+    window.addEventListener('position-history-updated', handleHistoryUpdated);
+    
+    return () => {
+      window.removeEventListener('position-history-updated', handleHistoryUpdated);
+    };
+  }, []);
   
   const trackPositions = async () => {
     if (!domain) {
@@ -135,6 +150,7 @@ export function usePositionTracker({
     results,
     error,
     trackPositions,
+    historyUpdated,
     hasActiveProxies: activeProxies.length > 0
   };
 }

@@ -8,6 +8,7 @@ export interface KeywordPosition {
   position: number;
   url?: string;
   searchEngine: string;
+  previousPosition?: number;
 }
 
 export interface PositionData {
@@ -22,6 +23,7 @@ export interface PositionData {
   previousResults?: PositionData[];
   useProxy?: boolean;
   proxyUsed?: string;
+  scanId?: string;
 }
 
 export interface PositionCheckParams {
@@ -37,6 +39,8 @@ export interface PositionCheckParams {
 
 // Моковые данные для демонстрации
 const mockSearchResults = (domain: string, keywords: string[], searchEngine: string, depth: number, useProxy: boolean = false) => {
+  console.log(`Генерация результатов поиска для ${domain} в ${searchEngine} с глубиной ${depth}, использование прокси: ${useProxy}`);
+  
   // Имитируем проверку позиций в поисковой системе
   const results: KeywordPosition[] = keywords.map(keyword => {
     // Генерируем случайную позицию для демонстрации
@@ -44,6 +48,9 @@ const mockSearchResults = (domain: string, keywords: string[], searchEngine: str
     const randomPosition = Math.random() > (useProxy ? 0.15 : 0.25) 
       ? Math.floor(Math.random() * (useProxy ? depth * 0.7 : depth)) + 1 
       : 0; // Иногда возвращаем 0, обозначая, что позиция не найдена
+    
+    // Учитываем предыдущую позицию для отображения динамики
+    const previousPosition = Math.floor(Math.random() * depth) + 1;
     
     // Генерируем URL для найденных позиций
     const url = randomPosition > 0 
@@ -53,6 +60,7 @@ const mockSearchResults = (domain: string, keywords: string[], searchEngine: str
     return {
       keyword,
       position: randomPosition,
+      previousPosition,
       url,
       searchEngine
     };
@@ -105,6 +113,9 @@ export const checkPositions = async (data: PositionCheckParams): Promise<Positio
     allResults = [...allResults, ...mailruResults];
   }
   
+  // Генерируем уникальный ID сканирования
+  const scanId = `scan-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+  
   // Формируем результирующий объект
   const result: PositionData = {
     domain,
@@ -116,7 +127,8 @@ export const checkPositions = async (data: PositionCheckParams): Promise<Positio
     depth,
     scanFrequency,
     useProxy: !!proxyUsed,
-    proxyUsed
+    proxyUsed,
+    scanId
   };
   
   // Получаем исторические данные для сравнения
@@ -151,6 +163,10 @@ const saveResultToHistory = (result: PositionData) => {
     // Сохраняем обновленную историю
     localStorage.setItem('position_history', JSON.stringify(history));
     console.log(`История сохранена: ${history.length} записей`);
+    
+    // Отправляем событие об обновлении истории
+    const event = new CustomEvent('position-history-updated', { detail: result });
+    window.dispatchEvent(event);
   } catch (error) {
     console.error('Ошибка сохранения истории:', error);
   }
