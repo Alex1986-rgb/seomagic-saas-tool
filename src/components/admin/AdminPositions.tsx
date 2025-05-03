@@ -30,6 +30,8 @@ const AdminPositions: React.FC = () => {
   const [isCheckingPositions, setIsCheckingPositions] = useState(false);
   const [domainToCheck, setDomainToCheck] = useState('');
   const [keywords, setKeywords] = useState<string[]>(['seo', 'позиции сайта', 'проверка позиций']);
+  const [bulkKeywordsInput, setBulkKeywordsInput] = useState("");
+  const [showBulkInput, setShowBulkInput] = useState(false);
   const { toast } = useToast();
   const { getRandomActiveProxy, activeProxies, isLoading: isProxyLoading } = useProxyManager();
 
@@ -82,7 +84,7 @@ const AdminPositions: React.FC = () => {
       if (!hasActiveProxies) {
         toast({
           title: "Внимание",
-          description: "Нет активных прокси. Проверка может быть менее точной или заблокирована поисковыми системами.",
+          description: "Нет активных прокси. Проверка может быть мене�� точной или заблокирована поисковыми системами.",
           variant: "default",
         });
       }
@@ -236,6 +238,49 @@ const AdminPositions: React.FC = () => {
     setKeywords(keywords.filter((_, i) => i !== index));
   };
 
+  const handleBulkKeywordsAdd = () => {
+    if (!bulkKeywordsInput.trim()) {
+      toast({
+        title: "Ошибка",
+        description: "Введите ключевые слова",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const lines = bulkKeywordsInput
+      .split(/[\n,;]+/)
+      .map(keyword => keyword.trim())
+      .filter(keyword => keyword.length > 0);
+
+    if (lines.length === 0) {
+      toast({
+        title: "Ошибка",
+        description: "Не найдено ключевых слов для добавления",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const uniqueKeywords = lines.filter(keyword => !keywords.includes(keyword));
+    
+    if (uniqueKeywords.length > 0) {
+      setKeywords([...keywords, ...uniqueKeywords]);
+      setBulkKeywordsInput("");
+      toast({
+        title: "Добавлено",
+        description: `Добавлено ${uniqueKeywords.length} ключевых слов`,
+      });
+      setShowBulkInput(false);
+    } else {
+      toast({
+        title: "Внимание",
+        description: "Все указанные ключевые слова уже добавлены",
+        variant: "default",
+      });
+    }
+  };
+
   const topDomains = getTopDomains();
   const searchEngineData = getSearchEngineDistribution();
   const checksByDay = getTotalChecksByDay();
@@ -289,31 +334,62 @@ const AdminPositions: React.FC = () => {
               />
             </div>
             <div>
-              <Label>Ключевые слова</Label>
-              <div className="flex gap-2">
-                <Input 
-                  placeholder="Добавить ключевое слово"
-                  onKeyPress={(e) => {
-                    if (e.key === 'Enter' && e.currentTarget.value) {
-                      addKeyword(e.currentTarget.value);
-                      e.currentTarget.value = '';
-                    }
-                  }}
-                />
+              <div className="flex justify-between items-center mb-1">
+                <Label>Ключевые слова</Label>
                 <Button 
                   type="button" 
-                  variant="outline"
-                  onClick={() => {
-                    const input = document.querySelector('input[placeholder="Добавить ключевое слово"]') as HTMLInputElement;
-                    if (input && input.value) {
-                      addKeyword(input.value);
-                      input.value = '';
-                    }
-                  }}
+                  variant="ghost" 
+                  size="sm"
+                  onClick={() => setShowBulkInput(!showBulkInput)}
+                  className="text-xs"
                 >
-                  Добавить
+                  {showBulkInput ? "Добавить по одному" : "Добавить списком"}
                 </Button>
               </div>
+              
+              {!showBulkInput ? (
+                <div className="flex gap-2">
+                  <Input 
+                    placeholder="Добавить ключевое слово"
+                    onKeyPress={(e) => {
+                      if (e.key === 'Enter' && e.currentTarget.value) {
+                        addKeyword(e.currentTarget.value);
+                        e.currentTarget.value = '';
+                      }
+                    }}
+                  />
+                  <Button 
+                    type="button" 
+                    variant="outline"
+                    onClick={() => {
+                      const input = document.querySelector('input[placeholder="Добавить ключевое слово"]') as HTMLInputElement;
+                      if (input && input.value) {
+                        addKeyword(input.value);
+                        input.value = '';
+                      }
+                    }}
+                  >
+                    Добавить
+                  </Button>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  <Textarea
+                    placeholder="Введите ключевые слова списком (разделяйте запятыми, точкой с запятой или новой строкой)"
+                    value={bulkKeywordsInput}
+                    onChange={(e) => setBulkKeywordsInput(e.target.value)}
+                    rows={4}
+                    className="min-h-[100px]"
+                  />
+                  <Button 
+                    type="button" 
+                    onClick={handleBulkKeywordsAdd}
+                    className="w-full"
+                  >
+                    Добавить список ключевых слов
+                  </Button>
+                </div>
+              )}
             </div>
           </div>
           
