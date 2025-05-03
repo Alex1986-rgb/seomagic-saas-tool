@@ -114,4 +114,19 @@
   .highlight-text::after {
     @apply content-[''] absolute -bottom-1 left-0 w-full h-[2px] bg-primary/60 rounded-full;
   }
+  
+  /* Alert improvements to handle contrast on interaction */
+  [data-radix-alert-dialog-overlay],
+  .alert-improvement {
+    @apply text-foreground;
+  }
+  
+  .alert.bg-amber-50:hover .text-amber-700,
+  .alert.bg-amber-50:focus .text-amber-700,
+  .alert.bg-amber-50:active .text-amber-700,
+  .alert.bg-green-50:hover .text-green-700,
+  .alert.bg-green-50:focus .text-green-700,
+  .alert.bg-green-50:active .text-green-700 {
+    @apply text-foreground/90;
+  }
 }

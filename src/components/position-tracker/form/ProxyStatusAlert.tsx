@@ -12,7 +12,7 @@ export const ProxyStatusAlert: React.FC<ProxyStatusAlertProps> = ({
 }) => {
   if (hasActiveProxies) {
     return (
-      <Alert className="bg-green-50 border-green-200">
+      <Alert className="bg-green-50 border-green-200 hover:bg-green-100">
         <CheckCircle2 className="h-4 w-4 text-green-600" />
         <AlertDescription className="text-green-700">
           Активные прокси доступны для проверки.
@@ -23,7 +23,7 @@ export const ProxyStatusAlert: React.FC<ProxyStatusAlertProps> = ({
   }
 
   return (
-    <Alert variant="destructive" className="bg-amber-50 border-amber-200">
+    <Alert variant="destructive" className="bg-amber-50 border-amber-200 hover:bg-amber-100">
       <AlertCircle className="h-4 w-4 text-amber-600" />
       <AlertDescription className="text-amber-700">
         Нет доступных прокси. Проверка будет выполнена напрямую,
