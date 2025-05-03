@@ -1,30 +1,34 @@
 
-import React, { useState } from 'react';
-import { Check, CopyCheck, Fingerprint, RefreshCw } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Fingerprint, RefreshCw } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { cn } from '@/lib/utils';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Progress } from '@/components/ui/progress';
 
 interface ContentUniquenessCheckerProps {
+  domain: string;
   className?: string;
 }
 
-export function ContentUniquenessChecker({ className }: ContentUniquenessCheckerProps) {
+export function ContentUniquenessChecker({ domain, className }: ContentUniquenessCheckerProps) {
   const [isChecking, setIsChecking] = useState(false);
-  const [content, setContent] = useState('');
-  const [url, setUrl] = useState('');
-  const [uniquenessScore, setUniquenessScore] = useState<number | null>(null);
+  const [inputDomain, setInputDomain] = useState(domain);
   const [progress, setProgress] = useState(0);
+  const [uniquenessScore, setUniquenessScore] = useState<number | null>(null);
   const { toast } = useToast();
+  
+  useEffect(() => {
+    setInputDomain(domain);
+  }, [domain]);
 
-  const checkUniqueness = async () => {
-    if (!content && !url) {
+  const checkContentUniqueness = async () => {
+    if (!inputDomain) {
       toast({
         title: "Ошибка",
-        description: "Введите текст или URL страницы для проверки уникальности",
+        description: "Пожалуйста, укажите домен для проверки",
         variant: "destructive",
       });
       return;
@@ -35,16 +39,14 @@ export function ContentUniquenessChecker({ className }: ContentUniquenessChecker
     setUniquenessScore(null);
 
     try {
-      // Здесь в реальном приложении был бы настоящий запрос к API
-      // Для демо эмулируем процесс проверки
-      for (let i = 1; i <= 10; i++) {
-        setProgress(i * 10);
-        await new Promise(resolve => setTimeout(resolve, 300));
+      // Эмуляция процесса проверки
+      for (let i = 0; i <= 100; i += 5) {
+        setProgress(i);
+        await new Promise(resolve => setTimeout(resolve, 150));
       }
       
-      // Генерируем случайную оценку уникальности для демо
-      // В реальном приложении здесь был бы результат проверки от API
-      const score = Math.floor(Math.random() * 31) + 70; // От 70 до 100%
+      // Генерируем случайный балл уникальности от 50 до 100
+      const score = Math.floor(Math.random() * 51) + 50;
       setUniquenessScore(score);
       
       toast({
@@ -52,10 +54,10 @@ export function ContentUniquenessChecker({ className }: ContentUniquenessChecker
         description: `Уникальность контента: ${score}%`,
       });
     } catch (error) {
-      console.error('Ошибка при проверке уникальности:', error);
+      console.error('Ошибка при проверке уникальности контента:', error);
       toast({
         title: "Ошибка",
-        description: "Не удалось выполнить проверку уникальности",
+        description: "Не удалось проверить уникальность контента",
         variant: "destructive",
       });
     } finally {
@@ -63,125 +65,138 @@ export function ContentUniquenessChecker({ className }: ContentUniquenessChecker
     }
   };
 
-  const getScoreColor = (score: number) => {
-    if (score >= 95) return 'text-green-500';
-    if (score >= 80) return 'text-blue-500';
-    if (score >= 60) return 'text-amber-500';
-    return 'text-red-500';
-  };
-
-  const getScoreDescription = (score: number) => {
-    if (score >= 95) return 'Высокая уникальность - отличный результат!';
-    if (score >= 80) return 'Хорошая уникальность - подходит для большинства сайтов';
-    if (score >= 60) return 'Средняя уникальность - может потребоваться доработка контента';
-    return 'Низкая уникальность - рекомендуется переработать текст';
-  };
-
   return (
-    <div className={cn("space-y-4", className)}>
+    <div className={className ? `space-y-4 ${className}` : "space-y-4"}>
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Fingerprint className="h-5 w-5 text-primary" />
-            Проверка уникальности контента
+            Уникальность контента
           </CardTitle>
           <CardDescription>
-            Анализирует текст на уникальность и выявляет возможные проблемы с дублированием контента
+            Проверяет уникальность текстового содержимого вашего сайта и выявляет возможные дубликаты
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div>
-            <label htmlFor="url" className="block text-sm font-medium mb-1">URL страницы (опционально)</label>
-            <Input
-              id="url"
-              value={url}
-              onChange={(e) => setUrl(e.target.value)}
-              placeholder="Введите URL страницы для проверки"
-              disabled={isChecking}
-            />
-            <div className="text-xs text-muted-foreground mt-1">
-              Или вставьте текст для проверки ниже
+        <CardContent>
+          <div className="flex items-end gap-2 mb-6">
+            <div className="flex-1">
+              <label htmlFor="uniqueness-domain" className="block text-sm font-medium mb-1">Домен для проверки</label>
+              <Input
+                id="uniqueness-domain"
+                value={inputDomain}
+                onChange={(e) => setInputDomain(e.target.value)}
+                placeholder="Введите домен, например example.com"
+                disabled={isChecking}
+              />
             </div>
-          </div>
-
-          <div>
-            <label htmlFor="content" className="block text-sm font-medium mb-1">Текст для проверки</label>
-            <Textarea
-              id="content"
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
-              placeholder="Вставьте текст, который нужно проверить на уникальность"
-              rows={6}
-              disabled={isChecking}
-              className="resize-none"
-            />
-          </div>
-
-          <div className="flex justify-end">
             <Button 
-              onClick={checkUniqueness} 
-              disabled={isChecking || (!content && !url)}
+              onClick={checkContentUniqueness} 
+              disabled={isChecking || !inputDomain}
               className="gap-2"
             >
               {isChecking ? (
                 <RefreshCw className="h-4 w-4 animate-spin" />
               ) : (
-                <CopyCheck className="h-4 w-4" />
+                <Fingerprint className="h-4 w-4" />
               )}
-              {isChecking ? 'Проверяем...' : 'Проверить уникальность'}
+              {isChecking ? 'Проверка...' : 'Проверить уникальность'}
             </Button>
           </div>
 
           {isChecking && (
-            <div className="mt-4">
-              <div className="text-sm mb-1">Прогресс проверки: {progress}%</div>
-              <div className="w-full h-2 bg-secondary rounded-full">
-                <div
-                  className="h-2 bg-primary rounded-full"
-                  style={{ width: `${progress}%` }}
-                />
-              </div>
+            <div className="my-4">
+              <div className="text-sm mb-1">Анализ контента: {progress}%</div>
+              <Progress value={progress} className="h-2" />
             </div>
           )}
 
-          {uniquenessScore !== null && (
-            <div className="mt-4 border rounded-lg p-4">
-              <div className="text-lg font-semibold mb-2">Результат проверки:</div>
-              <div className="flex items-center gap-3 mb-2">
-                <div 
-                  className={`text-2xl font-bold ${getScoreColor(uniquenessScore)}`}
-                >
-                  {uniquenessScore}%
+          {uniquenessScore !== null && !isChecking && (
+            <div className="space-y-6">
+              <div className="text-center">
+                <div className="relative inline-block">
+                  <svg className="w-32 h-32">
+                    <circle
+                      className="text-muted stroke-current"
+                      strokeWidth="8"
+                      stroke="currentColor"
+                      fill="transparent"
+                      r="58"
+                      cx="64"
+                      cy="64"
+                    />
+                    <circle
+                      className={`${
+                        uniquenessScore >= 80
+                          ? "text-green-500"
+                          : uniquenessScore >= 60
+                          ? "text-yellow-500"
+                          : "text-red-500"
+                      } stroke-current`}
+                      strokeWidth="8"
+                      strokeLinecap="round"
+                      stroke="currentColor"
+                      fill="transparent"
+                      r="58"
+                      cx="64"
+                      cy="64"
+                      strokeDasharray={`${uniquenessScore * 3.6} 1000`}
+                    />
+                  </svg>
+                  <div className="absolute inset-0 flex items-center justify-center text-2xl font-bold">
+                    {uniquenessScore}%
+                  </div>
                 </div>
-                <div className="text-sm">уникальности</div>
+                <h3 className="text-xl font-medium mt-4">Уникальность контента</h3>
+                <p className="text-muted-foreground mt-1">
+                  {uniquenessScore >= 80
+                    ? "Отличный результат! Большая часть вашего контента уникальна."
+                    : uniquenessScore >= 60
+                    ? "Хороший результат, но есть возможности для улучшения."
+                    : "Требуется улучшение уникальности контента."}
+                </p>
               </div>
-              <div className="text-sm text-muted-foreground">{getScoreDescription(uniquenessScore)}</div>
-              
-              <div className="mt-4">
-                <div className="text-sm font-medium mb-1">Рекомендации:</div>
-                <ul className="text-sm space-y-1">
-                  {uniquenessScore < 80 && (
-                    <li className="flex items-start gap-2">
-                      <Check className="h-4 w-4 mt-0.5 text-amber-500" />
-                      <span>Переработайте наименее уникальные части текста</span>
-                    </li>
-                  )}
-                  {uniquenessScore < 60 && (
-                    <li className="flex items-start gap-2">
-                      <Check className="h-4 w-4 mt-0.5 text-amber-500" />
-                      <span>Добавьте больше оригинального содержания</span>
-                    </li>
-                  )}
-                  <li className="flex items-start gap-2">
-                    <Check className="h-4 w-4 mt-0.5 text-green-500" />
-                    <span>Используйте уникальные заголовки и описания</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <Check className="h-4 w-4 mt-0.5 text-green-500" />
-                    <span>Регулярно проверяйте контент на уникальность</span>
-                  </li>
-                </ul>
-              </div>
+
+              <Tabs defaultValue="recommendations">
+                <TabsList className="grid w-full grid-cols-2">
+                  <TabsTrigger value="recommendations">Рекомендации</TabsTrigger>
+                  <TabsTrigger value="details">Детали проверки</TabsTrigger>
+                </TabsList>
+                <TabsContent value="recommendations" className="p-4 border rounded-md mt-2">
+                  <ul className="space-y-2 list-disc pl-5">
+                    <li>Проверяйте новый контент на уникальность перед публикацией</li>
+                    <li>Переработайте страницы с низкой уникальностью</li>
+                    <li>Используйте канонические URL для страниц с похожим содержанием</li>
+                    <li>Создавайте более глубокие, информативные материалы по вашей тематике</li>
+                  </ul>
+                </TabsContent>
+                <TabsContent value="details" className="p-4 border rounded-md mt-2">
+                  <div className="space-y-4">
+                    <div>
+                      <div className="text-sm font-medium">Проверено страниц</div>
+                      <div className="text-xl">24</div>
+                    </div>
+                    <div>
+                      <div className="text-sm font-medium">Проверено текста</div>
+                      <div className="text-xl">~14,500 слов</div>
+                    </div>
+                    <div>
+                      <div className="text-sm font-medium">Похожий контент найден на</div>
+                      <div className="text-xl text-amber-500">3 страницах</div>
+                    </div>
+                  </div>
+                </TabsContent>
+              </Tabs>
+            </div>
+          )}
+
+          {!isChecking && uniquenessScore === null && (
+            <div className="text-center py-10">
+              <Fingerprint className="h-16 w-16 mx-auto text-muted-foreground opacity-30 mb-4" />
+              <p className="text-muted-foreground">
+                {inputDomain 
+                  ? "Нажмите «Проверить уникальность», чтобы начать анализ" 
+                  : "Укажите домен для начала проверки"}
+              </p>
             </div>
           )}
         </CardContent>
