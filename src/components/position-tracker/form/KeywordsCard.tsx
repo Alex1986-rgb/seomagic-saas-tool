@@ -8,6 +8,7 @@ interface KeywordsCardProps {
   inputKeyword: string;
   setInputKeyword: (value: string) => void;
   addKeyword: (keyword?: string) => void;
+  addMultipleKeywords?: (keywords: string[]) => void;
   removeKeyword: (keyword: string) => void;
   keywords: string[];
   handleBulkKeywords: (text: string) => void;
@@ -19,6 +20,7 @@ export const KeywordsCard: React.FC<KeywordsCardProps> = ({
   inputKeyword,
   setInputKeyword,
   addKeyword,
+  addMultipleKeywords,
   removeKeyword,
   keywords,
   handleBulkKeywords,
@@ -38,6 +40,7 @@ export const KeywordsCard: React.FC<KeywordsCardProps> = ({
           inputKeyword={inputKeyword}
           setInputKeyword={setInputKeyword}
           addKeyword={addKeyword}
+          addMultipleKeywords={addMultipleKeywords}
           handleBulkKeywords={handleBulkKeywords}
           handleFileUpload={handleFileUpload}
           isLoading={isLoading}

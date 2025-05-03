@@ -28,6 +28,7 @@ export const usePositionTrackerForm = (onSearchComplete?: Function) => {
     inputKeyword,
     setInputKeyword,
     addKeyword,
+    addMultipleKeywords,
     removeKeyword,
     setKeywords
   } = useKeywordsManager();
@@ -94,6 +95,7 @@ export const usePositionTrackerForm = (onSearchComplete?: Function) => {
     isLoading,
     setInputKeyword,
     addKeyword,
+    addMultipleKeywords,
     removeKeyword,
     handleBulkKeywords,
     handleFileUpload,

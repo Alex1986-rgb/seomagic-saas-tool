@@ -33,6 +33,36 @@ export const useKeywordsManager = () => {
     setInputKeyword('');
   };
 
+  const addMultipleKeywords = (newKeywords: string[]) => {
+    if (newKeywords.length === 0) {
+      toast({
+        title: "Ошибка",
+        description: "Список ключевых слов пуст",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const uniqueKeywords = newKeywords.filter(kw => !keywords.includes(kw));
+    
+    if (uniqueKeywords.length === 0) {
+      toast({
+        title: "Предупреждение",
+        description: "Все указанные ключевые слова уже добавлены",
+        variant: "default",
+      });
+      return;
+    }
+
+    setKeywords([...keywords, ...uniqueKeywords]);
+    setInputKeyword('');
+    
+    toast({
+      title: "Добавлено",
+      description: `Добавлено ${uniqueKeywords.length} ключевых слов`,
+    });
+  };
+
   const removeKeyword = (keyword: string) => {
     setKeywords(keywords.filter(k => k !== keyword));
   };
@@ -46,6 +76,7 @@ export const useKeywordsManager = () => {
     inputKeyword,
     setInputKeyword,
     addKeyword,
+    addMultipleKeywords,
     removeKeyword,
     clearKeywords,
     setKeywords

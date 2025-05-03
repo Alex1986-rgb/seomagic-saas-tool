@@ -20,6 +20,7 @@ export function PositionTrackerForm({ onSearchComplete }: PositionTrackerFormPro
     isLoading,
     setInputKeyword,
     addKeyword,
+    addMultipleKeywords,
     removeKeyword,
     handleBulkKeywords,
     handleFileUpload,
@@ -45,6 +46,7 @@ export function PositionTrackerForm({ onSearchComplete }: PositionTrackerFormPro
             inputKeyword={inputKeyword}
             setInputKeyword={setInputKeyword}
             addKeyword={addKeyword}
+            addMultipleKeywords={addMultipleKeywords}
             removeKeyword={removeKeyword}
             keywords={keywords}
             handleBulkKeywords={handleBulkKeywords}
