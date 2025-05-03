@@ -17,6 +17,13 @@ interface ContentUniquenessCheckerProps {
   className?: string;
 }
 
+interface PageUniquenessData {
+  url: string;
+  uniqueness: number;
+  wordCount: number;
+  matches: number;
+}
+
 export const ContentUniquenessChecker: React.FC<ContentUniquenessCheckerProps> = ({ 
   domain = '',
   className = ''
@@ -25,7 +32,7 @@ export const ContentUniquenessChecker: React.FC<ContentUniquenessCheckerProps> =
   const [isChecking, setIsChecking] = useState(false);
   const [progress, setProgress] = useState(0);
   const [activeTab, setActiveTab] = useState('results');
-  const [results, setResults] = useState<any[]>([]);
+  const [results, setResults] = useState<PageUniquenessData[]>([]);
   const { toast } = useToast();
   const { getRandomActiveProxy, activeProxies } = useProxyManager();
   
@@ -47,6 +54,7 @@ export const ContentUniquenessChecker: React.FC<ContentUniquenessCheckerProps> =
     }
     
     try {
+      console.log('Запуск проверки уникальности для домена:', inputDomain);
       setIsChecking(true);
       setProgress(0);
       
@@ -59,6 +67,8 @@ export const ContentUniquenessChecker: React.FC<ContentUniquenessCheckerProps> =
           description: "Нет активных прокси. Проверка может быть менее точной.",
           variant: "default",
         });
+      } else if (proxy) {
+        console.log(`Используем прокси для проверки: ${proxy.ip}:${proxy.port}`);
       }
       
       // Mock the checking progress
@@ -67,6 +77,7 @@ export const ContentUniquenessChecker: React.FC<ContentUniquenessCheckerProps> =
         currentProgress += Math.random() * 15;
         if (currentProgress > 100) currentProgress = 100;
         setProgress(Math.round(currentProgress));
+        console.log(`Прогресс проверки уникальности: ${Math.round(currentProgress)}%`);
         
         if (currentProgress >= 100) {
           clearInterval(progressInterval);
@@ -80,6 +91,7 @@ export const ContentUniquenessChecker: React.FC<ContentUniquenessCheckerProps> =
             { url: `https://${inputDomain}/pricing`, uniqueness: 91, wordCount: 1500, matches: 2 },
           ];
           
+          console.log('Результаты проверки уникальности:', mockResults);
           setResults(mockResults);
           setActiveTab('results');
           setIsChecking(false);

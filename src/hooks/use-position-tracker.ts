@@ -61,6 +61,8 @@ export function usePositionTracker({
           description: "Нет активных прокси. Проверка может быть менее точной.",
           variant: "default",
         });
+      } else {
+        console.log(`Доступно ${activeProxies.length} активных прокси для проверки позиций`);
       }
       
       const data = {
@@ -78,6 +80,13 @@ export function usePositionTracker({
       const positionData = await checkPositions(data);
       console.log('Получены результаты проверки:', positionData);
       setResults(positionData);
+      
+      // Выводим информацию по найденным позициям
+      const inTop10 = positionData.keywords.filter(k => k.position > 0 && k.position <= 10).length;
+      const inTop30 = positionData.keywords.filter(k => k.position > 0 && k.position <= 30).length;
+      const notFound = positionData.keywords.filter(k => k.position === 0).length;
+      
+      console.log(`Статистика позиций: TOP-10: ${inTop10}, TOP-30: ${inTop30}, не найдено: ${notFound}`);
       
       toast({
         title: "Готово",

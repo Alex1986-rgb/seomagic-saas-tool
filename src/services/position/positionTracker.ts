@@ -63,6 +63,8 @@ const mockSearchResults = (domain: string, keywords: string[], searchEngine: str
 
 // Функция проверки позиций
 export const checkPositions = async (data: PositionCheckParams): Promise<PositionData> => {
+  console.log('checkPositions вызван с параметрами:', JSON.stringify(data, null, 2));
+  
   // Эмулируем задержку, как будто выполняется реальный запрос
   await new Promise(resolve => setTimeout(resolve, 2000));
   
@@ -86,16 +88,19 @@ export const checkPositions = async (data: PositionCheckParams): Promise<Positio
   
   // Проверяем позиции в выбранных поисковых системах
   if (searchEngine === 'all' || searchEngine === 'google') {
+    console.log(`Проверка позиций в Google для домена ${domain}...`);
     const googleResults = mockSearchResults(domain, keywords, 'google', depth, !!proxyUsed);
     allResults = [...allResults, ...googleResults];
   }
   
   if (searchEngine === 'all' || searchEngine === 'yandex') {
+    console.log(`Проверка позиций в Яндексе для домена ${domain}...`);
     const yandexResults = mockSearchResults(domain, keywords, 'yandex', depth, !!proxyUsed);
     allResults = [...allResults, ...yandexResults];
   }
   
   if (searchEngine === 'all' || searchEngine === 'mailru') {
+    console.log(`Проверка позиций в Mail.ru для домена ${domain}...`);
     const mailruResults = mockSearchResults(domain, keywords, 'mailru', depth, !!proxyUsed);
     allResults = [...allResults, ...mailruResults];
   }
@@ -118,10 +123,12 @@ export const checkPositions = async (data: PositionCheckParams): Promise<Positio
   const history = await getHistoricalData(domain);
   if (history.length > 0) {
     result.previousResults = [history[0]];
+    console.log(`Получены исторические данные для сравнения: ${history.length} записей`);
   }
   
   // Сохраняем результат в историю (в реальном приложении здесь был бы API-вызов)
   saveResultToHistory(result);
+  console.log(`Результаты проверки сохранены в историю: ${allResults.length} ключевых слов проверено`);
   
   return result;
 };
@@ -143,6 +150,7 @@ const saveResultToHistory = (result: PositionData) => {
     
     // Сохраняем обновленную историю
     localStorage.setItem('position_history', JSON.stringify(history));
+    console.log(`История сохранена: ${history.length} записей`);
   } catch (error) {
     console.error('Ошибка сохранения истории:', error);
   }

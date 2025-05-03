@@ -54,6 +54,7 @@ const AdminPositions = () => {
     }
   };
 
+  // Функция проверки позиций
   const handleCheckPositions = async () => {
     if (!domainToCheck) {
       toast({
@@ -86,6 +87,9 @@ const AdminPositions = () => {
         });
       }
 
+      console.log(`Начало проверки позиций для домена ${domainToCheck} с ${keywords.length} ключевыми словами`);
+      console.log(`Использование прокси: ${hasActiveProxies ? 'Да' : 'Нет'}`);
+
       const results = await checkPositions({
         domain: domainToCheck,
         keywords,
@@ -94,6 +98,8 @@ const AdminPositions = () => {
         scanFrequency: 'daily',
         useProxy: hasActiveProxies
       });
+
+      console.log(`Проверка позиций завершена. Получены результаты для ${results.keywords.length} ключевых слов`);
 
       toast({
         title: "Проверка завершена",
