@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Bar, BarChart, CartesianGrid, Legend, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { Search, Users, Download, ArrowDown, ArrowUp, History, FileText, Webhook, Link2Off, CopyX, FolderTree } from 'lucide-react';
@@ -240,6 +239,7 @@ const AdminPositions: React.FC = () => {
     setKeywords(keywords.filter((_, i) => i !== index));
   };
 
+  // Обновим функцию для добавления ключевых слов списком
   const handleBulkKeywordsAdd = () => {
     if (!bulkKeywordsInput.trim()) {
       toast({
@@ -250,6 +250,7 @@ const AdminPositions: React.FC = () => {
       return;
     }
 
+    // Разделяем ввод по переносам строк, запятым или точкам с запятой
     const lines = bulkKeywordsInput
       .split(/[\n,;]+/)
       .map(keyword => keyword.trim())
@@ -353,7 +354,7 @@ const AdminPositions: React.FC = () => {
                 <div className="flex gap-2">
                   <Input 
                     placeholder="Добавить ключевое слово"
-                    onKeyPress={(e) => {
+                    onKeyDown={(e) => {
                       if (e.key === 'Enter' && e.currentTarget.value) {
                         addKeyword(e.currentTarget.value);
                         e.currentTarget.value = '';

@@ -54,7 +54,7 @@ export const KeywordTabs: React.FC<KeywordTabsProps> = ({
 
       <TabsContent value="bulk" className="space-y-4">
         <Textarea
-          placeholder="Введите ключевые слова, по одному на строку"
+          placeholder="Введите ключевые слова, по одному на строку, или разделите запятыми или точкой с запятой"
           value={bulkKeywords}
           onChange={(e) => setBulkKeywords(e.target.value)}
           disabled={isLoading}
