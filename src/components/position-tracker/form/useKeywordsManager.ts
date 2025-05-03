@@ -7,8 +7,8 @@ export const useKeywordsManager = () => {
   const [inputKeyword, setInputKeyword] = useState('');
   const { toast } = useToast();
 
-  const addKeyword = () => {
-    const trimmedKeyword = inputKeyword.trim();
+  const addKeyword = (keyword: string) => {
+    const trimmedKeyword = keyword.trim();
     if (!trimmedKeyword) {
       toast({
         title: "Ошибка",
@@ -20,7 +20,7 @@ export const useKeywordsManager = () => {
 
     if (keywords.includes(trimmedKeyword)) {
       toast({
-        title: "Внимание",
+        title: "Предупреждение",
         description: "Это ключевое слово уже добавлено",
         variant: "default",
       });
@@ -31,10 +31,12 @@ export const useKeywordsManager = () => {
     setInputKeyword('');
   };
 
-  const removeKeyword = (index: number) => {
-    const newKeywords = [...keywords];
-    newKeywords.splice(index, 1);
-    setKeywords(newKeywords);
+  const removeKeyword = (keyword: string) => {
+    setKeywords(keywords.filter(k => k !== keyword));
+  };
+
+  const clearKeywords = () => {
+    setKeywords([]);
   };
 
   return {
@@ -43,6 +45,7 @@ export const useKeywordsManager = () => {
     setInputKeyword,
     addKeyword,
     removeKeyword,
-    setKeywords,
+    clearKeywords,
+    setKeywords
   };
 };

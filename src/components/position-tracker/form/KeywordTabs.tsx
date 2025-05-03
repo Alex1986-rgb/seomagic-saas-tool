@@ -1,19 +1,19 @@
 
 import React from 'react';
-import { Upload } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { FormDescription } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { Upload } from "lucide-react";
 import { KeywordInput } from './KeywordInput';
 
 interface KeywordTabsProps {
   inputKeyword: string;
   setInputKeyword: (value: string) => void;
   addKeyword: () => void;
-  handleBulkKeywords: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
-  handleFileUpload: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  handleBulkKeywords: (text: string) => void;
+  handleFileUpload: (event: React.ChangeEvent<HTMLInputElement>) => void;
+  isLoading: boolean;
 }
 
 export const KeywordTabs: React.FC<KeywordTabsProps> = ({
@@ -22,53 +22,65 @@ export const KeywordTabs: React.FC<KeywordTabsProps> = ({
   addKeyword,
   handleBulkKeywords,
   handleFileUpload,
+  isLoading
 }) => {
+  const [bulkKeywords, setBulkKeywords] = React.useState("");
+  const [activeTab, setActiveTab] = React.useState("single");
+
+  const handleBulkSubmit = () => {
+    handleBulkKeywords(bulkKeywords);
+    setBulkKeywords("");
+  };
+
   return (
-    <Tabs defaultValue="single" className="w-full">
-      <TabsList>
-        <TabsTrigger value="single">Добавление по одному</TabsTrigger>
-        <TabsTrigger value="bulk">Массовое добавление</TabsTrigger>
-        <TabsTrigger value="file">Загрузка файла</TabsTrigger>
+    <Tabs value={activeTab} onValueChange={setActiveTab}>
+      <TabsList className="grid grid-cols-3 mb-4">
+        <TabsTrigger value="single">По одному</TabsTrigger>
+        <TabsTrigger value="bulk">Списком</TabsTrigger>
+        <TabsTrigger value="file">Из файла</TabsTrigger>
       </TabsList>
 
       <TabsContent value="single" className="space-y-4">
-        <KeywordInput
+        <KeywordInput 
           inputKeyword={inputKeyword}
           setInputKeyword={setInputKeyword}
           addKeyword={addKeyword}
         />
-        <FormDescription>
-          Введите ключевое слово и нажмите + или Enter для добавления
-        </FormDescription>
       </TabsContent>
 
-      <TabsContent value="bulk">
+      <TabsContent value="bulk" className="space-y-4">
         <Textarea
-          placeholder="Введите ключевые слова, каждое с новой строки"
-          className="h-24"
-          onChange={handleBulkKeywords}
+          placeholder="Введите ключевые слова, по одному на строку"
+          value={bulkKeywords}
+          onChange={(e) => setBulkKeywords(e.target.value)}
+          disabled={isLoading}
+          rows={5}
         />
-        <FormDescription className="mt-2">
-          Введите список ключевых слов, каждое с новой строки
-        </FormDescription>
+        <Button
+          type="button"
+          onClick={handleBulkSubmit}
+          disabled={isLoading || !bulkKeywords.trim()}
+        >
+          Добавить список
+        </Button>
       </TabsContent>
 
       <TabsContent value="file" className="space-y-4">
-        <div className="flex flex-col gap-4">
-          <div className="flex gap-2">
+        <div className="border rounded-md p-8 text-center">
+          <div className="flex flex-col items-center gap-4">
+            <Upload className="h-10 w-10 text-muted-foreground" />
+            <p>
+              Перетащите файл TXT или CSV с ключевыми словами или нажмите
+              чтобы выбрать
+            </p>
             <Input
               type="file"
               accept=".txt,.csv"
+              className="max-w-xs"
               onChange={handleFileUpload}
-              className="flex-1"
+              disabled={isLoading}
             />
-            <Button type="button" variant="outline" size="icon">
-              <Upload className="h-4 w-4" />
-            </Button>
           </div>
-          <FormDescription>
-            Загрузите файл с ключевыми словами (.txt или .csv, каждое слово с новой строки)
-          </FormDescription>
         </div>
       </TabsContent>
     </Tabs>
