@@ -38,15 +38,29 @@ const AdminPositions: React.FC = () => {
 
   useEffect(() => {
     loadHistory();
+    
+    // Listen for position history updates
+    const handleHistoryUpdated = () => {
+      console.log('History updated event detected, reloading history data');
+      loadHistory();
+    };
+    
+    window.addEventListener('position-history-updated', handleHistoryUpdated);
+    
+    return () => {
+      window.removeEventListener('position-history-updated', handleHistoryUpdated);
+    };
   }, []);
 
   const loadHistory = async () => {
     try {
       setIsLoading(true);
+      console.log('Loading position check history');
       const data = await getPositionHistory();
+      console.log(`Loaded ${data.length} position history records`);
       setHistory(data);
     } catch (error) {
-      console.error('Ошибка загрузки истории:', error);
+      console.error('Error loading history:', error);
       toast({
         title: "Ошибка загрузки данных",
         description: "Не удалось загрузить историю проверок позиций",
@@ -85,7 +99,7 @@ const AdminPositions: React.FC = () => {
       if (!hasActiveProxies) {
         toast({
           title: "Внимание",
-          description: "Нет активных прокси. Проверка может быть мене�� точной или заблокирована поисковыми системами.",
+          description: "Нет активных прокси. Проверка может быть менее точной или заблокирована поисковыми системами.",
           variant: "default",
         });
       }

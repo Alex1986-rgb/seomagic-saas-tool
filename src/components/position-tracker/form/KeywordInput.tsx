@@ -1,9 +1,8 @@
 
-import React, { useState } from 'react';
-import { Plus } from 'lucide-react';
+import React from 'react';
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
+import { PlusCircle } from 'lucide-react';
 
 interface KeywordInputProps {
   inputKeyword: string;
@@ -16,82 +15,66 @@ export const KeywordInput: React.FC<KeywordInputProps> = ({
   inputKeyword,
   setInputKeyword,
   addKeyword,
-  addMultipleKeywords
+  addMultipleKeywords,
 }) => {
-  const [isMultiline, setIsMultiline] = useState(false);
-
-  const handleAddKeyword = () => {
-    if (!isMultiline) {
-      // Add single keyword
-      addKeyword(inputKeyword);
-    } else if (addMultipleKeywords && inputKeyword) {
-      // Split by newlines, commas, or semicolons and filter empty entries
-      const keywordList = inputKeyword
-        .split(/[\n,;]+/)
-        .map(kw => kw.trim())
-        .filter(kw => kw.length > 0);
-      
-      if (keywordList.length > 0) {
-        addMultipleKeywords(keywordList);
+  
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      if (inputKeyword.trim()) {
+        // Check if the input contains multiple keywords (comma or semicolon separated)
+        if (inputKeyword.includes(',') || inputKeyword.includes(';')) {
+          handleMultipleKeywords();
+        } else {
+          addKeyword(inputKeyword);
+          setInputKeyword('');
+        }
       }
     }
   };
-
-  const toggleInputMode = () => {
-    setIsMultiline(!isMultiline);
-    setInputKeyword('');
+  
+  // Handle comma or semicolon separated keywords
+  const handleMultipleKeywords = () => {
+    if (!addMultipleKeywords) return;
+    
+    const keywords = inputKeyword
+      .split(/[,;]+/)
+      .map(k => k.trim())
+      .filter(k => k !== '');
+      
+    if (keywords.length > 0) {
+      addMultipleKeywords(keywords);
+      setInputKeyword('');
+    }
   };
 
   return (
-    <div className="space-y-2">
-      <div className="flex justify-end">
-        <Button 
-          type="button" 
-          variant="ghost" 
-          size="sm" 
-          onClick={toggleInputMode}
-          className="text-xs"
-        >
-          {isMultiline ? "Одно ключевое слово" : "Несколько ключевых слов"}
-        </Button>
+    <div className="flex items-center gap-2">
+      <div className="flex-1">
+        <Input 
+          placeholder="Введите ключевое слово"
+          value={inputKeyword}
+          onChange={(e) => setInputKeyword(e.target.value)}
+          onKeyDown={handleKeyDown}
+        />
       </div>
-
-      <div className="flex gap-2">
-        {!isMultiline ? (
-          <Input
-            placeholder="Введите ключевое слово"
-            value={inputKeyword}
-            onChange={(e) => setInputKeyword(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') {
-                e.preventDefault();
-                handleAddKeyword();
-              }
-            }}
-          />
-        ) : (
-          <Textarea
-            placeholder="Введите несколько ключевых слов (разделяйте запятыми, точкой с запятой или новой строкой)"
-            value={inputKeyword}
-            onChange={(e) => setInputKeyword(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' && e.ctrlKey) {
-                e.preventDefault();
-                handleAddKeyword();
-              }
-            }}
-            className="min-h-[100px]"
-          />
-        )}
-        <Button type="button" onClick={handleAddKeyword} size="icon">
-          <Plus className="h-4 w-4" />
-        </Button>
-      </div>
-      {isMultiline && (
-        <p className="text-xs text-muted-foreground">
-          Нажмите Ctrl+Enter или кнопку + для добавления всех ключевых слов
-        </p>
-      )}
+      <Button
+        type="button"
+        onClick={() => {
+          if (inputKeyword.trim()) {
+            if (inputKeyword.includes(',') || inputKeyword.includes(';')) {
+              handleMultipleKeywords();
+            } else {
+              addKeyword(inputKeyword);
+              setInputKeyword('');
+            }
+          }
+        }}
+        disabled={!inputKeyword.trim()}
+      >
+        <PlusCircle className="h-4 w-4 mr-2" />
+        Добавить
+      </Button>
     </div>
   );
 };
