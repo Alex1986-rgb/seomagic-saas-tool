@@ -1,28 +1,86 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Progress } from "@/components/ui/progress";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { RefreshCw, Shield, TrashIcon, Download, FileText } from 'lucide-react';
 import ProxySourcesManager from './ProxySourcesManager';
 import { useProxyManager } from '@/hooks/use-proxy-manager';
+import ProxyList from './ProxyList';
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 
 const ProxyManager: React.FC = () => {
   const [activeTab, setActiveTab] = useState('sources');
+  const [testUrl, setTestUrl] = useState('https://api.ipify.org/');
+  const [exportFormat, setExportFormat] = useState('text');
+  const [importText, setImportText] = useState('');
+  
   const { 
     proxies, 
     activeProxies, 
     collectProxies, 
     testProxies, 
     importProxies, 
+    proxyManager,
     isLoading, 
     progress, 
-    statusMessage 
+    statusMessage,
+    clearBeforeCollect,
+    setClearBeforeCollect
   } = useProxyManager({ initialTestUrl: 'https://api.ipify.org/' });
+
+  const handleClearProxies = () => {
+    if (window.confirm('Вы уверены, что хотите удалить все прокси?')) {
+      proxyManager.clearAllProxies();
+    }
+  };
+
+  const handleImport = () => {
+    if (importText.trim()) {
+      importProxies(importText);
+      setImportText('');
+    }
+  };
+
+  const handleExport = () => {
+    // Подготовка прокси для экспорта
+    const allProxies = proxyManager.getAllProxies();
+    if (allProxies.length === 0) {
+      alert('Нет прокси для экспорта');
+      return;
+    }
+
+    let exportData = '';
+    if (exportFormat === 'text') {
+      exportData = allProxies.map(p => `${p.ip}:${p.port}`).join('\n');
+    } else if (exportFormat === 'json') {
+      exportData = JSON.stringify(allProxies, null, 2);
+    }
+
+    // Создание и скачивание файла
+    const blob = new Blob([exportData], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `proxies.${exportFormat === 'json' ? 'json' : 'txt'}`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
 
   return (
     <div className="space-y-4">
       <Tabs defaultValue={activeTab} onValueChange={setActiveTab}>
-        <TabsList>
+        <TabsList className="mb-4">
           <TabsTrigger value="sources">Источники прокси</TabsTrigger>
           <TabsTrigger value="proxies">Список прокси ({proxies.length})</TabsTrigger>
+          <TabsTrigger value="actions">Управление</TabsTrigger>
           <TabsTrigger value="stats">Статистика</TabsTrigger>
         </TabsList>
         
@@ -52,10 +110,152 @@ const ProxyManager: React.FC = () => {
         </TabsContent>
         
         <TabsContent value="proxies">
+          <ProxyList proxies={proxies} />
+        </TabsContent>
+        
+        <TabsContent value="actions">
           <Card className="p-4">
-            <h3 className="font-medium mb-2">Управление прокси</h3>
-            {/* Proxy management UI would go here */}
-            <p className="text-sm text-muted-foreground">Добавляйте и настраивайте прокси в разделе "Источники прокси".</p>
+            <h3 className="text-lg font-medium mb-4">Управление прокси</h3>
+            
+            <div className="space-y-6">
+              {/* Сбор и тестирование прокси */}
+              <div className="space-y-4">
+                <h4 className="font-medium">Сбор и проверка прокси</h4>
+                
+                <div className="flex flex-col space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="clear-before-collect">Очищать список перед сбором</Label>
+                    <Switch 
+                      id="clear-before-collect" 
+                      checked={clearBeforeCollect}
+                      onCheckedChange={setClearBeforeCollect}
+                    />
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Если включено, старые прокси будут удалены перед сбором новых
+                  </p>
+                </div>
+                
+                <div className="flex flex-wrap gap-2">
+                  <Button
+                    variant="outline"
+                    onClick={() => collectProxies(clearBeforeCollect)}
+                    disabled={isLoading}
+                    className="flex-1"
+                  >
+                    <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
+                    {clearBeforeCollect ? 'Очистить и собрать прокси' : 'Собрать новые прокси'}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => testProxies(proxyManager.getAllProxies(), testUrl)}
+                    disabled={isLoading}
+                    className="flex-1"
+                  >
+                    <Shield className="h-4 w-4 mr-2" />
+                    Проверить прокси
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={handleClearProxies}
+                    disabled={isLoading}
+                    className="flex-1 text-red-500 hover:text-red-600"
+                  >
+                    <TrashIcon className="h-4 w-4 mr-2" />
+                    Очистить все прокси
+                  </Button>
+                </div>
+                
+                <div>
+                  <Label>URL для тестирования прокси</Label>
+                  <Input 
+                    value={testUrl}
+                    onChange={(e) => setTestUrl(e.target.value)}
+                    placeholder="https://api.ipify.org/"
+                    className="mt-1"
+                  />
+                  <p className="text-xs text-muted-foreground mt-1">
+                    URL для проверки работоспособности прокси
+                  </p>
+                </div>
+                
+                {isLoading && progress > 0 && (
+                  <div className="space-y-2 my-4">
+                    <Progress value={progress} className="w-full h-2" />
+                    <p className="text-sm text-center">{statusMessage}</p>
+                  </div>
+                )}
+                
+                {activeProxies.length === 0 && !isLoading && (
+                  <Alert variant="destructive" className="mt-2">
+                    <AlertDescription>
+                      Нет активных прокси. Рекомендуется собрать и проверить прокси для корректной работы сервиса.
+                    </AlertDescription>
+                  </Alert>
+                )}
+                
+                {activeProxies.length > 0 && activeProxies.length < 100 && !isLoading && (
+                  <Alert className="mt-2 border-yellow-200 bg-yellow-50 text-yellow-800">
+                    <AlertDescription>
+                      Рекомендуется собрать больше прокси для лучшей производительности. Текущее количество ({activeProxies.length}) может быть недостаточным.
+                    </AlertDescription>
+                  </Alert>
+                )}
+              </div>
+              
+              <div className="border-t pt-4">
+                <h4 className="font-medium mb-4">Импорт и экспорт прокси</h4>
+                
+                <div className="space-y-4">
+                  {/* Импорт прокси */}
+                  <div>
+                    <Label>Импорт прокси</Label>
+                    <div className="flex gap-2 mt-1">
+                      <textarea 
+                        className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                        value={importText}
+                        onChange={(e) => setImportText(e.target.value)}
+                        placeholder="ip:port (каждый прокси с новой строки)"
+                        rows={4}
+                      />
+                    </div>
+                    <Button
+                      className="mt-2"
+                      onClick={handleImport}
+                      disabled={!importText.trim()}
+                    >
+                      <FileText className="h-4 w-4 mr-2" />
+                      Импортировать прокси
+                    </Button>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Формат: ip:port, каждый прокси с новой строки
+                    </p>
+                  </div>
+                  
+                  {/* Экспорт прокси */}
+                  <div>
+                    <Label>Экспорт прокси</Label>
+                    <div className="flex gap-2 mt-1">
+                      <select
+                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                        value={exportFormat}
+                        onChange={(e) => setExportFormat(e.target.value)}
+                      >
+                        <option value="text">Текстовый формат (ip:port)</option>
+                        <option value="json">JSON формат</option>
+                      </select>
+                      <Button
+                        onClick={handleExport}
+                        disabled={proxies.length === 0}
+                      >
+                        <Download className="h-4 w-4 mr-2" />
+                        Экспортировать
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
           </Card>
         </TabsContent>
         
