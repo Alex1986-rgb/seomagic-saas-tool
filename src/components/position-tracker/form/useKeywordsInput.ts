@@ -9,8 +9,7 @@ interface UseKeywordsInputProps {
 export const useKeywordsInput = ({ keywords, setKeywords }: UseKeywordsInputProps) => {
   const { toast } = useToast();
 
-  const handleBulkKeywords = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    const text = e.target.value.trim();
+  const handleBulkKeywords = (text: string) => {
     if (!text) {
       toast({
         title: "Ошибка",

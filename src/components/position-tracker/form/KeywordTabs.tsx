@@ -10,7 +10,7 @@ import { KeywordInput } from './KeywordInput';
 interface KeywordTabsProps {
   inputKeyword: string;
   setInputKeyword: (value: string) => void;
-  addKeyword: () => void;
+  addKeyword: (keyword?: string) => void; // Updated to make keyword optional
   handleBulkKeywords: (text: string) => void;
   handleFileUpload: (event: React.ChangeEvent<HTMLInputElement>) => void;
   isLoading: boolean;
@@ -25,6 +25,7 @@ export const KeywordTabs: React.FC<KeywordTabsProps> = ({
   isLoading
 }) => {
   const [bulkKeywords, setBulkKeywords] = React.useState("");
+
   const [activeTab, setActiveTab] = React.useState("single");
 
   const handleBulkSubmit = () => {

@@ -7,8 +7,10 @@ export const useKeywordsManager = () => {
   const [inputKeyword, setInputKeyword] = useState('');
   const { toast } = useToast();
 
-  const addKeyword = (keyword: string) => {
-    const trimmedKeyword = keyword.trim();
+  const addKeyword = (keyword?: string) => {
+    // Use provided keyword or fall back to the inputKeyword state
+    const trimmedKeyword = (keyword || inputKeyword).trim();
+    
     if (!trimmedKeyword) {
       toast({
         title: "Ошибка",
