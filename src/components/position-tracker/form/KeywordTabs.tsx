@@ -27,7 +27,6 @@ export const KeywordTabs: React.FC<KeywordTabsProps> = ({
   isLoading
 }) => {
   const [bulkKeywords, setBulkKeywords] = React.useState("");
-
   const [activeTab, setActiveTab] = React.useState("single");
 
   const handleBulkSubmit = () => {

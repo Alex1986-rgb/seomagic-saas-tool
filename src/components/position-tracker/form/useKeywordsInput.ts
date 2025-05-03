@@ -19,7 +19,12 @@ export const useKeywordsInput = ({ keywords, setKeywords }: UseKeywordsInputProp
       return;
     }
 
-    const lines = text.split('\n').filter(line => line.trim() !== '');
+    // Обработка ввода с разделителями: новая строка, запятая или точка с запятой
+    const lines = text
+      .split(/[\n,;]+/)
+      .map(line => line.trim())
+      .filter(line => line.trim() !== '');
+      
     const uniqueKeywords = lines.filter(
       (keyword, index, self) => 
         self.indexOf(keyword) === index && !keywords.includes(keyword)
@@ -51,7 +56,11 @@ export const useKeywordsInput = ({ keywords, setKeywords }: UseKeywordsInputProp
         const fileExtension = file.name.split('.').pop()?.toLowerCase();
 
         if (fileExtension === 'txt' || fileExtension === 'csv') {
-          const lines = content.split(/\r?\n/).filter(line => line.trim() !== '');
+          // Обработка содержимого файла с поддержкой различных разделителей
+          const lines = content
+            .split(/[\r\n,;]+/)
+            .filter(line => line.trim() !== '');
+            
           const uniqueKeywords = lines.filter(
             keyword => !keywords.includes(keyword.trim())
           );
