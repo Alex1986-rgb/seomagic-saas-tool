@@ -8,23 +8,30 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { 
   BrokenLinksAnalyzer, 
   DuplicatesDetector,
-  SiteStructureVisualization
+  SiteStructureVisualization,
+  ContentUniquenessChecker
 } from '@/components/position-tracker';
 import { PositionData, checkPositions } from '@/services/position/positionTracker';
 import { getPositionHistory, getHistoricalData } from '@/services/position/positionHistory';
 import { exportHistoryToExcel } from '@/services/position/exportService';
+import { useProxyManager } from '@/hooks/use-proxy-manager';
 
 const AdminPositions = () => {
   const [history, setHistory] = useState<PositionData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('history');
   const [selectedDomain, setSelectedDomain] = useState<string | null>(null);
+  const [isCheckingPositions, setIsCheckingPositions] = useState(false);
+  const [domainToCheck, setDomainToCheck] = useState('');
+  const [keywords, setKeywords] = useState<string[]>(['seo', 'позиции сайта', 'проверка позиций']);
   const { toast } = useToast();
+  const { getRandomActiveProxy, activeProxies, isLoading: isProxyLoading } = useProxyManager();
 
   useEffect(() => {
     loadHistory();
@@ -44,6 +51,67 @@ const AdminPositions = () => {
       });
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleCheckPositions = async () => {
+    if (!domainToCheck) {
+      toast({
+        title: "Введите домен",
+        description: "Для проверки позиций необходимо указать домен",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (keywords.length === 0) {
+      toast({
+        title: "Добавьте ключевые слова",
+        description: "Для проверки позиций необходимо указать хотя бы одно ключевое слово",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    try {
+      setIsCheckingPositions(true);
+
+      // Check if we have active proxies
+      const hasActiveProxies = activeProxies.length > 0;
+      if (!hasActiveProxies) {
+        toast({
+          title: "Внимание",
+          description: "Нет активных прокси. Проверка может быть менее точной или заблокирована поисковыми системами.",
+          variant: "default",
+        });
+      }
+
+      const results = await checkPositions({
+        domain: domainToCheck,
+        keywords,
+        searchEngine: 'all', // Check all search engines
+        depth: 100,
+        scanFrequency: 'daily',
+        useProxy: hasActiveProxies
+      });
+
+      toast({
+        title: "Проверка завершена",
+        description: `Проверено ${keywords.length} ключевых слов для домена ${domainToCheck}`,
+      });
+
+      // Refresh history to show new results
+      loadHistory();
+      
+    } catch (error) {
+      console.error('Ошибка при проверке позиций:', error);
+      toast({
+        title: "Ошибка проверки позиций",
+        description: error instanceof Error ? error.message : "Не удалось выполнить проверку позиций",
+        variant: "destructive",
+      });
+    } finally {
+      setIsCheckingPositions(false);
     }
   };
 
@@ -147,8 +215,19 @@ const AdminPositions = () => {
   };
   
   const handleCheckDomain = (domain: string) => {
+    setDomainToCheck(domain);
     setSelectedDomain(domain);
-    setActiveTab('linkAnalysis');
+    setActiveTab('positions');
+  };
+
+  const addKeyword = (keyword: string) => {
+    if (keyword && !keywords.includes(keyword)) {
+      setKeywords([...keywords, keyword]);
+    }
+  };
+
+  const removeKeyword = (index: number) => {
+    setKeywords(keywords.filter((_, i) => i !== index));
   };
 
   const topDomains = getTopDomains();
@@ -171,6 +250,93 @@ const AdminPositions = () => {
           </Button>
         </div>
       </div>
+
+      {/* Proxy Status Alert */}
+      {!isProxyLoading && activeProxies.length === 0 && (
+        <Alert className="mb-4">
+          <AlertDescription>
+            Для более точной проверки позиций рекомендуется настроить прокси в разделе 
+            <a href="/admin/proxies" className="text-primary hover:underline ml-1">
+              управления прокси
+            </a>
+          </AlertDescription>
+        </Alert>
+      )}
+
+      {/* Position Check Panel */}
+      <Card className="mb-4">
+        <CardHeader>
+          <CardTitle>Проверка позиций сайта</CardTitle>
+          <CardDescription>
+            Проверьте позиции вашего сайта в Google, Яндекс и Mail.ru
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="domain-input">Домен для проверки</Label>
+              <Input 
+                id="domain-input"
+                value={domainToCheck}
+                onChange={(e) => setDomainToCheck(e.target.value)}
+                placeholder="example.com"
+              />
+            </div>
+            <div>
+              <Label>Ключевые слова</Label>
+              <div className="flex gap-2">
+                <Input 
+                  placeholder="Добавить ключевое слово"
+                  onKeyPress={(e) => {
+                    if (e.key === 'Enter' && e.currentTarget.value) {
+                      addKeyword(e.currentTarget.value);
+                      e.currentTarget.value = '';
+                    }
+                  }}
+                />
+                <Button 
+                  type="button" 
+                  variant="outline"
+                  onClick={() => {
+                    const input = document.querySelector('input[placeholder="Добавить ключевое слово"]') as HTMLInputElement;
+                    if (input && input.value) {
+                      addKeyword(input.value);
+                      input.value = '';
+                    }
+                  }}
+                >
+                  Добавить
+                </Button>
+              </div>
+            </div>
+          </div>
+          
+          <div className="flex flex-wrap gap-2 mt-4">
+            {keywords.map((keyword, index) => (
+              <Badge key={index} variant="secondary" className="p-2">
+                {keyword}
+                <button 
+                  className="ml-2 text-muted-foreground hover:text-foreground"
+                  onClick={() => removeKeyword(index)}
+                >
+                  ✕
+                </button>
+              </Badge>
+            ))}
+          </div>
+          
+          <Button 
+            className="mt-4 w-full" 
+            onClick={handleCheckPositions}
+            disabled={isCheckingPositions}
+          >
+            {isCheckingPositions ? 
+              'Проверка позиций...' : 
+              `Проверить позиции в поисковых системах ${activeProxies.length > 0 ? '(с использованием прокси)' : ''}`
+            }
+          </Button>
+        </CardContent>
+      </Card>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card>
@@ -275,9 +441,9 @@ const AdminPositions = () => {
             <Webhook className="h-4 w-4" />
             Домены
           </TabsTrigger>
-          <TabsTrigger value="engines" className="flex items-center gap-1">
+          <TabsTrigger value="positions" className="flex items-center gap-1">
             <Search className="h-4 w-4" />
-            Поисковые системы
+            Позиции
           </TabsTrigger>
           <TabsTrigger value="linkAnalysis" className="flex items-center gap-1">
             <Link2Off className="h-4 w-4" />
@@ -415,34 +581,10 @@ const AdminPositions = () => {
           </Card>
         </TabsContent>
 
-        <TabsContent value="engines">
-          <Card>
-            <CardHeader>
-              <CardTitle>Распределение по поисковым системам</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {searchEngineData.map((item, index) => (
-                  <Card key={index}>
-                    <CardContent className="pt-6">
-                      <div className="text-center">
-                        <h3 className="text-lg font-medium mb-2">{item.engine}</h3>
-                        <p className="text-2xl font-bold">{item.count}</p>
-                        <p className="text-sm text-muted-foreground mb-4">запросов</p>
-                        <div className="w-full bg-muted rounded-full h-3">
-                          <div 
-                            className="bg-primary h-3 rounded-full" 
-                            style={{ width: `${item.percentage}%` }}
-                          ></div>
-                        </div>
-                        <p className="mt-2 text-sm">{item.percentage}% от общего числа</p>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
+        <TabsContent value="positions">
+          <ContentUniquenessChecker 
+            domain={selectedDomain || ''} 
+          />
         </TabsContent>
 
         <TabsContent value="linkAnalysis">

@@ -1,166 +1,297 @@
 
-import React, { useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { AlertTriangle, CheckCircle, Search } from 'lucide-react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Search, AlertCircle, FileCheck } from 'lucide-react';
+import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
+import { Progress } from "@/components/ui/progress";
+import { useToast } from "@/hooks/use-toast";
+import { useProxyManager } from '@/hooks/use-proxy-manager';
 
 interface ContentUniquenessCheckerProps {
-  domain: string;
+  domain?: string;
+  className?: string;
 }
 
-export function ContentUniquenessChecker({ domain }: ContentUniquenessCheckerProps) {
-  const [url, setUrl] = useState(domain || '');
-  const [content, setContent] = useState('');
+export const ContentUniquenessChecker: React.FC<ContentUniquenessCheckerProps> = ({ 
+  domain = '',
+  className = ''
+}) => {
+  const [inputDomain, setInputDomain] = useState(domain);
   const [isChecking, setIsChecking] = useState(false);
-  const [result, setResult] = useState<{
-    isUnique: boolean;
-    score: number;
-    matches?: Array<{url: string, similarity: number}>
-  } | null>(null);
+  const [progress, setProgress] = useState(0);
+  const [activeTab, setActiveTab] = useState('results');
+  const [results, setResults] = useState<any[]>([]);
+  const { toast } = useToast();
+  const { getRandomActiveProxy, activeProxies } = useProxyManager();
+  
+  // Set input domain when prop changes
+  useEffect(() => {
+    if (domain) {
+      setInputDomain(domain);
+    }
+  }, [domain]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    setIsChecking(true);
-    setResult(null);
+  const handleCheck = async () => {
+    if (!inputDomain) {
+      toast({
+        title: "Ошибка",
+        description: "Введите домен для проверки",
+        variant: "destructive",
+      });
+      return;
+    }
     
     try {
-      // Симуляция проверки контента
-      await new Promise((resolve) => setTimeout(resolve, 2500));
+      setIsChecking(true);
+      setProgress(0);
       
-      // Демонстрационные данные
-      const demoScore = Math.random() * 100;
-      setResult({
-        isUnique: demoScore > 70,
-        score: Math.round(demoScore),
-        matches: demoScore < 90 ? [
-          { url: 'https://example.com/similar-page', similarity: Math.round(Math.random() * 60) },
-          { url: 'https://another-site.com/content', similarity: Math.round(Math.random() * 40) },
-        ] : []
+      // Check if we have active proxies
+      const proxy = getRandomActiveProxy();
+      
+      if (!proxy && activeProxies.length === 0) {
+        toast({
+          title: "Внимание",
+          description: "Нет активных прокси. Проверка может быть менее точной.",
+          variant: "default",
+        });
+      }
+      
+      // Mock the checking progress
+      let currentProgress = 0;
+      const progressInterval = setInterval(() => {
+        currentProgress += Math.random() * 15;
+        if (currentProgress > 100) currentProgress = 100;
+        setProgress(Math.round(currentProgress));
+        
+        if (currentProgress >= 100) {
+          clearInterval(progressInterval);
+          
+          // Generate mock results after "checking" is done
+          const mockResults = [
+            { url: `https://${inputDomain}/about`, uniqueness: 87, wordCount: 1250, matches: 2 },
+            { url: `https://${inputDomain}/services`, uniqueness: 95, wordCount: 2100, matches: 1 },
+            { url: `https://${inputDomain}/blog/seo-tips`, uniqueness: 72, wordCount: 3200, matches: 5 },
+            { url: `https://${inputDomain}/contact`, uniqueness: 98, wordCount: 750, matches: 0 },
+            { url: `https://${inputDomain}/pricing`, uniqueness: 91, wordCount: 1500, matches: 2 },
+          ];
+          
+          setResults(mockResults);
+          setActiveTab('results');
+          setIsChecking(false);
+          
+          toast({
+            title: "Проверка завершена",
+            description: `Проанализировано ${mockResults.length} страниц на сайте ${inputDomain}`,
+          });
+        }
+      }, 500);
+      
+    } catch (error) {
+      console.error("Ошибка при проверке уникальности:", error);
+      toast({
+        title: "Ошибка проверки",
+        description: error instanceof Error ? error.message : "Неизвестная ошибка при проверке уникальности контента",
+        variant: "destructive",
       });
-    } finally {
       setIsChecking(false);
     }
   };
+  
+  // Calculate average uniqueness
+  const averageUniqueness = results.length > 0 
+    ? Math.round(results.reduce((acc, item) => acc + item.uniqueness, 0) / results.length) 
+    : 0;
+  
+  // Prepare chart data
+  const chartData = results.map(item => ({
+    name: new URL(item.url).pathname,
+    uniqueness: item.uniqueness,
+    wordCount: item.wordCount / 100 // Scale down for better visualization
+  }));
 
   return (
-    <div className="space-y-6">
+    <div className={className}>
       <Card>
         <CardHeader>
-          <CardTitle>Проверка уникальности контента</CardTitle>
+          <CardTitle className="flex items-center gap-2">
+            <FileCheck className="h-5 w-5" />
+            Проверка уникальности контента
+          </CardTitle>
           <CardDescription>
-            Анализ текста на уникальность и сравнение с другими источниками в интернете
+            Анализ уникальности текстового содержимого страниц вашего сайта
           </CardDescription>
         </CardHeader>
+        
         <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label htmlFor="url" className="block text-sm font-medium mb-1">
-                URL страницы или домен
-              </label>
-              <Input
-                id="url"
-                value={url}
-                onChange={(e) => setUrl(e.target.value)}
-                placeholder="Например, example.com"
-              />
-            </div>
-            
-            <div>
-              <label htmlFor="content" className="block text-sm font-medium mb-1">
-                Контент для проверки
-              </label>
-              <Textarea
-                id="content"
-                value={content}
-                onChange={(e) => setContent(e.target.value)}
-                placeholder="Вставьте текст для проверки уникальности..."
-                rows={6}
-              />
-            </div>
-            
-            <Button 
-              type="submit" 
-              className="w-full" 
-              disabled={isChecking || !content || !url}
-            >
-              {isChecking ? (
-                <>
-                  <span className="animate-spin mr-2">◌</span>
-                  Проверка...
-                </>
-              ) : (
-                <>
-                  <Search className="mr-2 h-4 w-4" />
-                  Проверить уникальность
-                </>
-              )}
-            </Button>
-          </form>
-          
-          {result && (
-            <div className="mt-6 space-y-4">
-              <Alert variant={result.isUnique ? "default" : "destructive"}>
-                <div className="flex items-center gap-2">
-                  {result.isUnique ? (
-                    <CheckCircle className="h-4 w-4 text-green-500" />
-                  ) : (
-                    <AlertTriangle className="h-4 w-4" />
-                  )}
-                  <AlertDescription>
-                    {result.isUnique 
-                      ? "Контент является достаточно уникальным!" 
-                      : "Обнаружены совпадения с другими источниками."}
-                  </AlertDescription>
-                </div>
-              </Alert>
-              
-              <div className="p-4 border rounded-md">
-                <div className="text-lg font-semibold mb-2">
-                  Уникальность: {result.score}%
-                </div>
-                
-                <div className="w-full h-3 bg-gray-200 rounded-full overflow-hidden">
-                  <div 
-                    className={`h-3 rounded-full ${
-                      result.score > 90 
-                        ? "bg-green-500" 
-                        : result.score > 70 
-                        ? "bg-yellow-500" 
-                        : "bg-red-500"
-                    }`}
-                    style={{ width: `${result.score}%` }}
-                  />
-                </div>
-                
-                {result.matches && result.matches.length > 0 && (
-                  <div className="mt-4">
-                    <h4 className="font-medium text-sm mb-2">Найденные совпадения:</h4>
-                    <ul className="space-y-2 text-sm">
-                      {result.matches.map((match, index) => (
-                        <li key={index} className="flex justify-between">
-                          <a 
-                            href={match.url} 
-                            target="_blank" 
-                            rel="noopener noreferrer"
-                            className="text-blue-500 hover:underline truncate"
-                          >
-                            {match.url}
-                          </a>
-                          <span>{match.similarity}% совпадение</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
+          <div className="space-y-4">
+            <div className="flex gap-2">
+              <div className="flex-1">
+                <Label htmlFor="domain-input">Домен для проверки</Label>
+                <Input
+                  id="domain-input"
+                  value={inputDomain}
+                  onChange={(e) => setInputDomain(e.target.value)}
+                  placeholder="example.com"
+                  disabled={isChecking}
+                />
+              </div>
+              <div className="flex items-end">
+                <Button 
+                  onClick={handleCheck} 
+                  disabled={isChecking || !inputDomain}
+                  className="gap-2"
+                >
+                  <Search className="h-4 w-4" />
+                  {isChecking ? 'Проверка...' : 'Проверить уникальность'}
+                </Button>
               </div>
             </div>
-          )}
+            
+            {isChecking && (
+              <div className="space-y-2 py-4">
+                <Progress value={progress} className="h-2" />
+                <p className="text-sm text-center text-muted-foreground">
+                  Проверка уникальности контента... {progress}%
+                </p>
+              </div>
+            )}
+            
+            {!isChecking && results.length > 0 && (
+              <Tabs value={activeTab} onValueChange={setActiveTab}>
+                <TabsList className="grid grid-cols-2 w-full mb-4">
+                  <TabsTrigger value="results">Результаты</TabsTrigger>
+                  <TabsTrigger value="chart">Графики</TabsTrigger>
+                </TabsList>
+                
+                <TabsContent value="results">
+                  <div className="border rounded-lg overflow-hidden">
+                    <div className="bg-muted/50 p-4">
+                      <div className="flex justify-between items-center">
+                        <h4 className="font-medium">Средняя уникальность контента</h4>
+                        <div className={`text-lg font-bold ${
+                          averageUniqueness >= 90 ? 'text-green-500' : 
+                          averageUniqueness >= 70 ? 'text-amber-500' : 
+                          'text-red-500'
+                        }`}>
+                          {averageUniqueness}%
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <table className="w-full">
+                      <thead className="bg-muted/50">
+                        <tr>
+                          <th className="text-left p-3 text-sm font-medium text-muted-foreground">URL страницы</th>
+                          <th className="text-center p-3 text-sm font-medium text-muted-foreground">Уникальность</th>
+                          <th className="text-center p-3 text-sm font-medium text-muted-foreground">Объем текста</th>
+                          <th className="text-center p-3 text-sm font-medium text-muted-foreground">Совпадения</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {results.map((item, index) => (
+                          <tr key={index} className={index % 2 === 0 ? 'bg-background' : 'bg-muted/20'}>
+                            <td className="p-3 truncate max-w-[200px]">
+                              <a 
+                                href={item.url} 
+                                target="_blank" 
+                                rel="noopener noreferrer" 
+                                className="text-primary hover:underline"
+                              >
+                                {new URL(item.url).pathname || '/'}
+                              </a>
+                            </td>
+                            <td className="p-3 text-center">
+                              <span className={`font-medium ${
+                                item.uniqueness >= 90 ? 'text-green-500' : 
+                                item.uniqueness >= 70 ? 'text-amber-500' : 
+                                'text-red-500'
+                              }`}>
+                                {item.uniqueness}%
+                              </span>
+                            </td>
+                            <td className="p-3 text-center">{item.wordCount} слов</td>
+                            <td className="p-3 text-center">
+                              {item.matches > 0 ? (
+                                <span className="text-red-500">{item.matches}</span>
+                              ) : (
+                                <span className="text-green-500">0</span>
+                              )}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                  
+                  {results.some(item => item.uniqueness < 70) && (
+                    <Alert className="mt-4" variant="warning">
+                      <AlertCircle className="h-4 w-4" />
+                      <AlertDescription>
+                        Обнаружены страницы с низкой уникальностью контента. Рекомендуется переработать
+                        эти тексты для улучшения SEO-показателей.
+                      </AlertDescription>
+                    </Alert>
+                  )}
+                </TabsContent>
+                
+                <TabsContent value="chart">
+                  <div className="space-y-4">
+                    <div className="h-80">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <BarChart data={chartData}>
+                          <CartesianGrid strokeDasharray="3 3" />
+                          <XAxis 
+                            dataKey="name" 
+                            label={{ value: 'Страница', position: 'insideBottom', offset: -5 }} 
+                          />
+                          <YAxis yAxisId="left" orientation="left" label={{ value: 'Уникальность (%)', angle: -90, position: 'insideLeft' }} />
+                          <YAxis yAxisId="right" orientation="right" label={{ value: 'Объем (x100 слов)', angle: 90, position: 'insideRight' }} />
+                          <Tooltip />
+                          <Legend />
+                          <Bar yAxisId="left" dataKey="uniqueness" name="Уникальность %" fill="#8884d8" />
+                          <Bar yAxisId="right" dataKey="wordCount" name="Объем текста" fill="#82ca9d" />
+                        </BarChart>
+                      </ResponsiveContainer>
+                    </div>
+                    
+                    <div className="border rounded-md p-4 bg-muted/20">
+                      <h4 className="font-medium mb-2">Интерпретация результатов:</h4>
+                      <ul className="space-y-2 text-sm">
+                        <li>
+                          <strong className="text-green-500">Высокая уникальность (90-100%)</strong>: 
+                          Отличный показатель, контент уникален и хорошо воспринимается поисковыми системами
+                        </li>
+                        <li>
+                          <strong className="text-amber-500">Средняя уникальность (70-89%)</strong>: 
+                          Приемлемый показатель, но рекомендуется улучшить уникальность для лучшего ранжирования
+                        </li>
+                        <li>
+                          <strong className="text-red-500">Низкая уникальность (&lt;70%)</strong>: 
+                          Требуется переработка текста, высокий риск пессимизации в поисковых системах
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+                </TabsContent>
+              </Tabs>
+            )}
+            
+            {!isChecking && results.length === 0 && !domain && (
+              <div className="text-center py-8">
+                <FileCheck className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                <p className="text-muted-foreground">
+                  Введите домен и нажмите "Проверить уникальность" для анализа контента
+                </p>
+              </div>
+            )}
+          </div>
         </CardContent>
       </Card>
     </div>
   );
-}
+};
