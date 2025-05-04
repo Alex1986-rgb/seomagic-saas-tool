@@ -31,7 +31,7 @@ const ExportErrorReport: React.FC<ExportErrorReportProps> = ({
         // Use API endpoint for tasks with IDs
         await downloadReport({
           id: taskId,
-          reportType: 'errors'
+          type: 'errors' // Changed from reportType to type
         });
         
         toast({

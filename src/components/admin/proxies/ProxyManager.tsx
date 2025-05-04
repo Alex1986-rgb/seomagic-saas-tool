@@ -100,10 +100,10 @@ const ProxyManager: React.FC = () => {
         proxies: allProxies.map(proxy => ({
           ip: proxy.ip,
           port: proxy.port,
-          type: proxy.type || 'HTTP',
+          type: proxy.protocol || 'HTTP',
           country: proxy.country || undefined,
-          speed: proxy.responseTime || undefined,
-          status: proxy.isActive ? 'active' as const : 'inactive' as const,
+          speed: proxy.speed || undefined,
+          status: proxy.status === 'active' ? 'active' as const : 'inactive' as const,
           lastChecked: proxy.lastChecked ? new Date(proxy.lastChecked).toLocaleString() : undefined
         })),
         stats: {
@@ -111,7 +111,7 @@ const ProxyManager: React.FC = () => {
           active: activeProxies.length,
           inactive: allProxies.length - activeProxies.length,
           averageSpeed: activeProxies.length > 0 
-            ? activeProxies.reduce((sum, p) => sum + (p.responseTime || 0), 0) / activeProxies.length 
+            ? activeProxies.reduce((sum, p) => sum + (p.speed || 0), 0) / activeProxies.length 
             : undefined
         },
         date: new Date().toISOString()
