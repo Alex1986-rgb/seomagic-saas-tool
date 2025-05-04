@@ -14,6 +14,17 @@ interface TrackerContentProps {
   onSearchComplete: (results: PositionData) => void;
 }
 
+// Define the valid search engine types to match the position tracker's expectations
+type SearchEngineType = "google" | "yandex" | "mailru" | "all";
+
+// Helper function to ensure the search engine string is of the correct type
+const validateSearchEngine = (engine: string): SearchEngineType => {
+  const validEngines: SearchEngineType[] = ["google", "yandex", "mailru", "all"];
+  return validEngines.includes(engine as SearchEngineType) 
+    ? (engine as SearchEngineType) 
+    : "all"; // Default to "all" if invalid
+};
+
 const TrackerContent: React.FC<TrackerContentProps> = ({ 
   activeTab, 
   searchResults, 
@@ -24,7 +35,14 @@ const TrackerContent: React.FC<TrackerContentProps> = ({
       <TabsContent value="search">
         <Card>
           <CardContent className="pt-6">
-            <PositionTrackerForm onSearchComplete={onSearchComplete} />
+            <PositionTrackerForm onSearchComplete={(results) => {
+              // Ensure the search engine is of the correct type before passing it on
+              const validatedResults = {
+                ...results,
+                searchEngine: validateSearchEngine(results.searchEngine)
+              };
+              onSearchComplete(validatedResults);
+            }} />
           </CardContent>
         </Card>
       </TabsContent>
