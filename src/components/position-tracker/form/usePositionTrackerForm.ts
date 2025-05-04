@@ -6,6 +6,7 @@ import { useToast } from '@/hooks/use-toast';
 import { positionTrackerFormSchema, type FormData } from './schema';
 import { useKeywordsManager } from './useKeywordsManager';
 import { useKeywordsInput } from './useKeywordsInput';
+import { checkPositions } from '@/services/position/positionTracker';
 
 export const usePositionTrackerForm = (onSearchComplete?: Function) => {
   const [isLoading, setIsLoading] = useState(false);
@@ -51,22 +52,35 @@ export const usePositionTrackerForm = (onSearchComplete?: Function) => {
     setIsLoading(true);
 
     try {
-      await new Promise(resolve => setTimeout(resolve, 2000));
-
-      const results = {
-        domain: values.domain,
-        keywords: keywords,
+      // Фильтруем пустые ключевые слова
+      const filteredKeywords = keywords.filter(k => k && k.trim() !== '');
+      
+      if (filteredKeywords.length === 0) {
+        throw new Error("Все ключевые слова пусты");
+      }
+      
+      // Форматируем домен
+      let formattedDomain = values.domain;
+      if (!formattedDomain.match(/^https?:\/\//)) {
+        formattedDomain = 'http://' + formattedDomain;
+      }
+      
+      // Удаляем trailing slash если он есть
+      formattedDomain = formattedDomain.replace(/\/$/, '');
+      
+      // Извлекаем только домен без протокола для проверки
+      const domainForCheck = formattedDomain.replace(/^https?:\/\//, '');
+      
+      // Используем реальный сервис проверки позиций
+      const results = await checkPositions({
+        domain: domainForCheck,
+        keywords: filteredKeywords,
         searchEngine: values.searchEngine,
         region: values.region,
         depth: values.depth,
         scanFrequency: values.scanFrequency,
-        positions: keywords.map(keyword => ({
-          keyword,
-          position: Math.floor(Math.random() * 100) + 1,
-          url: `https://${values.domain}/page-${keyword.toLowerCase().replace(/\s+/g, '-')}`,
-          previousPosition: Math.floor(Math.random() * 100) + 1,
-        })),
-      };
+        useProxy: values.useProxy
+      });
 
       toast({
         title: "Успешно",

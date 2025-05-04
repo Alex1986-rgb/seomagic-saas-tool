@@ -80,9 +80,22 @@ export function usePositionTracker({
         console.log(`Доступно ${activeProxies.length} активных прокси для проверки позиций`);
       }
       
+      // Добавляем проверку на корректность домена
+      let formattedDomain = domain;
+      if (!formattedDomain.match(/^https?:\/\//)) {
+        // Если домен не содержит протокол, добавляем http://
+        formattedDomain = 'http://' + formattedDomain;
+      }
+      
+      // Удаляем trailing slash если он есть
+      formattedDomain = formattedDomain.replace(/\/$/, '');
+      
+      // Извлекаем только домен без протокола для проверки
+      const domainForCheck = formattedDomain.replace(/^https?:\/\//, '');
+      
       const data = {
-        domain,
-        keywords,
+        domain: domainForCheck,
+        keywords: keywords.filter(k => k && k.trim() !== ''), // Фильтруем пустые ключевые слова
         searchEngine,
         region,
         depth,
@@ -105,7 +118,7 @@ export function usePositionTracker({
       
       toast({
         title: "Готово",
-        description: `Проверено ${keywords.length} ключевых слов для ${domain}`,
+        description: `Проверено ${keywords.length} ключевых слов для ${domainForCheck}`,
       });
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Произошла ошибка при проверке позиций";
@@ -122,7 +135,7 @@ export function usePositionTracker({
   };
   
   const addKeyword = (keyword: string) => {
-    if (!keywords.includes(keyword)) {
+    if (keyword && !keywords.includes(keyword)) {
       setKeywords([...keywords, keyword]);
     }
   };

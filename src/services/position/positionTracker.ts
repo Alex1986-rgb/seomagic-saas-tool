@@ -1,3 +1,4 @@
+
 import { getHistoricalData } from './positionHistory';
 import { proxyManager } from '../proxy/proxyManager';
 
@@ -41,6 +42,12 @@ const positionMemory: Record<string, number> = {};
 
 // Функция для получения стабильных и реалистичных позиций для домена и ключевого слова
 const getStablePosition = (domain: string, keyword: string, searchEngine: string, depth: number): number => {
+  // Проверка на null или undefined
+  if (!domain || !keyword || !searchEngine) {
+    console.warn('Получен null или undefined в параметрах getStablePosition', { domain, keyword, searchEngine });
+    return 0;
+  }
+  
   const key = `${domain}:${keyword}:${searchEngine}`;
   
   // Если позиция для этой комбинации уже была определена, используем ее с небольшими колебаниями
@@ -87,6 +94,11 @@ const getStablePosition = (domain: string, keyword: string, searchEngine: string
 const generateSearchResults = (domain: string, keywords: string[], searchEngine: string, depth: number, useProxy: boolean = false): KeywordPosition[] => {
   console.log(`Генерация результатов поиска для ${domain} в ${searchEngine} с глубиной ${depth}, использование прокси: ${useProxy}`);
   
+  if (!domain || !Array.isArray(keywords) || keywords.length === 0) {
+    console.warn('Неверные данные для generateSearchResults', { domain, keywords, searchEngine });
+    return [];
+  }
+  
   // Получаем исторические данные, если они есть
   let historicalData: Record<string, number> = {};
   try {
@@ -94,7 +106,7 @@ const generateSearchResults = (domain: string, keywords: string[], searchEngine:
     if (history.length > 0) {
       const lastRecord = history[0];
       lastRecord.keywords.forEach((k: KeywordPosition) => {
-        if (k.searchEngine === searchEngine) {
+        if (k.searchEngine === searchEngine && k.keyword) {
           historicalData[k.keyword] = k.position;
         }
       });
@@ -104,26 +116,28 @@ const generateSearchResults = (domain: string, keywords: string[], searchEngine:
   }
   
   // Имитируем проверку позиций в поисковой системе
-  const results: KeywordPosition[] = keywords.map(keyword => {
-    // Получаем стабильную позицию для домена и ключевого слова
-    const position = getStablePosition(domain, keyword, searchEngine, depth);
-    
-    // Получаем предыдущую позицию из исторических данных
-    const previousPosition = historicalData[keyword] || Math.floor(Math.random() * depth) + 1;
-    
-    // Генерируем URL для найденных позиций
-    const url = position > 0 
-      ? `https://${domain}/${keyword.replace(/\s+/g, '-').toLowerCase()}` 
-      : undefined;
-    
-    return {
-      keyword,
-      position,
-      previousPosition,
-      url,
-      searchEngine
-    };
-  });
+  const results: KeywordPosition[] = keywords
+    .filter(keyword => keyword && typeof keyword === 'string') // Фильтруем только валидные ключевые слова
+    .map(keyword => {
+      // Получаем стабильную позицию для домена и ключевого слова
+      const position = getStablePosition(domain, keyword, searchEngine, depth);
+      
+      // Получаем предыдущую позицию из исторических данных
+      const previousPosition = historicalData[keyword] || Math.floor(Math.random() * depth) + 1;
+      
+      // Генерируем URL для найденных позиций
+      const url = position > 0 
+        ? `https://${domain}/${keyword.replace(/\s+/g, '-').toLowerCase()}` 
+        : undefined;
+      
+      return {
+        keyword,
+        position,
+        previousPosition,
+        url,
+        searchEngine
+      };
+    });
   
   return results;
 };
@@ -135,8 +149,24 @@ export const checkPositions = async (data: PositionCheckParams): Promise<Positio
   // Эмулируем задержку, как будто выполняется реальный запрос
   await new Promise(resolve => setTimeout(resolve, 2000));
   
+  // Проверка и обработка входных данных
+  if (!data.domain) {
+    throw new Error('Не указан домен для проверки');
+  }
+  
+  if (!Array.isArray(data.keywords) || data.keywords.length === 0) {
+    throw new Error('Не указаны ключевые слова для проверки');
+  }
+  
+  // Фильтруем пустые ключевые слова
+  const validKeywords = data.keywords.filter(k => k && typeof k === 'string' && k.trim() !== '');
+  
+  if (validKeywords.length === 0) {
+    throw new Error('Все ключевые слова недействительны');
+  }
+  
   // Получаем данные из параметров
-  const { domain, keywords, searchEngine, region, depth, scanFrequency, useProxy, timestamp } = data;
+  const { domain, searchEngine, region, depth, scanFrequency, useProxy, timestamp } = data;
   
   // Определяем, будем ли использовать прокси
   let proxyUsed: string | undefined;
@@ -156,19 +186,19 @@ export const checkPositions = async (data: PositionCheckParams): Promise<Positio
   // Проверяем позиции в выбранных поисковых системах
   if (searchEngine === 'all' || searchEngine === 'google') {
     console.log(`Проверка позиций в Google для домена ${domain}...`);
-    const googleResults = generateSearchResults(domain, keywords, 'google', depth, !!proxyUsed);
+    const googleResults = generateSearchResults(domain, validKeywords, 'google', depth, !!proxyUsed);
     allResults = [...allResults, ...googleResults];
   }
   
   if (searchEngine === 'all' || searchEngine === 'yandex') {
     console.log(`Проверка позиций в Яндексе для домена ${domain}...`);
-    const yandexResults = generateSearchResults(domain, keywords, 'yandex', depth, !!proxyUsed);
+    const yandexResults = generateSearchResults(domain, validKeywords, 'yandex', depth, !!proxyUsed);
     allResults = [...allResults, ...yandexResults];
   }
   
   if (searchEngine === 'all' || searchEngine === 'mailru') {
     console.log(`Проверка позиций в Mail.ru для домена ${domain}...`);
-    const mailruResults = generateSearchResults(domain, keywords, 'mailru', depth, !!proxyUsed);
+    const mailruResults = generateSearchResults(domain, validKeywords, 'mailru', depth, !!proxyUsed);
     allResults = [...allResults, ...mailruResults];
   }
   
@@ -191,10 +221,14 @@ export const checkPositions = async (data: PositionCheckParams): Promise<Positio
   };
   
   // Получаем исторические данные для сравнения
-  const history = await getHistoricalData(domain);
-  if (history.length > 0) {
-    result.previousResults = [history[0]];
-    console.log(`Получены исторические данные для сравнения: ${history.length} записей`);
+  try {
+    const history = await getHistoricalData(domain);
+    if (history.length > 0) {
+      result.previousResults = [history[0]];
+      console.log(`Получены исторические данные для сравнения: ${history.length} записей`);
+    }
+  } catch (error) {
+    console.error('Ошибка при получении исторических данных:', error);
   }
   
   // Сохраняем результат в историю (в реальном приложении здесь был бы API-вызов)
@@ -207,6 +241,11 @@ export const checkPositions = async (data: PositionCheckParams): Promise<Positio
 // Функция сохранения результатов в историю (в локальном хранилище для демо)
 const saveResultToHistory = (result: PositionData) => {
   try {
+    if (!result.domain || !Array.isArray(result.keywords)) {
+      console.error('Некорректные данные для сохранения в историю', result);
+      return;
+    }
+    
     // Получаем текущую историю
     const domainKey = `position_history_${result.domain}`;
     const historyJson = localStorage.getItem(domainKey);
