@@ -11,7 +11,6 @@ const PositionTracking: React.FC = () => {
   const [searchResults, setSearchResults] = useState<PositionData | null>(null);
   
   const handleSearchComplete = (results: PositionData) => {
-    console.log('Поиск завершен, получены результаты:', results);
     setSearchResults(results);
     setActiveTab('results');
   };

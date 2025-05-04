@@ -51,7 +51,7 @@ export function usePositionTracker({
         description: "Укажите домен для проверки",
         variant: "destructive",
       });
-      return null;
+      return;
     }
     
     if (keywords.length === 0) {
@@ -60,20 +60,17 @@ export function usePositionTracker({
         description: "Добавьте хотя бы одно ключевое слово",
         variant: "destructive",
       });
-      return null;
+      return;
     }
     
     setIsLoading(true);
     setError(null);
     
     try {
-      console.log(`Запуск проверки позиций для домена ${domain} с ключевыми словами: ${keywords.join(', ')}`);
-      
       // Проверяем наличие прокси
       const hasActiveProxies = activeProxies.length > 0;
       
       if (!hasActiveProxies) {
-        console.log('Нет активных прокси. Проверка будет выполнена без использования прокси.');
         toast({
           title: "Внимание",
           description: "Нет активных прокси. Проверка может быть менее точной.",
@@ -110,8 +107,6 @@ export function usePositionTracker({
         title: "Готово",
         description: `Проверено ${keywords.length} ключевых слов для ${domain}`,
       });
-      
-      return positionData;
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Произошла ошибка при проверке позиций";
       console.error('Ошибка проверки позиций:', errorMessage);
@@ -121,7 +116,6 @@ export function usePositionTracker({
         description: "Не удалось проверить позиции",
         variant: "destructive",
       });
-      return null;
     } finally {
       setIsLoading(false);
     }
