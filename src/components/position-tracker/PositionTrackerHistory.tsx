@@ -173,7 +173,7 @@ export function PositionTrackerHistory() {
           <DialogHeader>
             <DialogTitle>Детали проверки позиций</DialogTitle>
           </DialogHeader>
-          {selectedItem && <PositionTrackerResults results={selectedItem} />}
+          {selectedItem && <PositionTrackerResults data={selectedItem} />}
         </DialogContent>
       </Dialog>
     </div>

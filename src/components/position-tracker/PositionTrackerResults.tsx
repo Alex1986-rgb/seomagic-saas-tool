@@ -78,7 +78,7 @@ export const PositionTrackerResults: React.FC<PositionTrackerResultsProps> = ({ 
   const handleExport = () => {
     positionTrackingService.exportResultsAsCsv({
       domain: data.domain,
-      keywords: data.keywords,
+      keywords: data.keywords.map(k => k.keyword), // Convert KeywordPosition[] to string[]
       searchEngine: data.searchEngine,
       region: data.region,
       positions: data.keywords.map(k => ({

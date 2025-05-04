@@ -20,7 +20,7 @@ import { usePositionTrackerForm } from './form/usePositionTrackerForm';
 interface FormValues {
   domain: string;
   keywords?: string[];
-  searchEngine: string;
+  searchEngine: "google" | "yandex" | "mailru" | "all";
   region?: string;
 }
 
@@ -113,7 +113,7 @@ export const PositionTrackerForm: React.FC<PositionTrackerFormProps> = ({
               variant="ghost" 
               size="sm" 
               className="h-8 px-2 text-xs"
-              onClick={() => handleBulkKeywords()}
+              onClick={() => handleBulkKeywords("")}
             >
               Добавить списком
             </Button>
@@ -160,7 +160,7 @@ export const PositionTrackerForm: React.FC<PositionTrackerFormProps> = ({
             <Label htmlFor="searchEngine">Поисковая система</Label>
             <Select
               defaultValue={form.getValues('searchEngine') || "all"}
-              onValueChange={(value) => form.setValue('searchEngine', value)}
+              onValueChange={(value: "google" | "yandex" | "mailru" | "all") => form.setValue('searchEngine', value)}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Выберите поисковую систему" />

@@ -81,7 +81,7 @@ const TrackerContent: React.FC<TrackerContentProps> = ({
       </TabsContent>
       
       <TabsContent value="history">
-        <PositionTrackerHistory domain={domain} />
+        <PositionTrackerHistory />
       </TabsContent>
       
       <TabsContent value="tools">
