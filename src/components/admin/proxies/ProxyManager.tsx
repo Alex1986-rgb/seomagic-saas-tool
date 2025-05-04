@@ -7,19 +7,22 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { RefreshCw, Shield, TrashIcon, Download, FileText, Rss, Wifi } from 'lucide-react';
+import { RefreshCw, Shield, TrashIcon, Download, FileText, Rss, Wifi, FilePdf } from 'lucide-react';
 import ProxySourcesManager from './ProxySourcesManager';
 import { useProxyManager } from '@/hooks/use-proxy-manager';
 import ProxyList from './ProxyList';
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import PingService from './PingService';
+import { generateProxyReportPdf } from '@/utils/pdf/proxyReport';
+import { useToast } from "@/hooks/use-toast";
 
 const ProxyManager: React.FC = () => {
   const [activeTab, setActiveTab] = useState('sources');
   const [testUrl, setTestUrl] = useState('https://api.ipify.org/');
   const [exportFormat, setExportFormat] = useState('text');
   const [importText, setImportText] = useState('');
+  const { toast } = useToast();
   
   const { 
     proxies, 
@@ -73,6 +76,73 @@ const ProxyManager: React.FC = () => {
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
+  };
+
+  // Новая функция для экспорта PDF-отчета
+  const handleExportPDF = async () => {
+    const allProxies = proxyManager.getAllProxies();
+    if (allProxies.length === 0) {
+      toast({
+        title: "Нет данных для отчета",
+        description: "Сначала соберите прокси для генерации отчета",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    toast({
+      title: "Создание PDF отчета",
+      description: "Пожалуйста, подождите...",
+    });
+
+    try {
+      // Форматируем данные для отчета
+      const proxyReportData = {
+        proxies: allProxies.map(proxy => ({
+          ip: proxy.ip,
+          port: proxy.port,
+          type: proxy.type || 'HTTP',
+          country: proxy.country || undefined,
+          speed: proxy.responseTime,
+          status: proxy.isActive ? 'active' : 'inactive',
+          lastChecked: proxy.lastChecked ? new Date(proxy.lastChecked).toLocaleString() : undefined
+        })),
+        stats: {
+          total: allProxies.length,
+          active: activeProxies.length,
+          inactive: allProxies.length - activeProxies.length,
+          averageSpeed: activeProxies.length > 0 
+            ? activeProxies.reduce((sum, p) => sum + (p.responseTime || 0), 0) / activeProxies.length 
+            : undefined
+        },
+        date: new Date().toISOString()
+      };
+
+      // Генерация PDF
+      const pdfBlob = await generateProxyReportPdf(proxyReportData);
+
+      // Сохранение файла
+      const url = URL.createObjectURL(pdfBlob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `proxy_report_${new Date().toISOString().split('T')[0]}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+
+      toast({
+        title: "Готово!",
+        description: "PDF отчет успешно создан и скачан",
+      });
+    } catch (error) {
+      console.error('Ошибка при создании PDF отчета:', error);
+      toast({
+        title: "Ошибка",
+        description: "Не удалось создать PDF отчет",
+        variant: "destructive",
+      });
+    }
   };
 
   const tabs: TabItem[] = [
@@ -258,6 +328,22 @@ const ProxyManager: React.FC = () => {
                     </Button>
                   </div>
                 </div>
+                
+                {/* PDF отчет */}
+                <div className="mt-4">
+                  <Button 
+                    variant="default"
+                    onClick={handleExportPDF}
+                    disabled={proxies.length === 0}
+                    className="w-full"
+                  >
+                    <FilePdf className="h-4 w-4 mr-2" />
+                    Скачать PDF отчет
+                  </Button>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Создать детальный PDF отчет о прокси с графиками и статистикой
+                  </p>
+                </div>
               </div>
             </div>
           </div>
@@ -269,7 +355,18 @@ const ProxyManager: React.FC = () => {
       label: 'Статистика',
       content: (
         <Card className="p-4">
-          <h3 className="font-medium mb-2">Статистика прокси</h3>
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="font-medium">Статистика прокси</h3>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={handleExportPDF} 
+              className="flex items-center gap-2"
+            >
+              <FilePdf className="h-4 w-4" />
+              PDF отчет
+            </Button>
+          </div>
           <div className="space-y-2">
             <div className="flex justify-between text-sm border-b pb-2">
               <span>Всего прокси:</span>

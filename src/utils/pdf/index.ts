@@ -3,7 +3,8 @@
 export * from './auditPdf';
 export * from './historyPdf';
 export * from './errorReport';
-export * from './deepCrawlPdf'; // Export the new deep crawl PDF generator
+export * from './deepCrawlPdf';
+export * from './proxyReport'; // Export the new proxy report generator
 
 // Export helpers from the new structure
 export * from './helpers';

@@ -7,6 +7,7 @@ export { generateAuditPdf } from './pdf/auditPdf';
 export { generateDeepCrawlPdf } from './pdf/deepCrawlPdf';
 export { generateErrorReportPdf } from './pdf/errorReport';
 export { generateHistoryPDF } from './pdf/historyPdf';
+export { generateProxyReportPdf } from './pdf/proxyReport';
 
 // Экспорт хелперов для форматирования
 export { formatDateString } from './pdf/helpers/formatting';
