@@ -24,6 +24,21 @@ export function addPaginationFooters(doc: jsPDF): void {
 }
 
 /**
+ * Adds copyright information to the PDF
+ */
+export function addCopyright(doc: jsPDF, companyName: string = 'SEO Market'): void {
+  const pageCount = doc.getNumberOfPages();
+  
+  for (let i = 1; i <= pageCount; i++) {
+    doc.setPage(i);
+    
+    doc.setFontSize(8);
+    doc.setTextColor(...pdfColors.gray);
+    doc.text(`© ${new Date().getFullYear()} ${companyName}. Все права защищены.`, 105, 292, { align: 'center' });
+  }
+}
+
+/**
  * Adds a table of contents to the PDF
  */
 export function addTableOfContents(doc: jsPDF, sections: Array<{title: string, page: number}>): void {

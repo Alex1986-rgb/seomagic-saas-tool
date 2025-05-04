@@ -1,7 +1,8 @@
 
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import { addCoverPage, addPaginationFooters, addCopyright } from './helpers/coverPage';
+import { addCoverPage } from './helpers/coverPage';
+import { addPaginationFooters, addCopyright } from './helpers/pagination';
 import { pdfColors, pdfFonts } from './styles';
 
 export interface ProxyReportData {

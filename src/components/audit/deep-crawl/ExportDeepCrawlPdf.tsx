@@ -1,136 +1,112 @@
 
-import React, { useState } from 'react';
-import { FileText, Loader2 } from 'lucide-react';
-import { Button } from "@/components/ui/button";
-import { useToast } from "@/hooks/use-toast";
+import React from 'react';
+import { Button } from '@/components/ui/button';
+import { useToast } from '@/hooks/use-toast';
 import { generateDeepCrawlPdf } from '@/utils/pdf/deepCrawlPdf';
 
-interface ExportDeepCrawlPdfProps {
-  domain: string;
-  urls: string[];
-  pageCount: number;
+// Define the interface for deep crawl options
+interface DeepCrawlOptions {
+  url: string;
+  pages: Array<{
+    url: string;
+    title?: string;
+    statusCode?: number;
+    contentType?: string;
+    headers?: Record<string, string>;
+    links?: string[];
+    meta?: Record<string, string>;
+    h1?: string[];
+    h2?: string[];
+    crawledAt?: string;
+  }>;
+  sitemap?: {
+    urls: number;
+    structure: Record<string, any>;
+  };
+  issues?: Array<{
+    type: string;
+    url: string;
+    description: string;
+    severity: 'high' | 'medium' | 'low';
+  }>;
+  stats?: {
+    totalPages: number;
+    uniquePages: number;
+    crawlDuration: number;
+    brokenLinks: number;
+    responseTimeAvg: number;
+  };
+  date?: string;
   scanDate?: string;
-  pageTypes?: Record<string, number>;
-  depthData?: { level: number; count: number }[];
-  brokenLinks?: { url: string; statusCode: number }[];
-  duplicatePages?: { url: string; similarUrls: string[] }[];
-  className?: string;
-  variant?: "default" | "outline" | "secondary" | "destructive" | "ghost";
-  size?: "default" | "sm" | "lg" | "icon";
-  enhancedStyling?: boolean;
-  includeFullDetails?: boolean;
-  children?: React.ReactNode;
 }
 
-const ExportDeepCrawlPdf: React.FC<ExportDeepCrawlPdfProps> = ({
-  domain,
-  urls,
-  pageCount,
-  scanDate = new Date().toISOString(),
-  pageTypes = {},
-  depthData = [],
-  brokenLinks = [],
-  duplicatePages = [],
-  className,
-  variant = "outline",
-  size = "sm",
-  enhancedStyling = true,
-  includeFullDetails = true,
-  children
-}) => {
-  const [isExporting, setIsExporting] = useState(false);
+interface ExportDeepCrawlPdfProps {
+  data: DeepCrawlOptions;
+  isLoading?: boolean;
+}
+
+const ExportDeepCrawlPdf: React.FC<ExportDeepCrawlPdfProps> = ({ data, isLoading = false }) => {
   const { toast } = useToast();
-  
+
   const handleExport = async () => {
-    if (isExporting) return;
-    
     try {
-      setIsExporting(true);
-      
       toast({
-        title: "Подготовка PDF отчета",
-        description: "Пожалуйста, подождите...",
+        title: 'Экспорт PDF',
+        description: 'Подготовка PDF отчета о результатах сканирования...',
       });
+
+      // Date formatting for the PDF filename
+      const dateStr = new Date().toISOString().split('T')[0];
+      const domain = data.url.replace(/https?:\/\//, '').replace(/[^\w]/g, '_');
       
-      // Оптимизация для больших сайтов - ограничиваем количество URL в отчете
-      let filteredUrls = urls;
-      if (urls.length > 10000) {
-        filteredUrls = urls.slice(0, 10000);
-        toast({
-          title: "Информация",
-          description: `Для оптимизации размера PDF, в отчет включено только 10,000 URL из ${urls.length}`,
-        });
-      }
-      
-      // Оптимизированный вызов генерации PDF
+      // Generate the PDF
       const pdfBlob = await generateDeepCrawlPdf({
-        domain,
-        scanDate,
-        pagesScanned: pageCount,
-        totalPages: pageCount,
-        urls: filteredUrls,
-        pageTypes,
-        depthData,
-        brokenLinks,
-        duplicatePages,
-        includeFullDetails,
-        enhancedStyling,
-        maxUrlsPerPage: 100 // Больше URL на странице для компактности
+        url: data.url,
+        pages: data.pages || [],
+        sitemap: data.sitemap,
+        issues: data.issues || [],
+        stats: data.stats,
+        date: data.date || new Date().toISOString(),
+        // Pass scanDate as date if it exists
+        ...(data.scanDate && { date: data.scanDate })
       });
       
-      if (!pdfBlob) throw new Error("Не удалось создать PDF");
-      
-      // Создаем ссылку для скачивания PDF
-      const url = window.URL.createObjectURL(pdfBlob);
+      // Create download link
+      const url = URL.createObjectURL(pdfBlob);
       const a = document.createElement('a');
       a.href = url;
-      
-      // Форматируем имя файла для скачивания
-      const formattedDomain = domain.replace(/[^a-zA-Z0-9]/g, '-');
-      const formattedDate = new Date().toISOString().split('T')[0];
-      a.download = `detailed-audit-${formattedDomain}-${formattedDate}.pdf`;
-      
+      a.download = `deepcrawl_${domain}_${dateStr}.pdf`;
       document.body.appendChild(a);
       a.click();
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(a);
+      
+      // Cleanup
+      setTimeout(() => {
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      }, 0);
       
       toast({
-        title: "Отчет сохранен",
-        description: "Полный PDF отчет успешно скачан",
+        title: 'PDF сохранен',
+        description: 'Отчет успешно сохранен на ваше устройство',
       });
     } catch (error) {
-      console.error('Ошибка при создании PDF:', error);
-      
+      console.error('Error generating deep crawl PDF:', error);
       toast({
-        title: "Ошибка",
-        description: "Не удалось создать PDF отчет. Пожалуйста, попробуйте еще раз.",
-        variant: "destructive",
+        title: 'Ошибка экспорта',
+        description: 'Не удалось создать PDF отчет',
+        variant: 'destructive',
       });
-    } finally {
-      setIsExporting(false);
     }
   };
   
   return (
-    <Button
-      variant={variant}
-      size={size}
-      className={`flex items-center gap-2 ${className}`}
+    <Button 
       onClick={handleExport}
-      disabled={isExporting}
+      disabled={isLoading || !data?.url || (data.pages?.length === 0)}
+      variant="secondary"
+      size="sm"
     >
-      {isExporting ? (
-        <>
-          <Loader2 className="h-4 w-4 animate-spin" />
-          <span>Создание PDF...</span>
-        </>
-      ) : (
-        <>
-          <FileText className="h-4 w-4" />
-          {children || <span>Скачать полный PDF отчет</span>}
-        </>
-      )}
+      {isLoading ? 'Создание отчета...' : 'Экспортировать PDF'}
     </Button>
   );
 };

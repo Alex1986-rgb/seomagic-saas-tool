@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card } from "@/components/ui/card";
 import { TabLayout, TabItem } from "@/components/ui/tab-layout";
@@ -7,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { RefreshCw, Shield, TrashIcon, Download, FileText, Rss, Wifi, FilePdf } from 'lucide-react';
+import { RefreshCw, Shield, TrashIcon, Download, FileText, Rss, Wifi, FileDown } from 'lucide-react';
 import ProxySourcesManager from './ProxySourcesManager';
 import { useProxyManager } from '@/hooks/use-proxy-manager';
 import ProxyList from './ProxyList';
@@ -103,8 +102,8 @@ const ProxyManager: React.FC = () => {
           port: proxy.port,
           type: proxy.type || 'HTTP',
           country: proxy.country || undefined,
-          speed: proxy.responseTime,
-          status: proxy.isActive ? 'active' : 'inactive',
+          speed: proxy.responseTime || undefined,
+          status: proxy.isActive ? 'active' as const : 'inactive' as const,
           lastChecked: proxy.lastChecked ? new Date(proxy.lastChecked).toLocaleString() : undefined
         })),
         stats: {
@@ -337,7 +336,7 @@ const ProxyManager: React.FC = () => {
                     disabled={proxies.length === 0}
                     className="w-full"
                   >
-                    <FilePdf className="h-4 w-4 mr-2" />
+                    <FileDown className="h-4 w-4 mr-2" />
                     Скачать PDF отчет
                   </Button>
                   <p className="text-xs text-muted-foreground mt-1">
@@ -363,7 +362,7 @@ const ProxyManager: React.FC = () => {
               onClick={handleExportPDF} 
               className="flex items-center gap-2"
             >
-              <FilePdf className="h-4 w-4" />
+              <FileDown className="h-4 w-4" />
               PDF отчет
             </Button>
           </div>

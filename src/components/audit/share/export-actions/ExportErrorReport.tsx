@@ -4,7 +4,7 @@ import { AlertCircle } from 'lucide-react';
 import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { useToast } from "@/hooks/use-toast";
 import { generateErrorReportPdf } from '@/utils/pdf/errorReport';
-import { downloadErrorReport } from '@/services/api/firecrawl/reportUtils';
+import { downloadReport } from '@/services/api/firecrawl/reportUtils';
 
 interface ExportErrorReportProps {
   taskId: string;
@@ -29,7 +29,7 @@ const ExportErrorReport: React.FC<ExportErrorReportProps> = ({
     try {
       if (taskId) {
         // Use API endpoint for tasks with IDs
-        await downloadErrorReport({
+        await downloadReport({
           id: taskId,
           reportType: 'errors'
         });
