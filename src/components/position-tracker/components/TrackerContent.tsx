@@ -43,15 +43,27 @@ const TrackerContent: React.FC<TrackerContentProps> = ({
     const engineValue = formData.searchEngine as "google" | "yandex" | "mailru" | "all";
     setSearchEngine(engineValue);
     
-    // Looking at the usePositionTracker hook, region should be a string like 'ru'
-    // But setRegion expects one of "google" | "yandex" | "mailru" | "all"
-    // This suggests there's a mistake in the hook definition
-    // As a workaround, we'll pass the region directly to bypass the type check
-    // The correct fix would be to update the usePositionTracker hook's type definitions
+    // There's a mismatch between what the form provides (a string like 'ru')
+    // and what usePositionTracker's setRegion expects (one of the search engine values)
+    // We need to map the region string to one of the allowed values
     
-    // Use type assertion to bypass TypeScript's type checking since we know
-    // there's a mismatch in the API design
-    setRegion(formData.region as any);
+    // First, determine the appropriate search engine value based on the region
+    let regionAsEngine: "google" | "yandex" | "mailru" | "all" = "all";
+    
+    // We can implement a simple mapping based on region value
+    // This is a workaround until the usePositionTracker hook is updated
+    if (formData.region) {
+      if (formData.region.includes("ru") || formData.region === "Россия") {
+        regionAsEngine = "yandex"; // For Russian regions, use Yandex
+      } else if (formData.region.includes("global")) {
+        regionAsEngine = "all"; // For global, use all engines
+      } else {
+        regionAsEngine = "google"; // Default to Google for other regions
+      }
+    }
+    
+    // Now we can safely pass the properly typed value to setRegion
+    setRegion(regionAsEngine);
     
     // Run the position check
     const trackResult = await trackPositions();
