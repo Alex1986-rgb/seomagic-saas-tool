@@ -4,7 +4,7 @@ export interface CrawlTask {
   url: string;
   domain: string;
   status: 'pending' | 'in_progress' | 'completed' | 'failed' | 'cancelled';
-  start_time: string;
+  start_time?: string;
   completion_time?: string;
   pages_scanned: number;
   estimated_total_pages?: number;

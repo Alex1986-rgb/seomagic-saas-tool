@@ -31,8 +31,12 @@ const ExportErrorReport: React.FC<ExportErrorReportProps> = ({
         // Use API endpoint for tasks with IDs
         await downloadReport({
           id: taskId,
-          type: 'errors' // Changed from reportType to type
-        });
+          status: 'completed',
+          url,
+          domain: url.replace(/^https?:\/\//, '').split('/')[0],
+          pages_scanned: 0,
+          progress: 100
+        }, 'errors');
         
         toast({
           title: "Отчет об ошибках скачан",

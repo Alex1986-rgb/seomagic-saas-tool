@@ -5,7 +5,10 @@ import { CrawlTask } from './types';
 /**
  * Handles the download of a PDF/text report
  */
-export const downloadReport = async (task: CrawlTask, reportType: 'full' | 'errors' | 'detailed' = 'full'): Promise<void> => {
+export const downloadReport = async (
+  task: CrawlTask, 
+  reportType: 'full' | 'errors' | 'detailed' = 'full'
+): Promise<void> => {
   if (task.status !== 'completed') {
     throw new Error('Task is not completed yet');
   }
