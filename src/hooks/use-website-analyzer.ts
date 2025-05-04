@@ -84,7 +84,7 @@ export const useWebsiteAnalyzer = () => {
             const sitemapUrlFromRobots = await sitemapExtractor.extractSitemapFromRobotsTxt(normalizedUrl);
             
             if (sitemapUrlFromRobots) {
-              // Fixed by passing only one argument as expected by the function
+              // Fixed: pass only one argument as expected by the function
               urlsFromSitemap = await sitemapExtractor.fetchAndProcessSitemaps(sitemapUrlFromRobots);
             }
           }
