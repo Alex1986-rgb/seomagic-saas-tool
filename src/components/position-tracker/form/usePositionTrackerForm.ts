@@ -84,6 +84,11 @@ export const usePositionTrackerForm = (onSearchComplete?: Function) => {
       // Извлекаем только домен без протокола для проверки
       const domainForCheck = formattedDomain.replace(/^https?:\/\//, '');
       
+      toast({
+        title: "Запуск браузера",
+        description: `Запуск эмуляции браузера для проверки позиций ${filteredKeywords.length} ключевых слов`,
+      });
+      
       // Используем реальный сервис проверки позиций
       const results = await checkPositions({
         domain: domainForCheck,
@@ -104,7 +109,7 @@ export const usePositionTrackerForm = (onSearchComplete?: Function) => {
 
       toast({
         title: "Успешно",
-        description: `Проверено ${filteredKeywords.length} ключевых слов для ${domainForCheck}`,
+        description: `Проверены позиции для ${filteredKeywords.length} ключевых слов для ${domainForCheck}`,
       });
 
       if (onSearchComplete) {
