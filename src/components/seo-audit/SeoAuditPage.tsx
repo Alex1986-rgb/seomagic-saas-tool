@@ -9,7 +9,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Check, AlertCircle, FileDown, Globe, History, RotateCw, Search, Settings, Upload } from "lucide-react";
+import { Check, AlertCircle, FileDown, Globe, History, RotateCw, Search, Settings, Upload, CheckCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { SeoAuditController, AuditOptions, PublishOptions, AuditHistory } from "@/services/audit/SeoAuditController";
 import { SeoAuditResult } from "@/services/audit/seoAuditor/SeoAuditor";
