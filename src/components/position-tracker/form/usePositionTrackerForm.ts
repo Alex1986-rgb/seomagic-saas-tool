@@ -7,10 +7,12 @@ import { positionTrackerFormSchema, type FormData } from './schema';
 import { useKeywordsManager } from './useKeywordsManager';
 import { useKeywordsInput } from './useKeywordsInput';
 import { checkPositions } from '@/services/position/positionTracker';
+import { useProxyManager } from '@/hooks/use-proxy-manager';
 
 export const usePositionTrackerForm = (onSearchComplete?: Function) => {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+  const { activeProxies } = useProxyManager();
 
   const form = useForm<FormData>({
     resolver: zodResolver(positionTrackerFormSchema),
@@ -20,7 +22,7 @@ export const usePositionTrackerForm = (onSearchComplete?: Function) => {
       region: 'Москва',
       depth: 100,
       scanFrequency: 'once',
-      useProxy: false,
+      useProxy: true,
     },
   });
 
@@ -59,6 +61,17 @@ export const usePositionTrackerForm = (onSearchComplete?: Function) => {
         throw new Error("Все ключевые слова пусты");
       }
       
+      // Проверяем наличие прокси
+      const hasActiveProxies = activeProxies && activeProxies.length > 0;
+      
+      if (values.useProxy && !hasActiveProxies) {
+        toast({
+          title: "Внимание",
+          description: "Нет активных прокси. Проверка может быть менее точной.",
+          variant: "default",
+        });
+      }
+      
       // Форматируем домен
       let formattedDomain = values.domain;
       if (!formattedDomain.match(/^https?:\/\//)) {
@@ -79,12 +92,19 @@ export const usePositionTrackerForm = (onSearchComplete?: Function) => {
         region: values.region,
         depth: values.depth,
         scanFrequency: values.scanFrequency,
-        useProxy: values.useProxy
+        useProxy: values.useProxy && hasActiveProxies
       });
+      
+      // Выводим информацию по найденным позициям
+      const inTop10 = results.keywords.filter(k => k.position > 0 && k.position <= 10).length;
+      const inTop30 = results.keywords.filter(k => k.position > 0 && k.position <= 30).length;
+      const notFound = results.keywords.filter(k => k.position === 0).length;
+      
+      console.log(`Статистика позиций: TOP-10: ${inTop10}, TOP-30: ${inTop30}, не найдено: ${notFound}`);
 
       toast({
         title: "Успешно",
-        description: "Проверка позиций выполнена",
+        description: `Проверено ${filteredKeywords.length} ключевых слов для ${domainForCheck}`,
       });
 
       if (onSearchComplete) {

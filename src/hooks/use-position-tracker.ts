@@ -8,17 +8,19 @@ interface UsePositionTrackerProps {
   defaultDomain?: string;
   defaultKeywords?: string[];
   defaultSearchEngine?: string;
+  defaultRegion?: string;
 }
 
 export function usePositionTracker({
   defaultDomain = '',
   defaultKeywords = [],
-  defaultSearchEngine = 'google'
+  defaultSearchEngine = 'google',
+  defaultRegion = 'ru'
 }: UsePositionTrackerProps = {}) {
   const [domain, setDomain] = useState(defaultDomain);
   const [keywords, setKeywords] = useState<string[]>(defaultKeywords);
   const [searchEngine, setSearchEngine] = useState(defaultSearchEngine);
-  const [region, setRegion] = useState('ru');
+  const [region, setRegion] = useState(defaultRegion);
   const [depth, setDepth] = useState(100);
   const [scanFrequency, setScanFrequency] = useState('daily');
   

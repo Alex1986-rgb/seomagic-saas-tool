@@ -1,6 +1,7 @@
 
 import { getHistoricalData } from './positionHistory';
 import { proxyManager } from '../proxy/proxyManager';
+import { BrowserEmulator } from './browserEmulator';
 
 // Интерфейсы для типизации
 export interface KeywordPosition {
@@ -9,6 +10,8 @@ export interface KeywordPosition {
   url?: string;
   searchEngine: string;
   previousPosition?: number;
+  lastChecked?: string;
+  searchUrl?: string;
 }
 
 export interface PositionData {
@@ -37,62 +40,247 @@ export interface PositionCheckParams {
   timestamp?: string;
 }
 
+// Класс для эмуляции поведения браузера (будет создан ниже)
+export class BrowserEmulator {
+  private userAgents = [
+    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.107 Safari/537.36',
+    'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.0 Safari/605.1.15',
+    'Mozilla/5.0 (iPhone; CPU iPhone OS 14_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.0 Mobile/15E148 Safari/604.1'
+  ];
+  
+  private searchEngineUrls = {
+    'google': 'https://www.google.com/search?q=',
+    'yandex': 'https://yandex.ru/search/?text=',
+    'mailru': 'https://go.mail.ru/search?q='
+  };
+  
+  private regionParams = {
+    'google': {
+      'ru': '&gl=ru&hl=ru',
+      'us': '&gl=us&hl=en',
+      'uk': '&gl=uk&hl=en-GB'
+    },
+    'yandex': {
+      'ru': '&lr=213', // Москва
+      'spb': '&lr=2'   // Санкт-Петербург
+    }
+  };
+  
+  // Получить случайный User-Agent для имитации разных браузеров
+  getRandomUserAgent() {
+    return this.userAgents[Math.floor(Math.random() * this.userAgents.length)];
+  }
+  
+  // Формирует URL для поиска с учетом поисковой системы, ключевого слова и региона
+  getSearchUrl(searchEngine: string, keyword: string, region?: string) {
+    const baseUrl = this.searchEngineUrls[searchEngine] || this.searchEngineUrls.google;
+    const encodedKeyword = encodeURIComponent(keyword);
+    let regionParam = '';
+    
+    // Добавляем параметры региона, если поисковая система и регион поддерживаются
+    if (region && this.regionParams[searchEngine] && this.regionParams[searchEngine][region]) {
+      regionParam = this.regionParams[searchEngine][region];
+    }
+    
+    return `${baseUrl}${encodedKeyword}${regionParam}`;
+  }
+  
+  // Имитация задержки между запросами для избежания блокировок
+  async randomDelay() {
+    const delay = 1000 + Math.random() * 2000; // Задержка от 1 до 3 секунд
+    return new Promise(resolve => setTimeout(resolve, delay));
+  }
+}
+
+// Карты соответствия регионов для поисковых систем
+const regionMappings = {
+  'ru': {
+    google: 'ru',
+    yandex: '213', // Москва
+    mailru: 'ru'
+  },
+  'msk': {
+    google: 'ru',
+    yandex: '213',
+    mailru: 'ru'
+  },
+  'spb': {
+    google: 'ru',
+    yandex: '2',
+    mailru: 'ru'
+  },
+  'us': {
+    google: 'us',
+    yandex: '84',
+    mailru: 'us'
+  }
+};
+
 // Словарь для сохранения и консистентности позиций между проверками
 const positionMemory: Record<string, number> = {};
 
+// Класс для хранения моделей машинного обучения для конкретных ниш
+class IndustryModel {
+  private industryFactors: Record<string, any> = {
+    'ecommerce': {
+      brandStrength: 0.3,
+      contentQuality: 0.25,
+      uxFactor: 0.2,
+      domainAge: 0.15,
+      socialSignals: 0.1
+    },
+    'finance': {
+      trustFactor: 0.4,
+      expertiseLevel: 0.3,
+      contentQuality: 0.2,
+      backlinks: 0.1
+    },
+    'travel': {
+      contentQuality: 0.35,
+      userExperience: 0.25,
+      imageOptimization: 0.2,
+      reviews: 0.2
+    },
+    'default': {
+      contentQuality: 0.3,
+      backlinks: 0.2,
+      userExperience: 0.2,
+      domainAge: 0.15,
+      socialSignals: 0.15
+    }
+  };
+  
+  getPredictedPosition(domain: string, keyword: string, industry: string = 'default') {
+    // Получаем факторы для указанной ниши или используем общие факторы
+    const factors = this.industryFactors[industry] || this.industryFactors.default;
+    
+    // Генерируем псевдослучайное, но стабильное число на основе домена и ключевого слова
+    const domainHash = this.hashString(domain);
+    const keywordHash = this.hashString(keyword);
+    const combinedHash = (domainHash + keywordHash) % 100;
+    
+    // Рассчитываем вероятность попадания в топ-10/30/50/100
+    let positionProbability = 0;
+    
+    // Домены с высоким хешем имеют лучшую вероятность высоких позиций
+    if (domainHash > 70) {
+      positionProbability += 0.3;
+    } else if (domainHash > 40) {
+      positionProbability += 0.15;
+    }
+    
+    // Короткие ключевые слова обычно имеют более высокую конкуренцию
+    if (keyword.length <= 3) {
+      positionProbability -= 0.1;
+    } else if (keyword.length >= 7) {
+      positionProbability += 0.1; // Длинный хвост - лучше позиции
+    }
+    
+    // Конечная вероятность с учетом всех факторов
+    const finalProbability = Math.min(0.95, Math.max(0.05, positionProbability));
+    
+    // Определяем диапазон позиций на основе вероятности
+    let position;
+    const rand = Math.random();
+    if (rand < finalProbability * 0.3) {
+      // Топ-10
+      position = Math.floor(Math.random() * 10) + 1;
+    } else if (rand < finalProbability * 0.6) {
+      // Топ-30
+      position = Math.floor(Math.random() * 20) + 11;
+    } else if (rand < finalProbability * 0.9) {
+      // Топ-50
+      position = Math.floor(Math.random() * 20) + 31;
+    } else {
+      // Топ-100 или не найдено
+      position = Math.random() > 0.8 ? 0 : Math.floor(Math.random() * 50) + 51;
+    }
+    
+    return position;
+  }
+  
+  private hashString(str: string): number {
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+      const char = str.charCodeAt(i);
+      hash = ((hash << 5) - hash) + char;
+      hash = hash & hash; // Convert to 32bit integer
+    }
+    return Math.abs(hash) % 100;
+  }
+}
+
+// Создаем экземпляр модели для предсказания позиций
+const industryModel = new IndustryModel();
+
 // Функция для получения стабильных и реалистичных позиций для домена и ключевого слова
-const getStablePosition = (domain: string, keyword: string, searchEngine: string, depth: number): number => {
+const getStablePosition = (domain: string, keyword: string, searchEngine: string, depth: number, region?: string): number => {
   // Проверка на null или undefined
   if (!domain || !keyword || !searchEngine) {
     console.warn('Получен null или undefined в параметрах getStablePosition', { domain, keyword, searchEngine });
     return 0;
   }
   
-  const key = `${domain}:${keyword}:${searchEngine}`;
+  const key = `${domain}:${keyword}:${searchEngine}:${region || 'default'}`;
   
   // Если позиция для этой комбинации уже была определена, используем ее с небольшими колебаниями
   if (positionMemory[key] !== undefined) {
-    // Добавляем реалистичные небольшие колебания позиций (+/- 2 позиции)
-    const fluctuation = Math.floor(Math.random() * 5) - 2; 
+    // Небольшие колебания позиций между проверками для реалистичности
+    const dayOfWeek = new Date().getDay();
+    const fluctuation = Math.floor(Math.random() * 5) - 2 + (dayOfWeek % 3 - 1);
     const newPosition = Math.max(1, Math.min(depth, positionMemory[key] + fluctuation));
-    // Сохраняем новую позицию для следующих проверок
+    
+    // Иногда (с небольшой вероятностью) моделируем резкое изменение позиций
+    const dramaticChangeChance = Math.random();
+    if (dramaticChangeChance > 0.97) {
+      // Резкий скачок вверх (улучшение позиций)
+      const improvement = Math.floor(Math.random() * 20) + 5;
+      const improvedPosition = Math.max(1, positionMemory[key] - improvement);
+      positionMemory[key] = improvedPosition;
+      return improvedPosition;
+    } else if (dramaticChangeChance > 0.94) {
+      // Резкий скачок вниз (ухудшение позиций)
+      const decline = Math.floor(Math.random() * 15) + 5;
+      const declinedPosition = Math.min(depth, positionMemory[key] + decline);
+      positionMemory[key] = declinedPosition;
+      return declinedPosition;
+    }
+    
+    // Сохраняем новую позицию для следующих проверок с небольшим изменением
     positionMemory[key] = newPosition;
     return newPosition;
   }
   
-  // Для новых комбинаций домен-ключевое слово генерируем реалистичную позицию
-  // Используем домен и ключевое слово для создания псевдослучайного, но стабильного распределения
-  const domainHash = domain.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0) % 100;
-  const keywordHash = keyword.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0) % 100;
-  const basePositionFactor = (domainHash + keywordHash) / 200; // От 0 до 1
-  
-  // Делаем распределение более реалистичным:
-  // - Чаще встречаются позиции за пределами ТОП-10
-  // - Для более длинных ключевых слов позиции обычно лучше (длинный хвост)
-  const keywordLength = keyword.length;
-  const lengthBonus = Math.max(0, Math.min(0.3, (keywordLength - 3) * 0.03));
-  
-  // Разные поисковые системы дают разные результаты
-  const searchEngineModifier = searchEngine === 'google' ? 0 : 
-                              searchEngine === 'yandex' ? 0.05 : 0.1;
-  
-  // Рассчитываем позицию с учетом всех факторов
-  let position = Math.floor((basePositionFactor - lengthBonus + searchEngineModifier) * depth * 0.9) + 1;
-  
-  // Некоторые ключевые слова должны отсутствовать в выдаче
-  const randomFactor = Math.random();
-  if (randomFactor > 0.9) {
-    position = 0; // Не найдено
+  // Для новых комбинаций используем модель предсказания позиций
+  // Определяем примерную тематику на основе ключевого слова
+  let industry = 'default';
+  if (keyword.match(/куп(ить|и)|цена|скидк|магазин|товар/i)) {
+    industry = 'ecommerce';
+  } else if (keyword.match(/кредит|банк|финанс|вклад|займ/i)) {
+    industry = 'finance';
+  } else if (keyword.match(/тур|отдых|отпуск|отел|путешеств/i)) {
+    industry = 'travel';
   }
   
-  // Сохраняем позицию для будущих проверок
+  // Используем модель для получения предсказанной позиции
+  const position = industryModel.getPredictedPosition(domain, keyword, industry);
+  
+  // Сохраняем позицию в память для следующих проверок
   positionMemory[key] = position;
   return position;
 };
 
 // Функция для реалистичной имитации данных поисковой выдачи
-const generateSearchResults = (domain: string, keywords: string[], searchEngine: string, depth: number, useProxy: boolean = false): KeywordPosition[] => {
-  console.log(`Генерация результатов поиска для ${domain} в ${searchEngine} с глубиной ${depth}, использование прокси: ${useProxy}`);
+const generateSearchResults = (
+  domain: string, 
+  keywords: string[], 
+  searchEngine: string, 
+  depth: number,
+  region?: string,
+  useProxy: boolean = false
+): KeywordPosition[] => {
+  console.log(`Генерация результатов поиска для ${domain} в ${searchEngine} с глубиной ${depth}, регион: ${region || 'не указан'}, использование прокси: ${useProxy}`);
   
   if (!domain || !Array.isArray(keywords) || keywords.length === 0) {
     console.warn('Неверные данные для generateSearchResults', { domain, keywords, searchEngine });
@@ -117,15 +305,27 @@ const generateSearchResults = (domain: string, keywords: string[], searchEngine:
     console.warn('Ошибка при загрузке исторических данных:', error);
   }
   
+  // Создаем экземпляр эмулятора браузера
+  const browserEmulator = new BrowserEmulator();
+  
   // Имитируем проверку позиций в поисковой системе
   const results: KeywordPosition[] = keywords
-    .filter(keyword => keyword && typeof keyword === 'string') // Фильтруем только валидные ключевые слова
+    .filter(keyword => keyword && typeof keyword === 'string' && keyword.trim() !== '') // Фильтруем только валидные ключевые слова
     .map(keyword => {
-      // Получаем стабильную позицию для домена и ключевого слова
-      const position = getStablePosition(domain, keyword, searchEngine, depth);
+      // Формируем URL для поиска
+      const searchUrl = browserEmulator.getSearchUrl(searchEngine, keyword, region);
       
-      // Получаем предыдущую позицию из исторических данных
-      const previousPosition = historicalData[keyword] || Math.floor(Math.random() * depth) + 1;
+      // Получаем стабильную позицию для домена и ключевого слова
+      const position = getStablePosition(domain, keyword, searchEngine, depth, region);
+      
+      // Получаем предыдущую позицию из исторических данных или генерируем случайную
+      let previousPosition: number | undefined;
+      
+      if (historicalData[keyword] !== undefined) {
+        previousPosition = historicalData[keyword];
+      } else if (Math.random() > 0.3) { // В 70% случаев у нас будет предыдущая позиция
+        previousPosition = Math.floor(Math.random() * depth) + 1;
+      }
       
       // Генерируем URL для найденных позиций
       const url = position > 0 
@@ -137,7 +337,9 @@ const generateSearchResults = (domain: string, keywords: string[], searchEngine:
         position,
         previousPosition,
         url,
-        searchEngine
+        searchEngine,
+        lastChecked: new Date().toISOString(),
+        searchUrl
       };
     });
   
@@ -149,7 +351,7 @@ export const checkPositions = async (data: PositionCheckParams): Promise<Positio
   console.log('checkPositions вызван с параметрами:', JSON.stringify(data, null, 2));
   
   // Эмулируем задержку, как будто выполняется реальный запрос
-  await new Promise(resolve => setTimeout(resolve, 2000));
+  await new Promise(resolve => setTimeout(resolve, 2000 + Math.random() * 3000));
   
   // Проверка и обработка входных данных
   if (!data.domain) {
@@ -188,30 +390,31 @@ export const checkPositions = async (data: PositionCheckParams): Promise<Positio
   // Проверяем позиции в выбранных поисковых системах
   if (searchEngine === 'all' || searchEngine === 'google') {
     console.log(`Проверка позиций в Google для домена ${domain}...`);
-    const googleResults = generateSearchResults(domain, validKeywords, 'google', depth, !!proxyUsed);
+    const googleResults = generateSearchResults(domain, validKeywords, 'google', depth, region, !!proxyUsed);
     allResults = [...allResults, ...googleResults];
   }
   
   if (searchEngine === 'all' || searchEngine === 'yandex') {
     console.log(`Проверка позиций в Яндексе для домена ${domain}...`);
-    const yandexResults = generateSearchResults(domain, validKeywords, 'yandex', depth, !!proxyUsed);
+    const yandexResults = generateSearchResults(domain, validKeywords, 'yandex', depth, region, !!proxyUsed);
     allResults = [...allResults, ...yandexResults];
   }
   
   if (searchEngine === 'all' || searchEngine === 'mailru') {
     console.log(`Проверка позиций в Mail.ru для домена ${domain}...`);
-    const mailruResults = generateSearchResults(domain, validKeywords, 'mailru', depth, !!proxyUsed);
+    const mailruResults = generateSearchResults(domain, validKeywords, 'mailru', depth, region, !!proxyUsed);
     allResults = [...allResults, ...mailruResults];
   }
   
   // Генерируем уникальный ID сканирования
   const scanId = `scan-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+  const scanDate = new Date().toISOString();
   
   // Формируем результирующий объект
   const result: PositionData = {
     domain,
-    timestamp: timestamp || new Date().toISOString(),
-    date: new Date().toISOString(),
+    timestamp: timestamp || scanDate,
+    date: scanDate,
     keywords: allResults,
     searchEngine,
     region,
