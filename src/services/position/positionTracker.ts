@@ -37,29 +37,89 @@ export interface PositionCheckParams {
   timestamp?: string;
 }
 
-// Моковые данные для демонстрации
-const mockSearchResults = (domain: string, keywords: string[], searchEngine: string, depth: number, useProxy: boolean = false) => {
+// Словарь для сохранения и консистентности позиций между проверками
+const positionMemory: Record<string, Record<string, number>> = {};
+
+// Функция для получения стабильных и реалистичных позиций для домена и ключевого слова
+const getStablePosition = (domain: string, keyword: string, searchEngine: string, depth: number): number => {
+  const key = `${domain}:${keyword}:${searchEngine}`;
+  
+  // Если позиция для этой комбинации уже была определена, используем ее с небольшими колебаниями
+  if (positionMemory[key]) {
+    // Добавляем реалистичные небольшие колебания позиций (+/- 2 позиции)
+    const fluctuation = Math.floor(Math.random() * 5) - 2; 
+    const newPosition = Math.max(1, Math.min(depth, positionMemory[key] + fluctuation));
+    // Сохраняем новую позицию для следующих проверок
+    positionMemory[key] = newPosition;
+    return newPosition;
+  }
+  
+  // Для новых комбинаций домен-ключевое слово генерируем реалистичную позицию
+  // Используем домен и ключевое слово для создания псевдослучайного, но стабильного распределения
+  const domainHash = domain.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0) % 100;
+  const keywordHash = keyword.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0) % 100;
+  const basePositionFactor = (domainHash + keywordHash) / 200; // От 0 до 1
+  
+  // Делаем распределение более реалистичным:
+  // - Чаще встречаются позиции за пределами ТОП-10
+  // - Для более длинных ключевых слов позиции обычно лучше (длинный хвост)
+  const keywordLength = keyword.length;
+  const lengthBonus = Math.max(0, Math.min(0.3, (keywordLength - 3) * 0.03));
+  
+  // Разные поисковые системы дают разные результаты
+  const searchEngineModifier = searchEngine === 'google' ? 0 : 
+                              searchEngine === 'yandex' ? 0.05 : 0.1;
+  
+  // Рассчитываем позицию с учетом всех факторов
+  let position = Math.floor((basePositionFactor - lengthBonus + searchEngineModifier) * depth * 0.9) + 1;
+  
+  // Некоторые ключевые слова должны отсутствовать в выдаче
+  const randomFactor = Math.random();
+  if (randomFactor > 0.9) {
+    position = 0; // Не найдено
+  }
+  
+  // Сохраняем позицию для будущих проверок
+  positionMemory[key] = position;
+  return position;
+};
+
+// Функция для реалистичной имитации данных поисковой выдачи
+const generateSearchResults = (domain: string, keywords: string[], searchEngine: string, depth: number, useProxy: boolean = false): KeywordPosition[] => {
   console.log(`Генерация результатов поиска для ${domain} в ${searchEngine} с глубиной ${depth}, использование прокси: ${useProxy}`);
+  
+  // Получаем исторические данные, если они есть
+  let historicalData: Record<string, number> = {};
+  try {
+    const history = JSON.parse(localStorage.getItem(`position_history_${domain}`) || '[]');
+    if (history.length > 0) {
+      const lastRecord = history[0];
+      lastRecord.keywords.forEach((k: KeywordPosition) => {
+        if (k.searchEngine === searchEngine) {
+          historicalData[k.keyword] = k.position;
+        }
+      });
+    }
+  } catch (error) {
+    console.warn('Ошибка при загрузке исторических данных:', error);
+  }
   
   // Имитируем проверку позиций в поисковой системе
   const results: KeywordPosition[] = keywords.map(keyword => {
-    // Генерируем случайную позицию для демонстрации
-    // При использовании прокси делаем позиции немного лучше (для демонстрации)
-    const randomPosition = Math.random() > (useProxy ? 0.15 : 0.25) 
-      ? Math.floor(Math.random() * (useProxy ? depth * 0.7 : depth)) + 1 
-      : 0; // Иногда возвращаем 0, обозначая, что позиция не найдена
+    // Получаем стабильную позицию для домена и ключевого слова
+    const position = getStablePosition(domain, keyword, searchEngine, depth);
     
-    // Учитываем предыдущую позицию для отображения динамики
-    const previousPosition = Math.floor(Math.random() * depth) + 1;
+    // Получаем предыдущую позицию из исторических данных
+    const previousPosition = historicalData[keyword] || Math.floor(Math.random() * depth) + 1;
     
     // Генерируем URL для найденных позиций
-    const url = randomPosition > 0 
-      ? `https://${domain}/page-${keyword.replace(/\s+/g, '-').toLowerCase()}` 
+    const url = position > 0 
+      ? `https://${domain}/${keyword.replace(/\s+/g, '-').toLowerCase()}` 
       : undefined;
     
     return {
       keyword,
-      position: randomPosition,
+      position,
       previousPosition,
       url,
       searchEngine
@@ -97,19 +157,19 @@ export const checkPositions = async (data: PositionCheckParams): Promise<Positio
   // Проверяем позиции в выбранных поисковых системах
   if (searchEngine === 'all' || searchEngine === 'google') {
     console.log(`Проверка позиций в Google для домена ${domain}...`);
-    const googleResults = mockSearchResults(domain, keywords, 'google', depth, !!proxyUsed);
+    const googleResults = generateSearchResults(domain, keywords, 'google', depth, !!proxyUsed);
     allResults = [...allResults, ...googleResults];
   }
   
   if (searchEngine === 'all' || searchEngine === 'yandex') {
     console.log(`Проверка позиций в Яндексе для домена ${domain}...`);
-    const yandexResults = mockSearchResults(domain, keywords, 'yandex', depth, !!proxyUsed);
+    const yandexResults = generateSearchResults(domain, keywords, 'yandex', depth, !!proxyUsed);
     allResults = [...allResults, ...yandexResults];
   }
   
   if (searchEngine === 'all' || searchEngine === 'mailru') {
     console.log(`Проверка позиций в Mail.ru для домена ${domain}...`);
-    const mailruResults = mockSearchResults(domain, keywords, 'mailru', depth, !!proxyUsed);
+    const mailruResults = generateSearchResults(domain, keywords, 'mailru', depth, !!proxyUsed);
     allResults = [...allResults, ...mailruResults];
   }
   
@@ -149,7 +209,8 @@ export const checkPositions = async (data: PositionCheckParams): Promise<Positio
 const saveResultToHistory = (result: PositionData) => {
   try {
     // Получаем текущую историю
-    const historyJson = localStorage.getItem('position_history');
+    const domainKey = `position_history_${result.domain}`;
+    const historyJson = localStorage.getItem(domainKey);
     let history: PositionData[] = historyJson ? JSON.parse(historyJson) : [];
     
     // Добавляем новый результат
@@ -161,8 +222,18 @@ const saveResultToHistory = (result: PositionData) => {
     }
     
     // Сохраняем обновленную историю
-    localStorage.setItem('position_history', JSON.stringify(history));
-    console.log(`История сохранена: ${history.length} записей`);
+    localStorage.setItem(domainKey, JSON.stringify(history));
+    
+    // Сохраняем также в общей истории для всех доменов
+    const globalHistoryJson = localStorage.getItem('position_history');
+    let globalHistory: PositionData[] = globalHistoryJson ? JSON.parse(globalHistoryJson) : [];
+    globalHistory.unshift(result);
+    if (globalHistory.length > 100) {
+      globalHistory = globalHistory.slice(0, 100);
+    }
+    localStorage.setItem('position_history', JSON.stringify(globalHistory));
+    
+    console.log(`История сохранена: ${history.length} записей для домена ${result.domain}`);
     
     // Отправляем событие об обновлении истории
     const event = new CustomEvent('position-history-updated', { detail: result });
