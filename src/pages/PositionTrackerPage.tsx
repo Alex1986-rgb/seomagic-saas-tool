@@ -15,7 +15,11 @@ const mockResults = {
     { keyword: 'seo tools', position: 12, previousPosition: 15, change: 3 }
   ],
   date: new Date().toISOString(),
-  searchEngine: 'Google'
+  searchEngine: 'Google',
+  // Adding the required properties to match PositionData type
+  timestamp: new Date().toISOString(),
+  depth: 100,
+  scanFrequency: 'weekly'
 };
 
 const PositionTrackerPage: React.FC = () => {

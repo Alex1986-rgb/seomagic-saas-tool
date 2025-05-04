@@ -7,7 +7,7 @@ import AuditResultsContainer from '@/components/audit/results/AuditResultsContai
 import { useAuditDataProvider } from '@/components/audit/results/hooks/useAuditDataProvider';
 
 const AuditPage: React.FC = () => {
-  const auditData = useAuditDataProvider();
+  const auditData = useAuditDataProvider(""); // Providing empty string as default URL
   
   return (
     <>
@@ -17,7 +17,7 @@ const AuditPage: React.FC = () => {
       </Helmet>
       
       <div className="container mx-auto px-4 py-8">
-        <AuditHero />
+        <AuditHero url="" /> {/* Providing empty string for URL */}
         <div className="mt-8">
           <UrlForm />
         </div>
