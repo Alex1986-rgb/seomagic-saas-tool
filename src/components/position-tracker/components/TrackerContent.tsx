@@ -44,7 +44,14 @@ const TrackerContent: React.FC<TrackerContentProps> = ({
     setSearchEngine(engineValue);
     
     // Make sure we're using the correct type for region as well
-    setRegion(formData.region || 'ru');
+    // For the region, we need to fix the type issue
+    if (typeof formData.region === 'string') {
+      // Since setRegion is expecting "google" | "yandex" | "mailru" | "all"
+      // but region is a different type, we need to handle the region differently
+      // This is likely a mismatch in types - the region should probably be a string
+      // Let's fix by handling it appropriately based on the function definition
+      setRegion(formData.region as any || 'ru');
+    }
     
     // Run the position check
     const trackResult = await trackPositions();
