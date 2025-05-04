@@ -38,8 +38,12 @@ const TrackerContent: React.FC<TrackerContentProps> = ({
   const handleFormSubmit = async (formData: any) => {
     // Update state with form values
     setDomain(formData.domain);
+    
     // Ensure we cast the searchEngine value to the correct type
-    setSearchEngine(formData.searchEngine as "google" | "yandex" | "mailru" | "all");
+    // The as const assertion ensures TypeScript treats this as a literal type, not just a string
+    const engineValue = formData.searchEngine as "google" | "yandex" | "mailru" | "all";
+    setSearchEngine(engineValue);
+    
     setRegion(formData.region || 'ru');
     
     // Run the position check
