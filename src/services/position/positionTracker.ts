@@ -40,59 +40,6 @@ export interface PositionCheckParams {
   timestamp?: string;
 }
 
-// Класс для эмуляции поведения браузера (будет создан ниже)
-export class BrowserEmulator {
-  private userAgents = [
-    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
-    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.107 Safari/537.36',
-    'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.0 Safari/605.1.15',
-    'Mozilla/5.0 (iPhone; CPU iPhone OS 14_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.0 Mobile/15E148 Safari/604.1'
-  ];
-  
-  private searchEngineUrls = {
-    'google': 'https://www.google.com/search?q=',
-    'yandex': 'https://yandex.ru/search/?text=',
-    'mailru': 'https://go.mail.ru/search?q='
-  };
-  
-  private regionParams = {
-    'google': {
-      'ru': '&gl=ru&hl=ru',
-      'us': '&gl=us&hl=en',
-      'uk': '&gl=uk&hl=en-GB'
-    },
-    'yandex': {
-      'ru': '&lr=213', // Москва
-      'spb': '&lr=2'   // Санкт-Петербург
-    }
-  };
-  
-  // Получить случайный User-Agent для имитации разных браузеров
-  getRandomUserAgent() {
-    return this.userAgents[Math.floor(Math.random() * this.userAgents.length)];
-  }
-  
-  // Формирует URL для поиска с учетом поисковой системы, ключевого слова и региона
-  getSearchUrl(searchEngine: string, keyword: string, region?: string) {
-    const baseUrl = this.searchEngineUrls[searchEngine] || this.searchEngineUrls.google;
-    const encodedKeyword = encodeURIComponent(keyword);
-    let regionParam = '';
-    
-    // Добавляем параметры региона, если поисковая система и регион поддерживаются
-    if (region && this.regionParams[searchEngine] && this.regionParams[searchEngine][region]) {
-      regionParam = this.regionParams[searchEngine][region];
-    }
-    
-    return `${baseUrl}${encodedKeyword}${regionParam}`;
-  }
-  
-  // Имитация задержки между запросами для избежания блокировок
-  async randomDelay() {
-    const delay = 1000 + Math.random() * 2000; // Задержка от 1 до 3 секунд
-    return new Promise(resolve => setTimeout(resolve, delay));
-  }
-}
-
 // Карты соответствия регионов для поисковых систем
 const regionMappings = {
   'ru': {
@@ -485,3 +432,4 @@ const saveResultToHistory = (result: PositionData) => {
     console.error('Ошибка сохранения истории:', error);
   }
 };
+
