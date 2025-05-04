@@ -54,14 +54,14 @@ export const usePositionTrackerForm = (onSearchComplete?: Function) => {
     setIsLoading(true);
 
     try {
-      // Фильтруем пустые ключевые слова
+      // Filter empty keywords
       const filteredKeywords = keywords.filter(k => k && k.trim() !== '');
       
       if (filteredKeywords.length === 0) {
         throw new Error("Все ключевые слова пусты");
       }
       
-      // Проверяем наличие прокси
+      // Check for available proxies
       const hasActiveProxies = activeProxies && activeProxies.length > 0;
       
       if (values.useProxy && !hasActiveProxies) {
@@ -72,16 +72,16 @@ export const usePositionTrackerForm = (onSearchComplete?: Function) => {
         });
       }
       
-      // Форматируем домен
+      // Format domain
       let formattedDomain = values.domain;
       if (!formattedDomain.match(/^https?:\/\//)) {
         formattedDomain = 'http://' + formattedDomain;
       }
       
-      // Удаляем trailing slash если он есть
+      // Remove trailing slash if present
       formattedDomain = formattedDomain.replace(/\/$/, '');
       
-      // Извлекаем только домен без протокола для проверки
+      // Extract only domain without protocol for checking
       const domainForCheck = formattedDomain.replace(/^https?:\/\//, '');
       
       toast({
@@ -89,7 +89,7 @@ export const usePositionTrackerForm = (onSearchComplete?: Function) => {
         description: `Запуск эмуляции браузера для проверки позиций ${filteredKeywords.length} ключевых слов`,
       });
       
-      // Используем реальный сервис проверки позиций
+      // Using real position checking service
       const results = await checkPositions({
         domain: domainForCheck,
         keywords: filteredKeywords,
@@ -100,7 +100,7 @@ export const usePositionTrackerForm = (onSearchComplete?: Function) => {
         useProxy: values.useProxy && hasActiveProxies
       });
       
-      // Выводим информацию по найденным позициям
+      // Output information on found positions
       const inTop10 = results.keywords.filter(k => k.position > 0 && k.position <= 10).length;
       const inTop30 = results.keywords.filter(k => k.position > 0 && k.position <= 30).length;
       const notFound = results.keywords.filter(k => k.position === 0).length;
