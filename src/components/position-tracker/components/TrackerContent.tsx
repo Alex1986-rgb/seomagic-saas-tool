@@ -40,16 +40,14 @@ const TrackerContent: React.FC<TrackerContentProps> = ({
     setDomain(formData.domain);
     
     // Ensure we cast the searchEngine value to the correct type
-    // The as const assertion ensures TypeScript treats this as a literal type, not just a string
     const engineValue = formData.searchEngine as "google" | "yandex" | "mailru" | "all";
     setSearchEngine(engineValue);
     
     // Make sure we're using the correct type for region as well
-    const regionValue = formData.region || 'ru';
-    setRegion(regionValue);
+    setRegion(formData.region || 'ru');
     
     // Run the position check
-    await trackPositions();
+    const trackResult = await trackPositions();
     
     // If we have results, pass them to parent component
     if (results) {
