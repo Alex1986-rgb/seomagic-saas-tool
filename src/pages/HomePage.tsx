@@ -1,10 +1,10 @@
 
 import React from 'react';
 import { Helmet } from 'react-helmet-async';
-import { CoreFeaturesSection } from '@/components/home/CoreFeaturesSection';
-import { DetailedFeaturesSection } from '@/components/home/DetailedFeaturesSection';
-import { PositionTrackerSection } from '@/components/home/PositionTrackerSection';
-import { VideoSection } from '@/components/home/VideoSection';
+import CoreFeaturesSection from '@/components/home/CoreFeaturesSection';
+import DetailedFeaturesSection from '@/components/home/DetailedFeaturesSection';
+import PositionTrackerSection from '@/components/home/PositionTrackerSection';
+import VideoSection from '@/components/home/VideoSection';
 import HeroSection from '@/components/hero/HeroSection';
 
 const HomePage: React.FC = () => {

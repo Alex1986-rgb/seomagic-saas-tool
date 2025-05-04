@@ -1,9 +1,9 @@
 
 import React from 'react';
 import { Helmet } from 'react-helmet-async';
-import { AuditHero } from '@/components/audit/AuditHero';
-import { UrlForm } from '@/components/url-form';
-import { AuditResultsContainer } from '@/components/audit/results/AuditResultsContainer';
+import AuditHero from '@/components/audit/AuditHero';
+import UrlForm from '@/components/url-form';
+import AuditResultsContainer from '@/components/audit/results/AuditResultsContainer';
 import { useAuditDataProvider } from '@/components/audit/results/hooks/useAuditDataProvider';
 
 const AuditPage: React.FC = () => {
@@ -22,7 +22,7 @@ const AuditPage: React.FC = () => {
           <UrlForm />
         </div>
         <div className="mt-8">
-          <AuditResultsContainer />
+          <AuditResultsContainer url="" />
         </div>
       </div>
     </>

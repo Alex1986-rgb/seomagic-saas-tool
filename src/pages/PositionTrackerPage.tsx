@@ -6,6 +6,18 @@ import { PositionTrackerResults } from '@/components/position-tracker/PositionTr
 import { PositionTrackerAnalytics } from '@/components/position-tracker/PositionTrackerAnalytics';
 import { PositionTrackerHistory } from '@/components/position-tracker/PositionTrackerHistory';
 
+// Mock data for position tracker results
+const mockResults = {
+  domain: 'example.com',
+  keywords: [
+    { keyword: 'seo audit', position: 3, previousPosition: 5, change: 2 },
+    { keyword: 'website optimization', position: 7, previousPosition: 10, change: 3 },
+    { keyword: 'seo tools', position: 12, previousPosition: 15, change: 3 }
+  ],
+  date: new Date().toISOString(),
+  searchEngine: 'Google'
+};
+
 const PositionTrackerPage: React.FC = () => {
   return (
     <>
@@ -19,7 +31,7 @@ const PositionTrackerPage: React.FC = () => {
         
         <div className="space-y-8">
           <PositionTrackerForm />
-          <PositionTrackerResults />
+          <PositionTrackerResults results={mockResults} />
           <PositionTrackerAnalytics />
           <PositionTrackerHistory />
         </div>
