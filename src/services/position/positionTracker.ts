@@ -1,4 +1,3 @@
-
 import { getHistoricalData } from './positionHistory';
 import { proxyManager } from '../proxy/proxyManager';
 
@@ -38,14 +37,14 @@ export interface PositionCheckParams {
 }
 
 // Словарь для сохранения и консистентности позиций между проверками
-const positionMemory: Record<string, Record<string, number>> = {};
+const positionMemory: Record<string, number> = {};
 
 // Функция для получения стабильных и реалистичных позиций для домена и ключевого слова
 const getStablePosition = (domain: string, keyword: string, searchEngine: string, depth: number): number => {
   const key = `${domain}:${keyword}:${searchEngine}`;
   
   // Если позиция для этой комбинации уже была определена, используем ее с небольшими колебаниями
-  if (positionMemory[key]) {
+  if (positionMemory[key] !== undefined) {
     // Добавляем реалистичные небольшие колебания позиций (+/- 2 позиции)
     const fluctuation = Math.floor(Math.random() * 5) - 2; 
     const newPosition = Math.max(1, Math.min(depth, positionMemory[key] + fluctuation));
