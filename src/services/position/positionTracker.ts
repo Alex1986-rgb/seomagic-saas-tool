@@ -105,11 +105,13 @@ const generateSearchResults = (domain: string, keywords: string[], searchEngine:
     const history = JSON.parse(localStorage.getItem(`position_history_${domain}`) || '[]');
     if (history.length > 0) {
       const lastRecord = history[0];
-      lastRecord.keywords.forEach((k: KeywordPosition) => {
-        if (k.searchEngine === searchEngine && k.keyword) {
-          historicalData[k.keyword] = k.position;
-        }
-      });
+      if (lastRecord && lastRecord.keywords) {
+        lastRecord.keywords.forEach((k: KeywordPosition) => {
+          if (k.searchEngine === searchEngine && k.keyword) {
+            historicalData[k.keyword] = k.position;
+          }
+        });
+      }
     }
   } catch (error) {
     console.warn('Ошибка при загрузке исторических данных:', error);
@@ -172,7 +174,7 @@ export const checkPositions = async (data: PositionCheckParams): Promise<Positio
   let proxyUsed: string | undefined;
   if (useProxy) {
     const activeProxies = proxyManager.getActiveProxies();
-    if (activeProxies.length > 0) {
+    if (activeProxies && activeProxies.length > 0) {
       const randomProxy = activeProxies[Math.floor(Math.random() * activeProxies.length)];
       proxyUsed = `${randomProxy.ip}:${randomProxy.port}`;
       console.log(`Используем прокси для проверки позиций: ${proxyUsed}`);
@@ -223,7 +225,7 @@ export const checkPositions = async (data: PositionCheckParams): Promise<Positio
   // Получаем исторические данные для сравнения
   try {
     const history = await getHistoricalData(domain);
-    if (history.length > 0) {
+    if (history && history.length > 0) {
       result.previousResults = [history[0]];
       console.log(`Получены исторические данные для сравнения: ${history.length} записей`);
     }
@@ -231,7 +233,7 @@ export const checkPositions = async (data: PositionCheckParams): Promise<Positio
     console.error('Ошибка при получении исторических данных:', error);
   }
   
-  // Сохраняем результат в историю (в реальном приложении здесь был бы API-вызов)
+  // Сохраняем результат в историю
   saveResultToHistory(result);
   console.log(`Результаты проверки сохранены в историю: ${allResults.length} ключевых слов проверено`);
   

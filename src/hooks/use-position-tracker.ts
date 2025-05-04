@@ -68,7 +68,7 @@ export function usePositionTracker({
     
     try {
       // Проверяем наличие прокси
-      const hasActiveProxies = activeProxies.length > 0;
+      const hasActiveProxies = activeProxies && activeProxies.length > 0;
       
       if (!hasActiveProxies) {
         toast({
@@ -80,22 +80,30 @@ export function usePositionTracker({
         console.log(`Доступно ${activeProxies.length} активных прокси для проверки позиций`);
       }
       
-      // Добавляем проверку на корректность домена
-      let formattedDomain = domain;
-      if (!formattedDomain.match(/^https?:\/\//)) {
-        // Если домен не содержит протокол, добавляем http://
+      // Форматируем домен для проверки
+      let formattedDomain = domain.trim();
+      
+      // Добавляем протокол, если его нет
+      if (!formattedDomain.match(/^https?:\/\//i)) {
         formattedDomain = 'http://' + formattedDomain;
       }
       
       // Удаляем trailing slash если он есть
-      formattedDomain = formattedDomain.replace(/\/$/, '');
+      formattedDomain = formattedDomain.replace(/\/+$/, '');
       
       // Извлекаем только домен без протокола для проверки
-      const domainForCheck = formattedDomain.replace(/^https?:\/\//, '');
+      const domainForCheck = formattedDomain.replace(/^https?:\/\//i, '');
+      
+      // Фильтруем пустые ключевые слова
+      const validKeywords = keywords.filter(k => k && k.trim() !== '');
+      
+      if (validKeywords.length === 0) {
+        throw new Error('Все ключевые слова недействительны');
+      }
       
       const data = {
         domain: domainForCheck,
-        keywords: keywords.filter(k => k && k.trim() !== ''), // Фильтруем пустые ключевые слова
+        keywords: validKeywords,
         searchEngine,
         region,
         depth,
@@ -118,7 +126,7 @@ export function usePositionTracker({
       
       toast({
         title: "Готово",
-        description: `Проверено ${keywords.length} ключевых слов для ${domainForCheck}`,
+        description: `Проверено ${validKeywords.length} ключевых слов для ${domainForCheck}`,
       });
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Произошла ошибка при проверке позиций";
@@ -164,6 +172,6 @@ export function usePositionTracker({
     error,
     trackPositions,
     historyUpdated,
-    hasActiveProxies: activeProxies.length > 0
+    hasActiveProxies: activeProxies && activeProxies.length > 0
   };
 }
