@@ -1,4 +1,3 @@
-
 import { useState, useCallback, useEffect } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import { generateAuditData } from '@/services/audit/generators';
@@ -100,7 +99,7 @@ export const useWebsiteAnalyzer = () => {
           // Continue with crawling even if sitemap processing fails
         }
       }
-
+      
       for (let i = 2; i <= 10; i++) {
         await new Promise(resolve => setTimeout(resolve, 500));
         setScanProgress(i * 10);
