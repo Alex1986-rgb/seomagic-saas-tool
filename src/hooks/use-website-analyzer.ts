@@ -27,7 +27,7 @@ export const useWebsiteAnalyzer = () => {
   const [options, setOptions] = useState<ScanOptions>({
     useSitemap: true,
     useRobotsTxt: true,
-    maxPages: 1000,
+    maxPages: 55555555, // Increased maximum pages limit as requested
     followExternalLinks: false,
     scanJavascript: true,
     includeImages: true,
@@ -36,7 +36,7 @@ export const useWebsiteAnalyzer = () => {
   });
   const { toast } = useToast();
 
-  const sitemapExtractor = new SitemapExtractor({ maxSitemaps: 5 });
+  const sitemapExtractor = new SitemapExtractor({ maxSitemaps: 50 }); // Increased max sitemaps
 
   const handleUrlChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     setUrl(e.target.value);

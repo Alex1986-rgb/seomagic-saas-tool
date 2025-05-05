@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { useToast } from "@/hooks/use-toast";
-import { Search, Settings2 } from 'lucide-react';
+import { Search, Settings2, Download } from 'lucide-react';
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/collapsible";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
+import { Slider } from "@/components/ui/slider";
 
 interface ScanFormProps {
   url: string;
@@ -37,12 +38,13 @@ const ScanForm = ({
   const [advancedOptions, setAdvancedOptions] = useState({
     useSitemap: true,
     useRobotsTxt: true,
-    maxPages: 1000,
+    maxPages: 55555555, // Increased max pages limit
     followExternalLinks: false,
     scanJavascript: true,
     includeImages: true,
     performSeoAudit: true,
-    generateOptimizedVersion: true
+    generateOptimizedVersion: true,
+    exportAsHtml: true // New option for HTML export
   });
 
   const handleOptionChange = (option: string, value: boolean | number) => {
@@ -61,6 +63,14 @@ const ScanForm = ({
 
     // Pass advanced options to scan function if needed
     onStartScan();
+  };
+
+  const handleExportHtml = () => {
+    toast({
+      title: "Подготовка HTML",
+      description: "Подготовка HTML экспорта...",
+    });
+    // This would be implemented with actual HTML conversion logic
   };
 
   return (
@@ -158,6 +168,39 @@ const ScanForm = ({
               />
               <Label htmlFor="generateOptimizedVersion">Создать оптимизированную версию</Label>
             </div>
+
+            <div className="flex items-center space-x-2">
+              <Switch 
+                checked={advancedOptions.exportAsHtml}
+                onCheckedChange={(checked) => handleOptionChange('exportAsHtml', checked)}
+                id="exportAsHtml"
+              />
+              <Label htmlFor="exportAsHtml">Экспорт в HTML</Label>
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="maxPages">Максимальное количество страниц: {advancedOptions.maxPages.toLocaleString()}</Label>
+            <Slider 
+              id="maxPages"
+              min={1000}
+              max={55555555}
+              step={1000}
+              value={[advancedOptions.maxPages]}
+              onValueChange={(value) => handleOptionChange('maxPages', value[0])}
+            />
+          </div>
+          
+          <div className="flex justify-end">
+            <Button 
+              variant="outline" 
+              className="gap-2"
+              onClick={handleExportHtml}
+              disabled={isScanning}
+            >
+              <Download className="h-4 w-4" />
+              Экспорт HTML
+            </Button>
           </div>
         </CollapsibleContent>
       </Collapsible>
