@@ -76,7 +76,6 @@ export const useWebsiteAnalyzer = () => {
           console.log(`Attempting to fetch sitemap from: ${sitemapUrl}`);
           
           // The real implementation would fetch and process all URLs from the sitemap
-          // Fix: Pass only the sitemapUrl parameter (not normalizedUrl)
           urlsFromSitemap = await sitemapExtractor.fetchAndProcessSitemaps(sitemapUrl);
           
           // If no URLs found and robots.txt option is enabled, try to get sitemap from robots.txt
@@ -85,7 +84,6 @@ export const useWebsiteAnalyzer = () => {
             const sitemapUrlFromRobots = await sitemapExtractor.extractSitemapFromRobotsTxt(normalizedUrl);
             
             if (sitemapUrlFromRobots) {
-              // Fix: Pass only the sitemapUrlFromRobots parameter (not normalizedUrl)
               urlsFromSitemap = await sitemapExtractor.fetchAndProcessSitemaps(sitemapUrlFromRobots);
             }
           }
