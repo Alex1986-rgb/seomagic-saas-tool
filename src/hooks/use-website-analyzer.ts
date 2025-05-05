@@ -1,4 +1,3 @@
-
 import { useState, useCallback, useEffect } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import { generateAuditData } from '@/services/audit/generators';
@@ -76,6 +75,7 @@ export const useWebsiteAnalyzer = () => {
           console.log(`Attempting to fetch sitemap from: ${sitemapUrl}`);
           
           // The real implementation would fetch and process all URLs from the sitemap
+          // Fix: Pass only the sitemapUrl parameter (not normalizedUrl)
           urlsFromSitemap = await sitemapExtractor.fetchAndProcessSitemaps(sitemapUrl);
           
           // If no URLs found and robots.txt option is enabled, try to get sitemap from robots.txt
@@ -99,7 +99,6 @@ export const useWebsiteAnalyzer = () => {
         }
       }
 
-      // Simulate scanning stages
       for (let i = 2; i <= 10; i++) {
         await new Promise(resolve => setTimeout(resolve, 500));
         setScanProgress(i * 10);
