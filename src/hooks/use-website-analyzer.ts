@@ -75,7 +75,7 @@ export const useWebsiteAnalyzer = () => {
           const sitemapUrl = `${normalizedUrl}/sitemap.xml`;
           console.log(`Attempting to fetch sitemap from: ${sitemapUrl}`);
           
-          // The real implementation would fetch and process all URLs from the sitemap
+          // Fixed: Removed the second argument, as the method only expects one argument
           urlsFromSitemap = await sitemapExtractor.fetchAndProcessSitemaps(sitemapUrl);
           
           // If no URLs found and robots.txt option is enabled, try to get sitemap from robots.txt
@@ -84,6 +84,7 @@ export const useWebsiteAnalyzer = () => {
             const sitemapUrlFromRobots = await sitemapExtractor.extractSitemapFromRobotsTxt(normalizedUrl);
             
             if (sitemapUrlFromRobots) {
+              // Fixed: Removed the second argument here as well
               urlsFromSitemap = await sitemapExtractor.fetchAndProcessSitemaps(sitemapUrlFromRobots);
             }
           }
