@@ -1,3 +1,4 @@
+
 import { useState, useCallback, useEffect } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import { generateAuditData } from '@/services/audit/generators';
@@ -74,7 +75,7 @@ export const useWebsiteAnalyzer = () => {
           const sitemapUrl = `${normalizedUrl}/sitemap.xml`;
           console.log(`Attempting to fetch sitemap from: ${sitemapUrl}`);
           
-          // Fixed: Removed the second argument, as the method only expects one argument
+          // Исправленная строка - убран второй аргумент
           urlsFromSitemap = await sitemapExtractor.fetchAndProcessSitemaps(sitemapUrl);
           
           // If no URLs found and robots.txt option is enabled, try to get sitemap from robots.txt
@@ -83,7 +84,7 @@ export const useWebsiteAnalyzer = () => {
             const sitemapUrlFromRobots = await sitemapExtractor.extractSitemapFromRobotsTxt(normalizedUrl);
             
             if (sitemapUrlFromRobots) {
-              // Fixed: Removed the second argument here as well
+              // Исправленная строка - убран второй аргумент
               urlsFromSitemap = await sitemapExtractor.fetchAndProcessSitemaps(sitemapUrlFromRobots);
             }
           }
