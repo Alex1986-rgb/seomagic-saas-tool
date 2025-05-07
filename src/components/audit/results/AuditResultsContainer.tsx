@@ -2,18 +2,13 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuditData } from './hooks/useAuditData';
-import { usePageAnalysis } from '@/hooks/use-page-analysis';
-import AuditHeader from './components/AuditHeader';
 import AuditStatus from './components/AuditStatus';
-import AuditMain from './components/AuditMain';
-import AuditPageInfo from './components/AuditPageInfo';
-import AuditOptimization from './components/AuditOptimization';
-import PageAnalysisTable from './components/PageAnalysisTable';
 import { useToast } from "@/hooks/use-toast";
 import LoadingSpinner from "@/components/LoadingSpinner";
-import AuditRecommendations from '@/components/audit/AuditRecommendations';
-import IssuesSummary from '@/components/audit/summary/IssuesSummary';
-import AuditIssuesAndEstimate from './components/AuditIssuesAndEstimate';
+import AuditResultHeader from './components/AuditResultHeader';
+import AuditRecommendationsSection from './components/AuditRecommendationsSection';
+import AuditPageAnalysisSection from './components/AuditPageAnalysisSection';
+import AuditOptimizationSection from './components/AuditOptimizationSection';
 
 /**
  * Основной контейнер для отображения результатов SEO аудита
@@ -151,13 +146,6 @@ const AuditResultsContainer: React.FC<AuditResultsContainerProps> = ({ url }) =>
     };
   }, [url, isInitialized, initializeAudit]);
 
-  // Обработчик обновления количества страниц
-  const handleUpdatePageCount = (pageCount: number) => {
-    if (auditData) {
-      auditData.pageCount = pageCount;
-    }
-  };
-
   // Обработчик выбора исторического аудита
   const handleSelectHistoricalAudit = (auditId: string) => {
     console.log("Selected historical audit:", auditId);
@@ -167,11 +155,6 @@ const AuditResultsContainer: React.FC<AuditResultsContainerProps> = ({ url }) =>
   const toggleContentPrompt = () => {
     setShowPrompt(!showPrompt);
   };
-
-  // Получение данных анализа страниц
-  const { data: pageAnalysisData, isLoading: isLoadingAnalysis } = usePageAnalysis(
-    auditData?.id
-  );
   
   // Обработчик повторной попытки при ошибке
   const handleRetry = () => {
@@ -235,101 +218,49 @@ const AuditResultsContainer: React.FC<AuditResultsContainerProps> = ({ url }) =>
         {/* Отображение результатов после завершения аудита */}
         {!isAuditLoading && !isScanning && !auditError && auditData && recommendations && (
           <>
-            {/* Заголовок аудита с кнопками действий */}
-            <AuditHeader 
+            {/* Заголовок и основные данные аудита */}
+            <AuditResultHeader 
+              url={url}
+              auditData={auditData}
+              recommendations={recommendations}
+              historyData={historyData}
+              taskId={taskId || ""}
               onRefresh={() => loadAuditData(true)}
               onDeepScan={() => loadAuditData(false, true)}
               isRefreshing={isRefreshing}
               onDownloadSitemap={sitemap ? downloadSitemap : undefined}
               onTogglePrompt={() => setShowPrompt(!showPrompt)}
               onExportJSON={exportJSONData}
+              onSelectAudit={handleSelectHistoricalAudit}
               showPrompt={showPrompt}
             />
             
-            <div className="space-y-6">
-              {/* Основные результаты аудита */}
-              <AuditMain 
-                url={url}
-                auditData={auditData}
-                recommendations={recommendations}
-                historyData={historyData}
-                taskId={taskId || ""}
-                onSelectAudit={handleSelectHistoricalAudit}
-              />
-              
-              {/* Секция со сводкой найденных проблем */}
-              {auditData.issues && (
-                <div className="neo-card p-6">
-                  <h2 className="text-xl font-semibold mb-4">Сводка проблем</h2>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <IssuesSummary 
-                      issues={{
-                        critical: auditData.issues.critical.length,
-                        important: auditData.issues.important.length,
-                        opportunities: auditData.issues.opportunities.length
-                      }} 
-                    />
-                    
-                    <div className="p-4 bg-primary/5 rounded-lg">
-                      <h3 className="text-lg font-medium mb-2">Оценка сайта</h3>
-                      <p className="text-sm mb-2">Общий SEO-скор вашего сайта: <strong>{auditData.score}/100</strong></p>
-                      <div className="w-full bg-gray-200 rounded-full h-4 mb-2">
-                        <div 
-                          className={`h-4 rounded-full ${auditData.score >= 70 ? 'bg-green-500' : auditData.score >= 50 ? 'bg-amber-500' : 'bg-red-500'}`}
-                          style={{ width: `${auditData.score}%` }}
-                        ></div>
-                      </div>
-                      <p className="text-xs text-muted-foreground">
-                        {auditData.score >= 70 
-                          ? 'Хороший результат! Ваш сайт соответствует большинству рекомендаций SEO.' 
-                          : auditData.score >= 50 
-                            ? 'Средний результат. Есть пространство для улучшений.' 
-                            : 'Требуется значительная оптимизация для улучшения SEO показателей.'}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              )}
-              
-              {/* Блок детализации ошибок и сметы */}
-              {auditData && (
-                <AuditIssuesAndEstimate 
-                  auditData={auditData} 
-                  optimizationCost={optimizationCost} 
-                  optimizationItems={optimizationItems} 
-                />
-              )}
-
-              {/* Подробные рекомендации по категориям */}
-              {recommendations && (
-                <AuditRecommendations recommendations={recommendations} />
-              )}
-              
-              {/* Таблица анализа страниц */}
-              <div className="neo-card p-6">
-                <h2 className="text-xl font-semibold mb-4">Анализ страниц</h2>
-                <PageAnalysisTable 
-                  data={pageAnalysisData}
-                  isLoading={isLoadingAnalysis}
-                />
-              </div>
-              
-              {/* Модуль оптимизации с расчетом стоимости */}
-              <AuditOptimization 
-                optimizationCost={optimizationCost}
-                optimizationItems={optimizationItems}
-                isOptimized={isOptimized}
-                contentPrompt={contentPrompt}
-                url={url}
-                pageCount={auditData.pageCount || 0}
-                showPrompt={showPrompt}
-                onTogglePrompt={toggleContentPrompt}
-                onOptimize={optimizeSiteContent}
-                onDownloadOptimizedSite={downloadOptimizedSite}
-                onGeneratePdfReport={generatePdfReportFile}
-                setContentOptimizationPrompt={setContentOptimizationPrompt}
-              />
-            </div>
+            {/* Секция рекомендаций и ошибок */}
+            <AuditRecommendationsSection 
+              recommendations={recommendations}
+              auditData={auditData}
+              optimizationCost={optimizationCost}
+              optimizationItems={optimizationItems}
+            />
+            
+            {/* Секция анализа страниц */}
+            <AuditPageAnalysisSection auditId={auditData.id} />
+            
+            {/* Модуль оптимизации */}
+            <AuditOptimizationSection 
+              optimizationCost={optimizationCost}
+              optimizationItems={optimizationItems}
+              isOptimized={isOptimized}
+              contentPrompt={contentPrompt}
+              url={url}
+              pageCount={auditData.pageCount || 0}
+              showPrompt={showPrompt}
+              onTogglePrompt={toggleContentPrompt}
+              onOptimize={optimizeSiteContent}
+              onDownloadOptimizedSite={downloadOptimizedSite}
+              onGeneratePdfReport={generatePdfReportFile}
+              setContentOptimizationPrompt={setContentOptimizationPrompt}
+            />
           </>
         )}
       </motion.div>

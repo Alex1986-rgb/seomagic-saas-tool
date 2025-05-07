@@ -1,69 +1,125 @@
 
+import { createUrlObject, normalizePath, normalizeUrl, isUrlFromSameDomain, isExternalUrl, getUrlPriority } from './urlUtils';
+
 /**
- * URL processing functionality for the crawler
+ * Класс для обработки и управления URL при сканировании
  */
-
 export class UrlProcessor {
-  private specialPatterns: Record<string, RegExp[]> = {
-    'myarredo.ru': [
-      /\/catalog\//, /\/factory\//, /\/product\//, /\/collection\//,
-      /\/interior\//, /\/sale\//, /\/brands\//
-    ],
-    'arredo': [
-      /\/catalog\//, /\/factory\//, /\/product\//, /\/collection\//,
-      /\/interior\//, /\/sale\//, /\/brands\//
-    ]
-  };
+  private domain: string;
+  private baseUrl: string;
+  private fileExtensionsToSkip = /\.(jpg|jpeg|png|gif|css|js|svg|pdf|zip|rar|doc|xls)$/i;
+  private adminPathsToSkip = ['/wp-admin/', '/admin/', '/wp-login.php'];
+  private robotsTxtDisallowedPaths: { [key: string]: boolean } = {};
 
-  constructor(
-    private domain: string,
-    private baseUrl: string
-  ) {}
-
-  getDefaultProductPatterns(): RegExp[] {
-    return [
-      /\/product\//i, /\/products\//i, /\/item\//i, /\/items\//i,
-      /\/catalog\//i, /\/collection\//i, /\/goods\//i,
-      /\/tovary?\//i, /\/mebel\//i, /\/furniture\//i
-    ];
-  }
-
-  getDomainSpecificPatterns(domain: string): RegExp[] {
-    for (const key in this.specialPatterns) {
-      if (domain.includes(key)) {
-        console.log(`Using specialized patterns for ${key}`);
-        return this.specialPatterns[key];
-      }
-    }
-    return [];
-  }
-
-  normalizeUrl(href: string, currentUrl: string, baseUrl: string): string | null {
+  constructor(url: string) {
     try {
-      // Normalize URL
-      let fullUrl = href;
-      if (href.startsWith('/')) {
-        fullUrl = baseUrl + href;
-      } else if (!href.startsWith('http')) {
-        fullUrl = `${baseUrl}/${href}`;
+      let normalizedUrl = url;
+      if (!normalizedUrl.startsWith('http://') && !normalizedUrl.startsWith('https://')) {
+        normalizedUrl = `https://${normalizedUrl}`;
       }
-      
-      const urlObj = new URL(fullUrl);
-      const isExternalLink = urlObj.hostname !== this.domain;
-      
-      return fullUrl;
-    } catch (e) {
-      // Skip invalid URLs
-      return null;
+
+      const urlObj = new URL(normalizedUrl);
+      this.baseUrl = urlObj.origin;
+      this.domain = urlObj.hostname;
+    } catch (error) {
+      throw new Error(`Invalid URL: ${url}`);
     }
   }
 
-  isInternalLink(url: string): boolean {
+  /**
+   * Устанавливает пути, запрещённые в robots.txt
+   */
+  setRobotsTxtPaths(paths: { [key: string]: boolean }): void {
+    this.robotsTxtDisallowedPaths = paths;
+  }
+
+  /**
+   * Проверяет, разрешён ли URL в robots.txt
+   */
+  isAllowedByRobotsTxt(url: string): boolean {
     try {
       const urlObj = new URL(url);
-      return urlObj.hostname === this.domain;
-    } catch (e) {
+      if (urlObj.hostname !== this.domain) {
+        return false; // External URLs are not allowed in our crawl
+      }
+
+      const pathname = urlObj.pathname;
+      for (const path in this.robotsTxtDisallowedPaths) {
+        if (pathname.startsWith(path) && !this.robotsTxtDisallowedPaths[path]) {
+          return false;
+        }
+      }
+      
+      return true;
+    } catch (error) {
       return false;
     }
+  }
+
+  /**
+   * Определяет, должен ли URL быть просканирован
+   */
+  shouldCrawl(url: string): boolean {
+    try {
+      const urlObj = new URL(url);
+      
+      // Пропускать не-http/https URL
+      if (urlObj.protocol !== 'http:' && urlObj.protocol !== 'https:') {
+        return false;
+      }
+      
+      // Сканировать только в пределах одного домена
+      if (urlObj.hostname !== this.domain) {
+        return false;
+      }
+      
+      // Пропускать URL с определёнными расширениями файлов
+      if (this.fileExtensionsToSkip.test(urlObj.pathname)) {
+        return false;
+      }
+      
+      // Пропускать админские/бекенд URL
+      for (const adminPath of this.adminPathsToSkip) {
+        if (urlObj.pathname.includes(adminPath)) {
+          return false;
+        }
+      }
+      
+      return true;
+    } catch (error) {
+      return false;
+    }
+  }
+
+  /**
+   * Нормализует URL для избежания дублирования
+   */
+  normalize(url: string): string {
+    return normalizeUrl(url);
+  }
+
+  /**
+   * Сортирует URL по приоритету для более эффективного сканирования
+   */
+  sortByPriority(urls: string[]): string[] {
+    return urls.sort((a, b) => {
+      const aPriority = getUrlPriority(a);
+      const bPriority = getUrlPriority(b);
+      return bPriority - aPriority;
+    });
+  }
+
+  /**
+   * Возвращает домен текущего сканирования
+   */
+  getDomain(): string {
+    return this.domain;
+  }
+
+  /**
+   * Возвращает базовый URL текущего сканирования
+   */
+  getBaseUrl(): string {
+    return this.baseUrl;
   }
 }
