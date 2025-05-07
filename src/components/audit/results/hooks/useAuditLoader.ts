@@ -76,16 +76,18 @@ export const useAuditLoader = (
         const scanResult = await handleScanWebsite();
         
         if (scanResult) {
-          if (scanResult.optimizationCost) {
-            setOptimizationCost(scanResult.optimizationCost);
-            
-            if (scanResult.optimizationItems) {
-              setOptimizationItems(scanResult.optimizationItems);
+          if (scanResult && typeof scanResult === 'object') {
+            if (scanResult.optimizationCost !== undefined) {
+              setOptimizationCost(Number(scanResult.optimizationCost));
+              
+              if (scanResult.optimizationItems && Array.isArray(scanResult.optimizationItems)) {
+                setOptimizationItems(scanResult.optimizationItems);
+              }
             }
-          }
-          
-          if (scanResult.pagesContent) {
-            setPagesContent(scanResult.pagesContent);
+            
+            if (scanResult.pagesContent && Array.isArray(scanResult.pagesContent)) {
+              setPagesContent(scanResult.pagesContent);
+            }
           }
         }
       }

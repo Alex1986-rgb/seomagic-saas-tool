@@ -22,6 +22,7 @@ export class CrawlQueueManager {
     retryAttempts?: number;
     requestTimeout?: number;
     debug?: boolean;
+    onProgress?: any;
   }): void {
     if (options.maxConcurrentRequests) this.maxConcurrentRequests = options.maxConcurrentRequests;
     if (options.retryAttempts) this.retryAttempts = options.retryAttempts;
@@ -109,8 +110,14 @@ export class CrawlQueueManager {
         );
         
         // Вызов колбэка прогресса
-        const progress = Math.min((this.visited.size / maxPages) * 100, 100);
-        onProgress(progress, this.visited.size, maxPages);
+        if (typeof onProgress === 'function') {
+          const progressData: TaskProgress = {
+            pagesScanned: this.visited.size,
+            currentUrl: batch[0]?.url || '',
+            totalUrls: maxPages
+          };
+          onProgress(progressData);
+        }
         
         // Небольшая пауза, чтобы не перегружать сервер
         await new Promise(resolve => setTimeout(resolve, 100));
@@ -119,20 +126,29 @@ export class CrawlQueueManager {
       const endTime = new Date();
       const totalTime = endTime.getTime() - startTime.getTime();
       
-      return {
+      const result: CrawlResult = {
         urls: Array.from(this.visited),
         pageCount: this.visited.size,
         metadata: {
           startTime: startTime.toISOString(),
           endTime: endTime.toISOString(),
           totalTime,
-          totalPages: this.visited.size,
-          domain: '', // Должен быть установлен вызывающей стороной
+          domain: '',
+          totalRequests: this.visited.size,
+          successRequests: this.visited.size,
+          failedRequests: 0
         }
       };
+      
+      // Add totalPages to metadata for queue managers
+      (result.metadata as any).totalPages = this.visited.size;
+      
+      return result;
     } catch (error) {
       console.error('Error during crawl queue processing:', error);
       throw error;
     }
   }
 }
+
+export default CrawlQueueManager;

@@ -9,6 +9,7 @@ import AuditResultHeader from './components/AuditResultHeader';
 import AuditRecommendationsSection from './components/AuditRecommendationsSection';
 import AuditPageAnalysisSection from './components/AuditPageAnalysisSection';
 import AuditOptimizationSection from './components/AuditOptimizationSection';
+import { AuditHistoryData } from '@/types/audit';
 
 /**
  * Основной контейнер для отображения результатов SEO аудита
@@ -61,6 +62,14 @@ const AuditResultsContainer: React.FC<AuditResultsContainerProps> = ({ url }) =>
     optimizeSiteContent,
     setContentOptimizationPrompt
   } = useAuditData(url);
+
+  // Ensure historyData has the correct type
+  const typedHistoryData: AuditHistoryData = historyData && typeof historyData === 'object' ? 
+    { 
+      url: url, 
+      items: Array.isArray(historyData) ? historyData : [] 
+    } : 
+    { url: url, items: [] };
 
   // Установка таймаута для предотвращения бесконечной загрузки
   useEffect(() => {
@@ -223,7 +232,7 @@ const AuditResultsContainer: React.FC<AuditResultsContainerProps> = ({ url }) =>
               url={url}
               auditData={auditData}
               recommendations={recommendations}
-              historyData={historyData}
+              historyData={typedHistoryData}
               taskId={taskId || ""}
               onRefresh={() => loadAuditData(true)}
               onDeepScan={() => loadAuditData(false, true)}

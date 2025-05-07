@@ -1,189 +1,168 @@
 
 import { useState, useCallback, useEffect } from 'react';
-import { useToast } from "@/hooks/use-toast";
-import { generateAuditData } from '@/services/audit/generators';
-import { scanningService } from '@/services/scanning/scanningService';
+import { useToast } from './use-toast';
 import { validationService } from '@/services/validation/validationService';
+import { firecrawlService } from '@/services/api/firecrawl/firecrawlService';
 
-interface ScanOptions {
-  useSitemap: boolean;
-  useRobotsTxt: boolean;
-  maxPages: number;
-  followExternalLinks: boolean;
-  scanJavascript: boolean;
-  includeImages: boolean;
-  performSeoAudit: boolean;
-  generateOptimizedVersion: boolean;
+export interface WebsiteAnalyzerState {
+  url: string;
+  isScanning: boolean;
+  scanProgress: number;
+  scanStage: string;
+  isError: boolean;
+  errorMessage: string;
+  scanResults: {
+    totalPages: number;
+    brokenLinks: number;
+    duplicateContent: number;
+    missingMetadata: number;
+  } | null;
 }
 
 export const useWebsiteAnalyzer = () => {
-  const [url, setUrl] = useState('');
-  const [isScanning, setIsScanning] = useState(false);
-  const [isError, setIsError] = useState(false);
-  const [scanProgress, setScanProgress] = useState(0);
-  const [scanStage, setScanStage] = useState('');
-  const [scannedUrls, setScannedUrls] = useState<string[]>([]);
-  const [auditData, setAuditData] = useState<any>(null);
-  const [hasAuditResults, setHasAuditResults] = useState(false);
-  const [options, setOptions] = useState<ScanOptions>({
-    useSitemap: true,
-    useRobotsTxt: true,
-    maxPages: 55555555, // Increased maximum pages limit
-    followExternalLinks: false,
-    scanJavascript: true,
-    includeImages: true,
-    performSeoAudit: true,
-    generateOptimizedVersion: true
+  const [state, setState] = useState<WebsiteAnalyzerState>({
+    url: '',
+    isScanning: false,
+    scanProgress: 0,
+    scanStage: '',
+    isError: false,
+    errorMessage: '',
+    scanResults: null,
   });
+
+  const [taskId, setTaskId] = useState<string | null>(null);
   const { toast } = useToast();
 
-  const handleUrlChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    setUrl(e.target.value);
-    if (isError) {
-      setIsError(false);
+  // Poll for status updates if a scan is in progress
+  useEffect(() => {
+    let interval: NodeJS.Timeout | null = null;
+
+    if (state.isScanning && taskId) {
+      interval = setInterval(async () => {
+        try {
+          const taskStatus = await firecrawlService.getStatus(taskId);
+          setState(prev => ({
+            ...prev,
+            scanProgress: taskStatus.progress,
+            scanStage: taskStatus.status === 'completed' 
+              ? 'Scan completed' 
+              : `Scanning ${taskStatus.current_url || ''}`,
+          }));
+
+          if (taskStatus.status === 'completed') {
+            clearInterval(interval!);
+            setState(prev => ({
+              ...prev,
+              isScanning: false,
+              scanResults: {
+                totalPages: taskStatus.pages_scanned,
+                brokenLinks: 0,
+                duplicateContent: 0,
+                missingMetadata: 0
+              }
+            }));
+            
+            toast({
+              title: "Scan completed",
+              description: `Successfully scanned ${taskStatus.pages_scanned} pages.`,
+            });
+          } else if (taskStatus.status === 'failed') {
+            clearInterval(interval!);
+            setState(prev => ({
+              ...prev,
+              isScanning: false,
+              isError: true,
+              errorMessage: taskStatus.error || 'Scan failed with unknown error'
+            }));
+            
+            toast({
+              title: "Scan failed",
+              description: taskStatus.error || "An error occurred during the scan",
+              variant: "destructive"
+            });
+          }
+        } catch (error) {
+          console.error('Error polling scan status:', error);
+        }
+      }, 3000);
     }
-  }, [isError]);
+
+    return () => {
+      if (interval) {
+        clearInterval(interval);
+      }
+    };
+  }, [state.isScanning, taskId, toast]);
+
+  const handleUrlChange = useCallback((url: string) => {
+    setState(prev => ({ ...prev, url }));
+  }, []);
 
   const startFullScan = useCallback(async () => {
-    if (!url) {
+    if (!state.url) {
       toast({
-        title: "Ошибка",
-        description: "Пожалуйста, введите URL сайта",
-        variant: "destructive",
+        title: "Error",
+        description: "Please enter a URL to scan",
+        variant: "destructive"
       });
       return;
     }
 
-    // Validate URL
-    if (!validationService.validateUrl(url)) {
+    if (!validationService.validateUrl(state.url)) {
       toast({
-        title: "Ошибка",
-        description: "Пожалуйста, введите корректный URL сайта",
-        variant: "destructive",
+        title: "Invalid URL",
+        description: "Please enter a valid URL",
+        variant: "destructive"
       });
       return;
     }
 
     try {
-      setIsScanning(true);
-      setIsError(false);
-      setScanProgress(0);
-      setScanStage('Подготовка к сканированию...');
+      setState(prev => ({
+        ...prev,
+        isScanning: true,
+        scanProgress: 0,
+        scanStage: 'Initializing scan...',
+        isError: false,
+        errorMessage: ''
+      }));
 
-      // Normalize URL
-      const normalizedUrl = validationService.formatUrl(url);
+      const formattedUrl = validationService.formatUrl(state.url);
+      const task = await firecrawlService.startCrawl(formattedUrl);
       
-      // Try to fetch and process sitemap if option enabled
-      let urlsFromSitemap: string[] = [];
-      if (options.useSitemap) {
-        setScanStage('Поиск и обработка sitemap.xml...');
-        setScanProgress(10);
-        
-        try {
-          // First try direct sitemap.xml access
-          urlsFromSitemap = await scanningService.extractSitemapUrls(normalizedUrl);
-          
-          // If no URLs found and robots.txt option is enabled, try to get sitemap from robots.txt
-          if (urlsFromSitemap.length === 0 && options.useRobotsTxt) {
-            setScanStage('Поиск sitemap в robots.txt...');
-            const robotsUrls = await scanningService.extractSitemapFromRobots(normalizedUrl);
-            
-            if (robotsUrls.length > 0) {
-              // Process each potential sitemap URL from robots.txt
-              for (const sitemapUrl of robotsUrls) {
-                const sitemapUrls = await scanningService.extractSitemapUrls(sitemapUrl);
-                urlsFromSitemap = [...urlsFromSitemap, ...sitemapUrls];
-              }
-            }
-          }
-          
-          console.log(`Found ${urlsFromSitemap.length} URLs from sitemap`);
-          
-          if (urlsFromSitemap.length > 0) {
-            setScannedUrls(urlsFromSitemap);
-          }
-        } catch (error) {
-          console.error('Error processing sitemap:', error);
-          // Continue with crawling even if sitemap processing fails
-        }
-      }
+      setTaskId(task.id);
       
-      for (let i = 2; i <= 10; i++) {
-        await new Promise(resolve => setTimeout(resolve, 500));
-        setScanProgress(i * 10);
-        
-        switch (i) {
-          case 2:
-            setScanStage('Анализ структуры сайта...');
-            break;
-          case 4:
-            setScanStage('Сканирование страниц...');
-            break;
-          case 6:
-            setScanStage('Проверка метаданных...');
-            break;
-          case 8:
-            setScanStage('Генерация отчета...');
-            break;
-          case 10:
-            setScanStage('Сканирование завершено');
-            // Generate audit data using the URLs from sitemap or create mock data
-            const urlsToUse = urlsFromSitemap.length > 0 ? urlsFromSitemap.slice(0, options.maxPages) : [];
-            const generatedData = generateAuditData(url, urlsToUse);
-            setAuditData(generatedData);
-            setHasAuditResults(true);
-            break;
-        }
-      }
-
       toast({
-        title: "Сканирование завершено",
-        description: urlsFromSitemap.length > 0 
-          ? `Найдено ${urlsFromSitemap.length} URL в sitemap` 
-          : "Сайт успешно просканирован",
+        title: "Scan started",
+        description: "The website scan has been initiated"
       });
-
-      // If SEO audit is enabled, we would trigger that process here
-      if (options.performSeoAudit) {
-        // The real implementation would perform the audit
-        console.log('Performing SEO audit with options:', options);
-      }
-
-      // If generating optimized version is enabled
-      if (options.generateOptimizedVersion) {
-        // The real implementation would generate the optimized version
-        console.log('Generating optimized version with options:', options);
-      }
     } catch (error) {
-      console.error("Scan error:", error);
-      setIsError(true);
+      console.error('Error starting scan:', error);
+      setState(prev => ({
+        ...prev,
+        isScanning: false,
+        isError: true,
+        errorMessage: error instanceof Error ? error.message : 'Unknown error occurred'
+      }));
+      
       toast({
-        title: "Ошибка сканирования",
-        description: "Произошла ошибка при сканировании сайта",
-        variant: "destructive",
+        title: "Scan failed",
+        description: error instanceof Error ? error.message : "Failed to start the scan",
+        variant: "destructive"
       });
-    } finally {
-      setIsScanning(false);
     }
-  }, [url, options, toast]);
-
-  const updateOptions = useCallback((newOptions: Partial<ScanOptions>) => {
-    setOptions(prev => ({ ...prev, ...newOptions }));
-  }, []);
+  }, [state.url, toast]);
 
   return {
-    url,
-    isScanning,
-    scanProgress,
-    scanStage,
-    isError,
-    scannedUrls,
-    auditData,
-    hasAuditResults,
-    options,
+    url: state.url,
+    isScanning: state.isScanning,
+    scanProgress: state.scanProgress,
+    scanStage: state.scanStage,
+    isError: state.isError,
+    errorMessage: state.errorMessage,
+    scanResults: state.scanResults,
     handleUrlChange,
     startFullScan,
-    setScannedUrls,
-    updateOptions,
+    taskId
   };
 };

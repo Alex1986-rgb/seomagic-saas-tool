@@ -1,58 +1,27 @@
 
-/**
- * Base crawler class with common functionality for all crawler types
- */
-
-import { DeepCrawlerCore } from '../deepCrawlerCore';
-import { RobotsTxtParser } from './RobotsTxtParser';
-import { PageData } from './types';
-
-export class CrawlerBase extends DeepCrawlerCore {
-  protected pageData: Map<string, PageData> = new Map();
-  protected userAgent: string = 'Mozilla/5.0 (compatible; AdvancedSEOBot/2.0; +https://example.com/bot)';
-  protected crawlStartTime: number = 0;
-  protected crawlEndTime: number = 0;
-  protected excludePatterns: RegExp[] = [
-    /\.(jpg|jpeg|png|gif|svg|webp|bmp|ico|css|js|pdf|zip|rar|gz|tar|mp4|mp3|webm|ogg|avi|mov|wmv|doc|docx|xls|xlsx|ppt|pptx)$/i,
-    /\/?(wp-admin|wp-includes|wp-content\/plugins|cgi-bin|admin|login|logout|sign-in|signup|register|cart|checkout|account|search|sitemaps?)/i
-  ];
-  protected robotsParser: RobotsTxtParser;
-
+export class CrawlerBase {
+  protected url: string;
+  protected options: any;
+  
   constructor(url: string, options: any) {
-    super(url, options);
-    this.robotsParser = new RobotsTxtParser();
-  }
-
-  async startCrawling() {
-    this.crawlStartTime = Date.now();
-    console.log(`Starting crawl of ${this.getBaseUrl()}`);
-    
-    // Try to read robots.txt first
-    await this.parseRobotsTxt();
-    
-    // Run the original crawler method
-    const result = await super.startCrawling();
-    
-    this.crawlEndTime = Date.now();
-    console.log(`Crawl completed in ${(this.crawlEndTime - this.crawlStartTime) / 1000} seconds`);
-    
-    return result;
+    this.url = url;
+    this.options = options || {};
   }
   
-  // Добавление вспомогательного метода для парсинга robots.txt
-  async parseRobotsTxt() {
+  getDomain(): string {
     try {
-      const disallowedPaths = await this.robotsParser.parse(this.getBaseUrl());
-      this.excludePatterns = [...this.excludePatterns];
-      return disallowedPaths;
-    } catch (error) {
-      console.error('Error parsing robots.txt:', error);
-      return [];
+      return new URL(this.url).hostname;
+    } catch (e) {
+      return '';
     }
   }
   
-  // Get all collected page data
-  getPageData(): Map<string, PageData> {
-    return this.pageData;
+  getBaseUrl(): string {
+    try {
+      const urlObj = new URL(this.url);
+      return `${urlObj.protocol}//${urlObj.hostname}`;
+    } catch (e) {
+      return this.url;
+    }
   }
 }

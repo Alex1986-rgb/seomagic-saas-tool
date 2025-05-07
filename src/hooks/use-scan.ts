@@ -99,17 +99,17 @@ export const useScan = (url: string, onPageCountUpdate?: (count: number) => void
             setIsScanning(false);
             
             if (status.status === 'completed') {
-              // Try to get URLs for sitemap
-              if (status.urls && status.urls.length > 0) {
-                const domain = validationService.extractDomain(url);
-                const sitemapXml = reportingService.generateSitemapXml(domain, status.urls);
-                setSitemap(sitemapXml);
-                
-                toast({
-                  title: "Сканирование завершено",
-                  description: `Просканировано ${status.pages_scanned} страниц`,
-                });
-              }
+              // Try to get URLs or create a dummy URL list if not available
+              const pageUrls = status.url ? [status.url] : [];
+              
+              const domain = validationService.extractDomain(url);
+              const sitemapXml = reportingService.generateSitemapXml(domain, pageUrls);
+              setSitemap(sitemapXml);
+              
+              toast({
+                title: "Сканирование завершено",
+                description: `Просканировано ${status.pages_scanned} страниц`,
+              });
             } else {
               toast({
                 title: "Ошибка сканирования",

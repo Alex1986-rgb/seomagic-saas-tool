@@ -1,5 +1,5 @@
 
-import { PageData, SiteStructureAnalysis } from './types';
+import { PageData } from './types';
 
 /**
  * Analyzes site structure based on crawl results
@@ -8,7 +8,7 @@ export class SiteAnalyzer {
   /**
    * Analyze site structure based on crawled pages
    */
-  analyzeSiteStructure(pages: PageData[]): SiteStructureAnalysis {
+  analyzeSiteStructure(pages: PageData[]) {
     const depthMap: Record<string, number> = {};
     const pageTypesMap: Record<string, number> = {};
     let totalInternalLinks = 0;
@@ -42,6 +42,33 @@ export class SiteAnalyzer {
   }
 
   /**
+   * Static method for analyzing site structure
+   */
+  static analyzeSiteStructure(urls: Set<string>, domain: string) {
+    const analyzer = new SiteAnalyzer();
+    
+    // Convert URLs to simple PageData objects
+    const pages = Array.from(urls).map(url => ({
+      url,
+      title: '',
+      description: '',
+      h1: [],
+      links: [],
+      internalLinks: [],
+      externalLinks: [],
+      images: [],
+      statusCode: 200,
+      contentType: 'text/html',
+      loadTime: 0,
+      contentLength: 0,
+      isIndexable: true,
+      issues: []
+    }));
+    
+    return analyzer.analyzeSiteStructure(pages);
+  }
+
+  /**
    * Calculate the depth of a page URL
    */
   private getPageDepth(url: string): number {
@@ -60,7 +87,14 @@ export class SiteAnalyzer {
    */
   private detectPageType(page: PageData): string {
     const url = page.url.toLowerCase();
-    const pathSegments = new URL(url).pathname.split('/').filter(Boolean);
+    let pathSegments: string[] = [];
+    
+    try {
+      pathSegments = new URL(url).pathname.split('/').filter(Boolean);
+    } catch (e) {
+      return 'other';
+    }
+    
     const lastSegment = pathSegments[pathSegments.length - 1];
 
     // Check for common page types by URL patterns
