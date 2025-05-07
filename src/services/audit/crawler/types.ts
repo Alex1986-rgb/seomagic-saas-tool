@@ -5,8 +5,8 @@ export interface PageData {
   description: string;
   h1: string[];
   links: string[];
-  internalLinks?: string[]; // Added for report generator
-  externalLinks?: string[]; // Added for report generator
+  internalLinks: string[];
+  externalLinks: string[];
   images: {
     src: string;
     alt: string;
@@ -26,7 +26,7 @@ export interface PageData {
 export interface DeepCrawlerOptions {
   maxPages: number;
   maxDepth: number;
-  onProgress?: (progress: TaskProgress) => void; // Fixed callback signature
+  onProgress?: (progress: TaskProgress) => void;
 }
 
 export interface TaskProgress {
@@ -48,14 +48,6 @@ export interface CrawlResult {
     endTime: string;
     totalTime: number;
     totalPages?: number; // Added for queue managers
-    // Added for compatibility with firecrawl type
-    keywords?: string[];
-    sitemap?: string;
-    links?: {
-      internal: number;
-      external: number;
-      broken: number;
-    };
   };
 }
 
@@ -87,18 +79,6 @@ export interface CrawlSummary {
   };
 }
 
-export interface RequestManager {
-  configure: (options: any) => void;
-  pause: () => void;
-  resume: () => void;
-  processCrawlQueue: (
-    queue: { url: string; depth: number }[],
-    visited: Set<string>,
-    options: any,
-    processFunction: (url: string, depth: number) => Promise<void>
-  ) => Promise<CrawlResult>;
-}
-
 export interface SiteStructureAnalysis {
   totalPages: number;
   depth: {
@@ -111,4 +91,16 @@ export interface SiteStructureAnalysis {
     internal: number;
     external: number;
   };
+}
+
+export interface RequestManager {
+  configure: (options: any) => void;
+  pause: () => void;
+  resume: () => void;
+  processCrawlQueue: (
+    queue: { url: string; depth: number }[],
+    visited: Set<string>,
+    options: any,
+    processFunction: (url: string, depth: number) => Promise<void>
+  ) => Promise<CrawlResult>;
 }

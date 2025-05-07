@@ -1,189 +1,214 @@
 
 import { useState, useCallback } from 'react';
-import { useToast } from "@/hooks/use-toast";
-import { PageStats } from '@/types/api';
-
-interface ScanDetails {
-  current_url: string;
-  pages_scanned: number;
-  estimated_pages: number;
-  stage: string;
-}
+import { useToast } from './use-toast';
+import { scanningService } from '@/services/scanning/scanningService';
+import { seoApiService } from '@/services/api/seoApiService';
+import { validationService } from '@/services/validation/validationService';
+import { reportingService } from '@/services/reporting/reportingService';
 
 /**
- * Централизованный хук для управления процессом сканирования сайтов
+ * Hook for handling website scanning functionality
  */
 export const useScan = (url: string, onPageCountUpdate?: (count: number) => void) => {
   const [isScanning, setIsScanning] = useState(false);
-  const [scanDetails, setScanDetails] = useState<ScanDetails>({
+  const [scanDetails, setScanDetails] = useState<{
+    current_url: string;
+    pages_scanned: number;
+    estimated_pages: number;
+    stage: string;
+  }>({
     current_url: '',
     pages_scanned: 0,
     estimated_pages: 0,
-    stage: 'idle'
+    stage: ''
   });
-  const [pageStats, setPageStats] = useState<PageStats | null>(null);
+  const [pageStats, setPageStats] = useState<{
+    total: number;
+    html: number;
+    images: number;
+    other: number;
+  }>({
+    total: 0,
+    html: 0,
+    images: 0,
+    other: 0
+  });
   const [sitemap, setSitemap] = useState<string | null>(null);
+  const [taskId, setTaskId] = useState<string | null>(null);
   const { toast } = useToast();
 
-  /**
-   * Запускает процесс сканирования сайта
-   */
-  const startScan = useCallback(async (deepScan: boolean = false) => {
-    setIsScanning(true);
-    setScanDetails({
-      current_url: `Scanning ${url}...`,
-      pages_scanned: 0,
-      estimated_pages: 100,
-      stage: 'starting'
-    });
+  // Start scanning process
+  const startScan = useCallback(async (useSitemap: boolean = true) => {
+    if (!url) {
+      toast({
+        title: "Ошибка",
+        description: "URL не указан",
+        variant: "destructive",
+      });
+      return null;
+    }
 
-    // Mock implementation for frontend demo - in a real implementation,
-    // this would call the real scanning API
+    if (!validationService.validateUrl(url)) {
+      toast({
+        title: "Ошибка",
+        description: "Неверный формат URL",
+        variant: "destructive",
+      });
+      return null;
+    }
+
     try {
-      // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      // Mock page count and stats
-      const mockPageCount = Math.floor(Math.random() * 50) + 20;
-      onPageCountUpdate?.(mockPageCount);
-      
-      // Mock page stats
-      const mockPageStats: PageStats = {
-        totalPages: mockPageCount,
-        indexablePages: Math.floor(mockPageCount * 0.85),
-        nonIndexablePages: Math.floor(mockPageCount * 0.15),
-        brokenLinks: Math.floor(Math.random() * 5),
-        externalLinks: Math.floor(Math.random() * 15) + 5,
-        duplicateContent: Math.floor(Math.random() * 3),
-        pageTypes: {
-          'blog': Math.floor(mockPageCount * 0.4),
-          'product': Math.floor(mockPageCount * 0.3),
-          'category': Math.floor(mockPageCount * 0.2),
-          'other': Math.floor(mockPageCount * 0.1)
-        },
-        depthData: [
-          { level: 1, count: Math.floor(mockPageCount * 0.2) },
-          { level: 2, count: Math.floor(mockPageCount * 0.5) },
-          { level: 3, count: Math.floor(mockPageCount * 0.3) }
-        ]
-      };
-      
-      setPageStats(mockPageStats);
-      
-      // Mock sitemap XML string
-      const mockSitemap = `<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url><loc>https://${url}/</loc></url>
-  <url><loc>https://${url}/about</loc></url>
-  <url><loc>https://${url}/blog</loc></url>
-  <url><loc>https://${url}/contact</loc></url>
-</urlset>`;
-      
-      setSitemap(mockSitemap);
-      
-      // Mock optimization cost and items for return value
-      const mockOptimizationCost = mockPageCount * 5;
-      
-      const mockOptimizationItems = [
-        {
-          name: "Meta descriptions",
-          count: Math.floor(mockPageCount * 0.7),
-          price: mockPageCount * 2,
-          type: "meta",
-          pricePerUnit: 2,
-          totalPrice: mockPageCount * 2,
-          description: "Optimizing meta descriptions for better CTR"
-        },
-        {
-          name: "Image alt tags",
-          count: Math.floor(mockPageCount * 1.5),
-          price: mockPageCount * 1,
-          type: "image",
-          pricePerUnit: 1,
-          totalPrice: mockPageCount * 1.5,
-          description: "Adding missing alt tags to images"
-        },
-        {
-          name: "Header structure",
-          count: mockPageCount,
-          price: mockPageCount * 2,
-          type: "structure",
-          pricePerUnit: 2,
-          totalPrice: mockPageCount * 2,
-          description: "Improving heading structure for better SEO"
-        }
-      ];
-      
-      toast({
-        title: "Сканирование завершено",
-        description: `Обнаружено ${mockPageCount} страниц на сайте ${url}`,
-      });
-      
-      // Mock scan completion
+      setIsScanning(true);
       setScanDetails({
-        current_url: '',
-        pages_scanned: mockPageCount,
-        estimated_pages: mockPageCount,
-        stage: 'completed'
+        current_url: url,
+        pages_scanned: 0,
+        estimated_pages: 500000,
+        stage: 'Подготовка к сканированию'
       });
+
+      // Format URL
+      const formattedUrl = validationService.formatUrl(url);
       
-      setIsScanning(false);
+      // Start crawl and get task ID
+      const crawlResponse = await seoApiService.startCrawl(formattedUrl);
+      const newTaskId = crawlResponse.task_id;
+      setTaskId(newTaskId);
       
-      return {
-        pageCount: mockPageCount,
-        optimizationCost: mockOptimizationCost,
-        optimizationItems: mockOptimizationItems,
-        pagesContent: [] // Mock empty content
-      };
+      // Start progress polling
+      const pollInterval = setInterval(async () => {
+        try {
+          const status = await seoApiService.getStatus(newTaskId);
+          
+          setScanDetails({
+            current_url: status.current_url || url,
+            pages_scanned: status.pages_scanned || 0,
+            estimated_pages: status.total_pages || 500000,
+            stage: status.status === 'completed' 
+              ? 'Сканирование завершено' 
+              : `Сканирование (${status.progress}%)`
+          });
+          
+          // Update parent component with page count if callback provided
+          if (onPageCountUpdate && status.pages_scanned) {
+            onPageCountUpdate(status.pages_scanned);
+          }
+          
+          // If scan is complete, clean up and generate sitemap
+          if (status.status === 'completed' || status.status === 'failed') {
+            clearInterval(pollInterval);
+            setIsScanning(false);
+            
+            if (status.status === 'completed') {
+              // Try to get URLs for sitemap
+              if (status.urls && status.urls.length > 0) {
+                const domain = validationService.extractDomain(url);
+                const sitemapXml = reportingService.generateSitemapXml(domain, status.urls);
+                setSitemap(sitemapXml);
+                
+                toast({
+                  title: "Сканирование завершено",
+                  description: `Просканировано ${status.pages_scanned} страниц`,
+                });
+              }
+            } else {
+              toast({
+                title: "Ошибка сканирования",
+                description: status.error || "Произошла ошибка при сканировании сайта",
+                variant: "destructive",
+              });
+            }
+          }
+        } catch (error) {
+          console.error("Error polling scan status:", error);
+          clearInterval(pollInterval);
+          setIsScanning(false);
+          
+          toast({
+            title: "Ошибка",
+            description: "Не удалось получить статус сканирования",
+            variant: "destructive",
+          });
+        }
+      }, 2000);
       
+      return newTaskId;
     } catch (error) {
-      console.error('Error scanning website:', error);
+      console.error("Error starting scan:", error);
+      setIsScanning(false);
+      
       toast({
-        title: "Ошибка сканирования",
-        description: "Произошла ошибка при сканировании сайта",
-        variant: "destructive"
+        title: "Ошибка",
+        description: "Не удалось запустить сканирование",
+        variant: "destructive",
       });
       
-      setIsScanning(false);
       return null;
     }
   }, [url, toast, onPageCountUpdate]);
 
-  /**
-   * Загружает файл sitemap.xml
-   */
+  // Handle download sitemap
   const downloadSitemap = useCallback(() => {
     if (!sitemap) {
       toast({
-        title: "Нет данных Sitemap",
-        description: "Сначала необходимо выполнить сканирование сайта",
-        variant: "destructive"
+        title: "Ошибка",
+        description: "Sitemap не сгенерирован",
+        variant: "destructive",
       });
       return;
     }
-    
-    const blob = new Blob([sitemap], { type: 'application/xml' });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'sitemap.xml';
-    document.body.appendChild(a);
-    a.click();
-    window.URL.revokeObjectURL(url);
-    document.body.removeChild(a);
-    
-    toast({
-      title: "Sitemap скачан",
-      description: "Файл sitemap.xml успешно скачан",
-    });
-  }, [sitemap, toast]);
+
+    try {
+      const domain = validationService.extractDomain(url);
+      reportingService.exportSitemapXml(sitemap, domain);
+      
+      toast({
+        title: "Готово",
+        description: "Sitemap.xml успешно скачан",
+      });
+    } catch (error) {
+      console.error("Error downloading sitemap:", error);
+      
+      toast({
+        title: "Ошибка",
+        description: "Не удалось скачать sitemap",
+        variant: "destructive",
+      });
+    }
+  }, [sitemap, url, toast]);
+
+  // Cancel ongoing scan
+  const cancelScan = useCallback(async () => {
+    if (!taskId || !isScanning) {
+      return;
+    }
+
+    try {
+      await seoApiService.cancelScan(taskId);
+      setIsScanning(false);
+      
+      toast({
+        title: "Сканирование отменено",
+        description: "Процесс сканирования был отменен пользователем",
+      });
+    } catch (error) {
+      console.error("Error cancelling scan:", error);
+      
+      toast({
+        title: "Ошибка",
+        description: "Не удалось отменить сканирование",
+        variant: "destructive",
+      });
+    }
+  }, [taskId, isScanning, toast]);
 
   return {
     isScanning,
     scanDetails,
     pageStats,
     sitemap,
+    taskId,
     startScan,
-    downloadSitemap,
+    cancelScan,
+    downloadSitemap
   };
 };

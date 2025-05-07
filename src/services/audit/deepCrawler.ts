@@ -5,14 +5,14 @@
  */
 
 import { DeepCrawlerCore } from './crawler/deepCrawlerCore';
-import { DeepCrawlerOptions as AuditDeepCrawlerOptions, TaskProgress } from './crawler/types';
+import { DeepCrawlerOptions, TaskProgress } from './crawler/types';
 
 export class DeepCrawler extends DeepCrawlerCore {
-  constructor(url: string, options: AuditDeepCrawlerOptions) {
+  constructor(url: string, options: DeepCrawlerOptions) {
     // Create a compatible options object
-    const compatibleOptions: AuditDeepCrawlerOptions = {
-      maxPages: options.maxPages || 500000, // Увеличиваем лимит по умолчанию до 500,000 страниц
-      maxDepth: options.maxDepth || 10,     // Увеличиваем глубину поиска
+    const compatibleOptions: DeepCrawlerOptions = {
+      maxPages: options.maxPages || 500000, // Increase default limit to 500,000 pages
+      maxDepth: options.maxDepth || 10,     // Increase search depth
       onProgress: options.onProgress 
         ? (progress: TaskProgress) => {
             // Convert the new progress object format to match the callback's expected parameters

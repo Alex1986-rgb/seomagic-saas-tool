@@ -8,6 +8,7 @@ export class UrlProcessor {
   private baseUrl: string;
   private domain: string;
   private urlObj: URL;
+  private robotsTxtPaths: string[] = [];
 
   constructor(url: string) {
     // Normalize URL
@@ -102,6 +103,80 @@ export class UrlProcessor {
       return `${urlObj.origin}${urlObj.pathname}`;
     } catch (e) {
       return url;
+    }
+  }
+
+  /**
+   * Sets robot.txt paths for the URL processor
+   */
+  setRobotsTxtPaths(paths: string[]): void {
+    this.robotsTxtPaths = paths;
+  }
+
+  /**
+   * Checks if a URL is allowed by robots.txt rules
+   */
+  isAllowedByRobotsTxt(url: string): boolean {
+    // Implement robots.txt checking logic
+    try {
+      const urlPath = new URL(url).pathname;
+      
+      // Check if URL path starts with any disallowed path
+      for (const disallowedPath of this.robotsTxtPaths) {
+        if (urlPath.startsWith(disallowedPath)) {
+          return false;
+        }
+      }
+      
+      return true;
+    } catch (e) {
+      return true; // If URL can't be parsed, assume it's allowed
+    }
+  }
+
+  /**
+   * Sort URLs by priority for crawling
+   */
+  sortByPriority(urls: string[]): string[] {
+    // Implement URL prioritization logic
+    return urls.filter(url => {
+      try {
+        const urlObj = new URL(url);
+        return urlObj.hostname === this.domain; // prioritize internal URLs
+      } catch (e) {
+        return false;
+      }
+    });
+  }
+
+  /**
+   * Determine whether a URL should be crawled
+   */
+  shouldCrawl(url: string): boolean {
+    if (!url) return false;
+    
+    try {
+      const urlObj = new URL(url);
+      
+      // Don't crawl non-HTTP protocols
+      if (!urlObj.protocol.startsWith('http')) {
+        return false;
+      }
+      
+      // Check if it's an internal URL
+      if (urlObj.hostname !== this.domain) {
+        return false;
+      }
+      
+      // Exclude common static assets and other file types
+      const excludedExtensions = /\.(jpg|jpeg|png|gif|svg|webp|ico|css|js|pdf|zip|doc|docx|xls|xlsx|ppt|pptx|mp3|mp4|avi|mov|wmv)$/i;
+      if (excludedExtensions.test(urlObj.pathname)) {
+        return false;
+      }
+      
+      return true;
+    } catch (e) {
+      return false;
     }
   }
 }

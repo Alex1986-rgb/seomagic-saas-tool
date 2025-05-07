@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Search, ArrowRight } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
+import { validationService } from "@/services/validation/validationService";
 
 const UrlForm: React.FC = () => {
   const navigate = useNavigate();
@@ -12,27 +13,24 @@ const UrlForm: React.FC = () => {
   const [isUrlValid, setIsUrlValid] = useState<boolean>(true);
   const { toast } = useToast();
   
-  const validateUrl = (value: string): boolean => {
-    if (!value.trim()) return false;
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setUrl(value);
     
-    // Simple URL validation (can be enhanced for more strict checking)
-    const pattern = /^(https?:\/\/)?(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)$/;
-    return pattern.test(value);
+    // Reset validation state when user types
+    if (!isUrlValid) {
+      setIsUrlValid(true);
+    }
   };
   
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    const isValid = validateUrl(url);
+    const isValid = validationService.validateUrl(url);
     setIsUrlValid(isValid);
     
     if (isValid) {
-      let formattedUrl = url;
-      
-      // Add https:// if the URL doesn't have a protocol
-      if (!/^https?:\/\//i.test(formattedUrl)) {
-        formattedUrl = 'https://' + formattedUrl;
-      }
+      const formattedUrl = validationService.formatUrl(url);
       
       try {
         toast({
@@ -57,18 +55,6 @@ const UrlForm: React.FC = () => {
     }
   };
   
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    setUrl(value);
-    
-    // Reset validation state when user types
-    if (!isUrlValid) {
-      setIsUrlValid(true);
-    }
-  };
-  
-  console.log("UrlForm rendering with url:", url);
-
   return (
     <form onSubmit={handleSubmit} className="w-full">
       <div className="relative flex items-center">

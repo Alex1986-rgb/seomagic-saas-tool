@@ -1,3 +1,4 @@
+
 /**
  * Core crawler implementation for deep site analysis
  */
@@ -8,6 +9,7 @@ import { CrawlResult, DeepCrawlerOptions, TaskProgress } from './types';
 import { UrlProcessor } from './UrlProcessor';
 import { RobotsTxtParser } from './RobotsTxtParser';
 import { CrawlQueueManager } from './CrawlQueueManager';
+import { PageProcessor } from './pageProcessor';
 
 export class DeepCrawlerCore {
   protected url: string;
@@ -30,11 +32,11 @@ export class DeepCrawlerCore {
       throw new Error('URL cannot be empty');
     }
 
-    // Инициализация процессора URL
+    // Initialize the URL processor
     this.urlProcessor = new UrlProcessor(url);
     this.url = url;
     
-    // Инициализация парсера robots.txt
+    // Initialize the robots.txt parser
     this.robotsParser = new RobotsTxtParser();
     
     // Set default options with fallbacks
@@ -44,39 +46,44 @@ export class DeepCrawlerCore {
       onProgress: options.onProgress || (() => {}),
     };
 
-    // Инициализация менеджера очереди
+    // Initialize queue manager
     this.queueManager = new CrawlQueueManager();
     this.queueManager.configure({
       maxConcurrentRequests: 10,
       retryAttempts: 3,
       requestTimeout: 15000,
-      debug: false
+      debug: false,
+      onProgress: (progress) => {
+        if (this.options.onProgress) {
+          this.options.onProgress(progress);
+        }
+      }
     });
   }
 
   /**
-   * Получение домена для текущего сканирования
+   * Get domain for current scan
    */
   getDomain(): string {
     return this.urlProcessor.getDomain();
   }
 
   /**
-   * Получение базового URL для текущего сканирования
+   * Get base URL for current scan
    */
   getBaseUrl(): string {
     return this.urlProcessor.getBaseUrl();
   }
 
   /**
-   * Включение или отключение режима отладки
+   * Enable or disable debug mode
    */
   setDebug(enabled: boolean): void {
     this.debugMode = enabled;
   }
 
   /**
-   * Отмена текущего процесса сканирования
+   * Cancel current scan process
    */
   cancel(): void {
     this.isCancelled = true;
@@ -88,14 +95,14 @@ export class DeepCrawlerCore {
   }
 
   /**
-   * Получает случайный User-Agent для избежания обнаружения
+   * Get random User-Agent to avoid detection
    */
   private getRandomUserAgent(): string {
     return this.userAgents[Math.floor(Math.random() * this.userAgents.length)];
   }
 
   /**
-   * Запуск процесса сканирования
+   * Start crawling process
    */
   async startCrawling(): Promise<CrawlResult> {
     try {
@@ -103,43 +110,35 @@ export class DeepCrawlerCore {
         console.log(`Starting deep crawl for ${this.url}`);
       }
 
-      // Сброс состояния для нового сканирования
+      // Reset state for new scan
       const queue: { url: string; depth: number }[] = [];
       const visited = new Set<string>();
       this.isCancelled = false;
       this.queueManager.reset();
       this.queueManager.resume();
 
-      // Добавление начального URL в очередь
+      // Add initial URL to queue
       queue.push({ url: this.url, depth: 0 });
 
-      // Получение и парсинг robots.txt
+      // Fetch and parse robots.txt
       await this.parseRobotsTxt();
 
-      // Начало сканирования
-      const result = await this.queueManager.processCrawlQueue(
+      // Process queue
+      const result = await this.queueManager.processQueue(
         queue,
         visited,
-        this.options,
-        this.processSingleUrl.bind(this)
+        {
+          maxPages: this.options.maxPages,
+          maxDepth: this.options.maxDepth
+        }
       );
 
-      // Добавляем домен к метаданным
-      result.metadata.domain = this.urlProcessor.getDomain();
+      // Add domain to metadata
+      if (result.metadata) {
+        result.metadata.domain = this.urlProcessor.getDomain();
+      }
 
-      return {
-        urls: [],
-        visitedCount: 0,
-        metadata: {
-          totalRequests: 0,
-          successRequests: 0,
-          failedRequests: 0,
-          domain: this.urlProcessor.getDomain(),
-          startTime: new Date().toISOString(),
-          endTime: new Date().toISOString(),
-          totalTime: 0
-        }
-      };
+      return result;
     } catch (error) {
       console.error('Error during crawl:', error);
       throw error;
@@ -147,7 +146,7 @@ export class DeepCrawlerCore {
   }
 
   /**
-   * Парсинг файла robots.txt, если он доступен
+   * Parse robots.txt if available
    */
   private async parseRobotsTxt(): Promise<void> {
     try {
@@ -159,7 +158,7 @@ export class DeepCrawlerCore {
   }
 
   /**
-   * Обработка одного URL
+   * Process single URL
    */
   private async processSingleUrl(url: string, depth: number): Promise<void> {
     if (this.isCancelled) {
@@ -167,12 +166,12 @@ export class DeepCrawlerCore {
     }
 
     try {
-      // Пропускать, если не разрешено в robots.txt
+      // Skip if not allowed by robots.txt
       if (!this.urlProcessor.isAllowedByRobotsTxt(url)) {
         return;
       }
 
-      // Попытка получить URL с логикой повторных попыток
+      // Try to fetch URL with retry logic
       let response;
       let retryCount = 0;
       
@@ -187,14 +186,14 @@ export class DeepCrawlerCore {
             timeout: 10000,
             maxRedirects: 5
           });
-          break; // Успех, выходим из цикла повторных попыток
+          break; // Success, exit retry loop
         } catch (error) {
           retryCount++;
           if (retryCount > this.retryCount) {
             throw error;
           }
           
-          // Экспоненциальное замедление
+          // Exponential backoff
           await new Promise(resolve => setTimeout(resolve, 1000 * retryCount));
         }
       }
@@ -203,27 +202,27 @@ export class DeepCrawlerCore {
         return;
       }
 
-      // Обрабатывать только HTML контент
+      // Process only HTML content
       const contentType = response.headers['content-type'] || '';
       if (!contentType.includes('text/html')) {
         return;
       }
 
-      // Извлечение ссылок из страницы
+      // Extract links from page
       const links = this.extractLinks(response.data, url);
       
-      // Фильтрация и сортировка по приоритету
+      // Filter and sort by priority
       const sortedLinks = this.urlProcessor.sortByPriority(links);
 
-      // Обработка отсортированных ссылок
+      // Process sorted links
       for (const link of sortedLinks) {
         try {
-          const normalizedLink = this.urlProcessor.normalize(link);
+          const normalizedLink = this.urlProcessor.normalizeUrl(link);
           if (this.urlProcessor.shouldCrawl(normalizedLink)) {
             this.queueManager.addToQueue(normalizedLink, depth + 1);
           }
         } catch (error) {
-          // Некорректная ссылка, пропускаем
+          // Invalid link, skip
         }
       }
     } catch (error) {
@@ -234,7 +233,7 @@ export class DeepCrawlerCore {
   }
 
   /**
-   * Извлечение ссылок из HTML контента
+   * Extract links from HTML content
    */
   private extractLinks(html: string, baseUrl: string): string[] {
     const links: string[] = [];
@@ -244,11 +243,11 @@ export class DeepCrawlerCore {
       const href = $(element).attr('href');
       if (href) {
         try {
-          // Резолв относительных URL
+          // Resolve relative URLs
           const resolvedUrl = new URL(href, baseUrl).href;
           links.push(resolvedUrl);
         } catch (error) {
-          // Пропускаем некорректные URL
+          // Skip invalid URLs
         }
       }
     });

@@ -1,47 +1,86 @@
 
+import { PageData, SiteStructureAnalysis } from './types';
+
 /**
- * Site structure analyzer
+ * Analyzes site structure based on crawl results
  */
-
-import { SiteStructureAnalysis } from './types';
-
 export class SiteAnalyzer {
-  static analyzeSiteStructure(visited: Set<string>, domain: string): SiteStructureAnalysis {
-    const sections: { [key: string]: number } = {};
-    const orphanedPages: string[] = [];
-    let maxDepth = 0;
-    
-    // Analyze pages by section
-    for (const url of visited) {
-      try {
-        const urlObj = new URL(url);
-        const path = urlObj.pathname;
-        
-        // Skip non-domain URLs
-        if (urlObj.hostname !== domain) continue;
-        
-        // Calculate depth
-        const pathSegments = path.split('/').filter(Boolean);
-        maxDepth = Math.max(maxDepth, pathSegments.length);
-        
-        // Categorize by section
-        if (pathSegments.length > 0) {
-          const section = pathSegments[0] || 'root';
-          sections[section] = (sections[section] || 0) + 1;
-        } else {
-          sections['root'] = (sections['root'] || 0) + 1;
-        }
-      } catch (e) {
-        // Skip invalid URLs
-      }
-    }
-    
+  /**
+   * Analyze site structure based on crawled pages
+   */
+  analyzeSiteStructure(pages: PageData[]): SiteStructureAnalysis {
+    const depthMap: Record<string, number> = {};
+    const pageTypesMap: Record<string, number> = {};
+    let totalInternalLinks = 0;
+    let totalExternalLinks = 0;
+
+    // Process each page to gather statistics
+    pages.forEach(page => {
+      // Calculate page depth
+      const depth = this.getPageDepth(page.url);
+      const depthKey = `depth_${depth}`;
+      depthMap[depthKey] = (depthMap[depthKey] || 0) + 1;
+
+      // Categorize page by type
+      const pageType = this.detectPageType(page);
+      pageTypesMap[pageType] = (pageTypesMap[pageType] || 0) + 1;
+
+      // Count links
+      totalInternalLinks += page.internalLinks?.length || 0;
+      totalExternalLinks += page.externalLinks?.length || 0;
+    });
+
     return {
-      pages: visited.size,
-      depth: maxDepth,
-      breadth: Object.keys(sections).length,
-      sections,
-      orphanedPages
+      totalPages: pages.length,
+      depth: depthMap,
+      pageTypes: pageTypesMap,
+      linkDistribution: {
+        internal: totalInternalLinks,
+        external: totalExternalLinks
+      }
     };
   }
+
+  /**
+   * Calculate the depth of a page URL
+   */
+  private getPageDepth(url: string): number {
+    try {
+      const pathname = new URL(url).pathname;
+      // Count segments, filter out empty ones
+      const segments = pathname.split('/').filter(Boolean);
+      return segments.length;
+    } catch (e) {
+      return 0;
+    }
+  }
+
+  /**
+   * Detect page type based on URL patterns and content
+   */
+  private detectPageType(page: PageData): string {
+    const url = page.url.toLowerCase();
+    const pathSegments = new URL(url).pathname.split('/').filter(Boolean);
+    const lastSegment = pathSegments[pathSegments.length - 1];
+
+    // Check for common page types by URL patterns
+    if (pathSegments.length === 0 || url.endsWith('/')) {
+      return 'homepage';
+    } else if (url.includes('/blog/') || url.includes('/news/') || url.includes('/article/')) {
+      return 'article';
+    } else if (url.includes('/product/') || url.includes('/item/')) {
+      return 'product';
+    } else if (url.includes('/category/') || url.includes('/catalog/')) {
+      return 'category';
+    } else if (url.includes('/about')) {
+      return 'about';
+    } else if (url.includes('/contact')) {
+      return 'contact';
+    } else {
+      // Fallback to generic page type
+      return 'other';
+    }
+  }
 }
+
+export const siteAnalyzer = new SiteAnalyzer();

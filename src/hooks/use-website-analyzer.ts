@@ -1,7 +1,9 @@
+
 import { useState, useCallback, useEffect } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import { generateAuditData } from '@/services/audit/generators';
-import { SitemapExtractor } from '@/services/audit/crawler/sitemapExtractor';
+import { scanningService } from '@/services/scanning/scanningService';
+import { validationService } from '@/services/validation/validationService';
 
 interface ScanOptions {
   useSitemap: boolean;
@@ -35,8 +37,6 @@ export const useWebsiteAnalyzer = () => {
   });
   const { toast } = useToast();
 
-  const sitemapExtractor = new SitemapExtractor({ maxSitemaps: 50 }); // Increased max sitemaps
-
   const handleUrlChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     setUrl(e.target.value);
     if (isError) {
@@ -54,6 +54,16 @@ export const useWebsiteAnalyzer = () => {
       return;
     }
 
+    // Validate URL
+    if (!validationService.validateUrl(url)) {
+      toast({
+        title: "Ошибка",
+        description: "Пожалуйста, введите корректный URL сайта",
+        variant: "destructive",
+      });
+      return;
+    }
+
     try {
       setIsScanning(true);
       setIsError(false);
@@ -61,7 +71,7 @@ export const useWebsiteAnalyzer = () => {
       setScanStage('Подготовка к сканированию...');
 
       // Normalize URL
-      const normalizedUrl = url.startsWith('http') ? url : `https://${url}`;
+      const normalizedUrl = validationService.formatUrl(url);
       
       // Try to fetch and process sitemap if option enabled
       let urlsFromSitemap: string[] = [];
@@ -71,19 +81,19 @@ export const useWebsiteAnalyzer = () => {
         
         try {
           // First try direct sitemap.xml access
-          const sitemapUrl = `${normalizedUrl}/sitemap.xml`;
-          console.log(`Attempting to fetch sitemap from: ${sitemapUrl}`);
-          
-          // Fix: use one argument instead of two
-          urlsFromSitemap = await sitemapExtractor.fetchAndProcessSitemaps(sitemapUrl);
+          urlsFromSitemap = await scanningService.extractSitemapUrls(normalizedUrl);
           
           // If no URLs found and robots.txt option is enabled, try to get sitemap from robots.txt
           if (urlsFromSitemap.length === 0 && options.useRobotsTxt) {
             setScanStage('Поиск sitemap в robots.txt...');
-            const sitemapUrlFromRobots = await sitemapExtractor.extractSitemapFromRobotsTxt(normalizedUrl);
+            const robotsUrls = await scanningService.extractSitemapFromRobots(normalizedUrl);
             
-            if (sitemapUrlFromRobots) {
-              urlsFromSitemap = await sitemapExtractor.fetchAndProcessSitemaps(sitemapUrlFromRobots);
+            if (robotsUrls.length > 0) {
+              // Process each potential sitemap URL from robots.txt
+              for (const sitemapUrl of robotsUrls) {
+                const sitemapUrls = await scanningService.extractSitemapUrls(sitemapUrl);
+                urlsFromSitemap = [...urlsFromSitemap, ...sitemapUrls];
+              }
             }
           }
           
@@ -155,7 +165,7 @@ export const useWebsiteAnalyzer = () => {
     } finally {
       setIsScanning(false);
     }
-  }, [url, options, toast, sitemapExtractor]);
+  }, [url, options, toast]);
 
   const updateOptions = useCallback((newOptions: Partial<ScanOptions>) => {
     setOptions(prev => ({ ...prev, ...newOptions }));

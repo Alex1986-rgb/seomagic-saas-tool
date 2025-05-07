@@ -1,6 +1,6 @@
 
 import { DeepCrawlerCore } from '../../audit/crawler/deepCrawlerCore';
-import { CrawlTask, CrawlResult, crawlTasks, TaskProgress } from './types';
+import { CrawlTask, CrawlResult, TaskProgress } from './types';
 
 export class FirecrawlService {
   private tasks = new Map<string, CrawlTask>();
@@ -19,14 +19,14 @@ export class FirecrawlService {
       pages_scanned: 0,
       estimated_total_pages: maxPages,
       progress: 0,
-      isLargeSite: maxPages > 10000 // Помечаем как крупный сайт, если лимит больше 10k
+      isLargeSite: maxPages > 10000 // Mark as large site if limit > 10k
     };
 
     this.tasks.set(taskId, task);
 
     const crawler = new DeepCrawlerCore(url, {
       maxPages,
-      maxDepth: 15, // Увеличиваем глубину для больших сайтов
+      maxDepth: 15, // Increase depth for large sites
       onProgress: (progress: TaskProgress) => {
         this.updateTaskProgress(taskId, progress);
       }
@@ -52,16 +52,12 @@ export class FirecrawlService {
       task.status = 'in_progress';
       const result = await crawler.startCrawling();
       
-      // Convert CrawlResult from crawler to the firecrawl type
+      // Convert CrawlResult to the expected format
       const convertedResult: CrawlResult = {
         urls: result.urls,
         metadata: {
-          startTime: result.metadata.startTime,
-          endTime: result.metadata.endTime,
-          totalTime: result.metadata.totalTime,
-          domain: result.metadata.domain,
-          // Add required firecrawl properties
           keywords: [],
+          sitemap: '',
           links: {
             internal: 0,
             external: 0,
@@ -74,7 +70,7 @@ export class FirecrawlService {
       task.results = convertedResult;
       task.completion_time = new Date().toISOString();
       
-      // Обновляем urls в задаче
+      // Update urls in task
       if (result.urls) {
         task.urls = result.urls;
       }
@@ -93,18 +89,18 @@ export class FirecrawlService {
       task.pages_scanned = progress.pagesScanned;
       task.current_url = progress.currentUrl;
       
-      // Для крупных сайтов используем другую формулу прогресса, чтобы не держать на 1% слишком долго
+      // For large sites use different progress formula to not stay at 1% too long
       if (task.isLargeSite) {
         if (progress.pagesScanned < 100) {
-          task.progress = Math.min(Math.floor((progress.pagesScanned / 100) * 5), 5); // Быстрее растет до 5%
+          task.progress = Math.min(Math.floor((progress.pagesScanned / 100) * 5), 5); // Faster growth to 5%
         } else if (progress.pagesScanned < 1000) {
           task.progress = 5 + Math.min(Math.floor(((progress.pagesScanned - 100) / 900) * 15), 15); // 5-20%
         } else {
-          // После 1000 страниц прогресс растет медленнее, но постоянно
+          // After 1000 pages progress grows slower but steady
           task.progress = 20 + Math.min(Math.floor(Math.log10(progress.pagesScanned) * 15), 79);
         }
       } else {
-        // Для обычных сайтов обычная формула
+        // For regular sites normal formula
         task.progress = Math.min(Math.floor((progress.pagesScanned / (task.estimated_total_pages || 1)) * 100), 99);
       }
       
@@ -154,7 +150,7 @@ export class FirecrawlService {
     
     task.urls = urls;
     if (!task.results) {
-      task.results = { urls };
+      task.results = { urls, metadata: { keywords: [], links: { internal: 0, external: 0, broken: 0 } } };
     } else {
       task.results.urls = urls;
     }
@@ -169,6 +165,16 @@ export class FirecrawlService {
       }
     }
     return null;
+  }
+
+  async cancelCrawl(taskId: string): Promise<void> {
+    const task = this.tasks.get(taskId);
+    const crawler = this.crawlers.get(taskId);
+
+    if (task && crawler) {
+      task.status = 'cancelled';
+      crawler.cancel();
+    }
   }
 }
 
