@@ -1,175 +1,163 @@
 
+/**
+ * Manages the crawl queue for deep site analysis
+ */
+
 import { CrawlResult } from './types';
 
-interface QueueManagerOptions {
-  maxConcurrentRequests: number;
-  retryAttempts: number;
-  requestTimeout: number;
-  debug: boolean;
-}
-
-/**
- * Класс для управления очередью сканирования страниц
- */
 export class CrawlQueueManager {
-  private maxConcurrentRequests: number = 5;
-  private retryAttempts: number = 3;
-  private requestTimeout: number = 10000;
-  private debug: boolean = false;
-  private paused: boolean = false;
+  private queue: { url: string; depth: number }[] = [];
+  private visited = new Set<string>();
+  private processing = new Set<string>();
+  private maxConcurrentRequests = 5;
+  private retryAttempts = 3;
+  private requestTimeout = 10000; // 10 seconds
+  private isPaused = false;
+  private debugMode = false;
   
-  // Метрики сканирования
-  private activeRequests: number = 0;
-  private completedRequests: number = 0;
-  private failedRequests: number = 0;
-  
+  // Stats
+  private totalRequests = 0;
+  private successRequests = 0;
+  private failedRequests = 0;
+  private startTime: number = 0;
+
   /**
-   * Конфигурирует очередь сканирования
+   * Configures the queue manager with specific options
    */
-  configure(options: QueueManagerOptions): void {
-    this.maxConcurrentRequests = options.maxConcurrentRequests;
-    this.retryAttempts = options.retryAttempts;
-    this.requestTimeout = options.requestTimeout;
-    this.debug = options.debug;
+  configure(options: {
+    maxConcurrentRequests?: number;
+    retryAttempts?: number;
+    requestTimeout?: number;
+    debug?: boolean;
+  }) {
+    if (options.maxConcurrentRequests) {
+      this.maxConcurrentRequests = options.maxConcurrentRequests;
+    }
+    if (options.retryAttempts !== undefined) {
+      this.retryAttempts = options.retryAttempts;
+    }
+    if (options.requestTimeout) {
+      this.requestTimeout = options.requestTimeout;
+    }
+    if (options.debug !== undefined) {
+      this.debugMode = options.debug;
+    }
   }
-  
+
   /**
-   * Сбрасывает состояние очереди
+   * Resets the queue and statistics
    */
-  reset(): void {
-    this.activeRequests = 0;
-    this.completedRequests = 0;
+  reset() {
+    this.queue = [];
+    this.visited = new Set<string>();
+    this.processing = new Set<string>();
+    this.totalRequests = 0;
+    this.successRequests = 0;
     this.failedRequests = 0;
-    this.paused = false;
+    this.startTime = Date.now();
+    this.isPaused = false;
   }
-  
+
   /**
-   * Приостанавливает обработку очереди
+   * Adds a URL to the crawl queue
    */
-  pause(): void {
-    this.paused = true;
-    if (this.debug) {
-      console.log('Queue processing paused');
+  addToQueue(url: string, depth: number) {
+    // Only add if not already visited or in queue
+    if (!this.visited.has(url) && !this.processing.has(url)) {
+      this.queue.push({ url, depth });
     }
   }
-  
+
   /**
-   * Возобновляет обработку очереди
+   * Marks a URL as visited
    */
-  resume(): void {
-    this.paused = false;
-    if (this.debug) {
-      console.log('Queue processing resumed');
-    }
+  markVisited(url: string) {
+    this.visited.add(url);
+    this.processing.delete(url);
   }
-  
+
   /**
-   * Добавляет URL в очередь сканирования
+   * Pauses the queue processing
    */
-  addToQueue(url: string, depth: number): void {
-    // Реализация добавления URL в очередь
-    // В реальном применении здесь была бы логика управления очередью
-    if (this.debug) {
-      console.log(`Added to queue: ${url} at depth ${depth}`);
-    }
+  pause() {
+    this.isPaused = true;
   }
-  
+
   /**
-   * Обрабатывает очередь сканирования
+   * Resumes the queue processing
    */
-  async processCrawlQueue(
-    queue: { url: string; depth: number }[], 
-    visited: Set<string>,
-    options: any,
-    processUrlFunction: (url: string, depth: number) => Promise<void>
+  resume() {
+    this.isPaused = false;
+  }
+
+  /**
+   * Processes the crawl queue with parallel requests
+   */
+  async processQueue(
+    options: { maxPages: number; maxDepth: number },
+    processFunction: (url: string, depth: number) => Promise<void>
   ): Promise<CrawlResult> {
-    const result: CrawlResult = {
-      urls: [],
-      visitedCount: 0,
-      metadata: {
-        totalRequests: 0,
-        successRequests: 0,
-        failedRequests: 0,
-        domain: '',
-        startTime: new Date().toISOString(),
-        endTime: '',
-        totalTime: 0
-      }
-    };
+    this.startTime = Date.now();
     
-    const startTime = Date.now();
-    
-    let index = 0;
-    const batchSize = this.maxConcurrentRequests;
-    
-    while (index < queue.length && !this.paused && result.visitedCount < options.maxPages) {
-      // Обработка текущего батча URL
-      const currentBatch = queue.slice(index, index + batchSize)
-        .filter(item => !visited.has(item.url) && item.depth <= options.maxDepth);
-      
-      if (currentBatch.length === 0) {
+    while (this.queue.length > 0 && !this.isPaused) {
+      // Stop if we've reached the max pages
+      if (this.visited.size >= options.maxPages) {
         break;
       }
       
-      // Параллельная обработка URLs в текущем батче
-      await Promise.all(
-        currentBatch.map(async item => {
-          const { url, depth } = item;
-          
-          if (visited.has(url)) return;
-          
-          visited.add(url);
-          result.visitedCount++;
-          result.urls.push(url);
-          
-          // Обработка одного URL
-          try {
-            this.activeRequests++;
-            await processUrlFunction(url, depth);
-            this.completedRequests++;
-            result.metadata.successRequests++;
-          } catch (error) {
-            this.failedRequests++;
-            result.metadata.failedRequests++;
-            if (this.debug) {
-              console.error(`Error processing ${url}:`, error);
-            }
-          } finally {
-            this.activeRequests--;
-          }
-          
-          // Вызов callback функции для обновления UI
-          if (options.onProgress) {
-            options.onProgress(
-              result.visitedCount, 
-              Math.min(queue.length, options.maxPages), 
-              url
-            );
-          }
-        })
-      );
+      // Process up to maxConcurrentRequests in parallel
+      const batch = [];
+      const batchSize = Math.min(this.maxConcurrentRequests, this.queue.length);
       
-      index += batchSize;
+      for (let i = 0; i < batchSize; i++) {
+        const item = this.queue.shift();
+        if (item) {
+          this.processing.add(item.url);
+          batch.push(this.processItem(item.url, item.depth, processFunction));
+        }
+      }
+      
+      if (batch.length > 0) {
+        await Promise.all(batch);
+      }
     }
     
-    // Заполнение результатов
     const endTime = Date.now();
-    result.metadata.totalTime = (endTime - startTime) / 1000;
-    result.metadata.endTime = new Date().toISOString();
-    result.metadata.totalRequests = result.metadata.successRequests + result.metadata.failedRequests;
     
-    return result;
-  }
-  
-  /**
-   * Получить текущие метрики сканирования
-   */
-  getMetrics() {
     return {
-      activeRequests: this.activeRequests,
-      completedRequests: this.completedRequests,
-      failedRequests: this.failedRequests,
-      isPaused: this.paused,
+      urls: Array.from(this.visited),
+      visitedCount: this.visited.size,
+      metadata: {
+        totalRequests: this.totalRequests,
+        successRequests: this.successRequests,
+        failedRequests: this.failedRequests,
+        startTime: new Date(this.startTime).toISOString(),
+        endTime: new Date(endTime).toISOString(),
+        totalTime: endTime - this.startTime,
+      }
     };
+  }
+
+  /**
+   * Processes a single queue item with retry logic
+   */
+  private async processItem(
+    url: string,
+    depth: number,
+    processFunction: (url: string, depth: number) => Promise<void>
+  ) {
+    this.totalRequests++;
+    
+    try {
+      await processFunction(url, depth);
+      this.successRequests++;
+    } catch (error) {
+      this.failedRequests++;
+      if (this.debugMode) {
+        console.error(`Error processing ${url}:`, error);
+      }
+    } finally {
+      this.markVisited(url);
+    }
   }
 }

@@ -1,95 +1,115 @@
 
-import robotsParser from 'robots-parser';
-import axios from 'axios';
-
 /**
- * Класс для работы с файлом robots.txt
+ * Parser for robots.txt files
  */
-export class RobotsTxtParser {
-  private baseUrl: string;
-  private userAgent: string;
-  private excludePatterns: RegExp[];
-  private parsedRobots: any = null;
 
-  constructor(baseUrl?: string, userAgent: string = 'SEOBot/1.0', excludePatterns: RegExp[] = []) {
-    this.baseUrl = baseUrl || '';
-    this.userAgent = userAgent;
-    this.excludePatterns = excludePatterns;
-  }
+export class RobotsTxtParser {
+  private userAgent: string = '*';
+  private disallowedPaths: string[] = [];
+  private allowedPaths: string[] = [];
+  private sitemapUrls: string[] = [];
 
   /**
-   * Извлекает URL из robots.txt
-   * @param baseUrl URL сайта
+   * Parse a robots.txt file from a given URL
    */
   async parse(baseUrl: string): Promise<string[]> {
     try {
-      const robotsUrl = `${baseUrl}/robots.txt`;
-      const response = await axios.get(robotsUrl, {
-        timeout: 5000,
-        headers: {
-          'User-Agent': this.userAgent
-        }
-      });
+      // Normalize the URL to ensure it ends with a trailing slash
+      const normalizedBaseUrl = baseUrl.endsWith('/') ? baseUrl : `${baseUrl}/`;
+      const robotsUrl = `${normalizedBaseUrl}robots.txt`;
       
-      if (response.status === 200) {
-        const robotsTxt = response.data;
-        this.parsedRobots = robotsParser(robotsUrl, robotsTxt);
-        
-        // Получаем пути, которые запрещены для сканирования
-        const disallowedPaths: string[] = [];
-        const robotsLines = robotsTxt.split('\n');
-        
-        for (const line of robotsLines) {
-          const trimmedLine = line.trim().toLowerCase();
-          if (trimmedLine.startsWith('disallow:')) {
-            const path = line.split(':')[1].trim();
-            if (path && path !== '/') {
-              disallowedPaths.push(path);
-            }
-          }
-        }
-        
-        return disallowedPaths;
+      const response = await fetch(robotsUrl);
+      if (!response.ok) {
+        console.warn(`Failed to fetch robots.txt: ${response.status} ${response.statusText}`);
+        return [];
       }
       
-      return [];
+      const content = await response.text();
+      return this.parseContent(content);
     } catch (error) {
-      console.warn(`Не удалось получить robots.txt для ${baseUrl}:`, error);
+      console.error('Error fetching robots.txt:', error);
       return [];
     }
   }
-  
+
   /**
-   * Читает файл robots.txt и возвращает паттерны для исключения
+   * Parse robots.txt content
    */
-  async readRobotsTxt(): Promise<RegExp[]> {
-    if (!this.baseUrl) {
-      return this.excludePatterns;
+  private parseContent(content: string): string[] {
+    this.disallowedPaths = [];
+    this.allowedPaths = [];
+    this.sitemapUrls = [];
+    
+    let currentUserAgent = '';
+    
+    // Split the content into lines and process each line
+    const lines = content.split('\n');
+    
+    for (const line of lines) {
+      const trimmedLine = line.trim();
+      
+      // Skip empty lines and comments
+      if (!trimmedLine || trimmedLine.startsWith('#')) {
+        continue;
+      }
+      
+      // Try to extract directive and value
+      const colonIndex = trimmedLine.indexOf(':');
+      if (colonIndex === -1) continue;
+      
+      const directive = trimmedLine.substring(0, colonIndex).trim().toLowerCase();
+      const value = trimmedLine.substring(colonIndex + 1).trim();
+      
+      if (directive === 'user-agent') {
+        currentUserAgent = value.toLowerCase();
+      } else if (currentUserAgent === this.userAgent.toLowerCase() || currentUserAgent === '*') {
+        if (directive === 'disallow' && value) {
+          this.disallowedPaths.push(value);
+        } else if (directive === 'allow' && value) {
+          this.allowedPaths.push(value);
+        }
+      }
+      
+      // Sitemap can appear anywhere in the file
+      if (directive === 'sitemap' && value) {
+        this.sitemapUrls.push(value);
+      }
     }
     
+    return this.sitemapUrls;
+  }
+
+  /**
+   * Check if a URL is allowed by robots.txt rules
+   */
+  isUrlAllowed(url: string): boolean {
     try {
-      await this.parse(this.baseUrl);
+      const urlObj = new URL(url);
+      const path = urlObj.pathname + urlObj.search;
       
-      // Обрабатываем disallow правила для текущего user-agent
-      const patterns: RegExp[] = [...this.excludePatterns];
+      // Check disallow rules
+      for (const disallowedPath of this.disallowedPaths) {
+        if (path.startsWith(disallowedPath)) {
+          // Check if there's a more specific allow rule
+          for (const allowedPath of this.allowedPaths) {
+            if (path.startsWith(allowedPath) && allowedPath.length > disallowedPath.length) {
+              return true;
+            }
+          }
+          return false;
+        }
+      }
       
-      // Добавляем дополнительную логику для создания RegExp из disallow правил
-      
-      return patterns;
+      return true;
     } catch (error) {
-      console.warn('Error reading robots.txt:', error);
-      return this.excludePatterns;
+      return false;
     }
   }
-  
+
   /**
-   * Проверяет, разрешен ли URL для сканирования по правилам robots.txt
+   * Get all sitemap URLs found in robots.txt
    */
-  isAllowed(url: string): boolean {
-    if (!this.parsedRobots) {
-      return true;
-    }
-    
-    return this.parsedRobots.isAllowed(url, this.userAgent);
+  getSitemapUrls(): string[] {
+    return [...this.sitemapUrls];
   }
 }

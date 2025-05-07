@@ -1,116 +1,122 @@
 
 /**
- * Page processor class for extracting data from crawled pages
+ * Page processor for handling HTML content extraction and analysis
  */
 
-import axios from 'axios';
 import * as cheerio from 'cheerio';
 import { PageData } from './types';
 
 export class PageProcessor {
-  private domain: string;
-  private baseUrl: string;
-  private userAgent: string;
-
-  constructor(domain: string, baseUrl: string, userAgent: string) {
-    this.domain = domain;
-    this.baseUrl = baseUrl;
-    this.userAgent = userAgent;
-  }
-
-  async processPage(url: string): Promise<{ pageData: PageData | null; links: string[] }> {
+  /**
+   * Processes HTML content to extract structured data
+   */
+  static async processPage(url: string, html: string, statusCode: number): Promise<PageData> {
+    const $ = cheerio.load(html);
+    
+    // Extract page title
+    const title = $('title').text().trim();
+    
+    // Extract meta description
+    const description = $('meta[name="description"]').attr('content') || '';
+    
+    // Extract all h1 tags
+    const h1: string[] = [];
+    $('h1').each((_, element) => {
+      h1.push($(element).text().trim());
+    });
+    
+    // Extract all links
+    const links: string[] = [];
+    const internalLinks: string[] = [];
+    const externalLinks: string[] = [];
+    
     try {
-      const response = await axios.get(url, {
-        headers: {
-          'User-Agent': this.userAgent
-        },
-        timeout: 15000
-      });
-
-      const $ = cheerio.load(response.data);
-      const title = $('title').text().trim() || '';
-      const description = $('meta[name="description"]').attr('content') || '';
+      const baseUrl = new URL(url);
       
-      // Extract headings
-      const h1s = $('h1').map((_, el) => $(el).text().trim()).get();
-      const h2s = $('h2').map((_, el) => $(el).text().trim()).get();
-      const h3s = $('h3').map((_, el) => $(el).text().trim()).get();
-      const h4s = $('h4').map((_, el) => $(el).text().trim()).get();
-      const h5s = $('h5').map((_, el) => $(el).text().trim()).get();
-      const h6s = $('h6').map((_, el) => $(el).text().trim()).get();
-
-      // Extract all links
-      const links: string[] = [];
       $('a[href]').each((_, element) => {
         const href = $(element).attr('href');
-        if (href) {
-          try {
-            const resolvedUrl = new URL(href, url).href;
-            links.push(resolvedUrl);
-          } catch (error) {
-            // Skip invalid URLs
-          }
-        }
-      });
-
-      // Separate internal and external links
-      const internalLinks: string[] = [];
-      const externalLinks: string[] = [];
-
-      for (const link of links) {
-        try {
-          const linkDomain = new URL(link).hostname;
-          if (linkDomain === this.domain) {
-            internalLinks.push(link);
-          } else {
-            externalLinks.push(link);
-          }
-        } catch (error) {
-          // Skip invalid URLs
-        }
-      }
-
-      // Extract images
-      const images = $('img').map((_, el) => {
-        const src = $(el).attr('src') || '';
-        const alt = $(el).attr('alt') || '';
-        const title = $(el).attr('title') || undefined;
+        if (!href) return;
         
         try {
-          const imageUrl = new URL(src, url).href;
-          return {
-            src: imageUrl,
-            alt,
-            title,
-            url: imageUrl // Adding url property to match the type
-          };
-        } catch (error) {
-          return null;
+          // Resolve relative URLs
+          const absoluteUrl = new URL(href, url).toString();
+          links.push(absoluteUrl);
+          
+          // Categorize as internal or external
+          const linkUrl = new URL(absoluteUrl);
+          if (linkUrl.hostname === baseUrl.hostname) {
+            internalLinks.push(absoluteUrl);
+          } else {
+            externalLinks.push(absoluteUrl);
+          }
+        } catch (e) {
+          // Skip invalid URLs
         }
-      }).get().filter(Boolean);
-
-      const pageData: PageData = {
-        url,
-        title,
-        description,
-        h1s,
-        headings: { h1: h1s, h2: h2s, h3: h3s, h4: h4s, h5: h5s, h6: h6s },
-        wordCount: $('body').text().split(/\s+/).length,
-        links: { internal: internalLinks, external: externalLinks },
-        internalLinks, // Add these properties to match the expected interface
-        externalLinks,
-        images,
-        statusCode: response.status,
-        contentType: response.headers['content-type'] || '',
-        loadTime: 0, // This would need to be measured properly
-        contentLength: parseInt(response.headers['content-length'] || '0', 10) || null,
-        metaDescription: description // For backward compatibility
-      };
-
-      return { pageData, links };
-    } catch (error) {
-      console.error(`Error processing page ${url}:`, error);
-      return { pageData: null, links: [] };
+      });
+    } catch (e) {
+      // Handle invalid base URL
     }
+    
+    // Extract all images
+    const images: { src: string; alt: string }[] = [];
+    $('img').each((_, element) => {
+      const src = $(element).attr('src') || '';
+      const alt = $(element).attr('alt') || '';
+      if (src) {
+        images.push({ src, alt });
+      }
+    });
+    
+    // Check if the page is indexable
+    const isNoindex = $('meta[name="robots"]').attr('content')?.includes('noindex') || 
+                      $('meta[name="googlebot"]').attr('content')?.includes('noindex') ||
+                      false;
+    
+    // Calculate content length
+    const contentLength = html.length;
+    
+    // Detect potential issues
+    const issues = [];
+    
+    if (!title) {
+      issues.push({
+        type: 'missing_title',
+        description: 'The page is missing a title tag',
+        severity: 'critical' as const
+      });
+    }
+    
+    if (!description) {
+      issues.push({
+        type: 'missing_description',
+        description: 'The page is missing a meta description',
+        severity: 'important' as const
+      });
+    }
+    
+    if (h1.length === 0) {
+      issues.push({
+        type: 'missing_h1',
+        description: 'The page is missing an H1 heading',
+        severity: 'important' as const
+      });
+    }
+    
+    return {
+      url,
+      title,
+      description,
+      h1,
+      links,
+      internalLinks,
+      externalLinks,
+      images,
+      statusCode,
+      contentType: 'text/html',
+      loadTime: 0,
+      contentLength,
+      isIndexable: !isNoindex,
+      issues
+    };
   }
 }

@@ -1,14 +1,13 @@
-
 /**
  * Core crawler implementation for deep site analysis
  */
 
 import * as cheerio from 'cheerio';
 import axios from 'axios';
-import { CrawlResult, DeepCrawlerOptions } from './types';
-import { UrlProcessor } from './urlProcessor';
-import { RobotsTxtParser } from './robotsTxtParser';
-import { CrawlQueueManager } from './crawlQueueManager';
+import { CrawlResult, DeepCrawlerOptions, TaskProgress } from './types';
+import { UrlProcessor } from './UrlProcessor';
+import { RobotsTxtParser } from './RobotsTxtParser';
+import { CrawlQueueManager } from './CrawlQueueManager';
 
 export class DeepCrawlerCore {
   protected url: string;
@@ -128,7 +127,19 @@ export class DeepCrawlerCore {
       // Добавляем домен к метаданным
       result.metadata.domain = this.urlProcessor.getDomain();
 
-      return result;
+      return {
+        urls: [],
+        visitedCount: 0,
+        metadata: {
+          totalRequests: 0,
+          successRequests: 0,
+          failedRequests: 0,
+          domain: this.urlProcessor.getDomain(),
+          startTime: new Date().toISOString(),
+          endTime: new Date().toISOString(),
+          totalTime: 0
+        }
+      };
     } catch (error) {
       console.error('Error during crawl:', error);
       throw error;

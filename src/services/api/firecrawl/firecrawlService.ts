@@ -1,11 +1,6 @@
-import { DeepCrawlerCore } from '../../audit/crawler/deepCrawlerCore';
-import { CrawlTask, CrawlResult, crawlTasks } from './types';
 
-interface TaskProgress {
-  pagesScanned: number;
-  currentUrl: string;
-  totalUrls: number;
-}
+import { DeepCrawlerCore } from '../../audit/crawler/deepCrawlerCore';
+import { CrawlTask, CrawlResult, crawlTasks, TaskProgress } from './types';
 
 export class FirecrawlService {
   private tasks = new Map<string, CrawlTask>();
@@ -32,7 +27,7 @@ export class FirecrawlService {
     const crawler = new DeepCrawlerCore(url, {
       maxPages,
       maxDepth: 15, // Увеличиваем глубину для больших сайтов
-      onProgress: (progress: { pagesScanned: number; currentUrl: string; totalUrls: number }) => {
+      onProgress: (progress: TaskProgress) => {
         this.updateTaskProgress(taskId, progress);
       }
     });
@@ -57,8 +52,26 @@ export class FirecrawlService {
       task.status = 'in_progress';
       const result = await crawler.startCrawling();
       
+      // Convert CrawlResult from crawler to the firecrawl type
+      const convertedResult: CrawlResult = {
+        urls: result.urls,
+        metadata: {
+          startTime: result.metadata.startTime,
+          endTime: result.metadata.endTime,
+          totalTime: result.metadata.totalTime,
+          domain: result.metadata.domain,
+          // Add required firecrawl properties
+          keywords: [],
+          links: {
+            internal: 0,
+            external: 0,
+            broken: 0
+          }
+        }
+      };
+      
       task.status = 'completed';
-      task.results = result;
+      task.results = convertedResult;
       task.completion_time = new Date().toISOString();
       
       // Обновляем urls в задаче

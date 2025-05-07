@@ -1,170 +1,107 @@
 
 /**
- * Класс для обработки URL в процессе сканирования
+ * URL processing utility for handling URL normalization and analysis
  */
+
 export class UrlProcessor {
+  private url: string;
   private baseUrl: string;
   private domain: string;
-  private crawledUrls: Set<string> = new Set();
-  private disallowedPaths: string[] = [];
-  
+  private urlObj: URL;
+
   constructor(url: string) {
-    const normalizedUrl = url.startsWith('http') ? url : `https://${url}`;
+    // Normalize URL
+    if (!url.startsWith('http://') && !url.startsWith('https://')) {
+      url = `https://${url}`;
+    }
     
     try {
-      const parsedUrl = new URL(normalizedUrl);
-      this.domain = parsedUrl.hostname;
-      this.baseUrl = `${parsedUrl.protocol}//${parsedUrl.hostname}`;
+      this.urlObj = new URL(url);
+      this.url = url;
+      this.baseUrl = this.urlObj.origin;
+      this.domain = this.urlObj.hostname;
     } catch (error) {
-      console.error('Invalid URL provided to UrlProcessor:', url);
-      this.domain = '';
-      this.baseUrl = '';
+      throw new Error(`Invalid URL: ${url}`);
     }
   }
-  
+
   /**
-   * Получить домен текущего URL
+   * Get the domain for the current URL
    */
   getDomain(): string {
     return this.domain;
   }
-  
+
   /**
-   * Получить базовый URL (протокол + домен)
+   * Get the base URL (protocol + domain)
    */
   getBaseUrl(): string {
     return this.baseUrl;
   }
-  
+
   /**
-   * Устанавливает пути, запрещенные robots.txt
+   * Normalize a URL against the base URL
    */
-  setRobotsTxtPaths(paths: string[]): void {
-    this.disallowedPaths = paths;
-  }
-  
-  /**
-   * Нормализует URL для единого формата
-   */
-  normalize(url: string): string {
+  normalizeUrl(href: string): string {
     try {
-      // Для относительных URL добавляем базовый URL
-      if (url.startsWith('/')) {
-        url = `${this.baseUrl}${url}`;
-      } else if (!url.startsWith('http')) {
-        url = `${this.baseUrl}/${url}`;
-      }
-      
-      // Удаляем фрагменты URL (всё после #)
-      const hashIndex = url.indexOf('#');
-      if (hashIndex > -1) {
-        url = url.substring(0, hashIndex);
-      }
-      
-      // Нормализация URL
-      const parsedUrl = new URL(url);
-      
-      // Удаляем trailing slash для единообразия
-      let normalizedUrl = parsedUrl.toString();
-      if (normalizedUrl.endsWith('/') && parsedUrl.pathname.length > 1) {
-        normalizedUrl = normalizedUrl.slice(0, -1);
-      }
-      
-      return normalizedUrl;
-    } catch (error) {
-      console.error('Error normalizing URL:', url, error);
-      return url;
+      return new URL(href, this.baseUrl).toString();
+    } catch (e) {
+      return '';
     }
   }
-  
+
   /**
-   * Проверяет, должен ли URL быть сканирован
+   * Check if a URL is internal relative to the base domain
    */
-  shouldCrawl(url: string): boolean {
+  isInternalUrl(url: string): boolean {
     try {
-      const parsedUrl = new URL(url);
-      
-      // Проверка, что URL относится к тому же домену
-      if (parsedUrl.hostname !== this.domain) {
-        return false;
-      }
-      
-      const normalizedUrl = this.normalize(url);
-      
-      // Проверка, был ли URL уже сканирован
-      if (this.crawledUrls.has(normalizedUrl)) {
-        return false;
-      }
-      
-      return this.isAllowedByRobotsTxt(url);
-    } catch (error) {
+      const urlObj = new URL(url);
+      return urlObj.hostname === this.domain;
+    } catch (e) {
       return false;
     }
   }
-  
+
   /**
-   * Проверяет, разрешен ли URL правилами robots.txt
+   * Check if a URL should be excluded based on common patterns
    */
-  isAllowedByRobotsTxt(url: string): boolean {
-    // Проверка по disallowed paths из robots.txt
-    for (const path of this.disallowedPaths) {
-      if (url.includes(path)) {
-        return false;
+  shouldExcludeUrl(url: string, patterns: RegExp[]): boolean {
+    try {
+      for (const pattern of patterns) {
+        if (pattern.test(url)) {
+          return true;
+        }
       }
+      return false;
+    } catch (e) {
+      return true;
     }
-    
-    return true;
   }
-  
+
   /**
-   * Сортирует URL по приоритету для сканирования
+   * Get the path depth of a URL
    */
-  sortByPriority(urls: string[]): string[] {
-    // Отфильтровываем недопустимые URL
-    const validUrls = urls.filter(url => {
-      try {
-        new URL(url);
-        return true;
-      } catch (error) {
-        return false;
-      }
-    });
-    
-    // Сортируем URL по приоритету:
-    // 1. URL того же домена
-    // 2. Короткие URL (обычно более важные страницы)
-    return validUrls.sort((a, b) => {
-      try {
-        const urlA = new URL(a);
-        const urlB = new URL(b);
-        
-        // Сначала URL того же домена
-        if (urlA.hostname === this.domain && urlB.hostname !== this.domain) {
-          return -1;
-        }
-        if (urlA.hostname !== this.domain && urlB.hostname === this.domain) {
-          return 1;
-        }
-        
-        // Затем сортируем по длине пути (более короткие пути обычно важнее)
-        return urlA.pathname.length - urlB.pathname.length;
-      } catch (error) {
-        return 0;
-      }
-    });
+  getUrlDepth(url: string): number {
+    try {
+      const urlObj = new URL(url);
+      const path = urlObj.pathname;
+      // Count segments, excluding empty ones
+      return path.split('/').filter(Boolean).length;
+    } catch (e) {
+      return 0;
+    }
   }
-  
+
   /**
-   * Отмечает URL как просканированный
+   * Removes trailing slashes, query parameters, and fragments from URL
    */
-  markAsScanned(url: string): void {
-    this.crawledUrls.add(this.normalize(url));
-  }
-  
-  /**
-   * Проверяет, был ли URL уже просканирован
-   */
-  isScanned(url: string): boolean {
-    return this.crawledUrls.has(this.normalize(url));
+  getCanonicalUrl(url: string): string {
+    try {
+      const urlObj = new URL(url);
+      // Remove query parameters and hash
+      return `${urlObj.origin}${urlObj.pathname}`;
+    } catch (e) {
+      return url;
+    }
   }
 }

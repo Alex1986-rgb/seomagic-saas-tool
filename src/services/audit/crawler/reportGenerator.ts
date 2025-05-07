@@ -1,4 +1,3 @@
-
 /**
  * Report generator for crawl results
  */
@@ -66,7 +65,7 @@ export class ReportGenerator {
     for (const page of pages) {
       if (!page.title) pagesWithoutTitle++;
       if (!page.description) pagesWithoutDescription++;
-      if (!page.h1s || page.h1s.length === 0) pagesWithoutH1++;
+      if (!page.h1 || page.h1.length === 0) pagesWithoutH1++;
     }
     
     // Calculate total time and rate

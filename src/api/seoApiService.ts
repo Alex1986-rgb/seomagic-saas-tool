@@ -1,4 +1,3 @@
-
 import { firecrawlService } from '../services/api/firecrawl';
 import { v4 as uuidv4 } from 'uuid';
 import { SitemapExtractor } from '../services/audit/crawler/sitemapExtractor';
@@ -95,6 +94,25 @@ class SeoApiService {
         pageCount: 0,
         status: 'error'
       };
+    }
+  }
+
+  async getPageAnalysis(auditId: string) {
+    try {
+      // Mock implementation for now
+      return [];
+    } catch (error) {
+      console.error('Error getting page analysis:', error);
+      return [];
+    }
+  }
+
+  async cancelScan(taskId: string) {
+    try {
+      return await firecrawlService.cancelCrawl(taskId);
+    } catch (error) {
+      console.error('Error canceling scan:', error);
+      throw error;
     }
   }
 
