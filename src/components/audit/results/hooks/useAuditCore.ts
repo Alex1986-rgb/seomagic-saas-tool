@@ -1,6 +1,10 @@
 
 import { useAudit } from '@/hooks/use-audit';
 
+/**
+ * Хук для работы с данными аудита и их состоянием
+ * Является связующим звеном между useScan и базовым useAudit
+ */
 export const useAuditCore = (url: string) => {
   // Используем централизованный хук для работы с аудитом
   const {

@@ -4,7 +4,7 @@
  */
 
 import { DeepCrawlerCore } from '../deepCrawlerCore';
-import { RobotsTxtParser } from './robotsTxtParser';
+import { RobotsTxtParser } from './RobotsTxtParser';
 import { PageData } from './types';
 
 export class CrawlerBase extends DeepCrawlerCore {
@@ -16,11 +16,11 @@ export class CrawlerBase extends DeepCrawlerCore {
     /\.(jpg|jpeg|png|gif|svg|webp|bmp|ico|css|js|pdf|zip|rar|gz|tar|mp4|mp3|webm|ogg|avi|mov|wmv|doc|docx|xls|xlsx|ppt|pptx)$/i,
     /\/?(wp-admin|wp-includes|wp-content\/plugins|cgi-bin|admin|login|logout|sign-in|signup|register|cart|checkout|account|search|sitemaps?)/i
   ];
-  protected robotsTxtParser: RobotsTxtParser;
+  protected robotsParser: RobotsTxtParser;
 
   constructor(url: string, options: any) {
     super(url, options);
-    this.robotsTxtParser = new RobotsTxtParser(this.getBaseUrl(), this.userAgent, this.excludePatterns);
+    this.robotsParser = new RobotsTxtParser();
   }
 
   async startCrawling() {
@@ -28,7 +28,7 @@ export class CrawlerBase extends DeepCrawlerCore {
     console.log(`Starting crawl of ${this.getBaseUrl()}`);
     
     // Try to read robots.txt first
-    this.excludePatterns = await this.robotsTxtParser.readRobotsTxt();
+    await this.parseRobotsTxt();
     
     // Run the original crawler method
     const result = await super.startCrawling();
@@ -37,6 +37,18 @@ export class CrawlerBase extends DeepCrawlerCore {
     console.log(`Crawl completed in ${(this.crawlEndTime - this.crawlStartTime) / 1000} seconds`);
     
     return result;
+  }
+  
+  // Добавление вспомогательного метода для парсинга robots.txt
+  async parseRobotsTxt() {
+    try {
+      const disallowedPaths = await this.robotsParser.parse(this.getBaseUrl());
+      this.excludePatterns = [...this.excludePatterns];
+      return disallowedPaths;
+    } catch (error) {
+      console.error('Error parsing robots.txt:', error);
+      return [];
+    }
   }
   
   // Get all collected page data

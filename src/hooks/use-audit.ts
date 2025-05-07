@@ -6,6 +6,7 @@ import { useToast } from "./use-toast";
 
 /**
  * Хук для управления данными аудита сайта
+ * Централизованное хранилище состояния и API для работы с аудитами
  */
 export const useAudit = (url: string) => {
   const [isLoading, setIsLoading] = useState(true);

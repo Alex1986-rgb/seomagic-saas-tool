@@ -6,6 +6,9 @@ import { useScanManager } from './useScanManager';
 import { AuditData } from '@/types/audit';
 import { useToast } from "@/hooks/use-toast";
 
+/**
+ * Хук для загрузки данных аудита и управления их состоянием
+ */
 export const useAuditLoader = (
   url: string,
   setOptimizationCost: (cost: number) => void,
@@ -15,6 +18,7 @@ export const useAuditLoader = (
   const { toast } = useToast();
   const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
   
+  // Обновление количества страниц в данных аудита
   const updateAuditPageCount = (pageCount: number) => {
     if (auditData) {
       setAuditData({
@@ -24,6 +28,7 @@ export const useAuditLoader = (
     }
   };
   
+  // Основной хук для работы с данными аудита
   const { 
     isLoading,
     loadingProgress,
@@ -35,6 +40,7 @@ export const useAuditLoader = (
     setAuditData
   } = useAuditCore(url);
   
+  // Хук для управления состоянием сканирования на стороне фронтенда
   const { 
     isScanning,
     scanDetails: frontendScanDetails,
@@ -44,12 +50,16 @@ export const useAuditLoader = (
     downloadSitemap: downloadSitemapLocal,
   } = useScanningState(url, updateAuditPageCount);
   
+  // Хук для управления сканированием через API бэкенда
   const {
     taskId,
     scanDetails: backendScanDetails,
     startScan
   } = useScanManager(url, updateAuditPageCount, setOptimizationCost, setOptimizationItems);
 
+  /**
+   * Загрузка данных аудита с опциями обновления и глубокого сканирования
+   */
   const handleLoadAuditData = async (refresh = false, deepScan = false) => {
     if (deepScan) {
       // Use backend scanning

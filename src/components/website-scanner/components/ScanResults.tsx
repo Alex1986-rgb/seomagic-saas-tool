@@ -1,51 +1,49 @@
-
-import React from 'react';
+import React, { useState } from 'react';
 import { Search } from 'lucide-react';
 
 interface ScanResultsProps {
-  results: any[];
-  isLoading?: boolean;
+  urls: string[];
+  onExport: () => void;
 }
 
-const ScanResults: React.FC<ScanResultsProps> = ({ results, isLoading = false }) => {
-  if (isLoading) {
-    return (
-      <div className="flex justify-center items-center p-8">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-      </div>
-    );
-  }
+const ScanResults: React.FC<ScanResultsProps> = ({ urls, onExport }) => {
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filteredUrls, setFilteredUrls] = useState(urls);
 
-  if (!results || results.length === 0) {
-    return (
-      <div className="text-center py-12">
-        <div className="mx-auto w-16 h-16 mb-4 flex items-center justify-center rounded-full bg-muted">
-          <Search className="h-8 w-8 text-muted-foreground" />
-        </div>
-        <h3 className="text-lg font-medium">Нет результатов</h3>
-        <p className="text-sm text-muted-foreground">
-          Запустите сканирование, чтобы увидеть результаты анализа сайта
-        </p>
-      </div>
-    );
-  }
+  const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const term = event.target.value;
+    setSearchTerm(term);
+    const filtered = urls.filter(url => url.toLowerCase().includes(term.toLowerCase()));
+    setFilteredUrls(filtered);
+  };
 
   return (
-    <div className="space-y-4">
-      <h2 className="text-xl font-semibold">Результаты сканирования</h2>
-      <div className="border rounded-md">
-        {results.map((result, index) => (
-          <div 
-            key={index} 
-            className="p-4 border-b last:border-b-0 flex items-start gap-3"
-          >
-            <div>
-              <h3 className="font-medium">{result.title}</h3>
-              <p className="text-sm text-muted-foreground">{result.description}</p>
-            </div>
-          </div>
-        ))}
+    <div className="mt-4">
+      <div className="flex items-center bg-background border rounded-md mb-4">
+        <div className="px-3 text-muted-foreground">
+          <Search className="h-4 w-4" />
+        </div>
+        <input
+          className="flex h-10 w-full rounded-md bg-background py-3 text-sm outline-none"
+          placeholder="Search URLs..."
+          value={searchTerm}
+          onChange={handleSearch}
+        />
       </div>
+      
+      {filteredUrls.length > 0 ? (
+        <ul className="list-none p-0">
+          {filteredUrls.map((url, index) => (
+            <li key={index} className="py-2 border-b border-border">
+              <a href={url} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
+                {url}
+              </a>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p>No URLs found.</p>
+      )}
     </div>
   );
 };
