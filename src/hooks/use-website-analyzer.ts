@@ -27,7 +27,7 @@ export const useWebsiteAnalyzer = () => {
   const [options, setOptions] = useState<ScanOptions>({
     useSitemap: true,
     useRobotsTxt: true,
-    maxPages: 55555555, // Increased maximum pages limit as requested
+    maxPages: 55555555, // Increased maximum pages limit
     followExternalLinks: false,
     scanJavascript: true,
     includeImages: true,
