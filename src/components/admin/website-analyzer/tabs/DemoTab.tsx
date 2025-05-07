@@ -18,7 +18,7 @@ const DemoTab: React.FC = () => {
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-8">
-        <VideoDemo autoplay={true} interval={7000} />
+        <VideoDemo autoPlay={true} interval={7000} />
         <div className="grid grid-cols-1 md:grid-cols-2 gap-7 mt-8">
           <FeatureCard
             icon={BarChart}

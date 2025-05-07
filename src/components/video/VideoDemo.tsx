@@ -6,16 +6,16 @@ import { getSlideData } from './placeholders/data';
 import styles from './VideoDemo.module.css';
 
 interface VideoDemoProps {
-  autoplay?: boolean;
+  autoPlay?: boolean;
   interval?: number;
 }
 
 const VideoDemo: React.FC<VideoDemoProps> = ({ 
-  autoplay = true, 
+  autoPlay = true, 
   interval = 5000 
 }) => {
   const [currentSlide, setCurrentSlide] = useState(0);
-  const [isPlaying, setIsPlaying] = useState(autoplay);
+  const [isPlaying, setIsPlaying] = useState(autoPlay);
   const slides = getSlideData();
 
   useEffect(() => {
