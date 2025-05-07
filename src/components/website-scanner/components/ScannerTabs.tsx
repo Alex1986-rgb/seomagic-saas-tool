@@ -1,11 +1,13 @@
 
 import React from 'react';
-import { FileText, Search, BarChart, Download } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import SimpleSitemapCreatorTool from '@/components/audit/deep-crawl/SimpleSitemapCreatorTool';
-import { useMobile } from '@/hooks/use-mobile';
+import { File, Monitor, Search, BarChart4 } from 'lucide-react';
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import ScanResults from './ScanResults';
+import UrlsList from './UrlsList';
+import AuditSection from './AuditSection';
+import AnalyticsSection from './AnalyticsSection';
 
 interface ScannerTabsProps {
   url: string;
@@ -28,96 +30,81 @@ const ScannerTabs: React.FC<ScannerTabsProps> = ({
   handleDownloadPdfReport,
   handleDownloadErrorReport
 }) => {
-  const isMobile = useMobile();
-
   return (
-    <Tabs defaultValue="sitemap" className="w-full">
-      <TabsList className="grid grid-cols-3 w-full mb-4 md:mb-6">
-        <TabsTrigger value="sitemap" className="flex flex-col md:flex-row items-center gap-1 md:gap-2 py-2 px-1 md:px-3 text-xs md:text-sm">
-          <FileText className="h-3 w-3 md:h-4 md:w-4" />
-          <span className="truncate">Карта сайта</span>
+    <Tabs defaultValue="overview" className="w-full">
+      <TabsList className="grid grid-cols-2 md:grid-cols-4 mb-4">
+        <TabsTrigger value="overview" className="flex items-center space-x-2">
+          <Monitor className="h-4 w-4" />
+          <span className="hidden sm:inline">Обзор</span>
         </TabsTrigger>
-        <TabsTrigger value="audit" className="flex flex-col md:flex-row items-center gap-1 md:gap-2 py-2 px-1 md:px-3 text-xs md:text-sm">
-          <Search className="h-3 w-3 md:h-4 md:w-4" />
-          <span className="truncate">Аудит</span>
+        <TabsTrigger value="urls" className="flex items-center space-x-2">
+          <Search className="h-4 w-4" />
+          <span className="hidden sm:inline">URLs</span>
         </TabsTrigger>
-        <TabsTrigger value="reports" className="flex flex-col md:flex-row items-center gap-1 md:gap-2 py-2 px-1 md:px-3 text-xs md:text-sm">
-          <BarChart className="h-3 w-3 md:h-4 md:w-4" />
-          <span className="truncate">Отчеты</span>
+        <TabsTrigger value="audit" className="flex items-center space-x-2">
+          <File className="h-4 w-4" />
+          <span className="hidden sm:inline">Аудит</span>
+        </TabsTrigger>
+        <TabsTrigger value="analytics" className="flex items-center space-x-2">
+          <BarChart4 className="h-4 w-4" />
+          <span className="hidden sm:inline">Аналитика</span>
         </TabsTrigger>
       </TabsList>
-      
-      <TabsContent value="sitemap" className="mt-2 md:mt-4">
-        <SimpleSitemapCreatorTool 
-          initialUrl={url} 
-          onUrlsScanned={onUrlsScanned} 
-          domain={url.replace(/^https?:\/\//, '')}
-        />
-      </TabsContent>
-      
-      <TabsContent value="audit" className="mt-2 md:mt-4">
+
+      <TabsContent value="overview">
         <Card>
-          <CardHeader className="p-4 md:p-6">
-            <CardTitle className="text-lg md:text-xl">Аудит сайта</CardTitle>
-            <CardDescription className="text-xs md:text-sm">
-              Проверка основных SEO-параметров и выявление проблем
-            </CardDescription>
-          </CardHeader>
           <CardContent className="p-4 md:p-6">
-            {scannedUrls.length > 0 || hasAuditResults ? (
-              <div className="space-y-4">
-                <p className="text-xs md:text-sm">{scannedUrls.length > 0 ? `Найдено ${scannedUrls.length} URL для аудита` : "Аудит готов"}</p>
-                <Button 
-                  className="gap-2 w-full md:w-auto" 
-                  onClick={startFullScan}
-                  disabled={isScanning}
-                >
-                  <Search className="h-4 w-4" />
-                  {hasAuditResults ? "Обновить данные аудита" : "Начать аудит"}
+            <ScanResults 
+              url={url}
+              scannedUrls={scannedUrls} 
+              hasAuditResults={hasAuditResults} 
+              handleDownloadPdfReport={handleDownloadPdfReport}
+              handleDownloadErrorReport={handleDownloadErrorReport}
+            />
+            
+            {!hasAuditResults && !isScanning && url && (
+              <div className="flex justify-center mt-4">
+                <Button onClick={startFullScan}>
+                  Запустить полное сканирование
                 </Button>
               </div>
-            ) : (
-              <p className="text-xs md:text-sm text-muted-foreground">
-                Сначала выполните сканирование сайта или создайте карту сайта
-              </p>
             )}
           </CardContent>
         </Card>
       </TabsContent>
       
-      <TabsContent value="reports" className="mt-2 md:mt-4">
+      <TabsContent value="urls">
         <Card>
-          <CardHeader className="p-4 md:p-6">
-            <CardTitle className="text-lg md:text-xl">Отчеты и рекомендации</CardTitle>
-            <CardDescription className="text-xs md:text-sm">
-              Генерация отчетов и рекомендаций по оптимизации
-            </CardDescription>
-          </CardHeader>
           <CardContent className="p-4 md:p-6">
-            <div className="space-y-4">
-              {hasAuditResults || scannedUrls.length > 0 ? (
-                <div className="grid grid-cols-1 gap-3">
-                  <Button variant="outline" className="gap-2 justify-start" onClick={handleDownloadPdfReport}>
-                    <FileText className="h-4 w-4" />
-                    <span className="text-xs md:text-sm">Скачать полный SEO-отчет</span>
-                  </Button>
-                  <Button variant="outline" className="gap-2 justify-start" onClick={handleDownloadErrorReport}>
-                    <Download className="h-4 w-4" />
-                    <span className="text-xs md:text-sm">Скачать отчет об ошибках</span>
-                  </Button>
-                  {scannedUrls.length > 0 && (
-                    <Button variant="outline" className="gap-2 justify-start">
-                      <Download className="h-4 w-4" />
-                      <span className="text-xs md:text-sm">Скачать карту сайта</span>
-                    </Button>
-                  )}
-                </div>
-              ) : (
-                <p className="text-xs md:text-sm text-muted-foreground">
-                  Доступные отчеты появятся после выполнения аудита
-                </p>
-              )}
-            </div>
+            <UrlsList 
+              url={url}
+              scannedUrls={scannedUrls} 
+              onUrlsScanned={onUrlsScanned}
+            />
+          </CardContent>
+        </Card>
+      </TabsContent>
+      
+      <TabsContent value="audit">
+        <Card>
+          <CardContent className="p-4 md:p-6">
+            <AuditSection 
+              url={url} 
+              hasAuditResults={hasAuditResults} 
+              isScanning={isScanning}
+              startFullScan={startFullScan}
+            />
+          </CardContent>
+        </Card>
+      </TabsContent>
+      
+      <TabsContent value="analytics">
+        <Card>
+          <CardContent className="p-4 md:p-6">
+            <AnalyticsSection 
+              url={url} 
+              hasResults={hasAuditResults || scannedUrls.length > 0} 
+            />
           </CardContent>
         </Card>
       </TabsContent>

@@ -176,7 +176,7 @@ const WebsiteScanner = () => {
   };
 
   return (
-    <div className="space-y-4 md:space-y-8">
+    <div className="space-y-4 md:space-y-6">
       <ScannerHeader />
       <CardContent className="p-3 md:p-6">
         <ScanForm

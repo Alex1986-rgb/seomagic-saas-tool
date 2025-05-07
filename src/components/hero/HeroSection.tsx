@@ -24,15 +24,13 @@ const HeroSection: React.FC = () => {
     visible: { opacity: 1, y: 0 }
   };
 
-  console.log("HeroSection rendering");
-
   return (
-    <section className="pt-20 pb-16 md:pt-32 md:pb-20 overflow-hidden relative">
+    <section className="pt-16 pb-12 md:pt-24 lg:pt-32 md:pb-16 lg:pb-20 overflow-hidden relative">
       <HeroBackground />
       
       <div className="container mx-auto px-4 md:px-6">
         <motion.div 
-          className="flex flex-col items-center text-center space-y-8 max-w-4xl mx-auto"
+          className="flex flex-col items-center text-center space-y-6 md:space-y-8 max-w-4xl mx-auto"
           variants={containerVariants}
           initial="hidden"
           animate="visible"

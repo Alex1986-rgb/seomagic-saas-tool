@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
@@ -51,14 +52,22 @@ const Navbar: React.FC = () => {
         <div className="flex justify-between items-center h-16">
           <NavbarLogo />
 
-          <NavbarDesktopLinks navItems={NAV_ITEMS} />
+          {/* Desktop nav links - hidden on mobile */}
+          <div className="hidden md:block">
+            <NavbarDesktopLinks navItems={NAV_ITEMS} />
+          </div>
 
-          <NavbarDesktopAuth />
+          {/* Desktop auth buttons - hidden on mobile */}
+          <div className="hidden md:block">
+            <NavbarDesktopAuth />
+          </div>
 
+          {/* Mobile menu toggle - only visible on mobile */}
           <NavbarMobileToggle isOpen={isOpen} setIsOpen={setIsOpen} />
         </div>
       </div>
 
+      {/* Mobile menu - conditional rendering with animation */}
       <AnimatePresence>
         {isOpen && isMobile && (
           <NavbarMobile 
