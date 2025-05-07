@@ -66,36 +66,28 @@ const UrlForm: React.FC = () => {
       setIsUrlValid(true);
     }
   };
+  
+  console.log("UrlForm rendering with url:", url);
 
   return (
     <form onSubmit={handleSubmit} className="w-full">
-      <div className="relative flex flex-col sm:flex-row items-center gap-2 sm:gap-0">
-        <div className="relative flex items-center w-full">
-          <div className="absolute left-3">
-            <Search className="h-5 w-5 text-muted-foreground" />
-          </div>
-          
-          <Input
-            type="text"
-            placeholder="Введите URL вашего сайта"
-            value={url}
-            onChange={handleInputChange}
-            className={`pl-10 h-12 text-base ${!isUrlValid ? 'border-destructive focus-visible:ring-destructive/30' : ''} pr-4 sm:pr-24`}
-            aria-invalid={!isUrlValid}
-          />
-          
-          <Button 
-            type="submit" 
-            className="absolute right-1 top-1 h-10 hidden sm:flex"
-            aria-label="Начать аудит"
-          >
-            Начать аудит <ArrowRight className="ml-2 h-4 w-4" />
-          </Button>
+      <div className="relative flex items-center">
+        <div className="absolute left-3">
+          <Search className="h-5 w-5 text-muted-foreground" />
         </div>
+        
+        <Input
+          type="text"
+          placeholder="Введите URL вашего сайта"
+          value={url}
+          onChange={handleInputChange}
+          className={`pl-10 h-12 pr-24 text-base ${!isUrlValid ? 'border-destructive focus-visible:ring-destructive/30' : ''}`}
+          aria-invalid={!isUrlValid}
+        />
         
         <Button 
           type="submit" 
-          className="w-full sm:hidden h-10 mt-2"
+          className="absolute right-1 h-10"
           aria-label="Начать аудит"
         >
           Начать аудит <ArrowRight className="ml-2 h-4 w-4" />

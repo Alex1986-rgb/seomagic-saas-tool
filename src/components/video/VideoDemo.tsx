@@ -1,95 +1,90 @@
 
-import React, { useState, useRef } from 'react';
-import { PlayCircle, PauseCircle } from 'lucide-react';
-import { motion } from 'framer-motion';
+import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import Slide from './placeholders/Slide';
+import { getSlideData } from './placeholders/data';
 import styles from './VideoDemo.module.css';
 
 interface VideoDemoProps {
-  videoSrc?: string;
-  posterSrc?: string;
-  autoPlay?: boolean;
-  className?: string;
+  autoplay?: boolean;
+  interval?: number;
 }
 
-const VideoDemo: React.FC<VideoDemoProps> = ({
-  videoSrc = '/video/seo-demo.mp4',
-  posterSrc = '/img/video-poster.jpg',
-  autoPlay = false,
-  className = '',
+const VideoDemo: React.FC<VideoDemoProps> = ({ 
+  autoplay = true, 
+  interval = 5000 
 }) => {
-  const [isPlaying, setIsPlaying] = useState(autoPlay);
   const [currentSlide, setCurrentSlide] = useState(0);
-  const videoRef = useRef<HTMLVideoElement>(null);
+  const [isPlaying, setIsPlaying] = useState(autoplay);
+  const slides = getSlideData();
 
-  const handlePlayPause = () => {
-    if (videoRef.current) {
-      if (isPlaying) {
-        videoRef.current.pause();
-      } else {
-        videoRef.current.play();
-      }
-      setIsPlaying(!isPlaying);
+  useEffect(() => {
+    let timer: NodeJS.Timeout;
+    
+    if (isPlaying) {
+      timer = setInterval(() => {
+        setCurrentSlide((prev) => (prev + 1) % slides.length);
+      }, interval);
     }
+    
+    return () => {
+      if (timer) clearInterval(timer);
+    };
+  }, [isPlaying, slides.length, interval]);
+
+  const handleSlideClick = (index: number) => {
+    setCurrentSlide(index);
+    setIsPlaying(false);
   };
 
-  const slides = [
-    "Анализ структуры сайта",
-    "Проверка метаданных",
-    "SEO оптимизация",
-  ];
+  const togglePlayPause = () => {
+    setIsPlaying(prev => !prev);
+  };
 
   return (
-    <div className={`${styles.videoContainer} ${className} mx-auto w-full max-w-5xl`}>
-      <div className={styles.videoOverlay}>
-        <motion.div 
-          className="absolute inset-0 flex flex-col justify-center items-center p-4 md:p-8 text-center"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.3 }}
-        >
-          <h2 className="text-xl md:text-3xl lg:text-4xl font-bold text-white mb-2 md:mb-4">
-            {slides[currentSlide]}
-          </h2>
-          <p className="text-sm md:text-base text-white/80 max-w-xl">
-            Наши инструменты помогут вам улучшить видимость вашего сайта в поисковых системах и привлечь больше целевого трафика
-          </p>
-        </motion.div>
-      </div>
+    <div className="relative w-full aspect-video bg-gray-900 rounded-lg overflow-hidden shadow-xl">
+      <div className="absolute inset-0 bg-gradient-to-br from-gray-900/80 to-gray-900/40 z-10"></div>
       
-      <video
-        ref={videoRef}
-        className="w-full h-full object-cover"
-        poster={posterSrc}
-        muted
-        loop
-        playsInline
-        autoPlay={autoPlay}
-      >
-        <source src={videoSrc} type="video/mp4" />
-        Ваш браузер не поддерживает видео.
-      </video>
+      <AnimatePresence mode="wait">
+        {slides.map((slide, index) => (
+          <Slide
+            key={slide.blogId}
+            slideData={slide}
+            currentSlide={currentSlide}
+            slideIndex={index}
+          />
+        ))}
+      </AnimatePresence>
       
-      <div className={styles.slideIndicators}>
+      {/* Slide indicators */}
+      <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2 z-20">
         {slides.map((_, index) => (
-          <div
+          <button
             key={index}
-            className={`${styles.slideIndicator} ${
-              index === currentSlide ? styles.slideIndicatorActive : ''
+            className={`w-2 h-2 rounded-full transition-all ${
+              currentSlide === index ? 'bg-white w-4' : 'bg-white/50'
             }`}
-            onClick={() => setCurrentSlide(index)}
+            onClick={() => handleSlideClick(index)}
+            aria-label={`Go to slide ${index + 1}`}
           />
         ))}
       </div>
       
+      {/* Play/Pause button */}
       <button
-        onClick={handlePlayPause}
-        className={styles.playPauseButton}
-        aria-label={isPlaying ? 'Pause video' : 'Play video'}
+        className="absolute bottom-4 right-4 bg-black/40 hover:bg-black/60 text-white p-2 rounded-full z-20"
+        onClick={togglePlayPause}
+        aria-label={isPlaying ? 'Pause' : 'Play'}
       >
         {isPlaying ? (
-          <PauseCircle className="h-6 w-6" />
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4">
+            <rect x="6" y="4" width="4" height="16" />
+            <rect x="14" y="4" width="4" height="16" />
+          </svg>
         ) : (
-          <PlayCircle className="h-6 w-6" />
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4">
+            <polygon points="5 3 19 12 5 21 5 3" />
+          </svg>
         )}
       </button>
     </div>
