@@ -1,34 +1,18 @@
 
-import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import React, { useCallback, useMemo } from 'react';
+import { AnimatePresence } from 'framer-motion';
 import { useAuditData } from './hooks/useAuditData';
-import AuditStatus from './components/AuditStatus';
-import { useToast } from "@/hooks/use-toast";
-import LoadingSpinner from "@/components/LoadingSpinner";
-import AuditResultHeader from './components/AuditResultHeader';
-import AuditRecommendationsSection from './components/AuditRecommendationsSection';
-import AuditPageAnalysisSection from './components/AuditPageAnalysisSection';
-import AuditOptimizationSection from './components/AuditOptimizationSection';
-import { AuditHistoryData } from '@/types/audit';
+import { useAuditInitialization } from './hooks/useAuditInitialization';
+import { usePromptToggle } from './hooks/usePromptToggle';
+import AuditStateHandler from './components/AuditStateHandler';
+import AuditContent from './components/AuditContent';
 
 interface AuditResultsContainerProps {
   url: string;
 }
 
 const AuditResultsContainer: React.FC<AuditResultsContainerProps> = ({ url }) => {
-  // Состояния для отображения и управления UI
-  const [showPrompt, setShowPrompt] = useState(false);
-  const [isInitialized, setIsInitialized] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-  const [hadError, setHadError] = useState(false);
-  const [timeout, setTimeoutStatus] = useState(false);
-  const { toast } = useToast();
-  
-  // Рефы для отслеживания инициализации и таймаутов
-  const initRef = useRef(false);
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
-  
-  // Получение данных аудита через хук
+  // Get audit data and actions from our custom hook
   const {
     isLoading: isAuditLoading,
     loadingProgress,
@@ -54,9 +38,31 @@ const AuditResultsContainer: React.FC<AuditResultsContainerProps> = ({ url }) =>
     optimizeSiteContent,
     setContentOptimizationPrompt
   } = useAuditData(url);
+  
+  // Content prompt state management
+  const { showPrompt, togglePrompt } = usePromptToggle();
+  
+  // Initialization and timeout handling
+  const {
+    isLoading,
+    hadError,
+    timeout,
+    handleRetry,
+    setIsLoading
+  } = useAuditInitialization(url, loadAuditData);
 
-  // Ensure historyData has the correct type - memoize this transformation
-  const typedHistoryData: AuditHistoryData = useMemo(() => 
+  // Sync loading state from audit data hook
+  React.useEffect(() => {
+    setIsLoading(isAuditLoading);
+  }, [isAuditLoading, setIsLoading]);
+
+  // Handler for selecting historical audit
+  const handleSelectHistoricalAudit = useCallback((auditId: string) => {
+    console.log("Selected historical audit:", auditId);
+  }, []);
+
+  // Ensure historyData has the correct type - memoize transformation
+  const typedHistoryData = useMemo(() => 
     historyData && typeof historyData === 'object' ? 
     { 
       url: url, 
@@ -65,215 +71,44 @@ const AuditResultsContainer: React.FC<AuditResultsContainerProps> = ({ url }) =>
     { url: url, items: [] }, 
   [historyData, url]);
 
-  // Установка таймаута для предотвращения бесконечной загрузки
-  useEffect(() => {
-    if (url && !timeout && isInitialized) {
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
-      }
-      
-      // Установка 3-минутного таймаута для загрузки данных
-      timeoutRef.current = setTimeout(() => {
-        console.log("Audit data loading timeout triggered after 3 minutes");
-        setTimeoutStatus(true);
-        setIsLoading(false);
-        setHadError(true);
-        
-        toast({
-          title: "Превышено время ожидания",
-          description: "Загрузка данных аудита заняла слишком много времени. Пожалуйста, попробуйте снова или используйте другой URL.",
-          variant: "destructive",
-        });
-      }, 180000) as unknown as NodeJS.Timeout;
-    }
-    
-    // Очистка таймаута при размонтировании компонента
-    return () => {
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
-      }
-    };
-  }, [url, timeout, isInitialized, toast]);
-
-  // Синхронизация состояния загрузки
-  useEffect(() => {
-    setIsLoading(isAuditLoading);
-  }, [isAuditLoading]);
-
-  // Инициализация аудита при монтировании компонента - memoize with useCallback
-  const initializeAudit = useCallback(() => {
-    if (initRef.current) return;
-    
-    console.log("Initializing audit for URL:", url);
-    try {
-      initRef.current = true;
-      setIsLoading(true);
-      
-      // Загрузка данных аудита
-      loadAuditData(false).then(() => {
-        setIsLoading(false);
-        
-        if (timeoutRef.current) {
-          clearTimeout(timeoutRef.current);
-        }
-      }).catch(err => {
-        console.error("Error loading audit data:", err);
-        setHadError(true);
-        setIsLoading(false);
-        toast({
-          title: "Ошибка загрузки аудита",
-          description: "Произошла ошибка при загрузке данных аудита",
-          variant: "destructive"
-        });
-      });
-    } catch (err) {
-      console.error("Exception during audit initialization:", err);
-      setHadError(true);
-      setIsLoading(false);
-    }
-    setIsInitialized(true);
-  }, [url, loadAuditData, toast]);
-
-  // Запуск инициализации при монтировании компонента с URL
-  useEffect(() => {
-    if (!isInitialized && url) {
-      initializeAudit();
-    }
-    
-    // Очистка при размонтировании
-    return () => {
-      console.log("AuditResultsContainer unmounted");
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
-      }
-    };
-  }, [url, isInitialized, initializeAudit]);
-
-  // Обработчик выбора исторического аудита - memoize with useCallback
-  const handleSelectHistoricalAudit = useCallback((auditId: string) => {
-    console.log("Selected historical audit:", auditId);
-  }, []);
-
-  // Переключение отображения поля для промпта оптимизации - memoize with useCallback
-  const toggleContentPrompt = useCallback(() => {
-    setShowPrompt(prevState => !prevState);
-  }, []);
-  
-  // Обработчик повторной попытки при ошибке - memoize with useCallback
-  const handleRetry = useCallback(() => {
-    console.log("Retrying audit...");
-    initRef.current = false;
-    setIsInitialized(false);
-    setHadError(false);
-    setTimeoutStatus(false);
-    setTimeout(() => {
-      initializeAudit();
-    }, 100);
-  }, [initializeAudit]);
-
-  // Memoize the error component
-  const errorComponent = useMemo(() => {
-    if (hadError || timeout) {
-      return (
-        <div className="p-6 text-center">
-          <p className="text-lg text-red-500 mb-4">
-            {timeout 
-              ? "Время ожидания истекло. Возможно, сайт слишком большой или недоступен." 
-              : "Произошла ошибка при загрузке аудита"
-            }
-          </p>
-          <button 
-            onClick={handleRetry}
-            className="px-4 py-2 bg-primary text-white rounded-md"
-          >
-            Попробовать снова
-          </button>
-        </div>
-      );
-    }
-    return null;
-  }, [hadError, timeout, handleRetry]);
-
-  // Отображение индикатора загрузки или ошибки
-  if (errorComponent) {
-    return errorComponent;
-  }
-
-  if (isLoading) {
-    return <LoadingSpinner />;
-  }
-
-  // Основной рендеринг результатов аудита
   return (
     <AnimatePresence mode="sync">
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.5 }}
-        className="relative"
+      <AuditStateHandler
+        isLoading={isLoading}
+        hadError={hadError}
+        timeout={timeout}
+        onRetry={handleRetry}
       >
-        {/* Компонент статуса аудита (загрузка, сканирование, ошибка) */}
-        <AuditStatus 
+        <AuditContent
+          url={url}
           isLoading={isAuditLoading}
           loadingProgress={loadingProgress}
           isScanning={isScanning}
           isRefreshing={isRefreshing}
-          error={auditError}
+          auditError={auditError}
           scanDetails={scanDetails}
-          url={url}
+          auditData={auditData}
+          recommendations={recommendations}
+          historyData={typedHistoryData}
+          optimizationCost={optimizationCost}
+          optimizationItems={optimizationItems}
+          isOptimized={isOptimized}
+          contentPrompt={contentPrompt}
+          taskId={taskId}
+          showPrompt={showPrompt}
+          onTogglePrompt={togglePrompt}
           onRetry={() => loadAuditData(false)}
           onDownloadSitemap={sitemap ? downloadSitemap : undefined}
+          loadAuditData={loadAuditData}
+          handleSelectHistoricalAudit={handleSelectHistoricalAudit}
+          downloadSitemap={sitemap ? downloadSitemap : undefined}
+          exportJSONData={exportJSONData}
+          generatePdfReportFile={generatePdfReportFile}
+          downloadOptimizedSite={downloadOptimizedSite}
+          optimizeSiteContent={optimizeSiteContent}
+          setContentOptimizationPrompt={setContentOptimizationPrompt}
         />
-        
-        {/* Отображение результатов после завершения аудита */}
-        {!isAuditLoading && !isScanning && !auditError && auditData && recommendations && (
-          <>
-            {/* Заголовок и основные данные аудита */}
-            <AuditResultHeader 
-              url={url}
-              auditData={auditData}
-              recommendations={recommendations}
-              historyData={typedHistoryData}
-              taskId={taskId || ""}
-              onRefresh={() => loadAuditData(true)}
-              onDeepScan={() => loadAuditData(false, true)}
-              isRefreshing={isRefreshing}
-              onDownloadSitemap={sitemap ? downloadSitemap : undefined}
-              onTogglePrompt={toggleContentPrompt}
-              onExportJSON={exportJSONData}
-              onSelectAudit={handleSelectHistoricalAudit}
-              showPrompt={showPrompt}
-            />
-            
-            {/* Секция рекомендаций и ошибок */}
-            <AuditRecommendationsSection 
-              recommendations={recommendations}
-              auditData={auditData}
-              optimizationCost={optimizationCost}
-              optimizationItems={optimizationItems}
-            />
-            
-            {/* Секция анализа страниц */}
-            <AuditPageAnalysisSection auditId={auditData.id} />
-            
-            {/* Модуль оптимизации */}
-            <AuditOptimizationSection 
-              optimizationCost={optimizationCost}
-              optimizationItems={optimizationItems}
-              isOptimized={isOptimized}
-              contentPrompt={contentPrompt}
-              url={url}
-              pageCount={auditData.pageCount || 0}
-              showPrompt={showPrompt}
-              onTogglePrompt={toggleContentPrompt}
-              onOptimize={optimizeSiteContent}
-              onDownloadOptimizedSite={downloadOptimizedSite}
-              onGeneratePdfReport={generatePdfReportFile}
-              setContentOptimizationPrompt={setContentOptimizationPrompt}
-            />
-          </>
-        )}
-      </motion.div>
+      </AuditStateHandler>
     </AnimatePresence>
   );
 };
