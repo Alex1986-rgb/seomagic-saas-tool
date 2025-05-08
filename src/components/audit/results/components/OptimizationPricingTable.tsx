@@ -4,7 +4,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, FileDownloadIcon, CheckCircle } from 'lucide-react';
+import { ArrowRight, Download, CheckCircle } from 'lucide-react';
 import { OptimizationItem } from '@/features/audit/types/optimization-types';
 import ScoreTrend from '@/components/audit/summary/ScoreTrend';
 
@@ -97,7 +97,7 @@ const OptimizationPricingTable: React.FC<OptimizationPricingTableProps> = ({
             <>
               {onDownload && (
                 <Button variant="outline" onClick={onDownload} className="flex-1 sm:flex-auto">
-                  <FileDownloadIcon className="mr-2 h-4 w-4" />
+                  <Download className="mr-2 h-4 w-4" />
                   Скачать
                 </Button>
               )}

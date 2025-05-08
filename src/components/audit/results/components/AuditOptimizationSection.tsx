@@ -12,8 +12,8 @@ interface AuditOptimizationSectionProps {
   pageCount: number;
   showPrompt: boolean;
   onTogglePrompt: () => void;
-  onOptimize: () => void;
-  onDownloadOptimizedSite: () => void;
+  onOptimize: () => Promise<void>;
+  onDownloadOptimizedSite: () => Promise<void>;
   onGeneratePdfReport: () => void;
   setContentOptimizationPrompt: (prompt: string) => void;
 }
