@@ -28,12 +28,13 @@ export function setupQueryErrorHandler(queryClient: QueryClient) {
   });
 
   // Set up global listeners
-  queryClient.getQueryCache().subscribe({
-    onError: (error, query) => {
+  queryClient.getQueryCache().subscribe(event => {
+    if (event.type === 'error' && event.error) {
+      const query = event.query;
       // Only show error toasts if no custom error handler is defined in the meta
       if (!query.meta?.onError) {
-        const errorMessage = formatError(error);
-        console.error('Query error:', error);
+        const errorMessage = formatError(event.error);
+        console.error('Query error:', event.error);
         toast({
           title: 'Ошибка загрузки данных',
           description: errorMessage,
@@ -43,12 +44,13 @@ export function setupQueryErrorHandler(queryClient: QueryClient) {
     }
   });
 
-  queryClient.getMutationCache().subscribe({
-    onError: (error, mutation) => {
+  queryClient.getMutationCache().subscribe(event => {
+    if (event.type === 'error' && event.error) {
+      const mutation = event.mutation;
       // Only show error toasts if no custom error handler is defined in the meta
       if (!mutation.meta?.onError) {
-        const errorMessage = formatError(error);
-        console.error('Mutation error:', error);
+        const errorMessage = formatError(event.error);
+        console.error('Mutation error:', event.error);
         toast({
           title: 'Ошибка сохранения данных',
           description: errorMessage,
