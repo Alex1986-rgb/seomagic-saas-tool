@@ -1,7 +1,9 @@
+
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
 import './index.css';
+import PerformanceMonitor from './components/shared/performance/PerformanceMonitor';
 
 // Add preconnect links for external resources
 const preconnectLinks = [
@@ -30,6 +32,7 @@ preconnectLinks.forEach(link => {
 const root = ReactDOM.createRoot(document.getElementById('root')!);
 root.render(
   <React.StrictMode>
+    <PerformanceMonitor />
     <App />
   </React.StrictMode>
 );
@@ -60,43 +63,29 @@ if ('serviceWorker' in navigator) {
 
 // Add performance monitoring
 if (process.env.NODE_ENV === 'production') {
-  // Report Web Vitals
-  const reportWebVitals = () => {
-    const vitalsUrl = 'https://vitals.vercel-analytics.com/v1/vitals';
-    const reportVital = ({ id, name, value }: any) => {
-      fetch(vitalsUrl, {
-        body: JSON.stringify({
-          dsn: '', // Add your analytics DSN here
-          id,
-          page: window.location.pathname,
-          href: window.location.href,
-          event_name: name,
-          value: Math.round(name === 'CLS' ? value * 1000 : value),
-          speed: navigator.connection?.effectiveType || ''
-        }),
-        method: 'POST',
-        keepalive: true
-      });
-    };
-
-    try {
-      // We need to import the web-vitals library to use these functions
-      // Since they're not imported, we'll comment them out for now
-      // If you want to use web-vitals, uncomment this and add the library
+  // Логирование производительности приложения
+  const logPerformance = () => {
+    setTimeout(() => {
+      console.info('App initialized in ' + performance.now() + 'ms');
       
-      /*
-      webVitals.getCLS(reportVital);
-      webVitals.getFID(reportVital);
-      webVitals.getLCP(reportVital);
-      webVitals.getFCP(reportVital);
-      webVitals.getTTFB(reportVital);
-      */
+      // Безопасная проверка наличия memory API
+      const memoryInfo = performance && 
+                       'memory' in performance && 
+                       (performance as any).memory ? {
+        totalJSHeapSize: ((performance as any).memory.totalJSHeapSize / (1024 * 1024)).toFixed(0) + ' MB',
+        usedJSHeapSize: ((performance as any).memory.usedJSHeapSize / (1024 * 1024)).toFixed(0) + ' MB'
+      } : {};
       
-      console.log('Web vitals reporting is disabled. Import web-vitals to enable.');
-    } catch (err) {
-      console.error('Error reporting web vitals:', err);
-    }
+      console.info('Memory usage:', memoryInfo);
+      
+      // Метрики отрисовки
+      const paintMetrics = performance.getEntriesByType('paint');
+      console.info('Paint metrics:', paintMetrics);
+      
+      // Time to Interactive (приблизительно)
+      console.info('Time to interactive:', performance.now());
+    }, 1000);
   };
 
-  reportWebVitals();
+  window.addEventListener('load', logPerformance);
 }

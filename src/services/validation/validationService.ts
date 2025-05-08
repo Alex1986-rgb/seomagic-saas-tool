@@ -1,61 +1,83 @@
 
 /**
- * Validation service for various input validations
+ * Класс для валидации данных
  */
-export class ValidationService {
+class ValidationService {
   /**
-   * Validates a URL
-   * 
-   * @param url URL to validate
-   * @returns Boolean indicating if URL is valid
+   * Валидирует URL
+   * @param url URL для проверки
+   * @returns true если URL корректен, иначе false
    */
   validateUrl(url: string): boolean {
-    if (!url.trim()) return false;
+    if (!url) return false;
     
-    // URL validation pattern
-    const pattern = /^(https?:\/\/)?(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)$/;
-    return pattern.test(url);
+    // Добавляем протокол если его нет
+    let urlWithProtocol = url;
+    if (!urlWithProtocol.startsWith('http://') && !urlWithProtocol.startsWith('https://')) {
+      urlWithProtocol = 'https://' + urlWithProtocol;
+    }
+    
+    try {
+      new URL(urlWithProtocol);
+      return true;
+    } catch (err) {
+      return false;
+    }
   }
-
+  
   /**
-   * Formats a URL by adding https:// prefix if missing
-   * 
-   * @param url URL to format
-   * @returns Formatted URL
+   * Форматирует URL, добавляя протокол если необходимо
+   * @param url URL для форматирования
+   * @returns отформатированный URL
    */
   formatUrl(url: string): string {
+    if (!url) return '';
+    
     let formattedUrl = url.trim();
     
-    if (!formattedUrl.match(/^https?:\/\//i)) {
+    // Если URL не начинается с протокола, добавляем https://
+    if (!formattedUrl.startsWith('http://') && !formattedUrl.startsWith('https://')) {
       formattedUrl = 'https://' + formattedUrl;
+    }
+    
+    // Убираем завершающий слеш, если он есть
+    if (formattedUrl.endsWith('/')) {
+      formattedUrl = formattedUrl.slice(0, -1);
     }
     
     return formattedUrl;
   }
 
   /**
-   * Extracts domain name from URL
-   * 
-   * @param url URL to process
-   * @returns Domain name
+   * Извлекает домен из URL
+   * @param url URL для извлечения домена
+   * @returns домен без протокола и www
    */
   extractDomain(url: string): string {
+    if (!url) return '';
+    
     try {
-      return new URL(this.formatUrl(url)).hostname;
-    } catch (e) {
-      return url;
+      let formattedUrl = url;
+      
+      // Добавляем протокол если его нет, чтобы URL был валидным
+      if (!formattedUrl.startsWith('http://') && !formattedUrl.startsWith('https://')) {
+        formattedUrl = 'https://' + formattedUrl;
+      }
+      
+      const urlObj = new URL(formattedUrl);
+      let domain = urlObj.hostname;
+      
+      // Удаляем www. если есть
+      if (domain.startsWith('www.')) {
+        domain = domain.substring(4);
+      }
+      
+      return domain;
+    } catch (err) {
+      // В случае ошибки возвращаем исходную строку
+      console.error('Error extracting domain:', err);
+      return url.replace(/^(https?:\/\/)?(www\.)?/, '').split('/')[0];
     }
-  }
-
-  /**
-   * Validates an email address
-   * 
-   * @param email Email to validate
-   * @returns Boolean indicating if email is valid
-   */
-  validateEmail(email: string): boolean {
-    const pattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return pattern.test(email);
   }
 }
 
