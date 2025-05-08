@@ -5,30 +5,14 @@ import { scanningService } from '@/services/scanning/scanningService';
 import { seoApiService } from '@/services/api/seoApiService';
 import { validationService } from '@/services/validation/validationService';
 import { reportingService } from '@/services/reporting/reportingService';
-
-interface ScanStatusResponse {
-  task_id: string;
-  current_url: string;
-  pages_scanned: number;
-  total_pages: number;
-  status: string;
-  progress: number;
-  error?: string;
-  url?: string;
-}
+import { ScanStatusResponse, ScanDetails } from '@/types/api';
 
 /**
  * Hook for handling website scanning functionality
  */
 export const useScan = (url: string, onPageCountUpdate?: (count: number) => void) => {
   const [isScanning, setIsScanning] = useState(false);
-  const [scanDetails, setScanDetails] = useState<{
-    current_url: string;
-    pages_scanned: number;
-    estimated_pages: number;
-    stage: string;
-    progress: number;
-  }>({
+  const [scanDetails, setScanDetails] = useState<ScanDetails>({
     current_url: '',
     pages_scanned: 0,
     estimated_pages: 0,
@@ -47,7 +31,7 @@ export const useScan = (url: string, onPageCountUpdate?: (count: number) => void
     other: 0
   });
   const [sitemap, setSitemap] = useState<string | null>(null);
-  const [taskId, setTaskId] = useState<string | null>(null);
+  const [taskId, setTaskId] = useState<string | null>(seoApiService.getTaskIdForUrl(url));
   const { toast } = useToast();
 
   // Start scanning process
@@ -86,16 +70,7 @@ export const useScan = (url: string, onPageCountUpdate?: (count: number) => void
       // Start crawl and get task ID
       const response = await seoApiService.startCrawl(formattedUrl);
       
-      if (!response || typeof response !== 'object') {
-        throw new Error('Invalid response from API');
-      }
-      
-      // Type guard for the response
-      if (!('task_id' in response)) {
-        throw new Error('No task ID returned');
-      }
-      
-      const crawlTaskId = response.task_id as string;
+      const crawlTaskId = response.task_id;
       if (!crawlTaskId) {
         throw new Error('Empty task ID returned');
       }
@@ -107,19 +82,12 @@ export const useScan = (url: string, onPageCountUpdate?: (count: number) => void
         try {
           const statusResponse = await seoApiService.getStatus(crawlTaskId);
           
-          if (!statusResponse || typeof statusResponse !== 'object') {
-            throw new Error('Invalid status response');
-          }
+          const statusCurrent = statusResponse.url;
+          const pagesScanned = statusResponse.pages_scanned;
+          const totalPages = statusResponse.total_pages;
+          const status = statusResponse.status;
           
-          // Type cast with type guard
-          const typedResponse = statusResponse as ScanStatusResponse;
-          
-          const statusCurrent = typedResponse.current_url || url;
-          const pagesScanned = typedResponse.pages_scanned || 0;
-          const totalPages = typedResponse.total_pages || 500000;
-          const status = typedResponse.status || 'in_progress';
-          
-          const progressValue = typedResponse.progress || 0;
+          const progressValue = statusResponse.progress;
           
           setScanDetails({
             current_url: statusCurrent,
@@ -142,8 +110,7 @@ export const useScan = (url: string, onPageCountUpdate?: (count: number) => void
             setIsScanning(false);
             
             if (status === 'completed') {
-              const pageUrl = typedResponse.url || url;
-              const pageUrls = [pageUrl];
+              const pageUrls = [statusResponse.url];
               
               const domain = validationService.extractDomain(url);
               const sitemapXml = reportingService.generateSitemapXml(domain, pageUrls);
@@ -154,7 +121,7 @@ export const useScan = (url: string, onPageCountUpdate?: (count: number) => void
                 description: `Просканировано ${pagesScanned} страниц`,
               });
             } else {
-              const errorMessage = typedResponse.error || "Произошла ошибка при сканировании сайта";
+              const errorMessage = statusResponse.error || "Произошла ошибка при сканировании сайта";
               toast({
                 title: "Ошибка сканирования",
                 description: errorMessage,

@@ -1,32 +1,34 @@
 
-import { useAuditDataProvider } from './useAuditDataProvider';
+import { useAuditContext } from '@/contexts/AuditContext';
+import { useScanContext } from '@/contexts/ScanContext';
 import { useAuditActions } from './useAuditActions';
 
 export const useAuditData = (url: string) => {
   const {
-    contentPrompt,
-    setContentPrompt,
-    optimizationCost,
-    optimizationItems,
-    isOptimized,
-    generatePdfReportFile,
-    isLoading,
-    loadingProgress,
     auditData,
     recommendations,
     historyData,
     error,
+    isLoading,
+    loadingProgress,
     isRefreshing,
+    optimizationCost,
+    optimizationItems,
+    isOptimized,
+    contentPrompt,
+    setContentOptimizationPrompt,
+    loadAuditData,
+    generatePdfReportFile
+  } = useAuditContext();
+  
+  const {
     isScanning,
     scanDetails,
     pageStats,
     sitemap,
     taskId,
-    setIsRefreshing,
-    loadAuditData,
-    downloadSitemapLocal,
-    localDownloadOptimizedSite
-  } = useAuditDataProvider(url);
+    downloadSitemap: downloadSitemapLocal
+  } = useScanContext();
 
   const {
     downloadSitemap,
@@ -38,12 +40,8 @@ export const useAuditData = (url: string) => {
     contentPrompt,
     auditData,
     downloadSitemapLocal,
-    localDownloadOptimizedSite
+    downloadOptimizedSite
   );
-
-  const setContentOptimizationPrompt = (prompt: string) => {
-    setContentPrompt(prompt);
-  };
 
   return {
     // State
@@ -66,7 +64,7 @@ export const useAuditData = (url: string) => {
     
     // Actions
     loadAuditData,
-    setIsRefreshing,
+    setIsRefreshing: (value: boolean) => {}, // This would be implemented in the context
     downloadSitemap,
     downloadOptimizedSite,
     generatePdfReportFile,

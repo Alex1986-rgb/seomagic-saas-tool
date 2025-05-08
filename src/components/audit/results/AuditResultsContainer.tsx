@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuditData } from './hooks/useAuditData';
 import AuditStatus from './components/AuditStatus';
@@ -11,14 +11,6 @@ import AuditPageAnalysisSection from './components/AuditPageAnalysisSection';
 import AuditOptimizationSection from './components/AuditOptimizationSection';
 import { AuditHistoryData } from '@/types/audit';
 
-/**
- * Основной контейнер для отображения результатов SEO аудита
- * 
- * Компонент управляет загрузкой, отображением и обработкой данных аудита.
- * Обрабатывает состояния загрузки, ошибок и таймаутов.
- * 
- * @param {string} url - URL сайта для аудита
- */
 interface AuditResultsContainerProps {
   url: string;
 }
@@ -63,13 +55,15 @@ const AuditResultsContainer: React.FC<AuditResultsContainerProps> = ({ url }) =>
     setContentOptimizationPrompt
   } = useAuditData(url);
 
-  // Ensure historyData has the correct type
-  const typedHistoryData: AuditHistoryData = historyData && typeof historyData === 'object' ? 
+  // Ensure historyData has the correct type - memoize this transformation
+  const typedHistoryData: AuditHistoryData = useMemo(() => 
+    historyData && typeof historyData === 'object' ? 
     { 
       url: url, 
-      items: Array.isArray(historyData) ? historyData : [] 
+      items: Array.isArray(historyData.items) ? historyData.items : [] 
     } : 
-    { url: url, items: [] };
+    { url: url, items: [] }, 
+  [historyData, url]);
 
   // Установка таймаута для предотвращения бесконечной загрузки
   useEffect(() => {
@@ -106,7 +100,7 @@ const AuditResultsContainer: React.FC<AuditResultsContainerProps> = ({ url }) =>
     setIsLoading(isAuditLoading);
   }, [isAuditLoading]);
 
-  // Инициализация аудита при монтировании компонента
+  // Инициализация аудита при монтировании компонента - memoize with useCallback
   const initializeAudit = useCallback(() => {
     if (initRef.current) return;
     
@@ -155,18 +149,18 @@ const AuditResultsContainer: React.FC<AuditResultsContainerProps> = ({ url }) =>
     };
   }, [url, isInitialized, initializeAudit]);
 
-  // Обработчик выбора исторического аудита
-  const handleSelectHistoricalAudit = (auditId: string) => {
+  // Обработчик выбора исторического аудита - memoize with useCallback
+  const handleSelectHistoricalAudit = useCallback((auditId: string) => {
     console.log("Selected historical audit:", auditId);
-  };
+  }, []);
 
-  // Переключение отображения поля для промпта оптимизации
-  const toggleContentPrompt = () => {
-    setShowPrompt(!showPrompt);
-  };
+  // Переключение отображения поля для промпта оптимизации - memoize with useCallback
+  const toggleContentPrompt = useCallback(() => {
+    setShowPrompt(prevState => !prevState);
+  }, []);
   
-  // Обработчик повторной попытки при ошибке
-  const handleRetry = () => {
+  // Обработчик повторной попытки при ошибке - memoize with useCallback
+  const handleRetry = useCallback(() => {
     console.log("Retrying audit...");
     initRef.current = false;
     setIsInitialized(false);
@@ -175,29 +169,36 @@ const AuditResultsContainer: React.FC<AuditResultsContainerProps> = ({ url }) =>
     setTimeout(() => {
       initializeAudit();
     }, 100);
-  };
+  }, [initializeAudit]);
 
-  // Отображение сообщения об ошибке или таймауте
-  if (hadError || timeout) {
-    return (
-      <div className="p-6 text-center">
-        <p className="text-lg text-red-500 mb-4">
-          {timeout 
-            ? "Время ожидания истекло. Возможно, сайт слишком большой или недоступен." 
-            : "Произошла ошибка при загрузке аудита"
-          }
-        </p>
-        <button 
-          onClick={handleRetry}
-          className="px-4 py-2 bg-primary text-white rounded-md"
-        >
-          Попробовать снова
-        </button>
-      </div>
-    );
+  // Memoize the error component
+  const errorComponent = useMemo(() => {
+    if (hadError || timeout) {
+      return (
+        <div className="p-6 text-center">
+          <p className="text-lg text-red-500 mb-4">
+            {timeout 
+              ? "Время ожидания истекло. Возможно, сайт слишком большой или недоступен." 
+              : "Произошла ошибка при загрузке аудита"
+            }
+          </p>
+          <button 
+            onClick={handleRetry}
+            className="px-4 py-2 bg-primary text-white rounded-md"
+          >
+            Попробовать снова
+          </button>
+        </div>
+      );
+    }
+    return null;
+  }, [hadError, timeout, handleRetry]);
+
+  // Отображение индикатора загрузки или ошибки
+  if (errorComponent) {
+    return errorComponent;
   }
 
-  // Отображение индикатора загрузки
   if (isLoading) {
     return <LoadingSpinner />;
   }
@@ -238,7 +239,7 @@ const AuditResultsContainer: React.FC<AuditResultsContainerProps> = ({ url }) =>
               onDeepScan={() => loadAuditData(false, true)}
               isRefreshing={isRefreshing}
               onDownloadSitemap={sitemap ? downloadSitemap : undefined}
-              onTogglePrompt={() => setShowPrompt(!showPrompt)}
+              onTogglePrompt={toggleContentPrompt}
               onExportJSON={exportJSONData}
               onSelectAudit={handleSelectHistoricalAudit}
               showPrompt={showPrompt}
@@ -277,4 +278,5 @@ const AuditResultsContainer: React.FC<AuditResultsContainerProps> = ({ url }) =>
   );
 };
 
-export default AuditResultsContainer;
+// Export memoized component to prevent unnecessary re-renders
+export default React.memo(AuditResultsContainer);

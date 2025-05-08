@@ -1,25 +1,21 @@
 
-export interface TaskResponse {
+// API Response Types
+export interface ScanStatusResponse {
   task_id: string;
-  status: 'pending' | 'in_progress' | 'completed' | 'failed';
-  pages_scanned?: number;
-  total_pages?: number;
-  estimated_completion?: string;
-  error?: string;
+  url: string;
+  status: 'pending' | 'in_progress' | 'completed' | 'failed' | 'cancelled';
+  pages_scanned: number;
+  total_pages: number;
+  progress: number;
+  error: string;
+  isLargeSite: boolean;
 }
 
-export interface OptimizationItem {
-  name: string;
-  count: number;
-  price: number;
-  type?: string;
-  description?: string;
-}
-
-export interface OptimizationResponse {
-  items: OptimizationItem[];
-  discount?: number;
+export interface PageStats {
   total: number;
+  html: number;
+  images: number;
+  other: number;
 }
 
 export interface ScanDetails {
@@ -27,15 +23,28 @@ export interface ScanDetails {
   pages_scanned: number;
   estimated_pages: number;
   stage: string;
+  progress?: number;
 }
 
-export interface PageStats {
-  totalPages: number;
-  indexablePages: number;
-  nonIndexablePages: number;
-  brokenLinks: number;
-  externalLinks: number;
-  duplicateContent: number;
-  pageTypes?: Record<string, number>;
-  depthData?: { level: number; count: number }[];
+export interface AuditInfo {
+  id: string;
+  pageCount: number;
+  score: number;
+  domain: string;
+  scanTime: string;
+}
+
+export interface OptimizationResult {
+  success: boolean;
+  message: string;
+  cost?: number;
+  items?: any[];
+}
+
+// Request Types
+export interface CrawlOptions {
+  maxPages?: number;
+  maxDepth?: number;
+  ignoreRobotsTxt?: boolean;
+  followRedirects?: boolean;
 }

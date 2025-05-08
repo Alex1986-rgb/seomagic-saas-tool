@@ -2,6 +2,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import AuditResultsContainer from './audit/results/AuditResultsContainer';
+import { AuditProvider } from '@/contexts/AuditContext';
+import { ScanProvider } from '@/contexts/ScanContext';
 
 interface SeoAuditResultsProps {
   url: string;
@@ -111,9 +113,13 @@ const SeoAuditResults: React.FC<SeoAuditResultsProps> = ({ url }) => {
 
   return (
     <div className="relative">
-      <AuditResultsContainer url={url} />
+      <AuditProvider initialUrl={url}>
+        <ScanProvider url={url}>
+          <AuditResultsContainer url={url} />
+        </ScanProvider>
+      </AuditProvider>
     </div>
   );
 };
 
-export default SeoAuditResults;
+export default React.memo(SeoAuditResults);

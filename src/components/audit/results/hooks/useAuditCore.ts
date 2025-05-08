@@ -1,39 +1,34 @@
 
 import { useState } from 'react';
-import { useAudit } from '@/hooks/use-audit';
+import { useAuditContext } from '@/contexts/AuditContext';
 import { AuditData } from '@/types/audit';
 
 /**
  * Хук для работы с данными аудита и их состоянием
- * Является связующим звеном между useScan и базовым useAudit
+ * Является связующим звеном между ScanContext и базовым AuditContext
  */
 export const useAuditCore = (url: string) => {
-  // State for refreshing flag
+  // State for refreshing flag and audit data state
   const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
   const [auditDataState, setAuditDataState] = useState<AuditData | null>(null);
   
-  // Используем централизованный хук для работы с аудитом
+  // Use the audit context
   const {
     isLoading,
     loadingProgress,
-    auditData,
+    auditData: contextAuditData,
     recommendations,
     historyData,
     error,
     isScanning,
     scanDetails,
     loadAuditData,
-  } = useAudit(url);
-
-  // Set the audit data from the hook if needed
-  const setAuditData = (newData: AuditData) => {
-    setAuditDataState(newData);
-  };
+  } = useAuditContext();
 
   return {
     isLoading,
     loadingProgress,
-    auditData: auditDataState || auditData,
+    auditData: auditDataState || contextAuditData,
     recommendations,
     historyData,
     error,
@@ -42,6 +37,6 @@ export const useAuditCore = (url: string) => {
     scanDetails,
     setIsRefreshing,
     loadAuditData,
-    setAuditData,
+    setAuditData: setAuditDataState,
   };
 };
