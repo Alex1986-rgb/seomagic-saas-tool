@@ -37,3 +37,4 @@ export type { BaseOptimizationOptions as OptimizationOptions };
 
 // For backward compatibility, we'll re-export OptimizationResults
 export type { BaseOptimizationResults as OptimizationResults };
+

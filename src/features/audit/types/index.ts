@@ -6,8 +6,8 @@ export * from './audit-items';
 export * from './category-data';
 export * from './optimization-types';
 
-// Re-export with type qualifier to fix TS2308 errors
-export * from './recommendations';
+// Re-export with type qualifier to fix TS1205 errors
+export type { RecommendationData } from './recommendations';
 
 // Export from crawler with explicit type qualifier to avoid name conflicts
 export type {
@@ -25,3 +25,4 @@ export type { PageAnalysisData } from './page-data';
 
 // Export CrawlOptions and OptimizationOptions with explicit type qualifier
 export type { CrawlOptions, OptimizationOptions } from './crawl-options';
+
