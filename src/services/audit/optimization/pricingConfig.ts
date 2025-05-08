@@ -23,6 +23,10 @@ export interface PricingConfig {
   headingStructure: number;
   conversionTextOptimization: number;
   readabilityImprovement: number;
+  // Base optimization price
+  baseOptimizationPrice: number;
+  criticalErrorPrice: number;
+  warningPrice: number;
 }
 
 // Цены в рублях
@@ -48,6 +52,10 @@ const defaultPricingConfig: PricingConfig = {
   headingStructure: 2500, // Настройка правильной структуры заголовков
   conversionTextOptimization: 5500, // Оптимизация текстов для улучшения конверсии
   readabilityImprovement: 3800, // Улучшение читабельности и структуры контента
+  // Detailed cost items
+  baseOptimizationPrice: 15000, // Базовая стоимость оптимизации
+  criticalErrorPrice: 300, // Стоимость исправления одной критической ошибки
+  warningPrice: 150, // Стоимость исправления одного предупреждения
 };
 
 let currentPricingConfig = { ...defaultPricingConfig };
@@ -107,28 +115,44 @@ export const calculateOptimizationCost = (pageCount: number): {
   totalCost: number;
   items: OptimizationItem[];
 } => {
-  // Apply volume discounts
-  let discount = 0;
-  if (pageCount > 1000) {
-    discount = 0.15; // 15% discount
-  } else if (pageCount > 500) {
-    discount = 0.10; // 10% discount
-  } else if (pageCount > 200) {
-    discount = 0.05; // 5% discount
-  }
-  
-  // Calculate quantities based on page count
-  const metaTagsCount = Math.ceil(pageCount * 0.7); // 70% of pages need meta tags
-  const contentPagesCount = Math.ceil(pageCount * 0.5); // 50% of pages need content optimization
-  const imageAltCount = Math.ceil(pageCount * 3); // Average 3 images per page
-  const performancePagesCount = Math.ceil(pageCount * 0.3); // 30% of pages have performance issues
-  const brokenLinksCount = Math.ceil(pageCount * 0.1); // 10% of links may be broken
-  const structureIssuesCount = Math.ceil(pageCount * 0.2); // 20% of pages have structure issues
+  // Get metrics from site analysis (simplified for this example)
+  const criticalErrors = Math.max(1, Math.round(pageCount * 0.03));
+  const warnings = Math.max(2, Math.round(pageCount * 0.08));
   
   // Create items array
   const items: OptimizationItem[] = [];
   
-  // Basic services
+  // Base optimization price
+  items.push({
+    name: 'Базовая стоимость оптимизации',
+    description: 'Основная стоимость комплексной оптимизации сайта',
+    count: 1,
+    price: currentPricingConfig.baseOptimizationPrice,
+    pricePerUnit: currentPricingConfig.baseOptimizationPrice,
+    totalPrice: currentPricingConfig.baseOptimizationPrice
+  });
+  
+  // Critical errors fix
+  items.push({
+    name: 'Исправление критических ошибок',
+    description: 'Исправление всех критических технических ошибок на сайте',
+    count: criticalErrors,
+    price: currentPricingConfig.criticalErrorPrice,
+    pricePerUnit: currentPricingConfig.criticalErrorPrice,
+    totalPrice: criticalErrors * currentPricingConfig.criticalErrorPrice
+  });
+  
+  // Warnings fix
+  items.push({
+    name: 'Исправление предупреждений',
+    description: 'Исправление некритических ошибок и предупреждений',
+    count: warnings,
+    price: currentPricingConfig.warningPrice,
+    pricePerUnit: currentPricingConfig.warningPrice,
+    totalPrice: warnings * currentPricingConfig.warningPrice
+  });
+  
+  // Technical improvements
   items.push({
     name: 'Карта сайта (sitemap.xml)',
     description: 'Создание и оптимизация файла sitemap.xml',
@@ -138,51 +162,41 @@ export const calculateOptimizationCost = (pageCount: number): {
     totalPrice: currentPricingConfig.sitemap
   });
   
-  // Technical improvements
-  items.push({
-    name: 'Исправление критических ошибок',
-    description: 'Поиск и исправление всех критических технических ошибок на сайте',
-    count: 1,
-    pricePerUnit: currentPricingConfig.criticalErrorsFix,
-    price: currentPricingConfig.criticalErrorsFix,
-    totalPrice: currentPricingConfig.criticalErrorsFix
-  });
-  
   items.push({
     name: 'Оптимизация мета-тегов',
     description: 'Оптимизация title, description и других мета-тегов для поисковых систем',
-    count: metaTagsCount,
+    count: Math.ceil(pageCount * 0.7),
     pricePerUnit: currentPricingConfig.metaTagsPerItem,
     price: currentPricingConfig.metaTagsPerItem,
-    totalPrice: metaTagsCount * currentPricingConfig.metaTagsPerItem
+    totalPrice: Math.ceil(pageCount * 0.7) * currentPricingConfig.metaTagsPerItem
   });
   
   items.push({
     name: 'Исправление битых ссылок',
     description: 'Поиск и исправление битых ссылок и настройка редиректов',
-    count: brokenLinksCount,
+    count: Math.ceil(pageCount * 0.1),
     pricePerUnit: currentPricingConfig.linksPerItem,
     price: currentPricingConfig.linksPerItem,
-    totalPrice: brokenLinksCount * currentPricingConfig.linksPerItem
+    totalPrice: Math.ceil(pageCount * 0.1) * currentPricingConfig.linksPerItem
   });
   
   items.push({
     name: 'Оптимизация изображений',
     description: 'Оптимизация изображений и медиафайлов для ускорения загрузки сайта',
-    count: imageAltCount,
+    count: Math.ceil(pageCount * 3),
     pricePerUnit: currentPricingConfig.imageAltPerItem,
     price: currentPricingConfig.imageAltPerItem,
-    totalPrice: imageAltCount * currentPricingConfig.imageAltPerItem
+    totalPrice: Math.ceil(pageCount * 3) * currentPricingConfig.imageAltPerItem
   });
   
   // Content improvements
   items.push({
     name: 'Оптимизация контента для SEO',
     description: 'Оптимизация контента для повышения видимости в поисковых системах',
-    count: contentPagesCount,
+    count: Math.ceil(pageCount * 0.5),
     pricePerUnit: currentPricingConfig.contentSeoOptimization,
     price: currentPricingConfig.contentSeoOptimization,
-    totalPrice: Math.ceil(contentPagesCount * 0.8) * currentPricingConfig.contentSeoOptimization
+    totalPrice: Math.ceil(pageCount * 0.5) * currentPricingConfig.contentSeoOptimization
   });
   
   items.push({
@@ -216,39 +230,11 @@ export const calculateOptimizationCost = (pageCount: number): {
   items.push({
     name: 'Улучшение производительности',
     description: 'Оптимизация скорости загрузки страниц',
-    count: performancePagesCount,
+    count: Math.ceil(pageCount * 0.3),
     pricePerUnit: currentPricingConfig.performancePerPage,
     price: currentPricingConfig.performancePerPage,
-    totalPrice: performancePagesCount * currentPricingConfig.performancePerPage
+    totalPrice: Math.ceil(pageCount * 0.3) * currentPricingConfig.performancePerPage
   });
-  
-  items.push({
-    name: 'Оптимизация структуры',
-    description: 'Улучшение структуры URL и навигации',
-    count: structureIssuesCount,
-    pricePerUnit: currentPricingConfig.structurePerItem,
-    price: currentPricingConfig.structurePerItem,
-    totalPrice: structureIssuesCount * currentPricingConfig.structurePerItem
-  });
-  
-  // Calculate subtotal
-  const subtotal = items.reduce((sum, item) => sum + item.totalPrice, 0);
-  
-  // Apply discount
-  const discountAmount = Math.round(subtotal * discount);
-  const totalCost = Math.round(subtotal - discountAmount);
-  
-  // Add discount item if applicable
-  if (discount > 0) {
-    items.push({
-      name: `Скидка за объем (${discount * 100}%)`,
-      description: 'Скидка при оптимизации большого количества страниц',
-      count: 1,
-      pricePerUnit: -discountAmount,
-      price: -discountAmount,
-      totalPrice: -discountAmount
-    });
-  }
   
   // Add warranty note item
   items.push({
@@ -259,6 +245,11 @@ export const calculateOptimizationCost = (pageCount: number): {
     price: 0,
     totalPrice: 0
   });
+  
+  // Calculate total cost from base prices
+  const totalCost = currentPricingConfig.baseOptimizationPrice + 
+                  (criticalErrors * currentPricingConfig.criticalErrorPrice) + 
+                  (warnings * currentPricingConfig.warningPrice);
   
   return {
     totalCost,

@@ -33,6 +33,10 @@ const CostDetailsTable: React.FC<CostDetailsTableProps> = ({ optimizationItems }
 
   // Group items by category
   const groupedItems = {
+    base: optimizationItems.filter(item => item.name.includes('Базовая стоимость')),
+    critical: optimizationItems.filter(item => item.name.includes('Исправление критических ошибок')),
+    warnings: optimizationItems.filter(item => item.name.includes('Исправление предупреждений')),
+    
     technical: optimizationItems.filter(item => [
       'Исправление критических ошибок',
       'Оптимизация мета-тегов',
@@ -40,7 +44,9 @@ const CostDetailsTable: React.FC<CostDetailsTableProps> = ({ optimizationItems }
       'Исправление битых ссылок',
       'Оптимизация изображений',
       'Улучшение производительности'
-    ].some(name => item.name.includes(name))),
+    ].some(name => item.name.includes(name)) && 
+      !item.name.includes('Базовая стоимость') && 
+      !item.name.includes('Исправление предупреждений')),
     
     content: optimizationItems.filter(item => [
       'Оптимизация контента',
@@ -104,6 +110,9 @@ const CostDetailsTable: React.FC<CostDetailsTableProps> = ({ optimizationItems }
           </TableRow>
         </TableHeader>
         <TableBody>
+          {renderTableSection(groupedItems.base, 'Базовая стоимость')}
+          {renderTableSection(groupedItems.critical, 'Исправление критических ошибок')}
+          {renderTableSection(groupedItems.warnings, 'Исправление предупреждений')}
           {renderTableSection(groupedItems.technical, 'Технические улучшения')}
           {renderTableSection(groupedItems.content, 'Контентные улучшения')}
           {renderTableSection(groupedItems.other, 'Дополнительно')}

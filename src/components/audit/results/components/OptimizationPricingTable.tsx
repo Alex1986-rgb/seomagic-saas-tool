@@ -39,11 +39,17 @@ const OptimizationPricingTable: React.FC<OptimizationPricingTableProps> = ({
 
   const [showWhatIncluded, setShowWhatIncluded] = useState(false);
 
+  const baseItems = items.filter(item => 
+    item.name.includes('Базовая стоимость') || 
+    item.name.includes('Исправление критических ошибок') || 
+    item.name.includes('Исправление предупреждений')
+  );
+  
   return (
     <Card className="border border-primary/20">
       <CardHeader className="pb-3">
         <div className="flex justify-between items-center mb-1">
-          <CardTitle>Смета на оптимизацию сайта</CardTitle>
+          <CardTitle>Детальная смета работ</CardTitle>
           
           {estimatedScore !== undefined && currentScore !== undefined && (
             <div className="flex items-center">
@@ -58,7 +64,7 @@ const OptimizationPricingTable: React.FC<OptimizationPricingTableProps> = ({
           )}
         </div>
         <CardDescription>
-          Стоимость исправления обнаруженных проблем и оптимизации контента
+          Расчет стоимости оптимизации сайта на основе проведенного аудита
         </CardDescription>
       </CardHeader>
       
@@ -110,7 +116,7 @@ const OptimizationPricingTable: React.FC<OptimizationPricingTableProps> = ({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {items.map((item, index) => (
+            {baseItems.map((item, index) => (
               <TableRow key={index} className={index % 2 === 0 ? 'bg-muted/30' : ''}>
                 <TableCell className="font-medium">{item.name}</TableCell>
                 <TableCell>{item.description}</TableCell>
