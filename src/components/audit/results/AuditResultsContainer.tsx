@@ -78,6 +78,7 @@ const AuditResultsContainer: React.FC<AuditResultsContainerProps> = ({ url }) =>
         hadError={hadError}
         timeout={timeout}
         onRetry={handleRetry}
+        url={url} // Pass the URL here
       >
         <AuditContent
           url={url}

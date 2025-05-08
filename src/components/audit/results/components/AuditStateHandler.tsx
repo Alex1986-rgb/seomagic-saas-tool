@@ -11,6 +11,7 @@ interface AuditStateHandlerProps {
   timeout: boolean;
   onRetry: () => void;
   children: React.ReactNode;
+  url?: string; // Add URL prop to pass down to AuditTimeoutMessage
 }
 
 // Animation variants for content transitions
@@ -24,7 +25,8 @@ const AuditStateHandler: React.FC<AuditStateHandlerProps> = ({
   hadError,
   timeout,
   onRetry,
-  children
+  children,
+  url = '' // Default to empty string if not provided
 }) => {
   if (isLoading) {
     return <AuditLoading />;
@@ -33,7 +35,7 @@ const AuditStateHandler: React.FC<AuditStateHandlerProps> = ({
   if (timeout) {
     return (
       <Card className="p-6 bg-card/90 backdrop-blur-sm border-border">
-        <AuditTimeoutMessage onRetry={onRetry} />
+        <AuditTimeoutMessage url={url} onRetry={onRetry} />
       </Card>
     );
   }
