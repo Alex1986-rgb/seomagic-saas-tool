@@ -1,20 +1,26 @@
 
-import React from 'react';
-import { AlertTriangle, AlertCircle, Lightbulb } from 'lucide-react';
+import React, { useState } from 'react';
+import { AlertTriangle, AlertCircle, Lightbulb, ChevronDown, ChevronUp, Check } from 'lucide-react';
 import { AuditData } from '@/types/audit';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 export interface AuditIssuesAndEstimateProps {
   auditData: AuditData;
   optimizationCost: number;
   optimizationItems: any[]; // Added this prop to match expected usage
+  onApproveEstimate?: () => void;
 }
 
 export const AuditIssuesAndEstimate: React.FC<AuditIssuesAndEstimateProps> = ({ 
   auditData, 
   optimizationCost,
-  optimizationItems 
+  optimizationItems,
+  onApproveEstimate 
 }) => {
+  const [showDetails, setShowDetails] = useState(false);
+  
   const criticalIssues = Array.isArray(auditData.issues.critical) 
     ? auditData.issues.critical 
     : [];
@@ -27,18 +33,92 @@ export const AuditIssuesAndEstimate: React.FC<AuditIssuesAndEstimateProps> = ({
     ? auditData.issues.opportunities 
     : [];
 
+  const totalIssues = criticalIssues.length + importantIssues.length + opportunities.length;
+  
+  // Calculate individual prices based on severity
+  const getPricePerIssue = (type: 'critical' | 'important' | 'opportunity') => {
+    switch(type) {
+      case 'critical':
+        return 2500; // Higher price for critical issues
+      case 'important':
+        return 1500; // Medium price for important issues
+      case 'opportunity':
+        return 800; // Lower price for opportunities
+      default:
+        return 1000;
+    }
+  };
+  
+  const criticalTotalPrice = criticalIssues.length * getPricePerIssue('critical');
+  const importantTotalPrice = importantIssues.length * getPricePerIssue('important');
+  const opportunitiesTotalPrice = opportunities.length * getPricePerIssue('opportunity');
+  
+  // Calculate total cost with volume discount
+  const calculateTotalWithDiscount = () => {
+    const baseTotal = criticalTotalPrice + importantTotalPrice + opportunitiesTotalPrice;
+    
+    // Apply volume discount based on total issues
+    let discountPercent = 0;
+    if (totalIssues > 20) {
+      discountPercent = 25;
+    } else if (totalIssues > 10) {
+      discountPercent = 15;
+    } else if (totalIssues > 5) {
+      discountPercent = 10;
+    }
+    
+    const discountAmount = Math.round(baseTotal * (discountPercent / 100));
+    const finalTotal = baseTotal - discountAmount;
+    
+    return {
+      baseTotal,
+      discountPercent,
+      discountAmount,
+      finalTotal
+    };
+  };
+  
+  const costCalculation = calculateTotalWithDiscount();
+
   const formatCost = (cost: number) => {
     return new Intl.NumberFormat('ru-RU', { style: 'currency', currency: 'RUB' }).format(cost);
+  };
+
+  const renderIssueWithPrice = (issue: any, index: number, type: 'critical' | 'important' | 'opportunity') => {
+    const price = getPricePerIssue(type);
+    const issueTitle = typeof issue === 'string' ? issue : issue.title;
+    
+    return (
+      <li key={`${type}-${index}`} className="flex justify-between items-center">
+        <span>{issueTitle}</span>
+        <span className="text-sm font-medium text-primary">{formatCost(price)}</span>
+      </li>
+    );
   };
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
       <Card className="bg-card/90 backdrop-blur-sm border-border">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <AlertTriangle className="text-red-500" />
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardTitle className="text-base font-medium flex items-center gap-2">
+            <AlertTriangle className="h-4 w-4 text-red-500" />
             Основные проблемы
+            <span className="bg-primary/10 text-primary rounded-full px-2 py-0.5 text-xs ml-2">
+              {totalIssues} шт.
+            </span>
           </CardTitle>
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className="text-xs h-8 px-2"
+            onClick={() => setShowDetails(!showDetails)}
+          >
+            {showDetails ? (
+              <>Скрыть детали <ChevronUp className="h-3 w-3 ml-1" /></>
+            ) : (
+              <>Показать детали <ChevronDown className="h-3 w-3 ml-1" /></>
+            )}
+          </Button>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
@@ -48,11 +128,17 @@ export const AuditIssuesAndEstimate: React.FC<AuditIssuesAndEstimateProps> = ({
             </h3>
             <ul className="space-y-1 text-sm">
               {criticalIssues.map((issue, index) => (
-                <li key={`critical-${index}`}>
-                  {typeof issue === 'string' ? issue : issue.title}
-                </li>
+                showDetails 
+                  ? renderIssueWithPrice(issue, index, 'critical')
+                  : <li key={`critical-${index}`}>{typeof issue === 'string' ? issue : issue.title}</li>
               ))}
             </ul>
+            {showDetails && criticalIssues.length > 0 && (
+              <div className="flex justify-between text-sm font-medium pt-1">
+                <span>Всего критических ошибок:</span>
+                <span className="text-primary">{formatCost(criticalTotalPrice)}</span>
+              </div>
+            )}
           </div>
           
           <div className="space-y-2">
@@ -62,11 +148,17 @@ export const AuditIssuesAndEstimate: React.FC<AuditIssuesAndEstimateProps> = ({
             </h3>
             <ul className="space-y-1 text-sm">
               {importantIssues.map((issue, index) => (
-                <li key={`important-${index}`}>
-                  {typeof issue === 'string' ? issue : issue.title}
-                </li>
+                showDetails 
+                  ? renderIssueWithPrice(issue, index, 'important')
+                  : <li key={`important-${index}`}>{typeof issue === 'string' ? issue : issue.title}</li>
               ))}
             </ul>
+            {showDetails && importantIssues.length > 0 && (
+              <div className="flex justify-between text-sm font-medium pt-1">
+                <span>Всего важных исправлений:</span>
+                <span className="text-primary">{formatCost(importantTotalPrice)}</span>
+              </div>
+            )}
           </div>
           
           <div className="space-y-2">
@@ -76,11 +168,17 @@ export const AuditIssuesAndEstimate: React.FC<AuditIssuesAndEstimateProps> = ({
             </h3>
             <ul className="space-y-1 text-sm">
               {opportunities.map((issue, index) => (
-                <li key={`opportunity-${index}`}>
-                  {typeof issue === 'string' ? issue : issue.title}
-                </li>
+                showDetails 
+                  ? renderIssueWithPrice(issue, index, 'opportunity')
+                  : <li key={`opportunity-${index}`}>{typeof issue === 'string' ? issue : issue.title}</li>
               ))}
             </ul>
+            {showDetails && opportunities.length > 0 && (
+              <div className="flex justify-between text-sm font-medium pt-1">
+                <span>Всего возможностей:</span>
+                <span className="text-primary">{formatCost(opportunitiesTotalPrice)}</span>
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>
@@ -91,10 +189,37 @@ export const AuditIssuesAndEstimate: React.FC<AuditIssuesAndEstimateProps> = ({
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            <div className="bg-primary/5 p-4 rounded-lg">
-              <p className="text-lg font-semibold mb-1">Стоимость оптимизации</p>
-              <p className="text-2xl font-bold text-primary">{formatCost(optimizationCost)}</p>
-            </div>
+            {showDetails ? (
+              <div className="space-y-3">
+                <div className="flex justify-between items-center border-b pb-2">
+                  <span>Базовая стоимость исправлений</span>
+                  <span className="font-medium">{formatCost(costCalculation.baseTotal)}</span>
+                </div>
+                
+                {costCalculation.discountPercent > 0 && (
+                  <div className="flex justify-between items-center border-b pb-2 text-green-600">
+                    <span>Скидка за объем ({costCalculation.discountPercent}%)</span>
+                    <span className="font-medium">-{formatCost(costCalculation.discountAmount)}</span>
+                  </div>
+                )}
+                
+                <div className="flex justify-between items-center border-b pb-2">
+                  <span>Оптимизация контента ({auditData.pageCount || 0} стр.)</span>
+                  <span className="font-medium">{formatCost(optimizationCost)}</span>
+                </div>
+                
+                <div className="flex justify-between items-center pt-2">
+                  <span className="font-medium">Итоговая стоимость</span>
+                  <span className="text-lg font-bold text-primary">{formatCost(costCalculation.finalTotal + optimizationCost)}</span>
+                </div>
+              </div>
+            ) : (
+              <div className="bg-primary/5 p-4 rounded-lg">
+                <p className="text-lg font-semibold mb-1">Стоимость оптимизации</p>
+                <p className="text-2xl font-bold text-primary">{formatCost(costCalculation.finalTotal + optimizationCost)}</p>
+                <p className="text-xs text-muted-foreground mt-1">Нажмите "Показать детали" для просмотра расчета</p>
+              </div>
+            )}
             
             <div className="space-y-2">
               <h3 className="text-sm font-medium">Что входит:</h3>
@@ -103,8 +228,25 @@ export const AuditIssuesAndEstimate: React.FC<AuditIssuesAndEstimateProps> = ({
                 <li>✓ Оптимизация мета-тегов</li>
                 <li>✓ Улучшение структуры контента</li>
                 <li>✓ Оптимизация {auditData.pageCount || 0} страниц</li>
+                <li>✓ Полный HTML-экспорт исправленного сайта</li>
               </ul>
             </div>
+            
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button 
+                    onClick={onApproveEstimate}
+                    className="w-full mt-2 gap-2"
+                  >
+                    <Check className="h-4 w-4" /> Согласен, начать оптимизацию
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Нажмите, чтобы перейти к оплате и оптимизации</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           </div>
         </CardContent>
       </Card>

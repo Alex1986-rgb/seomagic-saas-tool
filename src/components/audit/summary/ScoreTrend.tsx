@@ -7,12 +7,14 @@ interface ScoreTrendProps {
   currentScore: number;
   previousScore?: number;
   variant?: 'default' | 'compact';
+  priceToFix?: number; // Added price to fix this item
 }
 
 const ScoreTrend: React.FC<ScoreTrendProps> = ({ 
   currentScore, 
   previousScore,
-  variant = 'default'
+  variant = 'default',
+  priceToFix
 }) => {
   if (previousScore === undefined) return null;
   
@@ -25,6 +27,11 @@ const ScoreTrend: React.FC<ScoreTrendProps> = ({
   };
 
   const isCompact = variant === 'compact';
+  
+  const formatPrice = (price?: number) => {
+    if (price === undefined) return '';
+    return new Intl.NumberFormat('ru-RU', { style: 'currency', currency: 'RUB' }).format(price);
+  };
 
   return (
     <motion.div
@@ -46,6 +53,17 @@ const ScoreTrend: React.FC<ScoreTrendProps> = ({
       >
         {scoreDiff > 0 ? '+' : ''}{scoreDiff}
       </motion.span>
+      
+      {priceToFix !== undefined && (
+        <motion.span
+          className="text-xs font-medium ml-1 px-1.5 py-0.5 bg-white/50 rounded-full"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.3, delay: 0.9 }}
+        >
+          {formatPrice(priceToFix)}
+        </motion.span>
+      )}
     </motion.div>
   );
 };
