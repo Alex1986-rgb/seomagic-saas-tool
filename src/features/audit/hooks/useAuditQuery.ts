@@ -49,8 +49,8 @@ export const useAuditQuery = (url: string, taskId: string | null) => {
     enabled: !!taskId,
     // Polling for active scans
     refetchInterval: (data) => {
-      // Fix: Access the status from the data object, not from the query object
-      if (data && ['running', 'pending', 'starting'].includes(data.status)) {
+      // Fix: Access the status from the data object correctly
+      if (data && data.status && ['running', 'pending', 'starting'].includes(data.status)) {
         return 2000; // Poll every 2 seconds while actively scanning
       }
       return false; // Stop polling when complete
