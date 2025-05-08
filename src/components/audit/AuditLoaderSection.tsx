@@ -44,6 +44,7 @@ const AuditLoaderSection: React.FC<AuditLoaderSectionProps> = ({
 }) => {
   const [showEstimate, setShowEstimate] = useState(false);
   const [showReports, setShowReports] = useState(false);
+  const [showDetailedErrors, setShowDetailedErrors] = useState(false);
   const { toast } = useToast();
 
   // Автоматически показывать смету, если есть просканированные URL
@@ -213,6 +214,59 @@ const AuditLoaderSection: React.FC<AuditLoaderSectionProps> = ({
     );
   };
 
+  const renderDetailedErrorsSection = () => {
+    if (!showDetailedErrors) return null;
+    
+    // Примерные данные для типов ошибок
+    const errorTypes = [
+      { name: "Отсутствие мета-тегов", count: 12, impact: "Высокий", cost: 3600 },
+      { name: "Неоптимизированные изображения", count: 25, impact: "Средний", cost: 3750 },
+      { name: "Битые ссылки", count: 8, impact: "Высокий", cost: 2400 },
+      { name: "Дубликаты контента", count: 5, impact: "Высокий", cost: 1500 },
+      { name: "Отсутствие структуры H1-H6", count: 17, impact: "Средний", cost: 2550 },
+      { name: "Проблемы с мобильной версией", count: 10, impact: "Высокий", cost: 3000 }
+    ];
+    
+    return (
+      <motion.div
+        className="mb-8"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.5 }}
+      >
+        <Card className="elegant-card">
+          <CardHeader>
+            <CardTitle className="text-xl md:text-2xl">Детальный анализ ошибок</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {errorTypes.map((error, index) => (
+                <div key={index} className="p-3 border rounded-lg">
+                  <div className="flex justify-between items-center mb-2">
+                    <h3 className="font-medium">{error.name}</h3>
+                    <span className={`px-2 py-0.5 rounded-full text-sm ${error.impact === "Высокий" ? "bg-red-100 text-red-800" : "bg-yellow-100 text-yellow-800"}`}>
+                      {error.impact} приоритет
+                    </span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span>Количество: <strong>{error.count}</strong></span>
+                    <span>Стоимость исправления: <strong>{error.cost.toLocaleString('ru-RU')} ₽</strong></span>
+                  </div>
+                </div>
+              ))}
+            </div>
+            
+            <div className="flex flex-col sm:flex-row gap-3 justify-end mt-4">
+              <Button variant="outline" onClick={() => setShowDetailedErrors(false)}>
+                Скрыть детали
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </motion.div>
+    );
+  };
+
   const renderActionButtons = () => {
     // Показываем кнопки действий даже без просканированных URL для демонстрации функциональности
     const shouldShowButtons = Boolean(url) || scannedUrls.length > 0;
@@ -243,6 +297,15 @@ const AuditLoaderSection: React.FC<AuditLoaderSectionProps> = ({
               className="flex gap-2 items-center"
             >
               <BarChart className="h-4 w-4" /> Сгенерировать отчеты
+            </Button>
+          )}
+          {!showDetailedErrors && (
+            <Button 
+              variant="secondary" 
+              onClick={() => setShowDetailedErrors(true)}
+              className="flex gap-2 items-center"
+            >
+              <BarChart className="h-4 w-4" /> Показать детальный анализ
             </Button>
           )}
           <Button 
@@ -299,6 +362,7 @@ const AuditLoaderSection: React.FC<AuditLoaderSectionProps> = ({
               
               {renderActionButtons()}
               {renderEstimateSection()}
+              {renderDetailedErrorsSection()}
               {renderReportsSection()}
             </>
           )}
