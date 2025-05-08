@@ -1,7 +1,5 @@
 
 import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import { useToast } from "@/hooks/use-toast";
 import CostSummary from './CostSummary';
 import CostDetailsTable, { OptimizationItem } from './CostDetailsTable';
 import OptimizationActions from './OptimizationActions';
@@ -31,7 +29,6 @@ const OptimizationCost: React.FC<OptimizationCostProps> = ({
   optimizationItems = [],
   onGeneratePdfReport
 }) => {
-  const { toast } = useToast();
   const [isPaymentComplete, setIsPaymentComplete] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isOptimizing, setIsOptimizing] = useState(false);
@@ -61,14 +58,14 @@ const OptimizationCost: React.FC<OptimizationCostProps> = ({
   
   // Effect to update optimization progress simulation
   useEffect(() => {
-    let progressInterval: NodeJS.Timeout;
+    let progressInterval: NodeJS.Timeout | null = null;
     
     if (isOptimizing && !isOptimizedState && optimizationProgress < 100) {
       progressInterval = setInterval(() => {
         setOptimizationProgress(prev => {
           const newProgress = prev + (Math.random() * 2);
           if (newProgress >= 100) {
-            clearInterval(progressInterval);
+            if (progressInterval) clearInterval(progressInterval);
             setTimeout(() => {
               setLocalIsOptimized(true);
               setOptimizationProgress(100);
@@ -91,11 +88,6 @@ const OptimizationCost: React.FC<OptimizationCostProps> = ({
                   }
                 }
               });
-              
-              toast({
-                title: "Оптимизация завершена",
-                description: "Сайт был успешно оптимизирован для SEO",
-              });
             }, 1000);
             return 100;
           }
@@ -107,14 +99,10 @@ const OptimizationCost: React.FC<OptimizationCostProps> = ({
     return () => {
       if (progressInterval) clearInterval(progressInterval);
     };
-  }, [isOptimizing, isOptimizedState, optimizationProgress, toast]);
+  }, [isOptimizing, isOptimizedState, optimizationProgress]);
   
   const handlePayment = () => {
-    toast({
-      title: "Оплата успешно произведена",
-      description: "Теперь вы можете запустить процесс оптимизации",
-    });
-    
+    console.log("Payment completed");
     setIsPaymentComplete(true);
     setIsDialogOpen(false);
   };
@@ -122,22 +110,12 @@ const OptimizationCost: React.FC<OptimizationCostProps> = ({
   const startOptimization = async () => {
     setIsOptimizing(true);
     setOptimizationProgress(0);
-    
-    toast({
-      title: "Оптимизация начата",
-      description: "Процесс оптимизации сайта запущен",
-    });
   };
   
   if (!optimizationCost) return null;
   
   return (
-    <motion.div 
-      className={`border border-primary/20 rounded-lg p-4 bg-card/50 ${className || ''}`}
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
-    >
+    <div className={`border border-primary/20 rounded-lg p-4 bg-card/50 ${className || ''}`}>
       <OptimizationHeading />
       
       <CostSummary pageCount={pageCount} optimizationCost={optimizationCost} />
@@ -179,7 +157,7 @@ const OptimizationCost: React.FC<OptimizationCostProps> = ({
           setIsDialogOpen={setIsDialogOpen}
         />
       </div>
-    </motion.div>
+    </div>
   );
 };
 

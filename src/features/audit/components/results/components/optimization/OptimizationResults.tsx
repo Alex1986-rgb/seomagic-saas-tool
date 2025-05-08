@@ -1,6 +1,5 @@
 
 import React from 'react';
-import { Button } from "@/components/ui/button";
 
 interface OptimizationResultsProps {
   url: string;
@@ -79,18 +78,18 @@ const OptimizationResults: React.FC<OptimizationResultsProps> = ({
       )}
       
       <div className="flex flex-wrap gap-2 mt-4">
-        <Button 
+        <button 
           onClick={onDownloadOptimized}
-          variant="default"
+          className="bg-primary text-white px-4 py-2 rounded hover:bg-primary/90"
         >
           Скачать оптимизированный сайт
-        </Button>
-        <Button 
+        </button>
+        <button 
           onClick={onGeneratePdfReport}
-          variant="outline"
+          className="border border-primary px-4 py-2 rounded hover:bg-primary/10"
         >
           Скачать PDF-отчет
-        </Button>
+        </button>
       </div>
     </div>
   );

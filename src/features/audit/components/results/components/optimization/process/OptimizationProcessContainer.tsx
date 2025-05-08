@@ -1,6 +1,5 @@
 
-import React, { useEffect } from 'react';
-import { Progress } from "@/components/ui/progress";
+import React from 'react';
 
 interface OptimizationProcessContainerProps {
   url: string;
@@ -9,29 +8,40 @@ interface OptimizationProcessContainerProps {
   setLocalIsOptimized: (isOptimized: boolean) => void;
 }
 
-const OptimizationProcessContainer: React.FC<OptimizationProcessContainerProps> = ({ 
-  url, 
-  progress, 
-  setOptimizationResult, 
-  setLocalIsOptimized 
+const OptimizationProcessContainer: React.FC<OptimizationProcessContainerProps> = ({
+  url,
+  progress,
+  setOptimizationResult,
+  setLocalIsOptimized
 }) => {
+  const currentStage = progress < 20 ? 'Анализ страниц' :
+                       progress < 40 ? 'Оптимизация мета-тегов' :
+                       progress < 60 ? 'Улучшение контента' :
+                       progress < 80 ? 'Оптимизация изображений' :
+                       'Применение изменений';
+  
   return (
-    <div className="my-4 p-4 border border-primary/20 rounded-lg bg-background">
-      <h4 className="text-sm font-semibold mb-2">Процесс оптимизации</h4>
-      
-      <div className="mb-2 flex justify-between text-sm">
-        <span>Прогресс: {Math.round(progress)}%</span>
-        <span>Оптимизация {url}</span>
+    <div className="my-6 p-4 border border-primary/20 rounded-lg bg-background/50">
+      <div className="flex items-center gap-2 mb-2">
+        <div className="animate-spin h-4 w-4 border-2 border-primary border-t-transparent rounded-full"></div>
+        <h3 className="font-medium">Оптимизация сайта</h3>
       </div>
       
-      <Progress value={progress} className="h-2" />
+      <div className="w-full bg-muted h-2 rounded-full mb-2">
+        <div 
+          className="bg-primary h-2 rounded-full transition-all duration-300" 
+          style={{ width: `${Math.min(100, progress)}%` }}
+        ></div>
+      </div>
       
-      <div className="mt-4 text-sm text-muted-foreground">
-        <p>Улучшаем SEO-показатели сайта. Пожалуйста, подождите...</p>
-        {progress > 30 && <p>Исправляем META-теги...</p>}
-        {progress > 50 && <p>Оптимизируем контент...</p>}
-        {progress > 70 && <p>Создаем файл sitemap.xml...</p>}
-        {progress > 90 && <p>Финализируем оптимизацию...</p>}
+      <div className="flex justify-between items-center text-sm">
+        <span className="text-muted-foreground">{currentStage}</span>
+        <span className="font-medium">{Math.round(progress)}%</span>
+      </div>
+      
+      <div className="mt-3 text-xs text-muted-foreground">
+        Пожалуйста, не закрывайте страницу во время оптимизации. 
+        Процесс может занять до 5 минут в зависимости от размера сайта.
       </div>
     </div>
   );

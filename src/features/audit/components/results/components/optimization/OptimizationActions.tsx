@@ -1,6 +1,5 @@
 
 import React from 'react';
-import { Button } from "@/components/ui/button";
 import PaymentDialog from './PaymentDialog';
 
 interface OptimizationActionsProps {
@@ -32,41 +31,41 @@ const OptimizationActions: React.FC<OptimizationActionsProps> = ({
     <div className="flex flex-wrap gap-2">
       {isOptimized ? (
         <>
-          <Button 
+          <button 
             onClick={onDownloadOptimized} 
-            variant="default"
+            className="bg-primary text-white px-4 py-2 rounded hover:bg-primary/90"
           >
             Скачать оптимизированный сайт
-          </Button>
+          </button>
           
-          <Button 
-            variant="outline" 
+          <button 
+            className="border border-primary px-4 py-2 rounded hover:bg-primary/10" 
             onClick={onGeneratePdfReport}
           >
             Скачать PDF отчет
-          </Button>
+          </button>
         </>
       ) : isPaymentComplete ? (
-        <Button 
+        <button 
           onClick={onStartOptimization}
-          variant="default"
+          className="bg-primary text-white px-4 py-2 rounded hover:bg-primary/90"
         >
           Запустить оптимизацию
-        </Button>
+        </button>
       ) : (
         <>
-          <Button 
-            variant="default" 
+          <button 
+            className="bg-primary text-white px-4 py-2 rounded hover:bg-primary/90" 
             onClick={() => setIsDialogOpen(true)}
           >
             Оплатить и оптимизировать
-          </Button>
+          </button>
           
           <PaymentDialog 
-            isOpen={isDialogOpen} 
-            onClose={() => setIsDialogOpen(false)}
+            isDialogOpen={isDialogOpen} 
+            setIsDialogOpen={setIsDialogOpen}
             onPayment={onPayment}
-            cost={optimizationCost}
+            optimizationCost={optimizationCost}
             url={url}
           />
         </>
