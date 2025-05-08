@@ -16,7 +16,6 @@ export interface OptimizationItem {
 export interface OptimizationOptions {
   fixMetaTags?: boolean;
   improveContent?: boolean;
-  optimizeImages?: boolean;
   fixLinks?: boolean;
   improveStructure?: boolean;
   optimizeSpeed?: boolean;
