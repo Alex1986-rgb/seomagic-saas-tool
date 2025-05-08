@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import Layout from '../components/Layout';
 import HeroSection from '../components/hero/HeroSection';
 import VideoSection from '../components/home/VideoSection';
@@ -10,6 +10,11 @@ import CTASection from '../components/sections/CTASection';
 
 const Index: React.FC = () => {
   console.log("Index component rendering");
+
+  useEffect(() => {
+    // Check for any errors when mounting
+    console.log("Index mounted successfully");
+  }, []);
 
   return (
     <Layout>

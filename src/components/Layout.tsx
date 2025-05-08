@@ -40,22 +40,26 @@ const Layout: React.FC<LayoutProps> = ({
   const location = useLocation();
   const [isFirstRender, setIsFirstRender] = useState(true);
   
-  // Проверяем, начинается ли текущий путь с /admin
+  // Check if the current path starts with /admin
   const isAdminRoute = location.pathname.startsWith('/admin');
   
-  // На административных страницах мы скрываем стандартную навигацию и подвал,
-  // так как у них есть своя встроенная навигация
+  // On administrative pages we hide the standard navigation and footer
+  // since they have their own built-in navigation
   const shouldHideNavbar = hideNavbar || isAdminRoute;
   const shouldHideFooter = hideFooter || isAdminRoute;
 
-  // После первого рендера разрешаем анимацию
+  // After first render allow animation
   useEffect(() => {
-    // Небольшая задержка чтобы не блокировать первый рендер
+    // Small delay to not block first render
     const timeout = setTimeout(() => {
       setIsFirstRender(false);
     }, 10);
     return () => clearTimeout(timeout);
   }, []);
+
+  // Add console logs for debugging
+  console.log("Layout rendering with children:", children ? "Children exists" : "No children");
+  console.log("Current route:", location.pathname);
 
   return (
     <div className={cn("flex flex-col min-h-screen relative", className)}>
@@ -80,7 +84,7 @@ const Layout: React.FC<LayoutProps> = ({
       
       {!shouldHideFooter && <Footer />}
       
-      {/* Мониторинг производительности в режиме разработки */}
+      {/* Performance monitoring in development mode */}
       {process.env.NODE_ENV === 'development' && (
         <PerformanceMonitor showDebugInfo />
       )}
