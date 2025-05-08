@@ -9,7 +9,7 @@ export * from './crawler';
 export * from './optimization-types';
 
 // Export specific types from page-data to avoid conflicts
-export { PageAnalysisData } from './page-data';
+export type { PageAnalysisData } from './page-data';
 // PageData is already exported from ./crawler, so we don't re-export it from page-data
 
 // Export crawl options with type keyword to fix TS1205 error
