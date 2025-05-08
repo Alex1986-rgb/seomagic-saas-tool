@@ -1,6 +1,7 @@
-
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import SeoAuditResults from '@/components/SeoAuditResults';
+import UrlForm from '@/components/url-form';
 import { useToast } from "@/hooks/use-toast";
 import { motion } from 'framer-motion';
 import Layout from '@/components/Layout';
@@ -8,9 +9,9 @@ import AuditHero from '@/components/audit/AuditHero';
 import AuditErrorAlert from '@/components/audit/AuditErrorAlert';
 import AuditAdvancedTools from '@/components/audit/AuditAdvancedTools';
 import { ErrorBoundary } from 'react-error-boundary';
+import LoadingSpinner from '@/components/LoadingSpinner';
 import AuditTimeoutMessage from "@/components/audit/AuditTimeoutMessage";
 import AuditLoaderSection from "@/components/audit/AuditLoaderSection";
-import AuditGuide from "@/components/audit/AuditGuide";
 
 const Audit: React.FC = () => {
   const [searchParams] = useSearchParams();
@@ -20,7 +21,6 @@ const Audit: React.FC = () => {
   const [scannedUrls, setScannedUrls] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [timeoutOccurred, setTimeoutOccurred] = useState(false);
-  const [showGuide, setShowGuide] = useState(true);
   const { toast } = useToast();
   const extractedUrl = useRef(false);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -77,13 +77,12 @@ const Audit: React.FC = () => {
         setUrl(urlParam);
         setError(null);
         extractedUrl.current = true;
-        setShowGuide(false);
       } catch (err) {
         console.error("URL validation error:", err);
         setError("Предоставленный URL некорректен. Пожалуйста, попробуйте снова.");
         toast({
           title: "Некорректный URL",
-          description: "Предоставленный URL некорректен. Пожалуйста, попробуйте снова.",
+          description: "Предоставленный URL некорректен. Пожалуйста, попробуйте с��ова.",
           variant: "destructive",
         });
         setUrl('');
@@ -126,6 +125,25 @@ const Audit: React.FC = () => {
     }
   };
 
+  const handleErrorFallback = ({ error, resetErrorBoundary }: { error: Error; resetErrorBoundary: () => void }) => {
+    console.error("Error caught by boundary:", error);
+    return (
+      <div className="p-6 text-center">
+        <p className="text-lg text-red-500 mb-4">Произошла ошибка при загрузке аудита</p>
+        <button 
+          onClick={() => {
+            extractedUrl.current = false;
+            setTimeoutOccurred(false);
+            resetErrorBoundary();
+          }}
+          className="px-4 py-2 bg-primary text-white rounded-md"
+        >
+          Попробовать снова
+        </button>
+      </div>
+    );
+  };
+
   const handleResetErrors = () => {
     extractedUrl.current = false;
     setTimeoutOccurred(false);
@@ -149,10 +167,6 @@ const Audit: React.FC = () => {
 
   return (
     <Layout>
-      {showGuide && !url && (
-        <AuditGuide onClose={() => setShowGuide(false)} />
-      )}
-      
       <AuditLoaderSection
         url={url}
         error={error}

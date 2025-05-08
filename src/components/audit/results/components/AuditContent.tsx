@@ -5,12 +5,7 @@ import AuditResultHeader from './AuditResultHeader';
 import AuditRecommendationsSection from './AuditRecommendationsSection';
 import AuditPageAnalysisSection from './AuditPageAnalysisSection';
 import AuditOptimizationSection from './AuditOptimizationSection';
-import AuditErrorAnalysis from './AuditErrorAnalysis';
-import AuditSummaryReport from './AuditSummaryReport';
 import { AuditHistoryData } from '@/types/audit';
-import { Card, CardContent } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { AlertCircle, CheckCircle2, FileBarChart2, Settings, Zap } from "lucide-react";
 
 interface AuditContentProps {
   url: string;
@@ -110,79 +105,32 @@ const AuditContent: React.FC<AuditContentProps> = ({
             showPrompt={showPrompt}
           />
           
-          <Card className="mt-6 mb-6 border-primary/20 overflow-hidden">
-            <CardContent className="p-0">
-              <Tabs defaultValue="summary" className="w-full">
-                <TabsList className="w-full border-b rounded-none justify-start bg-muted/30 overflow-x-auto">
-                  <TabsTrigger value="summary">
-                    <CheckCircle2 className="h-4 w-4 mr-2" />
-                    Общий отчет
-                  </TabsTrigger>
-                  <TabsTrigger value="errors">
-                    <AlertCircle className="h-4 w-4 mr-2" />
-                    Ошибки
-                  </TabsTrigger>
-                  <TabsTrigger value="recommendations">
-                    <FileBarChart2 className="h-4 w-4 mr-2" />
-                    Рекомендации
-                  </TabsTrigger>
-                  <TabsTrigger value="pageAnalysis">
-                    <Zap className="h-4 w-4 mr-2" />
-                    Анализ страниц
-                  </TabsTrigger>
-                  <TabsTrigger value="optimization">
-                    <Settings className="h-4 w-4 mr-2" />
-                    Оптимизация
-                  </TabsTrigger>
-                </TabsList>
-                
-                <TabsContent value="summary" className="pt-6 px-6 pb-6 m-0">
-                  <AuditSummaryReport 
-                    url={url} 
-                    auditData={auditData} 
-                    recommendations={recommendations}
-                  />
-                </TabsContent>
-                
-                <TabsContent value="errors" className="pt-6 px-6 pb-6 m-0">
-                  <AuditErrorAnalysis 
-                    auditData={auditData} 
-                    recommendations={recommendations} 
-                  />
-                </TabsContent>
-                
-                <TabsContent value="recommendations" className="pt-6 px-6 pb-6 m-0">
-                  <AuditRecommendationsSection 
-                    recommendations={recommendations}
-                    auditData={auditData}
-                    optimizationCost={optimizationCost}
-                    optimizationItems={optimizationItems}
-                  />
-                </TabsContent>
-                
-                <TabsContent value="pageAnalysis" className="pt-6 px-6 pb-6 m-0">
-                  <AuditPageAnalysisSection auditId={auditData.id} />
-                </TabsContent>
-                
-                <TabsContent value="optimization" className="pt-6 px-6 pb-6 m-0">
-                  <AuditOptimizationSection 
-                    optimizationCost={optimizationCost}
-                    optimizationItems={optimizationItems}
-                    isOptimized={isOptimized}
-                    contentPrompt={contentPrompt}
-                    url={url}
-                    pageCount={auditData.pageCount || 0}
-                    showPrompt={showPrompt}
-                    onTogglePrompt={onTogglePrompt}
-                    onOptimize={optimizeSiteContent}
-                    onDownloadOptimizedSite={downloadOptimizedSite}
-                    onGeneratePdfReport={generatePdfReportFile}
-                    setContentOptimizationPrompt={setContentOptimizationPrompt}
-                  />
-                </TabsContent>
-              </Tabs>
-            </CardContent>
-          </Card>
+          {/* Recommendations section */}
+          <AuditRecommendationsSection 
+            recommendations={recommendations}
+            auditData={auditData}
+            optimizationCost={optimizationCost}
+            optimizationItems={optimizationItems}
+          />
+          
+          {/* Page analysis section */}
+          <AuditPageAnalysisSection auditId={auditData.id} />
+          
+          {/* Optimization section */}
+          <AuditOptimizationSection 
+            optimizationCost={optimizationCost}
+            optimizationItems={optimizationItems}
+            isOptimized={isOptimized}
+            contentPrompt={contentPrompt}
+            url={url}
+            pageCount={auditData.pageCount || 0}
+            showPrompt={showPrompt}
+            onTogglePrompt={onTogglePrompt}
+            onOptimize={optimizeSiteContent}
+            onDownloadOptimizedSite={downloadOptimizedSite}
+            onGeneratePdfReport={generatePdfReportFile}
+            setContentOptimizationPrompt={setContentOptimizationPrompt}
+          />
         </>
       )}
     </>
