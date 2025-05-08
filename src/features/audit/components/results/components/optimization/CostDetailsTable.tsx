@@ -1,16 +1,21 @@
 
 import React from 'react';
 import { Info } from 'lucide-react';
-
-export interface OptimizationItem {
-  type: string;
-  count: number;
-  pricePerUnit: number;
-  totalPrice: number;
-  description: string;
-  name: string;
-  price: number;
-}
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { OptimizationItem } from '../../types';
 
 interface CostDetailsTableProps {
   optimizationItems: OptimizationItem[];
@@ -25,29 +30,38 @@ const CostDetailsTable: React.FC<CostDetailsTableProps> = ({ optimizationItems }
 
   return (
     <div className="mb-4 overflow-x-auto">
-      <table className="w-full border-collapse">
-        <thead>
-          <tr className="border-b">
-            <th className="text-left p-2">Тип оптимизации</th>
-            <th className="text-right p-2">Количество</th>
-            <th className="text-right p-2">Цена за ед.</th>
-            <th className="text-right p-2">Сумма</th>
-          </tr>
-        </thead>
-        <tbody>
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Тип оптимизации</TableHead>
+            <TableHead>Количество</TableHead>
+            <TableHead>Цена за ед.</TableHead>
+            <TableHead>Сумма</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
           {optimizationItems.map((item, index) => (
-            <tr key={index} className="border-b">
-              <td className="p-2 flex items-center">
-                {item.type}
-                <Info className="h-3 w-3 ml-1 cursor-help text-muted-foreground" title={item.description} />
-              </td>
-              <td className="text-right p-2">{formatNumber(item.count)}</td>
-              <td className="text-right p-2">{formatNumber(item.pricePerUnit)} ₽</td>
-              <td className="text-right p-2 font-medium">{formatNumber(item.totalPrice)} ₽</td>
-            </tr>
+            <TableRow key={index}>
+              <TableCell>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger className="flex items-center">
+                      {item.type}
+                      <Info className="h-3 w-3 ml-1 cursor-help text-muted-foreground" />
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p className="max-w-xs">{item.description}</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              </TableCell>
+              <TableCell>{formatNumber(item.count)}</TableCell>
+              <TableCell>{formatNumber(item.pricePerUnit || item.price)} ₽</TableCell>
+              <TableCell className="font-medium">{formatNumber(item.totalPrice)} ₽</TableCell>
+            </TableRow>
           ))}
-        </tbody>
-      </table>
+        </TableBody>
+      </Table>
     </div>
   );
 };

@@ -1,36 +1,12 @@
 
-export interface OptimizationResult {
-  beforeScore: number;
-  afterScore: number;
-  demoPage?: {
-    title: string;
-    content: string;
-    meta?: {
-      description?: string;
-      keywords?: string;
-    };
-    optimized?: {
-      content: string;
-      meta?: {
-        description?: string;
-        keywords?: string;
-      };
-    };
-  };
-}
+import { 
+  OptimizationResult, 
+  OptimizationProgressState,
+  OptimizationItem 
+} from '@/features/audit/types/optimization-types';
 
-export interface OptimizationProgressState {
-  current: number;
-  total: number;
-  stage: string;
-}
-
-export interface OptimizationItem {
-  type: string;
-  count: number;
-  pricePerUnit: number;
-  totalPrice: number;
-  description: string;
-  name: string;
-  price: number;
-}
+export type { 
+  OptimizationResult, 
+  OptimizationProgressState,
+  OptimizationItem 
+};
