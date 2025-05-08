@@ -27,14 +27,16 @@ export function setupQueryErrorHandler(queryClient: QueryClient) {
     }
   });
 
-  // Set up global listeners
-  queryClient.getQueryCache().subscribe(event => {
-    if (event.type === 'error' && event.error) {
+  // Set up global query cache error listener
+  queryClient.getQueryCache().subscribe((event) => {
+    if (event.type === 'observerResultsUpdated' && 
+        event.query.getObserversCount() > 0 && 
+        event.query.state.error) {
       const query = event.query;
       // Only show error toasts if no custom error handler is defined in the meta
-      if (!query.meta?.onError) {
-        const errorMessage = formatError(event.error);
-        console.error('Query error:', event.error);
+      if (!query.options.meta?.onError) {
+        const errorMessage = formatError(query.state.error);
+        console.error('Query error:', query.state.error);
         toast({
           title: 'Ошибка загрузки данных',
           description: errorMessage,
@@ -44,13 +46,16 @@ export function setupQueryErrorHandler(queryClient: QueryClient) {
     }
   });
 
-  queryClient.getMutationCache().subscribe(event => {
-    if (event.type === 'error' && event.error) {
+  // Set up global mutation cache error listener
+  queryClient.getMutationCache().subscribe((event) => {
+    if (event.type === 'updated' && 
+        event.mutation.state.status === 'error' &&
+        event.mutation.state.error) {
       const mutation = event.mutation;
       // Only show error toasts if no custom error handler is defined in the meta
-      if (!mutation.meta?.onError) {
-        const errorMessage = formatError(event.error);
-        console.error('Mutation error:', event.error);
+      if (!mutation.options.meta?.onError) {
+        const errorMessage = formatError(mutation.state.error);
+        console.error('Mutation error:', mutation.state.error);
         toast({
           title: 'Ошибка сохранения данных',
           description: errorMessage,
