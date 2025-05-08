@@ -4,7 +4,6 @@ import { useScan } from './use-scan';
 import { seoApiService, ApiOptimizationResult } from '@/services/api/seoApiService';
 import { reportingService } from '@/services/reporting/reportingService';
 import { validationService } from '@/services/validation/validationService';
-import { OptimizationResult } from '@/services/api/seoApiService';
 
 /**
  * Hook for managing website audit functionality

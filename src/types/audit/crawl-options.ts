@@ -1,19 +1,8 @@
 
+import { CrawlOptions as BaseCrawlOptions } from './crawler';
+
 // Export crawl options interfaces
-export interface CrawlOptions {
-  maxPages?: number;
-  maxDepth?: number;
-  respectRobots?: boolean;
-  followExternalLinks?: boolean;
-  includeImages?: boolean;
-  timeout?: number;
-  userAgent?: string;
-  ignoreRobotsTxt?: boolean;
-  followRedirects?: boolean;
-  onProgress?: (progress: any) => void;
-  checkImages?: boolean;
-  checkPerformance?: boolean;
-}
+export type CrawlOptions = BaseCrawlOptions;
 
 export interface OptimizationOptions {
   includeImages?: boolean;

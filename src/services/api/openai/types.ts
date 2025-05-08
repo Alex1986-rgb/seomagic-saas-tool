@@ -1,17 +1,7 @@
 
-export interface OptimizationOptions {
-  optimizeMetaTags?: boolean;
-  optimizeHeadings?: boolean;
-  optimizeContent?: boolean;
-  optimizeImages?: boolean;
-  prompt?: string;
-  language?: string;
-  model?: string;
-  temperature?: number;
-  max_tokens?: number;  // Keeping snake_case version for API compatibility
-  maxTokens?: number;   // Keeping camelCase version for TypeScript compatibility
-  contentQuality?: 'standard' | 'premium' | 'ultimate';
-}
+import { OptimizationOptions as BaseOptimizationOptions } from '@/types/audit/optimization-types';
+
+export type OptimizationOptions = BaseOptimizationOptions;
 
 export interface OptimizationResult {
   title: string;

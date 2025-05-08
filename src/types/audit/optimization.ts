@@ -1,13 +1,11 @@
 
-export interface OptimizationItem {
-  name: string;
-  description: string;
-  count: number;
-  price: number;
-  totalPrice: number;
-  pricePerUnit?: number;
-  type?: string;
-}
+import { 
+  OptimizationItem,
+  OptimizationOptions as BaseOptimizationOptions,
+  OptimizationCosts,
+  OptimizationResults,
+  OptimizationMetrics
+} from './optimization-types';
 
 export interface CrawlOptions {
   maxPages?: number;
@@ -19,12 +17,5 @@ export interface CrawlOptions {
   checkPerformance?: boolean;
 }
 
-export interface OptimizationOptions {
-  fixMetaTags?: boolean;
-  improveContent?: boolean;
-  optimizeImages?: boolean;
-  fixLinks?: boolean;
-  improveStructure?: boolean;
-  optimizeSpeed?: boolean;
-  maxTokens?: number; // Adding this property to match what's used in the code
-}
+export type { OptimizationItem, OptimizationCosts, OptimizationResults, OptimizationMetrics };
+export type OptimizationOptions = BaseOptimizationOptions;

@@ -1,25 +1,4 @@
 
-export interface OptimizationResult {
-  beforeScore: number;
-  afterScore: number;
-  demoPage?: {
-    title: string;
-    content: string;
-    meta?: {
-      description?: string;
-      keywords?: string;
-    };
-    optimized?: {
-      content: string;
-      meta?: {
-        description?: string;
-        keywords?: string;
-      };
-    };
-  };
-}
+import { OptimizationResult, OptimizationProgressState } from '@/types/audit/optimization-types';
 
-export interface OptimizationProgressState {
-  progress: number;
-  stage: string;
-}
+export type { OptimizationResult, OptimizationProgressState };
