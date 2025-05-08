@@ -71,7 +71,7 @@ export const OptimizationProvider: React.FC<{
     if (!taskId) return null;
     
     const result = await apiOptimizeSiteContent(prompt);
-    if (result && result.success === true) {
+    if (result) {
       setIsOptimized(true);
     }
     return result;
