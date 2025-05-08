@@ -1,24 +1,21 @@
-export interface PageData {
-  url: string;
-  statusCode: number;
-  title: string;
-  description: string;
-  contentType: string;
-  contentLength: number;
-  loadTime: number;
-  links: string[];
-  h1: string[];
-  images: { src: string; alt: string }[];
-  internalLinks?: string[];
-  externalLinks?: string[];
-  isIndexable: boolean;
-  issues: string[];
+
+/**
+ * Shared types for the crawler system
+ */
+
+export interface CrawlOptions {
+  maxPages?: number;
+  maxDepth?: number;
+  respectRobots?: boolean;
+  followExternalLinks?: boolean;
+  followRedirects?: boolean;
+  ignoreRobotsTxt?: boolean;
 }
 
 export interface CrawlResult {
   urls: string[];
-  visitedCount?: number;
   pageCount?: number;
+  visitedCount?: number;
   metadata: {
     totalRequests: number;
     successRequests: number;
@@ -31,42 +28,29 @@ export interface CrawlResult {
   };
 }
 
-export interface CrawlOptions {
-  maxPages?: number;
-  maxDepth?: number;
-  ignoreRobotsTxt?: boolean;
-  urlFilter?: (url: string) => boolean;
-  respectNofollow?: boolean;
-  requestDelay?: number;
-  obeyRateLimit?: boolean;
-  followRedirects?: boolean;
-  onProgress?: (progress: TaskProgress) => void;
-}
-
 export interface TaskProgress {
   pagesScanned: number;
   currentUrl: string;
   totalUrls: number;
 }
 
+export interface PageData {
+  url: string;
+  title?: string;
+  description?: string;
+  h1?: string[];
+  links?: string[];
+  images?: string[];
+  statusCode?: number;
+  contentType?: string;
+  loadTime?: number;
+  redirectChain?: string[];
+}
+
 export interface DeepCrawlerOptions {
   maxPages: number;
-  maxDepth: number;
+  maxDepth?: number;
   onProgress?: (progress: TaskProgress) => void;
-}
-
-export interface CrawlSummary {
-  totalPages: number;
-  internalLinks: number;
-  externalLinks: number;
-  brokenLinks: number;
-  averageLoadTime: number;
-  pageTypes: Record<string, number>;
-  depthDistribution: Record<number, number>;
-}
-
-export interface RequestManager {
-  fetch: (url: string, options?: any) => Promise<any>;
-  configure: (options: any) => void;
-  pause?: () => void; // Add optional pause method
+  followExternalLinks?: boolean;
+  respectRobots?: boolean;
 }

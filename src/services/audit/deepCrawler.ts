@@ -5,7 +5,20 @@
  */
 
 import { DeepCrawler } from './crawler/deepCrawlerCore';
-import { DeepCrawlerOptions, TaskProgress } from './crawler/types';
+
+// Define TaskProgress interface here to avoid import issues
+interface TaskProgress {
+  pagesScanned: number;
+  currentUrl: string;
+  totalUrls: number;
+}
+
+// Define DeepCrawlerOptions interface here
+interface DeepCrawlerOptions {
+  maxPages: number;
+  maxDepth?: number;
+  onProgress?: (progress: TaskProgress) => void;
+}
 
 export class ExtendedDeepCrawler extends DeepCrawler {
   constructor(url: string, options: DeepCrawlerOptions) {

@@ -1,3 +1,4 @@
+
 import { DeepCrawler } from '../../audit/crawler/deepCrawlerCore';
 import { CrawlTask, CrawlResult, TaskProgress } from './types';
 
@@ -18,7 +19,8 @@ export class FirecrawlService {
       let domain = "";
       
       try {
-        domain = new URL(normalizedUrl).hostname;
+        const urlObj = new URL(normalizedUrl);
+        domain = urlObj.hostname;
       } catch (e) {
         console.error("Invalid URL:", e);
         throw new Error("Некорректный URL");

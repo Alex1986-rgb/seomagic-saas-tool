@@ -1,8 +1,7 @@
+
 // Fix imports to use consistent casing
 import { CrawlOptions } from '@/types/audit/crawl-options';
-import { EventEmitter } from 'events';
-import { URL } from 'url';
-// Remove problematic imports that cause case sensitivity issues
+// Remove Node.js-specific imports and implement a simple EventEmitter for browser compatibility
 
 // Define the interfaces here to avoid import errors
 interface CrawlResult {
@@ -32,7 +31,33 @@ interface TaskProgress {
   totalUrls: number;
 }
 
-export class DeepCrawler extends EventEmitter {
+// Simple EventEmitter implementation for browser compatibility
+class BrowserEventEmitter {
+  private events: Record<string, Function[]> = {};
+
+  on(event: string, listener: Function): this {
+    if (!this.events[event]) {
+      this.events[event] = [];
+    }
+    this.events[event].push(listener);
+    return this;
+  }
+
+  emit(event: string, ...args: any[]): boolean {
+    if (!this.events[event]) return false;
+    this.events[event].forEach(listener => listener(...args));
+    return true;
+  }
+
+  removeListener(event: string, listener: Function): this {
+    if (this.events[event]) {
+      this.events[event] = this.events[event].filter(l => l !== listener);
+    }
+    return this;
+  }
+}
+
+export class DeepCrawler extends BrowserEventEmitter {
   private baseUrl: string;
   private options: CrawlOptions;
   private isRunning: boolean = false;
@@ -109,12 +134,19 @@ export class DeepCrawler extends EventEmitter {
         totalRequests: Math.floor(Math.random() * 100),
         successRequests: Math.floor(Math.random() * 80),
         failedRequests: Math.floor(Math.random() * 20),
-        domain: new URL(this.baseUrl).hostname,
+        domain: this.getDomain(this.baseUrl),
         startTime: new Date().toISOString(),
         endTime: new Date().toISOString(),
         totalTime: Math.floor(Math.random() * 3600),
         totalPages: pages.length
       }
     };
+  }
+
+  // Helper method to extract domain from URL without using the URL API
+  private getDomain(url: string): string {
+    // Simple domain extraction using regex
+    const match = url.match(/^(?:https?:\/\/)?([^\/]+)/i);
+    return match ? match[1] : '';
   }
 }

@@ -9,7 +9,6 @@ import { CrawlResult } from './types';
 export interface RequestManager {
   fetch: (url: string, options?: any) => Promise<any>;
   configure: (options: any) => void;
-  pause?: () => void; // Make pause optional
   processCrawlQueue?: (queue: any[], visited: Set<string>, options: any, processFunction: Function) => Promise<CrawlResult>;
 }
 
@@ -17,9 +16,6 @@ export function createRequestManager(): RequestManager {
   return {
     configure(options) {
       // Configure options
-    },
-    pause() {
-      // Pause operations
     },
     async fetch(url, options) {
       // Fetch implementation
