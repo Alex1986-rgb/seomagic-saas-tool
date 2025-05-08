@@ -10,7 +10,8 @@ import {
   OptimizationResponse
 } from './optimization-types';
 
-// Re-export OptimizationResults with correct name
+// Do NOT re-export OptimizationResults to avoid conflicts
+// Import it only for local reference
 import { OptimizationResults as BaseOptimizationResults } from './optimization-types';
 
 export interface CrawlOptions {
@@ -35,6 +36,5 @@ export type {
 
 export type { BaseOptimizationOptions as OptimizationOptions };
 
-// For backward compatibility, we'll re-export OptimizationResults
-export type { BaseOptimizationResults as OptimizationResults };
-
+// Do NOT re-export OptimizationResults to avoid ambiguity
+// Local applications should import directly from optimization-types

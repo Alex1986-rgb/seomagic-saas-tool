@@ -4,7 +4,18 @@ export * from './audit-core';
 export * from './audit-details';
 export * from './audit-items';
 export * from './category-data';
-export * from './optimization-types';
+
+// Export optimization types with explicit type qualifier to avoid conflicts
+export type {
+  OptimizationItem,
+  OptimizationOptions,
+  OptimizationCosts,
+  OptimizationMetrics,
+  OptimizationResult,
+  OptimizationProgressState,
+  PageContent,
+  OptimizationResponse
+} from './optimization-types';
 
 // Re-export with type qualifier to fix TS1205 errors
 export type { RecommendationData } from './recommendations';
@@ -25,4 +36,3 @@ export type { PageAnalysisData } from './page-data';
 
 // Export CrawlOptions and OptimizationOptions with explicit type qualifier
 export type { CrawlOptions, OptimizationOptions } from './crawl-options';
-
