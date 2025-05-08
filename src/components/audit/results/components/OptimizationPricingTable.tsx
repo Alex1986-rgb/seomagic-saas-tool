@@ -1,11 +1,12 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Download, CheckCircle } from 'lucide-react';
+import { ArrowRight, Download, CheckCircle, AlertCircle, Check } from 'lucide-react';
 import { OptimizationItem } from '@/features/audit/types/optimization-types';
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"; 
 import ScoreTrend from '@/components/audit/summary/ScoreTrend';
 
 interface OptimizationPricingTableProps {
@@ -36,6 +37,8 @@ const OptimizationPricingTable: React.FC<OptimizationPricingTableProps> = ({
     }).format(amount);
   };
 
+  const [showWhatIncluded, setShowWhatIncluded] = useState(false);
+
   return (
     <Card className="border border-primary/20">
       <CardHeader className="pb-3">
@@ -60,6 +63,42 @@ const OptimizationPricingTable: React.FC<OptimizationPricingTableProps> = ({
       </CardHeader>
       
       <CardContent>
+        <Alert className="mb-4 bg-primary/5">
+          <AlertCircle className="h-4 w-4" />
+          <AlertTitle className="font-medium">Что входит в стоимость?</AlertTitle>
+          <AlertDescription>
+            <Button 
+              variant="link" 
+              className="p-0 h-auto text-primary mb-2" 
+              onClick={() => setShowWhatIncluded(!showWhatIncluded)}
+            >
+              {showWhatIncluded ? "Скрыть детали" : "Показать детали"}
+            </Button>
+            
+            {showWhatIncluded && (
+              <div className="mt-2 text-sm">
+                <h4 className="font-medium mb-1">Технические улучшения:</h4>
+                <ul className="list-disc pl-5 mb-2 space-y-1">
+                  <li>Исправление всех критических ошибок</li>
+                  <li>Оптимизация мета-тегов для поисковых систем</li>
+                  <li>Исправление битых ссылок и редиректов</li>
+                  <li>Оптимизация изображений и медиафайлов</li>
+                </ul>
+                
+                <h4 className="font-medium mb-1">Контентные улучшения:</h4>
+                <ul className="list-disc pl-5 mb-2 space-y-1">
+                  <li>Оптимизация контента для поисковых систем</li>
+                  <li>Настройка правильной структуры заголовков</li>
+                  <li>Оптимизация текстов для улучшения конверсии</li>
+                  <li>Улучшение читабельности и структуры контента</li>
+                </ul>
+                
+                <p className="mt-2 text-xs italic">Все работы выполняются квалифицированными SEO-специалистами с гарантией результата.</p>
+              </div>
+            )}
+          </AlertDescription>
+        </Alert>
+        
         <Table>
           <TableHeader>
             <TableRow>

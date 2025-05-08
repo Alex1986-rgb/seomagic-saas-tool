@@ -1,3 +1,4 @@
+
 import { OptimizationItem } from './types';
 
 export interface PricingConfig {
@@ -12,6 +13,16 @@ export interface PricingConfig {
   positionTrackingBase: number;
   keywordResearchBase: number;
   competitorAnalysisBase: number;
+  // New technical improvements
+  criticalErrorsFix: number;
+  metaTagsOptimization: number;
+  brokenLinksRedirects: number;
+  imageMediaOptimization: number;
+  // New content improvements
+  contentSeoOptimization: number;
+  headingStructure: number;
+  conversionTextOptimization: number;
+  readabilityImprovement: number;
 }
 
 // Цены в рублях
@@ -26,7 +37,17 @@ const defaultPricingConfig: PricingConfig = {
   seoAuditBase: 10000, // Базовая стоимость SEO аудита
   positionTrackingBase: 5000, // Отслеживание позиций
   keywordResearchBase: 8000, // Исследование ключевых слов
-  competitorAnalysisBase: 12000 // Анализ конкурентов
+  competitorAnalysisBase: 12000, // Анализ конкурентов
+  // Technical improvements
+  criticalErrorsFix: 4500, // Исправление критических ошибок
+  metaTagsOptimization: 3500, // Оптимизация мета-тегов для поисковых систем
+  brokenLinksRedirects: 2800, // Исправление битых ссылок и редиректов
+  imageMediaOptimization: 3200, // Оптимизация изображений и медиафайлов
+  // Content improvements
+  contentSeoOptimization: 4800, // Оптимизация контента для поисковых систем
+  headingStructure: 2500, // Настройка правильной структуры заголовков
+  conversionTextOptimization: 5500, // Оптимизация текстов для улучшения конверсии
+  readabilityImprovement: 3800, // Улучшение читабельности и структуры контента
 };
 
 let currentPricingConfig = { ...defaultPricingConfig };
@@ -104,72 +125,111 @@ export const calculateOptimizationCost = (pageCount: number): {
   const brokenLinksCount = Math.ceil(pageCount * 0.1); // 10% of links may be broken
   const structureIssuesCount = Math.ceil(pageCount * 0.2); // 20% of pages have structure issues
   
-  const pricePerMetaTag = currentPricingConfig.metaTagsPerItem;
-  const pricePerContentPage = currentPricingConfig.contentPerPage;
-  const pricePerImageAlt = currentPricingConfig.imageAltPerItem;
-  const pricePerPerformancePage = currentPricingConfig.performancePerPage;
-  const pricePerLink = currentPricingConfig.linksPerItem;
-  const pricePerStructureIssue = currentPricingConfig.structurePerItem;
+  // Create items array
+  const items: OptimizationItem[] = [];
   
-  // Calculate costs for each item
-  const items: OptimizationItem[] = [
-    {
-      name: 'Карта сайта (sitemap.xml)',
-      description: 'Создание и оптимизация файла sitemap.xml',
-      count: 1,
-      pricePerUnit: currentPricingConfig.sitemap,
-      price: currentPricingConfig.sitemap,
-      totalPrice: currentPricingConfig.sitemap
-    },
-    {
-      name: 'Оптимизация мета-тегов',
-      description: 'Оптимизация title, description и других мета-тегов',
-      count: metaTagsCount,
-      pricePerUnit: pricePerMetaTag,
-      price: pricePerMetaTag,
-      totalPrice: metaTagsCount * pricePerMetaTag
-    },
-    {
-      name: 'Оптимизация контента',
-      description: 'Улучшение текстового содержания страниц',
-      count: contentPagesCount,
-      pricePerUnit: pricePerContentPage,
-      price: pricePerContentPage,
-      totalPrice: contentPagesCount * pricePerContentPage
-    },
-    {
-      name: 'Оптимизация изображений',
-      description: 'Добавление и оптимизация alt-атрибутов',
-      count: imageAltCount,
-      pricePerUnit: pricePerImageAlt,
-      price: pricePerImageAlt,
-      totalPrice: imageAltCount * pricePerImageAlt
-    },
-    {
-      name: 'Оптимизация производительности',
-      description: 'Улучшение скорости загрузки страниц',
-      count: performancePagesCount,
-      pricePerUnit: pricePerPerformancePage,
-      price: pricePerPerformancePage,
-      totalPrice: performancePagesCount * pricePerPerformancePage
-    },
-    {
-      name: 'Исправление ссылок',
-      description: 'Починка битых ссылок и редиректов',
-      count: brokenLinksCount,
-      pricePerUnit: pricePerLink,
-      price: pricePerLink,
-      totalPrice: brokenLinksCount * pricePerLink
-    },
-    {
-      name: 'Оптимизация структуры',
-      description: 'Улучшение структуры URL и навигации',
-      count: structureIssuesCount,
-      pricePerUnit: pricePerStructureIssue,
-      price: pricePerStructureIssue,
-      totalPrice: structureIssuesCount * pricePerStructureIssue
-    }
-  ];
+  // Basic services
+  items.push({
+    name: 'Карта сайта (sitemap.xml)',
+    description: 'Создание и оптимизация файла sitemap.xml',
+    count: 1,
+    pricePerUnit: currentPricingConfig.sitemap,
+    price: currentPricingConfig.sitemap,
+    totalPrice: currentPricingConfig.sitemap
+  });
+  
+  // Technical improvements
+  items.push({
+    name: 'Исправление критических ошибок',
+    description: 'Поиск и исправление всех критических технических ошибок на сайте',
+    count: 1,
+    pricePerUnit: currentPricingConfig.criticalErrorsFix,
+    price: currentPricingConfig.criticalErrorsFix,
+    totalPrice: currentPricingConfig.criticalErrorsFix
+  });
+  
+  items.push({
+    name: 'Оптимизация мета-тегов',
+    description: 'Оптимизация title, description и других мета-тегов для поисковых систем',
+    count: metaTagsCount,
+    pricePerUnit: currentPricingConfig.metaTagsPerItem,
+    price: currentPricingConfig.metaTagsPerItem,
+    totalPrice: metaTagsCount * currentPricingConfig.metaTagsPerItem
+  });
+  
+  items.push({
+    name: 'Исправление битых ссылок',
+    description: 'Поиск и исправление битых ссылок и настройка редиректов',
+    count: brokenLinksCount,
+    pricePerUnit: currentPricingConfig.linksPerItem,
+    price: currentPricingConfig.linksPerItem,
+    totalPrice: brokenLinksCount * currentPricingConfig.linksPerItem
+  });
+  
+  items.push({
+    name: 'Оптимизация изображений',
+    description: 'Оптимизация изображений и медиафайлов для ускорения загрузки сайта',
+    count: imageAltCount,
+    pricePerUnit: currentPricingConfig.imageAltPerItem,
+    price: currentPricingConfig.imageAltPerItem,
+    totalPrice: imageAltCount * currentPricingConfig.imageAltPerItem
+  });
+  
+  // Content improvements
+  items.push({
+    name: 'Оптимизация контента для SEO',
+    description: 'Оптимизация контента для повышения видимости в поисковых системах',
+    count: contentPagesCount,
+    pricePerUnit: currentPricingConfig.contentSeoOptimization,
+    price: currentPricingConfig.contentSeoOptimization,
+    totalPrice: Math.ceil(contentPagesCount * 0.8) * currentPricingConfig.contentSeoOptimization
+  });
+  
+  items.push({
+    name: 'Структура заголовков',
+    description: 'Настройка правильной структуры H1-H6 заголовков для улучшения SEO',
+    count: Math.ceil(pageCount * 0.6),
+    pricePerUnit: currentPricingConfig.headingStructure,
+    price: currentPricingConfig.headingStructure,
+    totalPrice: Math.ceil(pageCount * 0.6) * currentPricingConfig.headingStructure
+  });
+  
+  items.push({
+    name: 'Оптимизация текстов для конверсии',
+    description: 'Улучшение текстов для повышения коэффициента конверсии',
+    count: Math.ceil(pageCount * 0.4),
+    pricePerUnit: currentPricingConfig.conversionTextOptimization,
+    price: currentPricingConfig.conversionTextOptimization,
+    totalPrice: Math.ceil(pageCount * 0.4) * currentPricingConfig.conversionTextOptimization
+  });
+  
+  items.push({
+    name: 'Улучшение читабельности',
+    description: 'Улучшение читабельности и структуры контента',
+    count: Math.ceil(pageCount * 0.5),
+    pricePerUnit: currentPricingConfig.readabilityImprovement,
+    price: currentPricingConfig.readabilityImprovement,
+    totalPrice: Math.ceil(pageCount * 0.5) * currentPricingConfig.readabilityImprovement
+  });
+  
+  // Additional services
+  items.push({
+    name: 'Улучшение производительности',
+    description: 'Оптимизация скорости загрузки страниц',
+    count: performancePagesCount,
+    pricePerUnit: currentPricingConfig.performancePerPage,
+    price: currentPricingConfig.performancePerPage,
+    totalPrice: performancePagesCount * currentPricingConfig.performancePerPage
+  });
+  
+  items.push({
+    name: 'Оптимизация структуры',
+    description: 'Улучшение структуры URL и навигации',
+    count: structureIssuesCount,
+    pricePerUnit: currentPricingConfig.structurePerItem,
+    price: currentPricingConfig.structurePerItem,
+    totalPrice: structureIssuesCount * currentPricingConfig.structurePerItem
+  });
   
   // Calculate subtotal
   const subtotal = items.reduce((sum, item) => sum + item.totalPrice, 0);
@@ -189,6 +249,16 @@ export const calculateOptimizationCost = (pageCount: number): {
       totalPrice: -discountAmount
     });
   }
+  
+  // Add warranty note item
+  items.push({
+    name: 'Гарантия результата',
+    description: 'Все работы выполняются квалифицированными SEO-специалистами с гарантией результата',
+    count: 1,
+    pricePerUnit: 0,
+    price: 0,
+    totalPrice: 0
+  });
   
   return {
     totalCost,
