@@ -2,12 +2,11 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { checkAuthStatus, AuthUser, loginWithEmailPassword, loginWithGoogle, logout, registerUser, toggleAdminStatus } from '@/services/auth/authService';
 import { useToast } from "@/hooks/use-toast";
-import { useNavigate } from 'react-router-dom';
 
-// Определяем интерфейс для контекста авторизации
+// Defining interface for auth context
 interface AuthContextType {
   user: AuthUser;
-  loginWithEmail: (email: string, password: string) => Promise<void>;
+  loginWithEmail: (email: string, password: string, redirectUrl?: string) => Promise<void>;
   loginWithGoogle: () => Promise<void>;
   register: (email: string, password: string) => Promise<void>;
   logoutUser: () => void;
@@ -15,7 +14,7 @@ interface AuthContextType {
   isLoading: boolean;
 }
 
-// Создаем контекст с начальными значениями
+// Creating context with initial values
 const AuthContext = createContext<AuthContextType>({
   user: { isLoggedIn: false, isAdmin: false },
   loginWithEmail: async () => {},
@@ -26,17 +25,16 @@ const AuthContext = createContext<AuthContextType>({
   isLoading: true,
 });
 
-// Хук для использования контекста в компонентах
+// Hook for using the auth context
 export const useAuth = () => useContext(AuthContext);
 
-// Провайдер контекста
+// Provider component
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<AuthUser>({ isLoggedIn: false, isAdmin: false });
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
-  const navigate = useNavigate();
 
-  // Проверяем статус авторизации при загрузке и при изменении localStorage
+  // Check auth status on mount and when localStorage changes
   useEffect(() => {
     const updateAuthStatus = () => {
       const status = checkAuthStatus();
@@ -46,7 +44,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
     updateAuthStatus();
     
-    // Слушаем событие изменения localStorage
+    // Listen for localStorage changes
     window.addEventListener('storage', updateAuthStatus);
     
     return () => {
@@ -54,8 +52,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     };
   }, []);
 
-  // Функция для входа с email и паролем
-  const loginWithEmail = async (email: string, password: string) => {
+  // Email login function
+  const loginWithEmail = async (email: string, password: string, redirectUrl?: string) => {
     try {
       await loginWithEmailPassword(email, password);
       
@@ -64,9 +62,14 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         description: "Добро пожаловать в личный кабинет SeoMarket",
       });
       
-      navigate('/dashboard');
+      // Use window.location for navigation instead of useNavigate
+      if (redirectUrl) {
+        window.location.href = redirectUrl;
+      } else {
+        window.location.href = '/dashboard';
+      }
       
-      // Обновляем состояние пользователя
+      // Update user state
       setUser(checkAuthStatus());
     } catch (error) {
       toast({
@@ -77,7 +80,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   };
 
-  // Функция для входа через Google
+  // Google login function
   const handleGoogleLogin = async () => {
     try {
       toast({
@@ -92,9 +95,10 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         description: "Добро пожаловать в личный кабинет SeoMarket",
       });
       
-      navigate('/dashboard');
+      // Use window.location for navigation
+      window.location.href = '/dashboard';
       
-      // Обновляем состояние пользователя
+      // Update user state
       setUser(checkAuthStatus());
     } catch (error) {
       toast({
@@ -105,7 +109,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   };
 
-  // Функция для регистрации
+  // Registration function
   const register = async (email: string, password: string) => {
     try {
       await registerUser(email, password);
@@ -115,7 +119,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         description: "Теперь вы можете войти в систему",
       });
       
-      navigate('/auth');
+      // Use window.location for navigation
+      window.location.href = '/auth';
     } catch (error) {
       toast({
         title: "Ошибка регистрации",
@@ -125,7 +130,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   };
 
-  // Функция для выхода
+  // Logout function
   const logoutUser = () => {
     logout();
     
@@ -134,16 +139,17 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       description: "Вы успешно вышли из системы",
     });
     
-    navigate('/');
+    // Use window.location for navigation
+    window.location.href = '/';
     
-    // Обновляем состояние пользователя
+    // Update user state
     setUser({ isLoggedIn: false, isAdmin: false });
   };
 
-  // Функция для переключения статуса администратора (только для демо)
+  // Toggle admin status function (for demo only)
   const toggleAdmin = () => {
     toggleAdminStatus();
-    // Обновляем состояние пользователя
+    // Update user state
     setUser(checkAuthStatus());
     
     toast({
@@ -152,7 +158,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     });
   };
 
-  // Предоставляем контекст всем дочерним компонентам
+  // Provide context to children
   return (
     <AuthContext.Provider
       value={{

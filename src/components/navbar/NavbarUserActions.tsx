@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -19,14 +19,14 @@ import {
   LayoutDashboard
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from '@/contexts/AuthContext';
 
 interface NavbarUserActionsProps {
   isLoggedIn: boolean;
-  handleLogout: () => void;
 }
 
-const NavbarUserActions: React.FC<NavbarUserActionsProps> = ({ isLoggedIn, handleLogout }) => {
-  const navigate = useNavigate();
+const NavbarUserActions: React.FC<NavbarUserActionsProps> = ({ isLoggedIn }) => {
+  const { logoutUser } = useAuth();
   const { toast } = useToast();
 
   return (
@@ -51,31 +51,31 @@ const NavbarUserActions: React.FC<NavbarUserActionsProps> = ({ isLoggedIn, handl
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => navigate('/dashboard')}>
+            <DropdownMenuItem as={Link} to="/dashboard">
               <LayoutDashboard className="mr-2 h-4 w-4" />
               <span>Панель управления</span>
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => navigate('/profile')}>
+            <DropdownMenuItem as={Link} to="/profile">
               <User className="mr-2 h-4 w-4" />
               <span>Профиль</span>
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => navigate('/settings')}>
+            <DropdownMenuItem as={Link} to="/settings">
               <Settings className="mr-2 h-4 w-4" />
               <span>Настройки</span>
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => navigate('/reports')}>
+            <DropdownMenuItem as={Link} to="/reports">
               <BarChart className="mr-2 h-4 w-4" />
               <span>Отчеты</span>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={handleLogout}>
+            <DropdownMenuItem onClick={logoutUser}>
               <LogOut className="mr-2 h-4 w-4" />
               <span>Выйти</span>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       ) : (
-        <Button onClick={() => navigate('/auth')} variant="default" size="sm">
+        <Button as={Link} to="/auth" variant="default" size="sm">
           Войти
         </Button>
       )}

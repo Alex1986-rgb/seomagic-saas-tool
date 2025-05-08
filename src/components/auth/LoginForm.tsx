@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { loginSchema } from './validationSchemas';
 import { useAuth } from '@/contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 interface LoginFormProps {
   onSuccess: () => void;
@@ -15,6 +16,7 @@ interface LoginFormProps {
 
 const LoginForm: React.FC<LoginFormProps> = ({ onSuccess }) => {
   const { loginWithEmail } = useAuth();
+  const navigate = useNavigate();
   
   const form = useForm<z.infer<typeof loginSchema>>({
     resolver: zodResolver(loginSchema),
@@ -25,7 +27,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSuccess }) => {
   });
 
   const onSubmit = async (values: z.infer<typeof loginSchema>) => {
-    await loginWithEmail(values.email, values.password);
+    await loginWithEmail(values.email, values.password, '/dashboard');
     onSuccess();
   };
 

@@ -1,6 +1,6 @@
 
 import React, { useEffect } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { LoginForm, RegisterForm, SocialAuth } from "@/components/auth";
 import AuthContainer from "@/components/auth/AuthContainer";
@@ -12,25 +12,24 @@ const Auth: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
 
-  // Перенаправляем на дашборд, если пользователь уже авторизован
+  // Redirect to dashboard if user is already logged in
   useEffect(() => {
     if (user.isLoggedIn) {
       navigate('/dashboard');
     }
   }, [user.isLoggedIn, navigate]);
 
-  // Устанавливаем фокус на контейнер при монтировании компонента
+  // Set focus on container when component mounts
   useEffect(() => {
     document.getElementById('auth-container')?.focus();
   }, []);
 
   const handleLoginSuccess = () => {
-    navigate('/dashboard');
+    // The redirection will be handled inside the AuthContext loginWithEmail function
   };
 
   const handleRegisterSuccess = () => {
-    // Просто переключаемся на вкладку входа
-    navigate('/auth');
+    // Redirection will be handled in the context
   };
 
   return (

@@ -80,9 +80,9 @@ function App() {
   }
   
   return (
-    <AppProviders>
-      <GlobalErrorBoundary fallback={<FallbackErrorComponent />}>
-        <BrowserRouter>
+    <BrowserRouter>
+      <AppProviders>
+        <GlobalErrorBoundary fallback={<FallbackErrorComponent />}>
           <Suspense fallback={<FullscreenLoader />}>
             <Routes>
               <Route path="/" element={<HomePage />} />
@@ -132,10 +132,10 @@ function App() {
               <Route path="*" element={<NotFound />} />
             </Routes>
           </Suspense>
-        </BrowserRouter>
-        <Toaster />
-      </GlobalErrorBoundary>
-    </AppProviders>
+          <Toaster />
+        </GlobalErrorBoundary>
+      </AppProviders>
+    </BrowserRouter>
   );
 }
 
