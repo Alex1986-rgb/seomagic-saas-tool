@@ -10,7 +10,7 @@ import { GlobalErrorBoundary } from '@/components/ui/error-handler';
 import { setupQueryErrorHandler } from '@/lib/react-query-error-handler';
 
 // Create a client with error handling
-const queryClient = setupQueryErrorHandler(new QueryClient({
+const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       retry: 1,
@@ -18,7 +18,7 @@ const queryClient = setupQueryErrorHandler(new QueryClient({
       staleTime: 5 * 60 * 1000, // 5 minutes
     },
   },
-}));
+});
 
 interface AppProvidersProps {
   children: React.ReactNode;
@@ -31,10 +31,7 @@ export const AppProviders: React.FC<AppProvidersProps> = ({ children }) => {
         <QueryClientProvider client={queryClient}>
           <LoadingProvider>
             <AuthProvider>
-              <GlobalErrorBoundary>
-                {children}
-                <Toaster />
-              </GlobalErrorBoundary>
+              {children}
             </AuthProvider>
           </LoadingProvider>
         </QueryClientProvider>

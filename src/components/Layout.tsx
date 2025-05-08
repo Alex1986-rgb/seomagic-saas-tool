@@ -1,27 +1,23 @@
 
-import React, { useEffect, useState } from 'react';
-import { motion } from 'framer-motion';
+import React from 'react';
 import Navbar from './navbar';
 import Footer from './Footer';
 import StarryBackground from './backgrounds/StarryBackground';
 import { cn } from '@/lib/utils';
 import { useLocation } from 'react-router-dom';
-import PerformanceMonitor from './shared/performance/PerformanceMonitor';
 
 interface LayoutProps {
   children: React.ReactNode;
   className?: string;
   hideNavbar?: boolean;
   hideFooter?: boolean;
-  animateTransitions?: boolean;
 }
 
 const Layout: React.FC<LayoutProps> = ({ 
   children, 
   className,
   hideNavbar = false,
-  hideFooter = false,
-  animateTransitions = true
+  hideFooter = false
 }) => {
   const location = useLocation();
   
@@ -32,6 +28,8 @@ const Layout: React.FC<LayoutProps> = ({
   // since they have their own built-in navigation
   const shouldHideNavbar = hideNavbar || isAdminRoute;
   const shouldHideFooter = hideFooter || isAdminRoute;
+
+  console.log("Layout rendering with children", children ? "present" : "missing");
 
   return (
     <div className={cn("flex flex-col min-h-screen relative", className)}>
@@ -50,11 +48,6 @@ const Layout: React.FC<LayoutProps> = ({
       
       {/* Footer */}
       {!shouldHideFooter && <Footer />}
-      
-      {/* Performance monitoring in development mode */}
-      {process.env.NODE_ENV === 'development' && (
-        <PerformanceMonitor showDebugInfo />
-      )}
     </div>
   );
 };

@@ -58,21 +58,13 @@ function App() {
   const [isLoading, setIsLoading] = useState(true);
   
   useEffect(() => {
-    // Preload critical resources
-    const preloadResources = async () => {
-      // Add any critical resources preloading here
-      console.log("Preloading critical resources");
-      
-      // Shorter timeout for faster initial load
-      const timer = setTimeout(() => {
-        console.log("Initial loading complete");
-        setIsLoading(false);
-      }, 100);
-      
-      return () => clearTimeout(timer);
-    };
+    // Shorter timeout for faster initial load
+    const timer = setTimeout(() => {
+      console.log("Initial loading complete");
+      setIsLoading(false);
+    }, 100);
     
-    preloadResources();
+    return () => clearTimeout(timer);
   }, []);
   
   if (isLoading) {
