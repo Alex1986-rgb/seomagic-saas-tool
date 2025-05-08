@@ -42,22 +42,30 @@ export class ReportingService {
     }
   }
 
-  // Add missing methods for sitemap operations
-  async generateSitemapXml(urls: string[]): Promise<string> {
+  // Generate sitemap XML from an array of URLs
+  generateSitemapXml(domain: string, urls: string[]): string {
     // Simple XML sitemap generation
     const urlEntries = urls.map(url => 
-      `<url><loc>${encodeURIComponent(url)}</loc><lastmod>${new Date().toISOString()}</lastmod></url>`
+      `<url><loc>${this.encodeUrl(url)}</loc><lastmod>${new Date().toISOString()}</lastmod></url>`
     ).join('\n');
 
     return `<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${urlEntries}</urlset>`;
   }
 
-  async exportSitemapXml(urls: string[], filename: string = 'sitemap'): Promise<void> {
+  // Helper method to properly encode URLs
+  private encodeUrl(url: string): string {
     try {
-      const sitemapXml = await this.generateSitemapXml(urls);
-      
+      return encodeURIComponent(url);
+    } catch (e) {
+      return url;
+    }
+  }
+
+  // Export sitemap XML as a downloadable file
+  async exportSitemapXml(sitemap: string, filename: string = 'sitemap'): Promise<void> {
+    try {
       // Create a Blob from the XML string
-      const blob = new Blob([sitemapXml], { type: 'application/xml' });
+      const blob = new Blob([sitemap], { type: 'application/xml' });
       
       // Create a URL for the Blob
       const url = URL.createObjectURL(blob);

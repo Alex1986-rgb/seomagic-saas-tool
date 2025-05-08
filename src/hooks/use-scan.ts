@@ -5,7 +5,16 @@ import { scanningService } from '@/services/scanning/scanningService';
 import { seoApiService } from '@/services/api/seoApiService';
 import { validationService } from '@/services/validation/validationService';
 import { reportingService } from '@/services/reporting/reportingService';
-import { ScanStatusResponse, ScanDetails } from '@/types/api';
+import { ScanStatusResponse } from '@/types/api';
+
+// Define ScanDetails type
+export interface ScanDetails {
+  current_url: string;
+  pages_scanned: number;
+  estimated_pages: number;
+  stage: string;
+  progress: number;
+}
 
 /**
  * Hook for handling website scanning functionality
@@ -110,9 +119,12 @@ export const useScan = (url: string, onPageCountUpdate?: (count: number) => void
             setIsScanning(false);
             
             if (status === 'completed') {
-              const pageUrls = [statusResponse.url];
+              // Get URLs from the status response or use the current URL
+              const pageUrls = [statusResponse.url]; // In a real implementation, you would get all discovered URLs
               
               const domain = validationService.extractDomain(url);
+              
+              // Generate sitemap using the reportingService
               const sitemapXml = reportingService.generateSitemapXml(domain, pageUrls);
               setSitemap(sitemapXml);
               
@@ -170,6 +182,7 @@ export const useScan = (url: string, onPageCountUpdate?: (count: number) => void
 
     try {
       const domain = validationService.extractDomain(url);
+      // Use the exportSitemapXml method with the sitemap string
       reportingService.exportSitemapXml(sitemap, domain);
       
       toast({

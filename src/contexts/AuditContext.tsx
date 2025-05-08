@@ -2,7 +2,15 @@
 import React, { createContext, useContext, useState, useCallback, ReactNode } from 'react';
 import { AuditData, AuditHistoryData, RecommendationData } from '@/types/audit';
 import { useAudit } from '@/hooks/use-audit';
-import { ScanDetails } from './ScanContext';
+
+// Define the ScanDetails interface here to ensure consistency
+export interface ScanDetails {
+  current_url: string;
+  pages_scanned: number;
+  estimated_pages: number;
+  stage: string;
+  progress: number;
+}
 
 // Define the context type
 interface AuditContextType {
@@ -69,7 +77,7 @@ export const AuditProvider: React.FC<{ children: ReactNode; initialUrl?: string 
 }) => {
   const audit = useAudit(initialUrl);
   
-  // Ensure scanDetails has all required properties
+  // Ensure scanDetails has all required properties with default values
   const scanDetailsWithDefaults: ScanDetails = {
     current_url: audit.scanDetails?.current_url || '',
     pages_scanned: audit.scanDetails?.pages_scanned || 0,

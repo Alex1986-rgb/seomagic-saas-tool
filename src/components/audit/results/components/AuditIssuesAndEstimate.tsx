@@ -1,15 +1,20 @@
 
 import React from 'react';
 import { AlertTriangle, AlertCircle, Lightbulb } from 'lucide-react';
-import { AuditData, AuditIssue } from '@/types/audit';
+import { AuditData } from '@/types/audit';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
-interface AuditIssuesAndEstimateProps {
+export interface AuditIssuesAndEstimateProps {
   auditData: AuditData;
   optimizationCost: number;
+  optimizationItems: any[]; // Added this prop to match expected usage
 }
 
-export const AuditIssuesAndEstimate: React.FC<AuditIssuesAndEstimateProps> = ({ auditData, optimizationCost }) => {
+export const AuditIssuesAndEstimate: React.FC<AuditIssuesAndEstimateProps> = ({ 
+  auditData, 
+  optimizationCost,
+  optimizationItems 
+}) => {
   const criticalIssues = Array.isArray(auditData.issues.critical) 
     ? auditData.issues.critical 
     : [];
@@ -106,3 +111,5 @@ export const AuditIssuesAndEstimate: React.FC<AuditIssuesAndEstimateProps> = ({ 
     </div>
   );
 };
+
+export default AuditIssuesAndEstimate;

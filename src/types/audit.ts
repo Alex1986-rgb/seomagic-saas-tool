@@ -45,6 +45,8 @@ export interface CrawlOptions {
   includeImages?: boolean;
   timeout?: number;
   userAgent?: string;
+  ignoreRobotsTxt?: boolean;
+  followRedirects?: boolean;
 }
 
 export interface OptimizationOptions {
@@ -53,4 +55,32 @@ export interface OptimizationOptions {
   targetPageSpeed?: number;
   minifyCode?: boolean;
   compressImages?: boolean;
+}
+
+// Add API types that might be needed elsewhere
+export interface ScanStatusResponse {
+  task_id: string;
+  url: string;
+  status: string;
+  progress: number;
+  pages_scanned: number;
+  total_pages: number;
+  error?: string;
+}
+
+export interface OptimizationResult {
+  url: string;
+  score_before: number;
+  score_after: number;
+  improvements: string[];
+  content: {
+    before: string;
+    after: string;
+  };
+  metadata: {
+    title?: string;
+    description?: string;
+    keywords?: string;
+  };
+  completion_time: string;
 }
