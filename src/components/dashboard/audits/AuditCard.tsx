@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { Calendar, Clock, RefreshCw } from 'lucide-react';
+import { Card } from "@/components/ui/card";
 
 interface AuditProps {
   audit: {
@@ -13,7 +14,7 @@ interface AuditProps {
 }
 
 export const AuditCard: React.FC<AuditProps> = ({ audit }) => (
-  <div className="neo-card p-6">
+  <Card className="bg-card/90 backdrop-blur-sm border-border p-6">
     <div className="flex flex-col md:flex-row md:items-center md:justify-between">
       <div>
         <h3 className="font-medium mb-1">{audit.url}</h3>
@@ -60,5 +61,5 @@ export const AuditCard: React.FC<AuditProps> = ({ audit }) => (
         )}
       </div>
     </div>
-  </div>
+  </Card>
 );

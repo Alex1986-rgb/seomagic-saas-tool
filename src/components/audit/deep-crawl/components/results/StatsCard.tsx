@@ -10,7 +10,7 @@ interface StatsCardProps {
 export const StatsCard: React.FC<StatsCardProps> = ({ value, label }) => {
   return (
     <motion.div 
-      className="bg-muted/30 p-4 rounded-lg border flex flex-col items-center justify-center"
+      className="bg-card/30 p-4 rounded-lg border border-border flex flex-col items-center justify-center backdrop-blur-sm"
       whileHover={{ scale: 1.03 }}
       transition={{ duration: 0.2 }}
     >

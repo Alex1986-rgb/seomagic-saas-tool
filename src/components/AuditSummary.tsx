@@ -3,6 +3,7 @@ import React from 'react';
 import ScoreGauge from './ScoreGauge';
 import { motion } from 'framer-motion';
 import { ScoreTrend, IssuesSummary, ActionButtons } from './audit/summary';
+import { Card } from "@/components/ui/card";
 
 interface AuditSummaryProps {
   url: string;
@@ -26,7 +27,7 @@ const AuditSummary: React.FC<AuditSummaryProps> = ({
   auditData 
 }) => {
   return (
-    <div className="neo-card p-6 mb-8">
+    <Card className="p-6 mb-8 bg-card/90 backdrop-blur-sm border-border">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
         <div className="text-center md:text-left">
           <h2 className="text-xl font-semibold mb-2">Результаты аудита</h2>
@@ -45,7 +46,7 @@ const AuditSummary: React.FC<AuditSummaryProps> = ({
       </div>
       
       <ActionButtons auditData={auditData} url={url} />
-    </div>
+    </Card>
   );
 };
 

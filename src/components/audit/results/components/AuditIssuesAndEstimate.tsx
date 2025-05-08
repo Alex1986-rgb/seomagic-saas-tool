@@ -33,7 +33,7 @@ export const AuditIssuesAndEstimate: React.FC<AuditIssuesAndEstimateProps> = ({
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-      <Card>
+      <Card className="bg-card/90 backdrop-blur-sm border-border">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <AlertTriangle className="text-red-500" />
@@ -85,7 +85,7 @@ export const AuditIssuesAndEstimate: React.FC<AuditIssuesAndEstimateProps> = ({
         </CardContent>
       </Card>
       
-      <Card>
+      <Card className="bg-card/90 backdrop-blur-sm border-border">
         <CardHeader>
           <CardTitle>Расчет оптимизации</CardTitle>
         </CardHeader>

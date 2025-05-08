@@ -11,6 +11,7 @@ import {
   SelectTrigger, 
   SelectValue 
 } from "@/components/ui/select";
+import { Card } from "@/components/ui/card";
 
 // Мок-данные аудитов
 const mockAudits = [
@@ -80,7 +81,7 @@ const AdminAudits: React.FC = () => {
   };
 
   return (
-    <div>
+    <Card className="p-6 bg-card/90 backdrop-blur-sm border-border">
       <div className="flex flex-col md:flex-row gap-4 mb-6 items-end">
         <div className="flex-1">
           <div className="relative">
@@ -89,17 +90,17 @@ const AdminAudits: React.FC = () => {
               placeholder="Поиск по URL или пользователю..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10"
+              className="pl-10 bg-card/50 border-border"
             />
           </div>
         </div>
         
         <div className="flex gap-2">
           <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger className="w-[180px]">
+            <SelectTrigger className="w-[180px] bg-card/50 border-border">
               <SelectValue placeholder="Статус" />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="bg-card border-border">
               <SelectItem value="all">Все статусы</SelectItem>
               <SelectItem value="completed">Завершенные</SelectItem>
               <SelectItem value="processing">В обработке</SelectItem>
@@ -107,7 +108,7 @@ const AdminAudits: React.FC = () => {
             </SelectContent>
           </Select>
           
-          <Button variant="outline" className="gap-2">
+          <Button variant="outline" className="gap-2 bg-card/50 border-border">
             <Calendar className="h-4 w-4" />
             <span>Фильтр по дате</span>
           </Button>
@@ -122,7 +123,7 @@ const AdminAudits: React.FC = () => {
       <div className="overflow-x-auto">
         <table className="w-full">
           <thead>
-            <tr className="border-b">
+            <tr className="border-b border-border">
               <th className="text-left py-3 px-4 font-medium">URL</th>
               <th className="text-left py-3 px-4 font-medium">Пользователь</th>
               <th className="text-left py-3 px-4 font-medium">SEO оценка</th>
@@ -133,7 +134,7 @@ const AdminAudits: React.FC = () => {
           </thead>
           <tbody>
             {filteredAudits.map(audit => (
-              <tr key={audit.id} className="border-b">
+              <tr key={audit.id} className="border-b border-border">
                 <td className="py-4 px-4">
                   <div className="flex items-center gap-2">
                     <Link className="h-4 w-4 text-muted-foreground" />
@@ -141,7 +142,7 @@ const AdminAudits: React.FC = () => {
                       href={audit.url} 
                       target="_blank" 
                       rel="noopener noreferrer"
-                      className="hover:underline"
+                      className="hover:underline text-blue-400"
                     >
                       {audit.url}
                     </a>
@@ -192,7 +193,7 @@ const AdminAudits: React.FC = () => {
           </tbody>
         </table>
       </div>
-    </div>
+    </Card>
   );
 };
 

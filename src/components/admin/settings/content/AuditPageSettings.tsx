@@ -28,7 +28,7 @@ const AuditPageSettings: React.FC<AuditPageSettingsProps> = ({
 }) => {
   return (
     <div className="space-y-6">
-      <Card>
+      <Card className="bg-card/90 backdrop-blur-sm border-border">
         <CardHeader>
           <CardTitle>Основные настройки страницы аудита</CardTitle>
           <CardDescription>Редактирование текстов на странице аудита</CardDescription>
@@ -39,7 +39,8 @@ const AuditPageSettings: React.FC<AuditPageSettingsProps> = ({
             <Input 
               id="audit-title" 
               value={auditPageContent.title}
-              onChange={(e) => updateAuditField('title', e.target.value)} 
+              onChange={(e) => updateAuditField('title', e.target.value)}
+              className="bg-card/50 border-border"
             />
           </div>
           
@@ -50,6 +51,7 @@ const AuditPageSettings: React.FC<AuditPageSettingsProps> = ({
               rows={3}
               value={auditPageContent.description}
               onChange={(e) => updateAuditField('description', e.target.value)}
+              className="bg-card/50 border-border"
             />
           </div>
           
@@ -59,7 +61,8 @@ const AuditPageSettings: React.FC<AuditPageSettingsProps> = ({
               <Input 
                 id="audit-placeholder" 
                 value={auditPageContent.placeholderText}
-                onChange={(e) => updateAuditField('placeholderText', e.target.value)} 
+                onChange={(e) => updateAuditField('placeholderText', e.target.value)}
+                className="bg-card/50 border-border"
               />
             </div>
             
@@ -68,21 +71,22 @@ const AuditPageSettings: React.FC<AuditPageSettingsProps> = ({
               <Input 
                 id="audit-button-text" 
                 value={auditPageContent.buttonText}
-                onChange={(e) => updateAuditField('buttonText', e.target.value)} 
+                onChange={(e) => updateAuditField('buttonText', e.target.value)}
+                className="bg-card/50 border-border"
               />
             </div>
           </div>
         </CardContent>
       </Card>
       
-      <Card>
+      <Card className="bg-card/90 backdrop-blur-sm border-border">
         <CardHeader>
           <CardTitle>Подсказки для пользователей</CardTitle>
           <CardDescription>Настройка подсказок на странице аудита</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           {auditPageContent.tips.map((tip, index) => (
-            <div key={index} className="p-4 border rounded-md space-y-3">
+            <div key={index} className="p-4 border border-border rounded-md space-y-3 bg-card/30 backdrop-blur-sm">
               <div className="flex items-center justify-between">
                 <h4 className="font-medium">Подсказка #{index + 1}</h4>
                 <div className="flex items-center gap-2">
@@ -100,7 +104,8 @@ const AuditPageSettings: React.FC<AuditPageSettingsProps> = ({
                 <Input 
                   id={`tip-text-${index}`} 
                   value={tip.text}
-                  onChange={(e) => updateAuditTip(index, 'text', e.target.value)} 
+                  onChange={(e) => updateAuditTip(index, 'text', e.target.value)}
+                  className="bg-card/50 border-border"
                 />
               </div>
             </div>

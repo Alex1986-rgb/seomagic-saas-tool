@@ -5,6 +5,7 @@ import AuditError from '../AuditError';
 import AuditScanning from './AuditScanning';
 import AuditRefreshing from './AuditRefreshing';
 import { ErrorDisplay } from '@/components/ui/error-handler';
+import { Card } from "@/components/ui/card";
 
 interface AuditStatusProps {
   isLoading: boolean;
@@ -34,27 +35,43 @@ const AuditStatus: React.FC<AuditStatusProps> = ({
   onDownloadSitemap
 }) => {
   if (isLoading) {
-    return <AuditLoading progress={loadingProgress} />;
+    return (
+      <Card className="bg-card/90 backdrop-blur-sm border-border">
+        <AuditLoading progress={loadingProgress} />
+      </Card>
+    );
   }
 
   if (isScanning) {
-    return <AuditScanning 
-      url={url} 
-      scanDetails={{
-        pagesScanned: scanDetails.pages_scanned,
-        totalPages: scanDetails.estimated_pages,
-        currentUrl: scanDetails.current_url
-      }} 
-      onDownloadSitemap={onDownloadSitemap} 
-    />;
+    return (
+      <Card className="bg-card/90 backdrop-blur-sm border-border">
+        <AuditScanning 
+          url={url} 
+          scanDetails={{
+            pagesScanned: scanDetails.pages_scanned,
+            totalPages: scanDetails.estimated_pages,
+            currentUrl: scanDetails.current_url
+          }} 
+          onDownloadSitemap={onDownloadSitemap} 
+        />
+      </Card>
+    );
   }
 
   if (error) {
-    return <AuditError error={error} onRetry={onRetry} />;
+    return (
+      <Card className="bg-card/90 backdrop-blur-sm border-border">
+        <AuditError error={error} onRetry={onRetry} />
+      </Card>
+    );
   }
 
   if (isRefreshing) {
-    return <AuditRefreshing />;
+    return (
+      <Card className="bg-card/90 backdrop-blur-sm border-border">
+        <AuditRefreshing />
+      </Card>
+    );
   }
 
   return null;
