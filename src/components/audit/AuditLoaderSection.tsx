@@ -8,6 +8,7 @@ import SeoAuditResults from "@/components/SeoAuditResults";
 import AuditAdvancedTools from "@/components/audit/AuditAdvancedTools";
 import AuditErrorFallback from "./AuditErrorFallback";
 import { ErrorBoundary } from "react-error-boundary";
+import { SectionLoader } from "@/components/ui/loading";
 
 interface AuditLoaderSectionProps {
   url: string;
@@ -49,9 +50,7 @@ const AuditLoaderSection: React.FC<AuditLoaderSectionProps> = ({
       <AuditErrorAlert error={error} onClearError={handleClearError} />
 
       {isLoading ? (
-        <div className="flex justify-center items-center min-h-[200px]">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
-        </div>
+        <SectionLoader text="Анализ сайта..." minHeight="min-h-[300px]" />
       ) : (
         <>
           {!url && (

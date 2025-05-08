@@ -6,6 +6,7 @@ import { ContentLoader } from './ContentLoader';
 import { FullscreenLoader } from './FullscreenLoader';
 import { SectionLoader } from './SectionLoader';
 import { ButtonLoader } from './ButtonLoader';
+import { SkeletonTable } from './SkeletonTable';
 
 export {
   LoadingSpinner,
@@ -13,5 +14,6 @@ export {
   ContentLoader,
   FullscreenLoader,
   SectionLoader,
-  ButtonLoader
+  ButtonLoader,
+  SkeletonTable
 };

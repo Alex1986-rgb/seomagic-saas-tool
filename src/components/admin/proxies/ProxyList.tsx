@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Card } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
@@ -11,6 +11,8 @@ import { Proxy } from '@/services/proxy/types';
 import { formatDistanceToNow } from 'date-fns';
 import { ru } from 'date-fns/locale';
 import { useToast } from '@/hooks/use-toast';
+import { SkeletonTable } from '@/components/ui/loading';
+import VirtualizedList from '@/components/ui/virtualized/VirtualizedList';
 
 interface ProxyListProps {
   proxies: Proxy[];
@@ -49,38 +51,73 @@ const ProxyList: React.FC<ProxyListProps> = ({ proxies }) => {
     });
   };
 
-  const filteredProxies = proxies
-    .filter(proxy => {
-      // Фильтрация по статусу
-      if (filteredStatus === 'active' && proxy.status !== 'active') return false;
-      if (filteredStatus === 'inactive' && proxy.status === 'active') return false;
-      
-      // Фильтрация по поисковому запросу
-      if (searchTerm) {
-        const searchLower = searchTerm.toLowerCase();
-        return (
-          proxy.ip.includes(searchLower) || 
-          proxy.port.toString().includes(searchLower) ||
-          proxy.source?.toLowerCase().includes(searchLower)
-        );
-      }
-      return true;
-    })
-    .sort((a, b) => {
-      // Сортировка: активные прокси выше неактивных
-      if (a.status === 'active' && b.status !== 'active') return -1;
-      if (a.status !== 'active' && b.status === 'active') return 1;
-      
-      // Для активных прокси сортировка по скорости
-      if (a.status === 'active' && b.status === 'active' && a.speed && b.speed) {
-        return a.speed - b.speed;
-      }
-      
-      // По умолчанию сортировка по дате последней проверки
-      const dateA = a.lastChecked ? new Date(a.lastChecked).getTime() : 0;
-      const dateB = b.lastChecked ? new Date(b.lastChecked).getTime() : 0;
-      return dateB - dateA;
-    });
+  const filteredProxies = useMemo(() => {
+    return proxies
+      .filter(proxy => {
+        // Фильтрация по статусу
+        if (filteredStatus === 'active' && proxy.status !== 'active') return false;
+        if (filteredStatus === 'inactive' && proxy.status === 'active') return false;
+        
+        // Фильтрация по поисковому запросу
+        if (searchTerm) {
+          const searchLower = searchTerm.toLowerCase();
+          return (
+            proxy.ip.includes(searchLower) || 
+            proxy.port.toString().includes(searchLower) ||
+            proxy.source?.toLowerCase().includes(searchLower)
+          );
+        }
+        return true;
+      })
+      .sort((a, b) => {
+        // Сортировка: активные прокси выше неактивных
+        if (a.status === 'active' && b.status !== 'active') return -1;
+        if (a.status !== 'active' && b.status === 'active') return 1;
+        
+        // Для активных прокси сортировка по скорости
+        if (a.status === 'active' && b.status === 'active' && a.speed && b.speed) {
+          return a.speed - b.speed;
+        }
+        
+        // По умолчанию сортировка по дате последней проверки
+        const dateA = a.lastChecked ? new Date(a.lastChecked).getTime() : 0;
+        const dateB = b.lastChecked ? new Date(b.lastChecked).getTime() : 0;
+        return dateB - dateA;
+      });
+  }, [proxies, searchTerm, filteredStatus]);
+  
+  // Should we use virtualization (for large lists)
+  const useVirtualization = filteredProxies.length > 100;
+  const itemHeight = 48; // Height of each row in px
+
+  const renderProxyRow = (proxy: Proxy) => (
+    <TableRow key={proxy.id}>
+      <TableCell className="font-medium">{proxy.ip}:{proxy.port}</TableCell>
+      <TableCell>
+        {proxy.status === 'active' ? (
+          <Badge variant="outline" className="bg-green-50 text-green-700">Активный</Badge>
+        ) : (
+          <Badge variant="outline" className="bg-red-50 text-red-700">Неактивный</Badge>
+        )}
+      </TableCell>
+      <TableCell>{proxy.speed ? `${proxy.speed} мс` : '-'}</TableCell>
+      <TableCell>{proxy.source || 'Неизвестно'}</TableCell>
+      <TableCell>
+        {proxy.lastChecked 
+          ? formatDistanceToNow(new Date(proxy.lastChecked), { addSuffix: true, locale: ru }) 
+          : 'Не проверялся'}
+      </TableCell>
+      <TableCell>
+        <Button 
+          variant="ghost" 
+          size="icon"
+          onClick={() => handleRemoveProxy(proxy.id)}
+        >
+          <Trash2 className="h-4 w-4 text-red-500" />
+        </Button>
+      </TableCell>
+    </TableRow>
+  );
 
   return (
     <Card className="p-4">
@@ -143,44 +180,34 @@ const ProxyList: React.FC<ProxyListProps> = ({ proxies }) => {
                 <TableHead>Действия</TableHead>
               </TableRow>
             </TableHeader>
-            <TableBody>
-              {filteredProxies.map((proxy) => (
-                <TableRow key={proxy.id}>
-                  <TableCell className="font-medium">{proxy.ip}:{proxy.port}</TableCell>
-                  <TableCell>
-                    {proxy.status === 'active' ? (
-                      <Badge variant="outline" className="bg-green-50 text-green-700">Активный</Badge>
-                    ) : (
-                      <Badge variant="outline" className="bg-red-50 text-red-700">Неактивный</Badge>
-                    )}
-                  </TableCell>
-                  <TableCell>{proxy.speed ? `${proxy.speed} мс` : '-'}</TableCell>
-                  <TableCell>{proxy.source || 'Неизвестно'}</TableCell>
-                  <TableCell>
-                    {proxy.lastChecked 
-                      ? formatDistanceToNow(new Date(proxy.lastChecked), { addSuffix: true, locale: ru }) 
-                      : 'Не проверялся'}
-                  </TableCell>
-                  <TableCell>
-                    <Button 
-                      variant="ghost" 
-                      size="icon"
-                      onClick={() => handleRemoveProxy(proxy.id)}
-                    >
-                      <Trash2 className="h-4 w-4 text-red-500" />
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
+            {!useVirtualization && (
+              <TableBody>
+                {filteredProxies.map(renderProxyRow)}
+              </TableBody>
+            )}
           </Table>
+          
+          {useVirtualization && (
+            <div style={{ height: Math.min(filteredProxies.length * itemHeight, 500) }}>
+              <VirtualizedList
+                items={filteredProxies}
+                height={500}
+                itemHeight={itemHeight}
+                renderItem={(proxy) => renderProxyRow(proxy)}
+              />
+            </div>
+          )}
+        </div>
+      ) : searchTerm || filteredStatus !== 'all' ? (
+        <div className="text-center py-8 text-muted-foreground">
+          Не найдено прокси, соответствующих заданным критериям.
+        </div>
+      ) : proxies.length === 0 ? (
+        <div className="text-center py-8 text-muted-foreground">
+          Список прокси пуст. Соберите прокси во вкладке "Управление".
         </div>
       ) : (
-        <div className="text-center py-8 text-muted-foreground">
-          {searchTerm || filteredStatus !== 'all' 
-            ? 'Не найдено прокси, соответствующих заданным критериям.'
-            : 'Список прокси пуст. Соберите прокси во вкладке "Управление".'}
-        </div>
+        <SkeletonTable rows={5} columns={6} />
       )}
       
       <p className="text-xs text-muted-foreground mt-4">

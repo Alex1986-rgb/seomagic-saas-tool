@@ -1,49 +1,68 @@
 
-import React from 'react';
-import { AlertCircle, RefreshCw } from 'lucide-react';
-import { Button } from "@/components/ui/button";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import React, { useState } from 'react';
+import { AlertCircle } from 'lucide-react';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Button } from '@/components/ui/button';
+import { GlobalErrorBoundary } from './GlobalErrorBoundary';
+import useErrorHandler from './useErrorHandler';
 
-export interface ErrorDisplayProps {
-  error: Error | string | null;
-  onRetry?: () => void;
-  title?: string;
-  className?: string;
-  variant?: 'default' | 'destructive' | 'outline';
+export { GlobalErrorBoundary, useErrorHandler };
+
+interface ErrorAlertProps {
+  title: string;
+  description: string;
+  variant?: 'default' | 'destructive';
+  onDismiss?: () => void;
+  retryAction?: () => void;
 }
 
-export const ErrorDisplay: React.FC<ErrorDisplayProps> = ({
-  error,
-  onRetry,
-  title = 'Произошла ошибка',
-  className = '',
-  variant = 'destructive'
+export const ErrorAlert: React.FC<ErrorAlertProps> = ({
+  title,
+  description,
+  variant = 'destructive',
+  onDismiss,
+  retryAction
 }) => {
-  if (!error) return null;
-
-  const errorMessage = typeof error === 'string' ? error : error.message;
-
+  const [dismissed, setDismissed] = useState(false);
+  
+  const handleDismiss = () => {
+    setDismissed(true);
+    if (onDismiss) {
+      onDismiss();
+    }
+  };
+  
+  if (dismissed) return null;
+  
   return (
-    <Alert variant={variant} className={`my-4 ${className}`}>
+    <Alert variant={variant as 'default' | 'destructive'} className="mb-4">
       <AlertCircle className="h-4 w-4" />
       <AlertTitle>{title}</AlertTitle>
-      <AlertDescription className="mt-2">
-        <div className="text-sm">{errorMessage}</div>
-        {onRetry && (
-          <Button 
-            variant="outline" 
-            size="sm" 
-            className="mt-2" 
-            onClick={onRetry}
-          >
-            <RefreshCw className="h-4 w-4 mr-2" />
-            Повторить
-          </Button>
-        )}
+      <AlertDescription>
+        <div className="mt-2">{description}</div>
+        <div className="mt-4 flex space-x-2">
+          {retryAction && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={retryAction}
+            >
+              Повторить
+            </Button>
+          )}
+          {onDismiss && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleDismiss}
+            >
+              Закрыть
+            </Button>
+          )}
+        </div>
       </AlertDescription>
     </Alert>
   );
 };
 
-export { default as GlobalErrorBoundary } from './GlobalErrorBoundary';
-export { useErrorHandler } from './useErrorHandler';
+export default { GlobalErrorBoundary, ErrorAlert, useErrorHandler };

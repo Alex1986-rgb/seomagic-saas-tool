@@ -1,12 +1,8 @@
 
 import React, { Suspense, lazy } from 'react';
-const FeatureSection = lazy(() => import('../features'));
+import { SectionLoader } from '@/components/ui/loading';
 
-const LoadingFallback = () => (
-  <div className="w-full py-16 flex items-center justify-center">
-    <div className="spinner-gradient"></div>
-  </div>
-);
+const FeatureSection = lazy(() => import('../features'));
 
 const DetailedFeaturesSection: React.FC = () => {
   return (
@@ -14,7 +10,7 @@ const DetailedFeaturesSection: React.FC = () => {
       <div className="container mx-auto px-4 md:px-6">
         <h2 className="text-3xl font-bold text-center mb-12">Подробные возможности</h2>
         <div className="neo-card p-8 rounded-lg">
-          <Suspense fallback={<LoadingFallback />}>
+          <Suspense fallback={<SectionLoader text="Загрузка возможностей..." />}>
             <FeatureSection />
           </Suspense>
         </div>

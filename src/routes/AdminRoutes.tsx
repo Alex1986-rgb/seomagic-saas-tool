@@ -1,88 +1,224 @@
 
-import React from 'react';
+import React, { Suspense } from 'react';
 import { Route, Routes } from 'react-router-dom';
 import AdminLayout from '@/layouts/AdminLayout';
+import { FullscreenLoader } from '@/components/ui/loading';
 
-import Dashboard from '@/pages/admin/Dashboard';
-import WebsiteAnalyzer from '@/pages/admin/WebsiteAnalyzer';
-import NotFound from '@/pages/NotFound';
-import SystemStatusPage from '@/pages/admin/SystemStatusPage';
-import AdminNotificationsPage from '@/pages/admin/AdminNotificationsPage';
-import AdminMonitoringPage from '@/pages/admin/AdminMonitoringPage';
-import AdminSettingsPage from '@/pages/admin/AdminSettingsPage';
-import AdminUsersPage from '@/pages/admin/AdminUsersPage';
-import AdminAnalyticsPage from '@/pages/admin/AdminAnalyticsPage';
-import HostingPage from '@/pages/admin/HostingPage';
-import SitesPage from '@/pages/admin/SitesPage';
-import AdminAuditsPage from '@/pages/admin/AdminAuditsPage';
-import AdminPositionsPage from '@/pages/admin/AdminPositionsPage';
-import AdminProxiesPage from '@/pages/admin/AdminProxiesPage';
+// Lazy load all admin pages
+const Dashboard = React.lazy(() => import('@/pages/admin/Dashboard'));
+const WebsiteAnalyzer = React.lazy(() => import('@/pages/admin/WebsiteAnalyzer'));
+const NotFound = React.lazy(() => import('@/pages/NotFound'));
+const SystemStatusPage = React.lazy(() => import('@/pages/admin/SystemStatusPage'));
+const AdminNotificationsPage = React.lazy(() => import('@/pages/admin/AdminNotificationsPage'));
+const AdminMonitoringPage = React.lazy(() => import('@/pages/admin/AdminMonitoringPage'));
+const AdminSettingsPage = React.lazy(() => import('@/pages/admin/AdminSettingsPage'));
+const AdminUsersPage = React.lazy(() => import('@/pages/admin/AdminUsersPage'));
+const AdminAnalyticsPage = React.lazy(() => import('@/pages/admin/AdminAnalyticsPage'));
+const HostingPage = React.lazy(() => import('@/pages/admin/HostingPage'));
+const SitesPage = React.lazy(() => import('@/pages/admin/SitesPage'));
+const AdminAuditsPage = React.lazy(() => import('@/pages/admin/AdminAuditsPage'));
+const AdminPositionsPage = React.lazy(() => import('@/pages/admin/AdminPositionsPage'));
+const AdminProxiesPage = React.lazy(() => import('@/pages/admin/AdminProxiesPage'));
 
-// system settings sections
-import DatabaseSettingsPage from '@/pages/admin/system/DatabaseSettingsPage';
-import SecuritySettingsPage from '@/pages/admin/system/SecuritySettingsPage';
-import UsersManagementPage from '@/pages/admin/system/UsersManagementPage';
-import NotificationsSettingsPage from '@/pages/admin/system/NotificationsSettingsPage';
-import AnalyticsSettingsPage from '@/pages/admin/system/AnalyticsSettingsPage';
-import PerformanceSettingsPage from '@/pages/admin/system/PerformanceSettingsPage';
-import AdminPaymentsPage from '@/pages/admin/AdminPaymentsPage';
-import BackupSettingsPage from '@/pages/admin/system/BackupSettingsPage';
-import ApiKeysPage from '@/pages/admin/system/ApiKeysPage';
-import EmailSettingsPage from '@/pages/admin/system/EmailSettingsPage';
-import LogSettingsPage from '@/pages/admin/system/LogSettingsPage';
-import SystemSettingsPage from '@/pages/admin/system/SystemSettingsPage';
+// Lazy load system settings sections
+const DatabaseSettingsPage = React.lazy(() => import('@/pages/admin/system/DatabaseSettingsPage'));
+const SecuritySettingsPage = React.lazy(() => import('@/pages/admin/system/SecuritySettingsPage'));
+const UsersManagementPage = React.lazy(() => import('@/pages/admin/system/UsersManagementPage'));
+const NotificationsSettingsPage = React.lazy(() => import('@/pages/admin/system/NotificationsSettingsPage'));
+const AnalyticsSettingsPage = React.lazy(() => import('@/pages/admin/system/AnalyticsSettingsPage'));
+const PerformanceSettingsPage = React.lazy(() => import('@/pages/admin/system/PerformanceSettingsPage'));
+const AdminPaymentsPage = React.lazy(() => import('@/pages/admin/AdminPaymentsPage'));
+const BackupSettingsPage = React.lazy(() => import('@/pages/admin/system/BackupSettingsPage'));
+const ApiKeysPage = React.lazy(() => import('@/pages/admin/system/ApiKeysPage'));
+const EmailSettingsPage = React.lazy(() => import('@/pages/admin/system/EmailSettingsPage'));
+const LogSettingsPage = React.lazy(() => import('@/pages/admin/system/LogSettingsPage'));
+const SystemSettingsPage = React.lazy(() => import('@/pages/admin/system/SystemSettingsPage'));
 
-// New content management pages
-import HomePageEditor from '@/pages/admin/content/HomePageEditor';
-import AboutPageEditor from '@/pages/admin/content/AboutPageEditor';
-import BlogEditor from '@/pages/admin/content/BlogEditor';
-import FeaturesEditor from '@/pages/admin/content/FeaturesEditor';
-import ClientCabinetEditor from '@/pages/admin/content/ClientCabinetEditor';
-import MarketingEditor from '@/pages/admin/content/MarketingEditor';
-import HelpEditor from '@/pages/admin/content/HelpEditor';
+// New content management pages - lazy loaded
+const HomePageEditor = React.lazy(() => import('@/pages/admin/content/HomePageEditor'));
+const AboutPageEditor = React.lazy(() => import('@/pages/admin/content/AboutPageEditor'));
+const BlogEditor = React.lazy(() => import('@/pages/admin/content/BlogEditor'));
+const FeaturesEditor = React.lazy(() => import('@/pages/admin/content/FeaturesEditor'));
+const ClientCabinetEditor = React.lazy(() => import('@/pages/admin/content/ClientCabinetEditor'));
+const MarketingEditor = React.lazy(() => import('@/pages/admin/content/MarketingEditor'));
+const HelpEditor = React.lazy(() => import('@/pages/admin/content/HelpEditor'));
 
 const AdminRoutes: React.FC = () => {
   return (
     <Routes>
       <Route path="/" element={<AdminLayout />}>
-        <Route index element={<Dashboard />} />
-        <Route path="website-analyzer" element={<WebsiteAnalyzer />} />
-        <Route path="system-status" element={<SystemStatusPage />} />
-        <Route path="notifications" element={<AdminNotificationsPage />} />
-        <Route path="monitoring" element={<AdminMonitoringPage />} />
-        <Route path="settings" element={<AdminSettingsPage />} />
-        <Route path="users" element={<AdminUsersPage />} />
-        <Route path="analytics" element={<AdminAnalyticsPage />} />
-        <Route path="hosting" element={<HostingPage />} />
-        <Route path="sites" element={<SitesPage />} />
-        <Route path="audits" element={<AdminAuditsPage />} />
-        <Route path="positions" element={<AdminPositionsPage />} />
-        <Route path="proxies" element={<AdminProxiesPage />} />
+        <Route index element={
+          <Suspense fallback={<FullscreenLoader text="Загрузка панели управления..." />}>
+            <Dashboard />
+          </Suspense>
+        } />
+        
+        {/* Main admin routes */}
+        <Route path="website-analyzer" element={
+          <Suspense fallback={<FullscreenLoader text="Загрузка анализатора сайтов..." />}>
+            <WebsiteAnalyzer />
+          </Suspense>
+        } />
+        <Route path="system-status" element={
+          <Suspense fallback={<FullscreenLoader />}>
+            <SystemStatusPage />
+          </Suspense>
+        } />
+        <Route path="notifications" element={
+          <Suspense fallback={<FullscreenLoader />}>
+            <AdminNotificationsPage />
+          </Suspense>
+        } />
+        <Route path="monitoring" element={
+          <Suspense fallback={<FullscreenLoader />}>
+            <AdminMonitoringPage />
+          </Suspense>
+        } />
+        <Route path="settings" element={
+          <Suspense fallback={<FullscreenLoader />}>
+            <AdminSettingsPage />
+          </Suspense>
+        } />
+        <Route path="users" element={
+          <Suspense fallback={<FullscreenLoader />}>
+            <AdminUsersPage />
+          </Suspense>
+        } />
+        <Route path="analytics" element={
+          <Suspense fallback={<FullscreenLoader />}>
+            <AdminAnalyticsPage />
+          </Suspense>
+        } />
+        <Route path="hosting" element={
+          <Suspense fallback={<FullscreenLoader />}>
+            <HostingPage />
+          </Suspense>
+        } />
+        <Route path="sites" element={
+          <Suspense fallback={<FullscreenLoader />}>
+            <SitesPage />
+          </Suspense>
+        } />
+        <Route path="audits" element={
+          <Suspense fallback={<FullscreenLoader />}>
+            <AdminAuditsPage />
+          </Suspense>
+        } />
+        <Route path="positions" element={
+          <Suspense fallback={<FullscreenLoader />}>
+            <AdminPositionsPage />
+          </Suspense>
+        } />
+        <Route path="proxies" element={
+          <Suspense fallback={<FullscreenLoader />}>
+            <AdminProxiesPage />
+          </Suspense>
+        } />
 
         {/* System Settings subroutes */}
-        <Route path="system" element={<SystemSettingsPage />} />
-        <Route path="system/database" element={<DatabaseSettingsPage />} />
-        <Route path="system/security" element={<SecuritySettingsPage />} />
-        <Route path="system/backup" element={<BackupSettingsPage />} />
-        <Route path="system/api-keys" element={<ApiKeysPage />} />
-        <Route path="system/email" element={<EmailSettingsPage />} />
-        <Route path="system/logs" element={<LogSettingsPage />} />
-        <Route path="system/users" element={<UsersManagementPage />} />
-        <Route path="system/notifications" element={<NotificationsSettingsPage />} />
-        <Route path="system/analytics" element={<AnalyticsSettingsPage />} />
-        <Route path="system/performance" element={<PerformanceSettingsPage />} />
-        <Route path="payments" element={<AdminPaymentsPage />} />
+        <Route path="system" element={
+          <Suspense fallback={<FullscreenLoader />}>
+            <SystemSettingsPage />
+          </Suspense>
+        } />
+        <Route path="system/database" element={
+          <Suspense fallback={<FullscreenLoader />}>
+            <DatabaseSettingsPage />
+          </Suspense>
+        } />
+        <Route path="system/security" element={
+          <Suspense fallback={<FullscreenLoader />}>
+            <SecuritySettingsPage />
+          </Suspense>
+        } />
+        <Route path="system/backup" element={
+          <Suspense fallback={<FullscreenLoader />}>
+            <BackupSettingsPage />
+          </Suspense>
+        } />
+        <Route path="system/api-keys" element={
+          <Suspense fallback={<FullscreenLoader />}>
+            <ApiKeysPage />
+          </Suspense>
+        } />
+        <Route path="system/email" element={
+          <Suspense fallback={<FullscreenLoader />}>
+            <EmailSettingsPage />
+          </Suspense>
+        } />
+        <Route path="system/logs" element={
+          <Suspense fallback={<FullscreenLoader />}>
+            <LogSettingsPage />
+          </Suspense>
+        } />
+        <Route path="system/users" element={
+          <Suspense fallback={<FullscreenLoader />}>
+            <UsersManagementPage />
+          </Suspense>
+        } />
+        <Route path="system/notifications" element={
+          <Suspense fallback={<FullscreenLoader />}>
+            <NotificationsSettingsPage />
+          </Suspense>
+        } />
+        <Route path="system/analytics" element={
+          <Suspense fallback={<FullscreenLoader />}>
+            <AnalyticsSettingsPage />
+          </Suspense>
+        } />
+        <Route path="system/performance" element={
+          <Suspense fallback={<FullscreenLoader />}>
+            <PerformanceSettingsPage />
+          </Suspense>
+        } />
+        <Route path="payments" element={
+          <Suspense fallback={<FullscreenLoader />}>
+            <AdminPaymentsPage />
+          </Suspense>
+        } />
 
         {/* Content Management Routes */}
-        <Route path="content/home" element={<HomePageEditor />} />
-        <Route path="content/about" element={<AboutPageEditor />} />
-        <Route path="content/blog" element={<BlogEditor />} />
-        <Route path="content/features" element={<FeaturesEditor />} />
-        <Route path="content/client-cabinet" element={<ClientCabinetEditor />} />
-        <Route path="content/marketing" element={<MarketingEditor />} />
-        <Route path="content/help" element={<HelpEditor />} />
+        <Route path="content/home" element={
+          <Suspense fallback={<FullscreenLoader />}>
+            <HomePageEditor />
+          </Suspense>
+        } />
+        <Route path="content/about" element={
+          <Suspense fallback={<FullscreenLoader />}>
+            <AboutPageEditor />
+          </Suspense>
+        } />
+        <Route path="content/blog" element={
+          <Suspense fallback={<FullscreenLoader />}>
+            <BlogEditor />
+          </Suspense>
+        } />
+        <Route path="content/features" element={
+          <Suspense fallback={<FullscreenLoader />}>
+            <FeaturesEditor />
+          </Suspense>
+        } />
+        <Route path="content/client-cabinet" element={
+          <Suspense fallback={<FullscreenLoader />}>
+            <ClientCabinetEditor />
+          </Suspense>
+        } />
+        <Route path="content/marketing" element={
+          <Suspense fallback={<FullscreenLoader />}>
+            <MarketingEditor />
+          </Suspense>
+        } />
+        <Route path="content/help" element={
+          <Suspense fallback={<FullscreenLoader />}>
+            <HelpEditor />
+          </Suspense>
+        } />
 
-        <Route path="*" element={<NotFound />} />
+        <Route path="*" element={
+          <Suspense fallback={<FullscreenLoader />}>
+            <NotFound />
+          </Suspense>
+        } />
       </Route>
     </Routes>
   );
