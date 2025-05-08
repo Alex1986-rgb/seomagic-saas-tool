@@ -11,8 +11,9 @@ export const useOptimization = (url: string) => {
   const [isOptimized, setIsOptimized] = useState<boolean>(false);
   const [pagesContent, setPagesContent] = useState<any[]>([]);
 
-  const downloadOptimizedSite = () => {
+  const downloadOptimizedSite = async (): Promise<void> => {
     console.log(`Downloading optimized site from optimization hook for ${url}`);
+    return Promise.resolve();
   };
 
   const generatePdfReportFile = () => {

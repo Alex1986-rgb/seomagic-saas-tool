@@ -9,7 +9,7 @@ export const useAuditActions = (
   contentPrompt: string,
   auditData: AuditData | null,
   downloadSitemapLocal: () => void,
-  localDownloadOptimizedSite: () => void,
+  localDownloadOptimizedSite: () => Promise<void>,
   apiExportHandler: any,
   apiOptimizeSiteContent: any
 ) => {
@@ -17,8 +17,8 @@ export const useAuditActions = (
     downloadSitemapLocal();
   };
 
-  const handleDownloadOptimizedSite = () => {
-    localDownloadOptimizedSite();
+  const handleDownloadOptimizedSite = async (): Promise<void> => {
+    return localDownloadOptimizedSite();
   };
 
   const handleExportJSONData = () => {
@@ -27,10 +27,11 @@ export const useAuditActions = (
     }
   };
 
-  const handleOptimizeSiteContent = () => {
+  const handleOptimizeSiteContent = async (): Promise<void> => {
     if (apiOptimizeSiteContent) {
-      apiOptimizeSiteContent(contentPrompt);
+      return apiOptimizeSiteContent(contentPrompt);
     }
+    return Promise.resolve();
   };
 
   return {

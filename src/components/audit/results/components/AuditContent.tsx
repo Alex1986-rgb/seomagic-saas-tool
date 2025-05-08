@@ -36,8 +36,8 @@ interface AuditContentProps {
   downloadSitemap?: () => void;
   exportJSONData: () => void;
   generatePdfReportFile: () => void;
-  downloadOptimizedSite: () => void;
-  optimizeSiteContent: () => void;
+  downloadOptimizedSite: () => Promise<void>; // Updated return type
+  optimizeSiteContent: () => Promise<void>; // Updated return type
   setContentOptimizationPrompt: (prompt: string) => void;
 }
 

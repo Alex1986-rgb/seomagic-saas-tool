@@ -18,6 +18,7 @@ interface AuditOptimizationProps {
   isOptimized: boolean;
   currentScore?: number;
   estimatedScore?: number;
+  url: string; // Added url prop
   setContentPrompt: (prompt: string) => void;
   onOptimizeSiteContent: () => Promise<any>;
   onDownloadOptimizedSite?: () => Promise<void>;
@@ -31,6 +32,7 @@ const AuditOptimization: React.FC<AuditOptimizationProps> = ({
   isOptimized,
   currentScore,
   estimatedScore,
+  url, // Added url prop
   setContentPrompt,
   onOptimizeSiteContent,
   onDownloadOptimizedSite

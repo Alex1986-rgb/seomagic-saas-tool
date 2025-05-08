@@ -43,14 +43,13 @@ const AuditOptimizationSection: React.FC<AuditOptimizationSectionProps> = ({
         optimizationItems={optimizationItems}
         isOptimized={isOptimized}
         contentPrompt={contentPrompt}
-        url={url}
+        url={url} // Pass the url prop
         pageCount={pageCount}
         showPrompt={showPrompt}
         onTogglePrompt={onTogglePrompt}
-        onOptimize={onOptimize}
+        onOptimizeSiteContent={onOptimize}
         onDownloadOptimizedSite={onDownloadOptimizedSite}
-        onGeneratePdfReport={onGeneratePdfReport}
-        setContentOptimizationPrompt={setContentOptimizationPrompt}
+        setContentPrompt={setContentOptimizationPrompt}
       />
     </motion.div>
   );
