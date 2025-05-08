@@ -4,13 +4,15 @@ import { Button } from "@/components/ui/button";
 import { Search } from "lucide-react";
 import ThemeSwitcher from "../ThemeSwitcher";
 import NavbarUserActions from './NavbarUserActions';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface NavbarActionsProps {
   isLoggedIn: boolean;
-  handleLogout: () => void;
 }
 
-const NavbarActions: React.FC<NavbarActionsProps> = ({ isLoggedIn, handleLogout }) => {
+const NavbarActions: React.FC<NavbarActionsProps> = ({ isLoggedIn }) => {
+  const { logoutUser } = useAuth();
+  
   return (
     <div className="flex items-center gap-2">
       <div className="hidden md:flex items-center gap-2">
@@ -18,10 +20,7 @@ const NavbarActions: React.FC<NavbarActionsProps> = ({ isLoggedIn, handleLogout 
           <Search className="h-5 w-5" />
         </Button>
         <ThemeSwitcher />
-        <NavbarUserActions 
-          isLoggedIn={isLoggedIn} 
-          handleLogout={handleLogout}
-        />
+        <NavbarUserActions isLoggedIn={isLoggedIn} />
       </div>
     </div>
   );

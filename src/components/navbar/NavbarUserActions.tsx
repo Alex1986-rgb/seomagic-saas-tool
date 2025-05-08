@@ -51,21 +51,29 @@ const NavbarUserActions: React.FC<NavbarUserActionsProps> = ({ isLoggedIn }) => 
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem as={Link} to="/dashboard">
-              <LayoutDashboard className="mr-2 h-4 w-4" />
-              <span>Панель управления</span>
+            <DropdownMenuItem>
+              <Link to="/dashboard" className="flex items-center">
+                <LayoutDashboard className="mr-2 h-4 w-4" />
+                <span>Панель управления</span>
+              </Link>
             </DropdownMenuItem>
-            <DropdownMenuItem as={Link} to="/profile">
-              <User className="mr-2 h-4 w-4" />
-              <span>Профиль</span>
+            <DropdownMenuItem>
+              <Link to="/profile" className="flex items-center">
+                <User className="mr-2 h-4 w-4" />
+                <span>Профиль</span>
+              </Link>
             </DropdownMenuItem>
-            <DropdownMenuItem as={Link} to="/settings">
-              <Settings className="mr-2 h-4 w-4" />
-              <span>Настройки</span>
+            <DropdownMenuItem>
+              <Link to="/settings" className="flex items-center">
+                <Settings className="mr-2 h-4 w-4" />
+                <span>Настройки</span>
+              </Link>
             </DropdownMenuItem>
-            <DropdownMenuItem as={Link} to="/reports">
-              <BarChart className="mr-2 h-4 w-4" />
-              <span>Отчеты</span>
+            <DropdownMenuItem>
+              <Link to="/reports" className="flex items-center">
+                <BarChart className="mr-2 h-4 w-4" />
+                <span>Отчеты</span>
+              </Link>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={logoutUser}>
@@ -75,8 +83,8 @@ const NavbarUserActions: React.FC<NavbarUserActionsProps> = ({ isLoggedIn }) => 
           </DropdownMenuContent>
         </DropdownMenu>
       ) : (
-        <Button as={Link} to="/auth" variant="default" size="sm">
-          Войти
+        <Button variant="default" size="sm" asChild>
+          <Link to="/auth">Войти</Link>
         </Button>
       )}
     </div>
