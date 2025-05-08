@@ -15,3 +15,4 @@ export { PageAnalysisData } from './page-data';
 
 // Export crawl options with type keyword to fix TS1205 error
 export type { CrawlOptions, OptimizationOptions } from './crawl-options';
+
