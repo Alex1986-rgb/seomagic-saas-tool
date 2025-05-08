@@ -1,11 +1,18 @@
 
+import { useState } from 'react';
+
 /**
  * Hook for toggling content optimization prompt visibility
- * This is a placeholder that will be implemented later
  */
 export const usePromptToggle = () => {
+  const [showPrompt, setShowPrompt] = useState(false);
+  
+  const togglePrompt = () => {
+    setShowPrompt(prevState => !prevState);
+  };
+
   return {
-    showPrompt: false,
-    togglePrompt: () => {}
+    showPrompt,
+    togglePrompt
   };
 };

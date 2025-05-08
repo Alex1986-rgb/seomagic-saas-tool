@@ -1,3 +1,3 @@
 
-// Re-export components when they are created
-export { default as AuditStateHandler } from './AuditStateHandler';
+// We'll export components as we create or migrate them
+export { default as AuditOptimization } from '../AuditOptimization';
