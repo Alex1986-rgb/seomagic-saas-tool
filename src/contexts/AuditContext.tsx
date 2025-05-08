@@ -2,6 +2,7 @@
 import React, { createContext, useContext, useState, useCallback, ReactNode } from 'react';
 import { AuditData, AuditHistoryData, RecommendationData } from '@/types/audit';
 import { useAudit } from '@/hooks/use-audit';
+import { ScanDetails } from './ScanContext';
 
 // Define the context type
 interface AuditContextType {
@@ -19,13 +20,7 @@ interface AuditContextType {
   contentPrompt: string;
   taskId: string | null;
   isScanning: boolean;
-  scanDetails: {
-    current_url: string;
-    pages_scanned: number;
-    estimated_pages: number;
-    stage: string;
-    progress: number;
-  };
+  scanDetails: ScanDetails;
   updateUrl: (url: string) => void;
   loadAuditData: (refresh?: boolean, deepScan?: boolean) => Promise<any>;
   generatePdfReportFile: () => Promise<void>;
@@ -74,6 +69,15 @@ export const AuditProvider: React.FC<{ children: ReactNode; initialUrl?: string 
 }) => {
   const audit = useAudit(initialUrl);
   
+  // Ensure scanDetails has all required properties
+  const scanDetailsWithDefaults: ScanDetails = {
+    current_url: audit.scanDetails?.current_url || '',
+    pages_scanned: audit.scanDetails?.pages_scanned || 0,
+    estimated_pages: audit.scanDetails?.estimated_pages || 0,
+    stage: audit.scanDetails?.stage || 'idle',
+    progress: audit.scanDetails?.progress || 0
+  };
+  
   return (
     <AuditContext.Provider value={{
       url: audit.url,
@@ -93,13 +97,7 @@ export const AuditProvider: React.FC<{ children: ReactNode; initialUrl?: string 
       contentPrompt: audit.contentPrompt,
       taskId: audit.taskId,
       isScanning: audit.isScanning,
-      scanDetails: audit.scanDetails || {
-        current_url: '',
-        pages_scanned: 0,
-        estimated_pages: 0,
-        stage: 'idle',
-        progress: 0
-      },
+      scanDetails: scanDetailsWithDefaults,
       updateUrl: audit.updateUrl,
       loadAuditData: audit.loadAuditData,
       generatePdfReportFile: audit.generatePdfReportFile,

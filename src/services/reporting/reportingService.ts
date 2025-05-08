@@ -41,6 +41,44 @@ export class ReportingService {
       throw error;
     }
   }
+
+  // Add missing methods for sitemap operations
+  async generateSitemapXml(urls: string[]): Promise<string> {
+    // Simple XML sitemap generation
+    const urlEntries = urls.map(url => 
+      `<url><loc>${encodeURIComponent(url)}</loc><lastmod>${new Date().toISOString()}</lastmod></url>`
+    ).join('\n');
+
+    return `<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${urlEntries}</urlset>`;
+  }
+
+  async exportSitemapXml(urls: string[], filename: string = 'sitemap'): Promise<void> {
+    try {
+      const sitemapXml = await this.generateSitemapXml(urls);
+      
+      // Create a Blob from the XML string
+      const blob = new Blob([sitemapXml], { type: 'application/xml' });
+      
+      // Create a URL for the Blob
+      const url = URL.createObjectURL(blob);
+      
+      // Create an anchor element for downloading
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${filename}.xml`;
+      
+      // Append the anchor to the document, click it, and remove it
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      
+      // Release the URL object
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Error exporting sitemap XML:', error);
+      throw error;
+    }
+  }
 }
 
 // Create a singleton instance

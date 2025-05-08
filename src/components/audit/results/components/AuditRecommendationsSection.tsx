@@ -2,7 +2,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import AuditRecommendations from '@/components/audit/AuditRecommendations';
-import AuditIssuesAndEstimate from './AuditIssuesAndEstimate';
+import { AuditIssuesAndEstimate } from './AuditIssuesAndEstimate';
 
 interface AuditRecommendationsSectionProps {
   recommendations: any;
