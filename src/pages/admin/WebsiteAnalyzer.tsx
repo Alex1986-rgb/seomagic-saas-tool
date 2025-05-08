@@ -58,7 +58,7 @@ const WebsiteAnalyzerPage: React.FC = () => {
           </CardContent>
         </Card>
 
-        <WebsiteAnalyzerTabs />
+        <WebsiteAnalyzerTabs scannedUrls={scannedUrls} />
       </div>
     </>
   );

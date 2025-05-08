@@ -74,7 +74,7 @@ export const useWebsiteAnalyzer = () => {
       );
       setScannedUrls(mockUrls);
       
-      await startScan(true);
+      await startScan();
       
       // Update scan results with mock data
       setScanResults({

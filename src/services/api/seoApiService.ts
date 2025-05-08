@@ -1,6 +1,12 @@
 
 import { apiService } from './apiService';
 
+export interface OptimizationResult {
+  success: boolean;
+  message?: string;
+  data?: any;
+}
+
 /**
  * Service for interacting with SEO-related API endpoints
  */
@@ -62,16 +68,26 @@ class SeoApiService {
       // Get status first to extract basic information
       const status = await this.getStatus(taskId);
       
+      // Type guard for status object
+      if (typeof status === 'object' && status !== null) {
+        return {
+          pageCount: status.pages_scanned || 0,
+          url: status.url || '',
+          status: status.status || 'unknown'
+        };
+      }
+      
       return {
-        pageCount: status.pages_scanned || 0,
-        url: status.url,
-        status: status.status
+        pageCount: 0,
+        status: 'error',
+        url: ''
       };
     } catch (error) {
       console.error('Error getting audit info:', error);
       return {
         pageCount: 0,
-        status: 'error'
+        status: 'error',
+        url: ''
       };
     }
   }
@@ -79,10 +95,13 @@ class SeoApiService {
   /**
    * Download optimized site
    */
-  async downloadOptimizedSite(taskId: string) {
+  async downloadOptimizedSite(taskId: string): Promise<Blob> {
     try {
       const response = await apiService.get(`/api/seo/download/${taskId}`, { responseType: 'blob' });
-      return response;
+      if (response instanceof Blob) {
+        return response;
+      }
+      throw new Error('Invalid response format');
     } catch (error) {
       console.error('Error downloading optimized site:', error);
       throw error;
@@ -92,10 +111,21 @@ class SeoApiService {
   /**
    * Optimize site content
    */
-  async optimizeSiteContent(taskId: string, prompt: string) {
+  async optimizeSiteContent(taskId: string, prompt: string): Promise<OptimizationResult> {
     try {
       const response = await apiService.post(`/api/seo/optimize/${taskId}`, { prompt });
-      return response;
+      // Type guard to ensure we return the correct OptimizationResult type
+      if (typeof response === 'object' && response !== null) {
+        return {
+          success: 'success' in response ? !!response.success : false,
+          message: 'message' in response ? String(response.message) : undefined,
+          data: 'data' in response ? response.data : undefined
+        };
+      }
+      return {
+        success: false,
+        message: 'Invalid response format'
+      };
     } catch (error) {
       console.error('Error optimizing site content:', error);
       throw error;

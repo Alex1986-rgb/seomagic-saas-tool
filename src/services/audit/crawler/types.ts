@@ -64,3 +64,8 @@ export interface CrawlSummary {
   pageTypes: Record<string, number>;
   depthDistribution: Record<number, number>;
 }
+
+export interface RequestManager {
+  fetch: (url: string, options?: any) => Promise<any>;
+  configure: (options: any) => void;
+}

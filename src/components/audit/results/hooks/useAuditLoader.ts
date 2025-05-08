@@ -76,16 +76,24 @@ export const useAuditLoader = (
         const scanResult = await handleScanWebsite();
         
         if (scanResult) {
-          if (scanResult && typeof scanResult === 'object') {
-            if (scanResult.optimizationCost !== undefined) {
-              setOptimizationCost(Number(scanResult.optimizationCost));
-              
-              if (scanResult.optimizationItems && Array.isArray(scanResult.optimizationItems)) {
-                setOptimizationItems(scanResult.optimizationItems);
-              }
+          // Check if scanResult exists and is an object before accessing its properties
+          if (typeof scanResult === 'object' && scanResult !== null) {
+            // Safe access to optimizationCost
+            const optimizationCost = 
+              scanResult.hasOwnProperty('optimizationCost') ? 
+              Number(scanResult.optimizationCost) : 0;
+            
+            setOptimizationCost(optimizationCost);
+            
+            // Safe access to optimizationItems
+            if (scanResult.hasOwnProperty('optimizationItems') && 
+                Array.isArray(scanResult.optimizationItems)) {
+              setOptimizationItems(scanResult.optimizationItems);
             }
             
-            if (scanResult.pagesContent && Array.isArray(scanResult.pagesContent)) {
+            // Safe access to pagesContent
+            if (scanResult.hasOwnProperty('pagesContent') && 
+                Array.isArray(scanResult.pagesContent)) {
               setPagesContent(scanResult.pagesContent);
             }
           }

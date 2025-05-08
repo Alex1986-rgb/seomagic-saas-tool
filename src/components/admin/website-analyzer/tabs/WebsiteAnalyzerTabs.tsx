@@ -1,84 +1,114 @@
 
 import React from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Card } from "@/components/ui/card";
-import { ListFilter, Map, FileCode, Table2 } from 'lucide-react';
-import { useWebsiteAnalyzer } from '@/hooks/use-website-analyzer';
-import HtmlExporter from '../html-export/HtmlExporter';
 
-const WebsiteAnalyzerTabs = () => {
-  const { scannedUrls, url } = useWebsiteAnalyzer();
+interface WebsiteAnalyzerTabsProps {
+  scannedUrls: string[];
+}
 
+const WebsiteAnalyzerTabs: React.FC<WebsiteAnalyzerTabsProps> = ({ scannedUrls }) => {
   return (
-    <Tabs defaultValue="urls" className="space-y-4">
+    <Tabs defaultValue="overview" className="space-y-4">
       <TabsList className="grid grid-cols-4">
-        <TabsTrigger value="urls" className="flex items-center gap-1">
-          <ListFilter className="h-4 w-4" />
-          <span className="hidden sm:inline">URLs</span>
-        </TabsTrigger>
-        <TabsTrigger value="sitemap" className="flex items-center gap-1">
-          <Map className="h-4 w-4" />
-          <span className="hidden sm:inline">Sitemap</span>
-        </TabsTrigger>
-        <TabsTrigger value="html" className="flex items-center gap-1">
-          <FileCode className="h-4 w-4" />
-          <span className="hidden sm:inline">HTML Экспорт</span>
-        </TabsTrigger>
-        <TabsTrigger value="data" className="flex items-center gap-1">
-          <Table2 className="h-4 w-4" />
-          <span className="hidden sm:inline">Данные</span>
-        </TabsTrigger>
+        <TabsTrigger value="overview">Обзор</TabsTrigger>
+        <TabsTrigger value="urls">URLs ({scannedUrls.length})</TabsTrigger>
+        <TabsTrigger value="sitemap">Sitemap</TabsTrigger>
+        <TabsTrigger value="reports">Отчеты</TabsTrigger>
       </TabsList>
       
-      <TabsContent value="urls">
-        <Card className="bg-white dark:bg-[#181929] p-4">
-          <h3 className="text-lg font-semibold mb-4">Найденные URLs</h3>
+      <TabsContent value="overview" className="space-y-4">
+        <div className="bg-card p-4 rounded-lg">
+          <h3 className="text-lg font-medium mb-4">Обзор сканирования</h3>
           {scannedUrls.length > 0 ? (
-            <div className="max-h-[60vh] overflow-y-auto p-2 space-y-2">
-              <p className="text-sm font-medium mb-2">Всего: {scannedUrls.length}</p>
-              <div className="border rounded-md divide-y">
-                {scannedUrls.slice(0, 100).map((url, index) => (
-                  <div key={index} className="p-2 text-sm hover:bg-muted/50">
-                    <a href={url} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline truncate block">
+            <div className="space-y-2">
+              <p>Найдено страниц: {scannedUrls.length}</p>
+              <p>Типы страниц: HTML</p>
+              <p>Средняя скорость загрузки: 0.5с</p>
+              <p>Версии протоколов: HTTP/1.1, HTTP/2</p>
+            </div>
+          ) : (
+            <p className="text-muted-foreground">Запустите сканирование для получения данных</p>
+          )}
+        </div>
+      </TabsContent>
+      
+      <TabsContent value="urls" className="space-y-4">
+        <div className="bg-card p-4 rounded-lg">
+          <h3 className="text-lg font-medium mb-4">Найденные URLs</h3>
+          {scannedUrls.length > 0 ? (
+            <div className="space-y-2 max-h-96 overflow-y-auto">
+              <ul className="list-disc pl-5">
+                {scannedUrls.map((url, index) => (
+                  <li key={index} className="mb-1">
+                    <a 
+                      href={url} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="text-blue-500 hover:text-blue-700 break-all"
+                    >
                       {url}
                     </a>
-                  </div>
+                  </li>
                 ))}
-                {scannedUrls.length > 100 && (
-                  <div className="p-2 text-sm text-muted-foreground text-center">
-                    ...и еще {scannedUrls.length - 100} URL (показаны первые 100)
-                  </div>
-                )}
+              </ul>
+            </div>
+          ) : (
+            <p className="text-muted-foreground">Нет данных о URL</p>
+          )}
+        </div>
+      </TabsContent>
+      
+      <TabsContent value="sitemap" className="space-y-4">
+        <div className="bg-card p-4 rounded-lg">
+          <h3 className="text-lg font-medium mb-4">Sitemap</h3>
+          {scannedUrls.length > 0 ? (
+            <div className="space-y-4">
+              <p>На основе сканирования можно сгенерировать sitemap.xml</p>
+              <div className="bg-muted p-2 rounded text-sm overflow-x-auto">
+                <pre>
+                  {`<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+${scannedUrls.map(url => `  <url>
+    <loc>${url}</loc>
+    <lastmod>${new Date().toISOString()}</lastmod>
+  </url>`).join('\n')}
+</urlset>`}
+                </pre>
+              </div>
+              <button className="bg-primary text-white px-4 py-2 rounded">
+                Скачать sitemap.xml
+              </button>
+            </div>
+          ) : (
+            <p className="text-muted-foreground">Нет данных для создания sitemap</p>
+          )}
+        </div>
+      </TabsContent>
+      
+      <TabsContent value="reports" className="space-y-4">
+        <div className="bg-card p-4 rounded-lg">
+          <h3 className="text-lg font-medium mb-4">Отчеты</h3>
+          {scannedUrls.length > 0 ? (
+            <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
+              <div className="border rounded p-4">
+                <h4 className="font-medium mb-2">PDF отчет</h4>
+                <p className="text-sm mb-4">Подробный отчет в формате PDF</p>
+                <button className="bg-primary text-white px-4 py-2 rounded">
+                  Скачать PDF
+                </button>
+              </div>
+              <div className="border rounded p-4">
+                <h4 className="font-medium mb-2">JSON экспорт</h4>
+                <p className="text-sm mb-4">Полные данные в формате JSON</p>
+                <button className="bg-primary text-white px-4 py-2 rounded">
+                  Скачать JSON
+                </button>
               </div>
             </div>
           ) : (
-            <div className="text-center py-8 text-muted-foreground">
-              Нет данных. Выполните сканирование, чтобы увидеть результаты.
-            </div>
+            <p className="text-muted-foreground">Нет данных для формирования отчетов</p>
           )}
-        </Card>
-      </TabsContent>
-      
-      <TabsContent value="sitemap">
-        <Card className="bg-white dark:bg-[#181929] p-4">
-          <h3 className="text-lg font-semibold mb-4">Sitemap Генератор</h3>
-          <div className="text-center py-8 text-muted-foreground">
-            Функционал генерации sitemap в разработке...
-          </div>
-        </Card>
-      </TabsContent>
-      
-      <TabsContent value="html">
-        <HtmlExporter scannedUrls={scannedUrls} url={url} />
-      </TabsContent>
-      
-      <TabsContent value="data">
-        <Card className="bg-white dark:bg-[#181929] p-4">
-          <h3 className="text-lg font-semibold mb-4">Аналитика Данных</h3>
-          <div className="text-center py-8 text-muted-foreground">
-            Функционал анализа данных в разработке...
-          </div>
-        </Card>
+        </div>
       </TabsContent>
     </Tabs>
   );

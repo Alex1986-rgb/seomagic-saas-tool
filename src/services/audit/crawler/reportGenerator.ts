@@ -1,155 +1,98 @@
+import { CrawlResult, CrawlSummary, PageData } from './types';
+
 /**
- * Report generator for crawl results
+ * Generate reports and summaries from crawl data
  */
-
-import { PageData, CrawlSummary } from './types';
-
 export class ReportGenerator {
-  // Generate sitemap XML for discovered URLs
-  static generateSitemap(domain: string, visited: Set<string>, excludePatterns: RegExp[]): string {
-    let sitemap = '<?xml version="1.0" encoding="UTF-8"?>\n';
-    sitemap += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n';
-    
-    for (const url of visited) {
-      try {
-        // Skip URLs that match exclude patterns
-        let shouldSkip = false;
-        for (const pattern of excludePatterns) {
-          if (pattern.test(url)) {
-            shouldSkip = true;
-            break;
-          }
-        }
-        
-        if (shouldSkip) continue;
-        
-        const urlObj = new URL(url);
-        if (urlObj.hostname === domain) {
-          sitemap += `  <url>\n    <loc>${url}</loc>\n`;
-          sitemap += `    <priority>0.5</priority>\n`;
-          sitemap += `  </url>\n`;
-        }
-      } catch (e) {
-        // Skip invalid URLs
+  /**
+   * Generate summary of crawl results
+   */
+  generateCrawlSummary(result: CrawlResult, pages: Map<string, PageData>): CrawlSummary {
+    // Calculate key metrics
+    let totalLinks = 0;
+    let internalLinks = 0;
+    let externalLinks = 0;
+    let brokenLinks = 0;
+    let totalLoadTime = 0;
+    let pageCount = 0;
+
+    // Track page types and depths
+    const pageTypes: Record<string, number> = {};
+    const depthDistribution: Record<number, number> = {};
+
+    // Process each page
+    pages.forEach((pageData, url) => {
+      // Count pages
+      pageCount++;
+
+      // Calculate links
+      totalLinks += pageData.links.length;
+      if (pageData.internalLinks) internalLinks += pageData.internalLinks.length;
+      if (pageData.externalLinks) externalLinks += pageData.externalLinks.length;
+
+      // Track load time
+      totalLoadTime += pageData.loadTime;
+
+      // Track content types
+      const contentType = pageData.contentType.split(';')[0].trim();
+      if (pageTypes[contentType]) {
+        pageTypes[contentType]++;
+      } else {
+        pageTypes[contentType] = 1;
       }
-    }
-    
-    sitemap += '</urlset>';
-    return sitemap;
-  }
-  
-  // Generate summary report of crawling
-  static generateSummaryReport(
-    pageData: Map<string, PageData>, 
-    domain: string, 
-    baseUrl: string, 
-    startTime: number, 
-    endTime: number
-  ): CrawlSummary {
-    const pages = Array.from(pageData.values());
-    
-    // Calculate total internal and external links
-    let totalInternalLinks = 0;
-    let totalExternalLinks = 0;
-    
-    for (const page of pages) {
-      totalInternalLinks += page.internalLinks?.length || 0;
-      totalExternalLinks += page.externalLinks?.length || 0;
-    }
-    
-    // Count pages with missing meta elements
-    let pagesWithoutTitle = 0;
-    let pagesWithoutDescription = 0;
-    let pagesWithoutH1 = 0;
-    
-    for (const page of pages) {
-      if (!page.title) pagesWithoutTitle++;
-      if (!page.description) pagesWithoutDescription++;
-      if (!page.h1 || page.h1.length === 0) pagesWithoutH1++;
-    }
-    
-    // Calculate total time and rate
-    const totalTimeMs = endTime - startTime;
-    const totalTimeSeconds = totalTimeMs / 1000;
-    const crawlRate = totalTimeSeconds > 0 ? `${(pages.length / totalTimeSeconds).toFixed(2)} pages/sec` : 'N/A';
-    
-    // Generate formatted time
-    const durationFormatted = totalTimeSeconds < 60 
-      ? `${totalTimeSeconds.toFixed(2)} seconds`
-      : `${Math.floor(totalTimeSeconds / 60)} minutes ${Math.floor(totalTimeSeconds % 60)} seconds`;
-    
-    // Calculate page statistics
-    const avgInternalLinks = pages.length > 0 
-      ? (totalInternalLinks / pages.length).toFixed(1) 
-      : '0';
-      
-    const avgExternalLinks = pages.length > 0 
-      ? (totalExternalLinks / pages.length).toFixed(1) 
-      : '0';
-      
-    const totalImages = pages.reduce((sum, page) => sum + (page.images?.length || 0), 0);
-    const avgImages = pages.length > 0 
-      ? (totalImages / pages.length).toFixed(1) 
-      : '0';
-    
-    // Calculate percentages
-    const percentWithoutTitle = pages.length > 0 
-      ? `${((pagesWithoutTitle / pages.length) * 100).toFixed(1)}%` 
-      : '0%';
-      
-    const percentWithoutDescription = pages.length > 0 
-      ? `${((pagesWithoutDescription / pages.length) * 100).toFixed(1)}%` 
-      : '0%';
-      
-    const percentWithoutH1 = pages.length > 0 
-      ? `${((pagesWithoutH1 / pages.length) * 100).toFixed(1)}%` 
-      : '0%';
-    
+
+      // Track issues
+      if (pageData.statusCode >= 400) {
+        brokenLinks++;
+      }
+
+      // We would track depth distribution here if depth information was available
+      // This is a placeholder
+      const estimatedDepth = url.split('/').length - 3;
+      if (estimatedDepth >= 0) {
+        if (depthDistribution[estimatedDepth]) {
+          depthDistribution[estimatedDepth]++;
+        } else {
+          depthDistribution[estimatedDepth] = 1;
+        }
+      }
+    });
+
+    // Calculate average load time
+    const averageLoadTime = pageCount > 0 ? totalLoadTime / pageCount : 0;
+
+    // Return summary
     return {
-      crawlSummary: {
-        url: baseUrl,
-        domain,
-        startTime: new Date(startTime).toISOString(),
-        endTime: new Date(endTime).toISOString(),
-        duration: durationFormatted,
-        totalPages: pages.length,
-        crawlRate
-      },
-      pageStats: {
-        totalInternalLinks,
-        totalExternalLinks,
-        totalImages,
-        avgInternalLinksPerPage: avgInternalLinks,
-        avgExternalLinksPerPage: avgExternalLinks,
-        avgImagesPerPage: avgImages
-      },
-      seoIssues: {
-        pagesWithoutTitle,
-        pagesWithoutDescription,
-        pagesWithoutH1,
-        percentWithoutTitle,
-        percentWithoutDescription,
-        percentWithoutH1
-      }
+      totalPages: pageCount,
+      internalLinks,
+      externalLinks,
+      brokenLinks,
+      averageLoadTime,
+      pageTypes,
+      depthDistribution
     };
   }
-  
-  // Create a ZIP file with crawl data
-  static async createCrawlDataZip(
-    domain: string, 
-    sitemap: string, 
-    summary: CrawlSummary, 
-    pagesData: PageData[]
-  ): Promise<Blob> {
-    // For now, we'll just return a simple blob since we're missing JSZip implementation
-    // In a real implementation, we would create a zip file with multiple files
-    const reportData = JSON.stringify({
-      domain,
-      summary,
-      pagesCount: pagesData.length,
-      timestamp: new Date().toISOString()
-    }, null, 2);
-    
-    return new Blob([reportData], { type: 'application/json' });
+
+  /**
+   * Generate JSON report
+   */
+  generateJsonReport(result: CrawlResult, pages: Map<string, PageData>, summary: CrawlSummary): string {
+    const report = {
+      timestamp: new Date().toISOString(),
+      domain: result.metadata.domain || '',
+      totalPages: pages.size,
+      crawlTime: result.metadata.totalTime,
+      summary: {
+        internalLinks: summary.internalLinks,
+        externalLinks: summary.externalLinks,
+        brokenLinks: summary.brokenLinks,
+        averageLoadTime: summary.averageLoadTime,
+        pageTypes: summary.pageTypes,
+        depthDistribution: summary.depthDistribution
+      },
+      pages: Array.from(pages.values())
+    };
+
+    return JSON.stringify(report, null, 2);
   }
 }

@@ -1,5 +1,6 @@
 
 import { saveAs } from 'file-saver';
+import { CrawlSummary } from '../audit/crawler/types';
 
 /**
  * Service for generating and exporting reports

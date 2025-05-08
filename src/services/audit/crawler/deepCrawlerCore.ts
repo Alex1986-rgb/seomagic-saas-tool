@@ -6,9 +6,9 @@
 import * as cheerio from 'cheerio';
 import axios from 'axios';
 import { CrawlResult, DeepCrawlerOptions, TaskProgress } from './types';
-import { UrlProcessor } from './UrlProcessor';
-import { RobotsTxtParser } from './RobotsTxtParser';
-import { CrawlQueueManager } from './CrawlQueueManager';
+import { UrlProcessor } from './urlProcessor';
+import { RobotsTxtParser } from './robotsTxtParser';
+import { CrawlQueueManager } from './crawlQueueManager';
 import { PageProcessor } from './pageProcessor';
 
 export class DeepCrawlerCore {

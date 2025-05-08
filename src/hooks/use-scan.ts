@@ -6,6 +6,17 @@ import { seoApiService } from '@/services/api/seoApiService';
 import { validationService } from '@/services/validation/validationService';
 import { reportingService } from '@/services/reporting/reportingService';
 
+interface ScanStatusResponse {
+  task_id: string;
+  current_url: string;
+  pages_scanned: number;
+  total_pages: number;
+  status: string;
+  progress: number;
+  error?: string;
+  url?: string;
+}
+
 /**
  * Hook for handling website scanning functionality
  */
@@ -74,31 +85,41 @@ export const useScan = (url: string, onPageCountUpdate?: (count: number) => void
       
       // Start crawl and get task ID
       const response = await seoApiService.startCrawl(formattedUrl);
+      
       if (!response || typeof response !== 'object') {
         throw new Error('Invalid response from API');
       }
       
-      const taskId = response.task_id as string;
-      if (!taskId) {
+      // Type guard for the response
+      if (!('task_id' in response)) {
         throw new Error('No task ID returned');
       }
       
-      setTaskId(taskId);
+      const crawlTaskId = response.task_id as string;
+      if (!crawlTaskId) {
+        throw new Error('Empty task ID returned');
+      }
+      
+      setTaskId(crawlTaskId);
       
       // Start progress polling
       const pollInterval = setInterval(async () => {
         try {
-          const statusResponse = await seoApiService.getStatus(taskId);
+          const statusResponse = await seoApiService.getStatus(crawlTaskId);
+          
           if (!statusResponse || typeof statusResponse !== 'object') {
             throw new Error('Invalid status response');
           }
           
-          const statusCurrent = statusResponse.current_url as string || url;
-          const pagesScanned = statusResponse.pages_scanned as number || 0;
-          const totalPages = statusResponse.total_pages as number || 500000;
-          const status = statusResponse.status as string;
+          // Type cast with type guard
+          const typedResponse = statusResponse as ScanStatusResponse;
           
-          const progressValue = statusResponse.progress as number || 0;
+          const statusCurrent = typedResponse.current_url || url;
+          const pagesScanned = typedResponse.pages_scanned || 0;
+          const totalPages = typedResponse.total_pages || 500000;
+          const status = typedResponse.status || 'in_progress';
+          
+          const progressValue = typedResponse.progress || 0;
           
           setScanDetails({
             current_url: statusCurrent,
@@ -121,7 +142,8 @@ export const useScan = (url: string, onPageCountUpdate?: (count: number) => void
             setIsScanning(false);
             
             if (status === 'completed') {
-              const pageUrls = [statusResponse.url as string || url];
+              const pageUrl = typedResponse.url || url;
+              const pageUrls = [pageUrl];
               
               const domain = validationService.extractDomain(url);
               const sitemapXml = reportingService.generateSitemapXml(domain, pageUrls);
@@ -132,9 +154,10 @@ export const useScan = (url: string, onPageCountUpdate?: (count: number) => void
                 description: `Просканировано ${pagesScanned} страниц`,
               });
             } else {
+              const errorMessage = typedResponse.error || "Произошла ошибка при сканировании сайта";
               toast({
                 title: "Ошибка сканирования",
-                description: statusResponse.error as string || "Произошла ошибка при сканировании сайта",
+                description: errorMessage,
                 variant: "destructive",
               });
             }
@@ -152,7 +175,7 @@ export const useScan = (url: string, onPageCountUpdate?: (count: number) => void
         }
       }, 2000);
       
-      return taskId;
+      return crawlTaskId;
     } catch (error) {
       console.error("Error starting scan:", error);
       setIsScanning(false);

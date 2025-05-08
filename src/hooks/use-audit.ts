@@ -1,10 +1,10 @@
-
 import { useState, useCallback } from 'react';
 import { useToast } from './use-toast';
 import { useScan } from './use-scan';
 import { seoApiService } from '@/services/api/seoApiService';
 import { reportingService } from '@/services/reporting/reportingService';
 import { validationService } from '@/services/validation/validationService';
+import { OptimizationResult } from '@/services/api/seoApiService';
 
 /**
  * Hook for managing website audit functionality
@@ -103,7 +103,7 @@ export const useAudit = (initialUrl?: string) => {
                 impact: 'high'
               })),
               important: Array(Math.floor(Math.random() * 5)).fill(null).map(() => ({
-                title: 'Важная ошибка',
+                title: 'Важна�� ошибка',
                 description: 'Описание важной ошибки',
                 impact: 'medium'
               })),
@@ -257,8 +257,14 @@ export const useAudit = (initialUrl?: string) => {
         description: "Подготовка оптимизированной версии сайта...",
       });
       
-      const blob = await seoApiService.downloadOptimizedSite(taskId);
-      const url = window.URL.createObjectURL(blob);
+      const response = await seoApiService.downloadOptimizedSite(taskId);
+      
+      // Type guard to ensure response is a Blob
+      if (!(response instanceof Blob)) {
+        throw new Error('Invalid response format');
+      }
+      
+      const url = window.URL.createObjectURL(response);
       const link = document.createElement('a');
       link.href = url;
       link.download = `optimized-site-${validationService.extractDomain(url)}.zip`;
@@ -301,15 +307,22 @@ export const useAudit = (initialUrl?: string) => {
       
       const result = await seoApiService.optimizeSiteContent(taskId, contentPrompt);
       
-      if (result.success) {
-        setIsOptimized(true);
+      // Type guard to ensure result is of OptimizationResult type
+      if (typeof result === 'object' && result !== null && 'success' in result) {
+        const typedResult = result as OptimizationResult;
         
-        toast({
-          title: "Готово",
-          description: result.message || "Контент успешно оптимизирован",
-        });
+        if (typedResult.success) {
+          setIsOptimized(true);
+          
+          toast({
+            title: "Готово",
+            description: typedResult.message || "Контент успешно оптимизирован",
+          });
+        } else {
+          throw new Error(typedResult.message || "Не удалось оптимизировать контент");
+        }
       } else {
-        throw new Error(result.message || "Не удалось оптимизировать контент");
+        throw new Error("Неверный формат ответа");
       }
     } catch (error) {
       console.error('Error optimizing content:', error);
