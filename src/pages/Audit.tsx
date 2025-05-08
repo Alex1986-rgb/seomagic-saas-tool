@@ -1,15 +1,8 @@
+
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import SeoAuditResults from '@/components/SeoAuditResults';
-import UrlForm from '@/components/url-form';
 import { useToast } from "@/hooks/use-toast";
-import { motion } from 'framer-motion';
 import Layout from '@/components/Layout';
-import AuditHero from '@/components/audit/AuditHero';
-import AuditErrorAlert from '@/components/audit/AuditErrorAlert';
-import AuditAdvancedTools from '@/components/audit/AuditAdvancedTools';
-import { ErrorBoundary } from 'react-error-boundary';
-import LoadingSpinner from '@/components/LoadingSpinner';
 import AuditTimeoutMessage from "@/components/audit/AuditTimeoutMessage";
 import AuditLoaderSection from "@/components/audit/AuditLoaderSection";
 
@@ -82,7 +75,7 @@ const Audit: React.FC = () => {
         setError("Предоставленный URL некорректен. Пожалуйста, попробуйте снова.");
         toast({
           title: "Некорректный URL",
-          description: "Предоставленный URL некорректен. Пожалуйста, попробуйте с��ова.",
+          description: "Предоставленный URL некорректен. Пожалуйста, попробуйте снова.",
           variant: "destructive",
         });
         setUrl('');
@@ -123,25 +116,6 @@ const Audit: React.FC = () => {
       });
       setShowAdvancedTools(true);
     }
-  };
-
-  const handleErrorFallback = ({ error, resetErrorBoundary }: { error: Error; resetErrorBoundary: () => void }) => {
-    console.error("Error caught by boundary:", error);
-    return (
-      <div className="p-6 text-center">
-        <p className="text-lg text-red-500 mb-4">Произошла ошибка при загрузке аудита</p>
-        <button 
-          onClick={() => {
-            extractedUrl.current = false;
-            setTimeoutOccurred(false);
-            resetErrorBoundary();
-          }}
-          className="px-4 py-2 bg-primary text-white rounded-md"
-        >
-          Попробовать снова
-        </button>
-      </div>
-    );
   };
 
   const handleResetErrors = () => {

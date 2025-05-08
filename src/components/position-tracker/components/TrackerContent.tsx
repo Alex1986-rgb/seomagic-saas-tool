@@ -34,7 +34,7 @@ const TrackerContent: React.FC<TrackerContentProps> = ({
     <>
       <TabsContent value="search">
         <Card>
-          <CardContent className="pt-6">
+          <CardContent className="pt-4 md:pt-6">
             <PositionTrackerForm onSearchComplete={(results) => {
               // Ensure the search engine is of the correct type before passing it on
               const validatedResults = {
@@ -49,11 +49,11 @@ const TrackerContent: React.FC<TrackerContentProps> = ({
       
       <TabsContent value="results">
         <Card>
-          <CardContent className="pt-6">
+          <CardContent className="pt-4 md:pt-6">
             {searchResults ? (
               <PositionTrackerResults results={searchResults} />
             ) : (
-              <div className="text-center py-6 text-muted-foreground">
+              <div className="text-center py-4 md:py-6 text-muted-foreground">
                 Нет данных для отображения. Пожалуйста, выполните проверку позиций.
               </div>
             )}
@@ -63,7 +63,7 @@ const TrackerContent: React.FC<TrackerContentProps> = ({
       
       <TabsContent value="history">
         <Card>
-          <CardContent className="pt-6">
+          <CardContent className="pt-4 md:pt-6">
             <PositionTrackerHistory />
           </CardContent>
         </Card>
@@ -71,7 +71,7 @@ const TrackerContent: React.FC<TrackerContentProps> = ({
       
       <TabsContent value="tools">
         <Card>
-          <CardContent className="pt-6">
+          <CardContent className="pt-4 md:pt-6">
             <PositionTrackerSettings />
           </CardContent>
         </Card>

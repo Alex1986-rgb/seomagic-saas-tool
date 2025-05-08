@@ -4,11 +4,11 @@ import Layout from '@/components/Layout';
 import TrackerHeader from '@/components/position-tracker/components/TrackerHeader';
 import TrackerContent from '@/components/position-tracker/components/TrackerContent';
 
-const PositionTracker = () => {
+const PositionTracker: React.FC = () => {
   const [searchResults, setSearchResults] = useState(null);
   const [activeTab, setActiveTab] = useState("search");
   
-  const handleSearchComplete = (results) => {
+  const handleSearchComplete = (results: any) => {
     setSearchResults(results);
     setActiveTab("results");
   };

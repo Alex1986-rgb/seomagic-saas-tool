@@ -44,7 +44,7 @@ const AuditLoaderSection: React.FC<AuditLoaderSectionProps> = ({
   };
 
   return (
-    <div className="container mx-auto px-4 md:px-6 pt-32 pb-20 relative">
+    <div className="container mx-auto px-4 md:px-6 pt-24 md:pt-32 pb-12 md:pb-20 relative">
       <div className="absolute inset-0 bg-gradient-to-b from-secondary/20 to-transparent -z-10" />
       <AuditHero url={url} />
       <AuditErrorAlert error={error} onClearError={handleClearError} />
@@ -55,7 +55,7 @@ const AuditLoaderSection: React.FC<AuditLoaderSectionProps> = ({
         <>
           {!url && (
             <motion.div 
-              className="max-w-2xl mx-auto mb-16 elegant-card p-8"
+              className="max-w-2xl mx-auto mb-8 md:mb-16 elegant-card p-4 md:p-8"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.5, delay: 0.2 }}
@@ -65,7 +65,7 @@ const AuditLoaderSection: React.FC<AuditLoaderSectionProps> = ({
           )}
           {url && (
             <>
-              <div className="mb-8">
+              <div className="mb-6 md:mb-8">
                 <div className="elegant-divider-alt" />
               </div>
               <ErrorBoundary
