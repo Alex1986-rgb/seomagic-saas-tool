@@ -3,6 +3,7 @@ import { useCallback } from 'react';
 import { useErrorHandler } from './use-error-handling';
 import { useToast } from './use-toast';
 import { ApiErrorResponse, isAxiosError } from '@/api/client/errorHandler';
+import { Button } from '@/components/ui/button';
 
 /**
  * Hook for handling API errors with appropriate user feedback
