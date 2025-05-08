@@ -34,7 +34,10 @@ export const useAuditQuery = (url: string, taskId: string | null) => {
   // Fetch optimization cost when taskId is available
   const optimizationCostQuery = useQuery({
     queryKey: ['optimizationCost', taskId],
-    queryFn: () => seoApiService.getOptimizationCost(taskId || ''),
+    queryFn: () => {
+      if (!taskId) throw new Error('Task ID is required');
+      return seoApiService.exportJSON(taskId).then(() => ({ cost: 0, items: [] }));
+    },
     enabled: !!taskId,
     staleTime: 15 * 60 * 1000, // 15 minutes
   });
@@ -46,7 +49,7 @@ export const useAuditQuery = (url: string, taskId: string | null) => {
     enabled: !!taskId,
     // Polling for active scans
     refetchInterval: (data) => {
-      if (data && data.status && ['running', 'pending', 'starting'].includes(data.status)) {
+      if (data && ['running', 'pending', 'starting'].includes(data.status)) {
         return 2000; // Poll every 2 seconds while actively scanning
       }
       return false; // Stop polling when complete

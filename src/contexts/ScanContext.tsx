@@ -56,7 +56,7 @@ export const ScanProvider: React.FC<{ children: ReactNode; url: string }> = ({
     pageStats,
     startScan,
     cancelScan,
-    downloadSitemap
+    downloadSitemap: downloadSitemapFn
   } = useScan(url);
   
   // Ensure scanDetails has all required properties with default values
@@ -67,6 +67,13 @@ export const ScanProvider: React.FC<{ children: ReactNode; url: string }> = ({
     stage: scanDetails?.stage || 'idle',
     progress: scanDetails?.progress || 0
   };
+  
+  // Wrap the downloadSitemap function to ensure it returns a Promise
+  const downloadSitemap = useCallback(async (): Promise<void> => {
+    if (downloadSitemapFn) {
+      await downloadSitemapFn();
+    }
+  }, [downloadSitemapFn]);
   
   return (
     <ScanContext.Provider value={{

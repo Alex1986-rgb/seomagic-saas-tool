@@ -88,6 +88,22 @@ const AuditResultsContainer: React.FC<AuditResultsContainerProps> = ({ url }) =>
     { url: url, items: [] }, 
   [historyData, url]);
 
+  // Wrap optimizeSiteContent to match the expected function signature (no arguments)
+  const handleOptimizeSiteContent = useCallback(() => {
+    if (taskId) {
+      return optimizeSiteContent(taskId, contentPrompt);
+    }
+    return Promise.resolve(null);
+  }, [taskId, contentPrompt, optimizeSiteContent]);
+
+  // Wrap downloadOptimizedSite to match the expected function signature (no arguments)
+  const handleDownloadOptimizedSite = useCallback(() => {
+    if (taskId) {
+      return downloadOptimizedSite(taskId);
+    }
+    return Promise.resolve();
+  }, [taskId, downloadOptimizedSite]);
+  
   return (
     <AuditStateHandler
       isLoading={isLoading}
@@ -121,8 +137,8 @@ const AuditResultsContainer: React.FC<AuditResultsContainerProps> = ({ url }) =>
         downloadSitemap={sitemap ? downloadSitemap : undefined}
         exportJSONData={exportJSONData}
         generatePdfReportFile={generatePdfReportFile}
-        downloadOptimizedSite={downloadOptimizedSite}
-        optimizeSiteContent={() => optimizeSiteContent(taskId || '', contentPrompt)}
+        downloadOptimizedSite={handleDownloadOptimizedSite}
+        optimizeSiteContent={handleOptimizeSiteContent}
         setContentOptimizationPrompt={setContentOptimizationPrompt}
       />
     </AuditStateHandler>
