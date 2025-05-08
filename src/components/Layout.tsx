@@ -70,8 +70,8 @@ const Layout: React.FC<LayoutProps> = ({
           key={location.pathname}
           className="flex-grow relative z-10 w-full"
           initial={animateTransitions && !isFirstRender ? 'initial' : false}
-          animate={animateTransitions ? 'animate' : false}
-          exit={animateTransitions ? 'exit' : false}
+          animate={animateTransitions ? 'animate' : undefined}
+          exit={animateTransitions ? 'exit' : undefined}
           variants={pageVariants}
         >
           {children}
