@@ -41,4 +41,4 @@ export function useErrorHandler() {
   };
 }
 
-export default useErrorHandler;
+// No default export, only named export

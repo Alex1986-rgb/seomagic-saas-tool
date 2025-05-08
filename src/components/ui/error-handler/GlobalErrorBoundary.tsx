@@ -105,5 +105,4 @@ export const ErrorFallback: React.FC<ErrorFallbackProps> = ({ error, resetError 
   );
 };
 
-// Use a consistent export pattern - remove default export and rely on named exports
-export { GlobalErrorBoundary as default };
+// Use consistent named exports instead of default export

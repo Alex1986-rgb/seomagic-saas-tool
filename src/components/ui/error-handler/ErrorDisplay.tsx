@@ -42,4 +42,5 @@ export const ErrorDisplay: React.FC<ErrorDisplayProps> = ({
   );
 };
 
+// Use named export as our standard pattern
 export default ErrorDisplay;
