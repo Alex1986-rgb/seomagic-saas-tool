@@ -1,4 +1,3 @@
-
 import { OptimizationItem } from '@/features/audit/types/optimization-types';
 
 export interface PricingConfig {
@@ -13,12 +12,12 @@ export interface PricingConfig {
   positionTrackingBase: number;
   keywordResearchBase: number;
   competitorAnalysisBase: number;
-  // New technical improvements
+  // Technical improvements
   criticalErrorsFix: number;
   metaTagsOptimization: number;
   brokenLinksRedirects: number;
   imageMediaOptimization: number;
-  // New content improvements
+  // Content improvements
   contentSeoOptimization: number;
   headingStructure: number;
   conversionTextOptimization: number;
@@ -129,7 +128,8 @@ export const calculateOptimizationCost = (pageCount: number): {
     count: 1,
     price: currentPricingConfig.baseOptimizationPrice,
     pricePerUnit: currentPricingConfig.baseOptimizationPrice,
-    totalPrice: currentPricingConfig.baseOptimizationPrice
+    totalPrice: currentPricingConfig.baseOptimizationPrice,
+    type: 'base'
   });
   
   // Critical errors fix
@@ -139,7 +139,8 @@ export const calculateOptimizationCost = (pageCount: number): {
     count: criticalErrors,
     price: currentPricingConfig.criticalErrorPrice,
     pricePerUnit: currentPricingConfig.criticalErrorPrice,
-    totalPrice: criticalErrors * currentPricingConfig.criticalErrorPrice
+    totalPrice: criticalErrors * currentPricingConfig.criticalErrorPrice,
+    type: 'critical'
   });
   
   // Warnings fix
@@ -149,10 +150,21 @@ export const calculateOptimizationCost = (pageCount: number): {
     count: warnings,
     price: currentPricingConfig.warningPrice,
     pricePerUnit: currentPricingConfig.warningPrice,
-    totalPrice: warnings * currentPricingConfig.warningPrice
+    totalPrice: warnings * currentPricingConfig.warningPrice,
+    type: 'warning'
   });
   
-  // Technical improvements
+  // Technical improvements - Detailed breakdown
+  items.push({
+    name: 'Оптимизация мета-тегов',
+    description: 'Оптимизация title, description и других мета-тегов для поисковых систем',
+    count: Math.ceil(pageCount * 0.7),
+    pricePerUnit: currentPricingConfig.metaTagsOptimization,
+    price: currentPricingConfig.metaTagsOptimization,
+    totalPrice: Math.ceil(pageCount * 0.7) * currentPricingConfig.metaTagsPerItem,
+    type: 'technical'
+  });
+  
   items.push({
     name: 'Карта сайта (sitemap.xml)',
     description: 'Создание и оптимизация файла sitemap.xml',
@@ -164,36 +176,26 @@ export const calculateOptimizationCost = (pageCount: number): {
   });
   
   items.push({
-    name: 'Оптимизация мета-тегов',
-    description: 'Оптимизация title, description и других мета-тегов для поисковых систем',
-    count: Math.ceil(pageCount * 0.7),
-    pricePerUnit: currentPricingConfig.metaTagsPerItem,
-    price: currentPricingConfig.metaTagsPerItem,
-    totalPrice: Math.ceil(pageCount * 0.7) * currentPricingConfig.metaTagsPerItem,
-    type: 'technical'
-  });
-  
-  items.push({
-    name: 'Исправление битых ссылок',
+    name: 'Исправление битых ссылок и редиректов',
     description: 'Поиск и исправление битых ссылок и настройка редиректов',
     count: Math.ceil(pageCount * 0.1),
-    pricePerUnit: currentPricingConfig.linksPerItem,
-    price: currentPricingConfig.linksPerItem,
+    pricePerUnit: currentPricingConfig.brokenLinksRedirects,
+    price: currentPricingConfig.brokenLinksRedirects,
     totalPrice: Math.ceil(pageCount * 0.1) * currentPricingConfig.linksPerItem,
     type: 'technical'
   });
   
   items.push({
-    name: 'Оптимизация изображений',
+    name: 'Оптимизация изображений и медиафайлов',
     description: 'Оптимизация изображений и медиафайлов для ускорения загрузки сайта',
     count: Math.ceil(pageCount * 3),
-    pricePerUnit: currentPricingConfig.imageAltPerItem,
-    price: currentPricingConfig.imageAltPerItem,
+    pricePerUnit: currentPricingConfig.imageMediaOptimization,
+    price: currentPricingConfig.imageMediaOptimization,
     totalPrice: Math.ceil(pageCount * 3) * currentPricingConfig.imageAltPerItem,
     type: 'technical'
   });
   
-  // Content improvements
+  // Content improvements - Detailed breakdown
   items.push({
     name: 'Оптимизация контента для SEO',
     description: 'Оптимизация контента для повышения видимости в поисковых системах',
@@ -205,7 +207,7 @@ export const calculateOptimizationCost = (pageCount: number): {
   });
   
   items.push({
-    name: 'Структура заголовков',
+    name: 'Настройка структуры заголовков',
     description: 'Настройка правильной структуры H1-H6 заголовков для улучшения SEO',
     count: Math.ceil(pageCount * 0.6),
     pricePerUnit: currentPricingConfig.headingStructure,
@@ -225,7 +227,7 @@ export const calculateOptimizationCost = (pageCount: number): {
   });
   
   items.push({
-    name: 'Улучшение читабельности',
+    name: 'Улучшение читабельности и структуры',
     description: 'Улучшение читабельности и структуры контента',
     count: Math.ceil(pageCount * 0.5),
     pricePerUnit: currentPricingConfig.readabilityImprovement,

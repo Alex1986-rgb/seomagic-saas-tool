@@ -4,7 +4,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Download, CheckCircle, AlertCircle, Check } from 'lucide-react';
+import { ArrowRight, Download, CheckCircle, AlertCircle, Check, ChevronDown, ChevronUp } from 'lucide-react';
 import { OptimizationItem } from '@/features/audit/types/optimization-types';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"; 
 import ScoreTrend from '@/components/audit/summary/ScoreTrend';
@@ -37,13 +37,36 @@ const OptimizationPricingTable: React.FC<OptimizationPricingTableProps> = ({
     }).format(amount);
   };
 
-  const [showWhatIncluded, setShowWhatIncluded] = useState(true); // Changed to true to show by default
+  const [showWhatIncluded, setShowWhatIncluded] = useState(true);
+  const [showAllItems, setShowAllItems] = useState(false);
 
+  // Group items by category
   const baseItems = items.filter(item => 
     item.name.includes('Базовая стоимость') || 
     item.name.includes('Исправление критических ошибок') || 
     item.name.includes('Исправление предупреждений')
   );
+  
+  const technicalItems = items.filter(item => 
+    item.type === 'technical' || 
+    item.name.includes('мета-тегов') || 
+    item.name.includes('битых ссылок') || 
+    item.name.includes('изображений') ||
+    item.name.includes('редиректов')
+  );
+  
+  const contentItems = items.filter(item => 
+    item.type === 'content' || 
+    item.name.includes('контента') || 
+    item.name.includes('заголовков') || 
+    item.name.includes('текстов') ||
+    item.name.includes('читабельности')
+  );
+  
+  // Items to display based on showAllItems state
+  const displayItems = showAllItems 
+    ? [...baseItems, ...technicalItems, ...contentItems] 
+    : baseItems;
   
   console.log("OptimizationPricingTable rendering with items:", items.length);
   
@@ -107,6 +130,28 @@ const OptimizationPricingTable: React.FC<OptimizationPricingTableProps> = ({
           </AlertDescription>
         </Alert>
         
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="text-sm font-medium">Расшифровка стоимости работ</h3>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="text-xs flex items-center gap-1"
+            onClick={() => setShowAllItems(!showAllItems)}
+          >
+            {showAllItems ? (
+              <>
+                Скрыть подробности
+                <ChevronUp className="h-3.5 w-3.5" />
+              </>
+            ) : (
+              <>
+                Показать все работы
+                <ChevronDown className="h-3.5 w-3.5" />
+              </>
+            )}
+          </Button>
+        </div>
+        
         <Table>
           <TableHeader>
             <TableRow>
@@ -118,8 +163,9 @@ const OptimizationPricingTable: React.FC<OptimizationPricingTableProps> = ({
             </TableRow>
           </TableHeader>
           <TableBody>
+            {/* Base items always shown */}
             {baseItems.map((item, index) => (
-              <TableRow key={index} className={index % 2 === 0 ? 'bg-muted/30' : ''}>
+              <TableRow key={`base-${index}`} className={index % 2 === 0 ? 'bg-muted/30' : ''}>
                 <TableCell className="font-medium">{item.name}</TableCell>
                 <TableCell>{item.description}</TableCell>
                 <TableCell className="text-center">{item.count}</TableCell>
@@ -127,6 +173,42 @@ const OptimizationPricingTable: React.FC<OptimizationPricingTableProps> = ({
                 <TableCell className="text-right">{formatCurrency(item.totalPrice)}</TableCell>
               </TableRow>
             ))}
+            
+            {/* Technical items shown conditionally */}
+            {showAllItems && technicalItems.length > 0 && (
+              <>
+                <TableRow className="bg-muted">
+                  <TableCell colSpan={5} className="font-medium">Технические улучшения</TableCell>
+                </TableRow>
+                {technicalItems.map((item, index) => (
+                  <TableRow key={`tech-${index}`} className={index % 2 === 0 ? 'bg-muted/10' : ''}>
+                    <TableCell className="font-medium">{item.name}</TableCell>
+                    <TableCell>{item.description}</TableCell>
+                    <TableCell className="text-center">{item.count}</TableCell>
+                    <TableCell className="text-right">{item.pricePerUnit ? formatCurrency(item.pricePerUnit) : formatCurrency(item.price)}</TableCell>
+                    <TableCell className="text-right">{formatCurrency(item.totalPrice)}</TableCell>
+                  </TableRow>
+                ))}
+              </>
+            )}
+            
+            {/* Content items shown conditionally */}
+            {showAllItems && contentItems.length > 0 && (
+              <>
+                <TableRow className="bg-muted">
+                  <TableCell colSpan={5} className="font-medium">Контентные улучшения</TableCell>
+                </TableRow>
+                {contentItems.map((item, index) => (
+                  <TableRow key={`content-${index}`} className={index % 2 === 0 ? 'bg-muted/10' : ''}>
+                    <TableCell className="font-medium">{item.name}</TableCell>
+                    <TableCell>{item.description}</TableCell>
+                    <TableCell className="text-center">{item.count}</TableCell>
+                    <TableCell className="text-right">{item.pricePerUnit ? formatCurrency(item.pricePerUnit) : formatCurrency(item.price)}</TableCell>
+                    <TableCell className="text-right">{formatCurrency(item.totalPrice)}</TableCell>
+                  </TableRow>
+                ))}
+              </>
+            )}
           </TableBody>
         </Table>
       </CardContent>

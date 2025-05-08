@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Info } from 'lucide-react';
 import {
@@ -35,33 +34,44 @@ const CostDetailsTable: React.FC<CostDetailsTableProps> = ({ optimizationItems }
 
   // Group items by category
   const groupedItems = {
+    // Base categories
     base: optimizationItems.filter(item => item.name.includes('Базовая стоимость')),
     critical: optimizationItems.filter(item => item.name.includes('Исправление критических ошибок')),
     warnings: optimizationItems.filter(item => item.name.includes('Исправление предупреждений')),
     
-    technical: optimizationItems.filter(item => [
-      'Оптимизация мета-тегов',
-      'Карта сайта',
-      'Исправление битых ссылок',
-      'Оптимизация изображений',
-      'Улучшение производительности'
-    ].some(name => item.name.includes(name)) && 
+    // Technical categories with specific searches
+    technical: optimizationItems.filter(item => 
+      [
+        'Оптимизация мета-тегов',
+        'Карта сайта',
+        'Исправление битых ссылок',
+        'Оптимизация изображений',
+        'Улучшение производительности',
+        'редиректов'
+      ].some(name => item.name.includes(name)) && 
       !item.name.includes('Базовая стоимость') && 
       !item.name.includes('Исправление критических ошибок') && 
-      !item.name.includes('Исправление предупреждений')),
+      !item.name.includes('Исправление предупреждений')
+    ),
     
-    content: optimizationItems.filter(item => [
-      'Оптимизация контента',
-      'Структура заголовков',
-      'текстов для конверсии',
-      'Улучшение читабельности',
-      'Оптимизация структуры'
-    ].some(name => item.name.includes(name))),
+    // Content categories with specific searches
+    content: optimizationItems.filter(item => 
+      [
+        'Оптимизация контента',
+        'Структура заголовков',
+        'тексты для конверсии',
+        'Улучшение читабельности',
+        'Оптимизация структуры'
+      ].some(name => item.name.includes(name))
+    ),
     
-    other: optimizationItems.filter(item => [
-      'Скидка',
-      'Гарантия'
-    ].some(name => item.name.includes(name)))
+    // Other categories
+    other: optimizationItems.filter(item => 
+      [
+        'Скидка',
+        'Гарантия'
+      ].some(name => item.name.includes(name))
+    )
   };
 
   const renderTableSection = (items: OptimizationItem[], sectionTitle: string) => {
