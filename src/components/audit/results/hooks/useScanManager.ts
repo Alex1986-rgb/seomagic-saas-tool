@@ -2,7 +2,7 @@
 import { useState, useCallback } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import { AuditData } from '@/types/audit';
-import { OptimizationItem } from '../components/optimization/CostDetailsTable';
+import { OptimizationItem } from '@/features/audit/types/optimization-types';
 import { useScanAPI } from './useScanAPI';
 import { useOptimizationAPI } from './useOptimizationAPI';
 

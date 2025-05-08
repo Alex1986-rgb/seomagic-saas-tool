@@ -53,6 +53,7 @@ export const calculateOptimizationMetrics = (
       description: `Базовая оптимизация для ${totalPagesCount} страниц`,
       count: totalPagesCount,
       price: baseCost,
+      pricePerUnit: baseCost,
       totalPrice: baseTotalCost
     },
     {
@@ -60,6 +61,7 @@ export const calculateOptimizationMetrics = (
       description: "Генерация отсутствующих мета-описаний",
       count: analysis.missingMetaDescriptions,
       price: metaDescriptionCost,
+      pricePerUnit: metaDescriptionCost,
       totalPrice: metaDescriptionTotalCost
     },
     {
@@ -67,6 +69,7 @@ export const calculateOptimizationMetrics = (
       description: "Генерация отсутствующих ключевых слов",
       count: analysis.missingMetaKeywords,
       price: metaKeywordsCost,
+      pricePerUnit: metaKeywordsCost,
       totalPrice: metaKeywordsTotalCost
     },
     {
@@ -74,6 +77,7 @@ export const calculateOptimizationMetrics = (
       description: "Оптимизация текстового содержимого страниц",
       count: analysis.contentToRewrite,
       price: contentOptimizationCost,
+      pricePerUnit: contentOptimizationCost,
       totalPrice: contentTotalCost
     },
     {
@@ -81,6 +85,7 @@ export const calculateOptimizationMetrics = (
       description: "Исправление URL с подчеркиваниями",
       count: analysis.underscoreUrls,
       price: urlFixCost,
+      pricePerUnit: urlFixCost,
       totalPrice: urlTotalCost
     },
     {
@@ -88,6 +93,7 @@ export const calculateOptimizationMetrics = (
       description: "Генерация ALT-текстов для изображений",
       count: analysis.missingAltTags,
       price: altTagCost,
+      pricePerUnit: altTagCost,
       totalPrice: altTagTotalCost
     }
   ];

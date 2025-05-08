@@ -2,7 +2,7 @@
 import { useScanAPI } from './useScanAPI';
 import { useDownloadAPI } from './useDownloadAPI';
 import { useOptimizationAPI } from './useOptimizationAPI';
-import { OptimizationItem } from '../components/optimization/CostDetailsTable';
+import { OptimizationItem } from '@/features/audit/types/optimization-types';
 
 export const useAuditAPI = (url: string) => {
   // Use the scan API hook
