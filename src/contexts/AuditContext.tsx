@@ -1,73 +1,19 @@
 
 import React, { createContext, useContext, useState, useCallback, ReactNode } from 'react';
-import { AuditData, AuditHistoryData, RecommendationData } from '@/types/audit';
-import { useAudit } from '@/hooks/use-audit';
+import { AuditDataProvider, useAuditDataContext } from './AuditDataContext';
+import { ScanProvider, useScanContext } from './ScanContext';
+import { OptimizationProvider, useOptimizationContext } from './OptimizationContext';
 
-// Define the ScanDetails interface here to ensure consistency
-export interface ScanDetails {
-  current_url: string;
-  pages_scanned: number;
-  estimated_pages: number;
-  stage: string;
-  progress: number;
-}
-
-// Define the context type
+// Define the context type (now much smaller, mostly just combining the other contexts)
 interface AuditContextType {
   url: string;
-  auditData: AuditData | null;
-  recommendations: RecommendationData | null;
-  isLoading: boolean;
-  loadingProgress: number;
-  error: string | null;
-  historyData: AuditHistoryData;
-  isRefreshing: boolean;
-  optimizationCost: number;
-  optimizationItems: any[];
-  isOptimized: boolean;
-  contentPrompt: string;
-  taskId: string | null;
-  isScanning: boolean;
-  scanDetails: ScanDetails;
   updateUrl: (url: string) => void;
-  loadAuditData: (refresh?: boolean, deepScan?: boolean) => Promise<any>;
-  generatePdfReportFile: () => Promise<void>;
-  exportJSONData: () => Promise<void>;
-  downloadOptimizedSite: () => Promise<void>;
-  optimizeSiteContent: () => Promise<void>;
-  setContentOptimizationPrompt: (prompt: string) => void;
 }
 
 // Create the context with default values
 const AuditContext = createContext<AuditContextType>({
   url: '',
-  auditData: null,
-  recommendations: null,
-  isLoading: false,
-  loadingProgress: 0,
-  error: null,
-  historyData: { url: '', items: [] },
-  isRefreshing: false,
-  optimizationCost: 0,
-  optimizationItems: [],
-  isOptimized: false,
-  contentPrompt: '',
-  taskId: null,
-  isScanning: false,
-  scanDetails: {
-    current_url: '',
-    pages_scanned: 0,
-    estimated_pages: 0,
-    stage: 'idle',
-    progress: 0
-  },
   updateUrl: () => {},
-  loadAuditData: async () => null,
-  generatePdfReportFile: async () => {},
-  exportJSONData: async () => {},
-  downloadOptimizedSite: async () => {},
-  optimizeSiteContent: async () => {},
-  setContentOptimizationPrompt: () => {},
 });
 
 // Provider component
@@ -75,57 +21,72 @@ export const AuditProvider: React.FC<{ children: ReactNode; initialUrl?: string 
   children, 
   initialUrl = '' 
 }) => {
-  const audit = useAudit(initialUrl);
+  const [url, setUrl] = useState(initialUrl);
   
-  // Ensure scanDetails has all required properties with default values
-  const scanDetailsWithDefaults: ScanDetails = {
-    current_url: audit.scanDetails?.current_url || '',
-    pages_scanned: audit.scanDetails?.pages_scanned || 0,
-    estimated_pages: audit.scanDetails?.estimated_pages || 0,
-    stage: audit.scanDetails?.stage || 'idle',
-    progress: audit.scanDetails?.progress || 0
-  };
+  // Update URL
+  const updateUrl = useCallback((newUrl: string) => {
+    setUrl(newUrl);
+  }, []);
   
   return (
-    <AuditContext.Provider value={{
-      url: audit.url,
-      auditData: audit.auditData,
-      recommendations: audit.recommendations,
-      isLoading: audit.isLoading,
-      loadingProgress: audit.loadingProgress,
-      error: audit.error,
-      historyData: { 
-        url: audit.url, 
-        items: Array.isArray(audit.historyData) ? audit.historyData : [] 
-      },
-      isRefreshing: audit.isRefreshing,
-      optimizationCost: audit.optimizationCost,
-      optimizationItems: audit.optimizationItems,
-      isOptimized: audit.isOptimized,
-      contentPrompt: audit.contentPrompt,
-      taskId: audit.taskId,
-      isScanning: audit.isScanning,
-      scanDetails: scanDetailsWithDefaults,
-      updateUrl: audit.updateUrl,
-      loadAuditData: audit.loadAuditData,
-      generatePdfReportFile: audit.generatePdfReportFile,
-      exportJSONData: audit.exportJSONData,
-      downloadOptimizedSite: audit.downloadOptimizedSite,
-      optimizeSiteContent: audit.optimizeSiteContent,
-      setContentOptimizationPrompt: audit.setContentOptimizationPrompt,
-    }}>
-      {children}
+    <AuditContext.Provider value={{ url, updateUrl }}>
+      <AuditDataProvider url={url}>
+        <ScanProvider url={url}>
+          <OptimizationProvider taskId={useScanContext().taskId}>
+            {children}
+          </OptimizationProvider>
+        </ScanProvider>
+      </AuditDataProvider>
     </AuditContext.Provider>
   );
 };
 
 // Custom hook to use the audit context
 export const useAuditContext = () => {
-  const context = useContext(AuditContext);
+  const auditContext = useContext(AuditContext);
+  const auditDataContext = useAuditDataContext();
+  const scanContext = useScanContext();
+  const optimizationContext = useOptimizationContext();
   
-  if (context === undefined) {
+  if (auditContext === undefined) {
     throw new Error('useAuditContext must be used within an AuditProvider');
   }
   
-  return context;
+  // Combine all contexts into one for backward compatibility
+  return {
+    // From main AuditContext
+    url: auditContext.url,
+    updateUrl: auditContext.updateUrl,
+    
+    // From AuditDataContext
+    auditData: auditDataContext.auditData,
+    recommendations: auditDataContext.recommendations,
+    historyData: auditDataContext.historyData,
+    error: auditDataContext.error,
+    isLoading: auditDataContext.isLoading,
+    loadingProgress: auditDataContext.loadingProgress,
+    isRefreshing: auditDataContext.isRefreshing,
+    loadAuditData: auditDataContext.loadAuditData,
+    generatePdfReportFile: auditDataContext.generatePdfReportFile,
+    exportJSONData: auditDataContext.exportJSONData,
+    
+    // From ScanContext
+    isScanning: scanContext.isScanning,
+    scanDetails: scanContext.scanDetails,
+    taskId: scanContext.taskId,
+    sitemap: scanContext.sitemap,
+    pageStats: scanContext.pageStats,
+    startScan: scanContext.startScan,
+    cancelScan: scanContext.cancelScan,
+    downloadSitemap: scanContext.downloadSitemap,
+    
+    // From OptimizationContext
+    optimizationCost: optimizationContext.optimizationCost,
+    optimizationItems: optimizationContext.optimizationItems,
+    isOptimized: optimizationContext.isOptimized,
+    contentPrompt: optimizationContext.contentPrompt,
+    setContentOptimizationPrompt: optimizationContext.setContentOptimizationPrompt,
+    optimizeSiteContent: (prompt: string) => optimizationContext.optimizeSiteContent(scanContext.taskId || '', prompt),
+    downloadOptimizedSite: () => optimizationContext.downloadOptimizedSite(scanContext.taskId || '')
+  };
 };

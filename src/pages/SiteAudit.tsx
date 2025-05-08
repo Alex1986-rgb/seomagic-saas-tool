@@ -2,8 +2,9 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useToast } from "@/hooks/use-toast";
-import SeoAuditResults from '@/components/SeoAuditResults';
 import Layout from '@/components/Layout';
+import AuditResultsContainer from '@/features/audit/components/results/AuditResultsContainer';
+import { AuditProvider } from '@/contexts/AuditContext';
 
 const SiteAudit: React.FC = () => {
   const [searchParams] = useSearchParams();
@@ -62,7 +63,9 @@ const SiteAudit: React.FC = () => {
               {error}
             </div>
           ) : (
-            <SeoAuditResults url={url} />
+            <AuditProvider initialUrl={url}>
+              <AuditResultsContainer url={url} />
+            </AuditProvider>
           )}
         </div>
       </div>

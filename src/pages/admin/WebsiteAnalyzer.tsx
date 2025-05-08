@@ -9,7 +9,6 @@ import { useWebsiteAnalyzer } from '@/hooks/use-website-analyzer';
 import ScanForm from '@/components/admin/website-analyzer/ScanForm';
 import WebsiteAnalyzerTabs from '@/components/admin/website-analyzer/tabs/WebsiteAnalyzerTabs';
 import { AuditProvider } from '@/contexts/AuditContext';
-import { ScanProvider } from '@/contexts/ScanContext';
 
 const WebsiteAnalyzerPage: React.FC = () => {
   const {
@@ -45,35 +44,33 @@ const WebsiteAnalyzerPage: React.FC = () => {
 
   return (
     <AuditProvider initialUrl={url}>
-      <ScanProvider url={url}>
-        <Helmet>
-          <title>Анализатор сайтов | Админ панель</title>
-        </Helmet>
-        <div className="container mx-auto px-2 md:px-4 py-6 md:py-10 max-w-4xl">
-          <WebsiteAnalyzerHeader />
-          <SupabaseWarning />
-          
-          <Card className="mb-8 bg-[#181929] border-[#22213B] shadow-lg">
-            <CardHeader>
-              {cardTitle}
-              {cardDescription}
-            </CardHeader>
-            <CardContent>
-              <ScanForm
-                url={url}
-                isScanning={isScanning}
-                scanProgress={scanProgress}
-                scanStage={scanStage}
-                isError={isError}
-                onUrlChange={handleUrlInputChange}
-                onStartScan={startFullScan}
-              />
-            </CardContent>
-          </Card>
+      <Helmet>
+        <title>Анализатор сайтов | Админ панель</title>
+      </Helmet>
+      <div className="container mx-auto px-2 md:px-4 py-6 md:py-10 max-w-4xl">
+        <WebsiteAnalyzerHeader />
+        <SupabaseWarning />
+        
+        <Card className="mb-8 bg-[#181929] border-[#22213B] shadow-lg">
+          <CardHeader>
+            {cardTitle}
+            {cardDescription}
+          </CardHeader>
+          <CardContent>
+            <ScanForm
+              url={url}
+              isScanning={isScanning}
+              scanProgress={scanProgress}
+              scanStage={scanStage}
+              isError={isError}
+              onUrlChange={handleUrlInputChange}
+              onStartScan={startFullScan}
+            />
+          </CardContent>
+        </Card>
 
-          <WebsiteAnalyzerTabs scannedUrls={scannedUrls ?? []} />
-        </div>
-      </ScanProvider>
+        <WebsiteAnalyzerTabs scannedUrls={scannedUrls ?? []} />
+      </div>
     </AuditProvider>
   );
 };

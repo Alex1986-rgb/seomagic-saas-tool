@@ -5,6 +5,7 @@ import { useToast } from "@/hooks/use-toast";
 import Layout from '@/components/Layout';
 import AuditTimeoutMessage from "@/components/audit/AuditTimeoutMessage";
 import AuditLoaderSection from "@/components/audit/AuditLoaderSection";
+import { AuditProvider } from '@/contexts/AuditContext';
 
 const Audit: React.FC = () => {
   const [searchParams] = useSearchParams();
@@ -141,19 +142,37 @@ const Audit: React.FC = () => {
 
   return (
     <Layout>
-      <AuditLoaderSection
-        url={url}
-        error={error}
-        isLoading={isLoading}
-        showAdvancedTools={showAdvancedTools}
-        scannedUrls={scannedUrls}
-        handleClearError={handleClearError}
-        handleUrlsScanned={handleUrlsScanned}
-        setShowAdvancedTools={setShowAdvancedTools}
-        extractedUrl={extractedUrl}
-        setTimeoutOccurred={setTimeoutOccurred}
-        extractUrlParam={extractUrlParam}
-      />
+      {url ? (
+        <AuditProvider initialUrl={url}>
+          <AuditLoaderSection
+            url={url}
+            error={error}
+            isLoading={isLoading}
+            showAdvancedTools={showAdvancedTools}
+            scannedUrls={scannedUrls}
+            handleClearError={handleClearError}
+            handleUrlsScanned={handleUrlsScanned}
+            setShowAdvancedTools={setShowAdvancedTools}
+            extractedUrl={extractedUrl}
+            setTimeoutOccurred={setTimeoutOccurred}
+            extractUrlParam={extractUrlParam}
+          />
+        </AuditProvider>
+      ) : (
+        <AuditLoaderSection
+          url={url}
+          error={error}
+          isLoading={isLoading}
+          showAdvancedTools={showAdvancedTools}
+          scannedUrls={scannedUrls}
+          handleClearError={handleClearError}
+          handleUrlsScanned={handleUrlsScanned}
+          setShowAdvancedTools={setShowAdvancedTools}
+          extractedUrl={extractedUrl}
+          setTimeoutOccurred={setTimeoutOccurred}
+          extractUrlParam={extractUrlParam}
+        />
+      )}
     </Layout>
   );
 };

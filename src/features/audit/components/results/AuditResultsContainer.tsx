@@ -1,6 +1,9 @@
 
 import React, { useCallback, useMemo } from 'react';
-import { useAuditData } from '../../hooks/useAuditData';
+import { useAuditContext } from '@/contexts/AuditContext';
+import { useAuditDataContext } from '@/contexts/AuditDataContext';
+import { useScanContext } from '@/contexts/ScanContext';
+import { useOptimizationContext } from '@/contexts/OptimizationContext';
 import { useAuditInitialization } from '../../hooks/useAuditInitialization';
 import { usePromptToggle } from '../../hooks/usePromptToggle';
 import AuditStateHandler from './components/AuditStateHandler';
@@ -11,32 +14,47 @@ interface AuditResultsContainerProps {
 }
 
 const AuditResultsContainer: React.FC<AuditResultsContainerProps> = ({ url }) => {
-  // Get audit data and actions from our custom hook
+  // Get data from our contexts
+  const { updateUrl } = useAuditContext();
+  
   const {
-    isLoading: isAuditLoading,
-    loadingProgress,
     auditData,
     recommendations,
     historyData,
     error: auditError,
+    isLoading: isAuditLoading,
+    loadingProgress,
     isRefreshing,
+    loadAuditData,
+    generatePdfReportFile,
+    exportJSONData
+  } = useAuditDataContext();
+  
+  const {
     isScanning,
     scanDetails,
-    pageStats,
+    taskId,
     sitemap,
+    pageStats,
+    downloadSitemap
+  } = useScanContext();
+  
+  const {
     optimizationCost,
     optimizationItems,
     isOptimized,
     contentPrompt,
-    taskId,
-    loadAuditData,
-    downloadSitemap,
-    downloadOptimizedSite,
-    generatePdfReportFile,
-    exportJSONData,
+    setContentOptimizationPrompt,
     optimizeSiteContent,
-    setContentOptimizationPrompt
-  } = useAuditData(url);
+    downloadOptimizedSite
+  } = useOptimizationContext();
+  
+  // Make sure URL is up to date
+  React.useEffect(() => {
+    if (url) {
+      updateUrl(url);
+    }
+  }, [url, updateUrl]);
   
   // Content prompt state management
   const { showPrompt, togglePrompt } = usePromptToggle();
@@ -50,7 +68,7 @@ const AuditResultsContainer: React.FC<AuditResultsContainerProps> = ({ url }) =>
     setIsLoading
   } = useAuditInitialization(url, loadAuditData);
 
-  // Sync loading state from audit data hook
+  // Sync loading state from audit data context
   React.useEffect(() => {
     setIsLoading(isAuditLoading);
   }, [isAuditLoading, setIsLoading]);
@@ -104,11 +122,11 @@ const AuditResultsContainer: React.FC<AuditResultsContainerProps> = ({ url }) =>
         exportJSONData={exportJSONData}
         generatePdfReportFile={generatePdfReportFile}
         downloadOptimizedSite={downloadOptimizedSite}
-        optimizeSiteContent={optimizeSiteContent}
+        optimizeSiteContent={() => optimizeSiteContent(taskId || '', contentPrompt)}
         setContentOptimizationPrompt={setContentOptimizationPrompt}
       />
     </AuditStateHandler>
   );
 };
 
-export default AuditResultsContainer;
+export default React.memo(AuditResultsContainer);

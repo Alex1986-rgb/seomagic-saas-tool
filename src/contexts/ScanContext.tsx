@@ -2,32 +2,31 @@
 import React, { createContext, useContext, useState, useCallback, ReactNode } from 'react';
 import { useScan } from '@/hooks/use-scan';
 
+// Define the ScanDetails interface
 export interface ScanDetails {
   current_url: string;
   pages_scanned: number;
   estimated_pages: number;
   stage: string;
-  progress: number; // Making this required since the interface that uses it requires it
+  progress: number;
 }
 
+// Define the scan context type
 interface ScanContextType {
+  url: string;
   isScanning: boolean;
   scanDetails: ScanDetails;
-  pageStats: {
-    total: number;
-    html: number;
-    images: number;
-    other: number;
-  } | null;
-  sitemap: string | null;
   taskId: string | null;
-  startScan: (useSitemap?: boolean) => Promise<string | null>;
+  sitemap: any;
+  pageStats: any;
+  startScan: (deepScan?: boolean) => Promise<string | null>;
   cancelScan: () => Promise<void>;
-  downloadSitemap: () => void;
+  downloadSitemap: () => Promise<void>;
 }
 
 // Create the context with default values
 const ScanContext = createContext<ScanContextType>({
+  url: '',
   isScanning: false,
   scanDetails: {
     current_url: '',
@@ -36,41 +35,50 @@ const ScanContext = createContext<ScanContextType>({
     stage: 'idle',
     progress: 0
   },
-  pageStats: null,
-  sitemap: null,
   taskId: null,
+  sitemap: null,
+  pageStats: null,
   startScan: async () => null,
   cancelScan: async () => {},
-  downloadSitemap: () => {},
+  downloadSitemap: async () => {}
 });
 
 // Provider component
-export const ScanProvider: React.FC<{ children: ReactNode; url: string; onPageCountUpdate?: (count: number) => void }> = ({ 
+export const ScanProvider: React.FC<{ children: ReactNode; url: string }> = ({ 
   children, 
-  url,
-  onPageCountUpdate
+  url 
 }) => {
-  const scan = useScan(url, onPageCountUpdate);
+  const {
+    isScanning,
+    scanDetails,
+    sitemap,
+    taskId,
+    pageStats,
+    startScan,
+    cancelScan,
+    downloadSitemap
+  } = useScan(url);
   
-  // Ensure scanDetails always has the required progress property
+  // Ensure scanDetails has all required properties with default values
   const scanDetailsWithDefaults: ScanDetails = {
-    current_url: scan.scanDetails?.current_url || '',
-    pages_scanned: scan.scanDetails?.pages_scanned || 0,
-    estimated_pages: scan.scanDetails?.estimated_pages || 0,
-    stage: scan.scanDetails?.stage || 'idle',
-    progress: scan.scanDetails?.progress || 0,
+    current_url: scanDetails?.current_url || '',
+    pages_scanned: scanDetails?.pages_scanned || 0,
+    estimated_pages: scanDetails?.estimated_pages || 0,
+    stage: scanDetails?.stage || 'idle',
+    progress: scanDetails?.progress || 0
   };
-
+  
   return (
     <ScanContext.Provider value={{
-      isScanning: scan.isScanning,
+      url,
+      isScanning,
       scanDetails: scanDetailsWithDefaults,
-      pageStats: scan.pageStats,
-      sitemap: scan.sitemap,
-      taskId: scan.taskId,
-      startScan: scan.startScan,
-      cancelScan: scan.cancelScan,
-      downloadSitemap: scan.downloadSitemap
+      taskId,
+      sitemap,
+      pageStats,
+      startScan,
+      cancelScan,
+      downloadSitemap
     }}>
       {children}
     </ScanContext.Provider>
