@@ -1,42 +1,61 @@
 
 /**
- * Service for validating different types of inputs
+ * Validation service for various input validations
  */
-class ValidationService {
+export class ValidationService {
   /**
-   * Validates a URL string
-   * @param url URL string to validate
-   * @returns boolean indicating if the URL is valid
+   * Validates a URL
+   * 
+   * @param url URL to validate
+   * @returns Boolean indicating if URL is valid
    */
   validateUrl(url: string): boolean {
-    if (!url || url.trim() === '') {
-      return false;
-    }
+    if (!url.trim()) return false;
     
-    try {
-      // Add protocol if missing
-      const urlWithProtocol = url.startsWith('http') ? url : `https://${url}`;
-      
-      // Try to construct a URL object
-      new URL(urlWithProtocol);
-      
-      // Additional checks for valid domain
-      const domainRegex = /^([a-z0-9]+(-[a-z0-9]+)*\.)+[a-z]{2,}$/i;
-      const hostname = new URL(urlWithProtocol).hostname;
-      
-      return domainRegex.test(hostname);
-    } catch (error) {
-      return false;
-    }
+    // URL validation pattern
+    const pattern = /^(https?:\/\/)?(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)$/;
+    return pattern.test(url);
   }
-  
+
   /**
-   * Formats a URL string by adding protocol if missing
-   * @param url URL string to format
-   * @returns Formatted URL string
+   * Formats a URL by adding https:// prefix if missing
+   * 
+   * @param url URL to format
+   * @returns Formatted URL
    */
   formatUrl(url: string): string {
-    return url.startsWith('http') ? url : `https://${url}`;
+    let formattedUrl = url.trim();
+    
+    if (!formattedUrl.match(/^https?:\/\//i)) {
+      formattedUrl = 'https://' + formattedUrl;
+    }
+    
+    return formattedUrl;
+  }
+
+  /**
+   * Extracts domain name from URL
+   * 
+   * @param url URL to process
+   * @returns Domain name
+   */
+  extractDomain(url: string): string {
+    try {
+      return new URL(this.formatUrl(url)).hostname;
+    } catch (e) {
+      return url;
+    }
+  }
+
+  /**
+   * Validates an email address
+   * 
+   * @param email Email to validate
+   * @returns Boolean indicating if email is valid
+   */
+  validateEmail(email: string): boolean {
+    const pattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return pattern.test(email);
   }
 }
 
