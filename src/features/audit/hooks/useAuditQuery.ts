@@ -17,12 +17,14 @@ export const useAuditQuery = (url: string, taskId: string | null) => {
     queryFn: () => auditDataService.fetchAuditData(url),
     enabled: !!url,
     staleTime: 5 * 60 * 1000, // 5 minutes
-    onError: (error) => {
-      toast({
-        title: 'Ошибка загрузки данных аудита',
-        description: formatError(error),
-        variant: 'destructive'
-      });
+    meta: {
+      onError: (error: unknown) => {
+        toast({
+          title: 'Ошибка загрузки данных аудита',
+          description: formatError(error),
+          variant: 'destructive'
+        });
+      }
     }
   });
   
@@ -32,12 +34,14 @@ export const useAuditQuery = (url: string, taskId: string | null) => {
     queryFn: () => auditDataService.fetchRecommendations(url),
     enabled: !!url,
     staleTime: 5 * 60 * 1000, // 5 minutes
-    onError: (error) => {
-      toast({
-        title: 'Ошибка загрузки рекомендаций',
-        description: formatError(error),
-        variant: 'destructive'
-      });
+    meta: {
+      onError: (error: unknown) => {
+        toast({
+          title: 'Ошибка загрузки рекомендаций',
+          description: formatError(error),
+          variant: 'destructive'
+        });
+      }
     }
   });
   
@@ -47,12 +51,14 @@ export const useAuditQuery = (url: string, taskId: string | null) => {
     queryFn: () => auditDataService.fetchAuditHistory(url),
     enabled: !!url,
     staleTime: 10 * 60 * 1000, // 10 minutes
-    onError: (error) => {
-      toast({
-        title: 'Ошибка загрузки истории аудита',
-        description: formatError(error),
-        variant: 'destructive'
-      });
+    meta: {
+      onError: (error: unknown) => {
+        toast({
+          title: 'Ошибка загрузки истории аудита',
+          description: formatError(error),
+          variant: 'destructive'
+        });
+      }
     }
   });
   
@@ -65,12 +71,14 @@ export const useAuditQuery = (url: string, taskId: string | null) => {
     },
     enabled: !!taskId,
     staleTime: 15 * 60 * 1000, // 15 minutes
-    onError: (error) => {
-      toast({
-        title: 'Ошибка расчета стоимости оптимизации',
-        description: formatError(error),
-        variant: 'destructive'
-      });
+    meta: {
+      onError: (error: unknown) => {
+        toast({
+          title: 'Ошибка расчета стоимости оптимизации',
+          description: formatError(error),
+          variant: 'destructive'
+        });
+      }
     }
   });
   
@@ -86,12 +94,14 @@ export const useAuditQuery = (url: string, taskId: string | null) => {
       }
       return false; // Stop polling when complete
     },
-    onError: (error) => {
-      toast({
-        title: 'Ошибка получения статуса сканирования',
-        description: formatError(error),
-        variant: 'destructive'
-      });
+    meta: {
+      onError: (error: unknown) => {
+        toast({
+          title: 'Ошибка получения статуса сканирования',
+          description: formatError(error),
+          variant: 'destructive'
+        });
+      }
     }
   });
   

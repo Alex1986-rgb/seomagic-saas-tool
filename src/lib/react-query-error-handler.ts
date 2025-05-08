@@ -20,32 +20,40 @@ export function setupQueryErrorHandler(queryClient: QueryClient) {
         return failureCount < 2;
       },
       refetchOnWindowFocus: false,
-      // Add consistent error handling via the meta option
-      meta: {
-        onError: (error: unknown) => {
-          const errorMessage = formatError(error);
-          console.error('Query error:', error);
-          toast({
-            title: 'Ошибка загрузки данных',
-            description: errorMessage,
-            variant: 'destructive'
-          });
-        }
-      }
+      gcTime: 5 * 60 * 1000, // 5 minutes
     },
     mutations: {
-      retry: false,
-      // Add consistent error handling via the meta option
-      meta: {
-        onError: (error: unknown) => {
-          const errorMessage = formatError(error);
-          console.error('Mutation error:', error);
-          toast({
-            title: 'Ошибка сохранения данных',
-            description: errorMessage,
-            variant: 'destructive'
-          });
-        }
+      retry: false
+    }
+  });
+
+  // Set up global listeners
+  queryClient.getQueryCache().subscribe({
+    onError: (error, query) => {
+      // Only show error toasts if no custom error handler is defined in the meta
+      if (!query.meta?.onError) {
+        const errorMessage = formatError(error);
+        console.error('Query error:', error);
+        toast({
+          title: 'Ошибка загрузки данных',
+          description: errorMessage,
+          variant: 'destructive'
+        });
+      }
+    }
+  });
+
+  queryClient.getMutationCache().subscribe({
+    onError: (error, mutation) => {
+      // Only show error toasts if no custom error handler is defined in the meta
+      if (!mutation.meta?.onError) {
+        const errorMessage = formatError(error);
+        console.error('Mutation error:', error);
+        toast({
+          title: 'Ошибка сохранения данных',
+          description: errorMessage,
+          variant: 'destructive'
+        });
       }
     }
   });
