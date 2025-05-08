@@ -6,7 +6,7 @@ import { FullscreenLoader } from '@/components/ui/loading';
 import { createLazyComponent } from '@/components/shared/performance/LazyLoadWrapper';
 
 // Import lazily loaded pages
-const HomePage = createLazyComponent(() => import('./pages/Home.tsx'), 'HomePage');
+const HomePage = createLazyComponent(() => import('./pages/Home'), 'HomePage');
 const SiteAudit = createLazyComponent(() => import('./pages/SiteAudit'), 'SiteAudit');
 const SeoAuditPage = createLazyComponent(() => import('./pages/SeoAuditPage'), 'SeoAuditPage');
 const Dashboard = createLazyComponent(() => import('./pages/Dashboard'), 'Dashboard');
