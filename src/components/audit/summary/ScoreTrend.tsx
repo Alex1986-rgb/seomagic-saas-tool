@@ -2,7 +2,6 @@
 import React from 'react';
 import { TrendingUp, TrendingDown, Minus } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { withMemo } from '@/components/shared/performance';
 
 interface ScoreTrendProps {
   currentScore: number;
@@ -39,10 +38,4 @@ const ScoreTrend: React.FC<ScoreTrendProps> = ({ currentScore, previousScore }) 
   );
 };
 
-ScoreTrend.displayName = 'ScoreTrend';
-
-// Apply memoization with a custom comparison function that only triggers re-renders when scores change
-export default withMemo(ScoreTrend, (prevProps, nextProps) => 
-  prevProps.currentScore === nextProps.currentScore && 
-  prevProps.previousScore === nextProps.previousScore
-);
+export default ScoreTrend;

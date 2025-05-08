@@ -1,11 +1,7 @@
-
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
 import './index.css';
-
-// Start measuring initial load performance
-const startTime = performance.now();
 
 // Add preconnect links for external resources
 const preconnectLinks = [
@@ -32,43 +28,11 @@ preconnectLinks.forEach(link => {
 
 // Initialize the app with React 18's createRoot
 const root = ReactDOM.createRoot(document.getElementById('root')!);
-
-// Create a custom performance marker
-if (window.performance && 'mark' in window.performance) {
-  window.performance.mark('react-init-start');
-}
-
 root.render(
   <React.StrictMode>
     <App />
   </React.StrictMode>
 );
-
-// Mark end of initial render
-if (window.performance && 'mark' in window.performance) {
-  window.addEventListener('load', () => {
-    window.performance.mark('react-init-end');
-    
-    try {
-      // Measure between marks
-      window.performance.measure('react-init', 'react-init-start', 'react-init-end');
-      
-      // Log timing info
-      const loadTime = performance.now() - startTime;
-      console.log(`App initialized in ${Math.round(loadTime)}ms`);
-      
-      // Log memory usage if available
-      if (performance.memory) {
-        console.log('Memory usage:', {
-          totalJSHeapSize: Math.round(performance.memory.totalJSHeapSize / 1048576) + ' MB',
-          usedJSHeapSize: Math.round(performance.memory.usedJSHeapSize / 1048576) + ' MB',
-        });
-      }
-    } catch (e) {
-      console.error('Error measuring performance:', e);
-    }
-  });
-}
 
 // Register service worker after app load for faster startup
 if ('serviceWorker' in navigator) {
@@ -82,10 +46,9 @@ if ('serviceWorker' in navigator) {
           try {
             // TypeScript doesn't know about the sync API by default
             // Using type assertion to tell TypeScript that we know what we're doing
-            (registration as any).sync.register('sync-data')
-              .catch(err => console.error('Background sync registration failed:', err));
+            (registration as any).sync.register('sync-data');
           } catch (err) {
-            console.error('Background sync error:', err);
+            console.error('Background sync registration failed:', err);
           }
         }
       })
@@ -113,8 +76,6 @@ if (process.env.NODE_ENV === 'production') {
         }),
         method: 'POST',
         keepalive: true
-      }).catch(err => {
-        console.error('Error reporting web vitals:', err);
       });
     };
 
