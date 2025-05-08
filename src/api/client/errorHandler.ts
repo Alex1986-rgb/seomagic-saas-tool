@@ -32,7 +32,7 @@ export const formatApiError = (error: unknown): ApiErrorResponse => {
   
   // Handle unknown error types
   return {
-    message: typeof error === 'string' ? error : 'Unknown error occurred',
+    message: 'Unknown error occurred',
     details: error
   };
 };
