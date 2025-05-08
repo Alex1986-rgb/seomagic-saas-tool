@@ -57,11 +57,12 @@ if (window.performance && 'mark' in window.performance) {
       const loadTime = performance.now() - startTime;
       console.log(`App initialized in ${Math.round(loadTime)}ms`);
       
-      // Log memory usage if available
-      if (performance.memory) {
+      // Check if memory property exists on performance before accessing it
+      // It's only available in Chrome and may not be in all browsers
+      if (performance && (performance as any).memory) {
         console.log('Memory usage:', {
-          totalJSHeapSize: Math.round(performance.memory.totalJSHeapSize / 1048576) + ' MB',
-          usedJSHeapSize: Math.round(performance.memory.usedJSHeapSize / 1048576) + ' MB',
+          totalJSHeapSize: Math.round((performance as any).memory.totalJSHeapSize / 1048576) + ' MB',
+          usedJSHeapSize: Math.round((performance as any).memory.usedJSHeapSize / 1048576) + ' MB',
         });
       }
     } catch (e) {

@@ -36,7 +36,9 @@ export function lazyWithName<T extends ComponentType<any>>(
   name: string
 ): React.LazyExoticComponent<T> {
   const LazyComponent = lazy(factory);
-  LazyComponent.displayName = `Lazy(${name})`;
+  // TypeScript doesn't recognize displayName on LazyExoticComponent
+  // so we need to use type assertion here
+  (LazyComponent as any).displayName = `Lazy(${name})`;
   return LazyComponent;
 }
 
@@ -52,9 +54,9 @@ export function createLazyComponent<P extends object>(
 ): React.FC<P> {
   const LazyComponent = lazyWithName(importFunc, name);
   
-  const WrappedComponent: React.FC<P> = (props) => (
+  const WrappedComponent: React.FC<P> = (props: P) => (
     <LazyLoadWrapper>
-      <LazyComponent {...props} />
+      <LazyComponent {...props as any} />
     </LazyLoadWrapper>
   );
   
