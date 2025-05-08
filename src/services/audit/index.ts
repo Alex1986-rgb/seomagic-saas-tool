@@ -20,7 +20,7 @@ export {
   type DuplicatePage,
   type DuplicateMetaTag,
   type SiteStructure,
-  type PageNode,
+  type SiteStructureNode,
   type ContentAnalysisResult
 } from './siteAnalysis';
 

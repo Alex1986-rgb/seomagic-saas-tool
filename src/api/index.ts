@@ -12,5 +12,5 @@ export * from './services/firecrawl';
 // Export auditApiService
 export { auditApiService } from './api/auditApiService';
 
-// Types
+// Types - explicitly re-export ScanDetails to resolve ambiguity
 export * from '../types/api';

@@ -10,6 +10,9 @@ export const useScanAPI = (url: string) => {
   const [isPolling, setIsPolling] = useState<boolean>(false);
   const [scanPollingInterval, setScanPollingInterval] = useState<NodeJS.Timeout | null>(null);
 
+  /**
+   * Start a website scan
+   */
   const startBackendScan = async (deepScan = false) => {
     try {
       const maxPages = deepScan ? 500000 : 10000;
@@ -38,6 +41,9 @@ export const useScanAPI = (url: string) => {
     }
   };
 
+  /**
+   * Set up polling for scan status
+   */
   const setupPolling = (
     taskId: string, 
     onStatusUpdate: (status: ScanDetails) => void,
@@ -82,10 +88,48 @@ export const useScanAPI = (url: string) => {
     return intervalId;
   };
 
+  /**
+   * Cancel current scan
+   */
+  const cancelScan = async () => {
+    if (!taskId) return { success: false };
+    
+    try {
+      await seoApiService.cancelScan(taskId);
+      
+      if (scanPollingInterval) {
+        clearInterval(scanPollingInterval);
+        setScanPollingInterval(null);
+      }
+      
+      setIsPolling(false);
+      
+      toast({
+        title: "Сканирование отменено",
+        description: "Процесс сканирования сайта был отменен"
+      });
+      
+      return { success: true };
+    } catch (error) {
+      console.error('Error cancelling scan:', error);
+      
+      toast({
+        title: "Ошибка отмены",
+        description: "Не удалось отменить сканирование сайта",
+        variant: "destructive"
+      });
+      
+      return { success: false };
+    }
+  };
+
   return {
     taskId,
     isPolling,
     startBackendScan,
-    setupPolling
+    setupPolling,
+    cancelScan
   };
 };
+
+export default useScanAPI;

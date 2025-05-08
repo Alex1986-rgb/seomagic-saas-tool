@@ -1,18 +1,12 @@
-
 import { AuditData } from '@/types/audit';
 import { apiClient } from '../client/apiClient';
 import { formatApiError } from '../client/errorHandler';
+import type { BrokenLink, Redirect, DuplicatePage, DuplicateMetaTag, SiteStructure, ContentAnalysisResult } from '@/services/audit/siteAnalysis';
 import { 
   detectBrokenLinks, 
   detectDuplicates, 
-  analyzeSiteStructure,
-  analyzeContentUniqueness,
-  BrokenLink,
-  Redirect,
-  DuplicatePage,
-  DuplicateMetaTag,
-  SiteStructure,
-  ContentAnalysisResult
+  analyzeSiteStructure, 
+  analyzeContentUniqueness 
 } from '@/services/audit/siteAnalysis';
 
 /**
@@ -99,55 +93,45 @@ class AuditDataService {
   }
 
   /**
-   * Find broken links on a website
+   * Finds broken links on a website
    */
-  async findBrokenLinks(domain: string, urls: string[], onProgress?: (current: number, total: number) => void): Promise<{ brokenLinks: BrokenLink[]; redirects: Redirect[] }> {
-    try {
-      return await detectBrokenLinks(domain, urls, onProgress);
-    } catch (error) {
-      const formattedError = formatApiError(error);
-      console.error('Error finding broken links:', formattedError);
-      throw formattedError;
-    }
+  async findBrokenLinks(
+    domain: string,
+    urls: string[],
+    onProgress?: (current: number, total: number) => void
+  ): Promise<{ brokenLinks: BrokenLink[]; redirects: Redirect[] }> {
+    return await detectBrokenLinks(domain, urls, onProgress);
   }
 
   /**
-   * Find duplicate pages on a website
+   * Finds duplicates on a website
    */
-  async findDuplicates(urls: string[], onProgress?: (current: number, total: number) => void): Promise<{ duplicatePages: DuplicatePage[]; duplicateMeta: DuplicateMetaTag[] }> {
-    try {
-      return await detectDuplicates(urls, onProgress);
-    } catch (error) {
-      const formattedError = formatApiError(error);
-      console.error('Error finding duplicates:', formattedError);
-      throw formattedError;
-    }
+  async findDuplicates(
+    urls: string[],
+    onProgress?: (current: number, total: number) => void
+  ): Promise<{ duplicatePages: DuplicatePage[]; duplicateMeta: DuplicateMetaTag[] }> {
+    return await detectDuplicates(urls, onProgress);
   }
 
   /**
-   * Analyze site structure
+   * Analyzes site structure
    */
-  async analyzeSiteStructure(domain: string, urls: string[], onProgress?: (current: number, total: number) => void): Promise<SiteStructure> {
-    try {
-      return await analyzeSiteStructure(domain, urls, onProgress);
-    } catch (error) {
-      const formattedError = formatApiError(error);
-      console.error('Error analyzing site structure:', formattedError);
-      throw formattedError;
-    }
+  async analyzeSiteStructure(
+    domain: string,
+    urls: string[],
+    onProgress?: (current: number, total: number) => void
+  ): Promise<SiteStructure> {
+    return await analyzeSiteStructure(domain, urls, onProgress);
   }
 
   /**
-   * Analyze content uniqueness
+   * Analyzes content uniqueness
    */
-  async analyzeContentUniqueness(urls: string[], onProgress?: (current: number, total: number) => void): Promise<ContentAnalysisResult> {
-    try {
-      return await analyzeContentUniqueness(urls, onProgress);
-    } catch (error) {
-      const formattedError = formatApiError(error);
-      console.error('Error analyzing content uniqueness:', formattedError);
-      throw formattedError;
-    }
+  async analyzeContentUniqueness(
+    urls: string[],
+    onProgress?: (current: number, total: number) => void
+  ): Promise<ContentAnalysisResult> {
+    return await analyzeContentUniqueness(urls, onProgress);
   }
 }
 
