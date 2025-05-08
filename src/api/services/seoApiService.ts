@@ -1,10 +1,10 @@
 
 import { apiClient } from '../client/apiClient';
 import { formatApiError } from '../client/errorHandler';
-import { ScanDetails } from '@/types/api';
+import { OptimizationItem } from '@/services/audit/optimization/types';
 
 /**
- * SEO API service for handling all SEO-related API calls
+ * Service for handling SEO-related API calls
  */
 class SeoApiService {
   private taskStorage: Record<string, string> = {};
@@ -14,7 +14,7 @@ class SeoApiService {
    */
   async startCrawl(url: string, maxPages: number = 10000): Promise<{task_id: string}> {
     try {
-      const response = await apiClient.post('/api/crawl', {
+      const response = await apiClient.post<{task_id: string}>('/api/crawl', {
         url,
         options: {
           maxPages,
@@ -93,13 +93,17 @@ class SeoApiService {
       });
       
       // Create a download link for the blob
-      const url = window.URL.createObjectURL(new Blob([response]));
-      const link = document.createElement('a');
-      link.href = url;
-      link.setAttribute('download', `sitemap-${taskId}.xml`);
-      document.body.appendChild(link);
-      link.click();
-      link.parentNode?.removeChild(link);
+      if (response instanceof Blob) {
+        const url = window.URL.createObjectURL(response);
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', `sitemap-${taskId}.xml`);
+        document.body.appendChild(link);
+        link.click();
+        link.parentNode?.removeChild(link);
+      } else {
+        throw new Error('Response is not a Blob');
+      }
     } catch (error) {
       const formattedError = formatApiError(error);
       console.error('Error downloading sitemap:', formattedError);
@@ -117,13 +121,17 @@ class SeoApiService {
       });
       
       // Create a download link for the blob
-      const url = window.URL.createObjectURL(new Blob([response]));
-      const link = document.createElement('a');
-      link.href = url;
-      link.setAttribute('download', `seo-report-${reportType}-${taskId}.pdf`);
-      document.body.appendChild(link);
-      link.click();
-      link.parentNode?.removeChild(link);
+      if (response instanceof Blob) {
+        const url = window.URL.createObjectURL(response);
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', `seo-report-${reportType}-${taskId}.pdf`);
+        document.body.appendChild(link);
+        link.click();
+        link.parentNode?.removeChild(link);
+      } else {
+        throw new Error('Response is not a Blob');
+      }
     } catch (error) {
       const formattedError = formatApiError(error);
       console.error('Error downloading report:', formattedError);
@@ -169,7 +177,12 @@ class SeoApiService {
         responseType: 'blob'
       });
       
-      return new Blob([response], { type: 'application/json' });
+      if (response instanceof Blob) {
+        return response;
+      }
+      
+      // If not a Blob, convert to one
+      return new Blob([JSON.stringify(response)], { type: 'application/json' });
     } catch (error) {
       const formattedError = formatApiError(error);
       console.error('Error exporting JSON:', formattedError);
@@ -186,7 +199,12 @@ class SeoApiService {
         responseType: 'blob'
       });
       
-      return new Blob([response], { type: 'application/zip' });
+      if (response instanceof Blob) {
+        return response;
+      }
+      
+      // If not a Blob, convert to one
+      return new Blob([JSON.stringify(response)], { type: 'application/zip' });
     } catch (error) {
       const formattedError = formatApiError(error);
       console.error('Error downloading optimized site:', formattedError);

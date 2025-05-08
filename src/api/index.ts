@@ -7,3 +7,6 @@ export * from './client/errorHandler';
 export * from './services/seoApiService';
 export * from './services/auditDataService'; 
 export * from './services/optimizationService';
+
+// Export auditApiService
+export { auditApiService } from './auditApiService';

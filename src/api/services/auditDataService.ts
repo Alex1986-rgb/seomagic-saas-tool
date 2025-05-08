@@ -57,7 +57,12 @@ class AuditDataService {
         responseType: 'blob'
       });
       
-      return new Blob([response], { type: 'application/pdf' });
+      // Ensure the response is treated as Blob
+      if (!(response instanceof Blob)) {
+        return new Blob([JSON.stringify(response)], { type: 'application/json' });
+      }
+      
+      return response;
     } catch (error) {
       const formattedError = formatApiError(error);
       console.error('Error generating PDF report:', formattedError);

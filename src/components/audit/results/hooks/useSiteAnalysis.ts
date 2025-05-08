@@ -1,7 +1,6 @@
-
 import { useState, useCallback } from 'react';
 import { useToast } from "@/hooks/use-toast";
-import { auditApiService } from '@/api';
+import { auditDataService } from '@/api';
 import { BrokenLink, DuplicatePage, SiteStructure, ContentAnalysisResult } from '@/services/audit/siteAnalysis';
 
 export const useSiteAnalysis = (domain: string, urls: string[]) => {
@@ -32,7 +31,7 @@ export const useSiteAnalysis = (domain: string, urls: string[]) => {
     setAnalysisProgress(0);
     
     try {
-      const result = await auditApiService.findBrokenLinks(
+      const result = await auditDataService.findBrokenLinks(
         domain, 
         urls,
         (current: number, total: number) => {
@@ -74,7 +73,7 @@ export const useSiteAnalysis = (domain: string, urls: string[]) => {
     setAnalysisProgress(0);
     
     try {
-      const result = await auditApiService.findDuplicates(
+      const result = await auditDataService.findDuplicates(
         urls,
         (current: number, total: number) => {
           setAnalysisProgress(Math.floor((current / total) * 100));
@@ -115,7 +114,7 @@ export const useSiteAnalysis = (domain: string, urls: string[]) => {
     setAnalysisProgress(0);
     
     try {
-      const result = await auditApiService.analyzeSiteStructure(
+      const result = await auditDataService.analyzeSiteStructure(
         domain,
         urls,
         (current: number, total: number) => {
@@ -156,7 +155,7 @@ export const useSiteAnalysis = (domain: string, urls: string[]) => {
     setAnalysisProgress(0);
     
     try {
-      const result = await auditApiService.analyzeContentUniqueness(
+      const result = await auditDataService.analyzeContentUniqueness(
         urls,
         (current: number, total: number) => {
           setAnalysisProgress(Math.floor((current / total) * 100));
