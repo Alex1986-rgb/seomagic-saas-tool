@@ -1,207 +1,276 @@
 
 import React, { useState } from 'react';
-import { OptimizationCost } from './optimization';
-import ContentOptimizationPrompt from './ContentOptimizationPrompt';
-import { OptimizationItem } from './optimization/CostDetailsTable';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { ChevronDown, ChevronUp, FileText, Check, Download } from 'lucide-react';
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useToast } from "@/hooks/use-toast";
+import { AlertCircle, CheckCircle, FileDown, Settings, Download } from 'lucide-react';
+import ContentOptimizationPrompt from './ContentOptimizationPrompt';
+import OptimizationPricingTable from './OptimizationPricingTable';
+import { OptimizationItem } from '@/features/audit/types/optimization-types';
 
 interface AuditOptimizationProps {
-  optimizationCost?: number;
-  optimizationItems?: OptimizationItem[];
-  isOptimized: boolean;
+  taskId?: string | null;
+  optimizationItems: OptimizationItem[];
+  optimizationCost: number;
   contentPrompt: string;
-  url: string;
-  pageCount: number;
-  showPrompt: boolean;
-  onTogglePrompt: () => void;
-  onOptimize: () => void;
-  onDownloadOptimizedSite: () => void;
-  onGeneratePdfReport: () => void;
-  setContentOptimizationPrompt: (prompt: string) => void;
-  paymentStatus?: 'pending' | 'approved' | 'rejected';
+  isOptimized: boolean;
+  currentScore?: number;
+  estimatedScore?: number;
+  setContentPrompt: (prompt: string) => void;
+  onOptimizeSiteContent: () => Promise<any>;
+  onDownloadOptimizedSite?: () => Promise<void>;
 }
 
 const AuditOptimization: React.FC<AuditOptimizationProps> = ({
-  optimizationCost,
+  taskId,
   optimizationItems,
-  isOptimized,
+  optimizationCost,
   contentPrompt,
-  url,
-  pageCount,
-  showPrompt,
-  onTogglePrompt,
-  onOptimize,
-  onDownloadOptimizedSite,
-  onGeneratePdfReport,
-  setContentOptimizationPrompt,
-  paymentStatus = 'pending'
+  isOptimized,
+  currentScore,
+  estimatedScore,
+  setContentPrompt,
+  onOptimizeSiteContent,
+  onDownloadOptimizedSite
 }) => {
-  const [showMetaEditor, setShowMetaEditor] = useState(false);
-  const [metaTitle, setMetaTitle] = useState('');
-  const [metaDescription, setMetaDescription] = useState('');
+  const { toast } = useToast();
+  const [activeTab, setActiveTab] = useState<string>("pricing");
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [isOptimizing, setIsOptimizing] = useState(false);
+  const [paymentStatus, setPaymentStatus] = useState<'idle' | 'success' | 'error'>('idle');
+
+  const handleOptimize = async () => {
+    if (!taskId) {
+      toast({
+        title: "Ошибка",
+        description: "ID задачи не найден",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    try {
+      setIsProcessing(true);
+      // Simulate payment process
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      // Set payment as successful
+      setPaymentStatus('success');
+      toast({
+        title: "Оплата прошла успешно",
+        description: "Начинаем процесс оптимизации сайта",
+      });
+      
+      // Move to content tab after successful payment
+      setActiveTab("content");
+      
+      // Wait a moment before starting optimization
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+    } catch (error) {
+      console.error('Payment error:', error);
+      setPaymentStatus('error');
+      toast({
+        title: "Ошибка оплаты",
+        description: "Не удалось провести оплату. Пожалуйста, попробуйте снова.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsProcessing(false);
+    }
+  };
   
-  if (!optimizationCost && !showPrompt) return null;
+  const handleStartOptimization = async () => {
+    if (!contentPrompt.trim()) {
+      toast({
+        title: "Введите промпт",
+        description: "Пожалуйста, введите промпт для оптимизации контента",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    try {
+      setIsOptimizing(true);
+      await onOptimizeSiteContent();
+      
+      toast({
+        title: "Оптимизация завершена",
+        description: "Сайт успешно оптимизирован",
+      });
+    } catch (error) {
+      console.error('Optimization error:', error);
+      toast({
+        title: "Ошибка оптимизации",
+        description: "Не удалось оптимизировать сайт. Пожалуйста, попробуйте снова.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsOptimizing(false);
+    }
+  };
   
-  const isPaid = paymentStatus === 'approved';
-  const canOptimize = isPaid || process.env.NODE_ENV === 'development';
-  
+  const handleDownloadOptimizedSite = async () => {
+    if (!onDownloadOptimizedSite) return;
+    
+    try {
+      toast({
+        title: "Подготовка архива",
+        description: "Пожалуйста, подождите...",
+      });
+      
+      await onDownloadOptimizedSite();
+      
+      toast({
+        title: "Готово",
+        description: "Оптимизированный сайт скачан",
+      });
+    } catch (error) {
+      console.error('Download error:', error);
+      toast({
+        title: "Ошибка загрузки",
+        description: "Не удалось скачать оптимизированный сайт",
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
     <div className="space-y-6">
-      {!isOptimized && isPaid && (
-        <Alert className="bg-green-50 text-green-800 border-green-200">
-          <Check className="h-5 w-5 text-green-600" />
-          <AlertTitle>Оплата подтверждена</AlertTitle>
-          <AlertDescription>
-            Теперь вы можете настроить оптимизацию контента и метаданных для вашего сайта
-          </AlertDescription>
-        </Alert>
-      )}
-      
-      {isOptimized && (
-        <Alert className="bg-green-50 text-green-800 border-green-200">
-          <Check className="h-5 w-5 text-green-600" />
-          <AlertTitle>Оптимизация завершена</AlertTitle>
-          <AlertDescription className="flex justify-between items-center">
-            <span>Ваш сайт был успешно оптимизирован и готов к скачиванию</span>
-            <Button onClick={onDownloadOptimizedSite} variant="outline" className="gap-2 bg-white">
-              <Download className="h-4 w-4" />
-              Скачать оптимизированный сайт
-            </Button>
-          </AlertDescription>
-        </Alert>
-      )}
-      
-      <div className="flex flex-col sm:flex-row gap-4">
-        <Button 
-          onClick={onTogglePrompt} 
-          variant={showPrompt ? "default" : "outline"}
-          className="gap-2 flex-1"
-        >
-          {showPrompt ? (
-            <>
-              <ChevronUp className="h-4 w-4" />
-              Скрыть настройки оптимизации
-            </>
-          ) : (
-            <>
-              <ChevronDown className="h-4 w-4" />
-              Показать настройки оптимизации
-            </>
-          )}
-        </Button>
-        
-        <Button 
-          onClick={onGeneratePdfReport}
-          variant="outline"
-          className="gap-2 flex-1"
-        >
-          <FileText className="h-4 w-4" />
-          Скачать PDF-отчет
-        </Button>
-      </div>
-      
-      {showPrompt && (
-        <>
-          <Card className="border shadow-sm">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-lg">Оптимизация мета-тегов</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-muted-foreground">Оптимизировать мета-теги title и description</span>
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  onClick={() => setShowMetaEditor(!showMetaEditor)}
-                >
-                  {showMetaEditor ? 'Скрыть редактор' : 'Редактировать мета-теги'}
-                </Button>
-              </div>
-              
-              {showMetaEditor && (
-                <div className="space-y-3 pt-2">
-                  <div className="space-y-2">
-                    <label htmlFor="meta-title" className="text-sm font-medium">
-                      Мета-заголовок (title)
-                      <span className="text-xs text-muted-foreground ml-2">Рекомендуется 50-60 символов</span>
-                    </label>
-                    <input
-                      id="meta-title"
-                      type="text"
-                      value={metaTitle}
-                      onChange={(e) => setMetaTitle(e.target.value)}
-                      placeholder="Введите оптимизированный мета-заголовок"
-                      className="w-full px-3 py-1.5 text-sm border rounded-md"
-                      maxLength={60}
-                    />
-                    <div className="text-xs text-right text-muted-foreground">
-                      {metaTitle.length}/60 символов
-                    </div>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <label htmlFor="meta-description" className="text-sm font-medium">
-                      Мета-описание (description)
-                      <span className="text-xs text-muted-foreground ml-2">Рекомендуется 150-160 символов</span>
-                    </label>
-                    <textarea
-                      id="meta-description"
-                      value={metaDescription}
-                      onChange={(e) => setMetaDescription(e.target.value)}
-                      placeholder="Введите оптимизированное мета-описание"
-                      className="w-full px-3 py-1.5 text-sm border rounded-md min-h-[80px]"
-                      maxLength={160}
-                    />
-                    <div className="text-xs text-right text-muted-foreground">
-                      {metaDescription.length}/160 символов
-                    </div>
-                  </div>
-                  
-                  <Button 
-                    className="w-full"
-                    disabled={!canOptimize}
-                  >
-                    Применить мета-теги ко всем страницам
-                  </Button>
-                  
-                  {!canOptimize && (
-                    <p className="text-xs text-amber-500 text-center">
-                      Для редактирования мета-тегов необходимо подтвердить оплату
-                    </p>
-                  )}
-                </div>
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center">
+            <Settings className="mr-2 h-5 w-5" />
+            Оптимизация сайта AI-технологиями
+          </CardTitle>
+          <CardDescription>
+            Автоматическое исправление SEO-проблем и улучшение контента с помощью искусственного интеллекта
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="pricing">Стоимость и оплата</TabsTrigger>
+              <TabsTrigger value="content">Оптимизация контента</TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="pricing" className="pt-4">
+              {optimizationItems.length > 0 ? (
+                <OptimizationPricingTable 
+                  items={optimizationItems}
+                  totalCost={optimizationCost}
+                  onOptimize={!isOptimized && paymentStatus !== 'success' ? handleOptimize : undefined}
+                  currentScore={currentScore}
+                  estimatedScore={estimatedScore}
+                  isOptimized={isOptimized}
+                  onDownload={isOptimized ? handleDownloadOptimizedSite : undefined}
+                />
+              ) : (
+                <Alert>
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertTitle>Данные не загружены</AlertTitle>
+                  <AlertDescription>
+                    Необходимо завершить сканирование сайта для расчета стоимости оптимизации.
+                  </AlertDescription>
+                </Alert>
               )}
-            </CardContent>
-          </Card>
-          
-          <ContentOptimizationPrompt 
-            prompt={contentPrompt} 
-            setPrompt={setContentOptimizationPrompt}
-            onOptimize={canOptimize ? onOptimize : undefined}
-          />
-          
-          {!canOptimize && (
-            <p className="text-sm text-amber-500 text-center">
-              Для запуска оптимизации контента необходимо подтвердить оплату
-            </p>
-          )}
-        </>
-      )}
-      
-      {optimizationCost && (
-        <OptimizationCost 
-          optimizationCost={optimizationCost}
-          pageCount={pageCount}
-          url={url}
-          onDownloadOptimized={onDownloadOptimizedSite}
-          isOptimized={isOptimized}
-          optimizationItems={optimizationItems}
-          onGeneratePdfReport={onGeneratePdfReport}
-        />
-      )}
+              
+              {paymentStatus === 'success' && !isOptimized && (
+                <Alert className="mt-4 bg-green-50 text-green-800 border-green-200">
+                  <CheckCircle className="h-4 w-4 text-green-600" />
+                  <AlertTitle>Оплата прошла успешно</AlertTitle>
+                  <AlertDescription className="flex flex-col gap-2">
+                    <p>Теперь вы можете перейти к настройке оптимизации контента.</p>
+                    <Button 
+                      onClick={() => setActiveTab("content")} 
+                      variant="outline" 
+                      className="w-full sm:w-auto mt-2"
+                    >
+                      Перейти к оптимизации контента
+                    </Button>
+                  </AlertDescription>
+                </Alert>
+              )}
+              
+              {isOptimized && (
+                <Alert className="mt-4 bg-green-50 text-green-800 border-green-200">
+                  <CheckCircle className="h-4 w-4 text-green-600" />
+                  <AlertTitle>Сайт успешно оптимизирован</AlertTitle>
+                  <AlertDescription className="flex flex-col gap-2">
+                    <p>Оптимизация сайта завершена. Вы можете скачать оптимизированную версию.</p>
+                    <div className="flex gap-2 mt-2">
+                      <Button 
+                        onClick={handleDownloadOptimizedSite} 
+                        className="w-full sm:w-auto"
+                        variant="outline"
+                      >
+                        <Download className="mr-2 h-4 w-4" />
+                        Скачать оптимизированный сайт
+                      </Button>
+                    </div>
+                  </AlertDescription>
+                </Alert>
+              )}
+            </TabsContent>
+            
+            <TabsContent value="content" className="pt-4">
+              <div className="space-y-6">
+                <Alert>
+                  <AlertTitle>Настройка AI-оптимизации контента</AlertTitle>
+                  <AlertDescription>
+                    Укажите инструкции для AI по улучшению текстов сайта. Вы можете выбрать готовый шаблон или создать собственный промпт.
+                  </AlertDescription>
+                </Alert>
+                
+                <ContentOptimizationPrompt 
+                  prompt={contentPrompt}
+                  setPrompt={setContentPrompt}
+                  onOptimize={paymentStatus === 'success' || isOptimized ? handleStartOptimization : undefined}
+                  disabled={paymentStatus !== 'success' && !isOptimized}
+                  isOptimizing={isOptimizing}
+                />
+                
+                {isOptimized && (
+                  <Alert className="bg-green-50 text-green-800 border-green-200">
+                    <CheckCircle className="h-4 w-4 text-green-600" />
+                    <AlertTitle>Оптимизация завершена</AlertTitle>
+                    <AlertDescription className="flex flex-col gap-2">
+                      <p>Контент сайта был успешно оптимизирован по вашему запросу.</p>
+                      <Button 
+                        onClick={handleDownloadOptimizedSite} 
+                        variant="outline"
+                        className="gap-2 w-full sm:w-auto mt-2"
+                      >
+                        <FileDown className="h-4 w-4" />
+                        Скачать оптимизированный сайт
+                      </Button>
+                    </AlertDescription>
+                  </Alert>
+                )}
+                
+                {!isOptimized && paymentStatus !== 'success' && (
+                  <Alert className="bg-amber-50 text-amber-800 border-amber-200">
+                    <AlertCircle className="h-4 w-4 text-amber-600" />
+                    <AlertTitle>Требуется оплата</AlertTitle>
+                    <AlertDescription className="flex flex-col gap-2">
+                      <p>Для продолжения необходимо оплатить услуги оптимизации.</p>
+                      <Button 
+                        onClick={() => setActiveTab("pricing")} 
+                        variant="outline" 
+                        className="mt-2 w-full sm:w-auto"
+                      >
+                        Перейти к оплате
+                      </Button>
+                    </AlertDescription>
+                  </Alert>
+                )}
+              </div>
+            </TabsContent>
+          </Tabs>
+        </CardContent>
+      </Card>
     </div>
   );
 };
