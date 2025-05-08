@@ -8,6 +8,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
+  TableFooter,
 } from "@/components/ui/table";
 import {
   Tooltip,
@@ -15,16 +16,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-
-export interface OptimizationItem {
-  type: string;
-  count: number;
-  pricePerUnit: number;
-  totalPrice: number;
-  description: string;
-  name: string;
-  price: number;
-}
+import { OptimizationItem } from '@/features/audit/types/optimization-types';
 
 interface CostDetailsTableProps {
   optimizationItems: OptimizationItem[];
@@ -37,26 +29,29 @@ const CostDetailsTable: React.FC<CostDetailsTableProps> = ({ optimizationItems }
 
   if (!optimizationItems.length) return null;
 
+  const totalSum = optimizationItems.reduce((sum, item) => sum + item.totalPrice, 0);
+
   return (
     <div className="mb-4 overflow-x-auto">
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Тип оптимизации</TableHead>
-            <TableHead>Количество</TableHead>
-            <TableHead>Цена за ед.</TableHead>
-            <TableHead>Сумма</TableHead>
+            <TableHead>Наименование</TableHead>
+            <TableHead>Описание</TableHead>
+            <TableHead className="text-center">Количество</TableHead>
+            <TableHead className="text-right">Цена за ед.</TableHead>
+            <TableHead className="text-right">Сумма</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {optimizationItems.map((item, index) => (
             <TableRow key={index}>
-              <TableCell>
+              <TableCell className="font-medium">
                 <TooltipProvider>
                   <Tooltip>
-                    <TooltipTrigger className="flex items-center">
-                      {item.type}
-                      <Info className="h-3 w-3 ml-1 cursor-help text-muted-foreground" />
+                    <TooltipTrigger className="flex items-center cursor-help">
+                      {item.name}
+                      <Info className="h-3 w-3 ml-1 text-muted-foreground" />
                     </TooltipTrigger>
                     <TooltipContent>
                       <p className="max-w-xs">{item.description}</p>
@@ -64,12 +59,21 @@ const CostDetailsTable: React.FC<CostDetailsTableProps> = ({ optimizationItems }
                   </Tooltip>
                 </TooltipProvider>
               </TableCell>
-              <TableCell>{formatNumber(item.count)}</TableCell>
-              <TableCell>{formatNumber(item.pricePerUnit)} ₽</TableCell>
-              <TableCell className="font-medium">{formatNumber(item.totalPrice)} ₽</TableCell>
+              <TableCell className="text-sm text-muted-foreground max-w-[200px] truncate">
+                {item.description}
+              </TableCell>
+              <TableCell className="text-center">{formatNumber(item.count)}</TableCell>
+              <TableCell className="text-right">{formatNumber(item.pricePerUnit)} ₽</TableCell>
+              <TableCell className="text-right font-medium">{formatNumber(item.totalPrice)} ₽</TableCell>
             </TableRow>
           ))}
         </TableBody>
+        <TableFooter>
+          <TableRow>
+            <TableCell colSpan={4} className="text-right font-medium">Итого:</TableCell>
+            <TableCell className="text-right font-bold text-primary">{formatNumber(totalSum)} ₽</TableCell>
+          </TableRow>
+        </TableFooter>
       </Table>
     </div>
   );

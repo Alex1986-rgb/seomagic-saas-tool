@@ -8,8 +8,8 @@ export interface OptimizationItem {
   description: string;
   count: number;
   price: number;
+  pricePerUnit: number; // Added to ensure we always have price per unit
   totalPrice: number;
-  pricePerUnit?: number;
   type?: string;
 }
 

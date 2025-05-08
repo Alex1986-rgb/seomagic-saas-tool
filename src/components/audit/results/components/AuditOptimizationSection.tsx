@@ -29,7 +29,6 @@ const AuditOptimizationSection: React.FC<AuditOptimizationSectionProps> = ({
   onTogglePrompt,
   onOptimize,
   onDownloadOptimizedSite,
-  onGeneratePdfReport,
   setContentOptimizationPrompt
 }) => {
   return (
@@ -43,7 +42,7 @@ const AuditOptimizationSection: React.FC<AuditOptimizationSectionProps> = ({
         optimizationItems={optimizationItems}
         isOptimized={isOptimized}
         contentPrompt={contentPrompt}
-        url={url} // Pass the url prop
+        url={url}
         pageCount={pageCount}
         showPrompt={showPrompt}
         onTogglePrompt={onTogglePrompt}

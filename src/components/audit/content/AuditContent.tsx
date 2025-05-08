@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { motion } from 'framer-motion';
 import AuditStatus from '@/components/audit/results/components/AuditStatus';
@@ -51,8 +50,8 @@ export interface AuditContentProps {
   handleSelectHistoricalAudit?: (auditId: string) => void;
   exportJSONData?: () => void;
   generatePdfReportFile?: () => void;
-  downloadOptimizedSite?: () => Promise<void>; // Updated return type
-  optimizeSiteContent?: () => Promise<void>; // Updated return type
+  downloadOptimizedSite?: () => Promise<void>;
+  optimizeSiteContent?: () => Promise<void>;
   setContentOptimizationPrompt?: (prompt: string) => void;
   
   // Optional variant props
@@ -281,6 +280,20 @@ const AuditContent: React.FC<AuditContentProps> = ({
       </>
     );
   }
+
+  const safeOptimizeSiteContent = async () => {
+    if (optimizeSiteContent) {
+      return optimizeSiteContent();
+    }
+    return Promise.resolve();
+  };
+
+  const safeDownloadOptimizedSite = async () => {
+    if (downloadOptimizedSite) {
+      return downloadOptimizedSite();
+    }
+    return Promise.resolve();
+  };
 };
 
 export default AuditContent;

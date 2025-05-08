@@ -5,7 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { AlertCircle, CheckCircle, FileDown, Settings, Download } from 'lucide-react';
+import { AlertCircle, CheckCircle, Download, Settings } from 'lucide-react';
 import ContentOptimizationPrompt from './ContentOptimizationPrompt';
 import OptimizationPricingTable from './OptimizationPricingTable';
 import { OptimizationItem } from '@/features/audit/types/optimization-types';
@@ -18,7 +18,10 @@ interface AuditOptimizationProps {
   isOptimized: boolean;
   currentScore?: number;
   estimatedScore?: number;
-  url: string; // Added url prop
+  url: string; // URL prop
+  pageCount: number; // pageCount prop
+  showPrompt: boolean;
+  onTogglePrompt: () => void;
   setContentPrompt: (prompt: string) => void;
   onOptimizeSiteContent: () => Promise<any>;
   onDownloadOptimizedSite?: () => Promise<void>;
@@ -32,7 +35,10 @@ const AuditOptimization: React.FC<AuditOptimizationProps> = ({
   isOptimized,
   currentScore,
   estimatedScore,
-  url, // Added url prop
+  url,
+  pageCount,
+  showPrompt,
+  onTogglePrompt,
   setContentPrompt,
   onOptimizeSiteContent,
   onDownloadOptimizedSite
