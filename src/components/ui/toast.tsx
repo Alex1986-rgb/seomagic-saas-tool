@@ -28,15 +28,15 @@ const toastVariants = cva(
   {
     variants: {
       variant: {
-        default: "border bg-background text-foreground",
+        default: "bg-card/90 backdrop-blur-sm border-border text-foreground",
         destructive:
-          "destructive group border-destructive bg-destructive text-destructive-foreground",
+          "destructive group border-destructive/30 bg-destructive/10 text-destructive-foreground dark:bg-destructive/20 dark:border-destructive/30",
         success:
-          "success group border-primary/30 bg-primary/10 text-primary-foreground dark:bg-primary/20 dark:text-primary-foreground dark:border-primary/30",
+          "success group border-[#22c55e]/30 bg-[#22c55e]/10 text-[#22c55e] dark:bg-[#22c55e]/20 dark:text-[#22c55e] dark:border-[#22c55e]/30",
         info:
-          "info group border-info/30 bg-info/10 text-info-foreground dark:bg-info/20 dark:text-info-foreground dark:border-info/30",
+          "info group border-[#0ea5e9]/30 bg-[#0ea5e9]/10 text-[#0ea5e9] dark:bg-[#0ea5e9]/20 dark:text-[#0ea5e9] dark:border-[#0ea5e9]/30",
         warning:
-          "warning group border-warning/30 bg-warning/10 text-warning-foreground dark:bg-warning/20 dark:text-warning-foreground dark:border-warning/30",
+          "warning group border-[#f59e0b]/30 bg-[#f59e0b]/10 text-[#f59e0b] dark:bg-[#f59e0b]/20 dark:text-[#f59e0b] dark:border-[#f59e0b]/30",
       },
     },
     defaultVariants: {
