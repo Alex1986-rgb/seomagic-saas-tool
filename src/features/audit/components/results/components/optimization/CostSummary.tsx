@@ -41,6 +41,10 @@ const CostSummary: React.FC<CostSummaryProps> = ({
             )}
           </div>
         </div>
+        
+        <div className="text-sm text-muted-foreground mt-3 text-center">
+          Стоимость включает технические и контентные улучшения для вашего сайта
+        </div>
       </CardContent>
     </Card>
   );

@@ -37,7 +37,7 @@ const OptimizationPricingTable: React.FC<OptimizationPricingTableProps> = ({
     }).format(amount);
   };
 
-  const [showWhatIncluded, setShowWhatIncluded] = useState(false);
+  const [showWhatIncluded, setShowWhatIncluded] = useState(true); // Changed to true to show by default
 
   const baseItems = items.filter(item => 
     item.name.includes('Базовая стоимость') || 

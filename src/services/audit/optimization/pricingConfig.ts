@@ -1,5 +1,5 @@
 
-import { OptimizationItem } from './types';
+import { OptimizationItem } from '@/features/audit/types/optimization-types';
 
 export interface PricingConfig {
   sitemap: number;
@@ -159,7 +159,8 @@ export const calculateOptimizationCost = (pageCount: number): {
     count: 1,
     pricePerUnit: currentPricingConfig.sitemap,
     price: currentPricingConfig.sitemap,
-    totalPrice: currentPricingConfig.sitemap
+    totalPrice: currentPricingConfig.sitemap,
+    type: 'technical'
   });
   
   items.push({
@@ -168,7 +169,8 @@ export const calculateOptimizationCost = (pageCount: number): {
     count: Math.ceil(pageCount * 0.7),
     pricePerUnit: currentPricingConfig.metaTagsPerItem,
     price: currentPricingConfig.metaTagsPerItem,
-    totalPrice: Math.ceil(pageCount * 0.7) * currentPricingConfig.metaTagsPerItem
+    totalPrice: Math.ceil(pageCount * 0.7) * currentPricingConfig.metaTagsPerItem,
+    type: 'technical'
   });
   
   items.push({
@@ -177,7 +179,8 @@ export const calculateOptimizationCost = (pageCount: number): {
     count: Math.ceil(pageCount * 0.1),
     pricePerUnit: currentPricingConfig.linksPerItem,
     price: currentPricingConfig.linksPerItem,
-    totalPrice: Math.ceil(pageCount * 0.1) * currentPricingConfig.linksPerItem
+    totalPrice: Math.ceil(pageCount * 0.1) * currentPricingConfig.linksPerItem,
+    type: 'technical'
   });
   
   items.push({
@@ -186,7 +189,8 @@ export const calculateOptimizationCost = (pageCount: number): {
     count: Math.ceil(pageCount * 3),
     pricePerUnit: currentPricingConfig.imageAltPerItem,
     price: currentPricingConfig.imageAltPerItem,
-    totalPrice: Math.ceil(pageCount * 3) * currentPricingConfig.imageAltPerItem
+    totalPrice: Math.ceil(pageCount * 3) * currentPricingConfig.imageAltPerItem,
+    type: 'technical'
   });
   
   // Content improvements
@@ -196,7 +200,8 @@ export const calculateOptimizationCost = (pageCount: number): {
     count: Math.ceil(pageCount * 0.5),
     pricePerUnit: currentPricingConfig.contentSeoOptimization,
     price: currentPricingConfig.contentSeoOptimization,
-    totalPrice: Math.ceil(pageCount * 0.5) * currentPricingConfig.contentSeoOptimization
+    totalPrice: Math.ceil(pageCount * 0.5) * currentPricingConfig.contentSeoOptimization,
+    type: 'content'
   });
   
   items.push({
@@ -205,7 +210,8 @@ export const calculateOptimizationCost = (pageCount: number): {
     count: Math.ceil(pageCount * 0.6),
     pricePerUnit: currentPricingConfig.headingStructure,
     price: currentPricingConfig.headingStructure,
-    totalPrice: Math.ceil(pageCount * 0.6) * currentPricingConfig.headingStructure
+    totalPrice: Math.ceil(pageCount * 0.6) * currentPricingConfig.headingStructure,
+    type: 'content'
   });
   
   items.push({
@@ -214,7 +220,8 @@ export const calculateOptimizationCost = (pageCount: number): {
     count: Math.ceil(pageCount * 0.4),
     pricePerUnit: currentPricingConfig.conversionTextOptimization,
     price: currentPricingConfig.conversionTextOptimization,
-    totalPrice: Math.ceil(pageCount * 0.4) * currentPricingConfig.conversionTextOptimization
+    totalPrice: Math.ceil(pageCount * 0.4) * currentPricingConfig.conversionTextOptimization,
+    type: 'content'
   });
   
   items.push({
@@ -223,7 +230,8 @@ export const calculateOptimizationCost = (pageCount: number): {
     count: Math.ceil(pageCount * 0.5),
     pricePerUnit: currentPricingConfig.readabilityImprovement,
     price: currentPricingConfig.readabilityImprovement,
-    totalPrice: Math.ceil(pageCount * 0.5) * currentPricingConfig.readabilityImprovement
+    totalPrice: Math.ceil(pageCount * 0.5) * currentPricingConfig.readabilityImprovement,
+    type: 'content'
   });
   
   // Additional services
@@ -233,7 +241,8 @@ export const calculateOptimizationCost = (pageCount: number): {
     count: Math.ceil(pageCount * 0.3),
     pricePerUnit: currentPricingConfig.performancePerPage,
     price: currentPricingConfig.performancePerPage,
-    totalPrice: Math.ceil(pageCount * 0.3) * currentPricingConfig.performancePerPage
+    totalPrice: Math.ceil(pageCount * 0.3) * currentPricingConfig.performancePerPage,
+    type: 'technical'
   });
   
   // Add warranty note item
@@ -243,13 +252,12 @@ export const calculateOptimizationCost = (pageCount: number): {
     count: 1,
     pricePerUnit: 0,
     price: 0,
-    totalPrice: 0
+    totalPrice: 0,
+    type: 'other'
   });
   
-  // Calculate total cost from base prices
-  const totalCost = currentPricingConfig.baseOptimizationPrice + 
-                  (criticalErrors * currentPricingConfig.criticalErrorPrice) + 
-                  (warnings * currentPricingConfig.warningPrice);
+  // Calculate total cost from all items
+  const totalCost = items.reduce((sum, item) => sum + item.totalPrice, 0);
   
   return {
     totalCost,
