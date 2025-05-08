@@ -58,8 +58,7 @@ export interface OptimizationResult {
 }
 
 export interface OptimizationProgressState {
-  current: number;
-  total: number;
+  progress: number;
   stage: string;
 }
 
@@ -96,6 +95,22 @@ export interface OptimizationCosts {
   discountPercentage?: number;
   discountAmount?: number;
   finalTotal?: number;
+}
+
+export interface PageStatistics {
+  totalPages: number;
+  indexablePages: number;
+  blockedPages: number;
+  brokenLinks: number;
+  averageLoadTime: number;
+  totalWordCount: number;
+  averageWordCount: number;
+}
+
+export interface OptimizationResults {
+  metrics: OptimizationMetrics;
+  costs: OptimizationCosts;
+  recommendations: string[];
 }
 
 export interface PageContent {

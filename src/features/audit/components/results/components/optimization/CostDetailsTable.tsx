@@ -15,7 +15,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { OptimizationItem } from '../../types';
+import { OptimizationItem } from '@/features/audit/types/optimization-types';
 
 interface CostDetailsTableProps {
   optimizationItems: OptimizationItem[];

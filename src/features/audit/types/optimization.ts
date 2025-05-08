@@ -3,7 +3,7 @@ import {
   OptimizationItem,
   OptimizationOptions as BaseOptimizationOptions,
   OptimizationCosts,
-  OptimizationResults,
+  OptimizationResults as BaseOptimizationResults,
   OptimizationMetrics,
   OptimizationResult,
   OptimizationProgressState,
@@ -33,9 +33,5 @@ export type {
 
 export type { BaseOptimizationOptions as OptimizationOptions };
 
-// For backward compatibility, we'll define this interface if needed
-export interface OptimizationResults {
-  metrics: OptimizationMetrics;
-  costs: OptimizationCosts;
-  recommendations: string[];
-}
+// For backward compatibility, we'll re-export OptimizationResults
+export type { BaseOptimizationResults as OptimizationResults };
