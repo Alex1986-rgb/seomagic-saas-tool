@@ -3,11 +3,8 @@
 export { useAuditBase } from './useAuditBase';
 export { useAuditData } from './useAuditData';
 export { useAuditActions } from './useAuditActions';
-
-// These will be commented out until we create them
-// export { useAuditInitialization } from './useAuditInitialization';
-// export { usePromptToggle } from './usePromptToggle';
-// export { useAuditExports } from './useAuditExports';
-// export { useAuditLoader } from './useAuditLoader';
-// export { useOptimization } from './useOptimization';
-
+export { useAuditInitialization } from './useAuditInitialization';
+export { usePromptToggle } from './usePromptToggle';
+export { useAuditExports } from './useAuditExports';
+export { useOptimization } from './useOptimization';
+export { useAuditLoader } from './useAuditLoader';

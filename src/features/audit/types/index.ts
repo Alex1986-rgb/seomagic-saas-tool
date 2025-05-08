@@ -11,3 +11,6 @@
 // export * from './optimization-types';
 // export * from './page-data';
 // export * from './crawl-options';
+
+// Use types from the global types directory for now
+export * from '../../../types/audit';
