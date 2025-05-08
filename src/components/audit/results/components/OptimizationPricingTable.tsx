@@ -45,6 +45,8 @@ const OptimizationPricingTable: React.FC<OptimizationPricingTableProps> = ({
     item.name.includes('Исправление предупреждений')
   );
   
+  console.log("OptimizationPricingTable rendering with items:", items.length);
+  
   return (
     <Card className="border border-primary/20">
       <CardHeader className="pb-3">

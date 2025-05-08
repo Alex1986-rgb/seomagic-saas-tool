@@ -27,7 +27,9 @@ const CostDetailsTable: React.FC<CostDetailsTableProps> = ({ optimizationItems }
     return new Intl.NumberFormat('ru-RU').format(num);
   };
 
-  if (!optimizationItems.length) return null;
+  console.log("CostDetailsTable rendering with items:", optimizationItems?.length);
+
+  if (!optimizationItems || !optimizationItems.length) return null;
 
   const totalSum = optimizationItems.reduce((sum, item) => sum + item.totalPrice, 0);
 
@@ -38,7 +40,6 @@ const CostDetailsTable: React.FC<CostDetailsTableProps> = ({ optimizationItems }
     warnings: optimizationItems.filter(item => item.name.includes('Исправление предупреждений')),
     
     technical: optimizationItems.filter(item => [
-      'Исправление критических ошибок',
       'Оптимизация мета-тегов',
       'Карта сайта',
       'Исправление битых ссылок',
@@ -46,6 +47,7 @@ const CostDetailsTable: React.FC<CostDetailsTableProps> = ({ optimizationItems }
       'Улучшение производительности'
     ].some(name => item.name.includes(name)) && 
       !item.name.includes('Базовая стоимость') && 
+      !item.name.includes('Исправление критических ошибок') && 
       !item.name.includes('Исправление предупреждений')),
     
     content: optimizationItems.filter(item => [
@@ -89,7 +91,7 @@ const CostDetailsTable: React.FC<CostDetailsTableProps> = ({ optimizationItems }
               {item.description}
             </TableCell>
             <TableCell className="text-center">{formatNumber(item.count)}</TableCell>
-            <TableCell className="text-right">{formatNumber(item.pricePerUnit)} ₽</TableCell>
+            <TableCell className="text-right">{formatNumber(item.pricePerUnit || item.price)} ₽</TableCell>
             <TableCell className="text-right font-medium">{formatNumber(item.totalPrice)} ₽</TableCell>
           </TableRow>
         ))}

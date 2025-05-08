@@ -63,25 +63,20 @@ const Layout: React.FC<LayoutProps> = ({
 
   return (
     <div className={cn("flex flex-col min-h-screen relative", className)}>
+      {/* Background */}
       <div className="fixed inset-0 z-[-1]">
         <StarryBackground />
       </div>
       
+      {/* Navbar */}
       {!shouldHideNavbar && <Navbar />}
       
-      <AnimatePresence mode="wait">
-        <motion.main 
-          key={location.pathname}
-          className="flex-grow relative z-10 w-full"
-          initial={animateTransitions && !isFirstRender ? 'initial' : false}
-          animate={animateTransitions ? 'animate' : undefined}
-          exit={animateTransitions ? 'exit' : undefined}
-          variants={pageVariants}
-        >
-          {children}
-        </motion.main>
-      </AnimatePresence>
+      {/* Main content */}
+      <main className="flex-grow relative z-10 w-full">
+        {children}
+      </main>
       
+      {/* Footer */}
       {!shouldHideFooter && <Footer />}
       
       {/* Performance monitoring in development mode */}

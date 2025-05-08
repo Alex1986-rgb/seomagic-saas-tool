@@ -12,7 +12,6 @@ const Index: React.FC = () => {
   console.log("Index component rendering");
 
   useEffect(() => {
-    // Check for any errors when mounting
     console.log("Index mounted successfully");
   }, []);
 

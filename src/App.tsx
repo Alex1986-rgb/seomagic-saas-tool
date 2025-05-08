@@ -1,13 +1,15 @@
 
 import React, { useState, useEffect, Suspense } from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate, BrowserRouter } from 'react-router-dom';
 import { Toaster } from "@/components/ui/toaster";
 import { GlobalErrorBoundary } from '@/components/ui/error-handler';
 import { FullscreenLoader } from '@/components/ui/loading';
 import AppProviders from './providers/AppProviders';
 
-// Lazy load pages
-const HomePage = React.lazy(() => import('@/pages/Index'));
+// Directly import the main page to avoid potential issues with lazy loading
+import HomePage from '@/pages/Index';
+
+// Lazy load other pages
 const AuditPage = React.lazy(() => import('@/pages/Audit'));
 const SiteAudit = React.lazy(() => import('@/pages/SiteAudit'));
 const SeoOptimizationPage = React.lazy(() => import('@/pages/SeoOptimizationPage'));
@@ -39,6 +41,19 @@ const Partnership = React.lazy(() => import('@/pages/Partnership'));
 // Lazy load admin routes
 const AdminRoutes = React.lazy(() => import('@/routes/AdminRoutes'));
 
+const FallbackErrorComponent = () => (
+  <div className="p-6 text-center">
+    <h1 className="text-xl text-red-500 mb-4">Произошла критическая ошибка в приложении</h1>
+    <p className="mb-4">Пожалуйста, обновите страницу</p>
+    <button 
+      onClick={() => window.location.reload()} 
+      className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+    >
+      Обновить страницу
+    </button>
+  </div>
+);
+
 function App() {
   const [isLoading, setIsLoading] = useState(true);
   
@@ -46,18 +61,13 @@ function App() {
     // Preload critical resources
     const preloadResources = async () => {
       // Add any critical resources preloading here
+      console.log("Preloading critical resources");
       
-      // Prefetch important routes
-      const importantRoutes = [HomePage, AuditPage];
-      await Promise.all(importantRoutes.map(route => {
-        // This triggers webpack to load the chunks in parallel
-        // but we don't need to do anything with the result
-        return Promise.resolve();
-      }));
-      
+      // Shorter timeout for faster initial load
       const timer = setTimeout(() => {
+        console.log("Initial loading complete");
         setIsLoading(false);
-      }, 300); // Reduced from 500ms to 300ms for faster initial load
+      }, 100);
       
       return () => clearTimeout(timer);
     };
@@ -71,55 +81,60 @@ function App() {
   
   return (
     <AppProviders>
-      <Suspense fallback={<FullscreenLoader />}>
-        <Routes>
-          <Route path="/" element={<HomePage />} />
-          
-          {/* Group routes by section for better code-splitting */}
-          {/* Audit related routes */}
-          <Route path="/audit" element={<AuditPage />} />
-          <Route path="/site-audit" element={<SiteAudit />} />
-          <Route path="/seo-optimization" element={<SeoOptimizationPage />} />
-          <Route path="/audit-history" element={<AuditHistory />} />
-          
-          {/* Content related routes */}
-          <Route path="/blog" element={<BlogPage />} />
-          <Route path="/blog/:id" element={<BlogPostPage />} />
-          <Route path="/guides" element={<Guides />} />
-          <Route path="/guides/:id" element={<GuidePost />} />
-          <Route path="/features" element={<Features />} />
-          
-          {/* User account related routes */}
-          <Route path="/profile" element={<ClientProfile />} />
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/settings" element={<Settings />} />
-          <Route path="/auth" element={<Auth />} />
-          
-          {/* Position tracking related routes */}
-          <Route path="/position-tracking" element={<PositionTracking />} />
-          <Route path="/position-pricing" element={<PositionPricing />} />
-          <Route path="/reports" element={<Reports />} />
-          
-          {/* Information pages */}
-          <Route path="/about" element={<About />} />
-          <Route path="/pricing" element={<Pricing />} />
-          <Route path="/support" element={<Support />} />
-          <Route path="/contact" element={<Contact />} />
-          <Route path="/demo" element={<Demo />} />
-          <Route path="/privacy" element={<Privacy />} />
-          <Route path="/terms" element={<Terms />} />
-          <Route path="/documentation" element={<Documentation />} />
-          <Route path="/documentation/:tab" element={<Documentation />} />
-          <Route path="/ip-info" element={<IPInfo />} />
-          <Route path="/partnership" element={<Partnership />} />
-          
-          {/* Admin section - completely separate bundle */}
-          <Route path="/admin/*" element={<AdminRoutes />} />
-          
-          {/* Fallback */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </Suspense>
+      <GlobalErrorBoundary fallback={<FallbackErrorComponent />}>
+        <BrowserRouter>
+          <Suspense fallback={<FullscreenLoader />}>
+            <Routes>
+              <Route path="/" element={<HomePage />} />
+              
+              {/* Group routes by section for better code-splitting */}
+              {/* Audit related routes */}
+              <Route path="/audit" element={<AuditPage />} />
+              <Route path="/site-audit" element={<SiteAudit />} />
+              <Route path="/seo-optimization" element={<SeoOptimizationPage />} />
+              <Route path="/audit-history" element={<AuditHistory />} />
+              
+              {/* Content related routes */}
+              <Route path="/blog" element={<BlogPage />} />
+              <Route path="/blog/:id" element={<BlogPostPage />} />
+              <Route path="/guides" element={<Guides />} />
+              <Route path="/guides/:id" element={<GuidePost />} />
+              <Route path="/features" element={<Features />} />
+              
+              {/* User account related routes */}
+              <Route path="/profile" element={<ClientProfile />} />
+              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/settings" element={<Settings />} />
+              <Route path="/auth" element={<Auth />} />
+              
+              {/* Position tracking related routes */}
+              <Route path="/position-tracking" element={<PositionTracking />} />
+              <Route path="/position-pricing" element={<PositionPricing />} />
+              <Route path="/reports" element={<Reports />} />
+              
+              {/* Information pages */}
+              <Route path="/about" element={<About />} />
+              <Route path="/pricing" element={<Pricing />} />
+              <Route path="/support" element={<Support />} />
+              <Route path="/contact" element={<Contact />} />
+              <Route path="/demo" element={<Demo />} />
+              <Route path="/privacy" element={<Privacy />} />
+              <Route path="/terms" element={<Terms />} />
+              <Route path="/documentation" element={<Documentation />} />
+              <Route path="/documentation/:tab" element={<Documentation />} />
+              <Route path="/ip-info" element={<IPInfo />} />
+              <Route path="/partnership" element={<Partnership />} />
+              
+              {/* Admin section - completely separate bundle */}
+              <Route path="/admin/*" element={<AdminRoutes />} />
+              
+              {/* Fallback */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </Suspense>
+        </BrowserRouter>
+        <Toaster />
+      </GlobalErrorBoundary>
     </AppProviders>
   );
 }

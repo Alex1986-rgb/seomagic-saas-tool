@@ -34,6 +34,7 @@ export class GlobalErrorBoundary extends React.Component<GlobalErrorBoundaryProp
   }
 
   static getDerivedStateFromError(error: Error) {
+    console.error("Error caught by GlobalErrorBoundary:", error);
     return { hasError: true, error };
   }
 
@@ -52,10 +53,11 @@ export class GlobalErrorBoundary extends React.Component<GlobalErrorBoundaryProp
       lastErrorTime: now
     });
     
-    console.error("Uncaught error:", error, errorInfo);
+    console.error("Uncaught error in GlobalErrorBoundary:", error, errorInfo);
   }
 
   resetError = () => {
+    console.log("Attempting to reset error in GlobalErrorBoundary");
     this.setState({
       hasError: false,
       error: null,
@@ -65,12 +67,15 @@ export class GlobalErrorBoundary extends React.Component<GlobalErrorBoundaryProp
 
   render() {
     if (this.state.hasError) {
+      console.log("GlobalErrorBoundary rendering error state");
       // If the component has errored too many times in succession, show a more permanent error
       if (this.state.errorCount >= 3) {
         return this.props.fallback || <PermanentErrorFallback error={this.state.error} />;
       }
       return this.props.fallback || <ErrorFallback error={this.state.error} resetError={this.resetError} />;
     }
+    
+    console.log("GlobalErrorBoundary rendering children");
     return this.props.children;
   }
 }
@@ -93,6 +98,7 @@ export const ErrorFallback: React.FC<ErrorFallbackProps> = ({ error, resetError 
   }, []);
 
   const handleRetry = async () => {
+    console.log("Attempting recovery in ErrorFallback");
     setIsAttemptingRecovery(true);
     
     // Artificial delay to allow React to clean up any problematic state
@@ -109,6 +115,7 @@ export const ErrorFallback: React.FC<ErrorFallbackProps> = ({ error, resetError 
   };
 
   const handleNavigateHome = () => {
+    console.log("Navigating home from ErrorFallback");
     resetError();
     navigate('/');
     toast({
@@ -156,6 +163,7 @@ const PermanentErrorFallback: React.FC<{error: Error | null}> = ({ error }) => {
   
   const handleReset = () => {
     // Perform a full page refresh to reset all state
+    console.log("Performing full page refresh in PermanentErrorFallback");
     window.location.href = '/';
     
     toast({
