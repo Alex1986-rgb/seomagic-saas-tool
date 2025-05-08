@@ -6,9 +6,18 @@
 
 export { DeepCrawler } from './deepCrawlerCore';
 export { createRequestManager, type RequestManager } from './requestManager';
-export type { CrawlOptions, CrawlResult, TaskProgress, PageData, DeepCrawlerOptions } from './types';
+export type { 
+  CrawlOptions, 
+  CrawlResult, 
+  TaskProgress, 
+  PageData, 
+  DeepCrawlerOptions,
+  CrawlSummary,
+  ImageData,
+  PageIssue 
+} from './types';
 
-// Re-export other needed classes with consistent naming
-export { RobotsTxtParser } from './RobotsTxtParser';
-export { UrlProcessor } from './UrlProcessor';
-export { CrawlQueueManager } from './CrawlQueueManager';
+// Re-export using the correct casing to avoid issues
+export { RobotsTxtParser } from './robotsTxtParser';
+export { UrlProcessor } from './urlProcessor';
+export { CrawlQueueManager } from './crawlQueueManager';

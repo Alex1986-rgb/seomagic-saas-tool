@@ -2,119 +2,130 @@
 import { PageData } from './types';
 
 /**
- * Analyzes site structure based on crawl results
+ * Site analyzer class for analyzing crawled pages and generating insights
  */
 export class SiteAnalyzer {
+  private pages: PageData[] = [];
+  
   /**
-   * Analyze site structure based on crawled pages
+   * Add a page to the analyzer
    */
-  analyzeSiteStructure(pages: PageData[]) {
-    const depthMap: Record<string, number> = {};
-    const pageTypesMap: Record<string, number> = {};
+  addPage(page: PageData): void {
+    this.pages.push(page);
+  }
+  
+  /**
+   * Generate basic stats for the site
+   */
+  generateStats(): any {
+    if (this.pages.length === 0) {
+      return {
+        pageCount: 0,
+        avgLoadTime: 0,
+        avgContentLength: 0,
+        internalLinks: 0,
+        externalLinks: 0
+      };
+    }
+    
+    let totalLoadTime = 0;
+    let totalContentLength = 0;
     let totalInternalLinks = 0;
     let totalExternalLinks = 0;
-
-    // Process each page to gather statistics
-    pages.forEach(page => {
-      // Calculate page depth
-      const depth = this.getPageDepth(page.url);
-      const depthKey = `depth_${depth}`;
-      depthMap[depthKey] = (depthMap[depthKey] || 0) + 1;
-
-      // Categorize page by type
-      const pageType = this.detectPageType(page);
-      pageTypesMap[pageType] = (pageTypesMap[pageType] || 0) + 1;
-
-      // Count links
-      totalInternalLinks += page.internalLinks?.length || 0;
-      totalExternalLinks += page.externalLinks?.length || 0;
+    
+    this.pages.forEach(page => {
+      if (page.loadTime) totalLoadTime += page.loadTime;
+      if (page.contentLength) totalContentLength += page.contentLength;
+      if (page.internalLinks) totalInternalLinks += page.internalLinks.length;
+      if (page.externalLinks) totalExternalLinks += page.externalLinks.length;
     });
-
+    
     return {
-      totalPages: pages.length,
-      depth: depthMap,
-      pageTypes: pageTypesMap,
-      linkDistribution: {
-        internal: totalInternalLinks,
-        external: totalExternalLinks
-      }
+      pageCount: this.pages.length,
+      avgLoadTime: totalLoadTime / this.pages.length,
+      avgContentLength: totalContentLength / this.pages.length,
+      internalLinks: totalInternalLinks,
+      externalLinks: totalExternalLinks
     };
   }
-
+  
   /**
-   * Static method for analyzing site structure
+   * Detect issues with the site
    */
-  static analyzeSiteStructure(urls: Set<string>, domain: string) {
-    const analyzer = new SiteAnalyzer();
+  detectIssues(): any {
+    const issues = {
+      missingTitles: [],
+      missingDescriptions: [],
+      missingH1: [],
+      duplicateTitles: {},
+      duplicateDescriptions: {},
+      brokenLinks: [],
+      slowPages: []
+    };
     
-    // Convert URLs to simple PageData objects
-    const pages = Array.from(urls).map(url => ({
-      url,
-      title: '',
-      description: '',
-      h1: [],
-      links: [],
-      internalLinks: [],
-      externalLinks: [],
-      images: [],
-      statusCode: 200,
-      contentType: 'text/html',
-      loadTime: 0,
-      contentLength: 0,
-      isIndexable: true,
-      issues: []
-    }));
+    // Process each page for issues
+    this.pages.forEach(page => {
+      if (!page.title || page.title.trim() === '') {
+        issues.missingTitles.push(page.url);
+      }
+      
+      if (!page.description || page.description.trim() === '') {
+        issues.missingDescriptions.push(page.url);
+      }
+      
+      if (!page.h1 || page.h1.length === 0) {
+        issues.missingH1.push(page.url);
+      }
+      
+      if (page.loadTime && page.loadTime > 2.0) { // Slow if > 2 seconds
+        issues.slowPages.push({
+          url: page.url,
+          loadTime: page.loadTime
+        });
+      }
+      
+      // Check for duplicate titles
+      if (page.title) {
+        const title = page.title.trim();
+        if (!issues.duplicateTitles[title]) {
+          issues.duplicateTitles[title] = [];
+        }
+        issues.duplicateTitles[title].push(page.url);
+      }
+      
+      // Check for duplicate descriptions
+      if (page.description) {
+        const description = page.description.trim();
+        if (!issues.duplicateDescriptions[description]) {
+          issues.duplicateDescriptions[description] = [];
+        }
+        issues.duplicateDescriptions[description].push(page.url);
+      }
+    });
     
-    return analyzer.analyzeSiteStructure(pages);
+    // Filter out unique titles and descriptions
+    Object.keys(issues.duplicateTitles).forEach(title => {
+      if (issues.duplicateTitles[title].length <= 1) {
+        delete issues.duplicateTitles[title];
+      }
+    });
+    
+    Object.keys(issues.duplicateDescriptions).forEach(description => {
+      if (issues.duplicateDescriptions[description].length <= 1) {
+        delete issues.duplicateDescriptions[description];
+      }
+    });
+    
+    return issues;
   }
-
+  
   /**
-   * Calculate the depth of a page URL
+   * Get content analysis for the site
    */
-  private getPageDepth(url: string): number {
-    try {
-      const pathname = new URL(url).pathname;
-      // Count segments, filter out empty ones
-      const segments = pathname.split('/').filter(Boolean);
-      return segments.length;
-    } catch (e) {
-      return 0;
-    }
-  }
-
-  /**
-   * Detect page type based on URL patterns and content
-   */
-  private detectPageType(page: PageData): string {
-    const url = page.url.toLowerCase();
-    let pathSegments: string[] = [];
-    
-    try {
-      pathSegments = new URL(url).pathname.split('/').filter(Boolean);
-    } catch (e) {
-      return 'other';
-    }
-    
-    const lastSegment = pathSegments[pathSegments.length - 1];
-
-    // Check for common page types by URL patterns
-    if (pathSegments.length === 0 || url.endsWith('/')) {
-      return 'homepage';
-    } else if (url.includes('/blog/') || url.includes('/news/') || url.includes('/article/')) {
-      return 'article';
-    } else if (url.includes('/product/') || url.includes('/item/')) {
-      return 'product';
-    } else if (url.includes('/category/') || url.includes('/catalog/')) {
-      return 'category';
-    } else if (url.includes('/about')) {
-      return 'about';
-    } else if (url.includes('/contact')) {
-      return 'contact';
-    } else {
-      // Fallback to generic page type
-      return 'other';
-    }
+  getContentAnalysis(): any {
+    // Implementation would analyze content patterns, keyword usage, etc.
+    return {
+      // Placeholder for content analysis
+    };
   }
 }
-
-export const siteAnalyzer = new SiteAnalyzer();

@@ -4,7 +4,7 @@
  */
 
 import * as cheerio from 'cheerio';
-import { PageData } from './types';
+import { PageData, ImageData, PageIssue } from './types';
 
 export class PageProcessor {
   /**
@@ -58,7 +58,7 @@ export class PageProcessor {
     }
     
     // Extract all images
-    const images: { src: string; alt: string }[] = [];
+    const images: ImageData[] = [];
     $('img').each((_, element) => {
       const src = $(element).attr('src') || '';
       const alt = $(element).attr('alt') || '';
@@ -76,13 +76,13 @@ export class PageProcessor {
     const contentLength = html.length;
     
     // Detect potential issues
-    const issues = [];
+    const issues: PageIssue[] = [];
     
     if (!title) {
       issues.push({
         type: 'missing_title',
         description: 'The page is missing a title tag',
-        severity: 'critical' as const
+        severity: 'critical'
       });
     }
     
@@ -90,7 +90,7 @@ export class PageProcessor {
       issues.push({
         type: 'missing_description',
         description: 'The page is missing a meta description',
-        severity: 'important' as const
+        severity: 'important'
       });
     }
     
@@ -98,7 +98,7 @@ export class PageProcessor {
       issues.push({
         type: 'missing_h1',
         description: 'The page is missing an H1 heading',
-        severity: 'important' as const
+        severity: 'important'
       });
     }
     

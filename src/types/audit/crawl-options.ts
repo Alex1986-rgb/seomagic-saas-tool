@@ -10,6 +10,9 @@ export interface CrawlOptions {
   userAgent?: string;
   ignoreRobotsTxt?: boolean;
   followRedirects?: boolean;
+  onProgress?: (progress: any) => void;
+  checkImages?: boolean;
+  checkPerformance?: boolean;
 }
 
 export interface OptimizationOptions {
@@ -18,4 +21,13 @@ export interface OptimizationOptions {
   targetPageSpeed?: number;
   minifyCode?: boolean;
   compressImages?: boolean;
+  optimizeMetaTags?: boolean;
+  optimizeHeadings?: boolean;
+  optimizeContent?: boolean;
+  optimizeImages?: boolean;
+  temperature?: number;
+  max_tokens?: number;
+  contentQuality?: string;
+  language?: string;
+  model?: string;
 }

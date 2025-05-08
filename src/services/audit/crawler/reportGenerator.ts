@@ -1,3 +1,4 @@
+
 import { CrawlResult, CrawlSummary, PageData } from './types';
 
 /**
@@ -26,23 +27,25 @@ export class ReportGenerator {
       pageCount++;
 
       // Calculate links
-      totalLinks += pageData.links.length;
+      if (pageData.links) totalLinks += pageData.links.length;
       if (pageData.internalLinks) internalLinks += pageData.internalLinks.length;
       if (pageData.externalLinks) externalLinks += pageData.externalLinks.length;
 
       // Track load time
-      totalLoadTime += pageData.loadTime;
+      if (pageData.loadTime) totalLoadTime += pageData.loadTime;
 
       // Track content types
-      const contentType = pageData.contentType.split(';')[0].trim();
-      if (pageTypes[contentType]) {
-        pageTypes[contentType]++;
-      } else {
-        pageTypes[contentType] = 1;
+      if (pageData.contentType) {
+        const contentType = pageData.contentType.split(';')[0].trim();
+        if (pageTypes[contentType]) {
+          pageTypes[contentType]++;
+        } else {
+          pageTypes[contentType] = 1;
+        }
       }
 
       // Track issues
-      if (pageData.statusCode >= 400) {
+      if (pageData.statusCode && pageData.statusCode >= 400) {
         brokenLinks++;
       }
 

@@ -1,7 +1,7 @@
 import { useState, useCallback } from 'react';
 import { useToast } from './use-toast';
 import { useScan } from './use-scan';
-import { seoApiService } from '@/services/api/seoApiService';
+import { seoApiService, ApiOptimizationResult } from '@/services/api/seoApiService';
 import { reportingService } from '@/services/reporting/reportingService';
 import { validationService } from '@/services/validation/validationService';
 import { OptimizationResult } from '@/services/api/seoApiService';
@@ -103,7 +103,7 @@ export const useAudit = (initialUrl?: string) => {
                 impact: 'high'
               })),
               important: Array(Math.floor(Math.random() * 5)).fill(null).map(() => ({
-                title: 'Важна�� ошибка',
+                title: 'Важная ошибка',
                 description: 'Описание важной ошибки',
                 impact: 'medium'
               })),
@@ -309,7 +309,7 @@ export const useAudit = (initialUrl?: string) => {
       
       // Type guard to ensure result is of OptimizationResult type
       if (typeof result === 'object' && result !== null && 'success' in result) {
-        const typedResult = result as OptimizationResult;
+        const typedResult = result as ApiOptimizationResult;
         
         if (typedResult.success) {
           setIsOptimized(true);

@@ -14,9 +14,12 @@ class SeoOptimizationController {
         crawlOptions.maxDepth = 5; // Default depth
       }
       
-      if (!crawlOptions.checkPerformance) {
-        crawlOptions.checkPerformance = true; // Default to true
-      }
+      // Add the checkPerformance property if it doesn't exist
+      const updatedCrawlOptions = {
+        ...crawlOptions,
+        checkPerformance: crawlOptions.checkPerformance !== undefined ? 
+          crawlOptions.checkPerformance : true // Default to true
+      };
 
       // Start the optimization process
       const taskId = `task_${Date.now()}`;
@@ -25,7 +28,7 @@ class SeoOptimizationController {
       localStorage.setItem(`task_${url}`, JSON.stringify({
         id: taskId,
         url,
-        crawlOptions,
+        crawlOptions: updatedCrawlOptions,
         optimizationOptions,
         status: 'started',
         startTime: new Date().toISOString()
