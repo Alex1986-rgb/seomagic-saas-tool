@@ -1,7 +1,6 @@
 // Fix imports to use consistent casing
 import { CrawlOptions } from '@/types/audit';
-import { EventEmitter } from 'events';
-import { URL } from 'url';
+// Use a browser-compatible implementation instead of Node's EventEmitter
 
 // Define the interfaces here to avoid import errors
 interface CrawlResult {
@@ -31,7 +30,33 @@ interface TaskProgress {
   totalUrls: number;
 }
 
-export class DeepCrawler extends EventEmitter {
+// Simple EventEmitter implementation for browser compatibility
+class BrowserEventEmitter {
+  private events: Record<string, Function[]> = {};
+
+  on(event: string, listener: Function): this {
+    if (!this.events[event]) {
+      this.events[event] = [];
+    }
+    this.events[event].push(listener);
+    return this;
+  }
+
+  emit(event: string, ...args: any[]): boolean {
+    if (!this.events[event]) return false;
+    this.events[event].forEach(listener => listener(...args));
+    return true;
+  }
+
+  removeListener(event: string, listener: Function): this {
+    if (this.events[event]) {
+      this.events[event] = this.events[event].filter(l => l !== listener);
+    }
+    return this;
+  }
+}
+
+export class DeepCrawler extends BrowserEventEmitter {
   private baseUrl: string;
   private options: CrawlOptions;
   private isRunning: boolean = false;

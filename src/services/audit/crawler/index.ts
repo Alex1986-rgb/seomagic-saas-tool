@@ -20,4 +20,4 @@ export type {
 // Re-export using the correct casing to avoid issues
 export { RobotsTxtParser } from './robotsTxtParser';
 export { UrlProcessor } from './urlProcessor';
-export { CrawlQueueManager } from './crawlQueueManager';
+export { CrawlQueueManager } from './CrawlQueueManager';
