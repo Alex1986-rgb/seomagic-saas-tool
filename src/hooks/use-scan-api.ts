@@ -1,11 +1,11 @@
 
 import { useState } from 'react';
 import { useToast } from "@/hooks/use-toast";
-import { seoApiService } from '@/api/seoApiService';
+import { seoApiService } from '@/api/services/seoApiService';
 import { ScanDetails } from '@/types/api';
 
 /**
- * Хук для работы с API сканирования сайтов
+ * Hook for working with SEO scanning API
  */
 export const useScanAPI = (url: string) => {
   const { toast } = useToast();
@@ -14,9 +14,9 @@ export const useScanAPI = (url: string) => {
   const [scanPollingInterval, setScanPollingInterval] = useState<NodeJS.Timeout | null>(null);
 
   /**
-   * Запускает сканирование сайта через API
+   * Start a website scan
    */
-  const startBackendScan = async (deepScan = false) => {
+  const startScan = async (deepScan = false) => {
     try {
       const maxPages = deepScan ? 500000 : 10000;
       
@@ -45,7 +45,7 @@ export const useScanAPI = (url: string) => {
   };
 
   /**
-   * Настраивает опрос сервера для получения статуса сканирования
+   * Set up polling for scan status
    */
   const setupPolling = (
     taskId: string, 
@@ -92,13 +92,13 @@ export const useScanAPI = (url: string) => {
   };
 
   /**
-   * Отмена текущего сканирования
+   * Cancel current scan
    */
   const cancelScan = async () => {
     if (!taskId) return;
     
     try {
-      await seoApiService.cancelScan(taskId);
+      await seoApiService.cancelCrawl(taskId);
       
       if (scanPollingInterval) {
         clearInterval(scanPollingInterval);
@@ -125,7 +125,7 @@ export const useScanAPI = (url: string) => {
   return {
     taskId,
     isPolling,
-    startBackendScan,
+    startScan,
     setupPolling,
     cancelScan
   };
