@@ -1,7 +1,8 @@
-import { firecrawlService } from '../services/api/firecrawl';
+
 import { v4 as uuidv4 } from 'uuid';
-import { SitemapExtractor } from '../services/audit/crawler/sitemapExtractor';
-import { CrawlTask } from '../services/api/firecrawl/types';
+import { SitemapExtractor } from '../audit/crawler/sitemapExtractor';
+import { firecrawlService } from './firecrawl/index';
+import { CrawlTask } from './firecrawl/types';
 
 export type ScanDetails = {
   current_url: string;

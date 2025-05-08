@@ -1,6 +1,6 @@
-import { firecrawlService } from '../services/api/firecrawl';
 import { v4 as uuidv4 } from 'uuid';
 import { SitemapExtractor } from '../services/audit/crawler/sitemapExtractor';
+import { firecrawlService } from '../services/api/firecrawl/index';
 import { CrawlTask } from '../services/api/firecrawl/types';
 
 export type ScanDetails = {
@@ -8,6 +8,7 @@ export type ScanDetails = {
   pages_scanned: number;
   estimated_pages: number;
   stage: string;
+  progress: number;
 };
 
 export interface OptimizationResult {
