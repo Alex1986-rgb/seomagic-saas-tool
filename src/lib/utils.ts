@@ -1,46 +1,38 @@
-
-import { type ClassValue, clsx } from 'clsx';
-import { twMerge } from 'tailwind-merge';
+import { type ClassValue, clsx } from "clsx";
+import { twMerge } from "tailwind-merge";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
+/**
+ * Format any error into a readable string
+ */
 export function formatError(error: unknown): string {
-  if (error instanceof Error) return error.message;
   if (typeof error === 'string') return error;
-  return 'Произошла неизвестная ошибка';
+  if (error instanceof Error) return error.message;
+  if (error && typeof error === 'object') {
+    if ('message' in error) return String(error.message);
+    if ('error' in error) return String(error.error);
+  }
+  return 'An unknown error occurred';
 }
 
-export function delay(ms: number): Promise<void> {
-  return new Promise(resolve => setTimeout(resolve, ms));
+/**
+ * Creates a promise that rejects after a specified timeout
+ */
+export function createTimeout(ms: number, message = 'Operation timed out'): Promise<never> {
+  return new Promise((_, reject) => {
+    setTimeout(() => reject(new Error(message)), ms);
+  });
 }
 
-export function debounce<T extends (...args: any[]) => any>(
-  func: T,
-  wait: number
-): (...args: Parameters<T>) => void {
-  let timeout: ReturnType<typeof setTimeout> | null = null;
-  
-  return function(...args: Parameters<T>) {
-    if (timeout) clearTimeout(timeout);
-    timeout = setTimeout(() => func(...args), wait);
-  };
-}
-
-export function throttle<T extends (...args: any[]) => any>(
-  func: T,
-  limit: number
-): (...args: Parameters<T>) => void {
-  let inThrottle = false;
-  
-  return function(...args: Parameters<T>) {
-    if (!inThrottle) {
-      func(...args);
-      inThrottle = true;
-      setTimeout(() => {
-        inThrottle = false;
-      }, limit);
-    }
-  };
+/**
+ * Execute a promise with a timeout
+ */
+export async function withTimeout<T>(promise: Promise<T>, timeoutMs: number, message?: string): Promise<T> {
+  return Promise.race([
+    promise,
+    createTimeout(timeoutMs, message)
+  ]);
 }

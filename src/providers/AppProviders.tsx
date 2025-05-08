@@ -8,9 +8,10 @@ import { LoadingProvider } from '@/contexts/LoadingContext';
 import { ErrorHandlingProvider } from '@/contexts/ErrorHandlingContext';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { GlobalErrorBoundary } from '@/components/ui/error-handler';
+import { setupQueryErrorHandler } from '@/lib/react-query-error-handler';
 
-// Create a client
-const queryClient = new QueryClient({
+// Create a client with error handling
+const queryClient = setupQueryErrorHandler(new QueryClient({
   defaultOptions: {
     queries: {
       retry: 1,
@@ -18,7 +19,7 @@ const queryClient = new QueryClient({
       staleTime: 5 * 60 * 1000, // 5 minutes
     },
   },
-});
+}));
 
 interface AppProvidersProps {
   children: React.ReactNode;

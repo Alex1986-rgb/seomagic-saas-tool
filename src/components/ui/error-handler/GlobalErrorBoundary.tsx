@@ -1,9 +1,10 @@
 
-import React, { ErrorInfo } from 'react';
-import { AlertTriangle, Home, RefreshCw } from 'lucide-react';
+import React, { ErrorInfo, useState, useEffect } from 'react';
+import { AlertTriangle, Home, RefreshCw, XOctagon } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from 'react-router-dom';
+import { Card } from '@/components/ui/card';
 
 interface GlobalErrorBoundaryProps {
   children: React.ReactNode;
@@ -14,7 +15,11 @@ interface ErrorBoundaryState {
   hasError: boolean;
   error: Error | null;
   errorInfo: ErrorInfo | null;
+  errorCount: number;
+  lastErrorTime: number | null;
 }
+
+const ERROR_RESET_TIMEOUT = 10000; // 10 seconds
 
 export class GlobalErrorBoundary extends React.Component<GlobalErrorBoundaryProps, ErrorBoundaryState> {
   constructor(props: GlobalErrorBoundaryProps) {
@@ -22,7 +27,9 @@ export class GlobalErrorBoundary extends React.Component<GlobalErrorBoundaryProp
     this.state = {
       hasError: false,
       error: null,
-      errorInfo: null
+      errorInfo: null,
+      errorCount: 0,
+      lastErrorTime: null
     };
   }
 
@@ -31,7 +38,20 @@ export class GlobalErrorBoundary extends React.Component<GlobalErrorBoundaryProp
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    this.setState({ errorInfo });
+    const now = Date.now();
+    const { lastErrorTime, errorCount } = this.state;
+    
+    // Reset error count if last error was more than ERROR_RESET_TIMEOUT ago
+    const newErrorCount = (lastErrorTime && now - lastErrorTime > ERROR_RESET_TIMEOUT) 
+      ? 1 
+      : errorCount + 1;
+    
+    this.setState({ 
+      errorInfo,
+      errorCount: newErrorCount,
+      lastErrorTime: now
+    });
+    
     console.error("Uncaught error:", error, errorInfo);
   }
 
@@ -45,6 +65,10 @@ export class GlobalErrorBoundary extends React.Component<GlobalErrorBoundaryProp
 
   render() {
     if (this.state.hasError) {
+      // If the component has errored too many times in succession, show a more permanent error
+      if (this.state.errorCount >= 3) {
+        return this.props.fallback || <PermanentErrorFallback error={this.state.error} />;
+      }
       return this.props.fallback || <ErrorFallback error={this.state.error} resetError={this.resetError} />;
     }
     return this.props.children;
@@ -59,12 +83,28 @@ interface ErrorFallbackProps {
 export const ErrorFallback: React.FC<ErrorFallbackProps> = ({ error, resetError }) => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const [isAttemptingRecovery, setIsAttemptingRecovery] = useState(false);
 
-  const handleRetry = () => {
+  useEffect(() => {
+    return () => {
+      // Clean up any recovery timers if component unmounts
+      setIsAttemptingRecovery(false);
+    };
+  }, []);
+
+  const handleRetry = async () => {
+    setIsAttemptingRecovery(true);
+    
+    // Artificial delay to allow React to clean up any problematic state
+    await new Promise(resolve => setTimeout(resolve, 1500));
+    
     resetError();
+    setIsAttemptingRecovery(false);
+    
     toast({
       title: "Перезапуск приложения",
-      description: "Перезапуск компонента после ошибки"
+      description: "Перезапуск компонента после ошибки",
+      duration: 3000
     });
   };
 
@@ -73,7 +113,8 @@ export const ErrorFallback: React.FC<ErrorFallbackProps> = ({ error, resetError 
     navigate('/');
     toast({
       title: "Навигация на главную",
-      description: "Возврат на главную страницу"
+      description: "Возврат на главную страницу",
+      duration: 3000
     });
   };
 
@@ -90,9 +131,14 @@ export const ErrorFallback: React.FC<ErrorFallbackProps> = ({ error, resetError 
         </div>
       )}
       <div className="flex gap-3">
-        <Button onClick={handleRetry} variant="outline" className="flex items-center gap-2">
-          <RefreshCw className="h-4 w-4" />
-          Повторить
+        <Button 
+          onClick={handleRetry} 
+          variant="outline" 
+          className="flex items-center gap-2"
+          disabled={isAttemptingRecovery}
+        >
+          <RefreshCw className={`h-4 w-4 ${isAttemptingRecovery ? 'animate-spin' : ''}`} />
+          {isAttemptingRecovery ? 'Восстановление...' : 'Повторить'}
         </Button>
         <Button onClick={handleNavigateHome} variant="default" className="flex items-center gap-2">
           <Home className="h-4 w-4" />
@@ -100,5 +146,42 @@ export const ErrorFallback: React.FC<ErrorFallbackProps> = ({ error, resetError 
         </Button>
       </div>
     </div>
+  );
+};
+
+// More serious fallback for repeated errors
+const PermanentErrorFallback: React.FC<{error: Error | null}> = ({ error }) => {
+  const navigate = useNavigate();
+  const { toast } = useToast();
+  
+  const handleReset = () => {
+    // Perform a full page refresh to reset all state
+    window.location.href = '/';
+    
+    toast({
+      title: "Полный сброс",
+      description: "Выполняется полный перезапуск приложения",
+      duration: 3000
+    });
+  };
+  
+  return (
+    <Card className="p-6 max-w-md mx-auto my-12 text-center">
+      <div className="flex flex-col items-center justify-center gap-4">
+        <XOctagon className="h-16 w-16 text-destructive" />
+        <h1 className="text-2xl font-bold">Критическая ошибка</h1>
+        <p className="text-muted-foreground">
+          Обнаружена повторяющаяся ошибка, которая препятствует нормальной работе приложения
+        </p>
+        {error && (
+          <div className="bg-destructive/10 p-4 rounded-md text-sm mb-2 w-full overflow-auto text-left">
+            <p className="font-mono">{error.message}</p>
+          </div>
+        )}
+        <Button onClick={handleReset} variant="destructive" className="mt-4">
+          Полный сброс приложения
+        </Button>
+      </div>
+    </Card>
   );
 };

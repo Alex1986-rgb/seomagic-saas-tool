@@ -2,17 +2,28 @@
 import { useQuery } from '@tanstack/react-query';
 import { auditDataService } from '@/api/services/auditDataService';
 import { seoApiService } from '@/api/services/seoApiService';
+import { formatError } from '@/lib/error-utils';
+import { useToast } from '@/hooks/use-toast';
 
 /**
  * Custom hook for audit data querying with React Query
  */
 export const useAuditQuery = (url: string, taskId: string | null) => {
+  const { toast } = useToast();
+  
   // Fetch audit data
   const auditDataQuery = useQuery({
     queryKey: ['auditData', url],
     queryFn: () => auditDataService.fetchAuditData(url),
     enabled: !!url,
     staleTime: 5 * 60 * 1000, // 5 minutes
+    onError: (error) => {
+      toast({
+        title: 'Ошибка загрузки данных аудита',
+        description: formatError(error),
+        variant: 'destructive'
+      });
+    }
   });
   
   // Fetch audit recommendations
@@ -21,6 +32,13 @@ export const useAuditQuery = (url: string, taskId: string | null) => {
     queryFn: () => auditDataService.fetchRecommendations(url),
     enabled: !!url,
     staleTime: 5 * 60 * 1000, // 5 minutes
+    onError: (error) => {
+      toast({
+        title: 'Ошибка загрузки рекомендаций',
+        description: formatError(error),
+        variant: 'destructive'
+      });
+    }
   });
   
   // Fetch audit history
@@ -29,6 +47,13 @@ export const useAuditQuery = (url: string, taskId: string | null) => {
     queryFn: () => auditDataService.fetchAuditHistory(url),
     enabled: !!url,
     staleTime: 10 * 60 * 1000, // 10 minutes
+    onError: (error) => {
+      toast({
+        title: 'Ошибка загрузки истории аудита',
+        description: formatError(error),
+        variant: 'destructive'
+      });
+    }
   });
   
   // Fetch optimization cost when taskId is available
@@ -40,6 +65,13 @@ export const useAuditQuery = (url: string, taskId: string | null) => {
     },
     enabled: !!taskId,
     staleTime: 15 * 60 * 1000, // 15 minutes
+    onError: (error) => {
+      toast({
+        title: 'Ошибка расчета стоимости оптимизации',
+        description: formatError(error),
+        variant: 'destructive'
+      });
+    }
   });
   
   // Fetch scan status when taskId is available
@@ -49,11 +81,17 @@ export const useAuditQuery = (url: string, taskId: string | null) => {
     enabled: !!taskId,
     // Polling for active scans - fixed to properly check scan status
     refetchInterval: (queryInfo) => {
-      const statusData = queryInfo.state.data;
-      if (statusData && statusData.status && ['running', 'pending', 'starting'].includes(statusData.status)) {
+      if (queryInfo.state.data && ['running', 'pending', 'starting'].includes(queryInfo.state.data.status)) {
         return 2000; // Poll every 2 seconds while actively scanning
       }
       return false; // Stop polling when complete
+    },
+    onError: (error) => {
+      toast({
+        title: 'Ошибка получения статуса сканирования',
+        description: formatError(error),
+        variant: 'destructive'
+      });
     }
   });
   

@@ -1,16 +1,19 @@
 
 import React from 'react';
-import { GlobalErrorBoundary } from './GlobalErrorBoundary';
-import { useErrorHandler } from './useErrorHandler';
+import { GlobalErrorBoundary, ErrorFallback } from './GlobalErrorBoundary';
 import ErrorDisplay from './ErrorDisplay';
-import { AlertCircle } from 'lucide-react';
+import ErrorRetry from './ErrorRetry';
+import { useErrorHandler } from '@/hooks/use-error-handling';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
-// Standardize exports - use named exports consistently
+// Standardize exports
 export { GlobalErrorBoundary };
-export { useErrorHandler };
+export { ErrorFallback };
 export { ErrorDisplay };
+export { ErrorRetry };
+export { useErrorHandler };
 
 interface ErrorAlertProps {
   title: string;
