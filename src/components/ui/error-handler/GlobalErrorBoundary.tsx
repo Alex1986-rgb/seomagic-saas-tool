@@ -58,7 +58,7 @@ interface ErrorFallbackProps {
   resetError: () => void;
 }
 
-const ErrorFallback: React.FC<ErrorFallbackProps> = ({ error, resetError }) => {
+export const ErrorFallback: React.FC<ErrorFallbackProps> = ({ error, resetError }) => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -105,4 +105,5 @@ const ErrorFallback: React.FC<ErrorFallbackProps> = ({ error, resetError }) => {
   );
 };
 
-export default GlobalErrorBoundary;
+// Use a consistent export pattern - remove default export and rely on named exports
+export { GlobalErrorBoundary as default };

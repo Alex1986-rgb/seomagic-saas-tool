@@ -3,11 +3,14 @@ import React, { useState } from 'react';
 import { AlertCircle } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
-import GlobalErrorBoundary, { GlobalErrorBoundary as NamedGlobalErrorBoundary } from './GlobalErrorBoundary';
+import GlobalErrorBoundary from './GlobalErrorBoundary';
 import { useErrorHandler } from './useErrorHandler';
 import ErrorDisplay from './ErrorDisplay';
 
-export { NamedGlobalErrorBoundary as GlobalErrorBoundary, useErrorHandler, ErrorDisplay };
+// Standardize exports - use named exports consistently
+export { GlobalErrorBoundary };
+export { useErrorHandler };
+export { ErrorDisplay };
 
 interface ErrorAlertProps {
   title: string;
@@ -66,4 +69,5 @@ export const ErrorAlert: React.FC<ErrorAlertProps> = ({
   );
 };
 
-export default { GlobalErrorBoundary, ErrorAlert, useErrorHandler, ErrorDisplay };
+// Replace default export with named exports
+export { ErrorAlert };

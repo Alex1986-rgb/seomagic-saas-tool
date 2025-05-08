@@ -18,4 +18,4 @@ export interface CrawlOptions {
 }
 
 export type { OptimizationItem, OptimizationCosts, OptimizationResults, OptimizationMetrics };
-export type OptimizationOptions = BaseOptimizationOptions;
+export type { BaseOptimizationOptions as OptimizationOptions };
