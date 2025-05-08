@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { motion } from "framer-motion";
 import UrlForm from "@/components/url-form";
 import AuditHero from "@/components/audit/AuditHero";
@@ -9,6 +9,10 @@ import AuditAdvancedTools from "@/components/audit/AuditAdvancedTools";
 import AuditErrorFallback from "./AuditErrorFallback";
 import { ErrorBoundary } from "react-error-boundary";
 import { SectionLoader } from "@/components/ui/loading";
+import { Button } from "@/components/ui/button";
+import { Download, FileText, BarChart } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { formatApiError } from "@/api/client/errorHandler";
 
 interface AuditLoaderSectionProps {
   url: string;
@@ -37,10 +41,192 @@ const AuditLoaderSection: React.FC<AuditLoaderSectionProps> = ({
   setTimeoutOccurred,
   extractUrlParam
 }) => {
+  const [showEstimate, setShowEstimate] = useState(false);
+  const [showReports, setShowReports] = useState(false);
+
   const handleResetErrors = () => {
     extractedUrl.current = false;
     setTimeoutOccurred(false);
     extractUrlParam();
+  };
+
+  const handleGenerateReport = async () => {
+    try {
+      // Симуляция генерации отчета
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      setShowReports(true);
+    } catch (err) {
+      const formattedError = formatApiError(err);
+      console.error("Ошибка генерации отчета:", formattedError.message);
+    }
+  };
+
+  // Примерная смета на основе количества просканированных страниц
+  const getEstimateInfo = () => {
+    const pageCount = scannedUrls.length;
+    const baseCost = pageCount <= 50 ? 15000 : pageCount <= 200 ? 30000 : pageCount <= 500 ? 50000 : 80000;
+    const errors = Math.floor(pageCount * 0.15); // 15% страниц с ошибками
+    const warnings = Math.floor(pageCount * 0.25); // 25% страниц с предупреждениями
+    const errorsCost = errors * 300;
+    const warningsCost = warnings * 150;
+    const totalCost = baseCost + errorsCost + warningsCost;
+    
+    const timeToFix = pageCount <= 50 ? '3-5 дней' : 
+                     pageCount <= 200 ? '7-10 дней' :
+                     pageCount <= 500 ? '14-21 день' : '30+ дней';
+    
+    return { pageCount, baseCost, errors, warnings, errorsCost, warningsCost, totalCost, timeToFix };
+  };
+
+  const renderEstimateSection = () => {
+    if (!url || scannedUrls.length === 0) return null;
+    
+    const { pageCount, baseCost, errors, warnings, errorsCost, warningsCost, totalCost, timeToFix } = getEstimateInfo();
+
+    return (
+      <motion.div
+        className="mb-8 mt-6"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.5 }}
+      >
+        <Card className="elegant-card">
+          <CardHeader>
+            <CardTitle className="text-xl md:text-2xl">Смета на оптимизацию сайта</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+              <div className="stat-card p-4 rounded-lg">
+                <div className="text-sm text-muted-foreground">Страниц просканировано</div>
+                <div className="text-2xl font-bold">{pageCount}</div>
+              </div>
+              <div className="stat-card p-4 rounded-lg">
+                <div className="text-sm text-muted-foreground">Найдено ошибок</div>
+                <div className="text-2xl font-bold text-destructive">{errors}</div>
+              </div>
+              <div className="stat-card p-4 rounded-lg">
+                <div className="text-sm text-muted-foreground">Время на исправление</div>
+                <div className="text-2xl font-bold">{timeToFix}</div>
+              </div>
+            </div>
+            
+            <div className="space-y-3 mb-6">
+              <div className="flex justify-between p-2 border-b">
+                <span>Базовая стоимость оптимизации</span>
+                <span className="font-medium">{baseCost.toLocaleString('ru-RU')} ₽</span>
+              </div>
+              <div className="flex justify-between p-2 border-b">
+                <span>Исправление критических ошибок ({errors})</span>
+                <span className="font-medium">{errorsCost.toLocaleString('ru-RU')} ₽</span>
+              </div>
+              <div className="flex justify-between p-2 border-b">
+                <span>Исправление предупреждений ({warnings})</span>
+                <span className="font-medium">{warningsCost.toLocaleString('ru-RU')} ₽</span>
+              </div>
+              <div className="flex justify-between p-3 bg-primary/10 rounded mt-4">
+                <span className="font-bold">Итоговая стоимость</span>
+                <span className="font-bold text-primary">{totalCost.toLocaleString('ru-RU')} ₽</span>
+              </div>
+            </div>
+            
+            <div className="flex flex-col sm:flex-row gap-3 justify-end">
+              <Button variant="outline" onClick={() => setShowEstimate(false)}>
+                Скрыть смету
+              </Button>
+              <Button>
+                Заказать оптимизацию
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </motion.div>
+    );
+  };
+
+  const renderReportsSection = () => {
+    if (!url || !showReports) return null;
+    
+    return (
+      <motion.div
+        className="mb-8"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.5 }}
+      >
+        <Card className="elegant-card">
+          <CardHeader>
+            <CardTitle className="text-xl md:text-2xl">Доступные отчеты</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+              <div className="p-4 border rounded-lg flex flex-col items-center text-center">
+                <FileText className="h-12 w-12 text-primary mb-3" />
+                <h3 className="text-lg font-medium mb-2">Полный SEO отчет</h3>
+                <p className="text-muted-foreground mb-4">Детальный анализ всех аспектов SEO вашего сайта</p>
+                <Button variant="outline" className="flex gap-2 items-center">
+                  <Download className="h-4 w-4" /> Скачать PDF
+                </Button>
+              </div>
+              <div className="p-4 border rounded-lg flex flex-col items-center text-center">
+                <BarChart className="h-12 w-12 text-primary mb-3" />
+                <h3 className="text-lg font-medium mb-2">Отчет об ошибках</h3>
+                <p className="text-muted-foreground mb-4">Список всех обнаруженных ошибок и рекомендации</p>
+                <Button variant="outline" className="flex gap-2 items-center">
+                  <Download className="h-4 w-4" /> Скачать Excel
+                </Button>
+              </div>
+            </div>
+            
+            <div className="flex flex-col sm:flex-row gap-3 justify-end">
+              <Button variant="outline" onClick={() => setShowReports(false)}>
+                Скрыть отчеты
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </motion.div>
+    );
+  };
+
+  const renderActionButtons = () => {
+    if (!url || scannedUrls.length === 0) return null;
+    
+    return (
+      <motion.div
+        className="mb-8 elegant-card p-4 rounded-lg"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.5, delay: 0.3 }}
+      >
+        <div className="flex flex-wrap gap-3 justify-center">
+          {!showEstimate && (
+            <Button 
+              variant="secondary" 
+              onClick={() => setShowEstimate(true)}
+              className="flex gap-2 items-center"
+            >
+              <FileText className="h-4 w-4" /> Показать смету
+            </Button>
+          )}
+          {!showReports && (
+            <Button 
+              variant="secondary" 
+              onClick={handleGenerateReport}
+              className="flex gap-2 items-center"
+            >
+              <BarChart className="h-4 w-4" /> Сгенерировать отчеты
+            </Button>
+          )}
+          <Button 
+            variant="outline" 
+            onClick={() => setShowAdvancedTools(!showAdvancedTools)}
+            className="flex gap-2 items-center"
+          >
+            {showAdvancedTools ? 'Скрыть' : 'Показать'} расширенные инструменты
+          </Button>
+        </div>
+      </motion.div>
+    );
   };
 
   return (
@@ -82,6 +268,10 @@ const AuditLoaderSection: React.FC<AuditLoaderSectionProps> = ({
               >
                 <SeoAuditResults url={url} />
               </ErrorBoundary>
+              
+              {url && renderActionButtons()}
+              {showEstimate && renderEstimateSection()}
+              {showReports && renderReportsSection()}
             </>
           )}
           {url && (
