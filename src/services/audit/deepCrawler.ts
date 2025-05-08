@@ -4,10 +4,10 @@
  * Specialized in handling furniture catalogs and other large product collections
  */
 
-import { DeepCrawlerCore } from './crawler/deepCrawlerCore';
+import { DeepCrawler } from './crawler/deepCrawlerCore';
 import { DeepCrawlerOptions, TaskProgress } from './crawler/types';
 
-export class DeepCrawler extends DeepCrawlerCore {
+export class ExtendedDeepCrawler extends DeepCrawler {
   constructor(url: string, options: DeepCrawlerOptions) {
     // Create a compatible options object
     const compatibleOptions: DeepCrawlerOptions = {
@@ -26,3 +26,5 @@ export class DeepCrawler extends DeepCrawlerCore {
     super(url, compatibleOptions);
   }
 }
+
+export default ExtendedDeepCrawler;

@@ -1,4 +1,3 @@
-
 export interface PageData {
   url: string;
   statusCode: number;
@@ -28,6 +27,7 @@ export interface CrawlResult {
     startTime: string;
     endTime: string;
     totalTime: number;
+    totalPages?: number;
   };
 }
 
@@ -68,4 +68,5 @@ export interface CrawlSummary {
 export interface RequestManager {
   fetch: (url: string, options?: any) => Promise<any>;
   configure: (options: any) => void;
+  pause?: () => void; // Add optional pause method
 }

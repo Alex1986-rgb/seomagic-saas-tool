@@ -1,10 +1,9 @@
-
-import { DeepCrawlerCore } from '../../audit/crawler/deepCrawlerCore';
+import { DeepCrawler } from '../../audit/crawler/deepCrawlerCore';
 import { CrawlTask, CrawlResult, TaskProgress } from './types';
 
 export class FirecrawlService {
   private tasks = new Map<string, CrawlTask>();
-  private crawlers = new Map<string, DeepCrawlerCore>();
+  private crawlers = new Map<string, DeepCrawler>();
 
   /**
    * Запуск полного сканирования сайта без ограничений по количеству страниц
@@ -39,7 +38,7 @@ export class FirecrawlService {
 
       this.tasks.set(taskId, task);
 
-      const crawler = new DeepCrawlerCore(normalizedUrl, {
+      const crawler = new DeepCrawler(normalizedUrl, {
         maxPages,
         maxDepth: 15, // Увеличиваем глубину для больших сайтов
         onProgress: (progress: TaskProgress) => {

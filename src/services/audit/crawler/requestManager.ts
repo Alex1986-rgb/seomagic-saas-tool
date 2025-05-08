@@ -1,10 +1,15 @@
-
 /**
  * Request manager for handling HTTP requests in the crawler
  */
 
 import axios from 'axios';
 import { RequestManager, CrawlResult } from './types';
+
+export interface RequestManager {
+  fetch: (url: string, options?: any) => Promise<any>;
+  configure: (options: any) => void;
+  pause: () => void;
+}
 
 export function createRequestManager(): RequestManager {
   return {
@@ -13,9 +18,6 @@ export function createRequestManager(): RequestManager {
     },
     pause() {
       // Pause operations
-    },
-    resume() {
-      // Resume operations
     },
     async processCrawlQueue(queue, visited, options, processFunction) {
       // Process the queue
