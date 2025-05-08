@@ -1,19 +1,16 @@
 
-export interface AuditData {
-  id: string;
-  url: string;
-  domain: string;
-  score: number;
-  pageCount?: number;
-  scanTime: string;
-  issues: {
-    critical: AuditIssue[];
-    important: AuditIssue[];
-    opportunities: AuditIssue[];
-    minor: AuditIssue[];
-    passed: AuditCheck[];
-  };
-}
+// Export core interfaces from audit.d.ts
+import type { 
+  AuditData,
+  AuditDetailsData,
+  CategoryData,
+  AuditItemData,
+  IssuesData,
+  AuditHistoryItem,
+  AuditHistoryData 
+} from './audit/audit-core';
+
+import type { RecommendationData } from './audit/recommendations';
 
 export interface AuditIssue {
   title: string;
@@ -26,15 +23,14 @@ export interface AuditCheck {
   description: string;
 }
 
-export interface AuditHistoryItem {
-  id: string;
-  url: string;
-  score: number;
-  date: string;
-  pageCount?: number;
-}
-
-export interface AuditHistoryData {
-  url: string;
-  items: AuditHistoryItem[];
-}
+// Export all the imported types
+export type {
+  AuditData,
+  AuditDetailsData,
+  CategoryData,
+  AuditItemData,
+  IssuesData,
+  AuditHistoryItem,
+  AuditHistoryData,
+  RecommendationData
+};

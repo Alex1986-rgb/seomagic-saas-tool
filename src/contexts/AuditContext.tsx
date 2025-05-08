@@ -1,13 +1,13 @@
 
 import React, { createContext, useContext, useState, useCallback, ReactNode } from 'react';
-import { AuditData, AuditHistoryData } from '@/types/audit';
+import { AuditData, AuditHistoryData, RecommendationData } from '@/types/audit';
 import { useAudit } from '@/hooks/use-audit';
 
 // Define the context type
 interface AuditContextType {
   url: string;
   auditData: AuditData | null;
-  recommendations: any;
+  recommendations: RecommendationData | null;
   isLoading: boolean;
   loadingProgress: number;
   error: string | null;
@@ -18,6 +18,14 @@ interface AuditContextType {
   isOptimized: boolean;
   contentPrompt: string;
   taskId: string | null;
+  isScanning: boolean;
+  scanDetails: {
+    current_url: string;
+    pages_scanned: number;
+    estimated_pages: number;
+    stage: string;
+    progress: number;
+  };
   updateUrl: (url: string) => void;
   loadAuditData: (refresh?: boolean, deepScan?: boolean) => Promise<any>;
   generatePdfReportFile: () => Promise<void>;
@@ -42,6 +50,14 @@ const AuditContext = createContext<AuditContextType>({
   isOptimized: false,
   contentPrompt: '',
   taskId: null,
+  isScanning: false,
+  scanDetails: {
+    current_url: '',
+    pages_scanned: 0,
+    estimated_pages: 0,
+    stage: 'idle',
+    progress: 0
+  },
   updateUrl: () => {},
   loadAuditData: async () => null,
   generatePdfReportFile: async () => {},
@@ -76,6 +92,14 @@ export const AuditProvider: React.FC<{ children: ReactNode; initialUrl?: string 
       isOptimized: audit.isOptimized,
       contentPrompt: audit.contentPrompt,
       taskId: audit.taskId,
+      isScanning: audit.isScanning,
+      scanDetails: audit.scanDetails || {
+        current_url: '',
+        pages_scanned: 0,
+        estimated_pages: 0,
+        stage: 'idle',
+        progress: 0
+      },
       updateUrl: audit.updateUrl,
       loadAuditData: audit.loadAuditData,
       generatePdfReportFile: audit.generatePdfReportFile,

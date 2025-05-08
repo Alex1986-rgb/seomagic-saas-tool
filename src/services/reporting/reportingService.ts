@@ -1,82 +1,47 @@
 
-import { saveAs } from 'file-saver';
-import { CrawlSummary } from '../audit/crawler/types';
+import { AuditData } from '@/types/audit';
 
-/**
- * Service for generating and exporting reports
- */
 export class ReportingService {
-  /**
-   * Generate sitemap XML
-   * @param domain Domain name
-   * @param urls Array of URLs
-   * @returns Sitemap XML content
-   */
-  generateSitemapXml(domain: string, urls: string[]): string {
-    let sitemap = '<?xml version="1.0" encoding="UTF-8"?>\n';
-    sitemap += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n';
-
-    // Add URLs to sitemap
-    urls.forEach(url => {
-      try {
-        const urlObj = new URL(url);
-        // Check if URL belongs to the domain
-        if (urlObj.hostname === domain || urlObj.hostname === 'www.' + domain) {
-          sitemap += '  <url>\n';
-          sitemap += `    <loc>${url}</loc>\n`;
-          sitemap += `    <lastmod>${new Date().toISOString()}</lastmod>\n`;
-          sitemap += '  </url>\n';
-        }
-      } catch (e) {
-        console.warn("Invalid URL skipped in sitemap:", url);
-      }
-    });
-
-    sitemap += '</urlset>';
-    return sitemap;
-  }
-
-  /**
-   * Export sitemap XML as a file
-   * @param sitemapXml Sitemap XML content
-   * @param domain Domain name
-   */
-  exportSitemapXml(sitemapXml: string, domain: string): void {
-    const blob = new Blob([sitemapXml], { type: 'application/xml;charset=utf-8' });
-    saveAs(blob, `sitemap-${domain}-${new Date().toISOString().slice(0, 10)}.xml`);
-  }
-
-  /**
-   * Generate PDF report
-   * @param data Report data
-   * @returns PDF blob
-   */
-  async generatePdfReport(data: any): Promise<Blob> {
-    // Mock implementation
-    console.log('Generating PDF report with data:', data);
-    return new Blob(['PDF report content'], { type: 'application/pdf' });
-  }
-
-  /**
-   * Export report as PDF
-   * @param data Report data
-   * @param filename File name
-   */
-  async exportPdfReport(data: any, filename: string): Promise<void> {
-    const pdfBlob = await this.generatePdfReport(data);
-    saveAs(pdfBlob, filename);
+  async generatePdfReport(auditData: AuditData): Promise<Blob> {
+    // Implementation for PDF report generation
+    // This would normally call an API or use a library to generate a PDF
+    
+    // For now, we'll mock this functionality
+    const mockPdfContent = JSON.stringify(auditData, null, 2);
+    
+    // Create a Blob that represents a PDF file
+    return new Blob([mockPdfContent], { type: 'application/pdf' });
   }
   
-  /**
-   * Export JSON report
-   * @param data Report data
-   * @param domain Domain name
-   */
-  async exportJsonReport(data: any, domain: string): Promise<void> {
-    const json = JSON.stringify(data, null, 2);
-    const blob = new Blob([json], { type: 'application/json;charset=utf-8' });
-    saveAs(blob, `report-${domain}-${new Date().toISOString().slice(0, 10)}.json`);
+  async exportJsonReport(auditData: AuditData, filename: string = 'audit-report'): Promise<void> {
+    try {
+      // Convert audit data to a JSON string with pretty formatting
+      const jsonData = JSON.stringify(auditData, null, 2);
+      
+      // Create a Blob from the JSON string
+      const blob = new Blob([jsonData], { type: 'application/json' });
+      
+      // Create a URL for the Blob
+      const url = URL.createObjectURL(blob);
+      
+      // Create an anchor element for downloading
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${filename.replace(/[^a-z0-9]/gi, '-')}-${new Date().toISOString().split('T')[0]}.json`;
+      
+      // Append the anchor to the document, click it, and remove it
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      
+      // Release the URL object
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Error exporting JSON report:', error);
+      throw error;
+    }
   }
 }
 
+// Create a singleton instance
 export const reportingService = new ReportingService();

@@ -1,7 +1,6 @@
 
 import { useAuditContext } from '@/contexts/AuditContext';
 import { useScanContext } from '@/contexts/ScanContext';
-import { useAuditActions } from './useAuditActions';
 
 export const useAuditData = (url: string) => {
   const {
@@ -30,6 +29,10 @@ export const useAuditData = (url: string) => {
     downloadSitemap: downloadSitemapLocal
   } = useScanContext();
 
+  // Import locally to avoid circular dependency
+  const { useAuditActions } = require('./useAuditActions');
+
+  // Use actions from audit actions hook
   const {
     downloadSitemap,
     downloadOptimizedSite,
@@ -39,8 +42,7 @@ export const useAuditData = (url: string) => {
     url,
     contentPrompt,
     auditData,
-    downloadSitemapLocal,
-    downloadOptimizedSite
+    downloadSitemapLocal
   );
 
   return {

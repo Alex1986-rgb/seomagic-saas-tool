@@ -6,19 +6,20 @@ export interface AuditData {
   url: string;
   title?: string;
   score: number;
-  previousScore?: number; // Added this to match usage in components
+  previousScore?: number;
   pageCount?: number;
   crawledPages?: number;
-  date: string;
+  date: string; // Ensuring date property is present
+  scanTime?: string;
   status: 'completed' | 'in-progress' | 'failed';
   issues: {
-    critical: string[]; // Changed to string[] from number
-    important: string[]; // Changed to string[] from number
-    opportunities: string[]; // Added opportunities property
+    critical: string[] | any[];
+    important: string[] | any[];
+    opportunities: string[] | any[];
     minor?: number;
     passed?: number;
   };
-  details: AuditDetailsData;
+  details: AuditDetailsData; // Ensuring details property is present
   optimizationCost?: number;
   optimizationItems?: {
     name: string;
@@ -28,6 +29,7 @@ export interface AuditData {
     totalPrice: number;
     type?: string;
   }[];
+  domain?: string;
 }
 
 export interface AuditHistoryItem {
@@ -36,7 +38,7 @@ export interface AuditHistoryItem {
   score: number;
   pageCount?: number;
   url: string;
-  details?: { // Added details property to match usage
+  details?: {
     seo: { score: number; };
     performance: { score: number; };
     content: { score: number; };
@@ -44,7 +46,7 @@ export interface AuditHistoryItem {
     mobile?: { score: number; };
     usability?: { score: number; };
   };
-  issues?: { // Added issues property to match usage
+  issues?: {
     critical: number;
     important: number;
     opportunities?: number;

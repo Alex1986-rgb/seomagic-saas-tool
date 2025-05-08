@@ -1,13 +1,23 @@
-
 import axios from 'axios';
 import { ScanStatusResponse, AuditInfo, OptimizationResult, CrawlOptions } from '@/types/api';
 
 /**
  * Service for SEO API operations
  */
-class SeoApiService {
-  private baseUrl: string = 'https://api.seo.example.com';
-  
+export interface OptimizationResult {
+  success: boolean;
+  message?: string;
+  cost?: number;
+  items?: any[];
+}
+
+export class SeoApiService {
+  private baseUrl: string;
+
+  constructor(baseUrl: string = '/api') {
+    this.baseUrl = baseUrl;
+  }
+
   /**
    * Get stored task ID for a URL
    */
@@ -93,21 +103,24 @@ class SeoApiService {
   /**
    * Get audit information for a task
    */
-  async getAuditInfo(taskId: string): Promise<AuditInfo> {
+  async getAuditInfo(taskId: string): Promise<AuditInfo | null> {
     try {
-      console.log(`Getting audit info for task ${taskId}`);
+      const response = await fetch(`${this.baseUrl}/scan/${taskId}/info`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch audit info');
+      }
       
-      // Mock audit info
+      const data = await response.json();
       return {
-        id: taskId,
-        pageCount: Math.floor(Math.random() * 500) + 50,
-        score: Math.floor(Math.random() * 30) + 70,
-        domain: "example.com",
-        scanTime: new Date().toISOString()
+        id: data.id || taskId,
+        pageCount: data.pages_scanned || 0,
+        score: data.score || 0,
+        domain: data.url?.split('/')[2] || '',
+        scanTime: new Date().toISOString(),
       };
     } catch (error) {
-      console.error('Error getting audit info:', error);
-      throw new Error('Failed to get audit info');
+      console.error('Error fetching audit info:', error);
+      return null;
     }
   }
   
@@ -116,14 +129,16 @@ class SeoApiService {
    */
   async downloadOptimizedSite(taskId: string): Promise<Blob> {
     try {
-      console.log(`Downloading optimized site for task ${taskId}`);
+      const response = await fetch(`${this.baseUrl}/optimize/${taskId}/download`);
       
-      // Mock response with a simple text blob
-      const blob = new Blob(['Optimized site content'], { type: 'application/zip' });
-      return blob;
+      if (!response.ok) {
+        throw new Error('Failed to download optimized site');
+      }
+      
+      return await response.blob();
     } catch (error) {
       console.error('Error downloading optimized site:', error);
-      throw new Error('Failed to download optimized site');
+      throw error;
     }
   }
   
@@ -132,18 +147,34 @@ class SeoApiService {
    */
   async optimizeSiteContent(taskId: string, prompt: string): Promise<OptimizationResult> {
     try {
-      console.log(`Optimizing site content for task ${taskId} with prompt: ${prompt}`);
+      const response = await fetch(`${this.baseUrl}/optimize/${taskId}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ prompt }),
+      });
       
-      // Mock successful response
+      if (!response.ok) {
+        throw new Error('Failed to optimize site content');
+      }
+      
+      const result = await response.json();
       return {
         success: true,
-        message: "Контент успешно оптимизирован"
+        message: result.message || 'Optimization successful',
+        cost: result.cost,
+        items: result.items
       };
     } catch (error) {
       console.error('Error optimizing site content:', error);
-      throw new Error('Failed to optimize site content');
+      return {
+        success: false,
+        message: error instanceof Error ? error.message : 'Failed to optimize site content'
+      };
     }
   }
 }
 
+// Create a singleton instance
 export const seoApiService = new SeoApiService();

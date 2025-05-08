@@ -66,23 +66,31 @@ export const useAuditLoader = (
         // Execute scan
         const scanResult = await startScan(true);
         
-        // Safe handling of scan result
+        // Safe handling of scan result with null checks
         if (scanResult && typeof scanResult === 'object') {
           // If scanResult is a proper JSON object with optimization data
-          if ('optimizationCost' in scanResult && scanResult.optimizationCost !== null) {
+          if (
+            'optimizationCost' in scanResult && 
+            scanResult.optimizationCost !== null && 
+            scanResult.optimizationCost !== undefined
+          ) {
             const cost = Number(scanResult.optimizationCost);
             if (!isNaN(cost)) {
               setOptimizationCost(cost);
             }
           }
           
-          if ('optimizationItems' in scanResult && 
-              Array.isArray(scanResult.optimizationItems)) {
+          if (
+            'optimizationItems' in scanResult && 
+            Array.isArray(scanResult.optimizationItems)
+          ) {
             setOptimizationItems(scanResult.optimizationItems);
           }
           
-          if ('pagesContent' in scanResult && 
-              Array.isArray(scanResult.pagesContent)) {
+          if (
+            'pagesContent' in scanResult && 
+            Array.isArray(scanResult.pagesContent)
+          ) {
             setPagesContent(scanResult.pagesContent);
           }
         }
@@ -105,7 +113,8 @@ export const useAuditLoader = (
       current_url: '',
       pages_scanned: 0,
       estimated_pages: 0,
-      stage: 'idle'
+      stage: 'idle',
+      progress: 0
     },
     pageStats,
     sitemap,
