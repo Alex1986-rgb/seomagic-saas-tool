@@ -3,7 +3,6 @@ import { useCallback } from 'react';
 import { useErrorHandler } from './use-error-handling';
 import { useToast } from './use-toast';
 import { ApiErrorResponse, isAxiosError } from '@/api/client/errorHandler';
-import { Button } from '@/components/ui/button';
 
 /**
  * Hook for handling API errors with appropriate user feedback
@@ -81,20 +80,20 @@ export function useApiErrorHandler() {
     console.error(`API error${context}:`, error);
     
     if (!options?.silent) {
+      // Create action button if retry function is provided
+      let action = undefined;
+      if (options?.retry) {
+        action = {
+          label: "Повторить",
+          onClick: options.retry
+        };
+      }
+      
       toast({
         title,
         description: errorMessage,
         variant: 'destructive',
-        action: options?.retry ? (
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={options.retry}
-            className="bg-background"
-          >
-            Повторить
-          </Button>
-        ) : undefined
+        action: action
       });
     }
     
