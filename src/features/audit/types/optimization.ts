@@ -3,13 +3,15 @@ import {
   OptimizationItem,
   OptimizationOptions as BaseOptimizationOptions,
   OptimizationCosts,
-  OptimizationResults as BaseOptimizationResults,
-  OptimizationMetrics,
   OptimizationResult,
+  OptimizationMetrics,
   OptimizationProgressState,
   PageContent,
   OptimizationResponse
 } from './optimization-types';
+
+// Re-export OptimizationResults with correct name
+import { OptimizationResults as BaseOptimizationResults } from './optimization-types';
 
 export interface CrawlOptions {
   maxPages?: number;

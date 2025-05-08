@@ -1,63 +1,48 @@
 
 import React from 'react';
-import { Info } from 'lucide-react';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
+import { 
+  Table, 
+  TableBody, 
+  TableCaption, 
+  TableCell, 
+  TableHead, 
+  TableHeader, 
+  TableRow 
 } from "@/components/ui/table";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import { OptimizationItem } from '@/features/audit/types/optimization-types';
+import { 
+  OptimizationItem 
+} from '@/features/audit/types/optimization-types';
 
 interface CostDetailsTableProps {
-  optimizationItems: OptimizationItem[];
+  items: OptimizationItem[];
 }
 
-const CostDetailsTable: React.FC<CostDetailsTableProps> = ({ optimizationItems }) => {
+const CostDetailsTable: React.FC<CostDetailsTableProps> = ({ items }) => {
   const formatNumber = (num: number) => {
     return new Intl.NumberFormat('ru-RU').format(num);
   };
 
-  if (!optimizationItems.length) return null;
-
   return (
-    <div className="mb-4 overflow-x-auto">
+    <div className="overflow-x-auto max-h-[400px] overflow-y-auto">
       <Table>
+        <TableCaption>Детализация стоимости оптимизации</TableCaption>
         <TableHeader>
           <TableRow>
-            <TableHead>Тип оптимизации</TableHead>
-            <TableHead>Количество</TableHead>
-            <TableHead>Цена за ед.</TableHead>
-            <TableHead>Сумма</TableHead>
+            <TableHead>Оптимизация</TableHead>
+            <TableHead>Описание</TableHead>
+            <TableHead className="text-right">Количество</TableHead>
+            <TableHead className="text-right">Цена</TableHead>
+            <TableHead className="text-right">Сумма</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
-          {optimizationItems.map((item, index) => (
+          {items.map((item, index) => (
             <TableRow key={index}>
-              <TableCell>
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger className="flex items-center">
-                      {item.type}
-                      <Info className="h-3 w-3 ml-1 cursor-help text-muted-foreground" />
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p className="max-w-xs">{item.description}</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-              </TableCell>
-              <TableCell>{formatNumber(item.count)}</TableCell>
-              <TableCell>{formatNumber(item.pricePerUnit || item.price)} ₽</TableCell>
-              <TableCell className="font-medium">{formatNumber(item.totalPrice)} ₽</TableCell>
+              <TableCell className="font-medium">{item.name}</TableCell>
+              <TableCell>{item.description}</TableCell>
+              <TableCell className="text-right">{item.count}</TableCell>
+              <TableCell className="text-right">{formatNumber(item.price)} ₽</TableCell>
+              <TableCell className="text-right">{formatNumber(item.totalPrice)} ₽</TableCell>
             </TableRow>
           ))}
         </TableBody>

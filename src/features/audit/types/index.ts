@@ -4,9 +4,24 @@ export * from './audit-core';
 export * from './audit-details';
 export * from './audit-items';
 export * from './category-data';
-export * from './optimization';
-export * from './recommendations';
-export * from './crawler';
 export * from './optimization-types';
-export * from './page-data';
-export * from './crawl-options';
+
+// Re-export with type qualifier to fix TS2308 errors
+export * from './recommendations';
+
+// Export from crawler with explicit type qualifier to avoid name conflicts
+export {
+  DeepCrawlerOptions,
+  TaskProgress,
+  CrawlResult,
+  ImageData,
+  PageIssue,
+  CrawlSummary,
+  RequestManager
+} from './crawler';
+
+// Explicitly export needed types from page-data to avoid conflicts
+export type { PageAnalysisData } from './page-data';
+
+// Export CrawlOptions and OptimizationOptions with explicit type qualifier
+export type { CrawlOptions, OptimizationOptions } from './crawl-options';
