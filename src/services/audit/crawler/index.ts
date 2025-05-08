@@ -18,6 +18,6 @@ export type {
 } from './types';
 
 // Re-export using the correct casing to avoid issues
-export { RobotsTxtParser } from './robotsTxtParser';
-export { UrlProcessor } from './urlProcessor';
+export { RobotsTxtParser } from './RobotsTxtParser';
+export { UrlProcessor } from './UrlProcessor';
 export { CrawlQueueManager } from './CrawlQueueManager';
