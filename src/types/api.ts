@@ -1,50 +1,48 @@
 
-// API Response Types
-export interface ScanStatusResponse {
-  task_id: string;
-  url: string;
-  status: 'pending' | 'in_progress' | 'completed' | 'failed' | 'cancelled';
-  pages_scanned: number;
-  total_pages: number;
-  progress: number;
-  error: string;
-  isLargeSite: boolean;
-}
+/**
+ * Type definitions for API requests and responses
+ */
 
-export interface PageStats {
-  total: number;
-  html: number;
-  images: number;
-  other: number;
-}
-
-export interface ScanDetails {
+// Scan Details returned by the API
+export type ScanDetails = {
   current_url: string;
   pages_scanned: number;
   estimated_pages: number;
   stage: string;
   progress?: number;
-}
+};
 
-export interface AuditInfo {
-  id: string;
-  pageCount: number;
-  score: number;
-  domain: string;
-  scanTime: string;
-}
-
-export interface OptimizationResult {
+// API response for optimization 
+export interface OptimizationApiResponse {
   success: boolean;
-  message: string;
+  message?: string;
+  data?: any;
   cost?: number;
-  items?: any[];
 }
 
-// Request Types
-export interface CrawlOptions {
-  maxPages?: number;
-  maxDepth?: number;
-  ignoreRobotsTxt?: boolean;
-  followRedirects?: boolean;
+// API response for sitemap generation
+export interface SitemapResponse {
+  success: boolean;
+  url?: string;
+  error?: string;
+  format?: string;
+}
+
+// API response for scan status
+export interface ScanStatusResponse {
+  task_id: string;
+  url: string;
+  status: string;
+  progress: number;
+  pages_scanned: number;
+  total_pages: number;
+  error?: string;
+}
+
+// API response for export operations
+export interface ExportResponse {
+  success: boolean;
+  url?: string;
+  blob?: Blob;
+  error?: string;
 }

@@ -16,7 +16,7 @@ export const useScanAPI = (url: string) => {
   /**
    * Start a website scan
    */
-  const startScan = async (deepScan = false) => {
+  const startBackendScan = async (deepScan = false) => {
     try {
       const maxPages = deepScan ? 500000 : 10000;
       
@@ -95,7 +95,7 @@ export const useScanAPI = (url: string) => {
    * Cancel current scan
    */
   const cancelScan = async () => {
-    if (!taskId) return;
+    if (!taskId) return { success: false };
     
     try {
       await seoApiService.cancelCrawl(taskId);
@@ -111,6 +111,8 @@ export const useScanAPI = (url: string) => {
         title: "Сканирование отменено",
         description: "Процесс сканирования сайта был отменен"
       });
+      
+      return { success: true };
     } catch (error) {
       console.error('Error cancelling scan:', error);
       
@@ -119,13 +121,15 @@ export const useScanAPI = (url: string) => {
         description: "Не удалось отменить сканирование сайта",
         variant: "destructive"
       });
+      
+      return { success: false };
     }
   };
 
   return {
     taskId,
     isPolling,
-    startScan,
+    startBackendScan,
     setupPolling,
     cancelScan
   };

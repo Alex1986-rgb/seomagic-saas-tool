@@ -7,6 +7,10 @@ export * from './client/errorHandler';
 export * from './services/seoApiService';
 export * from './services/auditDataService'; 
 export * from './services/optimizationService';
+export * from './services/firecrawl';
 
 // Export auditApiService
-export { auditApiService } from './auditApiService';
+export { auditApiService } from './api/auditApiService';
+
+// Types
+export * from '../types/api';

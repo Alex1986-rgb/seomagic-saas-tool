@@ -13,6 +13,7 @@ export const useAuditAPI = (url: string) => {
     isPolling,
     startBackendScan,
     setupPolling,
+    cancelScan
   } = useScanAPI(url);
 
   // Use the download API hook
@@ -34,21 +35,6 @@ export const useAuditAPI = (url: string) => {
   // Create renamed functions for compatibility
   const startScan = async (deepScan?: boolean): Promise<string> => {
     return await startBackendScan(deepScan);
-  };
-
-  const cancelScan = async (): Promise<{ success: boolean }> => {
-    // Implementation for cancelScan based on the available APIs
-    if (!taskId) return { success: false };
-    
-    try {
-      // This could be implemented by calling a method to cancel the scan
-      // For now, we'll just log the action
-      console.log('Canceling scan for task:', taskId);
-      return { success: true };
-    } catch (error) {
-      console.error('Error canceling scan:', error);
-      return { success: false };
-    }
   };
 
   return {
