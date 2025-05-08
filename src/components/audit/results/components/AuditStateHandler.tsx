@@ -2,7 +2,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import AuditLoading from '../../AuditLoading';
-import { AuditTimeoutMessage } from '../../AuditTimeoutMessage';
+import AuditTimeoutMessage from '../../AuditTimeoutMessage';
 import { Card } from "@/components/ui/card";
 
 interface AuditStateHandlerProps {
