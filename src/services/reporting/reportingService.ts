@@ -65,6 +65,17 @@ export class ReportingService {
     const pdfBlob = await this.generatePdfReport(data);
     saveAs(pdfBlob, filename);
   }
+  
+  /**
+   * Export JSON report
+   * @param data Report data
+   * @param domain Domain name
+   */
+  async exportJsonReport(data: any, domain: string): Promise<void> {
+    const json = JSON.stringify(data, null, 2);
+    const blob = new Blob([json], { type: 'application/json;charset=utf-8' });
+    saveAs(blob, `report-${domain}-${new Date().toISOString().slice(0, 10)}.json`);
+  }
 }
 
 export const reportingService = new ReportingService();

@@ -16,11 +16,13 @@ export const useScan = (url: string, onPageCountUpdate?: (count: number) => void
     pages_scanned: number;
     estimated_pages: number;
     stage: string;
+    progress: number;
   }>({
     current_url: '',
     pages_scanned: 0,
     estimated_pages: 0,
-    stage: ''
+    stage: 'idle',
+    progress: 0
   });
   const [pageStats, setPageStats] = useState<{
     total: number;
@@ -63,44 +65,63 @@ export const useScan = (url: string, onPageCountUpdate?: (count: number) => void
         current_url: url,
         pages_scanned: 0,
         estimated_pages: 500000,
-        stage: 'Подготовка к сканированию'
+        stage: 'Подготовка к сканированию',
+        progress: 0
       });
 
       // Format URL
       const formattedUrl = validationService.formatUrl(url);
       
       // Start crawl and get task ID
-      const crawlResponse = await seoApiService.startCrawl(formattedUrl);
-      const newTaskId = crawlResponse.task_id;
-      setTaskId(newTaskId);
+      const response = await seoApiService.startCrawl(formattedUrl);
+      if (!response || typeof response !== 'object') {
+        throw new Error('Invalid response from API');
+      }
+      
+      const taskId = response.task_id as string;
+      if (!taskId) {
+        throw new Error('No task ID returned');
+      }
+      
+      setTaskId(taskId);
       
       // Start progress polling
       const pollInterval = setInterval(async () => {
         try {
-          const status = await seoApiService.getStatus(newTaskId);
+          const statusResponse = await seoApiService.getStatus(taskId);
+          if (!statusResponse || typeof statusResponse !== 'object') {
+            throw new Error('Invalid status response');
+          }
+          
+          const statusCurrent = statusResponse.current_url as string || url;
+          const pagesScanned = statusResponse.pages_scanned as number || 0;
+          const totalPages = statusResponse.total_pages as number || 500000;
+          const status = statusResponse.status as string;
+          
+          const progressValue = statusResponse.progress as number || 0;
           
           setScanDetails({
-            current_url: status.current_url || url,
-            pages_scanned: status.pages_scanned || 0,
-            estimated_pages: status.total_pages || 500000,
-            stage: status.status === 'completed' 
+            current_url: statusCurrent,
+            pages_scanned: pagesScanned,
+            estimated_pages: totalPages,
+            stage: status === 'completed' 
               ? 'Сканирование завершено' 
-              : `Сканирование (${status.progress}%)`
+              : `Сканирование (${progressValue}%)`,
+            progress: progressValue
           });
           
           // Update parent component with page count if callback provided
-          if (onPageCountUpdate && status.pages_scanned) {
-            onPageCountUpdate(status.pages_scanned);
+          if (onPageCountUpdate && pagesScanned) {
+            onPageCountUpdate(pagesScanned);
           }
           
           // If scan is complete, clean up and generate sitemap
-          if (status.status === 'completed' || status.status === 'failed') {
+          if (status === 'completed' || status === 'failed') {
             clearInterval(pollInterval);
             setIsScanning(false);
             
-            if (status.status === 'completed') {
-              // Try to get URLs or create a dummy URL list if not available
-              const pageUrls = status.url ? [status.url] : [];
+            if (status === 'completed') {
+              const pageUrls = [statusResponse.url as string || url];
               
               const domain = validationService.extractDomain(url);
               const sitemapXml = reportingService.generateSitemapXml(domain, pageUrls);
@@ -108,12 +129,12 @@ export const useScan = (url: string, onPageCountUpdate?: (count: number) => void
               
               toast({
                 title: "Сканирование завершено",
-                description: `Просканировано ${status.pages_scanned} страниц`,
+                description: `Просканировано ${pagesScanned} страниц`,
               });
             } else {
               toast({
                 title: "Ошибка сканирования",
-                description: status.error || "Произошла ошибка при сканировании сайта",
+                description: statusResponse.error as string || "Произошла ошибка при сканировании сайта",
                 variant: "destructive",
               });
             }
@@ -131,7 +152,7 @@ export const useScan = (url: string, onPageCountUpdate?: (count: number) => void
         }
       }, 2000);
       
-      return newTaskId;
+      return taskId;
     } catch (error) {
       console.error("Error starting scan:", error);
       setIsScanning(false);

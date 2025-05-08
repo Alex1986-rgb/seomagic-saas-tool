@@ -16,9 +16,15 @@ const WebsiteAnalyzerPage: React.FC = () => {
     scanProgress,
     scanStage,
     isError,
+    scannedUrls,
     handleUrlChange,
     startFullScan,
   } = useWebsiteAnalyzer();
+
+  // Create a handler that accepts the ChangeEvent from inputs
+  const handleUrlInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    handleUrlChange(event.target.value);
+  };
 
   return (
     <>
@@ -46,7 +52,7 @@ const WebsiteAnalyzerPage: React.FC = () => {
               scanProgress={scanProgress}
               scanStage={scanStage}
               isError={isError}
-              onUrlChange={handleUrlChange}
+              onUrlChange={handleUrlInputChange}
               onStartScan={startFullScan}
             />
           </CardContent>

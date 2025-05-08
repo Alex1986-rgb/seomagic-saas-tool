@@ -1,31 +1,45 @@
 
 export interface PageData {
   url: string;
+  statusCode: number;
   title: string;
   description: string;
-  h1: string[];
-  links: string[];
-  internalLinks: string[];
-  externalLinks: string[];
-  images: {
-    src: string;
-    alt: string;
-  }[];
-  statusCode: number;
   contentType: string;
-  loadTime: number;
   contentLength: number;
+  loadTime: number;
+  links: string[];
+  h1: string[];
+  images: { src: string; alt: string }[];
+  internalLinks?: string[];
+  externalLinks?: string[];
   isIndexable: boolean;
-  issues: {
-    type: string;
-    description: string;
-    severity: 'critical' | 'important' | 'opportunity';
-  }[];
+  issues: string[];
 }
 
-export interface DeepCrawlerOptions {
-  maxPages: number;
-  maxDepth: number;
+export interface CrawlResult {
+  urls: string[];
+  visitedCount?: number;
+  pageCount?: number;
+  metadata: {
+    totalRequests: number;
+    successRequests: number;
+    failedRequests: number;
+    domain?: string;
+    startTime: string;
+    endTime: string;
+    totalTime: number;
+  };
+}
+
+export interface CrawlOptions {
+  maxPages?: number;
+  maxDepth?: number;
+  ignoreRobotsTxt?: boolean;
+  urlFilter?: (url: string) => boolean;
+  respectNofollow?: boolean;
+  requestDelay?: number;
+  obeyRateLimit?: boolean;
+  followRedirects?: boolean;
   onProgress?: (progress: TaskProgress) => void;
 }
 
@@ -35,72 +49,18 @@ export interface TaskProgress {
   totalUrls: number;
 }
 
-export interface CrawlResult {
-  urls: string[];
-  visitedCount?: number;
-  pageCount?: number;
-  metadata: {
-    totalRequests?: number;
-    successRequests?: number;
-    failedRequests?: number;
-    domain?: string;
-    startTime: string;
-    endTime: string;
-    totalTime: number;
-    totalPages?: number; // Added for queue managers
-  };
+export interface DeepCrawlerOptions {
+  maxPages: number;
+  maxDepth: number;
+  onProgress?: (progress: TaskProgress) => void;
 }
 
 export interface CrawlSummary {
-  crawlSummary: {
-    url: string;
-    domain: string;
-    startTime: string;
-    endTime: string;
-    duration: string;
-    totalPages: number;
-    crawlRate: string;
-  };
-  pageStats: {
-    totalInternalLinks: number;
-    totalExternalLinks: number;
-    totalImages: number;
-    avgInternalLinksPerPage: string;
-    avgExternalLinksPerPage: string;
-    avgImagesPerPage: string;
-  };
-  seoIssues: {
-    pagesWithoutTitle: number;
-    pagesWithoutDescription: number;
-    pagesWithoutH1: number;
-    percentWithoutTitle: string;
-    percentWithoutDescription: string;
-    percentWithoutH1: string;
-  };
-}
-
-export interface SiteStructureAnalysis {
   totalPages: number;
-  depth: {
-    [depth: string]: number;
-  };
-  pageTypes: {
-    [type: string]: number;
-  };
-  linkDistribution: {
-    internal: number;
-    external: number;
-  };
-}
-
-export interface RequestManager {
-  configure: (options: any) => void;
-  pause: () => void;
-  resume: () => void;
-  processCrawlQueue: (
-    queue: { url: string; depth: number }[],
-    visited: Set<string>,
-    options: any,
-    processFunction: (url: string, depth: number) => Promise<void>
-  ) => Promise<CrawlResult>;
+  internalLinks: number;
+  externalLinks: number;
+  brokenLinks: number;
+  averageLoadTime: number;
+  pageTypes: Record<string, number>;
+  depthDistribution: Record<number, number>;
 }

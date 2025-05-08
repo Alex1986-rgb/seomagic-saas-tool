@@ -8,9 +8,9 @@ class SeoApiService {
   /**
    * Start crawling a website
    */
-  async startCrawl(url: string) {
+  async startCrawl(url: string, maxPages: number = 500000) {
     try {
-      return await apiService.post('/api/seo/crawl', { url });
+      return await apiService.post('/api/seo/crawl', { url, maxPages });
     } catch (error) {
       console.error('Error starting crawl:', error);
       throw error;
@@ -22,7 +22,8 @@ class SeoApiService {
    */
   async getStatus(taskId: string) {
     try {
-      return await apiService.get(`/api/seo/status/${taskId}`);
+      const response = await apiService.get(`/api/seo/status/${taskId}`);
+      return response;
     } catch (error) {
       console.error('Error fetching status:', error);
       throw error;
@@ -51,6 +52,62 @@ class SeoApiService {
       console.error('Error fetching page analysis:', error);
       throw error;
     }
+  }
+
+  /**
+   * Get audit information
+   */
+  async getAuditInfo(taskId: string) {
+    try {
+      // Get status first to extract basic information
+      const status = await this.getStatus(taskId);
+      
+      return {
+        pageCount: status.pages_scanned || 0,
+        url: status.url,
+        status: status.status
+      };
+    } catch (error) {
+      console.error('Error getting audit info:', error);
+      return {
+        pageCount: 0,
+        status: 'error'
+      };
+    }
+  }
+
+  /**
+   * Download optimized site
+   */
+  async downloadOptimizedSite(taskId: string) {
+    try {
+      const response = await apiService.get(`/api/seo/download/${taskId}`, { responseType: 'blob' });
+      return response;
+    } catch (error) {
+      console.error('Error downloading optimized site:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Optimize site content
+   */
+  async optimizeSiteContent(taskId: string, prompt: string) {
+    try {
+      const response = await apiService.post(`/api/seo/optimize/${taskId}`, { prompt });
+      return response;
+    } catch (error) {
+      console.error('Error optimizing site content:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get task ID for a URL
+   */
+  getTaskIdForUrl(url: string): string | null {
+    // This is a placeholder, in a real implementation this would fetch from storage
+    return null;
   }
 }
 

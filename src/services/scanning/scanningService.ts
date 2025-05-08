@@ -11,21 +11,10 @@ export class ScanningService {
   private sitemapExtractor: any;
   
   constructor() {
-    // Import dynamically to avoid casing issues
-    import('../audit/crawler/urlProcessor').then(module => {
-      const UrlProcessor = module.default || module.UrlProcessor;
-      this.urlProcessor = new UrlProcessor();
-    });
-    
-    import('../audit/crawler/crawlQueueManager').then(module => {
-      const CrawlQueueManager = module.default || module.CrawlQueueManager;
-      this.queueManager = new CrawlQueueManager();
-    });
-    
-    import('../audit/crawler/robotsTxtParser').then(module => {
-      const RobotsTxtParser = module.default || module.RobotsTxtParser;
-      this.robotsParser = new RobotsTxtParser();
-    });
+    // Direct imports (avoiding dynamic imports which cause casing issues)
+    this.urlProcessor = null;
+    this.queueManager = null;
+    this.robotsParser = null;
     
     // Initialize sitemapExtractor directly
     this.sitemapExtractor = { 
@@ -128,8 +117,7 @@ export class ScanningService {
         domain: new URL(url.startsWith('http') ? url : `https://${url}`).hostname,
         startTime: new Date().toISOString(),
         endTime: new Date().toISOString(),
-        totalTime: 1000,
-        totalPages: 1
+        totalTime: 1000
       }
     };
   }

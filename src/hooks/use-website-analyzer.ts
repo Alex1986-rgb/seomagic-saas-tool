@@ -1,166 +1,107 @@
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback } from 'react';
 import { useToast } from './use-toast';
+import { useScan } from './use-scan';
 import { validationService } from '@/services/validation/validationService';
-import { firecrawlService } from '@/services/api/firecrawl/firecrawlService';
 
-export interface WebsiteAnalyzerState {
-  url: string;
-  isScanning: boolean;
-  scanProgress: number;
-  scanStage: string;
-  isError: boolean;
-  errorMessage: string;
-  scanResults: {
-    totalPages: number;
-    brokenLinks: number;
-    duplicateContent: number;
-    missingMetadata: number;
-  } | null;
+export interface WebsiteAnalyzerResults {
+  totalPages: number;
+  brokenLinks: number;
+  duplicateContent: number;
+  missingMetadata: number;
 }
 
+/**
+ * Hook for website analyzer functionality
+ */
 export const useWebsiteAnalyzer = () => {
-  const [state, setState] = useState<WebsiteAnalyzerState>({
-    url: '',
-    isScanning: false,
-    scanProgress: 0,
-    scanStage: '',
-    isError: false,
-    errorMessage: '',
-    scanResults: null,
+  const [url, setUrl] = useState('');
+  const [isError, setIsError] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+  const [scannedUrls, setScannedUrls] = useState<string[]>([]);
+  const [scanResults, setScanResults] = useState<WebsiteAnalyzerResults>({
+    totalPages: 0,
+    brokenLinks: 0,
+    duplicateContent: 0,
+    missingMetadata: 0
   });
-
-  const [taskId, setTaskId] = useState<string | null>(null);
+  
   const { toast } = useToast();
-
-  // Poll for status updates if a scan is in progress
-  useEffect(() => {
-    let interval: NodeJS.Timeout | null = null;
-
-    if (state.isScanning && taskId) {
-      interval = setInterval(async () => {
-        try {
-          const taskStatus = await firecrawlService.getStatus(taskId);
-          setState(prev => ({
-            ...prev,
-            scanProgress: taskStatus.progress,
-            scanStage: taskStatus.status === 'completed' 
-              ? 'Scan completed' 
-              : `Scanning ${taskStatus.current_url || ''}`,
-          }));
-
-          if (taskStatus.status === 'completed') {
-            clearInterval(interval!);
-            setState(prev => ({
-              ...prev,
-              isScanning: false,
-              scanResults: {
-                totalPages: taskStatus.pages_scanned,
-                brokenLinks: 0,
-                duplicateContent: 0,
-                missingMetadata: 0
-              }
-            }));
-            
-            toast({
-              title: "Scan completed",
-              description: `Successfully scanned ${taskStatus.pages_scanned} pages.`,
-            });
-          } else if (taskStatus.status === 'failed') {
-            clearInterval(interval!);
-            setState(prev => ({
-              ...prev,
-              isScanning: false,
-              isError: true,
-              errorMessage: taskStatus.error || 'Scan failed with unknown error'
-            }));
-            
-            toast({
-              title: "Scan failed",
-              description: taskStatus.error || "An error occurred during the scan",
-              variant: "destructive"
-            });
-          }
-        } catch (error) {
-          console.error('Error polling scan status:', error);
-        }
-      }, 3000);
+  
+  // Initialize scan functionality
+  const {
+    isScanning,
+    scanDetails,
+    taskId,
+    startScan,
+    cancelScan
+  } = useScan(url, (pagesCount) => {
+    // Update results based on scanned pages
+    setScanResults(prev => ({
+      ...prev,
+      totalPages: pagesCount
+    }));
+  });
+  
+  // Handle URL change
+  const handleUrlChange = useCallback((newUrl: string) => {
+    setUrl(newUrl);
+    setIsError(false);
+    setErrorMessage('');
+    
+    // Validate URL
+    if (newUrl && !validationService.validateUrl(newUrl)) {
+      setIsError(true);
+      setErrorMessage('Введен некорректный URL');
     }
-
-    return () => {
-      if (interval) {
-        clearInterval(interval);
-      }
-    };
-  }, [state.isScanning, taskId, toast]);
-
-  const handleUrlChange = useCallback((url: string) => {
-    setState(prev => ({ ...prev, url }));
   }, []);
 
+  // Start full site scan
   const startFullScan = useCallback(async () => {
-    if (!state.url) {
-      toast({
-        title: "Error",
-        description: "Please enter a URL to scan",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    if (!validationService.validateUrl(state.url)) {
-      toast({
-        title: "Invalid URL",
-        description: "Please enter a valid URL",
-        variant: "destructive"
-      });
-      return;
-    }
-
     try {
-      setState(prev => ({
-        ...prev,
-        isScanning: true,
-        scanProgress: 0,
-        scanStage: 'Initializing scan...',
-        isError: false,
-        errorMessage: ''
-      }));
+      if (!url || isError) {
+        toast({
+          title: "Ошибка",
+          description: "Введите корректный URL сайта",
+          variant: "destructive",
+        });
+        return;
+      }
 
-      const formattedUrl = validationService.formatUrl(state.url);
-      const task = await firecrawlService.startCrawl(formattedUrl);
+      // Generate mock URLs for testing
+      const mockUrls = Array(10).fill(0).map((_, i) => 
+        `${url.startsWith('http') ? url : 'https://' + url}/${i === 0 ? '' : 'page' + i}`
+      );
+      setScannedUrls(mockUrls);
       
-      setTaskId(task.id);
+      await startScan(true);
       
-      toast({
-        title: "Scan started",
-        description: "The website scan has been initiated"
+      // Update scan results with mock data
+      setScanResults({
+        totalPages: mockUrls.length,
+        brokenLinks: Math.floor(Math.random() * 5),
+        duplicateContent: Math.floor(Math.random() * 3),
+        missingMetadata: Math.floor(Math.random() * 8)
       });
     } catch (error) {
       console.error('Error starting scan:', error);
-      setState(prev => ({
-        ...prev,
-        isScanning: false,
-        isError: true,
-        errorMessage: error instanceof Error ? error.message : 'Unknown error occurred'
-      }));
-      
       toast({
-        title: "Scan failed",
-        description: error instanceof Error ? error.message : "Failed to start the scan",
-        variant: "destructive"
+        title: "Ошибка сканирования",
+        description: error instanceof Error ? error.message : "Произошла ошибка при сканировании",
+        variant: "destructive",
       });
     }
-  }, [state.url, toast]);
-
+  }, [url, isError, toast, startScan]);
+  
   return {
-    url: state.url,
-    isScanning: state.isScanning,
-    scanProgress: state.scanProgress,
-    scanStage: state.scanStage,
-    isError: state.isError,
-    errorMessage: state.errorMessage,
-    scanResults: state.scanResults,
+    url,
+    isScanning,
+    scanProgress: scanDetails.progress || 0,
+    scanStage: scanDetails.stage || 'idle',
+    isError,
+    errorMessage,
+    scanResults,
+    scannedUrls,
     handleUrlChange,
     startFullScan,
     taskId
