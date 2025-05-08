@@ -16,7 +16,7 @@ interface ErrorBoundaryState {
   errorInfo: ErrorInfo | null;
 }
 
-class GlobalErrorBoundary extends React.Component<GlobalErrorBoundaryProps, ErrorBoundaryState> {
+export class GlobalErrorBoundary extends React.Component<GlobalErrorBoundaryProps, ErrorBoundaryState> {
   constructor(props: GlobalErrorBoundaryProps) {
     super(props);
     this.state = {
@@ -105,4 +105,4 @@ const ErrorFallback: React.FC<ErrorFallbackProps> = ({ error, resetError }) => {
   );
 };
 
-export default GlobalErrorBoundary;
+export default ErrorFallback;

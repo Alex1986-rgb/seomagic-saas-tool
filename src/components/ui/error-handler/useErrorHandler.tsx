@@ -40,3 +40,5 @@ export function useErrorHandler() {
     clearError
   };
 }
+
+export default useErrorHandler;
