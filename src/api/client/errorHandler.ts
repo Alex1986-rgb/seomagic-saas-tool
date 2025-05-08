@@ -9,16 +9,28 @@ export interface ApiErrorResponse {
 }
 
 /**
+ * Type guard for Axios errors
+ */
+export const isAxiosError = (error: any): error is AxiosError => {
+  return error && error.isAxiosError === true;
+};
+
+/**
  * Formats API errors for consistent handling
  */
 export const formatApiError = (error: unknown): ApiErrorResponse => {
   // Handle Axios errors
   if (isAxiosError(error)) {
+    const axiosError = error as AxiosError;
     return {
-      message: error.response?.data?.message || error.message || 'API request failed',
-      code: error.response?.data?.code,
-      status: error.response?.status,
-      details: error.response?.data
+      message: axiosError.response?.data && typeof axiosError.response.data === 'object' && 'message' in axiosError.response.data
+        ? String(axiosError.response.data.message)
+        : axiosError.message || 'API request failed',
+      code: axiosError.response?.data && typeof axiosError.response.data === 'object' && 'code' in axiosError.response.data
+        ? String(axiosError.response.data.code)
+        : undefined,
+      status: axiosError.response?.status,
+      details: axiosError.response?.data
     };
   }
   
@@ -35,11 +47,4 @@ export const formatApiError = (error: unknown): ApiErrorResponse => {
     message: typeof error === 'string' ? error : 'Unknown error occurred',
     details: error
   };
-};
-
-/**
- * Type guard for Axios errors
- */
-export const isAxiosError = (error: any): error is AxiosError => {
-  return error && error.isAxiosError === true;
 };
