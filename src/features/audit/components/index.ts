@@ -16,7 +16,8 @@
 // export { default as AuditShareResults } from './AuditShareResults';
 // export { default as AuditSummary } from './AuditSummary';
 
-// Result components
+// Result components - excluding OptimizationResults to avoid ambiguity
+export * from './results/components';
 export * from './results';
 
 // Export component groups
