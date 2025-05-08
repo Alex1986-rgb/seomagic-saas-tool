@@ -1,5 +1,2 @@
-
-export * from './ScoreGauge';
-export * from './ErrorDisplay';
-export * from './LoadingIndicator';
-export * from './PageCountDisplay';
+// Export only components that exist
+// Will need to add proper exports once components are created
