@@ -13,7 +13,7 @@ export const useAuditAPI = (url: string) => {
     isPolling,
     startBackendScan,
     setupPolling,
-    cancelScan
+    cancelScan: cancelScanInternal
   } = useScanAPI(url);
 
   // Use the download API hook
@@ -35,6 +35,11 @@ export const useAuditAPI = (url: string) => {
   // Create renamed functions for compatibility
   const startScan = async (deepScan?: boolean): Promise<string> => {
     return await startBackendScan(deepScan);
+  };
+  
+  // Forward the cancel scan method
+  const cancelScan = async () => {
+    return await cancelScanInternal();
   };
 
   return {

@@ -5,7 +5,7 @@ export * from './client/errorHandler';
 
 // API services
 export * from './services/seoApiService';
-export * from './services/auditDataService'; 
+export { auditDataService } from './services/auditDataService'; 
 export * from './services/optimizationService';
 export * from './services/firecrawl';
 

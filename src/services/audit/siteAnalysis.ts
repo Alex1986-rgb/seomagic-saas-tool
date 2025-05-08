@@ -6,27 +6,37 @@
 export interface BrokenLink {
   url: string;
   sourceUrl: string;
+  fromPage: string;
   statusCode: number;
+  linkText: string;
   anchor: string;
 }
 
 export interface Redirect {
+  url: string;
   sourceUrl: string;
-  destinationUrl: string;
+  fromPage: string;
+  redirectsTo: string;
   statusCode: number;
 }
 
 export interface DuplicatePage {
   url: string;
+  title: string;
+  urls: string[];
+  contentLength: number;
   duplicateUrls: string[];
   similarity: number;
   contentHash: string;
 }
 
 export interface DuplicateMetaTag {
+  tag: 'title' | 'description' | 'keywords';
   type: 'title' | 'description' | 'keywords';
+  value: string;
   content: string;
   urls: string[];
+  pages: string[];
 }
 
 export interface SiteStructureNode {
@@ -45,6 +55,12 @@ export interface SiteStructure {
 export interface ContentAnalysisResult {
   overallUniqueness: number;
   uniquePages: number;
+  duplicatePages: {
+    title: string;
+    urls: string[];
+    contentLength: number;
+  }[];
+  pageContents: any[];
   duplicateGroups: {
     urls: string[];
     similarity: number;
@@ -79,15 +95,19 @@ export const detectBrokenLinks = async (
       brokenLinks.push({
         url: `${domain}/broken-page-${i}`,
         sourceUrl: urls[i],
+        fromPage: urls[i],
         statusCode: 404,
+        linkText: `Link ${i}`,
         anchor: `Link ${i}`
       });
     }
     
     if (i % 15 === 0) {
       redirects.push({
-        sourceUrl: `${domain}/old-page-${i}`,
-        destinationUrl: `${domain}/new-page-${i}`,
+        url: `${domain}/old-page-${i}`,
+        sourceUrl: urls[i],
+        fromPage: urls[i],
+        redirectsTo: `${domain}/new-page-${i}`,
         statusCode: 301
       });
     }
@@ -126,6 +146,9 @@ export const detectDuplicates = async (
     if (i % 20 === 0 && i > 0) {
       duplicatePages.push({
         url: urls[i],
+        title: `Page ${i} Title`,
+        urls: [urls[i], urls[i - 1]],
+        contentLength: 5000,
         duplicateUrls: [urls[i - 1]],
         similarity: 0.95,
         contentHash: `hash-${i}`
@@ -135,9 +158,12 @@ export const detectDuplicates = async (
     // Add some duplicate meta tags
     if (i % 25 === 0 && i > 0) {
       duplicateMeta.push({
+        tag: 'title',
         type: 'title',
+        value: `Duplicate Title ${i}`,
         content: `Duplicate Title ${i}`,
-        urls: [urls[i], urls[i - 1]]
+        urls: [urls[i], urls[i - 1]],
+        pages: [urls[i], urls[i - 1]]
       });
     }
     
@@ -225,7 +251,9 @@ export const analyzeContentUniqueness = async (
   const overallUniqueness = 85 + Math.random() * 10; // 85-95% uniqueness
   
   const duplicateGroups: { urls: string[]; similarity: number }[] = [];
+  const duplicatePages: { title: string; urls: string[]; contentLength: number }[] = [];
   const pageUniqueness: { url: string; uniqueness: number }[] = [];
+  const pageContents: any[] = [];
   
   // Process URLs
   for (let i = 0; i < urls.length; i++) {
@@ -243,11 +271,24 @@ export const analyzeContentUniqueness = async (
       uniqueness
     });
     
+    // Add page content
+    pageContents.push({
+      url,
+      content: `Content for page ${i}`,
+      size: 1000 + Math.random() * 9000
+    });
+    
     // Create some duplicate groups
     if (i % 25 === 0 && i > 0 && i < urls.length - 3) {
       duplicateGroups.push({
         urls: [url, urls[i + 1], urls[i + 2]],
         similarity: 85 + Math.random() * 10
+      });
+      
+      duplicatePages.push({
+        title: `Similar Content Group ${i}`,
+        urls: [url, urls[i + 1], urls[i + 2]],
+        contentLength: 5000 + Math.random() * 5000
       });
     }
     
@@ -264,6 +305,8 @@ export const analyzeContentUniqueness = async (
     overallUniqueness,
     uniquePages,
     duplicateGroups,
+    duplicatePages,
+    pageContents,
     pageUniqueness
   };
 };

@@ -98,7 +98,7 @@ export const useScanAPI = (url: string) => {
     if (!taskId) return { success: false };
     
     try {
-      await seoApiService.cancelCrawl(taskId);
+      await seoApiService.cancelScan(taskId);
       
       if (scanPollingInterval) {
         clearInterval(scanPollingInterval);

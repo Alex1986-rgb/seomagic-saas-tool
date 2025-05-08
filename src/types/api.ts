@@ -12,6 +12,15 @@ export type ScanDetails = {
   progress?: number;
 };
 
+// Page statistics from the scan
+export interface PageStats {
+  total: number;
+  scanned: number;
+  withIssues: number;
+  withWarnings: number;
+  withErrors: number;
+}
+
 // API response for optimization 
 export interface OptimizationApiResponse {
   success: boolean;

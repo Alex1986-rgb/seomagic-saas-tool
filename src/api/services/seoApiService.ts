@@ -1,3 +1,4 @@
+
 import { apiClient } from '../client/apiClient';
 import { formatApiError } from '../client/errorHandler';
 import { v4 as uuidv4 } from 'uuid';
@@ -83,10 +84,10 @@ class SeoApiService {
 
   async getAuditInfo(taskId: string) {
     try {
-      // Получаем статус задачи
+      // Get task status
       const status = await this.getStatus(taskId);
       
-      // Возвращаем данные о количестве страниц
+      // Return page count data
       return {
         pageCount: status.total_pages || status.pages_scanned || 0,
         url: status.url,
