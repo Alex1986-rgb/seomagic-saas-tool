@@ -1,7 +1,6 @@
 
 import { 
   OptimizationItem,
-  OptimizationOptions as BaseOptimizationOptions,
   OptimizationCosts,
   OptimizationResult,
   OptimizationMetrics,
@@ -13,6 +12,9 @@ import {
 // Do NOT re-export OptimizationResults to avoid conflicts
 // Import it only for local reference
 import { OptimizationResults as BaseOptimizationResults } from './optimization-types';
+
+// Import the base optimization options but use a different name
+import { OptimizationOptions as BaseOptimizationOptions } from './optimization-types';
 
 export interface CrawlOptions {
   maxPages?: number;
@@ -34,7 +36,8 @@ export type {
   OptimizationResponse
 };
 
-export type { BaseOptimizationOptions as OptimizationOptions };
+// Don't re-export OptimizationOptions to avoid ambiguity with crawl-options
+// Local applications should import directly from crawl-options or optimization-types as needed
 
 // Do NOT re-export OptimizationResults to avoid ambiguity
 // Local applications should import directly from optimization-types

@@ -7,7 +7,6 @@ export * from './hooks';
 // Export types with explicit type qualifier to avoid ambiguities
 export type {
   OptimizationItem,
-  OptimizationOptions,
   OptimizationCosts,
   OptimizationMetrics,
   OptimizationResult,
@@ -15,6 +14,9 @@ export type {
   PageContent,
   OptimizationResponse
 } from './types/optimization-types';
+
+// Import the OptimizationOptions from crawl-options to avoid conflicts
+export type { OptimizationOptions } from './types/crawl-options';
 
 // Export individual components to avoid name conflicts
 export * from './components/results/components';

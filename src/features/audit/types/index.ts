@@ -8,7 +8,6 @@ export * from './category-data';
 // Export optimization types with explicit type qualifier to avoid conflicts
 export type {
   OptimizationItem,
-  OptimizationOptions,
   OptimizationCosts,
   OptimizationMetrics,
   OptimizationResult,
@@ -16,6 +15,9 @@ export type {
   PageContent,
   OptimizationResponse
 } from './optimization-types';
+
+// Export OptimizationOptions with explicit qualifier
+export type { OptimizationOptions } from './crawl-options';
 
 // Re-export with type qualifier to fix TS1205 errors
 export type { RecommendationData } from './recommendations';
@@ -34,5 +36,5 @@ export type {
 // Explicitly export needed types from page-data to avoid conflicts
 export type { PageAnalysisData } from './page-data';
 
-// Export CrawlOptions and OptimizationOptions with explicit type qualifier
-export type { CrawlOptions, OptimizationOptions } from './crawl-options';
+// Export CrawlOptions with explicit type qualifier
+export type { CrawlOptions } from './crawl-options';
