@@ -1,4 +1,4 @@
 
-import { OptimizationResult, OptimizationProgressState } from '@/types/audit/optimization-types';
+import { OptimizationItem, OptimizationResult, OptimizationProgressState } from '@/features/audit/types/optimization-types';
 
-export type { OptimizationResult, OptimizationProgressState };
+export type { OptimizationItem, OptimizationResult, OptimizationProgressState };

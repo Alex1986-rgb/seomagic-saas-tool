@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -251,7 +250,7 @@ const AuditOptimization: React.FC<AuditOptimizationProps> = ({
                         variant="outline"
                         className="gap-2 w-full sm:w-auto mt-2"
                       >
-                        <FileDown className="h-4 w-4" />
+                        <Download className="h-4 w-4" />
                         Скачать оптимизированный сайт
                       </Button>
                     </AlertDescription>

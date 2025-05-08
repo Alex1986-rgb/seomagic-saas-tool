@@ -1,14 +1,14 @@
-
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useToast } from "@/hooks/use-toast";
 import CostSummary from './CostSummary';
-import CostDetailsTable, { OptimizationItem } from './CostDetailsTable';
+import CostDetailsTable from './CostDetailsTable';
 import OptimizationActions from './OptimizationActions';
 import OptimizationHeading from './OptimizationHeading';
 import OptimizationSummary from './OptimizationSummary';
 import OptimizationProcessContainer from './process/OptimizationProcessContainer';
 import OptimizationResults from './OptimizationResults';
+import { OptimizationItem } from '@/features/audit/types/optimization-types';
 
 interface OptimizationCostProps {
   optimizationCost?: number;

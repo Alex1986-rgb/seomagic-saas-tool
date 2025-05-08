@@ -101,6 +101,21 @@ const AuditContent: React.FC<AuditContentProps> = ({
   variant = 'full',
   urls,
 }) => {
+  // Helper function to ensure proper Promise handling
+  const safeOptimizeSiteContent = async (): Promise<void> => {
+    if (optimizeSiteContent) {
+      return optimizeSiteContent();
+    }
+    return Promise.resolve();
+  };
+
+  const safeDownloadOptimizedSite = async (): Promise<void> => {
+    if (downloadOptimizedSite) {
+      return downloadOptimizedSite();
+    }
+    return Promise.resolve();
+  };
+  
   // If minimal version is requested, show simplified version
   if (variant === 'minimal' && auditData) {
     return renderMinimalVersion();
@@ -165,8 +180,8 @@ const AuditContent: React.FC<AuditContentProps> = ({
             pageCount={auditData.pageCount || 0}
             showPrompt={showPrompt}
             onTogglePrompt={onTogglePrompt}
-            onOptimize={optimizeSiteContent}
-            onDownloadOptimizedSite={downloadOptimizedSite}
+            onOptimize={safeOptimizeSiteContent}
+            onDownloadOptimizedSite={safeDownloadOptimizedSite}
             onGeneratePdfReport={generatePdfReportFile}
             setContentOptimizationPrompt={setContentOptimizationPrompt}
           />
@@ -204,7 +219,7 @@ const AuditContent: React.FC<AuditContentProps> = ({
       seo: [
         { category: 'Meta-теги', before: 55, after: 85 },
         { category: 'Ключевые слова', before: 60, after: 80 },
-        { category: 'Структура URL', before: 70, after: 90 },
+        { category: 'С��руктура URL', before: 70, after: 90 },
         { category: 'Внутренние ссылки', before: 50, after: 75 },
         { category: 'Внешние ссылки', before: 65, after: 85 },
       ],
@@ -280,20 +295,6 @@ const AuditContent: React.FC<AuditContentProps> = ({
       </>
     );
   }
-
-  const safeOptimizeSiteContent = async () => {
-    if (optimizeSiteContent) {
-      return optimizeSiteContent();
-    }
-    return Promise.resolve();
-  };
-
-  const safeDownloadOptimizedSite = async () => {
-    if (downloadOptimizedSite) {
-      return downloadOptimizedSite();
-    }
-    return Promise.resolve();
-  };
 };
 
 export default AuditContent;

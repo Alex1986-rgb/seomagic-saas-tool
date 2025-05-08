@@ -58,6 +58,7 @@ export interface OptimizationItem {
   count: number;
   price: number;
   totalPrice: number;
+  pricePerUnit: number; // Added to ensure we include this property
 }
 
 export interface OptimizationResponse {

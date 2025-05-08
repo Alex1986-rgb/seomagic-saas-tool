@@ -2,10 +2,11 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import AuditOptimization from './AuditOptimization';
+import { OptimizationItem } from '@/features/audit/types/optimization-types';
 
 interface AuditOptimizationSectionProps {
   optimizationCost: any;
-  optimizationItems: any;
+  optimizationItems: OptimizationItem[];
   isOptimized: boolean;
   contentPrompt: string;
   url: string;
@@ -29,6 +30,7 @@ const AuditOptimizationSection: React.FC<AuditOptimizationSectionProps> = ({
   onTogglePrompt,
   onOptimize,
   onDownloadOptimizedSite,
+  onGeneratePdfReport,
   setContentOptimizationPrompt
 }) => {
   return (

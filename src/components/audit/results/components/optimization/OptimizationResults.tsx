@@ -1,14 +1,13 @@
-
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { CreditCard } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import OptimizationProgress from '../OptimizationProgress';
 import OptimizationDemo from '../OptimizationDemo';
-import { OptimizationItem } from './CostDetailsTable';
 import OptimizationHeading from './OptimizationHeading';
 import OptimizationSummary from './OptimizationSummary';
 import OptimizationActions from './OptimizationActions';
+import { OptimizationItem } from '@/features/audit/types/optimization-types';
 
 interface OptimizationResultsProps {
   url: string;
