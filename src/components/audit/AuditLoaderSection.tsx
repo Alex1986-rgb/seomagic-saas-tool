@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import UrlForm from "@/components/url-form";
 import AuditHero from "@/components/audit/AuditHero";
@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Download, FileText, BarChart } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatApiError } from "@/api/client/errorHandler";
+import { useToast } from "@/hooks/use-toast";
 
 interface AuditLoaderSectionProps {
   url: string;
@@ -43,6 +44,14 @@ const AuditLoaderSection: React.FC<AuditLoaderSectionProps> = ({
 }) => {
   const [showEstimate, setShowEstimate] = useState(false);
   const [showReports, setShowReports] = useState(false);
+  const { toast } = useToast();
+
+  // Автоматически показывать смету, если есть просканированные URL
+  useEffect(() => {
+    if (scannedUrls.length > 0 && url) {
+      setShowEstimate(true);
+    }
+  }, [scannedUrls, url]);
 
   const handleResetErrors = () => {
     extractedUrl.current = false;
@@ -53,17 +62,33 @@ const AuditLoaderSection: React.FC<AuditLoaderSectionProps> = ({
   const handleGenerateReport = async () => {
     try {
       // Симуляция генерации отчета
+      toast({
+        title: "Генерация отчетов",
+        description: "Пожалуйста, подождите..."
+      });
+      
       await new Promise(resolve => setTimeout(resolve, 1500));
       setShowReports(true);
+      
+      toast({
+        title: "Отчеты готовы",
+        description: "Вы можете скачать их в разделе отчетов"
+      });
     } catch (err) {
       const formattedError = formatApiError(err);
       console.error("Ошибка генерации отчета:", formattedError.message);
+      
+      toast({
+        title: "Ошибка генерации отчетов",
+        description: formattedError.message,
+        variant: "destructive"
+      });
     }
   };
 
   // Примерная смета на основе количества просканированных страниц
   const getEstimateInfo = () => {
-    const pageCount = scannedUrls.length;
+    const pageCount = scannedUrls.length || 10; // Если нет просканированных URL, используем 10 для демо
     const baseCost = pageCount <= 50 ? 15000 : pageCount <= 200 ? 30000 : pageCount <= 500 ? 50000 : 80000;
     const errors = Math.floor(pageCount * 0.15); // 15% страниц с ошибками
     const warnings = Math.floor(pageCount * 0.25); // 25% страниц с предупреждениями
@@ -79,7 +104,7 @@ const AuditLoaderSection: React.FC<AuditLoaderSectionProps> = ({
   };
 
   const renderEstimateSection = () => {
-    if (!url || scannedUrls.length === 0) return null;
+    if (!showEstimate) return null;
     
     const { pageCount, baseCost, errors, warnings, errorsCost, warningsCost, totalCost, timeToFix } = getEstimateInfo();
 
@@ -144,7 +169,7 @@ const AuditLoaderSection: React.FC<AuditLoaderSectionProps> = ({
   };
 
   const renderReportsSection = () => {
-    if (!url || !showReports) return null;
+    if (!showReports) return null;
     
     return (
       <motion.div
@@ -189,7 +214,10 @@ const AuditLoaderSection: React.FC<AuditLoaderSectionProps> = ({
   };
 
   const renderActionButtons = () => {
-    if (!url || scannedUrls.length === 0) return null;
+    // Показываем кнопки действий даже без просканированных URL для демонстрации функциональности
+    const shouldShowButtons = Boolean(url) || scannedUrls.length > 0;
+    
+    if (!shouldShowButtons) return null;
     
     return (
       <motion.div
@@ -269,9 +297,9 @@ const AuditLoaderSection: React.FC<AuditLoaderSectionProps> = ({
                 <SeoAuditResults url={url} />
               </ErrorBoundary>
               
-              {url && renderActionButtons()}
-              {showEstimate && renderEstimateSection()}
-              {showReports && renderReportsSection()}
+              {renderActionButtons()}
+              {renderEstimateSection()}
+              {renderReportsSection()}
             </>
           )}
           {url && (
