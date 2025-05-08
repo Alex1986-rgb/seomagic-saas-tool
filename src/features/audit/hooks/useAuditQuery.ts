@@ -47,9 +47,8 @@ export const useAuditQuery = (url: string, taskId: string | null) => {
     queryKey: ['scanStatus', taskId],
     queryFn: () => seoApiService.getStatus(taskId || ''),
     enabled: !!taskId,
-    // Polling for active scans
+    // Polling for active scans - fixed to access status from data properly
     refetchInterval: (data) => {
-      // Fix: data directly contains the result of the query function
       if (data && data.status && ['running', 'pending', 'starting'].includes(data.status)) {
         return 2000; // Poll every 2 seconds while actively scanning
       }
