@@ -1,0 +1,65 @@
+
+/**
+ * Design Tokens
+ * 
+ * This file documents our standardized design values and should be 
+ * referenced when applying styles to maintain consistency.
+ */
+
+/* Spacing Scale */
+/* 
+  4px - xs (0.25rem) - Tiny spacing, icon padding
+  8px - sm (0.5rem) - Small elements spacing
+  12px - md (0.75rem) - Default padding
+  16px - base (1rem) - Standard spacing
+  20px - lg (1.25rem) - Large spacing
+  24px - xl (1.5rem) - Section spacing
+  32px - 2xl (2rem) - Container padding
+  48px - 3xl (3rem) - Large container padding
+  64px - 4xl (4rem) - Section vertical spacing
+  96px - 5xl (6rem) - Hero section spacing
+*/
+
+/* Typography Scale */
+/*
+  12px - xs (0.75rem) - Tiny text, captions
+  14px - sm (0.875rem) - Small text, secondary content
+  16px - base (1rem) - Body text
+  18px - lg (1.125rem) - Large body text
+  20px - xl (1.25rem) - Small headings
+  24px - 2xl (1.5rem) - H3 headings
+  30px - 3xl (1.875rem) - H2 headings
+  36px - 4xl (2.25rem) - H1 small
+  48px - 5xl (3rem) - H1 large
+  60px - 6xl (3.75rem) - Hero headings
+*/
+
+/* Border Radius */
+/*
+  2px - xs (rounded-xs) - Small elements
+  4px - sm (rounded-sm) - Buttons, inputs
+  6px - md (rounded-md) - Cards, dialog edges
+  8px - lg (rounded-lg) - Large cards
+  12px - xl (rounded-xl) - Panel sections
+  16px - 2xl (rounded-2xl) - Featured sections
+  9999px - full (rounded-full) - Avatars, badges
+*/
+
+/* Shadow Variants */
+/*
+  shadow-sm: Small elevation (buttons, inputs)
+  shadow: Medium elevation (cards)
+  shadow-md: Higher elevation (dropdowns)
+  shadow-lg: Significant elevation (modals)
+  shadow-xl: Dramatic elevation (popovers)
+  shadow-inner: Inset shadow (selected states)
+*/
+
+/* Animation Timings */
+/*
+  100ms - ultra-fast: Micro interactions
+  200ms - fast: Quick feedback
+  300ms - normal: Standard transitions
+  500ms - slow: Deliberate animations
+  800ms+ - very-slow: Dramatic effects
+*/

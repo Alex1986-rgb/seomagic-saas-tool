@@ -10,6 +10,8 @@
 
 /* Import utility styles */
 @import './utilities.css';
+@import './custom-utilities.css';
 
 /* Import animation styles */
 @import './animations/index.css';
+
