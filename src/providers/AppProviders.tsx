@@ -1,6 +1,5 @@
 
 import React from 'react';
-import { BrowserRouter } from 'react-router-dom';
 import { HelmetProvider } from 'react-helmet-async';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from "@/components/ui/toaster";
@@ -31,14 +30,12 @@ export const AppProviders: React.FC<AppProvidersProps> = ({ children }) => {
       <ErrorHandlingProvider>
         <QueryClientProvider client={queryClient}>
           <LoadingProvider>
-            <BrowserRouter>
-              <AuthProvider>
-                <GlobalErrorBoundary>
-                  {children}
-                  <Toaster />
-                </GlobalErrorBoundary>
-              </AuthProvider>
-            </BrowserRouter>
+            <AuthProvider>
+              <GlobalErrorBoundary>
+                {children}
+                <Toaster />
+              </GlobalErrorBoundary>
+            </AuthProvider>
           </LoadingProvider>
         </QueryClientProvider>
       </ErrorHandlingProvider>

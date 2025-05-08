@@ -1,6 +1,6 @@
 
 import React, { useEffect, useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import Navbar from './navbar';
 import Footer from './Footer';
 import StarryBackground from './backgrounds/StarryBackground';
@@ -16,20 +16,6 @@ interface LayoutProps {
   animateTransitions?: boolean;
 }
 
-const pageVariants = {
-  initial: { opacity: 0, y: 20 },
-  animate: { 
-    opacity: 1, 
-    y: 0,
-    transition: { duration: 0.4, ease: 'easeInOut' }
-  },
-  exit: { 
-    opacity: 0, 
-    y: -20,
-    transition: { duration: 0.3, ease: 'easeInOut' }
-  }
-};
-
 const Layout: React.FC<LayoutProps> = ({ 
   children, 
   className,
@@ -38,7 +24,6 @@ const Layout: React.FC<LayoutProps> = ({
   animateTransitions = true
 }) => {
   const location = useLocation();
-  const [isFirstRender, setIsFirstRender] = useState(true);
   
   // Check if the current path starts with /admin
   const isAdminRoute = location.pathname.startsWith('/admin');
@@ -47,19 +32,6 @@ const Layout: React.FC<LayoutProps> = ({
   // since they have their own built-in navigation
   const shouldHideNavbar = hideNavbar || isAdminRoute;
   const shouldHideFooter = hideFooter || isAdminRoute;
-
-  // After first render allow animation
-  useEffect(() => {
-    // Small delay to not block first render
-    const timeout = setTimeout(() => {
-      setIsFirstRender(false);
-    }, 10);
-    return () => clearTimeout(timeout);
-  }, []);
-
-  // Add console logs for debugging
-  console.log("Layout rendering with children:", children ? "Children exists" : "No children");
-  console.log("Current route:", location.pathname);
 
   return (
     <div className={cn("flex flex-col min-h-screen relative", className)}>

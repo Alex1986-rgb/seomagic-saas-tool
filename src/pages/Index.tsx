@@ -1,5 +1,5 @@
 
-import React, { useEffect } from 'react';
+import React from 'react';
 import Layout from '../components/Layout';
 import HeroSection from '../components/hero/HeroSection';
 import VideoSection from '../components/home/VideoSection';
@@ -9,12 +9,6 @@ import DetailedFeaturesSection from '../components/home/DetailedFeaturesSection'
 import CTASection from '../components/sections/CTASection';
 
 const Index: React.FC = () => {
-  console.log("Index component rendering");
-
-  useEffect(() => {
-    console.log("Index mounted successfully");
-  }, []);
-
   return (
     <Layout>
       <div className="flex flex-col min-h-[calc(100vh-4rem)]">
