@@ -38,6 +38,22 @@ class ValidationService {
   formatUrl(url: string): string {
     return url.startsWith('http') ? url : `https://${url}`;
   }
+  
+  /**
+   * Extracts domain from a URL string
+   * @param url URL string to extract domain from
+   * @returns Domain string
+   */
+  extractDomain(url: string): string {
+    try {
+      if (!url) return '';
+      const formattedUrl = this.formatUrl(url);
+      return new URL(formattedUrl).hostname;
+    } catch (error) {
+      console.error('Error extracting domain:', error);
+      return url;
+    }
+  }
 }
 
 export const validationService = new ValidationService();
