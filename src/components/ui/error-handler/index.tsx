@@ -1,11 +1,11 @@
 
-import React, { useState } from 'react';
-import { AlertCircle } from 'lucide-react';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Button } from '@/components/ui/button';
+import React from 'react';
 import { GlobalErrorBoundary } from './GlobalErrorBoundary';
 import { useErrorHandler } from './useErrorHandler';
 import ErrorDisplay from './ErrorDisplay';
+import { AlertCircle } from 'lucide-react';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Button } from '@/components/ui/button';
 
 // Standardize exports - use named exports consistently
 export { GlobalErrorBoundary };
@@ -27,7 +27,7 @@ export const ErrorAlert: React.FC<ErrorAlertProps> = ({
   onDismiss,
   retryAction
 }) => {
-  const [dismissed, setDismissed] = useState(false);
+  const [dismissed, setDismissed] = React.useState(false);
   
   const handleDismiss = () => {
     setDismissed(true);
@@ -68,5 +68,3 @@ export const ErrorAlert: React.FC<ErrorAlertProps> = ({
     </Alert>
   );
 };
-
-// No need for duplicate export here since ErrorAlert is already exported above

@@ -9,20 +9,22 @@ interface ErrorDisplayProps {
   onRetry?: () => void;
   title?: string;
   variant?: 'default' | 'destructive';
+  className?: string;
 }
 
 export const ErrorDisplay: React.FC<ErrorDisplayProps> = ({
   error,
   onRetry,
   title = 'Ошибка',
-  variant = 'destructive'
+  variant = 'destructive',
+  className = ''
 }) => {
   if (!error) return null;
 
   const errorMessage = typeof error === 'string' ? error : error.message;
 
   return (
-    <Alert variant={variant} className="mb-4">
+    <Alert variant={variant} className={`mb-4 ${className}`}>
       <AlertCircle className="h-4 w-4" />
       <AlertTitle>{title}</AlertTitle>
       <AlertDescription>

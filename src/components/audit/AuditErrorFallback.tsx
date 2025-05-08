@@ -1,5 +1,7 @@
 
 import React from "react";
+import { Button } from "@/components/ui/button";
+import { ErrorDisplay } from '@/components/ui/error-handler';
 
 interface AuditErrorFallbackProps {
   error: Error;
@@ -13,20 +15,21 @@ const AuditErrorFallback: React.FC<AuditErrorFallbackProps> = ({
   resetErrorBoundary,
   extractedUrlRef,
   setTimeoutOccurred
-}) => (
-  <div className="p-6 text-center">
-    <p className="text-lg text-red-500 mb-4">Произошла ошибка при загрузке аудита</p>
-    <button 
-      onClick={() => {
-        extractedUrlRef.current = false;
-        setTimeoutOccurred(false);
-        resetErrorBoundary();
-      }}
-      className="px-4 py-2 bg-primary text-white rounded-md"
-    >
-      Попробовать снова
-    </button>
-  </div>
-);
+}) => {
+  const handleRetry = () => {
+    extractedUrlRef.current = false;
+    setTimeoutOccurred(false);
+    resetErrorBoundary();
+  };
+
+  return (
+    <ErrorDisplay 
+      error={error} 
+      onRetry={handleRetry}
+      title="Ошибка аудита"
+      variant="destructive"
+    />
+  );
+};
 
 export default AuditErrorFallback;

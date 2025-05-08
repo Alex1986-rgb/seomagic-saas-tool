@@ -8,6 +8,7 @@ import ScannerTabs from './components/ScannerTabs';
 import ScanForm from '@/components/admin/website-analyzer/ScanForm';
 import { useWebsiteScan } from '@/hooks/use-website-scan';
 import { useMobile } from '@/hooks/use-mobile';
+import { ErrorDisplay } from '@/components/ui/error-handler';
 
 const WebsiteScanner = () => {
   const {
@@ -40,6 +41,16 @@ const WebsiteScanner = () => {
           onUrlChange={handleUrlChange}
           onStartScan={startFullScan}
         />
+        
+        {isError && (
+          <div className="mt-4">
+            <ErrorDisplay 
+              error="Произошла ошибка при сканировании сайта" 
+              onRetry={startFullScan}
+              title="Ошибка сканирования"
+            />
+          </div>
+        )}
       </CardContent>
 
       <ScannerTabs

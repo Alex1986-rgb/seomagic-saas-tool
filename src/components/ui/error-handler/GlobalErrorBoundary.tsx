@@ -33,8 +33,6 @@ export class GlobalErrorBoundary extends React.Component<GlobalErrorBoundaryProp
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     this.setState({ errorInfo });
     console.error("Uncaught error:", error, errorInfo);
-    
-    // Можно добавить отправку ошибки в систему логирования
   }
 
   resetError = () => {
@@ -104,5 +102,3 @@ export const ErrorFallback: React.FC<ErrorFallbackProps> = ({ error, resetError 
     </div>
   );
 };
-
-// Use consistent named exports instead of default export

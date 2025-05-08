@@ -1,6 +1,7 @@
 
 import { useState, useCallback } from 'react';
 import { useToast } from "@/hooks/use-toast";
+import { formatError } from '@/lib/utils';
 
 export function useErrorHandler() {
   const [error, setError] = useState<Error | string | null>(null);
@@ -10,10 +11,11 @@ export function useErrorHandler() {
     message?: string,
     silent?: boolean,
     toastTitle?: string,
-    toastDescription?: string
+    toastDescription?: string,
+    toastVariant?: 'default' | 'destructive'
   }) => {
-    const errorMessage = options?.message || 
-      (err instanceof Error ? err.message : 'Произошла неизвестная ошибка');
+    // Format the error to ensure consistent handling
+    const errorMessage = options?.message || formatError(err);
     
     console.error('Handled error:', err);
     setError(errorMessage);
@@ -22,7 +24,7 @@ export function useErrorHandler() {
       toast({
         title: options?.toastTitle || 'Ошибка',
         description: options?.toastDescription || errorMessage,
-        variant: 'destructive'
+        variant: options?.toastVariant || 'destructive'
       });
     }
     
@@ -40,5 +42,3 @@ export function useErrorHandler() {
     clearError
   };
 }
-
-// No default export, only named export

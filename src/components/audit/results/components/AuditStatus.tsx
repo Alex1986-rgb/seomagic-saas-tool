@@ -4,6 +4,7 @@ import AuditLoading from '../../AuditLoading';
 import AuditError from '../AuditError';
 import AuditScanning from './AuditScanning';
 import AuditRefreshing from './AuditRefreshing';
+import { ErrorDisplay } from '@/components/ui/error-handler';
 
 interface AuditStatusProps {
   isLoading: boolean;

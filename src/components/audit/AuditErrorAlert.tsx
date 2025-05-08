@@ -1,9 +1,7 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { AlertTriangle } from 'lucide-react';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Button } from '@/components/ui/button';
+import { ErrorAlert } from '@/components/ui/error-handler';
 
 interface AuditErrorAlertProps {
   error: string | null;
@@ -19,18 +17,12 @@ const AuditErrorAlert: React.FC<AuditErrorAlertProps> = ({ error, onClearError }
       animate={{ opacity: 1, y: 0 }}
       className="max-w-2xl mx-auto mb-6"
     >
-      <Alert variant="destructive">
-        <AlertTriangle className="h-4 w-4" />
-        <AlertDescription className="ml-2">{error}</AlertDescription>
-        <Button 
-          variant="ghost" 
-          size="sm" 
-          onClick={onClearError}
-          className="ml-auto"
-        >
-          Закрыть
-        </Button>
-      </Alert>
+      <ErrorAlert
+        title="Ошибка"
+        description={error}
+        variant="destructive"
+        onDismiss={onClearError}
+      />
     </motion.div>
   );
 };

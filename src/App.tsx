@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from "@/components/ui/toaster";
@@ -7,6 +6,7 @@ import { LoadingProvider } from '@/contexts/LoadingContext';
 import { ErrorHandlingProvider } from '@/contexts/ErrorHandlingContext';
 import { GlobalErrorBoundary } from '@/components/ui/error-handler';
 import { FullscreenLoader } from '@/components/ui/loading';
+import { AuthProvider } from '@/contexts/AuthContext';
 
 // Lazy load pages
 const HomePage = React.lazy(() => import('@/pages/Index'));
@@ -40,9 +40,6 @@ const Partnership = React.lazy(() => import('@/pages/Partnership'));
 
 // Lazy load admin routes
 const AdminRoutes = React.lazy(() => import('@/routes/AdminRoutes'));
-
-// Import the AuthProvider from contexts
-import { AuthProvider } from '@/contexts/AuthContext';
 
 function App() {
   const [isLoading, setIsLoading] = useState(true);

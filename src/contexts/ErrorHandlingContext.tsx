@@ -2,6 +2,7 @@
 import React, { createContext, useContext, useState, useCallback } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { ErrorDisplay } from '@/components/ui/error-handler';
+import { formatError } from '@/lib/utils';
 
 interface ErrorHandlingContextType {
   setError: (error: Error | string | null) => void;
@@ -39,8 +40,7 @@ export const ErrorHandlingProvider: React.FC<ErrorHandlingProviderProps> = ({
     toastTitle?: string;
     toastVariant?: 'default' | 'destructive';
   }) => {
-    const errorMessage = options?.message || 
-      (err instanceof Error ? err.message : 'Произошла неизвестная ошибка');
+    const errorMessage = options?.message || formatError(err);
     
     console.error('Ошибка:', err);
     setError(errorMessage);
@@ -57,7 +57,15 @@ export const ErrorHandlingProvider: React.FC<ErrorHandlingProviderProps> = ({
   return (
     <ErrorHandlingContext.Provider value={{ error, setError, clearError, handleError }}>
       {children}
-      {displayErrors && error && <ErrorDisplay error={error} onRetry={clearError} />}
+      {displayErrors && error && (
+        <div className="fixed bottom-4 right-4 z-50 max-w-md">
+          <ErrorDisplay 
+            error={error} 
+            onRetry={clearError}
+            title="Произошла ошибка"
+          />
+        </div>
+      )}
     </ErrorHandlingContext.Provider>
   );
 };
