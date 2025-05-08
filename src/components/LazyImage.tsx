@@ -1,7 +1,8 @@
 
-import React, { useState, useCallback, memo } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import { LazyLoadImage } from 'react-lazy-load-image-component';
 import 'react-lazy-load-image-component/src/effects/blur.css';
+import { withMemo } from '@/components/shared/performance';
 
 interface LazyImageProps {
   src: string;
@@ -9,14 +10,16 @@ interface LazyImageProps {
   className?: string;
   width?: number;
   height?: number;
+  priority?: boolean;
 }
 
-export const LazyImage: React.FC<LazyImageProps> = memo(({
+export const LazyImage: React.FC<LazyImageProps> = ({
   src,
   alt,
   className,
   width,
-  height
+  height,
+  priority = false
 }) => {
   const [isLoaded, setIsLoaded] = useState(false);
   const [hasError, setHasError] = useState(false);
@@ -38,6 +41,29 @@ export const LazyImage: React.FC<LazyImageProps> = memo(({
             ${imageSrc} 1200w`;
   }, []);
 
+  // Preload high-priority images
+  useMemo(() => {
+    if (priority && typeof window !== 'undefined') {
+      const link = document.createElement('link');
+      link.rel = 'preload';
+      link.as = 'image';
+      link.href = src;
+      document.head.appendChild(link);
+      
+      return () => {
+        document.head.removeChild(link);
+      };
+    }
+  }, [priority, src]);
+
+  const actualSrc = useMemo(() => 
+    hasError ? '/images/placeholder.jpg' : src, 
+  [hasError, src]);
+  
+  const srcSet = useMemo(() => 
+    generateSrcSet(actualSrc), 
+  [actualSrc, generateSrcSet]);
+
   return (
     <div className={`relative overflow-hidden ${className}`}>
       {!isLoaded && !hasError && (
@@ -49,23 +75,31 @@ export const LazyImage: React.FC<LazyImageProps> = memo(({
       
       <LazyLoadImage
         alt={alt}
-        src={hasError ? '/images/placeholder.jpg' : src}
+        src={actualSrc}
         effect="blur"
         className={className}
         width={width}
         height={height}
         threshold={200}
-        srcSet={generateSrcSet(src)}
+        srcSet={srcSet}
         sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
         placeholderSrc="/images/placeholder.jpg"
         onLoad={handleLoad}
         onError={handleError}
         wrapperClassName="w-full h-full"
-        loading="lazy"
+        loading={priority ? "eager" : "lazy"}
         decoding="async"
       />
     </div>
   );
-});
+};
 
 LazyImage.displayName = 'LazyImage';
+
+// Apply memoization with custom comparison function for images
+export default withMemo(LazyImage, (prevProps, nextProps) => {
+  return prevProps.src === nextProps.src && 
+         prevProps.className === nextProps.className &&
+         prevProps.width === nextProps.width &&
+         prevProps.height === nextProps.height;
+});

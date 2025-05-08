@@ -8,13 +8,14 @@ import { useAuditInitialization } from '../../hooks/useAuditInitialization';
 import { usePromptToggle } from '../../hooks/usePromptToggle';
 import AuditStateHandler from './components/AuditStateHandler';
 import AuditContent from './AuditContent';
+import { withMemo } from '@/components/shared/performance';
 
 interface AuditResultsContainerProps {
   url: string;
 }
 
 const AuditResultsContainer: React.FC<AuditResultsContainerProps> = ({ url }) => {
-  // Get data from our contexts
+  // Get data from our contexts - memoize these to prevent unnecessary re-renders
   const { updateUrl } = useAuditContext();
   
   const {
@@ -56,7 +57,7 @@ const AuditResultsContainer: React.FC<AuditResultsContainerProps> = ({ url }) =>
     }
   }, [url, updateUrl]);
   
-  // Content prompt state management
+  // Content prompt state management - wrapped in a separate hook
   const { showPrompt, togglePrompt } = usePromptToggle();
   
   // Initialization and timeout handling
@@ -73,7 +74,7 @@ const AuditResultsContainer: React.FC<AuditResultsContainerProps> = ({ url }) =>
     setIsLoading(isAuditLoading);
   }, [isAuditLoading, setIsLoading]);
 
-  // Handler for selecting historical audit
+  // Handler for selecting historical audit - memoized to prevent recreation
   const handleSelectHistoricalAudit = useCallback((auditId: string) => {
     console.log("Selected historical audit:", auditId);
   }, []);
@@ -145,4 +146,5 @@ const AuditResultsContainer: React.FC<AuditResultsContainerProps> = ({ url }) =>
   );
 };
 
-export default React.memo(AuditResultsContainer);
+// Apply memoization with a custom equality function that checks just the URL
+export default withMemo(AuditResultsContainer, (prev, next) => prev.url === next.url);

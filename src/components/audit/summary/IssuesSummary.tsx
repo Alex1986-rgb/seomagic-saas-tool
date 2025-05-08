@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { ArrowUp, ArrowDown } from 'lucide-react';
+import { withMemo } from '@/components/shared/performance';
 
 interface IssuesSummaryProps {
   issues: {
@@ -35,4 +36,11 @@ const IssuesSummary: React.FC<IssuesSummaryProps> = ({ issues }) => {
   );
 };
 
-export default IssuesSummary;
+IssuesSummary.displayName = 'IssuesSummary';
+
+// Apply memoization with a custom comparison function for deep comparison of issues
+export default withMemo(IssuesSummary, (prevProps, nextProps) => 
+  prevProps.issues.critical === nextProps.issues.critical &&
+  prevProps.issues.important === nextProps.issues.important &&
+  prevProps.issues.opportunities === nextProps.issues.opportunities
+);

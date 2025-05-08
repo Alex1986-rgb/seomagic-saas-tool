@@ -5,39 +5,42 @@ import { Toaster } from "@/components/ui/toaster";
 import { GlobalErrorBoundary } from '@/components/ui/error-handler';
 import { FullscreenLoader } from '@/components/ui/loading';
 import AppProviders from './providers/AppProviders';
+import { createLazyComponent } from '@/components/shared/performance/LazyLoadWrapper';
 
-// Lazy load pages
+// Eager load critical pages
 const HomePage = React.lazy(() => import('@/pages/Index'));
 const AuditPage = React.lazy(() => import('@/pages/Audit'));
-const SiteAudit = React.lazy(() => import('@/pages/SiteAudit'));
-const SeoOptimizationPage = React.lazy(() => import('@/pages/SeoOptimizationPage'));
-const BlogPage = React.lazy(() => import('@/pages/Blog'));
-const BlogPostPage = React.lazy(() => import('@/pages/BlogPost'));
-const ClientProfile = React.lazy(() => import('@/pages/ClientProfile'));
-const PositionTracking = React.lazy(() => import('@/pages/PositionTracking'));
-const Reports = React.lazy(() => import('@/pages/Reports'));
-const AuditHistory = React.lazy(() => import('@/pages/AuditHistory'));
-const Settings = React.lazy(() => import('@/pages/Settings'));
-const About = React.lazy(() => import('@/pages/About'));
-const Pricing = React.lazy(() => import('@/pages/Pricing'));
-const PositionPricing = React.lazy(() => import('@/pages/PositionPricing'));
-const Auth = React.lazy(() => import('@/pages/Auth'));
-const Dashboard = React.lazy(() => import('@/pages/Dashboard'));
-const Support = React.lazy(() => import('@/pages/Support'));
-const Contact = React.lazy(() => import('@/pages/Contact'));
-const Guides = React.lazy(() => import('@/pages/Guides'));
-const Demo = React.lazy(() => import('@/pages/Demo'));
-const Privacy = React.lazy(() => import('@/pages/Privacy'));
-const Terms = React.lazy(() => import('@/pages/Terms'));
-const Features = React.lazy(() => import('@/pages/Features'));
-const Documentation = React.lazy(() => import('@/pages/Documentation'));
-const NotFound = React.lazy(() => import('@/pages/NotFound'));
-const GuidePost = React.lazy(() => import('@/pages/GuidePost'));
-const IPInfo = React.lazy(() => import('@/pages/IPInfo'));
-const Partnership = React.lazy(() => import('@/pages/Partnership'));
+
+// Lazy load remaining pages with better naming
+const SiteAudit = createLazyComponent(() => import('@/pages/SiteAudit'), 'SiteAudit');
+const SeoOptimizationPage = createLazyComponent(() => import('@/pages/SeoOptimizationPage'), 'SeoOptimizationPage');
+const BlogPage = createLazyComponent(() => import('@/pages/Blog'), 'BlogPage');
+const BlogPostPage = createLazyComponent(() => import('@/pages/BlogPost'), 'BlogPostPage');
+const ClientProfile = createLazyComponent(() => import('@/pages/ClientProfile'), 'ClientProfile');
+const PositionTracking = createLazyComponent(() => import('@/pages/PositionTracking'), 'PositionTracking');
+const Reports = createLazyComponent(() => import('@/pages/Reports'), 'Reports');
+const AuditHistory = createLazyComponent(() => import('@/pages/AuditHistory'), 'AuditHistory');
+const Settings = createLazyComponent(() => import('@/pages/Settings'), 'Settings');
+const About = createLazyComponent(() => import('@/pages/About'), 'About');
+const Pricing = createLazyComponent(() => import('@/pages/Pricing'), 'Pricing');
+const PositionPricing = createLazyComponent(() => import('@/pages/PositionPricing'), 'PositionPricing');
+const Auth = createLazyComponent(() => import('@/pages/Auth'), 'Auth');
+const Dashboard = createLazyComponent(() => import('@/pages/Dashboard'), 'Dashboard');
+const Support = createLazyComponent(() => import('@/pages/Support'), 'Support');
+const Contact = createLazyComponent(() => import('@/pages/Contact'), 'Contact');
+const Guides = createLazyComponent(() => import('@/pages/Guides'), 'Guides');
+const Demo = createLazyComponent(() => import('@/pages/Demo'), 'Demo');
+const Privacy = createLazyComponent(() => import('@/pages/Privacy'), 'Privacy');
+const Terms = createLazyComponent(() => import('@/pages/Terms'), 'Terms');
+const Features = createLazyComponent(() => import('@/pages/Features'), 'Features');
+const Documentation = createLazyComponent(() => import('@/pages/Documentation'), 'Documentation');
+const NotFound = createLazyComponent(() => import('@/pages/NotFound'), 'NotFound');
+const GuidePost = createLazyComponent(() => import('@/pages/GuidePost'), 'GuidePost');
+const IPInfo = createLazyComponent(() => import('@/pages/IPInfo'), 'IPInfo');
+const Partnership = createLazyComponent(() => import('@/pages/Partnership'), 'Partnership');
 
 // Lazy load admin routes
-const AdminRoutes = React.lazy(() => import('@/routes/AdminRoutes'));
+const AdminRoutes = createLazyComponent(() => import('@/routes/AdminRoutes'), 'AdminRoutes');
 
 function App() {
   const [isLoading, setIsLoading] = useState(true);
@@ -45,24 +48,41 @@ function App() {
   useEffect(() => {
     // Preload critical resources
     const preloadResources = async () => {
-      // Add any critical resources preloading here
+      // Preload critical route components in parallel
+      const criticalRoutes = Promise.all([
+        import('@/pages/Index'),
+        import('@/pages/Audit')
+      ]);
       
-      // Prefetch important routes
-      const importantRoutes = [HomePage, AuditPage];
-      await Promise.all(importantRoutes.map(route => {
-        // This triggers webpack to load the chunks in parallel
-        // but we don't need to do anything with the result
-        return Promise.resolve();
-      }));
+      // Start preloading but don't wait for it
+      criticalRoutes.catch(err => {
+        console.warn('Failed to preload some routes:', err);
+      });
       
+      // Set a timeout to ensure we don't block the UI for too long
       const timer = setTimeout(() => {
         setIsLoading(false);
-      }, 300); // Reduced from 500ms to 300ms for faster initial load
+      }, 300);
       
       return () => clearTimeout(timer);
     };
     
     preloadResources();
+    
+    // Register performance monitoring
+    if ('performance' in window && 'measure' in window.performance) {
+      window.addEventListener('load', () => {
+        // Measure time to interactive
+        const tti = performance.now();
+        console.log('Time to interactive:', tti);
+        
+        // Report to analytics if needed
+        if (window.performance && 'getEntriesByType' in window.performance) {
+          const paintMetrics = window.performance.getEntriesByType('paint');
+          console.log('Paint metrics:', paintMetrics);
+        }
+      });
+    }
   }, []);
   
   if (isLoading) {
@@ -71,55 +91,62 @@ function App() {
   
   return (
     <AppProviders>
-      <Suspense fallback={<FullscreenLoader />}>
-        <Routes>
-          <Route path="/" element={<HomePage />} />
-          
-          {/* Group routes by section for better code-splitting */}
-          {/* Audit related routes */}
-          <Route path="/audit" element={<AuditPage />} />
-          <Route path="/site-audit" element={<SiteAudit />} />
-          <Route path="/seo-optimization" element={<SeoOptimizationPage />} />
-          <Route path="/audit-history" element={<AuditHistory />} />
-          
-          {/* Content related routes */}
-          <Route path="/blog" element={<BlogPage />} />
-          <Route path="/blog/:id" element={<BlogPostPage />} />
-          <Route path="/guides" element={<Guides />} />
-          <Route path="/guides/:id" element={<GuidePost />} />
-          <Route path="/features" element={<Features />} />
-          
-          {/* User account related routes */}
-          <Route path="/profile" element={<ClientProfile />} />
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/settings" element={<Settings />} />
-          <Route path="/auth" element={<Auth />} />
-          
-          {/* Position tracking related routes */}
-          <Route path="/position-tracking" element={<PositionTracking />} />
-          <Route path="/position-pricing" element={<PositionPricing />} />
-          <Route path="/reports" element={<Reports />} />
-          
-          {/* Information pages */}
-          <Route path="/about" element={<About />} />
-          <Route path="/pricing" element={<Pricing />} />
-          <Route path="/support" element={<Support />} />
-          <Route path="/contact" element={<Contact />} />
-          <Route path="/demo" element={<Demo />} />
-          <Route path="/privacy" element={<Privacy />} />
-          <Route path="/terms" element={<Terms />} />
-          <Route path="/documentation" element={<Documentation />} />
-          <Route path="/documentation/:tab" element={<Documentation />} />
-          <Route path="/ip-info" element={<IPInfo />} />
-          <Route path="/partnership" element={<Partnership />} />
-          
-          {/* Admin section - completely separate bundle */}
-          <Route path="/admin/*" element={<AdminRoutes />} />
-          
-          {/* Fallback */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </Suspense>
+      <Routes>
+        {/* Critical routes - highest priority */}
+        <Route path="/" element={
+          <Suspense fallback={<FullscreenLoader />}>
+            <HomePage />
+          </Suspense>
+        } />
+        
+        <Route path="/audit" element={
+          <Suspense fallback={<FullscreenLoader />}>
+            <AuditPage />
+          </Suspense>
+        } />
+        
+        {/* Audit related routes */}
+        <Route path="/site-audit" element={<SiteAudit />} />
+        <Route path="/seo-optimization" element={<SeoOptimizationPage />} />
+        <Route path="/audit-history" element={<AuditHistory />} />
+        
+        {/* Content related routes */}
+        <Route path="/blog" element={<BlogPage />} />
+        <Route path="/blog/:id" element={<BlogPostPage />} />
+        <Route path="/guides" element={<Guides />} />
+        <Route path="/guides/:id" element={<GuidePost />} />
+        <Route path="/features" element={<Features />} />
+        
+        {/* User account related routes */}
+        <Route path="/profile" element={<ClientProfile />} />
+        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/settings" element={<Settings />} />
+        <Route path="/auth" element={<Auth />} />
+        
+        {/* Position tracking related routes */}
+        <Route path="/position-tracking" element={<PositionTracking />} />
+        <Route path="/position-pricing" element={<PositionPricing />} />
+        <Route path="/reports" element={<Reports />} />
+        
+        {/* Information pages */}
+        <Route path="/about" element={<About />} />
+        <Route path="/pricing" element={<Pricing />} />
+        <Route path="/support" element={<Support />} />
+        <Route path="/contact" element={<Contact />} />
+        <Route path="/demo" element={<Demo />} />
+        <Route path="/privacy" element={<Privacy />} />
+        <Route path="/terms" element={<Terms />} />
+        <Route path="/documentation" element={<Documentation />} />
+        <Route path="/documentation/:tab" element={<Documentation />} />
+        <Route path="/ip-info" element={<IPInfo />} />
+        <Route path="/partnership" element={<Partnership />} />
+        
+        {/* Admin section - completely separate bundle */}
+        <Route path="/admin/*" element={<AdminRoutes />} />
+        
+        {/* Fallback */}
+        <Route path="*" element={<NotFound />} />
+      </Routes>
     </AppProviders>
   );
 }
