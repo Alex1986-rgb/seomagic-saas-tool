@@ -10,7 +10,7 @@ export * from './optimization-types';
 export * from './recommendations';
 
 // Export from crawler with explicit type qualifier to avoid name conflicts
-export {
+export type {
   DeepCrawlerOptions,
   TaskProgress,
   CrawlResult,
