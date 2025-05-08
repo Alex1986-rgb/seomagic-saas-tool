@@ -32,10 +32,13 @@ export const useAuditAPI = (url: string) => {
   } = useOptimizationAPI(taskId);
 
   // Create renamed functions for compatibility
-  const startScan = startBackendScan;
-  const cancelScan = async () => {
+  const startScan = async (deepScan?: boolean): Promise<string> => {
+    return await startBackendScan(deepScan);
+  };
+
+  const cancelScan = async (): Promise<{ success: boolean }> => {
     // Implementation for cancelScan based on the available APIs
-    if (!taskId) return;
+    if (!taskId) return { success: false };
     
     try {
       // This could be implemented by calling a method to cancel the scan

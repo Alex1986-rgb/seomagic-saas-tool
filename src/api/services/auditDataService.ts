@@ -2,6 +2,18 @@
 import { AuditData } from '@/types/audit';
 import { apiClient } from '../client/apiClient';
 import { formatApiError } from '../client/errorHandler';
+import { 
+  detectBrokenLinks, 
+  detectDuplicates, 
+  analyzeSiteStructure,
+  analyzeContentUniqueness,
+  BrokenLink,
+  Redirect,
+  DuplicatePage,
+  DuplicateMetaTag,
+  SiteStructure,
+  ContentAnalysisResult
+} from '@/services/audit/siteAnalysis';
 
 /**
  * Audit data service for handling audit-specific operations
@@ -82,6 +94,58 @@ class AuditDataService {
     } catch (error) {
       const formattedError = formatApiError(error);
       console.error('Error sharing audit results:', formattedError);
+      throw formattedError;
+    }
+  }
+
+  /**
+   * Find broken links on a website
+   */
+  async findBrokenLinks(domain: string, urls: string[], onProgress?: (current: number, total: number) => void): Promise<{ brokenLinks: BrokenLink[]; redirects: Redirect[] }> {
+    try {
+      return await detectBrokenLinks(domain, urls, onProgress);
+    } catch (error) {
+      const formattedError = formatApiError(error);
+      console.error('Error finding broken links:', formattedError);
+      throw formattedError;
+    }
+  }
+
+  /**
+   * Find duplicate pages on a website
+   */
+  async findDuplicates(urls: string[], onProgress?: (current: number, total: number) => void): Promise<{ duplicatePages: DuplicatePage[]; duplicateMeta: DuplicateMetaTag[] }> {
+    try {
+      return await detectDuplicates(urls, onProgress);
+    } catch (error) {
+      const formattedError = formatApiError(error);
+      console.error('Error finding duplicates:', formattedError);
+      throw formattedError;
+    }
+  }
+
+  /**
+   * Analyze site structure
+   */
+  async analyzeSiteStructure(domain: string, urls: string[], onProgress?: (current: number, total: number) => void): Promise<SiteStructure> {
+    try {
+      return await analyzeSiteStructure(domain, urls, onProgress);
+    } catch (error) {
+      const formattedError = formatApiError(error);
+      console.error('Error analyzing site structure:', formattedError);
+      throw formattedError;
+    }
+  }
+
+  /**
+   * Analyze content uniqueness
+   */
+  async analyzeContentUniqueness(urls: string[], onProgress?: (current: number, total: number) => void): Promise<ContentAnalysisResult> {
+    try {
+      return await analyzeContentUniqueness(urls, onProgress);
+    } catch (error) {
+      const formattedError = formatApiError(error);
+      console.error('Error analyzing content uniqueness:', formattedError);
       throw formattedError;
     }
   }
