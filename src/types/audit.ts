@@ -21,6 +21,7 @@ export interface AuditIssue {
   title: string;
   description: string;
   impact: 'high' | 'medium' | 'low';
+  category?: string; // Added category property as optional
 }
 
 export interface AuditCheck {
