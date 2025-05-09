@@ -33,6 +33,12 @@ const AuditOptimizationSection: React.FC<AuditOptimizationSectionProps> = ({
   onGeneratePdfReport,
   setContentOptimizationPrompt
 }) => {
+  // Ensure we have valid IDs for all optimization items to satisfy the stricter type requirements
+  const validOptimizationItems = optimizationItems.map(item => ({
+    ...item,
+    id: item.id || `item-${Math.random().toString(36).substr(2, 9)}` // Ensure id exists
+  }));
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -41,7 +47,7 @@ const AuditOptimizationSection: React.FC<AuditOptimizationSectionProps> = ({
     >
       <AuditOptimization 
         optimizationCost={optimizationCost}
-        optimizationItems={optimizationItems}
+        optimizationItems={validOptimizationItems}
         isOptimized={isOptimized}
         contentPrompt={contentPrompt}
         url={url}
