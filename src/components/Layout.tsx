@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import Navbar from './navbar';
 import Footer from './Footer';
 import StarryBackground from './backgrounds/StarryBackground';
@@ -29,7 +29,12 @@ const Layout: React.FC<LayoutProps> = ({
   const shouldHideNavbar = hideNavbar || isAdminRoute;
   const shouldHideFooter = hideFooter || isAdminRoute;
 
-  console.log("Layout rendering with children", children ? "present" : "missing");
+  useEffect(() => {
+    console.log("Layout rendering with path:", location.pathname);
+    console.log("Children present:", children ? "yes" : "no");
+    console.log("Hiding navbar:", shouldHideNavbar);
+    console.log("Hiding footer:", shouldHideFooter);
+  }, [location.pathname, children, shouldHideNavbar, shouldHideFooter]);
 
   return (
     <div className={cn("flex flex-col min-h-screen relative", className)}>

@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { HelmetProvider } from 'react-helmet-async';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from "@/components/ui/toaster";
@@ -7,7 +7,6 @@ import { LoadingProvider } from '@/contexts/LoadingContext';
 import { ErrorHandlingProvider } from '@/contexts/ErrorHandlingContext';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { GlobalErrorBoundary } from '@/components/ui/error-handler';
-import { setupQueryErrorHandler } from '@/lib/react-query-error-handler';
 
 // Create a client with error handling
 const queryClient = new QueryClient({
@@ -25,6 +24,21 @@ interface AppProvidersProps {
 }
 
 export const AppProviders: React.FC<AppProvidersProps> = ({ children }) => {
+  useEffect(() => {
+    console.log("AppProviders initializing...");
+    
+    // Add event listener for uncaught errors
+    const handleError = (event: ErrorEvent) => {
+      console.error("Global error caught:", event.error);
+    };
+    
+    window.addEventListener('error', handleError);
+    
+    return () => {
+      window.removeEventListener('error', handleError);
+    };
+  }, []);
+
   return (
     <HelmetProvider>
       <ErrorHandlingProvider>

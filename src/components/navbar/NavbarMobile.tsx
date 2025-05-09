@@ -2,7 +2,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { NAV_ITEMS, CLIENT_ITEMS, RESOURCE_ITEMS, COMPANY_ITEMS } from './navConstants';
+import { NAV_ITEMS } from './navConstants';
 import { Badge } from '@/components/ui/badge';
 
 interface NavbarMobileProps {
@@ -25,6 +25,21 @@ const NavbarMobile: React.FC<NavbarMobileProps> = ({
   isAdmin,
   toggleAuth
 }) => {
+  const resourceItems = [
+    { label: "Блог", href: "/blog" },
+    { label: "Руководства", href: "/guides" },
+    { label: "Документация API", href: "/documentation" },
+    { label: "Партнерская программа", href: "/partnership" },
+    { label: "Поддержка", href: "/support" },
+  ];
+
+  const companyItems = [
+    { label: "О нас", href: "/about" },
+    { label: "Контакты", href: "/contact" },
+    { label: "Карьера", href: "/careers" },
+    { label: "Правовая информация", href: "/legal" },
+  ];
+
   return (
     <motion.div
       className="md:hidden absolute top-16 left-0 w-full bg-background/95 backdrop-blur-lg shadow-lg border-t border-border z-40"
@@ -59,7 +74,7 @@ const NavbarMobile: React.FC<NavbarMobileProps> = ({
         <div className="pt-4 pb-2">
           <h3 className="text-muted-foreground text-xs font-medium px-3 mb-2">Ресурсы</h3>
           <div className="space-y-1">
-            {RESOURCE_ITEMS.map((item) => (
+            {resourceItems.map((item) => (
               <Link
                 key={item.href}
                 to={item.href}
@@ -74,7 +89,7 @@ const NavbarMobile: React.FC<NavbarMobileProps> = ({
         <div className="pt-2 pb-4 border-b border-border">
           <h3 className="text-muted-foreground text-xs font-medium px-3 mb-2">Компания</h3>
           <div className="space-y-1">
-            {COMPANY_ITEMS.map((item) => (
+            {companyItems.map((item) => (
               <Link
                 key={item.href}
                 to={item.href}
