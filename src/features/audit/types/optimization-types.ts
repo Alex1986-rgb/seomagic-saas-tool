@@ -41,7 +41,6 @@ export interface OptimizationProgressState {
   error?: string;
 }
 
-// Add the missing types that are being imported elsewhere
 export interface OptimizationCosts {
   sitemap: number;
   metaTags: number;

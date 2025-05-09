@@ -1,5 +1,5 @@
 
-import { OptimizationMetrics, OptimizationCosts, PageContent, OptimizationResults } from './types';
+import { OptimizationMetrics, OptimizationCosts, PageContent, OptimizationResults } from '@/features/audit/types/optimization-types';
 import { calculateDiscount } from './discountCalculator';
 import { getPricingConfig } from './pricingConfig';
 import { analyzeContent } from './contentAnalyzer';

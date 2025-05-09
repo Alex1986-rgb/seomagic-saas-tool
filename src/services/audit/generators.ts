@@ -1,6 +1,8 @@
 
 import { OptimizationItem } from '@/features/audit/types/optimization-types';
 import { AuditData } from '@/types/audit';
+import { CategoryData } from '@/types/audit/category-data';
+import { AuditItemData } from '@/features/audit/types/audit-items';
 
 /**
  * Generate mock optimization items for demo purposes
@@ -150,6 +152,17 @@ export const calculateTotalCost = (items: OptimizationItem[]): number => {
   return items.reduce((total, item) => total + item.totalPrice, 0);
 };
 
+// Helper function to create empty category data
+const createCategoryData = (score: number): CategoryData => {
+  return {
+    score,
+    passed: Math.floor(Math.random() * 10) + 5,
+    warning: Math.floor(Math.random() * 5) + 2,
+    failed: Math.floor(Math.random() * 3),
+    items: []
+  };
+};
+
 /**
  * Generate mock audit data for demo purposes
  */
@@ -161,6 +174,18 @@ export const generateAuditData = (url: string): AuditData => {
   const score = Math.floor(Math.random() * 30) + 50; // Score between 50-80
   const optimizationItems = generateMockOptimizationItems(pageCount);
   const optimizationCost = calculateTotalCost(optimizationItems);
+
+  // Create test issue data
+  const generateIssues = (count: number, prefix: string, impactLevel: 'high' | 'medium' | 'low'): any[] => {
+    return Array(count).fill(0).map((_, i) => ({
+      id: `${prefix}-${i}`,
+      title: `${prefix} проблема ${i+1}`,
+      description: `Описание ${prefix} проблемы ${i+1}`,
+      impact: impactLevel,
+      affected: Math.floor(Math.random() * pageCount) + 1,
+      urls: []
+    }));
+  };
   
   return {
     id: Math.random().toString(36).substring(2, 15),
@@ -174,46 +199,19 @@ export const generateAuditData = (url: string): AuditData => {
     optimizationItems,
     optimizationCost,
     issues: {
-      critical: Array(Math.floor(Math.random() * 5) + 3).fill(0).map((_, i) => ({
-        id: `critical-${i}`,
-        title: `Критическая проблема ${i+1}`,
-        description: `Описание критической проблемы ${i+1}`,
-        impact: 'high',
-        affected: Math.floor(Math.random() * pageCount) + 1,
-        urls: []
-      })),
-      important: Array(Math.floor(Math.random() * 8) + 5).fill(0).map((_, i) => ({
-        id: `important-${i}`,
-        title: `Важная проблема ${i+1}`,
-        description: `Описание важной проблемы ${i+1}`,
-        impact: 'medium',
-        affected: Math.floor(Math.random() * pageCount) + 1,
-        urls: []
-      })),
-      minor: Array(Math.floor(Math.random() * 10) + 8).fill(0).map((_, i) => ({
-        id: `minor-${i}`,
-        title: `Незначительная проблема ${i+1}`,
-        description: `Описание незначительной проблемы ${i+1}`,
-        impact: 'low',
-        affected: Math.floor(Math.random() * pageCount) + 1,
-        urls: []
-      })),
-      opportunities: Array(Math.floor(Math.random() * 7) + 3).fill(0).map((_, i) => ({
-        id: `opportunity-${i}`,
-        title: `Возможность улучшения ${i+1}`,
-        description: `Описание возможности улучшения ${i+1}`,
-        impact: 'medium',
-        affected: Math.floor(Math.random() * pageCount) + 1,
-        urls: []
-      }))
+      critical: generateIssues(Math.floor(Math.random() * 5) + 3, 'Критическая', 'high'),
+      important: generateIssues(Math.floor(Math.random() * 8) + 5, 'Важная', 'medium'),
+      minor: Math.floor(Math.random() * 10) + 8,
+      passed: Math.floor(Math.random() * 15) + 10,
+      opportunities: generateIssues(Math.floor(Math.random() * 7) + 3, 'Возможность улучшения', 'medium')
     },
     details: {
-      seo: { score: Math.floor(Math.random() * 30) + 50 },
-      performance: { score: Math.floor(Math.random() * 30) + 50 },
-      content: { score: Math.floor(Math.random() * 30) + 50 },
-      technical: { score: Math.floor(Math.random() * 30) + 50 },
-      mobile: { score: Math.floor(Math.random() * 30) + 50 },
-      usability: { score: Math.floor(Math.random() * 30) + 50 }
+      seo: createCategoryData(Math.floor(Math.random() * 30) + 50),
+      performance: createCategoryData(Math.floor(Math.random() * 30) + 50),
+      content: createCategoryData(Math.floor(Math.random() * 30) + 50),
+      technical: createCategoryData(Math.floor(Math.random() * 30) + 50),
+      mobile: createCategoryData(Math.floor(Math.random() * 30) + 50),
+      usability: createCategoryData(Math.floor(Math.random() * 30) + 50)
     }
   };
 };

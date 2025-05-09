@@ -1,6 +1,21 @@
 
 import { OptimizationItem } from '@/features/audit/types/optimization-types';
 
+// Configuration for pricing
+export const getPricingConfig = () => {
+  return {
+    sitemap: 2000,
+    metaTagsPerItem: 50,
+    contentPerPage: 120,
+    imageAltPerItem: 40,
+    performancePerPage: 80,
+    linksPerItem: 70,
+    structurePerItem: 60,
+    basePrice: 5000,
+    discountThreshold: 20
+  };
+};
+
 // Let's create a simplified version for now
 export const calculateOptimizationCost = (pageCount: number) => {
   // Base costs
@@ -148,7 +163,7 @@ export const calculateOptimizationCost = (pageCount: number) => {
       price: 2000,
       pricePerUnit: 2000,
       totalPrice: 2000,
-      type: 'additional' // Changed from 'other' to 'additional'
+      type: 'additional'
     }
   ];
   

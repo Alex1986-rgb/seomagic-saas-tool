@@ -44,7 +44,6 @@ export const useOptimizationAPI = (taskId: string | null) => {
       const optimizationData = calculateOptimizationCost(pageCount || 100);
       
       setOptimizationCost(optimizationData.totalCost);
-      // The types are now compatible because we've updated the OptimizationItem interface
       setOptimizationItems(optimizationData.items);
       
       toast({
