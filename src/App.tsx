@@ -59,39 +59,6 @@ function App() {
   const [isLoading, setIsLoading] = useState(true);
   
   useEffect(() => {
-    console.log("App component mounting...");
-    
-    // Debug output all routes
-    console.log("Available routes:", [
-      "/",
-      "/audit",
-      "/site-audit",
-      "/seo-optimization",
-      "/audit-history",
-      "/optimization-demo",
-      "/blog",
-      "/guides",
-      "/features",
-      "/profile",
-      "/dashboard",
-      "/settings",
-      "/auth",
-      "/position-tracking",
-      "/position-pricing",
-      "/reports",
-      "/about",
-      "/pricing",
-      "/support",
-      "/contact",
-      "/demo",
-      "/privacy",
-      "/terms",
-      "/documentation",
-      "/ip-info",
-      "/partnership",
-      "/admin/*"
-    ]);
-    
     // Shorter timeout for faster initial load
     const timer = setTimeout(() => {
       console.log("Initial loading complete");
