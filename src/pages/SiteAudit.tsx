@@ -13,11 +13,13 @@ const SiteAudit: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
 
-  console.log("SiteAudit page rendering");
+  console.log("SiteAudit page rendering with params:", searchParams.toString());
 
   useEffect(() => {
     const urlParam = searchParams.get('url');
     const taskIdParam = searchParams.get('task_id');
+    
+    console.log("URL Param:", urlParam);
     
     if (urlParam) {
       try {
@@ -32,6 +34,7 @@ const SiteAudit: React.FC = () => {
           localStorage.setItem(`task_id_${urlParam}`, taskIdParam);
         }
       } catch (err) {
+        console.error("Invalid URL provided:", urlParam, err);
         setError("Предоставленный URL некорректен. Пожалуйста, попробуйте снова.");
         toast({
           title: "Некорректный URL",
@@ -41,6 +44,7 @@ const SiteAudit: React.FC = () => {
       }
     } else {
       // Use a demo URL if no URL is provided
+      console.log("No URL provided, using demo URL");
       setUrl('example.com');
     }
     

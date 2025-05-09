@@ -19,8 +19,11 @@ const SiteAuditContent: React.FC<SiteAuditContentProps> = ({ url }) => {
   const [activeTab, setActiveTab] = useState('overview');
   const { toast } = useToast();
 
+  console.log("SiteAuditContent rendering for URL:", url);
+
   useEffect(() => {
     const loadAuditData = async () => {
+      console.log("Loading audit data for:", url);
       setIsLoading(true);
       
       try {
@@ -89,6 +92,7 @@ const SiteAuditContent: React.FC<SiteAuditContentProps> = ({ url }) => {
           }
         };
         
+        console.log("Audit data loaded successfully");
         setAuditData(mockAuditData);
         
       } catch (error) {
@@ -122,7 +126,6 @@ const SiteAuditContent: React.FC<SiteAuditContentProps> = ({ url }) => {
           await new Promise(resolve => setTimeout(resolve, 1500));
           
           // Create mock data similar to the one above
-          // ... (same code as above)
           const mockAuditData = {
             url: url,
             score: Math.floor(Math.random() * 30) + 60,
@@ -184,6 +187,7 @@ const SiteAuditContent: React.FC<SiteAuditContentProps> = ({ url }) => {
             }
           };
           
+          console.log("Refreshed audit data loaded successfully");
           setAuditData(mockAuditData);
           
         } catch (error) {
@@ -203,6 +207,7 @@ const SiteAuditContent: React.FC<SiteAuditContentProps> = ({ url }) => {
   };
   
   const handleDownloadReport = () => {
+    console.log("Downloading report");
     toast({
       title: "Скачивание отчета",
       description: "Отчет аудита успешно скачан",
