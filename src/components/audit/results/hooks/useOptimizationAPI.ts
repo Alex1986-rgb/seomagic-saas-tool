@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import { seoApiService } from '@/api/seoApiService';
 import { OptimizationItem } from '@/features/audit/types/optimization-types';
-import { calculateOptimizationCost } from '@/services/audit/optimization/pricingConfig';
+import { getStandardOptimizationItems, calculateTotalOptimizationCost } from '@/services/audit/optimization/pricingConfig';
 
 export const useOptimizationAPI = (taskId: string | null) => {
   const { toast } = useToast();
@@ -40,26 +40,27 @@ export const useOptimizationAPI = (taskId: string | null) => {
         });
       }
       
-      // Используем функцию расчета из конфигурации цен
-      const optimizationData = calculateOptimizationCost(pageCount || 100);
+      // Get standard optimization items
+      const items = getStandardOptimizationItems();
+      const totalCost = calculateTotalOptimizationCost(items);
       
-      setOptimizationCost(optimizationData.totalCost);
-      setOptimizationItems(optimizationData.items);
+      setOptimizationCost(totalCost);
+      setOptimizationItems(items);
       
       toast({
         title: "Данные оптимизации загружены",
-        description: `Расчетная стоимость оптимизации: ${new Intl.NumberFormat('ru-RU').format(optimizationData.totalCost)} ₽`,
+        description: `Расчетная стоимость оптимизации: ${new Intl.NumberFormat('ru-RU').format(totalCost)} ₽`,
       });
       
     } catch (error) {
       console.error('Error loading optimization cost:', error);
       
       // В случае ошибки используем резервный расчет
-      const fallbackPageCount = 100;
-      const fallbackData = calculateOptimizationCost(fallbackPageCount);
+      const items = getStandardOptimizationItems();
+      const totalCost = calculateTotalOptimizationCost(items);
       
-      setOptimizationCost(fallbackData.totalCost);
-      setOptimizationItems(fallbackData.items);
+      setOptimizationCost(totalCost);
+      setOptimizationItems(items);
       
       toast({
         title: "Внимание",

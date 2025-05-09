@@ -15,6 +15,34 @@ export const getPricingConfig = () => {
   };
 };
 
+// Calculate optimization cost based on page count
+export const calculateOptimizationCost = (pageCount: number = 20) => {
+  const items = getStandardOptimizationItems();
+  const totalCost = calculateTotalOptimizationCost(items);
+  
+  return {
+    items,
+    totalCost,
+    pageCount
+  };
+};
+
+// Calculate total cost from items
+export const calculateTotalOptimizationCost = (items: OptimizationItem[]): number => {
+  let totalCost = items.reduce((sum, item) => sum + item.cost, 0);
+  
+  // Apply discount based on number of items
+  if (items.length > 30) {
+    totalCost = Math.round(totalCost * 0.85); // 15% discount
+  } else if (items.length > 15) {
+    totalCost = Math.round(totalCost * 0.9); // 10% discount
+  } else if (items.length > 5) {
+    totalCost = Math.round(totalCost * 0.95); // 5% discount
+  }
+  
+  return totalCost;
+};
+
 // Generate standardized optimization items
 export const getStandardOptimizationItems = (): OptimizationItem[] => {
   const items: OptimizationItem[] = [

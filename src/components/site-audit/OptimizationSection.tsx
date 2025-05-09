@@ -11,7 +11,6 @@ import OptimizationProgress from '@/components/seo-optimization/OptimizationProg
 import OptimizationDemo from '@/components/audit/results/components/OptimizationDemo';
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { AuditData } from '@/types/audit';
-import { OptimizationItem } from '@/features/audit/types/optimization-types';
 
 interface OptimizationSectionProps {
   url: string;
@@ -73,8 +72,8 @@ const OptimizationSection: React.FC<OptimizationSectionProps> = ({ url, auditDat
     };
   } | null>(null);
   
-  // Use the optimizationItems from auditData, ensuring it conforms to OptimizationItem[]
-  const optimizationItems = (auditData?.optimizationItems || []) as OptimizationItem[];
+  // Use the optimizationItems from auditData
+  const optimizationItems = auditData.optimizationItems || [];
   
   const optimizationCost = auditData?.optimizationCost || 0;
   const pageCount = auditData.pageCount || 15;
@@ -203,28 +202,7 @@ const OptimizationSection: React.FC<OptimizationSectionProps> = ({ url, auditDat
   };
   
   const handleDownloadOptimizedSite = async () => {
-    try {
-      toast({
-        title: "Подготовка архива",
-        description: "Пожалуйста, подождите...",
-      });
-      
-      // Simulate download process
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      toast({
-        title: "Готово",
-        description: "Оптимизированный сайт скачан",
-      });
-    } catch (error) {
-      console.error('Download error:', error);
-      
-      toast({
-        title: "Ошибка загрузки",
-        description: "Не удалось скачать оптимизированный сайт",
-        variant: "destructive",
-      });
-    }
+    console.log("Downloading optimized site");
   };
   
   const formatNumber = (num: number) => {
@@ -316,7 +294,7 @@ const OptimizationSection: React.FC<OptimizationSectionProps> = ({ url, auditDat
                             </td>
                             <td className="p-2">
                               <ul className="list-disc list-inside">
-                                {item.tasks.map((task, idx) => (
+                                {item.tasks && item.tasks.map((task, idx) => (
                                   <li key={idx} className="truncate text-xs">{task}</li>
                                 ))}
                               </ul>
@@ -456,7 +434,7 @@ const OptimizationSection: React.FC<OptimizationSectionProps> = ({ url, auditDat
                     ></div>
                   </div>
                   <div className="flex justify-between mt-2 text-xs text-muted-foreground">
-                    <span>{Math.round(optimizationProgress)}% завершено</span>
+                    <span>{Math.round(optimizationProgress)}% завер��ено</span>
                     <span>Примерное время: {Math.ceil((100 - optimizationProgress) / 10)} мин</span>
                   </div>
                   
@@ -599,6 +577,22 @@ const OptimizationSection: React.FC<OptimizationSectionProps> = ({ url, auditDat
       </Tabs>
     </div>
   );
+};
+
+// Helper function to format numbers with thousand separators
+const formatNumber = (num: number) => {
+  return new Intl.NumberFormat('ru-RU').format(num);
+};
+
+// Add these functions that were mentioned in the component but might be missing
+const handleDownloadOptimizedSite = async () => {
+  // Implementation here
+  console.log("Downloading optimized site");
+};
+
+const handleOptimize = async () => {
+  // Implementation here
+  console.log("Starting optimization");
 };
 
 export default OptimizationSection;

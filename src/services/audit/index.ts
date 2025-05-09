@@ -47,7 +47,7 @@ export {
 };
 
 import { AuditData } from "@/types/audit";
-import { generateAuditData as mockGenerateAuditData } from '@/components/audit/results/components/optimization/mockOptimizationData';
+import { generateAuditData } from './generators';
 
 /**
  * Fetches audit data for a URL
@@ -56,27 +56,11 @@ export const fetchAuditData = async (url?: string): Promise<AuditData> => {
   // Simulate an API call
   return new Promise((resolve) => {
     setTimeout(() => {
-      // First generate the data
-      const data = mockGenerateAuditData(url || "example.com");
-      // Convert to the expected type using type assertion
-      const auditData = {
-        ...data,
-        // Ensure the issues property has the right structure
-        issues: {
-          critical: data.issues.critical,
-          important: data.issues.important,
-          opportunities: data.issues.opportunities,
-          minor: data.issues.minor,
-          passed: data.issues.passed
-        },
-        // Add missing required properties for AuditData type
-        id: `audit-${Date.now()}`,
-        score: 65,
-        date: new Date().toISOString(),
-        details: {}
-      } as AuditData;
+      // Generate the mock audit data
+      const mockData = generateAuditData(url || "example.com");
       
-      resolve(auditData);
+      // Convert to the expected type
+      resolve(mockData as unknown as AuditData);
     }, 1000);
   });
 };

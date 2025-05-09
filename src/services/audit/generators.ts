@@ -1,3 +1,4 @@
+
 /**
  * Утилиты для генерирования данных оптимизации
  */
@@ -212,7 +213,13 @@ export const generateMockOptimizationItems = (pageCount: number = 20): Optimizat
       tasks,
       cost,
       priority,
-      category
+      category,
+      name: `Optimization for ${pageUrl}`,
+      description: `Tasks: ${tasks.join(', ')}`,
+      count: 1,
+      price: cost,
+      totalPrice: cost,
+      pricePerUnit: cost
     });
   }
   
@@ -241,7 +248,8 @@ export const generateOptimizationItem = (
     description: `Tasks: ${tasks.join(', ')}`,
     count: 1,
     price: cost,
-    totalPrice: cost
+    totalPrice: cost,
+    pricePerUnit: cost
   };
 };
 
@@ -274,5 +282,74 @@ export const generateMockOptimizationData = (pageCount: number = 20) => {
     items,
     totalCost,
     pageCount
+  };
+};
+
+// Export function to generate mock audit data
+export const generateAuditData = (url: string = 'example.com') => {
+  const pageCount = Math.floor(Math.random() * 30) + 10;
+  const optimizationItems = generateMockOptimizationItems(pageCount);
+  const optimizationCost = calculateTotalCost(optimizationItems);
+  
+  return {
+    id: `audit-${Date.now()}`,
+    url,
+    pageCount,
+    date: new Date().toISOString(),
+    score: Math.floor(Math.random() * 40) + 50,
+    status: 'completed',
+    issues: {
+      critical: Array.from({ length: Math.floor(Math.random() * 5) }, (_, i) => `Critical issue ${i + 1}`),
+      important: Array.from({ length: Math.floor(Math.random() * 8) }, (_, i) => `Important issue ${i + 1}`),
+      opportunities: Array.from({ length: Math.floor(Math.random() * 10) }, (_, i) => `Opportunity ${i + 1}`),
+      minor: Array.from({ length: Math.floor(Math.random() * 15) }, (_, i) => `Minor issue ${i + 1}`),
+      passed: Array.from({ length: Math.floor(Math.random() * 20) }, (_, i) => `Passed test ${i + 1}`)
+    },
+    optimizationItems,
+    optimizationCost,
+    details: {
+      seo: {
+        score: Math.floor(Math.random() * 40) + 50,
+        passed: Math.floor(Math.random() * 10) + 5,
+        warning: Math.floor(Math.random() * 8) + 2,
+        failed: Math.floor(Math.random() * 5),
+        items: []
+      },
+      content: {
+        score: Math.floor(Math.random() * 40) + 50,
+        passed: Math.floor(Math.random() * 10) + 5,
+        warning: Math.floor(Math.random() * 8) + 2,
+        failed: Math.floor(Math.random() * 5),
+        items: []
+      },
+      performance: {
+        score: Math.floor(Math.random() * 40) + 50,
+        passed: Math.floor(Math.random() * 10) + 5,
+        warning: Math.floor(Math.random() * 8) + 2,
+        failed: Math.floor(Math.random() * 5),
+        items: []
+      },
+      technical: {
+        score: Math.floor(Math.random() * 40) + 50,
+        passed: Math.floor(Math.random() * 10) + 5,
+        warning: Math.floor(Math.random() * 8) + 2,
+        failed: Math.floor(Math.random() * 5),
+        items: []
+      },
+      mobile: {
+        score: Math.floor(Math.random() * 40) + 50,
+        passed: Math.floor(Math.random() * 10) + 5,
+        warning: Math.floor(Math.random() * 8) + 2,
+        failed: Math.floor(Math.random() * 5),
+        items: []
+      },
+      usability: {
+        score: Math.floor(Math.random() * 40) + 50,
+        passed: Math.floor(Math.random() * 10) + 5,
+        warning: Math.floor(Math.random() * 8) + 2,
+        failed: Math.floor(Math.random() * 5),
+        items: []
+      }
+    }
   };
 };
