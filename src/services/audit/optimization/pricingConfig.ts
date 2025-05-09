@@ -177,3 +177,28 @@ export const getStandardOptimizationItems = (): OptimizationItem[] => {
 export const calculateTotalOptimizationCost = (items: OptimizationItem[]): number => {
   return items.reduce((total, item) => total + item.totalPrice, 0);
 };
+
+// Add the missing function that was being imported in optimizationCalculator.ts
+export const getPricingConfig = () => {
+  return {
+    // Base pricing
+    baseCost: 5000,
+    pagesMultiplier: 1.2,
+    
+    // Feature-specific pricing
+    sitemap: 1500,
+    metaTagsPerItem: 300,
+    contentPerPage: 500,
+    imageAltPerItem: 100,
+    performancePerPage: 400,
+    linksPerItem: 200,
+    structurePerItem: 200,
+    
+    // Discounts
+    smallSiteDiscount: 0.1,  // 10% discount for small sites
+    mediumSiteDiscount: 0.05, // 5% discount for medium sites
+    largeSiteThreshold: 50,   // Pages threshold for large sites
+    mediumSiteThreshold: 20,  // Pages threshold for medium sites
+    smallSiteThreshold: 5,    // Pages threshold for small sites
+  };
+};
