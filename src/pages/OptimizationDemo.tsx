@@ -5,6 +5,7 @@ import Layout from '@/components/Layout';
 import { Helmet } from 'react-helmet-async';
 
 const OptimizationDemo: React.FC = () => {
+  console.log("Rendering OptimizationDemo page");
   return (
     <Layout>
       <Helmet>

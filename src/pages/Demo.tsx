@@ -19,7 +19,8 @@ const Demo: React.FC = () => {
     <Layout>
       <section className="py-20 relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-b from-background via-primary/5 to-background/90 -z-10" />
-        <div className="absolute inset-0 bg-[url('/img/grid-pattern.png')] opacity-5 mix-blend-overlay -z-5" />
+        {/* Replace the problematic background with a gradient */}
+        <div className="absolute inset-0 bg-opacity-5 mix-blend-overlay -z-5" />
         
         <div className="container mx-auto px-4 md:px-6">
           <motion.div
