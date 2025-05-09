@@ -3,8 +3,8 @@ import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useToast } from "@/hooks/use-toast";
 import Layout from '@/components/Layout';
-import AuditResultsContainer from '@/features/audit/components/results/AuditResultsContainer';
 import { AuditProvider } from '@/contexts/AuditContext';
+import SiteAuditContent from '@/components/site-audit/SiteAuditContent';
 
 const SiteAudit: React.FC = () => {
   const [searchParams] = useSearchParams();
@@ -12,6 +12,8 @@ const SiteAudit: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
+
+  console.log("SiteAudit page rendering");
 
   useEffect(() => {
     const urlParam = searchParams.get('url');
@@ -38,10 +40,11 @@ const SiteAudit: React.FC = () => {
         });
       }
     } else {
-      setUrl('example.com'); // Демо-URL если параметр не предоставлен
+      // Use a demo URL if no URL is provided
+      setUrl('example.com');
     }
     
-    // Завершаем загрузку в любом случае
+    // Finish loading in any case
     setIsLoading(false);
   }, [searchParams, toast]);
 
@@ -64,7 +67,7 @@ const SiteAudit: React.FC = () => {
             </div>
           ) : (
             <AuditProvider initialUrl={url}>
-              <AuditResultsContainer url={url} />
+              <SiteAuditContent url={url} />
             </AuditProvider>
           )}
         </div>
