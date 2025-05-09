@@ -11,6 +11,7 @@ import OptimizationSection from './OptimizationSection';
 import { AlertCircle, ArrowRight } from "lucide-react";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { Button } from '@/components/ui/button';
+import { AuditData } from '@/types/audit';
 
 // Import the generator functions directly
 import { generateMockOptimizationItems, calculateTotalCost } from '@/services/audit/generators';
@@ -55,12 +56,28 @@ const SiteAuditContent: React.FC<SiteAuditContentProps> = ({ url }) => {
   };
   
   // Make sure we have a valid data object, not an HTML string or other unexpected type
-  let data = auditData;
+  let data: AuditData | null = null;
   
-  // Check if data is not of expected type or is a string (which might be HTML)
-  if (!data || typeof data === 'string' || !Object.prototype.hasOwnProperty.call(data, 'pageCount')) {
-    data = demoAuditData;
+  // Check if auditData is not of expected type or is a string (which might be HTML)
+  if (!auditData || typeof auditData === 'string' || !Object.prototype.hasOwnProperty.call(auditData, 'pageCount')) {
+    // Use demo data as fallback
+    data = { ...demoAuditData } as AuditData;
+    
+    // Ensure status is one of the allowed values
+    if (data && data.status && typeof data.status === 'string' && 
+        !['completed', 'failed', 'in-progress'].includes(data.status)) {
+      data.status = 'completed'; // Set to a default allowed value
+    }
+    
     console.warn("Using demo data because audit data is invalid:", typeof auditData);
+  } else {
+    data = { ...auditData } as AuditData;
+    
+    // Ensure status is one of the allowed values
+    if (data && data.status && typeof data.status === 'string' && 
+        !['completed', 'failed', 'in-progress'].includes(data.status)) {
+      data.status = 'completed'; // Set to a default allowed value
+    }
   }
   
   // Make sure we have optimization data for demo purposes

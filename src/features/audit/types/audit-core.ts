@@ -24,6 +24,7 @@ export interface AuditData {
     description: string;
     count: number;
     price: number;
+    pricePerUnit: number;
     totalPrice: number;
     type?: string;
   }[];
