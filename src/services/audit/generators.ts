@@ -1,292 +1,253 @@
 
-import { v4 as uuidv4 } from 'uuid';
+/**
+ * Утилиты для генерирования данных оптимизации
+ */
+
 import { OptimizationItem } from '@/features/audit/types/optimization-types';
-import { CategoryData, AuditData } from '@/types/audit';
 
-/**
- * Generate random audit data for development and testing
- */
-export const generateAuditData = (url?: string): any => {
-  const domain = url ? extractDomain(url) : 'example.com';
-  const pageCount = Math.floor(Math.random() * 100) + 10;
-  const score = Math.floor(Math.random() * 30) + 70;
-  
-  // Generate issues
-  const criticalCount = Math.floor(Math.random() * 3);
-  const importantCount = Math.floor(Math.random() * 6);
-  const minorCount = Math.floor(Math.random() * 10);
-  const opportunitiesCount = Math.floor(Math.random() * 8);
-  const passedCount = Math.floor(Math.random() * 15) + 5;
-  
-  // Create sample issues
-  const criticalIssues = Array(criticalCount).fill(0).map(() => ({
-    id: uuidv4(),
-    title: generateRandomIssueTitle('critical'),
-    description: 'Эта проблема критически влияет на ранжирование вашего сайта в поисковых системах.',
-    impact: 'high',
-    affected: Math.floor(Math.random() * pageCount) + 1,
-    urls: []
-  }));
-  
-  const importantIssues = Array(importantCount).fill(0).map(() => ({
-    id: uuidv4(),
-    title: generateRandomIssueTitle('important'),
-    description: 'Эта проблема значительно влияет на ранжирование вашего сайта.',
-    impact: 'medium',
-    affected: Math.floor(Math.random() * pageCount) + 1,
-    urls: []
-  }));
-  
-  const minorIssues = Array(minorCount).fill(0).map(() => ({
-    id: uuidv4(),
-    title: generateRandomIssueTitle('minor'),
-    description: 'Эта проблема имеет незначительное влияние на SEO вашего сайта.',
-    impact: 'low',
-    affected: Math.floor(Math.random() * pageCount) + 1,
-    urls: []
-  }));
-  
-  const opportunities = Array(opportunitiesCount).fill(0).map(() => ({
-    id: uuidv4(),
-    title: generateRandomOpportunityTitle(),
-    description: 'Это возможность для улучшения SEO вашего сайта.',
-    impact: 'medium',
-    potential: Math.floor(Math.random() * 15) + 5,
-    urls: []
-  }));
-  
-  const passedChecks = Array(passedCount).fill(0).map(() => ({
-    id: uuidv4(),
-    title: generateRandomPassedTitle(),
-    description: 'Эта проверка пройдена успешно.',
-  }));
-  
-  // Generate category data
-  const categories = {
-    seo: generateCategoryData(90),
-    performance: generateCategoryData(75),
-    accessibility: generateCategoryData(85),
-    bestPractices: generateCategoryData(80),
-    security: generateCategoryData(95),
-    mobile: generateCategoryData(70)
+// Генерирует основные задачи для оптимизации
+const generateBaseTasks = () => [
+  'Оптимизация meta-тегов',
+  'Исправление заголовков H1-H6',
+  'Улучшение контента страницы',
+  'Исправление перелинковки',
+  'Оптимизация изображений',
+  'Исправление микроразметки',
+  'Улучшение структуры URL'
+];
+
+// Генерирует задачи для конкретного типа страницы
+const generateTasksForPageType = (pageType: string) => {
+  const baseTasks = generateBaseTasks();
+  const specificTasks = {
+    'main': [
+      'Оптимизация заголовка главной страницы',
+      'Улучшение мета-описания с ключевыми словами',
+      'Оптимизация контента для повышения релевантности',
+    ],
+    'product': [
+      'Добавление микроразметки товара',
+      'Оптимизация описания товара',
+      'Добавление уникальных характеристик',
+      'Оптимизация изображений товара',
+    ],
+    'category': [
+      'Оптимизация заголовка категории',
+      'Улучшение описания категории',
+      'Добавление структурированных данных',
+    ],
+    'blog': [
+      'Оптимизация заголовка статьи',
+      'Улучшение структуры контента',
+      'Добавление внутренних ссылок',
+      'Оптимизация изображений в статье',
+    ],
+    'contact': [
+      'Оптимизация контактной информации',
+      'Добавление микроразметки организации',
+      'Улучшение формы обратной связи',
+    ],
+    'about': [
+      'Оптимизация информации о компании',
+      'Улучшение УТП',
+      'Добавление социальных доказательств',
+    ],
+    'service': [
+      'Улучшение описания услуги',
+      'Оптимизация заголовков услуги',
+      'Добавление призывов к действию',
+    ]
   };
-  
-  return {
-    id: uuidv4(),
-    url: url || 'https://example.com',
-    domain,
-    score,
-    pageCount,
-    scanTime: new Date().toISOString(),
-    issues: {
-      critical: criticalIssues,
-      important: importantIssues,
-      minor: minorIssues,
-      opportunities,
-      passed: passedChecks
-    },
-    categories,
-    // Add data for demo optimization
-    optimizationItems: generateMockOptimizationItems(pageCount),
-    optimizationCost: calculateTotalCost(generateMockOptimizationItems(pageCount))
-  };
-};
 
-/**
- * Generate random issue titles for demo data
- */
-const generateRandomIssueTitle = (severity: string): string => {
-  const criticalTitles = [
-    'Отсутствуют метатеги description',
-    'Несколько H1 на странице',
-    'Неоптимизированные изображения',
-    'Отсутствует файл robots.txt',
-    'Медленная загрузка страниц',
-    'Отсутствует SSL-сертификат',
-    'Дубликаты мета-описаний',
-    'Контент не оптимизирован для мобильных устройств'
-  ];
+  // Выбираем тип страницы из доступных или используем общие задачи
+  const pageTypeKey = pageType.toLowerCase();
+  let availableSpecificTasks: string[] = [];
   
-  const importantTitles = [
-    'Страницы без заголовков',
-    'Неоптимальное использование ключевых слов',
-    'Отсутствующие alt-атрибуты',
-    'Неправильная структура URL',
-    'Отсутствует карта сайта',
-    'Не оптимизирована структура заголовков',
-    'Низкая плотность ключевых слов',
-    'Избыточное использование ключевых слов'
-  ];
-  
-  const minorTitles = [
-    'Отсутствуют теги Open Graph',
-    'Нет микроразметки Schema.org',
-    'Отсутствуют внутренние ссылки',
-    'Недостаточно исходящих ссылок',
-    'Отсутствуют хлебные крошки',
-    'Устаревшие плагины',
-    'Неоптимизированные анкоры ссылок',
-    'Отсутствуют сжатие CSS/JS'
-  ];
-  
-  let titles: string[] = [];
-  
-  if (severity === 'critical') {
-    titles = criticalTitles;
-  } else if (severity === 'important') {
-    titles = importantTitles;
-  } else {
-    titles = minorTitles;
-  }
-  
-  return titles[Math.floor(Math.random() * titles.length)];
-};
-
-/**
- * Generate random opportunity titles
- */
-const generateRandomOpportunityTitle = (): string => {
-  const titles = [
-    'Оптимизация контента для улучшения позиций',
-    'Улучшение структуры сайта',
-    'Создание качественных обратных ссылок',
-    'Улучшение скорости загрузки страниц',
-    'Оптимизация мета-данных',
-    'Внедрение структурированных данных',
-    'Повышение мобильной оптимизации',
-    'Создание более качественного контента',
-    'Улучшение пользовательского опыта'
-  ];
-  
-  return titles[Math.floor(Math.random() * titles.length)];
-};
-
-/**
- * Generate random passed check titles
- */
-const generateRandomPassedTitle = (): string => {
-  const titles = [
-    'Корректное использование заголовков H1',
-    'Правильная реализация мета-тегов',
-    'Оптимизированные URL',
-    'Корректные редиректы',
-    'Оптимизированный размер контента',
-    'Правильная структура сайта',
-    'Безопасное соединение (SSL)',
-    'Отсутствие большого количества исходящих ссылок',
-    'Корректная индексация сайта'
-  ];
-  
-  return titles[Math.floor(Math.random() * titles.length)];
-};
-
-/**
- * Extract domain from URL
- */
-const extractDomain = (url: string): string => {
-  try {
-    // Try to parse the URL
-    const urlObj = new URL(url.startsWith('http') ? url : `https://${url}`);
-    return urlObj.hostname;
-  } catch (e) {
-    // If parsing fails, just return the URL as is or extract domain with regex
-    const domainMatch = url.match(/^(?:https?:\/\/)?(?:www\.)?([^\/]+)/i);
-    return domainMatch ? domainMatch[1] : url;
-  }
-};
-
-/**
- * Generate mock category data for audit
- */
-function generateCategoryData(score: number): CategoryData {
-  return {
-    score,
-    passed: Math.floor(Math.random() * 10) + 5,
-    warning: Math.floor(Math.random() * 5),
-    failed: Math.floor(Math.random() * 3),
-    items: []
-  };
-}
-
-/**
- * Generate mock optimization items based on page count
- */
-export function generateMockOptimizationItems(pageCount: number): OptimizationItem[] {
-  const baseCost = 2500;
-  const perPageCost = pageCount * 10;
-  
-  const items: OptimizationItem[] = [
-    {
-      name: 'Базовый аудит SEO',
-      description: 'Первичный аудит и анализ сайта',
-      count: 1,
-      price: baseCost,
-      pricePerUnit: baseCost,
-      totalPrice: baseCost,
-      type: 'base'
-    },
-    {
-      name: 'Оптимизация метатегов',
-      description: `Оптимизация метатегов для ${pageCount} страниц`,
-      count: pageCount,
-      price: perPageCost,
-      pricePerUnit: 10,
-      totalPrice: perPageCost,
-      type: 'content'
-    },
-    {
-      name: 'Внутренняя оптимизация',
-      description: 'Оптимизация структуры и внутренних ссылок',
-      count: 1,
-      price: 1500,
-      pricePerUnit: 1500,
-      totalPrice: 1500,
-      type: 'technical'
-    },
-    {
-      name: 'Оптимизация скорости',
-      description: 'Ускорение загрузки страниц',
-      count: 1,
-      price: 2000,
-      pricePerUnit: 2000,
-      totalPrice: 2000,
-      type: 'technical'
-    },
-    {
-      name: 'Скидка за объем',
-      description: 'Скидка при заказе комплексной оптимизации',
-      count: 1,
-      price: -1000,
-      pricePerUnit: -1000,
-      totalPrice: -1000,
-      type: 'discount'
-    },
-    {
-      name: 'Гарантия результата',
-      description: 'Гарантируем улучшение позиций в течение 30 дней',
-      count: 1,
-      price: 0,
-      pricePerUnit: 0,
-      totalPrice: 0,
-      type: 'guarantee'
-    },
-    {
-      name: 'Дополнительные услуги',
-      description: 'Прочие услуги по оптимизации',
-      count: 1,
-      price: 1000,
-      pricePerUnit: 1000,
-      totalPrice: 1000,
-      type: 'other'
+  // Определяем тип страницы по ключевым словам
+  for (const [type, tasks] of Object.entries(specificTasks)) {
+    if (pageTypeKey.includes(type)) {
+      availableSpecificTasks = [...availableSpecificTasks, ...tasks];
+      break;
     }
+  }
+  
+  // Если не нашли специфичных задач, используем базовые
+  if (availableSpecificTasks.length === 0) {
+    availableSpecificTasks = specificTasks.main;
+  }
+
+  // Выбираем от 2 до 4 базовых задачи
+  const selectedBaseTasks = baseTasks
+    .sort(() => Math.random() - 0.5)
+    .slice(0, Math.floor(Math.random() * 3) + 2);
+    
+  // Выбираем от 1 до 3 специфичных задачи
+  const selectedSpecificTasks = availableSpecificTasks
+    .sort(() => Math.random() - 0.5)
+    .slice(0, Math.floor(Math.random() * 3) + 1);
+  
+  // Объединяем и возвращаем задачи
+  return [...selectedBaseTasks, ...selectedSpecificTasks];
+};
+
+// Генерирует случайный тип приоритета
+const generatePriority = (): 'high' | 'medium' | 'low' => {
+  const priorities = ['high', 'medium', 'low'];
+  return priorities[Math.floor(Math.random() * priorities.length)] as 'high' | 'medium' | 'low';
+};
+
+// Генерирует примерную стоимость работ в рублях
+const generateCost = (tasks: string[], priority: 'high' | 'medium' | 'low'): number => {
+  const baseCost = 1500; // Базовая стоимость оптимизации страницы
+  const taskCost = tasks.length * 300; // Стоимость за каждую задачу
+  
+  const priorityMultiplier = {
+    'high': 1.5,
+    'medium': 1.0,
+    'low': 0.7
+  };
+  
+  return Math.round((baseCost + taskCost) * priorityMultiplier[priority]);
+};
+
+// Генерирует URL страницы для демо
+const generatePageUrl = (index: number, totalPages: number): string => {
+  // Определяем типы страниц сайта
+  const pageTypes = [
+    { type: 'main', url: '/' },
+    { type: 'category', url: '/category/' },
+    { type: 'product', url: '/product/' },
+    { type: 'blog', url: '/blog/' },
+    { type: 'service', url: '/service/' },
+    { type: 'about', url: '/about' },
+    { type: 'contact', url: '/contact' },
   ];
+  
+  if (index === 0) {
+    return pageTypes[0].url; // Главная страница
+  }
+  
+  if (index === totalPages - 1) {
+    return pageTypes[6].url; // Контактная страница
+  }
+  
+  if (index === totalPages - 2) {
+    return pageTypes[5].url; // О компании
+  }
+  
+  // Для других страниц выбираем случайный тип
+  const randomPageType = pageTypes[Math.floor(Math.random() * (pageTypes.length - 3)) + 1];
+  const randomId = Math.floor(Math.random() * 1000) + 1;
+  
+  if (randomPageType.type === 'blog') {
+    return `${randomPageType.url}post-${randomId}-about-something`;
+  }
+  
+  if (randomPageType.type === 'category') {
+    const categories = ['electronics', 'clothes', 'furniture', 'books', 'toys'];
+    const randomCategory = categories[Math.floor(Math.random() * categories.length)];
+    return `${randomPageType.url}${randomCategory}`;
+  }
+  
+  if (randomPageType.type === 'product') {
+    const products = ['iphone', 'laptop', 'tv', 'sofa', 'table', 'book'];
+    const randomProduct = products[Math.floor(Math.random() * products.length)];
+    return `${randomPageType.url}${randomProduct}-${randomId}`;
+  }
+  
+  if (randomPageType.type === 'service') {
+    const services = ['delivery', 'installation', 'repair', 'design', 'consulting'];
+    const randomService = services[Math.floor(Math.random() * services.length)];
+    return `${randomPageType.url}${randomService}`;
+  }
+  
+  return `${randomPageType.url}${randomId}`;
+};
+
+// Генерирует категорию для задачи оптимизации
+const generateCategory = (priority: 'high' | 'medium' | 'low', pageUrl: string): string => {
+  const categories = {
+    'high': ['Критические ошибки', 'Технические проблемы', 'SEO-блокеры'],
+    'medium': ['Контент', 'Метаданные', 'Структура', 'Перелинковка'],
+    'low': ['Улучшения', 'Рекомендации', 'Минорные проблемы']
+  };
+  
+  // Определяем категорию по URL страницы
+  if (pageUrl === '/') {
+    return 'Главная страница';
+  }
+  
+  if (pageUrl.includes('product')) {
+    return 'Товарная страница';
+  }
+  
+  if (pageUrl.includes('blog')) {
+    return 'Блог';
+  }
+  
+  if (pageUrl.includes('category')) {
+    return 'Категория';
+  }
+  
+  // Если не определили по URL, используем приоритет
+  const categoriesForPriority = categories[priority];
+  return categoriesForPriority[Math.floor(Math.random() * categoriesForPriority.length)];
+};
+
+/**
+ * Генерирует элементы оптимизации для демо
+ */
+export const generateMockOptimizationItems = (pageCount: number = 20): OptimizationItem[] => {
+  const items: OptimizationItem[] = [];
+  
+  for (let i = 0; i < pageCount; i++) {
+    const pageUrl = generatePageUrl(i, pageCount);
+    const priority = generatePriority();
+    const tasks = generateTasksForPageType(pageUrl);
+    const cost = generateCost(tasks, priority);
+    const category = generateCategory(priority, pageUrl);
+    
+    items.push({
+      id: `optimization-${i}`,
+      page: pageUrl,
+      tasks,
+      cost,
+      priority,
+      category
+    });
+  }
   
   return items;
-}
+};
 
 /**
- * Calculate total cost from optimization items
+ * Рассчитывает общую стоимость оптимизации
  */
-export function calculateTotalCost(items: OptimizationItem[]): number {
-  return items.reduce((total, item) => total + item.totalPrice, 0);
-}
+export const calculateTotalCost = (items: OptimizationItem[]): number => {
+  let totalCost = items.reduce((sum, item) => sum + item.cost, 0);
+  
+  // Применяем скидку для больших проектов
+  if (items.length > 30) {
+    totalCost = Math.round(totalCost * 0.85); // 15% скидка
+  } else if (items.length > 15) {
+    totalCost = Math.round(totalCost * 0.9); // 10% скидка
+  } else if (items.length > 5) {
+    totalCost = Math.round(totalCost * 0.95); // 5% скидка
+  }
+  
+  return totalCost;
+};
+
+/**
+ * Генерирует заглушку данных оптимизации для демо
+ */
+export const generateMockOptimizationData = (pageCount: number = 20) => {
+  const items = generateMockOptimizationItems(pageCount);
+  const totalCost = calculateTotalCost(items);
+  
+  return {
+    items,
+    totalCost,
+    pageCount
+  };
+};

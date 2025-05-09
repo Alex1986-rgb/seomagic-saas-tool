@@ -8,6 +8,7 @@ import { useAuditContext } from '@/contexts/AuditContext';
 import AuditOverview from './AuditOverview';
 import AuditIssues from './AuditIssues';
 import OptimizationSection from './OptimizationSection';
+import OptimizationSummary from './OptimizationSummary';
 import { AlertCircle, ArrowRight } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from '@/components/ui/button';
@@ -223,10 +224,15 @@ const SiteAuditContent: React.FC<SiteAuditContentProps> = ({ url }) => {
         
         <TabsContent value="optimization">
           {data && (
-            <OptimizationSection 
-              url={url} 
-              auditData={data} 
-            />
+            <>
+              <OptimizationSection 
+                url={url} 
+                auditData={data} 
+              />
+              <div className="mt-8">
+                <OptimizationSummary auditData={data} />
+              </div>
+            </>
           )}
         </TabsContent>
       </Tabs>

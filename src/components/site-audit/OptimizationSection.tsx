@@ -1,684 +1,609 @@
 
-import React, { useState, useEffect } from 'react';
-import { motion } from "framer-motion";
+import React, { useState } from 'react';
+import { motion } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { 
-  AlertTriangle, 
-  CheckCircle, 
-  CreditCard, 
-  Download, 
-  FileText, 
-  ShoppingCart, 
-  ArrowRightCircle,
-  AlertCircle,
-  Lightbulb
+  Download, Settings, FileText, CheckCircle2, AlertCircle, RefreshCw, ChevronDown, ChevronUp
 } from 'lucide-react';
-import { useOptimization } from '@/features/audit/hooks/useOptimization';
+import OptimizationProgress from '@/components/seo-optimization/OptimizationProgress';
+import OptimizationDemo from '@/components/audit/results/components/OptimizationDemo';
+import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
+import { AuditData } from '@/types/audit';
+import { OptimizationItem } from '@/features/audit/types/optimization-types';
+
+// Import generator functions for mock data if needed
+import { generateMockOptimizationItems, calculateTotalCost } from '@/services/audit/generators';
 
 interface OptimizationSectionProps {
   url: string;
-  auditData: any;
+  auditData: AuditData;
 }
+
+const seoPromptTemplates = [
+  {
+    id: 'standard',
+    name: 'Стандартный',
+    prompt: 'Оптимизировать мета-теги, заголовки и содержание страниц для повышения SEO-рейтинга. Исправить технические ошибки и улучшить читабельность контента.'
+  },
+  {
+    id: 'ecommerce',
+    name: 'Для интернет-магазина',
+    prompt: 'Оптимизировать страницы товаров, категорий и описания для улучшения конверсии и SEO. Добавить микроразметку Schema.org и улучшить мета-теги с ориентацией на коммерческие запросы.'
+  },
+  {
+    id: 'blog',
+    name: 'Для блога',
+    prompt: 'Улучшить структуру контента, заголовки, внутреннюю перелинковку и мета-теги для повышения органического трафика. Оптимизировать для ответов на вопросы.'
+  },
+  {
+    id: 'corporate',
+    name: 'Для корпоративного сайта',
+    prompt: 'Оптимизировать представление услуг, кейсов и информации о компании. Улучшить авторитетность и профессиональную лексику, сохраняя строгий деловой стиль.'
+  }
+];
 
 const OptimizationSection: React.FC<OptimizationSectionProps> = ({ url, auditData }) => {
   const { toast } = useToast();
-  const [paymentStep, setPaymentStep] = useState<'estimate' | 'payment' | 'confirmation' | 'completed'>('estimate');
-  const [isLoading, setIsLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState<string>("pricing");
+  const [showDetails, setShowDetails] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [isOptimizing, setIsOptimizing] = useState(false);
+  const [isOptimized, setIsOptimized] = useState(false);
+  const [paymentStatus, setPaymentStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const [optimizationProgress, setOptimizationProgress] = useState(0);
-  const [activeTab, setActiveTab] = useState('issues');
-  
-  const {
-    optimizationCost,
-    optimizationItems,
-    isOptimized,
-    downloadOptimizedSite,
-    generatePdfReportFile,
-    setOptimizationCost,
-    setOptimizationItems
-  } = useOptimization(url);
-
-  // Функция для вычисления количества проблем по категориям
-  const countIssues = () => {
-    if (!auditData || !auditData.issues) return { critical: 0, important: 0, minor: 0, opportunities: 0 };
-    
-    return {
-      critical: auditData.issues.critical?.length || 0,
-      important: auditData.issues.important?.length || 0,
-      minor: auditData.issues.minor?.length || 0,
-      opportunities: auditData.issues.opportunities?.length || 0
+  const [seoPrompt, setSeoPrompt] = useState(seoPromptTemplates[0].prompt);
+  const [selectedPromptTemplate, setSelectedPromptTemplate] = useState(seoPromptTemplates[0].id);
+  const [optimizationResult, setOptimizationResult] = useState<{
+    beforeScore: number;
+    afterScore: number;
+    demoPage?: {
+      title: string;
+      content: string;
+      optimized: {
+        title: string;
+        content: string;
+        meta?: {
+          description?: string;
+          keywords?: string;
+        };
+      };
+      meta?: {
+        description?: string;
+        keywords?: string;
+      };
     };
-  };
+  } | null>(null);
   
-  const issueCount = countIssues();
-  const totalIssues = issueCount.critical + issueCount.important + issueCount.minor + issueCount.opportunities;
+  // Generate optimization items and cost if they don't exist in audit data
+  const optimizationItems: OptimizationItem[] = auditData.optimizationItems || 
+    generateMockOptimizationItems(auditData.pageCount || 15);
   
-  // Расчет стоимости оптимизации на основе количества проблем и страниц
-  useEffect(() => {
-    if (!optimizationCost) {
-      // Базовая стоимость плюс стоимость по каждой категории проблем
-      const baseCost = 5000;
-      const criticalCost = issueCount.critical * 1500;
-      const importantCost = issueCount.important * 800;
-      const minorCost = issueCount.minor * 300;
-      const opportunitiesCost = issueCount.opportunities * 500;
-      
-      const pageCount = auditData.pageCount || 1;
-      const pageFactor = Math.min(1.5, 1 + (pageCount / 100)); // Увеличение до максимум 50% в зависимости от количества страниц
-      
-      const totalCost = Math.round((baseCost + criticalCost + importantCost + minorCost + opportunitiesCost) * pageFactor);
-      
-      setOptimizationCost(totalCost);
-      
-      // Создаем элементы оптимизации для отображения в таблице
-      const items = [
-        {
-          name: "Базовая оптимизация",
-          description: `Базовая SEO-оптимизация сайта`,
-          count: 1,
-          price: baseCost,
-          pricePerUnit: baseCost,
-          totalPrice: baseCost,
-          type: "base"
-        },
-        {
-          name: "Критические проблемы",
-          description: `Исправление критических SEO-проблем`,
-          count: issueCount.critical,
-          price: 1500,
-          pricePerUnit: 1500,
-          totalPrice: criticalCost,
-          type: "critical"
-        },
-        {
-          name: "Важные проблемы",
-          description: `Исправление важных SEO-проблем`,
-          count: issueCount.important,
-          price: 800,
-          pricePerUnit: 800,
-          totalPrice: importantCost,
-          type: "important"
-        },
-        {
-          name: "Незначительные проблемы",
-          description: `Исправление незначительных SEO-проблем`,
-          count: issueCount.minor,
-          price: 300,
-          pricePerUnit: 300,
-          totalPrice: minorCost,
-          type: "minor"
-        },
-        {
-          name: "Возможности улучшения",
-          description: `Реализация возможностей улучшения SEO`,
-          count: issueCount.opportunities,
-          price: 500,
-          pricePerUnit: 500,
-          totalPrice: opportunitiesCost,
-          type: "opportunity"
-        }
-      ];
-      
-      setOptimizationItems(items);
+  const optimizationCost = auditData.optimizationCost || 
+    calculateTotalCost(optimizationItems);
+  
+  const pageCount = auditData.pageCount || 15;
+  
+  // Calculate average cost per page
+  const costPerPage = pageCount > 0 ? Math.round(optimizationCost / pageCount) : 0;
+  
+  const handlePromptTemplateChange = (value: string) => {
+    setSelectedPromptTemplate(value);
+    const template = seoPromptTemplates.find(t => t.id === value);
+    if (template) {
+      setSeoPrompt(template.prompt);
     }
-  }, [auditData, issueCount, setOptimizationCost, setOptimizationItems, optimizationCost]);
-
-  // Обработчик для процесса оплаты
-  const handlePayment = () => {
-    setIsLoading(true);
-    
-    // Имитируем процесс оплаты
-    setTimeout(() => {
-      setIsLoading(false);
-      setPaymentStep('confirmation');
+  };
+  
+  const handleOptimize = async () => {
+    try {
+      setIsProcessing(true);
+      
       toast({
-        title: "Оплата успешно произведена",
-        description: "Вы можете запустить процесс оптимизации",
+        title: "Обработка платежа",
+        description: "Пожалуйста, подождите...",
       });
-    }, 2000);
+      
+      // Simulate payment process
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      // Set payment as successful
+      setPaymentStatus('success');
+      
+      toast({
+        title: "Оплата прошла успешно",
+        description: "Начинаем процесс оптимизации сайта",
+      });
+      
+      // Move to content tab after successful payment
+      setActiveTab("content");
+      
+    } catch (error) {
+      console.error('Payment error:', error);
+      setPaymentStatus('error');
+      
+      toast({
+        title: "Ошибка оплаты",
+        description: "Не удалось провести оплату. Пожалуйста, попробуйте снова.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsProcessing(false);
+    }
   };
-
-  // Обработчик для запуска процесса оптимизации
-  const handleStartOptimization = () => {
-    setPaymentStep('completed');
-    setIsLoading(true);
+  
+  const handleStartOptimization = async () => {
+    if (!seoPrompt.trim()) {
+      toast({
+        title: "Введите промпт",
+        description: "Пожалуйста, введите промпт для оптимизации контента",
+        variant: "destructive",
+      });
+      return;
+    }
     
-    // Имитируем процесс оптимизации с прогрессом
-    const interval = setInterval(() => {
-      setOptimizationProgress(prev => {
-        const newValue = prev + Math.random() * 5;
-        if (newValue >= 100) {
-          clearInterval(interval);
-          setIsLoading(false);
-          toast({
-            title: "Оптимизация завершена",
-            description: "Сайт успешно оптимизирован!",
-          });
-          return 100;
-        }
-        return newValue;
+    try {
+      setIsOptimizing(true);
+      setOptimizationProgress(0);
+      
+      toast({
+        title: "Оптимизация начата",
+        description: "Процесс оптимизации сайта запущен",
       });
-    }, 300);
+      
+      // Simulate optimization process with progress updates
+      const interval = setInterval(() => {
+        setOptimizationProgress(prev => {
+          const newProgress = prev + (Math.random() * 2);
+          if (newProgress >= 100) {
+            clearInterval(interval);
+            
+            // Create demo optimization result when complete
+            setTimeout(() => {
+              setOptimizationResult({
+                beforeScore: 65,
+                afterScore: 92,
+                demoPage: {
+                  title: 'Главная страница',
+                  content: 'Наша компания предлагает широкий ассортимент товаров и услуг. Мы работаем на рынке более 10 лет и имеем большой опыт в данной области. Свяжитесь с нами для получения дополнительной информации.',
+                  meta: {
+                    description: 'Компания предлагает товары и услуги в Москве',
+                    keywords: 'товары, услуги, компания'
+                  },
+                  optimized: {
+                    title: 'Качественные товары и профессиональные услуги | Ваш надежный партнер с 2013 года',
+                    content: 'ООО "Компания" предлагает широкий ассортимент высококачественных товаров и профессиональных услуг для бизнеса и частных лиц. За более чем 10 лет работы на рынке мы обслужили свыше 5000 клиентов и реализовали более 200 крупных проектов. Наши специалисты имеют сертификаты и регулярно проходят обучение для повышения квалификации. Свяжитесь с нами сегодня через форму обратной связи или по телефону +7 (XXX) XXX-XX-XX, чтобы получить бесплатную консультацию по вашему проекту.',
+                    meta: {
+                      description: 'Ведущая компания по предоставлению высококачественных товаров и профессиональных услуг в Москве с 2013 года. Индивидуальный подход, выгодные цены, гарантия качества. Звоните ☎ +7 (XXX) XXX-XX-XX',
+                      keywords: 'качественные товары москва, профессиональные услуги, надежная компания, опытные специалисты, индивидуальный подход, гарантия качества'
+                    }
+                  }
+                }
+              });
+              
+              setIsOptimized(true);
+              setActiveTab("results");
+              
+              toast({
+                title: "Оптимизация завершена",
+                description: "Сайт был успешно оптимизирован для SEO",
+              });
+            }, 1500);
+            
+            return 100;
+          }
+          return newProgress;
+        });
+      }, 200);
+      
+    } catch (error) {
+      console.error('Optimization error:', error);
+      
+      toast({
+        title: "Ошибка оптимизации",
+        description: "Не удалось оптимизировать сайт. Пожалуйста, попробуйте снова.",
+        variant: "destructive",
+      });
+    }
   };
-
-  // Форматирование цены
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('ru-RU', { style: 'currency', currency: 'RUB' }).format(amount);
+  
+  const handleDownloadOptimizedSite = async () => {
+    try {
+      toast({
+        title: "Подготовка архива",
+        description: "Пожалуйста, подождите...",
+      });
+      
+      // Simulate download process
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      toast({
+        title: "Готово",
+        description: "Оптимизированный сайт скачан",
+      });
+    } catch (error) {
+      console.error('Download error:', error);
+      
+      toast({
+        title: "Ошибка загрузки",
+        description: "Не удалось скачать оптимизированный сайт",
+        variant: "destructive",
+      });
+    }
+  };
+  
+  const formatNumber = (num: number) => {
+    return new Intl.NumberFormat('ru-RU').format(num);
   };
 
   return (
-    <div className="space-y-8">
-      {paymentStep === 'estimate' && (
-        <motion.div 
-          className="space-y-8"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-        >
-          <Card className="bg-card/90 backdrop-blur-sm border-border">
+    <div className="space-y-6">
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
+        <TabsList className="grid grid-cols-3">
+          <TabsTrigger value="pricing">Стоимость и оплата</TabsTrigger>
+          <TabsTrigger value="content" disabled={paymentStatus !== 'success' && !isOptimized}>Оптимизация контента</TabsTrigger>
+          <TabsTrigger value="results" disabled={!isOptimized}>Результаты</TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="pricing" className="pt-4 space-y-4">
+          <Card>
             <CardHeader>
-              <CardTitle className="text-2xl">Оптимизация сайта {url}</CardTitle>
+              <CardTitle className="flex items-center">
+                <Settings className="mr-2 h-5 w-5" />
+                Оптимизация сайта AI-технологиями
+              </CardTitle>
               <CardDescription>
-                На основе проведенного аудита мы предлагаем следующую оптимизацию:
+                Автоматическое исправление SEO-проблем и улучшение контента с помощью искусственного интеллекта
               </CardDescription>
             </CardHeader>
-            <CardContent>
-              <Tabs defaultValue={activeTab} onValueChange={setActiveTab} className="w-full">
-                <TabsList className="grid grid-cols-2">
-                  <TabsTrigger value="issues">Проблемы и стоимость</TabsTrigger>
-                  <TabsTrigger value="details">Детали оптимизации</TabsTrigger>
-                </TabsList>
+            <CardContent className="space-y-4">
+              <div className="border border-primary/20 rounded-lg p-4 bg-card/50">
+                <h3 className="text-lg font-medium mb-2">Смета работ по оптимизации</h3>
                 
-                <TabsContent value="issues" className="space-y-4 pt-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                    <Card className="bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-900/50">
-                      <CardContent className="pt-6">
-                        <div className="flex items-center space-x-2">
-                          <div className="p-2 bg-red-100 dark:bg-red-900/30 rounded-full">
-                            <AlertTriangle className="h-5 w-5 text-red-600 dark:text-red-400" />
-                          </div>
-                          <div>
-                            <p className="text-sm text-muted-foreground">Критические проблемы</p>
-                            <p className="text-2xl font-bold">{issueCount.critical}</p>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                    
-                    <Card className="bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-900/50">
-                      <CardContent className="pt-6">
-                        <div className="flex items-center space-x-2">
-                          <div className="p-2 bg-amber-100 dark:bg-amber-900/30 rounded-full">
-                            <AlertCircle className="h-5 w-5 text-amber-600 dark:text-amber-400" />
-                          </div>
-                          <div>
-                            <p className="text-sm text-muted-foreground">Важные проблемы</p>
-                            <p className="text-2xl font-bold">{issueCount.important}</p>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                    
-                    <Card className="bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-900/50">
-                      <CardContent className="pt-6">
-                        <div className="flex items-center space-x-2">
-                          <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-full">
-                            <AlertCircle className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-                          </div>
-                          <div>
-                            <p className="text-sm text-muted-foreground">Незначительные</p>
-                            <p className="text-2xl font-bold">{issueCount.minor}</p>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                    
-                    <Card className="bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-900/50">
-                      <CardContent className="pt-6">
-                        <div className="flex items-center space-x-2">
-                          <div className="p-2 bg-green-100 dark:bg-green-900/30 rounded-full">
-                            <Lightbulb className="h-5 w-5 text-green-600 dark:text-green-400" />
-                          </div>
-                          <div>
-                            <p className="text-sm text-muted-foreground">Возможности</p>
-                            <p className="text-2xl font-bold">{issueCount.opportunities}</p>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
+                  <div className="bg-primary/10 p-3 rounded-lg">
+                    <div className="text-sm text-muted-foreground">Количество страниц</div>
+                    <div className="text-xl font-semibold">{formatNumber(pageCount)}</div>
                   </div>
                   
-                  <div className="overflow-hidden">
-                    <table className="min-w-full divide-y divide-border">
-                      <thead className="bg-muted/50">
-                        <tr>
-                          <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Категория</th>
-                          <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Описание</th>
-                          <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Количество</th>
-                          <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Цена за шт.</th>
-                          <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Сумма</th>
+                  <div className="bg-primary/10 p-3 rounded-lg">
+                    <div className="text-sm text-muted-foreground">Стоимость за страницу</div>
+                    <div className="text-xl font-semibold">{formatNumber(costPerPage)} ₽</div>
+                    <div className="text-xs text-muted-foreground">(среднее значение)</div>
+                  </div>
+                  
+                  <div className="bg-primary/10 p-3 rounded-lg">
+                    <div className="text-sm text-muted-foreground">Итоговая стоимость</div>
+                    <div className="text-xl font-semibold">{formatNumber(optimizationCost)} ₽</div>
+                  </div>
+                </div>
+                
+                <p className="text-sm text-muted-foreground mb-4">
+                  Стоимость включает все работы по техническим и контентным улучшениям: исправление ошибок, 
+                  оптимизацию мета-тегов, исправление ссылок, оптимизацию изображений, улучшение структуры 
+                  контента и заголовков, оптимизацию текстов для конверсии.
+                </p>
+                
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowDetails(!showDetails)}
+                  className="mb-4 text-sm"
+                >
+                  {showDetails ? (
+                    <>
+                      <ChevronUp className="h-4 w-4 mr-1" /> Скрыть детали
+                    </>
+                  ) : (
+                    <>
+                      <ChevronDown className="h-4 w-4 mr-1" /> Показать детали
+                    </>
+                  )}
+                </Button>
+                
+                {showDetails && optimizationItems && optimizationItems.length > 0 && (
+                  <div className="mt-4 mb-6 max-h-[400px] overflow-y-auto">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="border-b">
+                          <th className="text-left p-2">Страница</th>
+                          <th className="text-left p-2">Задачи</th>
+                          <th className="text-right p-2">Стоимость</th>
                         </tr>
                       </thead>
-                      <tbody className="bg-card divide-y divide-border">
-                        {optimizationItems?.map((item, index) => (
-                          <tr key={index} className="hover:bg-muted/50 transition-colors">
-                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-primary">{item.name}</td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground">{item.description}</td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground">{item.count}</td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground">{formatCurrency(item.pricePerUnit)}</td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-primary">{formatCurrency(item.totalPrice)}</td>
+                      <tbody>
+                        {optimizationItems.map((item) => (
+                          <tr key={item.id} className="border-b">
+                            <td className="p-2 align-top">
+                              <div className="truncate max-w-[150px]" title={item.page}>
+                                {item.page}
+                              </div>
+                            </td>
+                            <td className="p-2">
+                              <ul className="list-disc list-inside">
+                                {item.tasks.map((task, idx) => (
+                                  <li key={idx} className="truncate text-xs">{task}</li>
+                                ))}
+                              </ul>
+                            </td>
+                            <td className="p-2 text-right">{formatNumber(item.cost)} ₽</td>
                           </tr>
                         ))}
-                        <tr className="bg-muted/20">
-                          <td colSpan={4} className="px-6 py-4 whitespace-nowrap text-sm font-bold text-right">Общая стоимость:</td>
-                          <td className="px-6 py-4 whitespace-nowrap text-lg font-bold text-primary">{formatCurrency(optimizationCost || 0)}</td>
-                        </tr>
                       </tbody>
                     </table>
                   </div>
-                </TabsContent>
+                )}
                 
-                <TabsContent value="details" className="space-y-6 pt-4">
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Что включает оптимизация?</CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      <div className="flex items-start space-x-2">
-                        <CheckCircle className="h-5 w-5 text-green-600 mt-0.5" />
-                        <div>
-                          <p className="font-medium">Исправление всех проблем</p>
-                          <p className="text-sm text-muted-foreground">Мы устраним обнаруженные при аудите проблемы, влияющие на SEO-показатели сайта</p>
-                        </div>
-                      </div>
-                      
-                      <div className="flex items-start space-x-2">
-                        <CheckCircle className="h-5 w-5 text-green-600 mt-0.5" />
-                        <div>
-                          <p className="font-medium">Оптимизация контента</p>
-                          <p className="text-sm text-muted-foreground">Оптимизация текстов, мета-тегов и заголовков для лучшего ранжирования</p>
-                        </div>
-                      </div>
-                      
-                      <div className="flex items-start space-x-2">
-                        <CheckCircle className="h-5 w-5 text-green-600 mt-0.5" />
-                        <div>
-                          <p className="font-medium">Техническая оптимизация</p>
-                          <p className="text-sm text-muted-foreground">Улучшение скорости загрузки, мобильной версии и технических аспектов сайта</p>
-                        </div>
-                      </div>
-                      
-                      <div className="flex items-start space-x-2">
-                        <CheckCircle className="h-5 w-5 text-green-600 mt-0.5" />
-                        <div>
-                          <p className="font-medium">Оптимизированная версия сайта</p>
-                          <p className="text-sm text-muted-foreground">Вы получите полностью оптимизированную версию вашего сайта</p>
-                        </div>
-                      </div>
-                      
-                      <div className="flex items-start space-x-2">
-                        <CheckCircle className="h-5 w-5 text-green-600 mt-0.5" />
-                        <div>
-                          <p className="font-medium">Детальный отчет</p>
-                          <p className="text-sm text-muted-foreground">PDF-отчет с подробностями оптимизации и рекомендациями</p>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                  
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Ожидаемые результаты</CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      <div className="space-y-2">
-                        <div className="flex justify-between items-center">
-                          <span>SEO рейтинг</span>
-                          <div className="flex items-center space-x-2">
-                            <span className="text-muted-foreground">{auditData?.score || 0}/100</span>
-                            <ArrowRightCircle className="h-4 w-4 mx-2 text-primary" />
-                            <span className="font-medium text-primary">{Math.min(100, Math.floor((auditData?.score || 0) * 1.4))}/100</span>
-                          </div>
-                        </div>
-                        <Progress value={auditData?.score || 0} max={100} className="h-2 bg-muted" />
-                        <Progress value={Math.min(100, Math.floor((auditData?.score || 0) * 1.4))} max={100} className="h-2 bg-primary" />
-                      </div>
-                      
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4">
-                        <div className="flex flex-col items-center">
-                          <p className="text-lg font-medium">Улучшение позиций</p>
-                          <p className="text-3xl font-bold text-primary">↑40%</p>
-                          <p className="text-sm text-muted-foreground text-center">Среднее улучшение позиций в поисковых системах</p>
-                        </div>
-                        
-                        <div className="flex flex-col items-center">
-                          <p className="text-lg font-medium">Рост трафика</p>
-                          <p className="text-3xl font-bold text-primary">↑65%</p>
-                          <p className="text-sm text-muted-foreground text-center">Прогнозируемый рост органического трафика</p>
-                        </div>
-                        
-                        <div className="flex flex-col items-center">
-                          <p className="text-lg font-medium">Конверсия</p>
-                          <p className="text-3xl font-bold text-primary">↑25%</p>
-                          <p className="text-sm text-muted-foreground text-center">Потенциальный рост конверсии сайта</p>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </TabsContent>
-              </Tabs>
-              
-              <div className="mt-8 flex justify-center">
-                <Button 
-                  className="w-full max-w-md text-lg py-6" 
-                  onClick={() => setPaymentStep('payment')}
-                >
-                  <ShoppingCart className="mr-2 h-5 w-5" /> 
-                  Заказать оптимизацию за {formatCurrency(optimizationCost || 0)}
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </motion.div>
-      )}
-      
-      {paymentStep === 'payment' && (
-        <motion.div
-          className="space-y-8"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-        >
-          <Card className="max-w-2xl mx-auto">
-            <CardHeader>
-              <CardTitle>Оформление заказа</CardTitle>
-              <CardDescription>
-                Заполните данные для оплаты оптимизации сайта {url}
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="space-y-4">
-                <div className="grid grid-cols-1 gap-4">
-                  <div className="space-y-2">
-                    <label htmlFor="email" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">Email</label>
-                    <input
-                      id="email"
-                      type="email"
-                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                      placeholder="your@email.com"
-                    />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <label htmlFor="name" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">Имя</label>
-                    <input
-                      id="name"
-                      type="text"
-                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                      placeholder="Имя Фамилия"
-                    />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <label htmlFor="phone" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">Телефон</label>
-                    <input
-                      id="phone"
-                      type="tel"
-                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                      placeholder="+7 (XXX) XXX-XX-XX"
-                    />
-                  </div>
-                </div>
-                
-                <div className="pt-4 border-t border-border">
-                  <h3 className="text-lg font-medium mb-2">Детали оплаты</h3>
-                  <div className="space-y-4">
-                    <div className="space-y-2">
-                      <label htmlFor="card" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">Номер карты</label>
-                      <input
-                        id="card"
-                        type="text"
-                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                        placeholder="XXXX XXXX XXXX XXXX"
-                      />
-                    </div>
-                    
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <label htmlFor="expiry" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">Срок действия</label>
-                        <input
-                          id="expiry"
-                          type="text"
-                          className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                          placeholder="MM/YY"
-                        />
-                      </div>
-                      
-                      <div className="space-y-2">
-                        <label htmlFor="cvv" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">CVV</label>
-                        <input
-                          id="cvv"
-                          type="text"
-                          className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                          placeholder="XXX"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="flex items-center justify-between pt-4 border-t border-border">
-                  <div>
-                    <p className="font-medium">Итого к оплате:</p>
-                    <p className="text-2xl font-bold text-primary">{formatCurrency(optimizationCost || 0)}</p>
-                  </div>
-                  
-                  <Button 
-                    onClick={handlePayment} 
-                    disabled={isLoading} 
-                    className="px-6"
-                  >
-                    {isLoading ? (
-                      <>Обработка...</>
-                    ) : (
-                      <>
-                        <CreditCard className="mr-2 h-4 w-4" /> 
-                        Оплатить
-                      </>
-                    )}
-                  </Button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          
-          <div className="flex justify-center">
-            <Button
-              variant="outline"
-              onClick={() => setPaymentStep('estimate')}
-              className="mt-4"
-            >
-              Вернуться назад
-            </Button>
-          </div>
-        </motion.div>
-      )}
-      
-      {paymentStep === 'confirmation' && (
-        <motion.div
-          className="space-y-8"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-        >
-          <Card className="max-w-2xl mx-auto">
-            <CardHeader className="text-center">
-              <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-primary/10">
-                <CheckCircle className="h-10 w-10 text-primary" />
-              </div>
-              <CardTitle className="text-2xl">Оплата успешно произведена</CardTitle>
-              <CardDescription>
-                Заказ на оптимизацию сайта {url} успешно оформлен и оплачен
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4 text-center">
-              <div className="border rounded-lg bg-muted/50 p-4 mb-6">
-                <p className="text-sm text-muted-foreground mb-2">Сумма платежа</p>
-                <p className="text-3xl font-bold text-primary">{formatCurrency(optimizationCost || 0)}</p>
-              </div>
-              
-              <p className="text-muted-foreground">
-                Нажмите кнопку ниже, чтобы начать процесс оптимизации вашего сайта.
-                Это может занять некоторое время в зависимости от размера сайта и количества проблем.
-              </p>
-              
-              <Button 
-                size="lg" 
-                onClick={handleStartOptimization}
-                className="w-full mt-4"
-              >
-                Начать оптимизацию
-              </Button>
-            </CardContent>
-          </Card>
-        </motion.div>
-      )}
-      
-      {paymentStep === 'completed' && (
-        <motion.div
-          className="space-y-8"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-        >
-          <Card className="max-w-2xl mx-auto">
-            <CardHeader className="text-center">
-              {optimizationProgress >= 100 ? (
-                <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/30">
-                  <CheckCircle className="h-10 w-10 text-green-600 dark:text-green-500" />
-                </div>
-              ) : (
-                <div className="text-center mb-4">
-                  <div className="relative w-24 h-24 mx-auto">
-                    <svg className="w-24 h-24" viewBox="0 0 100 100">
-                      <circle
-                        className="text-muted stroke-current"
-                        strokeWidth="8"
-                        cx="50"
-                        cy="50"
-                        r="40"
-                        fill="transparent"
-                      />
-                      <circle
-                        className="text-primary stroke-current"
-                        strokeWidth="8"
-                        strokeLinecap="round"
-                        cx="50"
-                        cy="50"
-                        r="40"
-                        fill="transparent"
-                        strokeDasharray={`${optimizationProgress * 2.51} 251`}
-                        strokeDashoffset="0"
-                        transform="rotate(-90 50 50)"
-                      />
-                    </svg>
-                    <div className="absolute top-0 left-0 flex items-center justify-center w-full h-full">
-                      <span className="text-xl font-medium">{Math.round(optimizationProgress)}%</span>
-                    </div>
-                  </div>
-                </div>
-              )}
-              
-              <CardTitle className="text-2xl">
-                {optimizationProgress >= 100 ? "Оптимизация завершена" : "Оптимизация в процессе..."}
-              </CardTitle>
-              
-              <CardDescription>
-                {optimizationProgress >= 100 
-                  ? `Сайт ${url} успешно оптимизирован!` 
-                  : `Пожалуйста, дождитесь завершения процесса оптимизации сайта ${url}`}
-              </CardDescription>
-            </CardHeader>
-            
-            <CardContent className="space-y-4">
-              {optimizationProgress < 100 ? (
-                <div className="space-y-4">
-                  <Progress value={optimizationProgress} className="h-2" />
-                  <p className="text-center text-muted-foreground text-sm">
-                    Идёт оптимизация сайта. Этот процесс может занять несколько минут.
-                  </p>
-                </div>
-              ) : (
-                <div className="space-y-6">
-                  <Card className="bg-muted/50">
-                    <CardContent className="pt-6 pb-4">
-                      <div className="grid grid-cols-2 gap-4">
-                        <div>
-                          <p className="text-sm text-muted-foreground">До оптимизации</p>
-                          <div className="flex items-baseline mt-1">
-                            <span className="text-3xl font-bold">{auditData?.score || 65}</span>
-                            <span className="text-sm text-muted-foreground ml-1">/100</span>
-                          </div>
-                        </div>
-                        <div>
-                          <p className="text-sm text-muted-foreground">После оптимизации</p>
-                          <div className="flex items-baseline mt-1">
-                            <span className="text-3xl font-bold text-primary">{Math.min(100, Math.floor((auditData?.score || 65) * 1.4))}</span>
-                            <span className="text-sm text-muted-foreground ml-1">/100</span>
-                          </div>
-                        </div>
-                      </div>
-                      
-                      <div className="mt-4">
-                        <p className="text-sm font-medium mb-1">Улучшение SEO-оценки</p>
-                        <div className="w-full bg-muted h-3 rounded-full overflow-hidden">
-                          <div 
-                            className="bg-primary h-full rounded-full" 
-                            style={{ width: `${Math.min(100, Math.floor((auditData?.score || 65) * 1.4))}%` }}
-                          ></div>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                  
-                  <div className="flex flex-col space-y-2 sm:flex-row sm:space-y-0 sm:space-x-2">
+                <div className="flex flex-wrap gap-2">
+                  {isOptimized ? (
                     <Button 
-                      className="flex-1" 
-                      onClick={() => downloadOptimizedSite()}
+                      onClick={handleDownloadOptimizedSite}
+                      disabled={isProcessing}
                     >
                       <Download className="mr-2 h-4 w-4" />
                       Скачать оптимизированный сайт
                     </Button>
-                    
+                  ) : (
                     <Button 
-                      variant="outline" 
-                      className="flex-1" 
-                      onClick={() => generatePdfReportFile()}
+                      onClick={handleOptimize}
+                      disabled={isProcessing}
                     >
-                      <FileText className="mr-2 h-4 w-4" />
-                      Скачать отчёт PDF
+                      {isProcessing ? (
+                        <>
+                          <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+                          Обработка...
+                        </>
+                      ) : (
+                        "Заказать оптимизацию"
+                      )}
                     </Button>
-                  </div>
+                  )}
                   
-                  <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-900/50 rounded-lg p-4">
-                    <div className="flex items-start space-x-2">
-                      <CheckCircle className="h-5 w-5 text-green-600 dark:text-green-500 mt-0.5" />
-                      <div>
-                        <p className="font-medium text-green-800 dark:text-green-500">Оптимизация успешно выполнена!</p>
-                        <p className="text-sm text-green-700 dark:text-green-400">Вы можете скачать оптимизированную версию сайта или полный отчет о проделанной работе.</p>
-                      </div>
-                    </div>
-                  </div>
+                  <Button 
+                    variant="outline" 
+                    className="flex items-center"
+                    disabled={isProcessing}
+                  >
+                    <FileText className="h-4 w-4 mr-2" />
+                    Скачать PDF отчет
+                  </Button>
                 </div>
+              </div>
+              
+              {paymentStatus === 'success' && !isOptimized && (
+                <Alert className="mt-4 bg-green-50 text-green-800 border-green-200 dark:bg-green-900/10 dark:border-green-900/30 dark:text-green-400">
+                  <CheckCircle2 className="h-4 w-4 text-green-600 dark:text-green-400" />
+                  <AlertTitle>Оплата прошла успешно</AlertTitle>
+                  <AlertDescription className="flex flex-col gap-2">
+                    <p>Теперь вы можете перейти к настройке оптимизации контента.</p>
+                    <Button 
+                      onClick={() => setActiveTab("content")} 
+                      variant="outline" 
+                      className="w-full sm:w-auto mt-2"
+                    >
+                      Перейти к оптимизации контента
+                    </Button>
+                  </AlertDescription>
+                </Alert>
+              )}
+              
+              {paymentStatus === 'error' && (
+                <Alert variant="destructive" className="mt-4">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertTitle>Ошибка оплаты</AlertTitle>
+                  <AlertDescription>
+                    Не удалось провести оплату. Пожалуйста, попробуйте снова.
+                  </AlertDescription>
+                </Alert>
               )}
             </CardContent>
           </Card>
-        </motion.div>
-      )}
+        </TabsContent>
+        
+        <TabsContent value="content" className="pt-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Настройка AI-оптимизации</CardTitle>
+              <CardDescription>
+                Выберите готовый шаблон или создайте собственные инструкции для ИИ
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-4">
+                <div>
+                  <h3 className="text-sm font-medium mb-2">Шаблон для оптимизации</h3>
+                  <select 
+                    className="w-full p-2 border border-input rounded-md bg-background"
+                    value={selectedPromptTemplate}
+                    onChange={(e) => handlePromptTemplateChange(e.target.value)}
+                  >
+                    {seoPromptTemplates.map((template) => (
+                      <option key={template.id} value={template.id}>
+                        {template.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                
+                <div>
+                  <h3 className="text-sm font-medium mb-2">Инструкции для ИИ</h3>
+                  <textarea
+                    className="w-full min-h-[150px] p-3 border border-input rounded-md"
+                    value={seoPrompt}
+                    onChange={(e) => setSeoPrompt(e.target.value)}
+                    placeholder="Введите инструкции для оптимизации контента..."
+                  />
+                </div>
+                
+                <Button 
+                  onClick={handleStartOptimization} 
+                  disabled={isOptimizing}
+                  className="w-full"
+                >
+                  {isOptimizing ? (
+                    <>
+                      <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+                      Оптимизация...
+                    </>
+                  ) : (
+                    "Начать оптимизацию контента"
+                  )}
+                </Button>
+              </div>
+              
+              {isOptimizing && (
+                <div className="mt-6">
+                  <h3 className="text-sm font-medium mb-2">Прогресс оптимизации</h3>
+                  <div className="w-full bg-muted rounded-full h-2.5">
+                    <div 
+                      className="bg-primary h-2.5 rounded-full" 
+                      style={{ width: `${optimizationProgress}%` }}
+                    ></div>
+                  </div>
+                  <div className="flex justify-between mt-2 text-xs text-muted-foreground">
+                    <span>{Math.round(optimizationProgress)}% завершено</span>
+                    <span>Примерное время: {Math.ceil((100 - optimizationProgress) / 10)} мин</span>
+                  </div>
+                  
+                  {optimizationProgress > 0 && optimizationProgress < 100 && (
+                    <div className="mt-4 space-y-2">
+                      <p className="text-sm">Текущие действия:</p>
+                      <ul className="space-y-1 text-xs">
+                        {optimizationProgress > 10 && <li className="text-green-500">✓ Анализ структуры сайта</li>}
+                        {optimizationProgress > 20 && <li className="text-green-500">✓ Оптимизация мета-тегов</li>}
+                        {optimizationProgress > 30 && <li className="text-green-500">✓ Исправление структуры заголовков</li>}
+                        {optimizationProgress > 40 && <li className="text-green-500">✓ Оптимизация URL-структуры</li>}
+                        {optimizationProgress > 50 && <li className="text-green-500">✓ Исправление перелинковки</li>}
+                        {optimizationProgress > 60 && <li>{optimizationProgress > 70 ? "✓" : "⟳"} Оптимизация изображений</li>}
+                        {optimizationProgress > 70 && <li>{optimizationProgress > 80 ? "✓" : "⟳"} Улучшение контента главной страницы</li>}
+                        {optimizationProgress > 80 && <li>{optimizationProgress > 90 ? "✓" : "⟳"} Улучшение контента внутренних страниц</li>}
+                        {optimizationProgress > 90 && <li>⟳ Финальные проверки и подготовка отчета</li>}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+              )}
+              
+              {isOptimized && (
+                <Alert className="mt-4 bg-green-50 text-green-800 border-green-200 dark:bg-green-900/10 dark:border-green-900/30 dark:text-green-400">
+                  <CheckCircle2 className="h-4 w-4 text-green-600 dark:text-green-400" />
+                  <AlertTitle>Оптимизация завершена</AlertTitle>
+                  <AlertDescription className="flex flex-col gap-2">
+                    <p>Контент сайта был успешно оптимизирован.</p>
+                    <div className="flex gap-2 mt-2">
+                      <Button 
+                        onClick={() => setActiveTab("results")} 
+                        variant="default" 
+                      >
+                        Просмотреть результаты
+                      </Button>
+                      <Button 
+                        onClick={handleDownloadOptimizedSite} 
+                        variant="outline"
+                      >
+                        <Download className="mr-2 h-4 w-4" />
+                        Скачать оптимизированный сайт
+                      </Button>
+                    </div>
+                  </AlertDescription>
+                </Alert>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+        
+        <TabsContent value="results" className="pt-4">
+          {optimizationResult && (
+            <div className="space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Результаты оптимизации</CardTitle>
+                  <CardDescription>
+                    Сравнение исходного и оптимизированного сайта
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex items-center justify-center gap-3 mb-6">
+                    <motion.div 
+                      className="p-4 text-center rounded-lg bg-amber-500/20 text-amber-700 dark:text-amber-400"
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.3 }}
+                    >
+                      <div className="text-2xl font-bold">{optimizationResult.beforeScore}</div>
+                      <div className="text-sm">До оптимизации</div>
+                    </motion.div>
+                    
+                    <motion.div
+                      className="text-2xl text-muted-foreground"
+                      initial={{ opacity: 0, scale: 0.8 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ duration: 0.3, delay: 0.15 }}
+                    >
+                      →
+                    </motion.div>
+                    
+                    <motion.div 
+                      className="p-4 text-center rounded-lg bg-green-500/20 text-green-700 dark:text-green-400"
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.3, delay: 0.2 }}
+                    >
+                      <div className="text-2xl font-bold">{optimizationResult.afterScore}</div>
+                      <div className="text-sm">После оптимизации</div>
+                    </motion.div>
+                    
+                    <motion.div 
+                      className="p-4 text-center rounded-lg bg-primary/20 text-primary"
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.3, delay: 0.3 }}
+                    >
+                      <div className="text-2xl font-bold">+{optimizationResult.afterScore - optimizationResult.beforeScore}</div>
+                      <div className="text-sm">Улучшение</div>
+                    </motion.div>
+                  </div>
+                  
+                  {optimizationResult.demoPage && (
+                    <OptimizationDemo
+                      beforeTitle={optimizationResult.demoPage.title}
+                      afterTitle={optimizationResult.demoPage.optimized.title}
+                      beforeContent={optimizationResult.demoPage.content}
+                      afterContent={optimizationResult.demoPage.optimized.content}
+                      beforeMeta={optimizationResult.demoPage.meta}
+                      afterMeta={optimizationResult.demoPage.optimized.meta}
+                      beforeScore={optimizationResult.beforeScore}
+                      afterScore={optimizationResult.afterScore}
+                    />
+                  )}
+                  
+                  <div className="flex flex-wrap gap-3 mt-6">
+                    <Button onClick={handleDownloadOptimizedSite}>
+                      <Download className="mr-2 h-4 w-4" />
+                      Скачать оптимизированный сайт
+                    </Button>
+                    
+                    <Button variant="outline" className="flex items-center">
+                      <FileText className="h-4 w-4 mr-2" />
+                      Скачать PDF отчет
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+              
+              <Alert className="bg-green-50 text-green-800 border-green-200 dark:bg-green-900/10 dark:border-green-900/30 dark:text-green-400">
+                <CheckCircle2 className="h-4 w-4 text-green-600 dark:text-green-400" />
+                <AlertTitle>Оптимизация успешно завершена</AlertTitle>
+                <AlertDescription>
+                  Ваш сайт был успешно оптимизирован с помощью ИИ. Показатели SEO значительно улучшены.
+                </AlertDescription>
+              </Alert>
+            </div>
+          )}
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };
