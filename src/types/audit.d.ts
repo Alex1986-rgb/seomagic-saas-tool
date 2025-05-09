@@ -30,6 +30,7 @@ export interface OptimizationItem {
   pricePerUnit?: number;
   totalPrice: number;
   type?: string;
+  errorCount?: number; // Added for showing error counts
 }
 
 export interface AuditDetailsData {

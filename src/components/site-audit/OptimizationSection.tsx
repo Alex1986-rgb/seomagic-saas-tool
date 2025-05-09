@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -5,11 +6,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { 
-  Download, Settings, FileText, CheckCircle2, AlertCircle, RefreshCw, ChevronDown, ChevronUp
+  Download, Settings, FileText, CheckCircle2, AlertCircle, RefreshCw, ChevronDown, ChevronUp, AlertOctagon
 } from 'lucide-react';
 import OptimizationProgress from '@/components/seo-optimization/OptimizationProgress';
 import OptimizationDemo from '@/components/audit/results/components/OptimizationDemo';
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { AuditData, OptimizationItem } from '@/types/audit';
 
 interface OptimizationSectionProps {
@@ -51,6 +54,7 @@ const OptimizationSection: React.FC<OptimizationSectionProps> = ({ url, auditDat
   const [optimizationProgress, setOptimizationProgress] = useState(0);
   const [seoPrompt, setSeoPrompt] = useState(seoPromptTemplates[0].prompt);
   const [selectedPromptTemplate, setSelectedPromptTemplate] = useState(seoPromptTemplates[0].id);
+  const [showPaymentDialog, setShowPaymentDialog] = useState(false);
   const [optimizationResult, setOptimizationResult] = useState<{
     beforeScore: number;
     afterScore: number;
@@ -80,6 +84,9 @@ const OptimizationSection: React.FC<OptimizationSectionProps> = ({ url, auditDat
   
   // Calculate average cost per page
   const costPerPage = pageCount > 0 ? Math.round(optimizationCost / pageCount) : 0;
+
+  // Calculate total errors across all items
+  const totalErrors = optimizationItems.reduce((sum, item) => sum + (item.errorCount || 0), 0);
   
   const handlePromptTemplateChange = (value: string) => {
     setSelectedPromptTemplate(value);
@@ -91,27 +98,8 @@ const OptimizationSection: React.FC<OptimizationSectionProps> = ({ url, auditDat
   
   const handleOptimize = async () => {
     try {
-      setIsProcessing(true);
-      
-      toast({
-        title: "Обработка платежа",
-        description: "Пожалуйста, подождите...",
-      });
-      
-      // Simulate payment process
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      // Set payment as successful
-      setPaymentStatus('success');
-      
-      toast({
-        title: "Оплата прошла успешно",
-        description: "Начинаем процесс оптимизации сайта",
-      });
-      
-      // Move to content tab after successful payment
-      setActiveTab("content");
-      
+      // Instead of immediately processing payment, show payment dialog
+      setShowPaymentDialog(true);
     } catch (error) {
       console.error('Payment error:', error);
       setPaymentStatus('error');
@@ -121,9 +109,32 @@ const OptimizationSection: React.FC<OptimizationSectionProps> = ({ url, auditDat
         description: "Не удалось провести оплату. Пожалуйста, попробуйте снова.",
         variant: "destructive",
       });
-    } finally {
-      setIsProcessing(false);
     }
+  };
+  
+  const handlePaymentConfirm = async () => {
+    setIsProcessing(true);
+    setShowPaymentDialog(false);
+    
+    toast({
+      title: "Обработка платежа",
+      description: "Пожалуйста, подождите...",
+    });
+    
+    // Simulate payment process
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    
+    // Set payment as successful
+    setPaymentStatus('success');
+    
+    toast({
+      title: "Оплата прошла успешно",
+      description: "Начинаем процесс оптимизации сайта",
+    });
+    
+    // Move to content tab after successful payment
+    setActiveTab("content");
+    setIsProcessing(false);
   };
   
   const handleStartOptimization = async () => {
@@ -223,7 +234,12 @@ const OptimizationSection: React.FC<OptimizationSectionProps> = ({ url, auditDat
             <CardHeader>
               <CardTitle className="flex items-center">
                 <Settings className="mr-2 h-5 w-5" />
-                Оптимизация сайта AI-технологиями
+                Оптимизация сайта AI-технологиями 
+                {totalErrors > 0 && (
+                  <Badge variant="destructive" className="ml-2">
+                    <AlertOctagon className="h-3 w-3 mr-1" /> {totalErrors} ошибок
+                  </Badge>
+                )}
               </CardTitle>
               <CardDescription>
                 Автоматическое исправление SEO-проблем и улучшение контента с помощью искусственного интеллекта
@@ -281,6 +297,7 @@ const OptimizationSection: React.FC<OptimizationSectionProps> = ({ url, auditDat
                         <tr className="border-b">
                           <th className="text-left p-2">Страница</th>
                           <th className="text-left p-2">Задачи</th>
+                          <th className="text-center p-2">Ошибок</th>
                           <th className="text-right p-2">Стоимость</th>
                         </tr>
                       </thead>
@@ -300,6 +317,13 @@ const OptimizationSection: React.FC<OptimizationSectionProps> = ({ url, auditDat
                                   <li className="truncate text-xs">{item.description}</li>
                                 )}
                               </ul>
+                            </td>
+                            <td className="p-2 text-center">
+                              {item.errorCount ? (
+                                <Badge variant="destructive">{item.errorCount}</Badge>
+                              ) : (
+                                <span className="text-muted-foreground">—</span>
+                              )}
                             </td>
                             <td className="p-2 text-right">{formatNumber(item.cost || item.totalPrice)} ₽</td>
                           </tr>
@@ -577,24 +601,73 @@ const OptimizationSection: React.FC<OptimizationSectionProps> = ({ url, auditDat
           )}
         </TabsContent>
       </Tabs>
+
+      {/* Payment Dialog */}
+      <Dialog open={showPaymentDialog} onOpenChange={setShowPaymentDialog}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>Оплата оптимизации сайта</DialogTitle>
+            <DialogDescription>
+              Для выполнения оптимизации необходимо произвести оплату
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4 py-4">
+            <div className="bg-muted p-4 rounded-lg">
+              <h4 className="font-medium mb-2">Детали заказа:</h4>
+              <div className="grid grid-cols-2 gap-2 text-sm">
+                <div className="text-muted-foreground">URL сайта:</div>
+                <div className="font-medium">{url}</div>
+                
+                <div className="text-muted-foreground">Количество страниц:</div>
+                <div className="font-medium">{pageCount}</div>
+                
+                <div className="text-muted-foreground">Количество ошибок:</div>
+                <div className="font-medium">{totalErrors}</div>
+              </div>
+            </div>
+            
+            <div className="border-t border-border pt-4">
+              <div className="flex justify-between items-center text-lg">
+                <span>Итого к оплате:</span>
+                <span className="font-bold">{formatNumber(optimizationCost)} ₽</span>
+              </div>
+            </div>
+            
+            <div className="bg-primary/5 p-3 rounded-md text-sm">
+              <div className="font-medium mb-1">Способы оплаты:</div>
+              <div className="grid grid-cols-2 gap-2">
+                <div className="flex items-center">
+                  <input type="radio" id="card" name="payment" defaultChecked className="mr-2" />
+                  <label htmlFor="card">Банковская карта</label>
+                </div>
+                <div className="flex items-center">
+                  <input type="radio" id="bank" name="payment" className="mr-2" />
+                  <label htmlFor="bank">Банковский перевод</label>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowPaymentDialog(false)}>
+              Отмена
+            </Button>
+            <Button onClick={handlePaymentConfirm} disabled={isProcessing}>
+              {isProcessing ? (
+                <>
+                  <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+                  Обработка...
+                </>
+              ) : (
+                "Оплатить"
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
-};
-
-// Helper function to format numbers with thousand separators
-const formatNumber = (num: number) => {
-  return new Intl.NumberFormat('ru-RU').format(num);
-};
-
-// Add these functions that were mentioned in the component but might be missing
-const handleDownloadOptimizedSite = async () => {
-  // Implementation here
-  console.log("Downloading optimized site");
-};
-
-const handleOptimize = async () => {
-  // Implementation here
-  console.log("Starting optimization");
 };
 
 export default OptimizationSection;
