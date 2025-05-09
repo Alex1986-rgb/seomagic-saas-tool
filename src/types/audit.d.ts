@@ -11,18 +11,24 @@ export interface AuditData {
   crawledPages?: number;
   status: 'completed' | 'in-progress' | 'failed';
   optimizationCost?: number;
-  optimizationItems?: OptimizationItem[];
+  optimizationItems?: any[]; // Use 'any[]' to accommodate both types
   domain?: string;
   title?: string;
   scanTime?: string;
 }
 
 export interface OptimizationItem {
+  id?: string;
+  page?: string;
+  tasks?: string[];
+  cost?: number;
+  priority?: 'high' | 'medium' | 'low';
+  category?: string;
   name: string;
   description: string;
   count: number;
   price: number;
-  pricePerUnit: number;
+  pricePerUnit?: number;
   totalPrice: number;
   type?: string;
 }
