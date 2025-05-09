@@ -16,8 +16,8 @@ export interface AuditData {
     critical: string[] | any[];
     important: string[] | any[];
     opportunities: string[] | any[];
-    minor?: number;
-    passed?: number;
+    minor: number | any[]; // Can be number or array of objects
+    passed?: number | any[]; // Can be number or array of objects
   };
   details: AuditDetailsData; // Ensuring details property is present
   optimizationCost?: number;
@@ -26,6 +26,7 @@ export interface AuditData {
     description: string;
     count: number;
     price: number;
+    pricePerUnit: number;
     totalPrice: number;
     type?: string;
   }[];

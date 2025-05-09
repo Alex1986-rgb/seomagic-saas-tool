@@ -75,7 +75,8 @@ const SiteAuditContent: React.FC<SiteAuditContentProps> = ({ url }) => {
       processedData.status = 'completed'; // Set to a default allowed value
     }
     
-    data = processedData as AuditData;
+    // Use type assertion to inform TypeScript this is an AuditData object
+    data = processedData as unknown as AuditData;
     console.warn("Using demo data because audit data is invalid:", typeof auditData);
   } else {
     const processedData = { ...auditData };
@@ -93,7 +94,8 @@ const SiteAuditContent: React.FC<SiteAuditContentProps> = ({ url }) => {
       processedData.status = 'completed'; // Set to a default allowed value
     }
     
-    data = processedData as AuditData;
+    // Use type assertion to inform TypeScript this is an AuditData object
+    data = processedData as unknown as AuditData;
   }
   
   // Make sure we have optimization data for demo purposes

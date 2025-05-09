@@ -50,11 +50,11 @@ export interface AuditItemData {
 }
 
 export interface IssuesData {
-  critical: string[];
-  important: string[];
-  minor: number;
-  passed: number;
-  opportunities: string[];
+  critical: string[] | any[];
+  important: string[] | any[];
+  opportunities: string[] | any[];
+  minor: number | any[]; // Can be number or array of objects
+  passed?: number | any[]; // Can be number or array of objects
 }
 
 export interface AuditHistoryItem {
