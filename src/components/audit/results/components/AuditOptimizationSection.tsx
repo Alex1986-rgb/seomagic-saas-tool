@@ -1,11 +1,13 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import AuditOptimization from './AuditOptimization';
-import { OptimizationItem } from '@/types/audit.d';
+import OptimizationCost from './optimization/OptimizationCost';
+import OptimizationProcessContainer from './optimization/process/OptimizationProcessContainer';
+import OptimizationResults from './optimization/OptimizationResults';
+import { OptimizationItem } from '@/features/audit/types/optimization-types';
 
 interface AuditOptimizationSectionProps {
-  optimizationCost: any;
+  optimizationCost: number;
   optimizationItems: OptimizationItem[];
   isOptimized: boolean;
   contentPrompt: string;
@@ -13,7 +15,7 @@ interface AuditOptimizationSectionProps {
   pageCount: number;
   showPrompt: boolean;
   onTogglePrompt: () => void;
-  onOptimize: () => Promise<void>;
+  onOptimize: () => Promise<any>;
   onDownloadOptimizedSite: () => Promise<void>;
   onGeneratePdfReport: () => void;
   setContentOptimizationPrompt: (prompt: string) => void;
@@ -31,40 +33,129 @@ const AuditOptimizationSection: React.FC<AuditOptimizationSectionProps> = ({
   onOptimize,
   onDownloadOptimizedSite,
   onGeneratePdfReport,
-  setContentOptimizationPrompt
+  setContentOptimizationPrompt,
 }) => {
-  // Transform optimization items to ensure all required fields are present
-  // This addresses the type mismatch between different OptimizationItem definitions
-  const validOptimizationItems = optimizationItems.map(item => ({
-    ...item,
-    id: item.id || `item-${Math.random().toString(36).substr(2, 9)}`, // Ensure id exists
-    page: item.page || url, // Ensure page exists with fallback to current URL
-    tasks: item.tasks || [], // Ensure tasks exists as empty array if not provided
-    cost: item.cost || item.totalPrice || 0, // Ensure cost exists
-    priority: item.priority || 'medium', // Set default priority
-    category: item.category || 'general' // Set default category
-  }));
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isPaymentComplete, setIsPaymentComplete] = useState(false);
+  const [isOptimizing, setIsOptimizing] = useState(false);
+  const [optimizationProgress, setOptimizationProgress] = useState(0);
+  const [optimizationResult, setOptimizationResult] = useState<any>(null);
+
+  // Demo result for visualization
+  const demoResult = {
+    beforeScore: 65,
+    afterScore: 89,
+    demoPage: {
+      title: "Главная страница",
+      content: "Добро пожаловать на наш сайт. Мы предлагаем лучшие решения для вашего бизнеса.",
+      meta: {
+        description: "Компания предлагающая услуги по оптимизации сайтов.",
+        keywords: "оптимизация, сайт, SEO"
+      },
+      optimized: {
+        content: "Добро пожаловать на наш сайт! Мы специализируемся на высококачественных решениях для развития вашего бизнеса в цифровой среде. Наши эксперты помогут достичь максимальных результатов.",
+        meta: {
+          description: "Профессиональные услуги по оптимизации и продвижению сайтов. Увеличим конверсию и привлечем целевых клиентов.",
+          keywords: "оптимизация сайта, SEO продвижение, улучшение конверсии, аудит сайта"
+        }
+      }
+    }
+  };
+
+  const handlePayment = () => {
+    setIsPaymentComplete(true);
+    setIsDialogOpen(false);
+  };
+
+  const handleStartOptimization = async () => {
+    setIsOptimizing(true);
+    
+    // Simulate optimization process
+    const intervalId = setInterval(() => {
+      setOptimizationProgress(prev => {
+        const newProgress = prev + Math.random() * 10;
+        if (newProgress >= 100) {
+          clearInterval(intervalId);
+          setTimeout(() => {
+            setIsOptimizing(false);
+            setOptimizationResult(demoResult);
+          }, 1000);
+          return 100;
+        }
+        return newProgress;
+      });
+    }, 500);
+    
+    try {
+      await onOptimize();
+    } catch (error) {
+      console.error("Error during optimization:", error);
+      clearInterval(intervalId);
+      setIsOptimizing(false);
+    }
+  };
+
+  const handleSelectPrompt = (prompt: string) => {
+    if (setContentOptimizationPrompt) {
+      setContentOptimizationPrompt(prompt);
+    }
+  };
 
   return (
     <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.3, delay: 0.3 }}
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+      className="mt-6"
     >
-      <AuditOptimization 
-        optimizationCost={optimizationCost}
-        optimizationItems={validOptimizationItems}
-        isOptimized={isOptimized}
-        contentPrompt={contentPrompt}
-        url={url}
-        pageCount={pageCount}
-        showPrompt={showPrompt}
-        onTogglePrompt={onTogglePrompt}
-        onOptimizeSiteContent={onOptimize}
-        onDownloadOptimizedSite={onDownloadOptimizedSite}
-        onGeneratePdfReport={onGeneratePdfReport}
-        setContentPrompt={setContentOptimizationPrompt}
-      />
+      <h2 className="text-xl font-semibold mb-4">Оптимизация сайта</h2>
+      
+      {!isOptimized && !isOptimizing && (
+        <OptimizationCost 
+          url={url} 
+          optimizationCost={optimizationCost}
+          pageCount={pageCount}
+          optimizationItems={optimizationItems}
+        />
+      )}
+      
+      {isOptimizing && (
+        <OptimizationProcessContainer 
+          progress={optimizationProgress} 
+        />
+      )}
+      
+      {(isOptimized || optimizationResult) && (
+        <OptimizationResults 
+          url={url}
+          optimizationResult={optimizationResult || demoResult}
+          onDownloadOptimized={onDownloadOptimizedSite}
+          onGeneratePdfReport={onGeneratePdfReport}
+          className="mb-4"
+        />
+      )}
+      
+      {!isOptimizing && !optimizationResult && (
+        <div className="flex flex-col sm:flex-row justify-between gap-3 mt-4">
+          <div></div>
+          <div>
+            {/* Pass all required props to OptimizationActions */}
+            <OptimizationActions 
+              url={url}
+              optimizationCost={optimizationCost}
+              isOptimized={isOptimized}
+              isPaymentComplete={isPaymentComplete}
+              onDownloadOptimized={onDownloadOptimizedSite}
+              onGeneratePdfReport={onGeneratePdfReport}
+              onStartOptimization={handleStartOptimization}
+              onPayment={handlePayment}
+              isDialogOpen={isDialogOpen}
+              setIsDialogOpen={setIsDialogOpen}
+              onSelectPrompt={handleSelectPrompt}
+            />
+          </div>
+        </div>
+      )}
     </motion.div>
   );
 };

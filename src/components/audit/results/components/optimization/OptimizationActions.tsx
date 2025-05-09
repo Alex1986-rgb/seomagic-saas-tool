@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { Button } from "@/components/ui/button";
 import { Download, FileText, Bot, CreditCard } from 'lucide-react';
 import PaymentDialog from './PaymentDialog';
@@ -38,7 +38,7 @@ const OptimizationActions: React.FC<OptimizationActionsProps> = ({
   return (
     <>
       <div className="flex flex-wrap gap-2 justify-end">
-        {isOptimized ? (
+        {isOptimized && onDownloadOptimized && (
           <Button
             onClick={onDownloadOptimized}
             variant="default"
@@ -47,7 +47,9 @@ const OptimizationActions: React.FC<OptimizationActionsProps> = ({
             <Download className="h-4 w-4" />
             Скачать оптимизированный сайт
           </Button>
-        ) : isPaymentComplete ? (
+        )}
+        
+        {!isOptimized && isPaymentComplete && (
           <Button
             onClick={onStartOptimization}
             variant="default"
@@ -56,7 +58,9 @@ const OptimizationActions: React.FC<OptimizationActionsProps> = ({
             <Bot className="h-4 w-4" />
             Запустить оптимизацию
           </Button>
-        ) : (
+        )}
+        
+        {!isOptimized && !isPaymentComplete && (
           <Button
             onClick={handleOpenPaymentDialog}
             variant="default"

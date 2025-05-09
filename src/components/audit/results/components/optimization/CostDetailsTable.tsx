@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Info } from 'lucide-react';
 import {
@@ -19,15 +18,15 @@ import {
 import { OptimizationItem } from '@/features/audit/types/optimization-types';
 
 interface CostDetailsTableProps {
-  optimizationItems: OptimizationItem[];
+  items: OptimizationItem[];
 }
 
-const CostDetailsTable: React.FC<CostDetailsTableProps> = ({ optimizationItems }) => {
+const CostDetailsTable: React.FC<CostDetailsTableProps> = ({ items }) => {
   const formatNumber = (num: number) => {
     return new Intl.NumberFormat('ru-RU').format(num);
   };
 
-  if (!optimizationItems || !optimizationItems.length) {
+  if (!items || !items.length) {
     return (
       <div className="text-center p-4 text-muted-foreground">
         Нет данных для отображения
@@ -35,43 +34,47 @@ const CostDetailsTable: React.FC<CostDetailsTableProps> = ({ optimizationItems }
     );
   }
 
-  const totalSum = optimizationItems.reduce((sum, item) => sum + item.totalPrice, 0);
+  const totalSum = items.reduce((sum, item) => sum + item.totalPrice, 0);
 
   // Group items by category
   const groupedItems = {
     // Base categories
-    base: optimizationItems.filter(item => item.name.includes('Базовая стоимость')),
-    critical: optimizationItems.filter(item => item.name.includes('Исправление критических ошибок')),
-    warnings: optimizationItems.filter(item => item.name.includes('Исправление предупреждений')),
+    base: items.filter(item => item.category === 'base' || item.name.includes('Базовая стоимость')),
+    critical: items.filter(item => item.category === 'errors' || item.name.includes('критических ошибок')),
+    warnings: items.filter(item => item.category === 'warnings' || item.name.includes('предупреждений')),
     
-    // Technical categories with specific searches
-    technical: optimizationItems.filter(item => 
+    // Technical categories
+    technical: items.filter(item => 
+      item.category === 'technical' || 
+      item.category === 'media' || 
       [
-        'Оптимизация мета-тегов',
+        'мета-тегов',
         'Карта сайта',
-        'Исправление битых ссылок',
-        'Оптимизация изображений',
-        'Улучшение производительности',
-        'редиректов'
-      ].some(name => item.name.includes(name)) && 
-      !item.name.includes('Базовая стоимость') && 
-      !item.name.includes('Исправление критических ошибок') && 
-      !item.name.includes('Исправление предупреждений')
+        'битых ссылок',
+        'изображений',
+        'производительности',
+        'редиректов',
+        'мобильных'
+      ].some(name => item.name.toLowerCase().includes(name))
     ),
     
-    // Content categories with specific searches
-    content: optimizationItems.filter(item => 
+    // Content categories
+    content: items.filter(item => 
+      item.category === 'content' || 
+      item.category === 'structure' || 
+      item.category === 'seo' ||
       [
-        'Оптимизация контента',
-        'Структура заголовков',
-        'тексты для конверсии',
-        'Улучшение читабельности',
-        'Оптимизация структуры'
-      ].some(name => item.name.includes(name))
+        'контент',
+        'заголовк',
+        'тексты',
+        'читабельности',
+        'структур'
+      ].some(name => item.name.toLowerCase().includes(name))
     ),
     
     // Other categories
-    other: optimizationItems.filter(item => 
+    other: items.filter(item => 
+      item.category === 'other' || 
       [
         'Скидка',
         'Гарантия'
@@ -79,15 +82,15 @@ const CostDetailsTable: React.FC<CostDetailsTableProps> = ({ optimizationItems }
     )
   };
 
-  const renderTableSection = (items: OptimizationItem[], sectionTitle: string) => {
-    if (!items.length) return null;
+  const renderTableSection = (sectionItems: OptimizationItem[], sectionTitle: string) => {
+    if (!sectionItems.length) return null;
     
     return (
       <>
         <TableRow className="bg-muted">
           <TableCell colSpan={6} className="font-semibold">{sectionTitle}</TableCell>
         </TableRow>
-        {items.map((item, index) => (
+        {sectionItems.map((item, index) => (
           <TableRow key={`${sectionTitle}-${index}`}>
             <TableCell className="font-medium">
               <TooltipProvider>
@@ -111,7 +114,7 @@ const CostDetailsTable: React.FC<CostDetailsTableProps> = ({ optimizationItems }
                 <span className="text-red-500 font-medium">{formatNumber(item.errorCount)}</span>
               </TableCell>
             )}
-            <TableCell className="text-right">{formatNumber(item.pricePerUnit || item.price)} ₽</TableCell>
+            <TableCell className="text-right">{formatNumber(item.price)} ₽</TableCell>
             <TableCell className="text-right font-medium">{formatNumber(item.totalPrice)} ₽</TableCell>
           </TableRow>
         ))}
