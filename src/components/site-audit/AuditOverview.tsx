@@ -1,206 +1,266 @@
 
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { CheckCircle, XCircle, AlertCircle, Clock, Globe, Search, Smartphone, Activity } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
-import { motion } from "framer-motion";
+import { motion } from 'framer-motion';
 
 interface AuditOverviewProps {
   auditData: any;
 }
 
 const AuditOverview: React.FC<AuditOverviewProps> = ({ auditData }) => {
-  // Safely access nested properties
-  const totalIssues = [
-    ...(auditData.issues?.critical || []),
-    ...(auditData.issues?.important || []),
-    ...(auditData.issues?.opportunities || []),
-    ...(auditData.issues?.minor || []),
-  ].length;
+  const {
+    score,
+    pageCount,
+    details,
+    issues
+  } = auditData;
+
+  const issuesCount = (issues?.critical?.length || 0) + 
+    (issues?.important?.length || 0) + 
+    (issues?.opportunities?.length || 0) + 
+    (issues?.minor?.length || 0);
   
-  const criticalIssues = auditData.issues?.critical?.length || 0;
-  const importantIssues = auditData.issues?.important?.length || 0;
-  const opportunitiesCount = auditData.issues?.opportunities?.length || 0;
-  const passedChecksCount = auditData.issues?.passed?.length || 0;
+  const passedCount = issues?.passed?.length || 0;
   
-  const getScoreColor = (score: number) => {
-    if (score >= 90) return "text-green-500";
-    if (score >= 70) return "text-yellow-500";
-    if (score >= 50) return "text-orange-500";
-    return "text-red-500";
-  };
-  
-  const getProgressColor = (score: number) => {
-    if (score >= 90) return "bg-green-500";
-    if (score >= 70) return "bg-yellow-500";
-    if (score >= 50) return "bg-orange-500";
+  const metrics = [
+    {
+      title: "Общая оценка",
+      value: score,
+      icon: <Activity className="h-5 w-5" />
+    },
+    {
+      title: "SEO оптимизация",
+      value: details?.seo?.score,
+      icon: <Search className="h-5 w-5" />
+    },
+    {
+      title: "Производительность",
+      value: details?.performance?.score,
+      icon: <Clock className="h-5 w-5" />
+    },
+    {
+      title: "Технические аспекты",
+      value: details?.technical?.score,
+      icon: <Globe className="h-5 w-5" />
+    }
+  ];
+
+  const getProgressColor = (value: number) => {
+    if (value >= 80) return "bg-green-500";
+    if (value >= 60) return "bg-amber-500";
     return "bg-red-500";
+  };
+
+  const fadeInUp = {
+    hidden: { opacity: 0, y: 20 },
+    visible: (i: number) => ({
+      opacity: 1,
+      y: 0,
+      transition: {
+        delay: i * 0.1,
+        duration: 0.5
+      }
+    })
   };
 
   return (
     <div className="space-y-6">
-      <Card className="overflow-hidden border-border">
-        <CardHeader className="pb-4 bg-primary/5">
-          <CardTitle>Общая оценка сайта</CardTitle>
-        </CardHeader>
-        <CardContent className="pt-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
-            <div className="flex flex-col items-center justify-center">
-              <div className="relative w-48 h-48">
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <motion.div 
-                    initial={{ opacity: 0, scale: 0.8 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ duration: 0.5 }}
-                    className={`text-6xl font-bold ${getScoreColor(auditData.score)}`}
-                  >
-                    {auditData.score}
-                  </motion.div>
-                </div>
-                <svg className="w-full h-full" viewBox="0 0 100 100">
-                  <circle
-                    cx="50"
-                    cy="50"
-                    r="45"
-                    fill="none"
-                    stroke="#e2e8f0"
-                    strokeWidth="10"
-                  />
-                  <motion.circle
-                    cx="50"
-                    cy="50"
-                    r="45"
-                    fill="none"
-                    stroke={getProgressColor(auditData.score).replace('bg-', 'stroke-').replace('500', '500')}
-                    strokeWidth="10"
-                    strokeDasharray={`${auditData.score * 2.83} 283`}
-                    strokeDashoffset="0"
-                    transform="rotate(-90 50 50)"
-                    initial={{ strokeDasharray: "0 283" }}
-                    animate={{ strokeDasharray: `${auditData.score * 2.83} 283` }}
-                    transition={{ duration: 1, delay: 0.3 }}
-                  />
-                </svg>
-              </div>
-              <p className="mt-4 text-lg font-medium">из 100 баллов</p>
-            </div>
-            
-            <div className="space-y-4">
-              <div>
-                <div className="flex justify-between mb-1">
-                  <span className="font-medium">SEO</span>
-                  <span>{auditData.details?.seo?.score || 0}%</span>
-                </div>
-                <Progress value={auditData.details?.seo?.score || 0} className="h-3" />
-              </div>
-              
-              <div>
-                <div className="flex justify-between mb-1">
-                  <span className="font-medium">Производительность</span>
-                  <span>{auditData.details?.performance?.score || 0}%</span>
-                </div>
-                <Progress value={auditData.details?.performance?.score || 0} className="h-3" />
-              </div>
-              
-              <div>
-                <div className="flex justify-between mb-1">
-                  <span className="font-medium">Техническая оптимизация</span>
-                  <span>{auditData.details?.technical?.score || 0}%</span>
-                </div>
-                <Progress value={auditData.details?.technical?.score || 0} className="h-3" />
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-      
+      {/* Main Metrics */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card className="bg-card/90 backdrop-blur-sm border-border">
-          <CardContent className="pt-6">
-            <div className="flex flex-col items-center">
-              <div className="w-14 h-14 rounded-full bg-red-100 flex items-center justify-center mb-3">
-                <span className="text-red-500 text-2xl font-bold">{criticalIssues}</span>
-              </div>
-              <p className="font-medium">Критические проблемы</p>
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card className="bg-card/90 backdrop-blur-sm border-border">
-          <CardContent className="pt-6">
-            <div className="flex flex-col items-center">
-              <div className="w-14 h-14 rounded-full bg-orange-100 flex items-center justify-center mb-3">
-                <span className="text-orange-500 text-2xl font-bold">{importantIssues}</span>
-              </div>
-              <p className="font-medium">Важные проблемы</p>
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card className="bg-card/90 backdrop-blur-sm border-border">
-          <CardContent className="pt-6">
-            <div className="flex flex-col items-center">
-              <div className="w-14 h-14 rounded-full bg-yellow-100 flex items-center justify-center mb-3">
-                <span className="text-yellow-500 text-2xl font-bold">{opportunitiesCount}</span>
-              </div>
-              <p className="font-medium">Возможности</p>
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card className="bg-card/90 backdrop-blur-sm border-border">
-          <CardContent className="pt-6">
-            <div className="flex flex-col items-center">
-              <div className="w-14 h-14 rounded-full bg-green-100 flex items-center justify-center mb-3">
-                <span className="text-green-500 text-2xl font-bold">{passedChecksCount}</span>
-              </div>
-              <p className="font-medium">Успешных проверок</p>
-            </div>
-          </CardContent>
-        </Card>
+        {metrics.map((metric, index) => (
+          <motion.div
+            key={metric.title}
+            custom={index}
+            initial="hidden"
+            animate="visible"
+            variants={fadeInUp}
+          >
+            <Card>
+              <CardContent className="pt-6">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center">
+                    <div className="bg-primary/10 p-2 rounded-full mr-3">
+                      {metric.icon}
+                    </div>
+                    <h3 className="font-medium">{metric.title}</h3>
+                  </div>
+                  <Badge variant={
+                    metric.value >= 80 ? 'outline' :
+                    metric.value >= 60 ? 'secondary' : 'destructive'
+                  }>
+                    {metric.value}/100
+                  </Badge>
+                </div>
+                <Progress 
+                  value={metric.value} 
+                  className={`h-2 mt-2 ${getProgressColor(metric.value)}`}
+                />
+              </CardContent>
+            </Card>
+          </motion.div>
+        ))}
       </div>
-      
-      <Card className="bg-card/90 backdrop-blur-sm border-border">
-        <CardHeader className="pb-4">
-          <CardTitle>Основные метрики</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <div>
-              <p className="text-muted-foreground mb-1">Время загрузки</p>
-              <p className="text-xl font-medium">{auditData.details?.performance?.metrics?.loadingTime || '0'} сек</p>
+
+      {/* Statistics Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <motion.div
+          custom={4}
+          initial="hidden"
+          animate="visible"
+          variants={fadeInUp}
+        >
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-lg">Проблемы сайта</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center">
+                <div className="mr-3">
+                  <XCircle className="h-8 w-8 text-destructive" />
+                </div>
+                <div>
+                  <p className="text-2xl font-bold">{issuesCount}</p>
+                  <p className="text-sm text-muted-foreground">проблем обнаружено</p>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-2 mt-4">
+                <div className="bg-red-50 dark:bg-red-900/20 p-2 rounded">
+                  <p className="text-sm font-medium text-red-700 dark:text-red-400">
+                    {issues?.critical?.length || 0} критических
+                  </p>
+                </div>
+                <div className="bg-orange-50 dark:bg-orange-900/20 p-2 rounded">
+                  <p className="text-sm font-medium text-orange-700 dark:text-orange-400">
+                    {issues?.important?.length || 0} важных
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
+
+        <motion.div
+          custom={5}
+          initial="hidden"
+          animate="visible"
+          variants={fadeInUp}
+        >
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-lg">Успешные проверки</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center">
+                <div className="mr-3">
+                  <CheckCircle className="h-8 w-8 text-green-500" />
+                </div>
+                <div>
+                  <p className="text-2xl font-bold">{passedCount}</p>
+                  <p className="text-sm text-muted-foreground">проверок пройдено</p>
+                </div>
+              </div>
+              <div className="mt-4">
+                <Progress value={(passedCount / (passedCount + issuesCount)) * 100} className="h-2 bg-green-500" />
+                <p className="text-xs text-muted-foreground mt-1">
+                  {Math.round((passedCount / (passedCount + issuesCount)) * 100)}% всех проверок
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
+
+        <motion.div
+          custom={6}
+          initial="hidden"
+          animate="visible"
+          variants={fadeInUp}
+        >
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-lg">Мобильная версия</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center">
+                <div className="mr-3">
+                  <Smartphone className="h-8 w-8 text-blue-500" />
+                </div>
+                <div>
+                  <p className="text-2xl font-bold">
+                    {details?.technical?.metrics?.mobileFriendly ? "Да" : "Нет"}
+                  </p>
+                  <p className="text-sm text-muted-foreground">Адаптирован для мобильных</p>
+                </div>
+              </div>
+              <div className="mt-4 flex items-center">
+                {details?.technical?.metrics?.mobileFriendly ? (
+                  <Badge variant="outline" className="bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400">
+                    <CheckCircle className="h-3 w-3 mr-1" /> Сайт оптимизирован для мобильных
+                  </Badge>
+                ) : (
+                  <Badge variant="outline" className="bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400">
+                    <AlertCircle className="h-3 w-3 mr-1" /> Требуется оптимизация
+                  </Badge>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
+      </div>
+
+      {/* Site Details */}
+      <motion.div
+        custom={7}
+        initial="hidden"
+        animate="visible"
+        variants={fadeInUp}
+      >
+        <Card>
+          <CardHeader>
+            <CardTitle>Детали сайта</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-y-4 gap-x-6">
+              <div>
+                <p className="text-sm font-medium text-muted-foreground mb-1">URL сайта</p>
+                <p className="font-medium">{auditData.url}</p>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-muted-foreground mb-1">Проверено страниц</p>
+                <p className="font-medium">{pageCount}</p>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-muted-foreground mb-1">HTTPS</p>
+                <p className="font-medium flex items-center">
+                  {details?.technical?.metrics?.httpsEnabled ? (
+                    <>
+                      <CheckCircle className="h-4 w-4 mr-1 text-green-500" /> Включен
+                    </>
+                  ) : (
+                    <>
+                      <XCircle className="h-4 w-4 mr-1 text-red-500" /> Отсутствует
+                    </>
+                  )}
+                </p>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-muted-foreground mb-1">Время загрузки</p>
+                <p className="font-medium">{details?.performance?.metrics?.loadingTime}с</p>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-muted-foreground mb-1">Первый контент</p>
+                <p className="font-medium">{details?.performance?.metrics?.firstContentfulPaint}с</p>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-muted-foreground mb-1">Длина заголовка</p>
+                <p className="font-medium">{details?.seo?.metrics?.titleLength} символов</p>
+              </div>
             </div>
-            
-            <div>
-              <p className="text-muted-foreground mb-1">Первая отрисовка контента</p>
-              <p className="text-xl font-medium">{auditData.details?.performance?.metrics?.firstContentfulPaint || '0'} сек</p>
-            </div>
-            
-            <div>
-              <p className="text-muted-foreground mb-1">Мобильная оптимизация</p>
-              <p className="text-xl font-medium">
-                {auditData.details?.technical?.metrics?.mobileFriendly ? 'Да' : 'Нет'}
-              </p>
-            </div>
-            
-            <div>
-              <p className="text-muted-foreground mb-1">Длина заголовка</p>
-              <p className="text-xl font-medium">{auditData.details?.seo?.metrics?.titleLength || '0'} символов</p>
-            </div>
-            
-            <div>
-              <p className="text-muted-foreground mb-1">Длина описания</p>
-              <p className="text-xl font-medium">{auditData.details?.seo?.metrics?.descriptionLength || '0'} символов</p>
-            </div>
-            
-            <div>
-              <p className="text-muted-foreground mb-1">HTTPS</p>
-              <p className="text-xl font-medium">
-                {auditData.details?.technical?.metrics?.httpsEnabled ? 'Включен' : 'Отключен'}
-              </p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      </motion.div>
     </div>
   );
 };

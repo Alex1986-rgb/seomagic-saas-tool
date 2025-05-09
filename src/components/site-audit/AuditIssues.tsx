@@ -3,6 +3,8 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { motion } from "framer-motion";
+import { AlertTriangle, CheckCircle, AlertCircle, Info, Lightbulb } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 
 interface AuditIssue {
   id: string;
@@ -26,29 +28,42 @@ const AuditIssues: React.FC<AuditIssuesProps> = ({ auditData }) => {
   
   const getIssueColor = (impact: string | undefined) => {
     switch(impact) {
-      case 'high': return 'border-red-500 bg-red-50';
-      case 'medium': return 'border-orange-500 bg-orange-50';
-      case 'low': return 'border-yellow-500 bg-yellow-50';
-      case 'info': return 'border-blue-500 bg-blue-50';
-      default: return 'border-green-500 bg-green-50';
+      case 'high': return 'border-red-500 bg-red-50 dark:bg-red-900/20';
+      case 'medium': return 'border-orange-500 bg-orange-50 dark:bg-orange-900/20';
+      case 'low': return 'border-yellow-500 bg-yellow-50 dark:bg-yellow-900/20';
+      case 'info': return 'border-blue-500 bg-blue-50 dark:bg-blue-900/20';
+      default: return 'border-green-500 bg-green-50 dark:bg-green-900/20';
     }
   };
   
   const getIssueTextColor = (impact: string | undefined) => {
     switch(impact) {
-      case 'high': return 'text-red-700';
-      case 'medium': return 'text-orange-700';
-      case 'low': return 'text-yellow-700';
-      case 'info': return 'text-blue-700';
-      default: return 'text-green-700';
+      case 'high': return 'text-red-700 dark:text-red-400';
+      case 'medium': return 'text-orange-700 dark:text-orange-400';
+      case 'low': return 'text-yellow-700 dark:text-yellow-400';
+      case 'info': return 'text-blue-700 dark:text-blue-400';
+      default: return 'text-green-700 dark:text-green-400';
+    }
+  };
+
+  const getIssueIcon = (impact: string | undefined) => {
+    switch(impact) {
+      case 'high': return <AlertTriangle className="h-5 w-5 text-red-600" />;
+      case 'medium': return <AlertCircle className="h-5 w-5 text-orange-600" />;
+      case 'low': return <Lightbulb className="h-5 w-5 text-yellow-600" />;
+      case 'info': return <Info className="h-5 w-5 text-blue-600" />;
+      default: return <CheckCircle className="h-5 w-5 text-green-600" />;
     }
   };
   
   const renderIssueItems = (items: AuditIssue[]) => {
     return (
-      <div className="space-y-3">
+      <div className="space-y-4">
         {items.length === 0 ? (
-          <p className="text-center text-muted-foreground py-8">Нет проблем в этой категории</p>
+          <div className="text-center py-12 border border-dashed rounded-lg border-gray-300 dark:border-gray-700">
+            <Info className="h-12 w-12 mx-auto text-muted-foreground opacity-50 mb-2" />
+            <p className="text-muted-foreground">Нет проблем в этой категории</p>
+          </div>
         ) : (
           items.map((item, index) => (
             <motion.div
@@ -56,12 +71,33 @@ const AuditIssues: React.FC<AuditIssuesProps> = ({ auditData }) => {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.05 }}
-              className={`p-4 border-l-4 rounded-md ${getIssueColor(item.impact)}`}
+              className={`p-4 border-l-4 rounded-md shadow-sm ${getIssueColor(item.impact)}`}
             >
-              <h3 className={`text-lg font-medium mb-1 ${getIssueTextColor(item.impact)}`}>
-                {item.title}
-              </h3>
-              <p className="text-sm text-muted-foreground">{item.description}</p>
+              <div className="flex items-start gap-3">
+                <div className="flex-shrink-0 mt-1">
+                  {getIssueIcon(item.impact)}
+                </div>
+                <div className="flex-grow">
+                  <h3 className={`text-lg font-medium mb-1 ${getIssueTextColor(item.impact)}`}>
+                    {item.title}
+                  </h3>
+                  <p className="text-sm text-muted-foreground">{item.description}</p>
+                  
+                  {item.impact && (
+                    <div className="mt-2">
+                      <Badge variant={
+                        item.impact === 'high' ? 'destructive' : 
+                        item.impact === 'medium' ? 'default' :
+                        item.impact === 'low' ? 'outline' : 'secondary'
+                      } className="mt-1">
+                        {item.impact === 'high' ? 'Срочно исправить' : 
+                         item.impact === 'medium' ? 'Важно' :
+                         item.impact === 'low' ? 'Рекомендация' : 'Информация'}
+                      </Badge>
+                    </div>
+                  )}
+                </div>
+              </div>
             </motion.div>
           ))
         )}
@@ -78,19 +114,24 @@ const AuditIssues: React.FC<AuditIssuesProps> = ({ auditData }) => {
         <Tabs value={activeIssueTab} onValueChange={setActiveIssueTab}>
           <TabsList className="grid grid-cols-5 mb-6">
             <TabsTrigger value="critical" className="data-[state=active]:text-red-600">
-              Критические ({criticalIssues.length})
+              <AlertTriangle className="h-3 w-3 mr-1" />
+              <span className="hidden md:inline">Критические</span> ({criticalIssues.length})
             </TabsTrigger>
             <TabsTrigger value="important" className="data-[state=active]:text-orange-600">
-              Важные ({importantIssues.length})
+              <AlertCircle className="h-3 w-3 mr-1" />
+              <span className="hidden md:inline">Важные</span> ({importantIssues.length})
             </TabsTrigger>
             <TabsTrigger value="opportunities" className="data-[state=active]:text-yellow-600">
-              Возможности ({opportunities.length})
+              <Lightbulb className="h-3 w-3 mr-1" />
+              <span className="hidden md:inline">Возможности</span> ({opportunities.length})
             </TabsTrigger>
             <TabsTrigger value="minor" className="data-[state=active]:text-blue-600">
-              Незначительные ({minorIssues.length})
+              <Info className="h-3 w-3 mr-1" />
+              <span className="hidden md:inline">Незначительные</span> ({minorIssues.length})
             </TabsTrigger>
             <TabsTrigger value="passed" className="data-[state=active]:text-green-600">
-              Успешные ({passedChecks.length})
+              <CheckCircle className="h-3 w-3 mr-1" />
+              <span className="hidden md:inline">Успешные</span> ({passedChecks.length})
             </TabsTrigger>
           </TabsList>
           
