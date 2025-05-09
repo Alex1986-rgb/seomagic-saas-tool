@@ -1,4 +1,3 @@
-
 // Export core interfaces from audit.d.ts
 import type { 
   AuditData,
@@ -14,7 +13,7 @@ import type { IssuesData } from './audit/audit-details';
 import type { RecommendationData } from './audit/recommendations';
 
 // Import OptimizationItem from features path to re-export
-import type { OptimizationItem } from '@/features/audit/types/optimization-types';
+import type { OptimizationItem } from '@/types/audit.d';
 
 export interface AuditIssue {
   id?: string;

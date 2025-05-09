@@ -1,3 +1,4 @@
+
 export interface AuditData {
   id: string;
   url: string;
@@ -10,7 +11,7 @@ export interface AuditData {
   crawledPages?: number;
   status: 'completed' | 'in-progress' | 'failed';
   optimizationCost?: number;
-  optimizationItems?: OptimizationItem[]; // Use the consistent OptimizationItem type
+  optimizationItems?: OptimizationItem[];
   domain?: string;
   title?: string;
   scanTime?: string;

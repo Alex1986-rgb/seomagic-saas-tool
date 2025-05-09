@@ -1,16 +1,22 @@
-
 /**
  * Consolidated types for optimization functionality
  */
 
 export interface OptimizationItem {
+  id?: string;
+  page?: string;
+  tasks?: string[];
+  cost?: number;
+  priority?: 'high' | 'medium' | 'low';
+  category?: string;
   name: string;
   description: string;
   count: number;
   price: number;
-  totalPrice: number;
   pricePerUnit?: number;
+  totalPrice: number;
   type?: string;
+  errorCount?: number;
 }
 
 export interface OptimizationOptions {

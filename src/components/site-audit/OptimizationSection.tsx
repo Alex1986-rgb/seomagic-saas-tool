@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -177,7 +176,7 @@ const OptimizationSection: React.FC<OptimizationSectionProps> = ({ url, auditDat
                   },
                   optimized: {
                     title: 'Качественные товары и профессиональные услуги | Ваш надежный партнер с 2013 года',
-                    content: 'ООО "Компания" предлага��т широкий ассортимент высококачественных товаров и профессиональных услуг для бизнеса и частных лиц. За более чем 10 лет работы на рынке мы обслужили свыше 5000 клиентов и реализовали более 200 крупных проектов. Наши с��ециалисты имеют с��ртификаты и регулярно проходят обучение для повышения квалификации. Свяжитесь с нами сегодня через форму обратной связи или по телефону +7 (XXX) XXX-XX-XX, чтобы получить бесплатную консультацию по вашему проекту.',
+                    content: 'ООО "Компания" предлагает широкий ассортимент высококачественных товаров и профессиональных услуг для бизнеса и частных лиц. За более чем 10 лет работы на рынке мы обслужили свыше 5000 клиентов и реализовали более 200 крупных проектов. Наши специалисты имеют сертификаты и регулярно проходят обучение для повышения квалификации. Свяжитесь с нами сегодня через форму обратной связи или по телефону +7 (XXX) XXX-XX-XX, чтобы получить бесплатную консультацию по вашему проекту.',
                     meta: {
                       description: 'Ведущая компания по предоставлению высококачественных товаров и профессиональных услуг в Москве с 2013 года. Индивидуальный подход, выгодные цены, гарантия качества. Звоните ☎ +7 (XXX) XXX-XX-XX',
                       keywords: 'качественные товары москва, профессиональные услуги, надежная компания, опытные специалисты, индивидуальный подход, гарантия качества'
@@ -460,7 +459,7 @@ const OptimizationSection: React.FC<OptimizationSectionProps> = ({ url, auditDat
                     ></div>
                   </div>
                   <div className="flex justify-between mt-2 text-xs text-muted-foreground">
-                    <span>{Math.round(optimizationProgress)}% завер��ено</span>
+                    <span>{Math.round(optimizationProgress)}% завершено</span>
                     <span>Примерное время: {Math.ceil((100 - optimizationProgress) / 10)} мин</span>
                   </div>
                   
@@ -592,7 +591,7 @@ const OptimizationSection: React.FC<OptimizationSectionProps> = ({ url, auditDat
               
               <Alert className="bg-green-50 text-green-800 border-green-200 dark:bg-green-900/10 dark:border-green-900/30 dark:text-green-400">
                 <CheckCircle2 className="h-4 w-4 text-green-600 dark:text-green-400" />
-                <AlertTitle>О��тимизация успешно завершена</AlertTitle>
+                <AlertTitle>Оптимизация успешно завершена</AlertTitle>
                 <AlertDescription>
                   Ваш сайт был успешно оптимизирован с помощью ИИ. Показатели SEO значительно улучшены.
                 </AlertDescription>

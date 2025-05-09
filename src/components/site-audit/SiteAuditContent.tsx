@@ -140,8 +140,7 @@ const SiteAuditContent: React.FC<SiteAuditContentProps> = ({ url }) => {
   if (data && !data.optimizationItems) {
     try {
       const pageCount = data.pageCount || 20;
-      const optimizationItems = generateMockOptimizationItems(pageCount);
-      // Use type assertion to make TypeScript happy
+      const optimizationItems: OptimizationItem[] = generateMockOptimizationItems(pageCount);
       data.optimizationItems = optimizationItems;
       data.optimizationCost = calculateTotalCost(optimizationItems);
     } catch (err) {

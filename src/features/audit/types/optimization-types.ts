@@ -1,4 +1,3 @@
-
 // Define optimization types used across the application
 
 export interface OptimizationItem {
@@ -20,6 +19,7 @@ export interface OptimizationItem {
   // Optional properties
   pricePerUnit?: number;
   type?: string;
+  errorCount?: number;
 }
 
 export interface OptimizationProgressState {
