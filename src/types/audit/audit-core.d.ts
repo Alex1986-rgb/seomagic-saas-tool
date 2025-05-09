@@ -13,10 +13,13 @@ export interface AuditData {
   pageCount?: number;
   crawledPages?: number;
   status: 'completed' | 'in-progress' | 'failed';
+  title?: string;
+  scanTime?: string;
   
   // Adding optimization data to the AuditData type
   optimizationItems?: OptimizationItem[];
   optimizationCost?: number;
+  domain?: string;
 }
 
 export interface AuditHistoryItem {

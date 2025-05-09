@@ -11,7 +11,7 @@ import OptimizationSection from './OptimizationSection';
 import { AlertCircle, ArrowRight } from "lucide-react";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { Button } from '@/components/ui/button';
-import { AuditData } from '@/types/audit';
+import { AuditData, OptimizationItem } from '@/types/audit';
 
 // Import the generator functions directly
 import { generateMockOptimizationItems, calculateTotalCost } from '@/services/audit/generators';
@@ -61,29 +61,39 @@ const SiteAuditContent: React.FC<SiteAuditContentProps> = ({ url }) => {
   // Check if auditData is not of expected type or is a string (which might be HTML)
   if (!auditData || typeof auditData === 'string' || !Object.prototype.hasOwnProperty.call(auditData, 'pageCount')) {
     console.warn("Using demo data because audit data is invalid:", typeof auditData);
-    // Use demo data as fallback with deep clone to avoid modifying the original
-    const processedData = JSON.parse(JSON.stringify(demoAuditData));
+    try {
+      // Use demo data as fallback with deep clone to avoid modifying the original
+      const processedData = JSON.parse(JSON.stringify(demoAuditData));
     
-    // Ensure status is one of the allowed values
-    if (processedData.status && typeof processedData.status === 'string' && 
-        !['completed', 'failed', 'in-progress'].includes(processedData.status)) {
-      processedData.status = 'completed'; // Set to a default allowed value
+      // Ensure status is one of the allowed values
+      if (processedData.status && typeof processedData.status === 'string' && 
+          !['completed', 'failed', 'in-progress'].includes(processedData.status)) {
+        processedData.status = 'completed'; // Set to a default allowed value
+      }
+      
+      // Use explicit type assertion through unknown for safety
+      data = processedData as unknown as AuditData;
+    } catch (err) {
+      console.error("Error processing demo data:", err);
+      data = null;
     }
-    
-    // Use explicit type assertion through unknown for safety
-    data = processedData as unknown as AuditData;
   } else {
-    // If we have valid audit data, create a deep copy to avoid modifying the original
-    const processedData = JSON.parse(JSON.stringify(auditData));
-    
-    // Ensure status is one of the allowed values
-    if (processedData.status && typeof processedData.status === 'string' && 
-        !['completed', 'failed', 'in-progress'].includes(processedData.status)) {
-      processedData.status = 'completed'; // Set to a default allowed value
+    try {
+      // If we have valid audit data, create a deep copy to avoid modifying the original
+      const processedData = JSON.parse(JSON.stringify(auditData));
+      
+      // Ensure status is one of the allowed values
+      if (processedData.status && typeof processedData.status === 'string' && 
+          !['completed', 'failed', 'in-progress'].includes(processedData.status)) {
+        processedData.status = 'completed'; // Set to a default allowed value
+      }
+      
+      // Use explicit type assertion through unknown for safety
+      data = processedData as unknown as AuditData;
+    } catch (err) {
+      console.error("Error processing audit data:", err);
+      data = null;
     }
-    
-    // Use explicit type assertion through unknown for safety
-    data = processedData as unknown as AuditData;
   }
   
   // Make sure we have optimization data for demo purposes
@@ -91,7 +101,7 @@ const SiteAuditContent: React.FC<SiteAuditContentProps> = ({ url }) => {
     try {
       const pageCount = data.pageCount || 20;
       const optimizationItems = generateMockOptimizationItems(pageCount);
-      data.optimizationItems = optimizationItems;
+      data.optimizationItems = optimizationItems as OptimizationItem[];
       data.optimizationCost = calculateTotalCost(optimizationItems);
     } catch (err) {
       console.error("Failed to generate mock optimization data:", err);
@@ -147,7 +157,7 @@ const SiteAuditContent: React.FC<SiteAuditContentProps> = ({ url }) => {
         </TabsList>
         
         <TabsContent value="overview" className="space-y-6">
-          <AuditOverview auditData={data} />
+          {data && <AuditOverview auditData={data} />}
           
           <motion.div
             className="flex justify-center mt-8"
@@ -167,14 +177,16 @@ const SiteAuditContent: React.FC<SiteAuditContentProps> = ({ url }) => {
         </TabsContent>
         
         <TabsContent value="issues">
-          <AuditIssues auditData={data} />
+          {data && <AuditIssues auditData={data} />}
         </TabsContent>
         
         <TabsContent value="optimization">
-          <OptimizationSection 
-            url={url} 
-            auditData={data} 
-          />
+          {data && (
+            <OptimizationSection 
+              url={url} 
+              auditData={data} 
+            />
+          )}
         </TabsContent>
       </Tabs>
     </div>
