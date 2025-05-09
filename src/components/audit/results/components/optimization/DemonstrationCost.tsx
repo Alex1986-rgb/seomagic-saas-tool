@@ -80,7 +80,7 @@ const DemonstrationCost: React.FC = () => {
             discount={pageCount > 50 ? (pageCount > 200 ? 15 : pageCount > 100 ? 10 : 5) : 0}
           />
           
-          <CostDetailsTable optimizationItems={optimizationItems} />
+          <CostDetailsTable items={optimizationItems} />
           
           <div className="flex justify-end mt-4">
             {!isOptimized ? (
