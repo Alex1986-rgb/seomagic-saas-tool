@@ -2,13 +2,15 @@
 // Define optimization types used across the application
 
 export interface OptimizationItem {
+  // Core properties
   id: string;
   page: string;
   tasks: string[];
   cost: number;
   priority: 'high' | 'medium' | 'low';
   category: string;
-  // Adding properties needed by components
+  
+  // Component-specific properties
   name: string;
   description: string;
   count: number;
@@ -40,6 +42,17 @@ export interface PageContent {
     description?: string;
     keywords?: string;
   };
+  // Add missing properties referenced in contentAnalyzer.ts
+  images?: {
+    url: string;
+    alt: string | null;
+  }[];
+  headings?: {
+    h1: string[];
+    h2: string[];
+    h3: string[];
+  };
+  wordCount?: number;
 }
 
 export interface OptimizationResponse {

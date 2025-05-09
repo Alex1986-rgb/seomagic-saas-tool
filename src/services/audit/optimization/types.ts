@@ -3,33 +3,14 @@
  * Типы данных для оптимизации сайта
  */
 
-export interface PageContent {
-  url: string;
-  title: string;
-  meta: {
-    description: string | null;
-    keywords: string | null;
-  };
-  content: string;
-  images: {
-    url: string;
-    alt: string | null;
-  }[];
-  headings: {
-    h1: string[];
-    h2: string[];
-    h3: string[];
-  };
-  wordCount: number;
-  optimized?: {
-    content: string;
-    meta?: {
-      description?: string;
-      keywords?: string;
-    };
-    score?: number;
-  };
-}
+import { 
+  OptimizationItem as BaseOptimizationItem,
+  PageContent as BasePageContent
+} from '@/features/audit/types/optimization-types';
+
+// Re-export types from the central type definitions
+export type OptimizationItem = BaseOptimizationItem;
+export type PageContent = BasePageContent;
 
 export interface OptimizationMetrics {
   missingMetaDescriptions: number;
@@ -50,15 +31,6 @@ export interface OptimizationMetrics {
   potentialScoreIncrease: number;
   estimatedCost: number;
   optimizationItems: OptimizationItem[];
-}
-
-export interface OptimizationItem {
-  name: string;
-  description: string;
-  count: number;
-  price: number;
-  totalPrice: number;
-  pricePerUnit: number; // Added to ensure we include this property
 }
 
 export interface OptimizationResponse {

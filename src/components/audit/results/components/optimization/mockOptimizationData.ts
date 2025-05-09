@@ -41,9 +41,22 @@ export const generateMockOptimizationItems = (pageCount: number = 25): Optimizat
   if (pageCount > 100) discountPercentage = 10;
   if (pageCount > 200) discountPercentage = 15;
   
+  let idCounter = 1;
+  
+  // Function to generate a unique ID
+  const generateId = () => {
+    return `item-${idCounter++}`;
+  };
+  
   // Items array
   const items: OptimizationItem[] = [
     {
+      id: generateId(),
+      page: 'all',
+      tasks: ['base_processing'],
+      cost: 5000,
+      priority: 'high',
+      category: 'base',
       name: 'Базовая стоимость обработки сайта',
       description: 'Начальная стоимость анализа и подготовки к оптимизации',
       count: 1,
@@ -53,6 +66,12 @@ export const generateMockOptimizationItems = (pageCount: number = 25): Optimizat
       type: 'base'
     },
     {
+      id: generateId(),
+      page: 'all',
+      tasks: ['page_processing'],
+      cost: basePrice * pageCount,
+      priority: 'high',
+      category: 'base',
       name: 'Базовая стоимость обработки страниц',
       description: 'Стоимость базовой обработки всех страниц сайта',
       count: pageCount,
@@ -63,6 +82,12 @@ export const generateMockOptimizationItems = (pageCount: number = 25): Optimizat
     },
     // Critical errors
     {
+      id: generateId(),
+      page: 'errors',
+      tasks: ['fix_critical_errors'],
+      cost: criticalErrorsCount * criticalErrorPrice,
+      priority: 'high',
+      category: 'technical',
       name: 'Исправление критических ошибок',
       description: 'Устранение критических ошибок, блокирующих индексацию',
       count: criticalErrorsCount,
@@ -73,6 +98,12 @@ export const generateMockOptimizationItems = (pageCount: number = 25): Optimizat
     },
     // Warnings
     {
+      id: generateId(),
+      page: 'warnings',
+      tasks: ['fix_warnings'],
+      cost: warningsCount * warningPrice,
+      priority: 'medium',
+      category: 'technical',
       name: 'Исправление предупреждений',
       description: 'Устранение предупреждений и некритичных ошибок',
       count: warningsCount,
@@ -83,6 +114,12 @@ export const generateMockOptimizationItems = (pageCount: number = 25): Optimizat
     },
     // Technical improvements
     {
+      id: generateId(),
+      page: 'meta',
+      tasks: ['optimize_meta_tags'],
+      cost: metaTagsCount * metaTagPrice,
+      priority: 'high',
+      category: 'technical',
       name: 'Оптимизация мета-тегов',
       description: 'Создание и оптимизация мета-тегов title и description',
       count: metaTagsCount,
@@ -92,6 +129,12 @@ export const generateMockOptimizationItems = (pageCount: number = 25): Optimizat
       type: 'technical'
     },
     {
+      id: generateId(),
+      page: 'links',
+      tasks: ['fix_broken_links'],
+      cost: brokenLinksCount * brokenLinkPrice,
+      priority: 'high',
+      category: 'technical',
       name: 'Исправление битых ссылок',
       description: 'Обнаружение и исправление некорректных ссылок',
       count: brokenLinksCount,
@@ -101,6 +144,12 @@ export const generateMockOptimizationItems = (pageCount: number = 25): Optimizat
       type: 'technical'
     },
     {
+      id: generateId(),
+      page: 'images',
+      tasks: ['optimize_images'],
+      cost: imagesCount * imageOptimizationPrice,
+      priority: 'medium',
+      category: 'technical',
       name: 'Оптимизация изображений',
       description: 'Оптимизация размера и добавление alt-тегов для изображений',
       count: imagesCount,
@@ -110,6 +159,12 @@ export const generateMockOptimizationItems = (pageCount: number = 25): Optimizat
       type: 'technical'
     },
     {
+      id: generateId(),
+      page: 'redirects',
+      tasks: ['setup_redirects'],
+      cost: redirectsCount * redirectPrice,
+      priority: 'medium',
+      category: 'technical',
       name: 'Настройка редиректов',
       description: 'Создание правильных редиректов для старых URL',
       count: redirectsCount,
@@ -120,6 +175,12 @@ export const generateMockOptimizationItems = (pageCount: number = 25): Optimizat
     },
     // Content improvements
     {
+      id: generateId(),
+      page: 'content',
+      tasks: ['optimize_seo_content'],
+      cost: contentCount * contentOptimizationPrice,
+      priority: 'high',
+      category: 'content',
       name: 'Оптимизация контента для SEO',
       description: 'Оптимизация текстового содержимого для поисковых систем',
       count: contentCount,
@@ -129,6 +190,12 @@ export const generateMockOptimizationItems = (pageCount: number = 25): Optimizat
       type: 'content'
     },
     {
+      id: generateId(),
+      page: 'headings',
+      tasks: ['optimize_headings'],
+      cost: headingsCount * headingStructurePrice,
+      priority: 'medium',
+      category: 'content',
       name: 'Структура заголовков',
       description: 'Оптимизация структуры заголовков H1-H6',
       count: headingsCount,
@@ -138,6 +205,12 @@ export const generateMockOptimizationItems = (pageCount: number = 25): Optimizat
       type: 'content'
     },
     {
+      id: generateId(),
+      page: 'readability',
+      tasks: ['improve_readability'],
+      cost: readabilityCount * readabilityPrice,
+      priority: 'medium',
+      category: 'content',
       name: 'Улучшение читабельности',
       description: 'Работа над улучшением читабельности текста',
       count: readabilityCount,
@@ -147,6 +220,12 @@ export const generateMockOptimizationItems = (pageCount: number = 25): Optimizat
       type: 'content'
     },
     {
+      id: generateId(),
+      page: 'conversion',
+      tasks: ['optimize_conversion_texts'],
+      cost: conversionCount * conversionTextPrice,
+      priority: 'medium',
+      category: 'content',
       name: 'Оптимизация текстов для конверсии',
       description: 'Улучшение текстов для повышения конверсии',
       count: conversionCount,
@@ -163,25 +242,37 @@ export const generateMockOptimizationItems = (pageCount: number = 25): Optimizat
     const discountAmount = totalBeforeDiscount * (discountPercentage / 100);
     
     items.push({
+      id: generateId(),
+      page: 'all',
+      tasks: ['apply_discount'],
+      cost: -discountAmount,
+      priority: 'low',
+      category: 'discount',
       name: `Скидка ${discountPercentage}%`,
       description: `Скидка за объем работ (более ${pageCount} страниц)`,
       count: 1,
       price: -discountAmount,
       pricePerUnit: -discountAmount,
       totalPrice: -discountAmount,
-      type: 'additional' // Changed from 'discount' to 'additional' which is allowed
+      type: 'additional'
     });
   }
 
   // Add guarantee
   items.push({
+    id: generateId(),
+    page: 'all',
+    tasks: ['guarantee_results'],
+    cost: 0,
+    priority: 'low',
+    category: 'guarantee',
     name: 'Гарантия результата',
     description: 'Гарантированное повышение позиций в поисковой выдаче',
     count: 1,
     price: 0,
     pricePerUnit: 0,
     totalPrice: 0,
-    type: 'additional' // Changed from 'guarantee' to 'additional' which is allowed
+    type: 'additional'
   });
   
   return items;

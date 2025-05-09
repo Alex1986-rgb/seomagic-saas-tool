@@ -14,8 +14,8 @@ import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { AuditData } from '@/types/audit';
 import { OptimizationItem } from '@/features/audit/types/optimization-types';
 
-// Import generator functions for mock data if needed
-import { generateMockOptimizationItems, calculateTotalCost } from '@/services/audit/generators';
+// Import generator functions for mock data
+import { generateMockOptimizationItems, calculateTotalCost } from '@/components/audit/results/components/optimization/mockOptimizationData';
 
 interface OptimizationSectionProps {
   url: string;
@@ -78,10 +78,10 @@ const OptimizationSection: React.FC<OptimizationSectionProps> = ({ url, auditDat
   } | null>(null);
   
   // Generate optimization items and cost if they don't exist in audit data
-  const optimizationItems: OptimizationItem[] = auditData.optimizationItems || 
-    generateMockOptimizationItems(auditData.pageCount || 15);
+  const optimizationItems = auditData?.optimizationItems || 
+    generateMockOptimizationItems(auditData?.pageCount || 20);
   
-  const optimizationCost = auditData.optimizationCost || 
+  const optimizationCost = auditData?.optimizationCost || 
     calculateTotalCost(optimizationItems);
   
   const pageCount = auditData.pageCount || 15;
