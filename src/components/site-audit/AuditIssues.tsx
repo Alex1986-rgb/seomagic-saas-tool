@@ -5,46 +5,93 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { motion } from "framer-motion";
 import { AlertTriangle, CheckCircle, AlertCircle, Info, Lightbulb, FileText, Image, Link } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-
-interface AuditIssue {
-  id: string;
-  title: string;
-  description: string;
-  impact?: string;
-  category?: string;
-}
+import { AuditIssue } from '@/types/audit';
 
 interface AuditIssuesProps {
   auditData: any;
 }
 
+// Helper type to handle both string and object issue formats
+type IssueItem = string | AuditIssue;
+
 const AuditIssues: React.FC<AuditIssuesProps> = ({ auditData }) => {
   const [activeIssueTab, setActiveIssueTab] = useState('critical');
   
-  // Получаем количество проблем для каждой категории
+  // Process and normalize issues to handle both string and object formats
+  const normalizeIssues = (issues: any[]): AuditIssue[] => {
+    if (!Array.isArray(issues)) return [];
+    
+    return issues.map((issue, index) => {
+      if (typeof issue === 'string') {
+        try {
+          // Try to parse if it's a stringified JSON
+          const parsed = JSON.parse(issue);
+          if (typeof parsed === 'object' && parsed !== null) {
+            return {
+              id: parsed.id || `issue-${index}`,
+              title: parsed.title || issue,
+              description: parsed.description || '',
+              impact: parsed.impact || 'medium',
+              category: parsed.category
+            };
+          }
+        } catch (e) {
+          // Not a JSON string, use as is
+        }
+        
+        // Create a simple object from the string
+        return {
+          id: `issue-${index}`,
+          title: issue,
+          description: '',
+          impact: 'medium'
+        };
+      } else if (typeof issue === 'object' && issue !== null) {
+        // Already an object, ensure it has the required fields
+        return {
+          id: issue.id || `issue-${index}`,
+          title: issue.title || 'Unknown Issue',
+          description: issue.description || '',
+          impact: issue.impact || 'medium',
+          category: issue.category
+        };
+      }
+      
+      // Fallback for any other type
+      return {
+        id: `issue-${index}`,
+        title: String(issue),
+        description: '',
+        impact: 'medium'
+      };
+    });
+  };
+  
+  // Normalize all issue categories
+  const criticalIssues = normalizeIssues(auditData.issues?.critical || []);
+  const importantIssues = normalizeIssues(auditData.issues?.important || []);
+  const opportunities = normalizeIssues(auditData.issues?.opportunities || []);
+  const metaIssues = normalizeIssues(auditData.issues?.meta || []);
+  const contentIssues = normalizeIssues(auditData.issues?.content || []);
+  const linkIssues = normalizeIssues(auditData.issues?.links || []);
+  const imageIssues = normalizeIssues(auditData.issues?.images || []);
+  
+  // Get counts (handle both array and number formats)
   const getIssueCount = (issues: any): number => {
     if (Array.isArray(issues)) return issues.length;
     if (typeof issues === 'number') return issues;
     return 0;
   };
   
-  const criticalIssues = auditData.issues?.critical || [];
-  const importantIssues = auditData.issues?.important || [];
-  const opportunities = auditData.issues?.opportunities || [];
-  const metaIssues = auditData.issues?.meta || [];
-  const contentIssues = auditData.issues?.content || [];
-  const linkIssues = auditData.issues?.links || [];
-  const imageIssues = auditData.issues?.images || [];
-  const minorIssues = auditData.issues?.minor || 0;
-  const passedChecks = auditData.issues?.passed || 0;
-  
-  const criticalCount = getIssueCount(criticalIssues);
-  const importantCount = getIssueCount(importantIssues);
-  const opportunitiesCount = getIssueCount(opportunities);
-  const metaCount = getIssueCount(metaIssues);
-  const contentCount = getIssueCount(contentIssues);
-  const linkCount = getIssueCount(linkIssues);
-  const imageCount = getIssueCount(imageIssues);
+  const criticalCount = getIssueCount(auditData.issues?.critical || []);
+  const importantCount = getIssueCount(auditData.issues?.important || []);
+  const opportunitiesCount = getIssueCount(auditData.issues?.opportunities || []);
+  const metaCount = getIssueCount(auditData.issues?.meta || []);
+  const contentCount = getIssueCount(auditData.issues?.content || []);
+  const linkCount = getIssueCount(auditData.issues?.links || []);
+  const imageCount = getIssueCount(auditData.issues?.images || []);
+  const minorIssues = getIssueCount(auditData.issues?.minor || 0);
+  const passedChecks = getIssueCount(auditData.issues?.passed || 0);
   
   const getIssueColor = (impact: string | undefined) => {
     switch(impact) {
@@ -98,7 +145,7 @@ const AuditIssues: React.FC<AuditIssuesProps> = ({ auditData }) => {
         ) : (
           items.map((item, index) => (
             <motion.div
-              key={item.id}
+              key={item.id || `issue-${index}`}
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.05 }}
@@ -112,7 +159,9 @@ const AuditIssues: React.FC<AuditIssuesProps> = ({ auditData }) => {
                   <h3 className={`text-lg font-medium mb-1 ${getIssueTextColor(item.impact)}`}>
                     {item.title}
                   </h3>
-                  <p className="text-sm text-muted-foreground">{item.description}</p>
+                  {item.description && (
+                    <p className="text-sm text-muted-foreground">{item.description}</p>
+                  )}
                   
                   {item.impact && (
                     <div className="mt-2">

@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { AlertTriangle, AlertCircle, Lightbulb, ChevronDown, ChevronUp, Check } from 'lucide-react';
-import { AuditData } from '@/types/audit';
+import { AuditData, AuditIssue } from '@/types/audit';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -9,7 +9,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 export interface AuditIssuesAndEstimateProps {
   auditData: AuditData;
   optimizationCost: number;
-  optimizationItems: any[]; // Added this prop to match expected usage
+  optimizationItems: any[]; 
   onApproveEstimate?: () => void;
 }
 
@@ -21,17 +21,57 @@ export const AuditIssuesAndEstimate: React.FC<AuditIssuesAndEstimateProps> = ({
 }) => {
   const [showDetails, setShowDetails] = useState(false);
   
-  const criticalIssues = Array.isArray(auditData.issues.critical) 
-    ? auditData.issues.critical 
-    : [];
+  // Helper function to normalize issues
+  const normalizeIssues = (issues: any[]): AuditIssue[] => {
+    if (!Array.isArray(issues)) return [];
     
-  const importantIssues = Array.isArray(auditData.issues.important) 
-    ? auditData.issues.important 
-    : [];
-    
-  const opportunities = Array.isArray(auditData.issues.opportunities) 
-    ? auditData.issues.opportunities 
-    : [];
+    return issues.map((issue, index) => {
+      if (typeof issue === 'string') {
+        try {
+          // Try to parse if it's a stringified JSON
+          const parsed = JSON.parse(issue);
+          if (typeof parsed === 'object' && parsed !== null) {
+            return {
+              id: parsed.id || `issue-${index}`,
+              title: parsed.title || issue,
+              description: parsed.description || '',
+              impact: parsed.impact || 'medium'
+            };
+          }
+        } catch (e) {
+          // Not a JSON string, use as is
+        }
+        
+        // Create a simple object from the string
+        return {
+          id: `issue-${index}`,
+          title: issue,
+          description: '',
+          impact: 'medium'
+        };
+      } else if (typeof issue === 'object' && issue !== null) {
+        // Already an object, ensure it has the required fields
+        return {
+          id: issue.id || `issue-${index}`,
+          title: issue.title || 'Unknown Issue',
+          description: issue.description || '',
+          impact: issue.impact || 'medium'
+        };
+      }
+      
+      // Fallback for any other type
+      return {
+        id: `issue-${index}`,
+        title: String(issue),
+        description: '',
+        impact: 'medium'
+      };
+    });
+  };
+
+  const criticalIssues = normalizeIssues(auditData.issues?.critical || []);
+  const importantIssues = normalizeIssues(auditData.issues?.important || []);
+  const opportunities = normalizeIssues(auditData.issues?.opportunities || []);
 
   const totalIssues = criticalIssues.length + importantIssues.length + opportunities.length;
   
@@ -84,13 +124,12 @@ export const AuditIssuesAndEstimate: React.FC<AuditIssuesAndEstimateProps> = ({
     return new Intl.NumberFormat('ru-RU', { style: 'currency', currency: 'RUB' }).format(cost);
   };
 
-  const renderIssueWithPrice = (issue: any, index: number, type: 'critical' | 'important' | 'opportunity') => {
+  const renderIssueWithPrice = (issue: AuditIssue, index: number, type: 'critical' | 'important' | 'opportunity') => {
     const price = getPricePerIssue(type);
-    const issueTitle = typeof issue === 'string' ? issue : issue.title;
     
     return (
       <li key={`${type}-${index}`} className="flex justify-between items-center">
-        <span>{issueTitle}</span>
+        <span>{issue.title}</span>
         <span className="text-sm font-medium text-primary">{formatCost(price)}</span>
       </li>
     );
@@ -130,7 +169,7 @@ export const AuditIssuesAndEstimate: React.FC<AuditIssuesAndEstimateProps> = ({
               {criticalIssues.map((issue, index) => (
                 showDetails 
                   ? renderIssueWithPrice(issue, index, 'critical')
-                  : <li key={`critical-${index}`}>{typeof issue === 'string' ? issue : issue.title}</li>
+                  : <li key={`critical-${index}`}>{issue.title}</li>
               ))}
             </ul>
             {showDetails && criticalIssues.length > 0 && (
@@ -150,7 +189,7 @@ export const AuditIssuesAndEstimate: React.FC<AuditIssuesAndEstimateProps> = ({
               {importantIssues.map((issue, index) => (
                 showDetails 
                   ? renderIssueWithPrice(issue, index, 'important')
-                  : <li key={`important-${index}`}>{typeof issue === 'string' ? issue : issue.title}</li>
+                  : <li key={`important-${index}`}>{issue.title}</li>
               ))}
             </ul>
             {showDetails && importantIssues.length > 0 && (
@@ -170,7 +209,7 @@ export const AuditIssuesAndEstimate: React.FC<AuditIssuesAndEstimateProps> = ({
               {opportunities.map((issue, index) => (
                 showDetails 
                   ? renderIssueWithPrice(issue, index, 'opportunity')
-                  : <li key={`opportunity-${index}`}>{typeof issue === 'string' ? issue : issue.title}</li>
+                  : <li key={`opportunity-${index}`}>{issue.title}</li>
               ))}
             </ul>
             {showDetails && opportunities.length > 0 && (

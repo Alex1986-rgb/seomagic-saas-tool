@@ -14,6 +14,25 @@ const AuditRecommendations: React.FC<AuditRecommendationsProps> = ({ recommendat
   const [copiedItem, setCopiedItem] = useState<string | null>(null);
   const { toast } = useToast();
 
+  // Normalize recommendation items to ensure they're all strings
+  const normalizeItems = (items: (string | any)[]): string[] => {
+    if (!items || !Array.isArray(items)) return [];
+    
+    return items.map(item => {
+      if (typeof item === 'string') return item;
+      if (typeof item === 'object' && item !== null) {
+        if (item.title) return item.title;
+        return JSON.stringify(item);
+      }
+      return String(item);
+    });
+  };
+
+  // Normalize all recommendation sections
+  const criticalItems = normalizeItems(recommendations.critical || []);
+  const importantItems = normalizeItems(recommendations.important || []);
+  const opportunityItems = normalizeItems(recommendations.opportunities || []);
+
   const handleCopy = (text: string) => {
     navigator.clipboard.writeText(text);
     setCopiedItem(text);
@@ -40,7 +59,7 @@ const AuditRecommendations: React.FC<AuditRecommendationsProps> = ({ recommendat
       id: "critical", 
       title: "Критические ошибки", 
       icon: AlertTriangle, 
-      items: recommendations.critical,
+      items: criticalItems,
       borderColor: "border-red-500",
       bgColor: "bg-red-900/20",
       hoverBgColor: "hover:bg-red-900/30",
@@ -51,7 +70,7 @@ const AuditRecommendations: React.FC<AuditRecommendationsProps> = ({ recommendat
       id: "important", 
       title: "Важные улучшения", 
       icon: AlertCircle, 
-      items: recommendations.important,
+      items: importantItems,
       borderColor: "border-amber-500",
       bgColor: "bg-amber-900/20",
       hoverBgColor: "hover:bg-amber-900/30",
@@ -62,7 +81,7 @@ const AuditRecommendations: React.FC<AuditRecommendationsProps> = ({ recommendat
       id: "opportunities", 
       title: "Возможности для улучшения", 
       icon: Lightbulb, 
-      items: recommendations.opportunities,
+      items: opportunityItems,
       borderColor: "border-green-500",
       bgColor: "bg-green-900/20",
       hoverBgColor: "hover:bg-green-900/30",
