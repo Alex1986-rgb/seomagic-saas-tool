@@ -10,8 +10,7 @@ import {
 import OptimizationProgress from '@/components/seo-optimization/OptimizationProgress';
 import OptimizationDemo from '@/components/audit/results/components/OptimizationDemo';
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
-import { AuditData } from '@/types/audit';
-import { OptimizationItem } from '@/features/audit/types/optimization-types';
+import { AuditData, OptimizationItem } from '@/types/audit';
 
 interface OptimizationSectionProps {
   url: string;
@@ -286,8 +285,8 @@ const OptimizationSection: React.FC<OptimizationSectionProps> = ({ url, auditDat
                         </tr>
                       </thead>
                       <tbody>
-                        {optimizationItems.map((item) => (
-                          <tr key={item.id || `item-${item.name}`}>
+                        {optimizationItems.map((item, index) => (
+                          <tr key={item.id || `item-${index}-${item.name}`}>
                             <td className="p-2 align-top">
                               <div className="truncate max-w-[150px]" title={item.page || item.name}>
                                 {item.page || item.name}
@@ -295,7 +294,7 @@ const OptimizationSection: React.FC<OptimizationSectionProps> = ({ url, auditDat
                             </td>
                             <td className="p-2">
                               <ul className="list-disc list-inside">
-                                {item.tasks ? item.tasks.map((task, idx) => (
+                                {item.tasks && item.tasks.length > 0 ? item.tasks.map((task, idx) => (
                                   <li key={idx} className="truncate text-xs">{task}</li>
                                 )) : (
                                   <li className="truncate text-xs">{item.description}</li>

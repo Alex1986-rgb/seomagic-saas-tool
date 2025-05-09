@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
@@ -12,8 +11,7 @@ import OptimizationSummary from './OptimizationSummary';
 import { AlertCircle, ArrowRight } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from '@/components/ui/button';
-import { AuditData } from '@/types/audit';
-import { OptimizationItem } from '@/features/audit/types/optimization-types';
+import { AuditData, OptimizationItem } from '@/types/audit';
 
 // Import the generator functions directly
 import { generateMockOptimizationItems, calculateTotalCost } from '@/services/audit/generators';
@@ -144,7 +142,7 @@ const SiteAuditContent: React.FC<SiteAuditContentProps> = ({ url }) => {
       const pageCount = data.pageCount || 20;
       const optimizationItems = generateMockOptimizationItems(pageCount);
       // Use type assertion to make TypeScript happy
-      data.optimizationItems = optimizationItems as any;
+      data.optimizationItems = optimizationItems;
       data.optimizationCost = calculateTotalCost(optimizationItems);
     } catch (err) {
       console.error("Failed to generate mock optimization data:", err);
