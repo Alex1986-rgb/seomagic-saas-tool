@@ -8,6 +8,14 @@ export interface OptimizationItem {
   cost: number;
   priority: 'high' | 'medium' | 'low';
   category: string;
+  // Adding properties needed by components
+  name: string;
+  description: string;
+  count: number;
+  price: number;
+  totalPrice: number;
+  pricePerUnit?: number;
+  type?: string;
 }
 
 export interface OptimizationProgressState {
