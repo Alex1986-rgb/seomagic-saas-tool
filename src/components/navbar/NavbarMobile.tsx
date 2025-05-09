@@ -25,6 +25,8 @@ const NavbarMobile: React.FC<NavbarMobileProps> = ({
   isAdmin,
   toggleAuth
 }) => {
+  console.log("NavbarMobile rendering with isOpen:", isOpen);
+  
   return (
     <motion.div
       className="md:hidden absolute top-16 left-0 w-full bg-background/95 backdrop-blur-lg shadow-lg border-t border-border z-40"

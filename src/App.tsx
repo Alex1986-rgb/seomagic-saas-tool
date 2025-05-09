@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, Suspense } from 'react';
-import { Routes, Route, Navigate, BrowserRouter } from 'react-router-dom';
+import { Routes, Route, BrowserRouter } from 'react-router-dom';
 import { Toaster } from "@/components/ui/toaster";
 import { GlobalErrorBoundary } from '@/components/ui/error-handler';
 import { FullscreenLoader } from '@/components/ui/loading';
@@ -59,6 +59,7 @@ function App() {
   const [isLoading, setIsLoading] = useState(true);
   
   useEffect(() => {
+    console.log("App component mounting");
     // Shorter timeout for faster initial load
     const timer = setTimeout(() => {
       console.log("Initial loading complete");
@@ -67,6 +68,8 @@ function App() {
     
     return () => clearTimeout(timer);
   }, []);
+  
+  console.log("App rendering, isLoading:", isLoading);
   
   if (isLoading) {
     return <FullscreenLoader text="Запуск приложения..." />;

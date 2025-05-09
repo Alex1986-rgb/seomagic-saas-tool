@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import Layout from '../components/Layout';
 import HeroSection from '../components/hero/HeroSection';
 import VideoSection from '../components/home/VideoSection';
@@ -9,6 +9,13 @@ import DetailedFeaturesSection from '../components/home/DetailedFeaturesSection'
 import CTASection from '../components/sections/CTASection';
 
 const Index: React.FC = () => {
+  useEffect(() => {
+    console.log("Index page mounted");
+    return () => {
+      console.log("Index page unmounted");
+    };
+  }, []);
+
   console.log("Index page rendering");
   
   return (

@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import Navbar from './navbar';
 import Footer from './Footer';
 import StarryBackground from './backgrounds/StarryBackground';
@@ -21,6 +21,13 @@ const Layout: React.FC<LayoutProps> = ({
 }) => {
   const location = useLocation();
   
+  useEffect(() => {
+    console.log("Layout mounted with path:", location.pathname);
+    return () => {
+      console.log("Layout unmounted");
+    };
+  }, [location.pathname]);
+  
   // Check if the current path starts with /admin
   const isAdminRoute = location.pathname.startsWith('/admin');
   
@@ -29,7 +36,7 @@ const Layout: React.FC<LayoutProps> = ({
   const shouldHideNavbar = hideNavbar || isAdminRoute;
   const shouldHideFooter = hideFooter || isAdminRoute;
 
-  console.log("Layout rendering with children", children ? "present" : "missing");
+  console.log("Layout rendering with navbar:", !shouldHideNavbar, "footer:", !shouldHideFooter);
 
   return (
     <div className={cn("flex flex-col min-h-screen relative", className)}>

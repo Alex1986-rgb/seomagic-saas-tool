@@ -4,10 +4,9 @@ import Layout from '@/components/Layout';
 import { motion } from 'framer-motion';
 import { 
   Play, Laptop, BarChart2, PenTool, 
-  Eye, ArrowRight, Download, CheckCircle
+  Eye, Download, CheckCircle
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import DemoServiceProcess from '@/components/demo/DemoServiceProcess';
 import DemoUserGuide from '@/components/demo/DemoUserGuide';
@@ -15,11 +14,13 @@ import DemoFeatures from '@/components/demo/DemoFeatures';
 import DemoInteractiveExample from '@/components/demo/DemoInteractiveExample';
 
 const Demo: React.FC = () => {
+  console.log("Demo page rendering");
+  
   return (
     <Layout>
       <section className="py-20 relative overflow-hidden">
+        {/* Use simple gradient backgrounds instead of image references */}
         <div className="absolute inset-0 bg-gradient-to-b from-background via-primary/5 to-background/90 -z-10" />
-        {/* Replace the problematic background with a gradient */}
         <div className="absolute inset-0 bg-opacity-5 mix-blend-overlay -z-5" />
         
         <div className="container mx-auto px-4 md:px-6">

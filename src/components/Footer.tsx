@@ -1,8 +1,11 @@
+
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { RESOURCE_ITEMS, COMPANY_ITEMS } from './navbar/navConstants';
 
 const Footer: React.FC = () => {
+  console.log("Footer rendering");
+  
   return (
     <footer className="bg-secondary/30 border-t border-border mt-auto">
       <div className="container mx-auto px-4 md:px-6 py-12">
