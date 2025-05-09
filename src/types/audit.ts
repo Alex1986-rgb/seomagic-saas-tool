@@ -17,12 +17,14 @@ import type { RecommendationData } from './audit/recommendations';
 import type { OptimizationItem } from '@/features/audit/types/optimization-types';
 
 export interface AuditIssue {
+  id?: string;
   title: string;
   description: string;
   impact: 'high' | 'medium' | 'low';
 }
 
 export interface AuditCheck {
+  id?: string;
   title: string;
   description: string;
 }
@@ -59,6 +61,22 @@ export interface OptimizationOptions {
   targetPageSpeed?: number;
   minifyCode?: boolean;
   compressImages?: boolean;
+  fixMetaTags?: boolean;
+  improveContent?: boolean;
+  fixLinks?: boolean;
+  improveStructure?: boolean;
+  optimizeSpeed?: boolean;
+  maxTokens?: number;
+  optimizeMetaTags?: boolean;
+  optimizeHeadings?: boolean;
+  optimizeContent?: boolean;
+  optimizeImages?: boolean;
+  temperature?: number;
+  max_tokens?: number;
+  contentQuality?: string | 'standard' | 'premium' | 'ultimate';
+  language?: string;
+  model?: string;
+  prompt?: string;
 }
 
 // Add API types that might be needed elsewhere

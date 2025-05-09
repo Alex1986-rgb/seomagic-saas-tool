@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
@@ -8,7 +9,7 @@ import AuditOverview from './AuditOverview';
 import AuditIssues from './AuditIssues';
 import OptimizationSection from './OptimizationSection';
 import { AlertCircle, ArrowRight } from "lucide-react";
-import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from '@/components/ui/button';
 import { AuditData } from '@/types/audit';
 import { OptimizationItem } from '@/features/audit/types/optimization-types';
@@ -71,6 +72,26 @@ const SiteAuditContent: React.FC<SiteAuditContentProps> = ({ url }) => {
         processedData.status = 'completed'; // Set to a default allowed value
       }
       
+      // Ensure issues are properly formatted
+      if (processedData.issues) {
+        // Convert any issue objects to strings to prevent rendering errors
+        ['critical', 'important', 'opportunities', 'minor', 'passed'].forEach(category => {
+          if (processedData.issues[category]) {
+            if (Array.isArray(processedData.issues[category])) {
+              // Map objects to strings to avoid direct rendering
+              processedData.issues[category] = processedData.issues[category].map((item: any) => {
+                if (typeof item === 'object') {
+                  return JSON.stringify(item);
+                }
+                return item;
+              });
+            } else if (typeof processedData.issues[category] === 'object') {
+              processedData.issues[category] = [JSON.stringify(processedData.issues[category])];
+            }
+          }
+        });
+      }
+      
       // Use explicit type assertion through unknown for safety
       data = processedData as unknown as AuditData;
     } catch (err) {
@@ -86,6 +107,26 @@ const SiteAuditContent: React.FC<SiteAuditContentProps> = ({ url }) => {
       if (processedData.status && typeof processedData.status === 'string' && 
           !['completed', 'failed', 'in-progress'].includes(processedData.status)) {
         processedData.status = 'completed'; // Set to a default allowed value
+      }
+      
+      // Ensure issues are properly formatted
+      if (processedData.issues) {
+        // Convert any issue objects to strings to prevent rendering errors
+        ['critical', 'important', 'opportunities', 'minor', 'passed'].forEach(category => {
+          if (processedData.issues[category]) {
+            if (Array.isArray(processedData.issues[category])) {
+              // Map objects to strings to avoid direct rendering
+              processedData.issues[category] = processedData.issues[category].map((item: any) => {
+                if (typeof item === 'object') {
+                  return JSON.stringify(item);
+                }
+                return item;
+              });
+            } else if (typeof processedData.issues[category] === 'object') {
+              processedData.issues[category] = [JSON.stringify(processedData.issues[category])];
+            }
+          }
+        });
       }
       
       // Use explicit type assertion through unknown for safety

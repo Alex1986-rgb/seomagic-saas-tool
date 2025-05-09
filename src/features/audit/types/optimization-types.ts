@@ -4,6 +4,7 @@
  */
 
 export interface OptimizationItem {
+  id?: string;
   name: string;
   description: string;
   count: number;
