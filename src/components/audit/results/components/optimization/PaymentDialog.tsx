@@ -1,17 +1,11 @@
 
 import React, { useState } from 'react';
-import { Check, CreditCard, Loader2 } from 'lucide-react';
-import { Button } from "@/components/ui/button";
-import { useToast } from "@/hooks/use-toast";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { CheckCircle, CreditCard, AlertCircle } from 'lucide-react';
+import { Card } from '@/components/ui/card';
 
 interface PaymentDialogProps {
   url: string;
@@ -24,111 +18,175 @@ interface PaymentDialogProps {
 const PaymentDialog: React.FC<PaymentDialogProps> = ({ 
   url, 
   optimizationCost, 
-  onPayment, 
-  isDialogOpen, 
-  setIsDialogOpen 
+  onPayment,
+  isDialogOpen,
+  setIsDialogOpen
 }) => {
-  const [isProcessing, setIsProcessing] = useState(false);
-  const { toast } = useToast();
+  const [cardNumber, setCardNumber] = useState('');
+  const [expiryDate, setExpiryDate] = useState('');
+  const [cvv, setCvv] = useState('');
+  const [cardName, setCardName] = useState('');
+  const [processing, setProcessing] = useState(false);
+  const [error, setError] = useState('');
   
-  const formatNumber = (num: number) => {
-    return new Intl.NumberFormat('ru-RU').format(num);
+  const formatCardNumber = (value: string) => {
+    // Remove all non-digit characters
+    const digits = value.replace(/\D/g, '');
+    
+    // Add a space after every 4 digits
+    const formatted = digits.replace(/(\d{4})(?=\d)/g, '$1 ');
+    
+    // Limit to 19 characters (16 digits + 3 spaces)
+    return formatted.substring(0, 19);
+  };
+  
+  const formatExpiryDate = (value: string) => {
+    // Remove all non-digit characters
+    const digits = value.replace(/\D/g, '');
+    
+    // Format as MM/YY
+    if (digits.length > 2) {
+      return `${digits.substring(0, 2)}/${digits.substring(2, 4)}`;
+    }
+    return digits;
   };
 
-  const handlePayment = async () => {
-    try {
-      setIsProcessing(true);
-      
-      // Simulate payment processing delay
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      // Call the payment callback
-      onPayment();
-      
-      toast({
-        title: "Оплата прошла успешно",
-        description: "Ваш платеж был обработан, оптимизация будет запущена.",
-        variant: "default",
-      });
-      
-      setIsDialogOpen(false);
-    } catch (error) {
-      toast({
-        title: "Ошибка платежа",
-        description: "Не удалось обработать платеж. Пожалуйста, попробуйте снова.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsProcessing(false);
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    
+    // Simple validation
+    if (cardNumber.replace(/\s/g, '').length !== 16) {
+      setError('Введите корректный номер карты (16 цифр)');
+      return;
     }
+    
+    if (expiryDate.length !== 5) {
+      setError('Введите корректную дату (ММ/ГГ)');
+      return;
+    }
+    
+    if (cvv.length !== 3) {
+      setError('CVV должен содержать 3 цифры');
+      return;
+    }
+    
+    if (!cardName) {
+      setError('Введите имя владельца карты');
+      return;
+    }
+    
+    // Simulate payment processing
+    setProcessing(true);
+    
+    setTimeout(() => {
+      setProcessing(false);
+      onPayment();
+      setIsDialogOpen(false);
+      
+      // Reset form
+      setCardNumber('');
+      setExpiryDate('');
+      setCvv('');
+      setCardName('');
+    }, 1500);
   };
 
   return (
     <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-      <DialogTrigger asChild>
-        <Button className="gap-2">Оплатить и оптимизировать</Button>
-      </DialogTrigger>
-      <DialogContent className="sm:max-w-md w-[95%]">
-        <DialogHeader className="text-center">
-          <DialogTitle className="text-xl font-semibold">Оплата оптимизации</DialogTitle>
-          <DialogDescription className="pt-2 text-muted-foreground">
-            Оптимизация сайта {url} будет выполнена после оплаты
+      <DialogContent className="sm:max-w-[425px]">
+        <DialogHeader>
+          <DialogTitle>Оплата оптимизации</DialogTitle>
+          <DialogDescription>
+            Оплата услуги оптимизации сайта {url}
           </DialogDescription>
         </DialogHeader>
-        <div className="grid gap-4 py-4">
-          <div className="rounded-lg bg-primary/10 p-4">
-            <h4 className="font-medium mb-2 text-center">Что включено:</h4>
-            <ul className="space-y-1 text-sm">
-              <li className="flex items-center gap-2">
-                <Check className="h-4 w-4 text-primary" />
-                Оптимизация всех мета-тегов
-              </li>
-              <li className="flex items-center gap-2">
-                <Check className="h-4 w-4 text-primary" />
-                Исправление проблем с изображениями
-              </li>
-              <li className="flex items-center gap-2">
-                <Check className="h-4 w-4 text-primary" />
-                Оптимизация контента для SEO
-              </li>
-              <li className="flex items-center gap-2">
-                <Check className="h-4 w-4 text-primary" />
-                Улучшение скорости загрузки
-              </li>
-              <li className="flex items-center gap-2">
-                <Check className="h-4 w-4 text-primary" />
-                Исправление технических проблем
-              </li>
-              <li className="flex items-center gap-2">
-                <Check className="h-4 w-4 text-primary" />
-                Удаление дублей и создание уникального контента
-              </li>
-            </ul>
+        
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <Card className="p-4 bg-muted/30">
+            <div className="flex justify-between items-center mb-2">
+              <span className="text-sm text-muted-foreground">Сумма к оплате:</span>
+              <span className="font-bold">{optimizationCost.toLocaleString('ru-RU')} ₽</span>
+            </div>
+          </Card>
+          
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="cardNumber">Номер карты</Label>
+              <Input
+                id="cardNumber"
+                placeholder="0000 0000 0000 0000"
+                value={cardNumber}
+                onChange={(e) => setCardNumber(formatCardNumber(e.target.value))}
+                maxLength={19}
+                required
+              />
+            </div>
+            
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="expiryDate">Срок действия</Label>
+                <Input
+                  id="expiryDate"
+                  placeholder="MM/YY"
+                  value={expiryDate}
+                  onChange={(e) => setExpiryDate(formatExpiryDate(e.target.value))}
+                  maxLength={5}
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="cvv">CVV</Label>
+                <Input
+                  id="cvv"
+                  placeholder="123"
+                  value={cvv}
+                  onChange={(e) => setCvv(e.target.value.replace(/\D/g, '').substring(0, 3))}
+                  maxLength={3}
+                  type="password"
+                  required
+                />
+              </div>
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="cardName">Имя владельца</Label>
+              <Input
+                id="cardName"
+                placeholder="IVAN IVANOV"
+                value={cardName}
+                onChange={(e) => setCardName(e.target.value.toUpperCase())}
+                required
+              />
+            </div>
           </div>
           
-          <div className="flex justify-between items-center p-3 border border-primary/30 rounded-lg">
-            <span className="font-medium">Итого к оплате:</span>
-            <span className="text-xl font-bold">{formatNumber(optimizationCost)} ₽</span>
-          </div>
-        </div>
-        <DialogFooter className="flex justify-between sm:justify-end gap-3">
-          <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
-            Отмена
-          </Button>
-          <Button onClick={handlePayment} className="gap-2" disabled={isProcessing}>
-            {isProcessing ? (
-              <>
-                <Loader2 className="h-4 w-4 animate-spin" />
-                Обработка...
-              </>
-            ) : (
-              <>
-                <CreditCard className="h-4 w-4" />
-                Оплатить
-              </>
-            )}
-          </Button>
-        </DialogFooter>
+          {error && (
+            <div className="flex items-center text-red-600 text-sm gap-2">
+              <AlertCircle className="h-4 w-4" />
+              {error}
+            </div>
+          )}
+          
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
+              Отмена
+            </Button>
+            <Button type="submit" disabled={processing}>
+              {processing ? (
+                <>
+                  <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-background border-t-transparent"></div>
+                  Обработка...
+                </>
+              ) : (
+                <>
+                  <CreditCard className="mr-2 h-4 w-4" />
+                  Оплатить
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </form>
       </DialogContent>
     </Dialog>
   );

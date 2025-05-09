@@ -89,7 +89,7 @@ const OptimizationPricingTable: React.FC<OptimizationPricingTableProps> = ({
           {showDetails ? 'Скрыть детали' : 'Показать детали'}
         </button>
         
-        {showDetails && (
+        {showDetails && items.length > 0 && (
           <div className="max-h-[300px] overflow-y-auto">
             <table className="w-full text-sm">
               <thead className="bg-muted/20">
@@ -105,6 +105,11 @@ const OptimizationPricingTable: React.FC<OptimizationPricingTableProps> = ({
                     <td className="p-3">
                       <div className="font-medium">{item.name}</div>
                       <div className="text-xs text-muted-foreground mt-1">{item.description}</div>
+                      {item.page && (
+                        <div className="text-xs text-blue-600 mt-1 truncate max-w-[240px]">
+                          {item.page}
+                        </div>
+                      )}
                     </td>
                     <td className="p-3 text-center">
                       {item.errorCount !== undefined && item.errorCount > 0 ? (
@@ -130,6 +135,12 @@ const OptimizationPricingTable: React.FC<OptimizationPricingTableProps> = ({
                 </tr>
               </tfoot>
             </table>
+          </div>
+        )}
+        
+        {showDetails && items.length === 0 && (
+          <div className="p-6 text-center text-muted-foreground">
+            Нет данных о страницах для отображения
           </div>
         )}
         
