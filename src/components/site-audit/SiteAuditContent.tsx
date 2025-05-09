@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
@@ -59,34 +60,9 @@ const SiteAuditContent: React.FC<SiteAuditContentProps> = ({ url }) => {
   
   // Check if auditData is not of expected type or is a string (which might be HTML)
   if (!auditData || typeof auditData === 'string' || !Object.prototype.hasOwnProperty.call(auditData, 'pageCount')) {
-    // Use demo data as fallback
-    const processedData = { ...demoAuditData };
-    
-    // Handle issues.minor properly based on its actual type
-    if (processedData.issues && Array.isArray(processedData.issues.minor)) {
-      // Keep it as an array, don't convert to number
-      // TypeScript will allow this because we've updated the AuditData type
-      processedData.issues.minor = processedData.issues.minor;
-    }
-    
-    // Ensure status is one of the allowed values
-    if (processedData.status && typeof processedData.status === 'string' && 
-        !['completed', 'failed', 'in-progress'].includes(processedData.status)) {
-      processedData.status = 'completed'; // Set to a default allowed value
-    }
-    
-    // Use type assertion to inform TypeScript this is an AuditData object
-    data = processedData as unknown as AuditData;
     console.warn("Using demo data because audit data is invalid:", typeof auditData);
-  } else {
-    const processedData = { ...auditData };
-    
-    // Handle issues.minor properly based on its actual type
-    if (processedData.issues && Array.isArray(processedData.issues.minor)) {
-      // Keep it as an array, don't convert to number
-      // TypeScript will allow this because we've updated the AuditData type
-      processedData.issues.minor = processedData.issues.minor;
-    }
+    // Use demo data as fallback with deep clone to avoid modifying the original
+    const processedData = JSON.parse(JSON.stringify(demoAuditData));
     
     // Ensure status is one of the allowed values
     if (processedData.status && typeof processedData.status === 'string' && 
@@ -94,7 +70,19 @@ const SiteAuditContent: React.FC<SiteAuditContentProps> = ({ url }) => {
       processedData.status = 'completed'; // Set to a default allowed value
     }
     
-    // Use type assertion to inform TypeScript this is an AuditData object
+    // Use explicit type assertion through unknown for safety
+    data = processedData as unknown as AuditData;
+  } else {
+    // If we have valid audit data, create a deep copy to avoid modifying the original
+    const processedData = JSON.parse(JSON.stringify(auditData));
+    
+    // Ensure status is one of the allowed values
+    if (processedData.status && typeof processedData.status === 'string' && 
+        !['completed', 'failed', 'in-progress'].includes(processedData.status)) {
+      processedData.status = 'completed'; // Set to a default allowed value
+    }
+    
+    // Use explicit type assertion through unknown for safety
     data = processedData as unknown as AuditData;
   }
   

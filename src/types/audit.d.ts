@@ -10,6 +10,17 @@ export interface AuditData {
   pageCount?: number;
   crawledPages?: number;
   status: 'completed' | 'in-progress' | 'failed';
+  optimizationCost?: number;
+  optimizationItems?: {
+    name: string;
+    description: string;
+    count: number;
+    price: number;
+    pricePerUnit: number;
+    totalPrice: number;
+    type?: string;
+  }[];
+  domain?: string;
 }
 
 export interface AuditDetailsData {
