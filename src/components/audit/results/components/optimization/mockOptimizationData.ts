@@ -169,7 +169,7 @@ export const generateMockOptimizationItems = (pageCount: number = 25): Optimizat
       price: -discountAmount,
       pricePerUnit: -discountAmount,
       totalPrice: -discountAmount,
-      type: 'discount'
+      type: 'additional' // Changed from 'discount' to 'additional' which is allowed
     });
   }
 
@@ -181,7 +181,7 @@ export const generateMockOptimizationItems = (pageCount: number = 25): Optimizat
     price: 0,
     pricePerUnit: 0,
     totalPrice: 0,
-    type: 'guarantee'
+    type: 'additional' // Changed from 'guarantee' to 'additional' which is allowed
   });
   
   return items;

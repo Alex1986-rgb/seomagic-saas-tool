@@ -1,268 +1,162 @@
+
 import { OptimizationItem } from '@/features/audit/types/optimization-types';
 
-export interface PricingConfig {
-  sitemap: number;
-  metaTagsPerItem: number;
-  contentPerPage: number;
-  imageAltPerItem: number;
-  performancePerPage: number;
-  linksPerItem: number;
-  structurePerItem: number;
-  seoAuditBase: number;
-  positionTrackingBase: number;
-  keywordResearchBase: number;
-  competitorAnalysisBase: number;
-  // Technical improvements
-  criticalErrorsFix: number;
-  metaTagsOptimization: number;
-  brokenLinksRedirects: number;
-  imageMediaOptimization: number;
-  // Content improvements
-  contentSeoOptimization: number;
-  headingStructure: number;
-  conversionTextOptimization: number;
-  readabilityImprovement: number;
-  // Base optimization price
-  baseOptimizationPrice: number;
-  criticalErrorPrice: number;
-  warningPrice: number;
-}
-
-// Цены в рублях
-const defaultPricingConfig: PricingConfig = {
-  sitemap: 3000, // Создание карты сайта
-  metaTagsPerItem: 500, // Оптимизация метатегов
-  contentPerPage: 5000, // Оптимизация контента на странице
-  imageAltPerItem: 200, // Оптимизация alt-атрибутов изображений
-  performancePerPage: 2000, // Оптимизация производительности страницы
-  linksPerItem: 300, // Оптимизация ссылок
-  structurePerItem: 1000, // Оптимизация структуры
-  seoAuditBase: 10000, // Базовая стоимость SEO аудита
-  positionTrackingBase: 5000, // Отслеживание позиций
-  keywordResearchBase: 8000, // Исследование ключевых слов
-  competitorAnalysisBase: 12000, // Анализ конкурентов
-  // Technical improvements
-  criticalErrorsFix: 4500, // Исправление критических ошибок
-  metaTagsOptimization: 3500, // Оптимизация мета-тегов для поисковых систем
-  brokenLinksRedirects: 2800, // Исправление битых ссылок и редиректов
-  imageMediaOptimization: 3200, // Оптимизация изображений и медиафайлов
-  // Content improvements
-  contentSeoOptimization: 4800, // Оптимизация контента для поисковых систем
-  headingStructure: 2500, // Настройка правильной структуры заголовков
-  conversionTextOptimization: 5500, // Оптимизация текстов для улучшения конверсии
-  readabilityImprovement: 3800, // Улучшение читабельности и структуры контента
-  // Detailed cost items
-  baseOptimizationPrice: 15000, // Базовая стоимость оптимизации
-  criticalErrorPrice: 300, // Стоимость исправления одной критической ошибки
-  warningPrice: 150, // Стоимость исправления одного предупреждения
-};
-
-let currentPricingConfig = { ...defaultPricingConfig };
-
-/**
- * Get the current pricing configuration
- */
-export const getPricingConfig = (): PricingConfig => {
-  return currentPricingConfig;
-};
-
-/**
- * Update the pricing configuration
- */
-export const updatePricingConfig = (config: Partial<PricingConfig>): PricingConfig => {
-  currentPricingConfig = {
-    ...currentPricingConfig,
-    ...config
-  };
+// Let's create a simplified version for now
+export const calculateOptimizationCost = (pageCount: number) => {
+  // Base costs
+  const basePrice = 200;
+  const baseCost = 5000;
   
-  return currentPricingConfig;
-};
-
-/**
- * Reset pricing to default values
- */
-export const resetPricingConfig = (): PricingConfig => {
-  currentPricingConfig = { ...defaultPricingConfig };
-  return currentPricingConfig;
-};
-
-/**
- * Calculate base price for a service
- */
-export const calculateServiceBasePrice = (
-  service: 'seoAudit' | 'positionTracking' | 'keywordResearch' | 'competitorAnalysis',
-  multiplier: number = 1
-): number => {
-  switch (service) {
-    case 'seoAudit':
-      return currentPricingConfig.seoAuditBase * multiplier;
-    case 'positionTracking':
-      return currentPricingConfig.positionTrackingBase * multiplier;
-    case 'keywordResearch':
-      return currentPricingConfig.keywordResearchBase * multiplier;
-    case 'competitorAnalysis':
-      return currentPricingConfig.competitorAnalysisBase * multiplier;
-    default:
-      return 0;
-  }
-};
-
-/**
- * Calculate optimization cost based on page count
- */
-export const calculateOptimizationCost = (pageCount: number): {
-  totalCost: number;
-  items: OptimizationItem[];
-} => {
-  // Get metrics from site analysis (simplified for this example)
-  const criticalErrors = Math.max(1, Math.round(pageCount * 0.03));
-  const warnings = Math.max(2, Math.round(pageCount * 0.08));
+  // Technical costs per unit
+  const metaTagPrice = 50;
+  const brokenLinkPrice = 70;
+  const imageOptimizationPrice = 40;
+  const redirectPrice = 60;
   
-  // Create items array
-  const items: OptimizationItem[] = [];
+  // Content costs per unit
+  const contentOptimizationPrice = 120;
+  const headingStructurePrice = 80;
+  const readabilityPrice = 90;
   
-  // Base optimization price
-  items.push({
-    name: 'Базовая стоимость оптимизации',
-    description: 'Основная стоимость комплексной оптимизации сайта',
-    count: 1,
-    price: currentPricingConfig.baseOptimizationPrice,
-    pricePerUnit: currentPricingConfig.baseOptimizationPrice,
-    totalPrice: currentPricingConfig.baseOptimizationPrice,
-    type: 'base'
-  });
+  // Errors counts (based on page count)
+  const metaTagsCount = Math.round(pageCount * 0.8);
+  const brokenLinksCount = Math.round(pageCount * 0.3);
+  const imagesCount = Math.round(pageCount * 1.5);
+  const redirectsCount = Math.round(pageCount * 0.2);
+  const contentCount = Math.round(pageCount * 0.9);
+  const headingsCount = Math.round(pageCount * 0.7);
+  const readabilityCount = Math.round(pageCount * 0.5);
   
-  // Critical errors fix
-  items.push({
-    name: 'Исправление критических ошибок',
-    description: 'Исправление всех критических технических ошибок на сайте',
-    count: criticalErrors,
-    price: currentPricingConfig.criticalErrorPrice,
-    pricePerUnit: currentPricingConfig.criticalErrorPrice,
-    totalPrice: criticalErrors * currentPricingConfig.criticalErrorPrice,
-    type: 'critical'
-  });
+  // Critical errors
+  const criticalErrorsCount = Math.round(pageCount * 0.15);
+  const criticalErrorPrice = 300;
   
-  // Warnings fix
-  items.push({
-    name: 'Исправление предупреждений',
-    description: 'Исправление некритических ошибок и предупреждений',
-    count: warnings,
-    price: currentPricingConfig.warningPrice,
-    pricePerUnit: currentPricingConfig.warningPrice,
-    totalPrice: warnings * currentPricingConfig.warningPrice,
-    type: 'warning'
-  });
+  // Warnings
+  const warningsCount = Math.round(pageCount * 0.25);
+  const warningPrice = 150;
   
-  // Technical improvements - Detailed breakdown
-  items.push({
-    name: 'Оптимизация мета-тегов',
-    description: 'Оптимизация title, description и других мета-тегов для поисковых систем',
-    count: Math.ceil(pageCount * 0.7),
-    pricePerUnit: currentPricingConfig.metaTagsOptimization,
-    price: currentPricingConfig.metaTagsOptimization,
-    totalPrice: Math.ceil(pageCount * 0.7) * currentPricingConfig.metaTagsPerItem,
-    type: 'technical'
-  });
+  // Items array
+  const items: OptimizationItem[] = [
+    {
+      name: 'Базовая стоимость обработки сайта',
+      description: 'Начальная стоимость анализа и подготовки к оптимизации',
+      count: 1,
+      price: baseCost,
+      pricePerUnit: baseCost,
+      totalPrice: baseCost,
+      type: 'base'
+    },
+    {
+      name: 'Базовая стоимость обработки страниц',
+      description: 'Стоимость базовой обработки всех страниц сайта',
+      count: pageCount,
+      price: basePrice * pageCount,
+      pricePerUnit: basePrice,
+      totalPrice: basePrice * pageCount,
+      type: 'base'
+    },
+    // Critical errors
+    {
+      name: 'Исправление критических ошибок',
+      description: 'Устранение критических ошибок, блокирующих индексацию',
+      count: criticalErrorsCount,
+      price: criticalErrorsCount * criticalErrorPrice,
+      pricePerUnit: criticalErrorPrice,
+      totalPrice: criticalErrorsCount * criticalErrorPrice,
+      type: 'critical'
+    },
+    // Warnings
+    {
+      name: 'Исправление предупреждений',
+      description: 'Устранение предупреждений и некритичных ошибок',
+      count: warningsCount,
+      price: warningsCount * warningPrice,
+      pricePerUnit: warningPrice,
+      totalPrice: warningsCount * warningPrice,
+      type: 'warning'
+    },
+    // Technical improvements
+    {
+      name: 'Оптимизация мета-тегов',
+      description: 'Создание и оптимизация мета-тегов title и description',
+      count: metaTagsCount,
+      price: metaTagsCount * metaTagPrice,
+      pricePerUnit: metaTagPrice,
+      totalPrice: metaTagsCount * metaTagPrice,
+      type: 'technical'
+    },
+    {
+      name: 'Исправление битых ссылок',
+      description: 'Обнаружение и исправление некорректных ссылок',
+      count: brokenLinksCount,
+      price: brokenLinksCount * brokenLinkPrice,
+      pricePerUnit: brokenLinkPrice,
+      totalPrice: brokenLinksCount * brokenLinkPrice,
+      type: 'technical'
+    },
+    {
+      name: 'Оптимизация изображений',
+      description: 'Оптимизация размера и добавление alt-тегов для изображений',
+      count: imagesCount,
+      price: imagesCount * imageOptimizationPrice,
+      pricePerUnit: imageOptimizationPrice,
+      totalPrice: imagesCount * imageOptimizationPrice,
+      type: 'technical'
+    },
+    {
+      name: 'Настройка редиректов',
+      description: 'Создание правильных редиректов для старых URL',
+      count: redirectsCount,
+      price: redirectsCount * redirectPrice,
+      pricePerUnit: redirectPrice,
+      totalPrice: redirectsCount * redirectPrice,
+      type: 'technical'
+    },
+    // Content improvements
+    {
+      name: 'Оптимизация контента для SEO',
+      description: 'Оптимизация текстового содержимого для поисковых систем',
+      count: contentCount,
+      price: contentCount * contentOptimizationPrice,
+      pricePerUnit: contentOptimizationPrice,
+      totalPrice: contentCount * contentOptimizationPrice,
+      type: 'content'
+    },
+    {
+      name: 'Структура заголовков',
+      description: 'Оптимизация структуры заголовков H1-H6',
+      count: headingsCount,
+      price: headingsCount * headingStructurePrice,
+      pricePerUnit: headingStructurePrice,
+      totalPrice: headingsCount * headingStructurePrice,
+      type: 'content'
+    },
+    {
+      name: 'Улучшение читабельности',
+      description: 'Работа над улучшением читабельности текста',
+      count: readabilityCount,
+      price: readabilityCount * readabilityPrice,
+      pricePerUnit: readabilityPrice,
+      totalPrice: readabilityCount * readabilityPrice,
+      type: 'content'
+    },
+    // Additional
+    {
+      name: 'Техническая поддержка',
+      description: 'Поддержка и консультации по техническим вопросам',
+      count: 1,
+      price: 2000,
+      pricePerUnit: 2000,
+      totalPrice: 2000,
+      type: 'additional' // Changed from 'other' to 'additional'
+    }
+  ];
   
-  items.push({
-    name: 'Карта сайта (sitemap.xml)',
-    description: 'Создание и оптимизация файла sitemap.xml',
-    count: 1,
-    pricePerUnit: currentPricingConfig.sitemap,
-    price: currentPricingConfig.sitemap,
-    totalPrice: currentPricingConfig.sitemap,
-    type: 'technical'
-  });
-  
-  items.push({
-    name: 'Исправление битых ссылок и редиректов',
-    description: 'Поиск и исправление битых ссылок и настройка редиректов',
-    count: Math.ceil(pageCount * 0.1),
-    pricePerUnit: currentPricingConfig.brokenLinksRedirects,
-    price: currentPricingConfig.brokenLinksRedirects,
-    totalPrice: Math.ceil(pageCount * 0.1) * currentPricingConfig.linksPerItem,
-    type: 'technical'
-  });
-  
-  items.push({
-    name: 'Оптимизация изображений и медиафайлов',
-    description: 'Оптимизация изображений и медиафайлов для ускорения загрузки сайта',
-    count: Math.ceil(pageCount * 3),
-    pricePerUnit: currentPricingConfig.imageMediaOptimization,
-    price: currentPricingConfig.imageMediaOptimization,
-    totalPrice: Math.ceil(pageCount * 3) * currentPricingConfig.imageAltPerItem,
-    type: 'technical'
-  });
-  
-  // Content improvements - Detailed breakdown
-  items.push({
-    name: 'Оптимизация контента для SEO',
-    description: 'Оптимизация контента для повышения видимости в поисковых системах',
-    count: Math.ceil(pageCount * 0.5),
-    pricePerUnit: currentPricingConfig.contentSeoOptimization,
-    price: currentPricingConfig.contentSeoOptimization,
-    totalPrice: Math.ceil(pageCount * 0.5) * currentPricingConfig.contentSeoOptimization,
-    type: 'content'
-  });
-  
-  items.push({
-    name: 'Настройка структуры заголовков',
-    description: 'Настройка правильной структуры H1-H6 заголовков для улучшения SEO',
-    count: Math.ceil(pageCount * 0.6),
-    pricePerUnit: currentPricingConfig.headingStructure,
-    price: currentPricingConfig.headingStructure,
-    totalPrice: Math.ceil(pageCount * 0.6) * currentPricingConfig.headingStructure,
-    type: 'content'
-  });
-  
-  items.push({
-    name: 'Оптимизация текстов для конверсии',
-    description: 'Улучшение текстов для повышения коэффициента конверсии',
-    count: Math.ceil(pageCount * 0.4),
-    pricePerUnit: currentPricingConfig.conversionTextOptimization,
-    price: currentPricingConfig.conversionTextOptimization,
-    totalPrice: Math.ceil(pageCount * 0.4) * currentPricingConfig.conversionTextOptimization,
-    type: 'content'
-  });
-  
-  items.push({
-    name: 'Улучшение читабельности и структуры',
-    description: 'Улучшение читабельности и структуры контента',
-    count: Math.ceil(pageCount * 0.5),
-    pricePerUnit: currentPricingConfig.readabilityImprovement,
-    price: currentPricingConfig.readabilityImprovement,
-    totalPrice: Math.ceil(pageCount * 0.5) * currentPricingConfig.readabilityImprovement,
-    type: 'content'
-  });
-  
-  // Additional services
-  items.push({
-    name: 'Улучшение производительности',
-    description: 'Оптимизация скорости загрузки страниц',
-    count: Math.ceil(pageCount * 0.3),
-    pricePerUnit: currentPricingConfig.performancePerPage,
-    price: currentPricingConfig.performancePerPage,
-    totalPrice: Math.ceil(pageCount * 0.3) * currentPricingConfig.performancePerPage,
-    type: 'technical'
-  });
-  
-  // Add warranty note item
-  items.push({
-    name: 'Гарантия результата',
-    description: 'Все работы выполняются квалифицированными SEO-специалистами с гарантией результата',
-    count: 1,
-    pricePerUnit: 0,
-    price: 0,
-    totalPrice: 0,
-    type: 'other'
-  });
-  
-  // Calculate total cost from all items
+  // Calculate total cost
   const totalCost = items.reduce((sum, item) => sum + item.totalPrice, 0);
   
   return {
-    totalCost,
-    items
+    items,
+    totalCost
   };
 };

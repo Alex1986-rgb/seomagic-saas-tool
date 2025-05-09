@@ -1,5 +1,6 @@
 
 import { OptimizationItem } from '@/features/audit/types/optimization-types';
+import { AuditData } from '@/types/audit';
 
 /**
  * Generate mock optimization items for demo purposes
@@ -26,6 +27,7 @@ export const generateMockOptimizationItems = (pageCount: number): OptimizationIt
       description: 'Начальная стоимость анализа и подготовки к оптимизации',
       count: 1,
       price: baseCost,
+      pricePerUnit: baseCost,
       totalPrice: baseCost,
       type: 'base'
     },
@@ -146,4 +148,72 @@ export const generateMockOptimizationItems = (pageCount: number): OptimizationIt
  */
 export const calculateTotalCost = (items: OptimizationItem[]): number => {
   return items.reduce((total, item) => total + item.totalPrice, 0);
+};
+
+/**
+ * Generate mock audit data for demo purposes
+ */
+export const generateAuditData = (url: string): AuditData => {
+  const now = new Date();
+  const date = now.toISOString();
+  const pageCount = Math.floor(Math.random() * 50) + 10;
+  
+  const score = Math.floor(Math.random() * 30) + 50; // Score between 50-80
+  const optimizationItems = generateMockOptimizationItems(pageCount);
+  const optimizationCost = calculateTotalCost(optimizationItems);
+  
+  return {
+    id: Math.random().toString(36).substring(2, 15),
+    url,
+    date,
+    score,
+    previousScore: score - Math.floor(Math.random() * 10),
+    status: 'completed',
+    pageCount,
+    crawledPages: pageCount - Math.floor(Math.random() * 5),
+    optimizationItems,
+    optimizationCost,
+    issues: {
+      critical: Array(Math.floor(Math.random() * 5) + 3).fill(0).map((_, i) => ({
+        id: `critical-${i}`,
+        title: `Критическая проблема ${i+1}`,
+        description: `Описание критической проблемы ${i+1}`,
+        impact: 'high',
+        affected: Math.floor(Math.random() * pageCount) + 1,
+        urls: []
+      })),
+      important: Array(Math.floor(Math.random() * 8) + 5).fill(0).map((_, i) => ({
+        id: `important-${i}`,
+        title: `Важная проблема ${i+1}`,
+        description: `Описание важной проблемы ${i+1}`,
+        impact: 'medium',
+        affected: Math.floor(Math.random() * pageCount) + 1,
+        urls: []
+      })),
+      minor: Array(Math.floor(Math.random() * 10) + 8).fill(0).map((_, i) => ({
+        id: `minor-${i}`,
+        title: `Незначительная проблема ${i+1}`,
+        description: `Описание незначительной проблемы ${i+1}`,
+        impact: 'low',
+        affected: Math.floor(Math.random() * pageCount) + 1,
+        urls: []
+      })),
+      opportunities: Array(Math.floor(Math.random() * 7) + 3).fill(0).map((_, i) => ({
+        id: `opportunity-${i}`,
+        title: `Возможность улучшения ${i+1}`,
+        description: `Описание возможности улучшения ${i+1}`,
+        impact: 'medium',
+        affected: Math.floor(Math.random() * pageCount) + 1,
+        urls: []
+      }))
+    },
+    details: {
+      seo: { score: Math.floor(Math.random() * 30) + 50 },
+      performance: { score: Math.floor(Math.random() * 30) + 50 },
+      content: { score: Math.floor(Math.random() * 30) + 50 },
+      technical: { score: Math.floor(Math.random() * 30) + 50 },
+      mobile: { score: Math.floor(Math.random() * 30) + 50 },
+      usability: { score: Math.floor(Math.random() * 30) + 50 }
+    }
+  };
 };

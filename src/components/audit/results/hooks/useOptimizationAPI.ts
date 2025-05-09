@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import { seoApiService } from '@/api/seoApiService';
-import { OptimizationItem } from '@/services/audit/optimization/types';
+import { OptimizationItem } from '@/features/audit/types/optimization-types';
 import { calculateOptimizationCost } from '@/services/audit/optimization/pricingConfig';
 
 export const useOptimizationAPI = (taskId: string | null) => {
@@ -44,6 +44,7 @@ export const useOptimizationAPI = (taskId: string | null) => {
       const optimizationData = calculateOptimizationCost(pageCount || 100);
       
       setOptimizationCost(optimizationData.totalCost);
+      // The types are now compatible because we've updated the OptimizationItem interface
       setOptimizationItems(optimizationData.items);
       
       toast({
