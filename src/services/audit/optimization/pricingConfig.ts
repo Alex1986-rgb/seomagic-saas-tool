@@ -1,60 +1,41 @@
 
 import { OptimizationItem } from '@/features/audit/types/optimization-types';
 
-// Configuration for pricing
+// Define pricing constants
+const BASE_PRICE = 2500;
+const META_TAGS_PER_PAGE = 10;
+const CONTENT_PER_PAGE = 25;
+const IMAGE_ALT_PER_ITEM = 5;
+const PERFORMANCE_PER_PAGE = 15;
+const LINKS_PER_ITEM = 8;
+const STRUCTURE_PER_ITEM = 12;
+
+/**
+ * Get the current pricing configuration
+ */
 export const getPricingConfig = () => {
   return {
-    sitemap: 2000,
-    metaTagsPerItem: 50,
-    contentPerPage: 120,
-    imageAltPerItem: 40,
-    performancePerPage: 80,
-    linksPerItem: 70,
-    structurePerItem: 60,
-    basePrice: 5000,
-    discountThreshold: 20
+    sitemap: BASE_PRICE,
+    metaTagsPerItem: META_TAGS_PER_PAGE,
+    contentPerPage: CONTENT_PER_PAGE,
+    imageAltPerItem: IMAGE_ALT_PER_ITEM,
+    performancePerPage: PERFORMANCE_PER_PAGE,
+    linksPerItem: LINKS_PER_ITEM,
+    structurePerItem: STRUCTURE_PER_ITEM
   };
 };
 
-// Let's create a simplified version for now
+/**
+ * Calculate optimization cost and items based on page count
+ */
 export const calculateOptimizationCost = (pageCount: number) => {
-  // Base costs
-  const basePrice = 200;
-  const baseCost = 5000;
+  const baseCost = 2500;
+  const perPageCost = pageCount * 10;
   
-  // Technical costs per unit
-  const metaTagPrice = 50;
-  const brokenLinkPrice = 70;
-  const imageOptimizationPrice = 40;
-  const redirectPrice = 60;
-  
-  // Content costs per unit
-  const contentOptimizationPrice = 120;
-  const headingStructurePrice = 80;
-  const readabilityPrice = 90;
-  
-  // Errors counts (based on page count)
-  const metaTagsCount = Math.round(pageCount * 0.8);
-  const brokenLinksCount = Math.round(pageCount * 0.3);
-  const imagesCount = Math.round(pageCount * 1.5);
-  const redirectsCount = Math.round(pageCount * 0.2);
-  const contentCount = Math.round(pageCount * 0.9);
-  const headingsCount = Math.round(pageCount * 0.7);
-  const readabilityCount = Math.round(pageCount * 0.5);
-  
-  // Critical errors
-  const criticalErrorsCount = Math.round(pageCount * 0.15);
-  const criticalErrorPrice = 300;
-  
-  // Warnings
-  const warningsCount = Math.round(pageCount * 0.25);
-  const warningPrice = 150;
-  
-  // Items array
   const items: OptimizationItem[] = [
     {
-      name: 'Базовая стоимость обработки сайта',
-      description: 'Начальная стоимость анализа и подготовки к оптимизации',
+      name: 'Базовый аудит SEO',
+      description: 'Первичный аудит и анализ сайта',
       count: 1,
       price: baseCost,
       pricePerUnit: baseCost,
@@ -62,116 +43,65 @@ export const calculateOptimizationCost = (pageCount: number) => {
       type: 'base'
     },
     {
-      name: 'Базовая стоимость обработки страниц',
-      description: 'Стоимость базовой обработки всех страниц сайта',
+      name: 'Оптимизация метатегов',
+      description: `Оптимизация метатегов для ${pageCount} страниц`,
       count: pageCount,
-      price: basePrice * pageCount,
-      pricePerUnit: basePrice,
-      totalPrice: basePrice * pageCount,
-      type: 'base'
-    },
-    // Critical errors
-    {
-      name: 'Исправление критических ошибок',
-      description: 'Устранение критических ошибок, блокирующих индексацию',
-      count: criticalErrorsCount,
-      price: criticalErrorsCount * criticalErrorPrice,
-      pricePerUnit: criticalErrorPrice,
-      totalPrice: criticalErrorsCount * criticalErrorPrice,
-      type: 'critical'
-    },
-    // Warnings
-    {
-      name: 'Исправление предупреждений',
-      description: 'Устранение предупреждений и некритичных ошибок',
-      count: warningsCount,
-      price: warningsCount * warningPrice,
-      pricePerUnit: warningPrice,
-      totalPrice: warningsCount * warningPrice,
-      type: 'warning'
-    },
-    // Technical improvements
-    {
-      name: 'Оптимизация мета-тегов',
-      description: 'Создание и оптимизация мета-тегов title и description',
-      count: metaTagsCount,
-      price: metaTagsCount * metaTagPrice,
-      pricePerUnit: metaTagPrice,
-      totalPrice: metaTagsCount * metaTagPrice,
-      type: 'technical'
-    },
-    {
-      name: 'Исправление битых ссылок',
-      description: 'Обнаружение и исправление некорректных ссылок',
-      count: brokenLinksCount,
-      price: brokenLinksCount * brokenLinkPrice,
-      pricePerUnit: brokenLinkPrice,
-      totalPrice: brokenLinksCount * brokenLinkPrice,
-      type: 'technical'
-    },
-    {
-      name: 'Оптимизация изображений',
-      description: 'Оптимизация размера и добавление alt-тегов для изображений',
-      count: imagesCount,
-      price: imagesCount * imageOptimizationPrice,
-      pricePerUnit: imageOptimizationPrice,
-      totalPrice: imagesCount * imageOptimizationPrice,
-      type: 'technical'
-    },
-    {
-      name: 'Настройка редиректов',
-      description: 'Создание правильных редиректов для старых URL',
-      count: redirectsCount,
-      price: redirectsCount * redirectPrice,
-      pricePerUnit: redirectPrice,
-      totalPrice: redirectsCount * redirectPrice,
-      type: 'technical'
-    },
-    // Content improvements
-    {
-      name: 'Оптимизация контента для SEO',
-      description: 'Оптимизация текстового содержимого для поисковых систем',
-      count: contentCount,
-      price: contentCount * contentOptimizationPrice,
-      pricePerUnit: contentOptimizationPrice,
-      totalPrice: contentCount * contentOptimizationPrice,
+      price: perPageCost,
+      pricePerUnit: 10,
+      totalPrice: perPageCost,
       type: 'content'
     },
     {
-      name: 'Структура заголовков',
-      description: 'Оптимизация структуры заголовков H1-H6',
-      count: headingsCount,
-      price: headingsCount * headingStructurePrice,
-      pricePerUnit: headingStructurePrice,
-      totalPrice: headingsCount * headingStructurePrice,
-      type: 'content'
+      name: 'Внутренняя оптимизация',
+      description: 'Оптимизация структуры и внутренних ссылок',
+      count: 1,
+      price: 1500,
+      pricePerUnit: 1500,
+      totalPrice: 1500,
+      type: 'technical'
     },
     {
-      name: 'Улучшение читабельности',
-      description: 'Работа над улучшением читабельности текста',
-      count: readabilityCount,
-      price: readabilityCount * readabilityPrice,
-      pricePerUnit: readabilityPrice,
-      totalPrice: readabilityCount * readabilityPrice,
-      type: 'content'
-    },
-    // Additional
-    {
-      name: 'Техническая поддержка',
-      description: 'Поддержка и консультации по техническим вопросам',
+      name: 'Оптимизация скорости',
+      description: 'Ускорение загрузки страниц',
       count: 1,
       price: 2000,
       pricePerUnit: 2000,
       totalPrice: 2000,
-      type: 'additional'
+      type: 'technical'
+    },
+    {
+      name: 'Скидка за объем',
+      description: 'Скидка при заказе комплексной оптимизации',
+      count: 1,
+      price: -1000,
+      pricePerUnit: -1000,
+      totalPrice: -1000,
+      type: 'discount'
+    },
+    {
+      name: 'Гарантия результата',
+      description: 'Гарантируем улучшение позиций в течение 30 дней',
+      count: 1,
+      price: 0,
+      pricePerUnit: 0,
+      totalPrice: 0,
+      type: 'guarantee'
+    },
+    {
+      name: 'Дополнительные услуги',
+      description: 'Прочие услуги по оптимизации',
+      count: 1,
+      price: 1000,
+      pricePerUnit: 1000,
+      totalPrice: 1000,
+      type: 'other'
     }
   ];
   
-  // Calculate total cost
   const totalCost = items.reduce((sum, item) => sum + item.totalPrice, 0);
   
   return {
-    items,
-    totalCost
+    totalCost,
+    items
   };
 };

@@ -4,7 +4,7 @@ export interface OptimizationItem {
   description: string;
   count: number;
   price: number;
-  pricePerUnit: number;  // Make this required instead of optional
+  pricePerUnit: number;
   totalPrice: number;
   type?: 'base' | 'critical' | 'warning' | 'technical' | 'content' | 'additional' | 'discount' | 'guarantee' | 'other';
 }

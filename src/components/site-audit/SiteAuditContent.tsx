@@ -54,15 +54,28 @@ const SiteAuditContent: React.FC<SiteAuditContentProps> = ({ url }) => {
     });
   };
   
-  // Use demo data or real audit data
-  const data = auditData || demoAuditData;
+  // Make sure we have a valid data object, not an HTML string or other unexpected type
+  let data = auditData;
+  
+  // Check if data is not of expected type or is a string (which might be HTML)
+  if (!data || typeof data === 'string' || !Object.prototype.hasOwnProperty.call(data, 'pageCount')) {
+    data = demoAuditData;
+    console.warn("Using demo data because audit data is invalid:", typeof auditData);
+  }
   
   // Make sure we have optimization data for demo purposes
   if (data && !data.optimizationItems && demoAuditData) {
-    const pageCount = data.pageCount || 20;
-    const optimizationItems = generateMockOptimizationItems(pageCount);
-    data.optimizationItems = optimizationItems;
-    data.optimizationCost = calculateTotalCost(optimizationItems);
+    try {
+      const pageCount = data.pageCount || 20;
+      const optimizationItems = generateMockOptimizationItems(pageCount);
+      data.optimizationItems = optimizationItems;
+      data.optimizationCost = calculateTotalCost(optimizationItems);
+    } catch (err) {
+      console.error("Failed to generate mock optimization data:", err);
+      // Provide fallback empty arrays to avoid further errors
+      data.optimizationItems = [];
+      data.optimizationCost = 0;
+    }
   }
 
   if (isLoading) {
