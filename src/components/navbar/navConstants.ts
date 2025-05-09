@@ -1,42 +1,58 @@
 
-import { Settings } from "lucide-react";
-
-export const COMPANY_ITEMS = [
-  { label: "О нас", href: "/about" },
-  { label: "Карьера", href: "/careers" },
-  { label: "Партнерство", href: "/partnership" },
-  { label: "Политика конфиденциальности", href: "/privacy" },
-  { label: "Условия использования", href: "/terms" },
-];
-
-export const RESOURCE_ITEMS = [
-  { label: "Блог", href: "/blog" },
-  { label: "Документация", href: "/documentation" },
-  { label: "Руководства", href: "/guides" },
-  { label: "Поддержка", href: "/support" },
-  { label: "Демо", href: "/demo" },
-];
-
-export const ADMIN_ICON = Settings;
-
+// Define navigation items for the application
 export const NAV_ITEMS = [
-  { label: "Главная", href: "/" },
-  { label: "Возможности", href: "/features" },
-  { label: "Аудит", href: "/audit" },
-  { label: "Цены", href: "/pricing" },
-  { label: "Контакты", href: "/contact" },
-  // Добавляем ссылку на админку для всех
-  { label: "Панель администратора", href: "/admin", admin: true },
+  {
+    label: "Главная",
+    href: "/",
+  },
+  {
+    label: "SEO Аудит",
+    href: "/site-audit",
+  },
+  {
+    label: "Отслеживание позиций",
+    href: "/position-tracking",
+  },
+  {
+    label: "Блог",
+    href: "/blog",
+  },
+  {
+    label: "О нас",
+    href: "/about",
+  },
+  {
+    label: "Демо оптимизации",
+    href: "/optimization-demo",
+    isDemo: true
+  }
 ];
 
+// Navigation items for client dashboard
 export const CLIENT_ITEMS = [
-  { label: "Профиль", href: "/profile" },
-  { label: "Отслеживание позиций", href: "/position-tracking" },
-  { label: "Аудиты", href: "/audit-history" },
-  { label: "Отчеты", href: "/reports" },
-  { label: "Настройки", href: "/settings" },
-];
-
-export const ADMIN_ITEMS = [
-  { label: "Панель администратора", href: "/admin" },
+  {
+    label: "Обзор",
+    href: "/dashboard",
+    icon: "layout-dashboard",
+  },
+  {
+    label: "Аудиты",
+    href: "/audit-history",
+    icon: "search-check",
+  },
+  {
+    label: "Отчеты",
+    href: "/reports",
+    icon: "bar-chart-3",
+  },
+  {
+    label: "Позиции",
+    href: "/position-tracking",
+    icon: "trending-up",
+  },
+  {
+    label: "Настройки",
+    href: "/settings",
+    icon: "settings",
+  },
 ];

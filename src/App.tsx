@@ -37,6 +37,7 @@ const NotFound = React.lazy(() => import('@/pages/NotFound'));
 const GuidePost = React.lazy(() => import('@/pages/GuidePost'));
 const IPInfo = React.lazy(() => import('@/pages/IPInfo'));
 const Partnership = React.lazy(() => import('@/pages/Partnership'));
+const OptimizationDemo = React.lazy(() => import('@/pages/OptimizationDemo'));
 
 // Lazy load admin routes
 const AdminRoutes = React.lazy(() => import('@/routes/AdminRoutes'));
@@ -85,6 +86,7 @@ function App() {
               <Route path="/site-audit" element={<SiteAudit />} />
               <Route path="/seo-optimization" element={<SeoOptimizationPage />} />
               <Route path="/audit-history" element={<AuditHistory />} />
+              <Route path="/optimization-demo" element={<OptimizationDemo />} />
               
               {/* Content related routes */}
               <Route path="/blog" element={<BlogPage />} />

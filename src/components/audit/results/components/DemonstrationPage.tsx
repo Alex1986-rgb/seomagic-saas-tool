@@ -2,10 +2,22 @@
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import DemonstrationCost from './optimization/DemonstrationCost';
+import { Button } from '@/components/ui/button';
+import { Link } from 'react-router-dom';
+import { ArrowLeft } from 'lucide-react';
 
 const DemonstrationPage: React.FC = () => {
   return (
     <div className="container mx-auto py-8 px-4">
+      <div className="mb-4">
+        <Link to="/">
+          <Button variant="outline" size="sm" className="mb-4">
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            На главную
+          </Button>
+        </Link>
+      </div>
+      
       <div className="mb-8">
         <h1 className="text-3xl font-bold mb-2">Демонстрация системы оптимизации</h1>
         <p className="text-muted-foreground">
