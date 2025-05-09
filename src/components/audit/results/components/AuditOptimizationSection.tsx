@@ -33,10 +33,16 @@ const AuditOptimizationSection: React.FC<AuditOptimizationSectionProps> = ({
   onGeneratePdfReport,
   setContentOptimizationPrompt
 }) => {
-  // Ensure we have valid IDs for all optimization items to satisfy the stricter type requirements
+  // Transform optimization items to ensure all required fields are present
+  // This addresses the type mismatch between different OptimizationItem definitions
   const validOptimizationItems = optimizationItems.map(item => ({
     ...item,
-    id: item.id || `item-${Math.random().toString(36).substr(2, 9)}` // Ensure id exists
+    id: item.id || `item-${Math.random().toString(36).substr(2, 9)}`, // Ensure id exists
+    page: item.page || url, // Ensure page exists with fallback to current URL
+    tasks: item.tasks || [], // Ensure tasks exists as empty array if not provided
+    cost: item.cost || item.totalPrice || 0, // Ensure cost exists
+    priority: item.priority || 'medium', // Set default priority
+    category: item.category || 'general' // Set default category
   }));
 
   return (
