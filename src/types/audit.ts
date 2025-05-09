@@ -13,6 +13,9 @@ import type { AuditItemData } from './audit/audit-items';
 import type { IssuesData } from './audit/audit-details';
 import type { RecommendationData } from './audit/recommendations';
 
+// Import OptimizationItem from features path to re-export
+import type { OptimizationItem } from '@/features/audit/types/optimization-types';
+
 export interface AuditIssue {
   title: string;
   description: string;
@@ -33,7 +36,8 @@ export type {
   IssuesData,
   AuditHistoryItem,
   AuditHistoryData,
-  RecommendationData
+  RecommendationData,
+  OptimizationItem
 };
 
 // Export CrawlOptions interfaces

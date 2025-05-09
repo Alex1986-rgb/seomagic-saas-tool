@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
@@ -11,7 +10,8 @@ import OptimizationSection from './OptimizationSection';
 import { AlertCircle, ArrowRight } from "lucide-react";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { Button } from '@/components/ui/button';
-import { AuditData, OptimizationItem } from '@/types/audit';
+import { AuditData } from '@/types/audit';
+import { OptimizationItem } from '@/features/audit/types/optimization-types';
 
 // Import the generator functions directly
 import { generateMockOptimizationItems, calculateTotalCost } from '@/services/audit/generators';

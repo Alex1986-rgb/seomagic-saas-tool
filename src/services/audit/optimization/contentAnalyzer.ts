@@ -2,7 +2,7 @@
 /**
  * Анализатор контента страниц
  */
-import { PageContent } from './types';
+import { PageContent } from '@/features/audit/types/optimization-types';
 
 interface ContentAnalysis {
   missingMetaDescriptions: number;
@@ -31,19 +31,21 @@ export const analyzeContent = (pagesContent: PageContent[]): ContentAnalysis => 
   
   for (const page of pagesContent) {
     // Проверяем мета-описания
-    if (!page.meta.description) {
+    if (!page.meta?.description) {
       analysis.missingMetaDescriptions++;
     }
     
     // Проверяем мета-ключевые слова
-    if (!page.meta.keywords) {
+    if (!page.meta?.keywords) {
       analysis.missingMetaKeywords++;
     }
     
     // Проверяем alt-теги изображений
-    for (const image of page.images) {
-      if (!image.alt) {
-        analysis.missingAltTags++;
+    if (page.images) {
+      for (const image of page.images) {
+        if (!image.alt) {
+          analysis.missingAltTags++;
+        }
       }
     }
     
@@ -63,7 +65,7 @@ export const analyzeContent = (pagesContent: PageContent[]): ContentAnalysis => 
     
     // Проверяем необходимость переписывания контента
     // Если контент слишком короткий или имеет низкое соотношение ключевых слов
-    if (page.wordCount < 300 || (!page.meta.description && !page.meta.keywords)) {
+    if ((page.wordCount !== undefined && page.wordCount < 300) || (!page.meta?.description && !page.meta?.keywords)) {
       analysis.contentToRewrite++;
     }
   }
@@ -78,23 +80,33 @@ export const calculatePageOptimizationScore = (page: PageContent): number => {
   let score = 100;
   
   // Проверка на наличие мета-тегов
-  if (!page.meta.description) score -= 15;
-  if (!page.meta.keywords) score -= 10;
+  if (!page.meta?.description) score -= 15;
+  if (!page.meta?.keywords) score -= 10;
   
   // Проверка на наличие заголовков
-  if (page.headings.h1.length === 0) score -= 15;
-  if (page.headings.h2.length === 0) score -= 5;
-  if (page.headings.h3.length === 0) score -= 2;
+  if (page.headings) {
+    if (page.headings.h1.length === 0) score -= 15;
+    if (page.headings.h2.length === 0) score -= 5;
+    if (page.headings.h3.length === 0) score -= 2;
+  } else {
+    score -= 22; // 15 + 5 + 2 = 22
+  }
   
   // Проверка на длину контента
-  if (page.wordCount < 300) score -= 15;
-  else if (page.wordCount < 500) score -= 7;
+  if (page.wordCount !== undefined) {
+    if (page.wordCount < 300) score -= 15;
+    else if (page.wordCount < 500) score -= 7;
+  } else {
+    score -= 7; // Default penalty if wordCount is not available
+  }
   
   // Проверка на оптимизацию изображений
-  const imagesWithoutAlt = page.images.filter(img => !img.alt).length;
-  if (imagesWithoutAlt > 0) {
-    const percentage = imagesWithoutAlt / page.images.length;
-    score -= Math.round(percentage * 15);
+  if (page.images && page.images.length > 0) {
+    const imagesWithoutAlt = page.images.filter(img => !img.alt).length;
+    if (imagesWithoutAlt > 0) {
+      const percentage = imagesWithoutAlt / page.images.length;
+      score -= Math.round(percentage * 15);
+    }
   }
   
   return Math.max(0, score);
