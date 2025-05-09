@@ -56,3 +56,47 @@ export const CLIENT_ITEMS = [
     icon: "settings",
   },
 ];
+
+// Resource navigation items
+export const RESOURCE_ITEMS = [
+  {
+    label: "Блог",
+    href: "/blog",
+  },
+  {
+    label: "Руководства",
+    href: "/guides",
+  },
+  {
+    label: "Документация API",
+    href: "/documentation",
+  },
+  {
+    label: "Партнерская программа",
+    href: "/partnership",
+  },
+  {
+    label: "Поддержка",
+    href: "/support",
+  },
+];
+
+// Company information items
+export const COMPANY_ITEMS = [
+  {
+    label: "О нас",
+    href: "/about",
+  },
+  {
+    label: "Контакты",
+    href: "/contact",
+  },
+  {
+    label: "Карьера",
+    href: "/careers",
+  },
+  {
+    label: "Правовая информация",
+    href: "/legal",
+  },
+];

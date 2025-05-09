@@ -42,22 +42,6 @@ const NavbarDesktopLinks: React.FC<NavbarDesktopLinksProps> = ({ navItems }) => 
           )}
         </NavLink>
       ))}
-      <NavLink
-        to="/optimization-demo"
-        className={({ isActive }) =>
-          cn(
-            "px-3 py-2 text-sm rounded-md transition-colors relative group",
-            isActive
-              ? "text-foreground bg-accent"
-              : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
-          )
-        }
-      >
-        Демо оптимизации
-        <Badge variant="outline" className="ml-1 py-0 px-1 text-[0.6rem] border-green-400 text-green-500">
-          DEMO
-        </Badge>
-      </NavLink>
     </div>
   );
 };
