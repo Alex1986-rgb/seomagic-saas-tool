@@ -20,11 +20,22 @@ interface AuditIssuesProps {
 const AuditIssues: React.FC<AuditIssuesProps> = ({ auditData }) => {
   const [activeIssueTab, setActiveIssueTab] = useState('critical');
   
+  // Получаем количество проблем для каждой категории
+  const getIssueCount = (issues: any): number => {
+    if (Array.isArray(issues)) return issues.length;
+    if (typeof issues === 'number') return issues;
+    return 0;
+  };
+  
   const criticalIssues = auditData.issues?.critical || [];
   const importantIssues = auditData.issues?.important || [];
   const opportunities = auditData.issues?.opportunities || [];
-  const minorIssues = auditData.issues?.minor || [];
-  const passedChecks = auditData.issues?.passed || [];
+  const minorIssues = auditData.issues?.minor || 0;
+  const passedChecks = auditData.issues?.passed || 0;
+  
+  const criticalCount = getIssueCount(criticalIssues);
+  const importantCount = getIssueCount(importantIssues);
+  const opportunitiesCount = getIssueCount(opportunities);
   
   const getIssueColor = (impact: string | undefined) => {
     switch(impact) {
@@ -108,30 +119,39 @@ const AuditIssues: React.FC<AuditIssuesProps> = ({ auditData }) => {
   return (
     <Card className="bg-card/90 backdrop-blur-sm border-border">
       <CardHeader className="pb-4">
-        <CardTitle>Проблемы и рекомендации</CardTitle>
+        <CardTitle className="flex justify-between">
+          <span>Проблемы и рекомендации</span>
+          <div className="flex gap-2 text-sm">
+            <span className="text-red-500">{criticalCount} крит.</span>
+            <span className="text-amber-500">{importantCount} важн.</span>
+            <span className="text-yellow-500">{opportunitiesCount} возм.</span>
+            <span className="text-blue-500">{minorIssues} мин.</span>
+            <span className="text-green-500">{passedChecks} проп.</span>
+          </div>
+        </CardTitle>
       </CardHeader>
       <CardContent>
         <Tabs value={activeIssueTab} onValueChange={setActiveIssueTab}>
           <TabsList className="grid grid-cols-5 mb-6">
             <TabsTrigger value="critical" className="data-[state=active]:text-red-600">
               <AlertTriangle className="h-3 w-3 mr-1" />
-              <span className="hidden md:inline">Критические</span> ({criticalIssues.length})
+              <span className="hidden md:inline">Критические</span> ({criticalCount})
             </TabsTrigger>
             <TabsTrigger value="important" className="data-[state=active]:text-orange-600">
               <AlertCircle className="h-3 w-3 mr-1" />
-              <span className="hidden md:inline">Важные</span> ({importantIssues.length})
+              <span className="hidden md:inline">Важные</span> ({importantCount})
             </TabsTrigger>
             <TabsTrigger value="opportunities" className="data-[state=active]:text-yellow-600">
               <Lightbulb className="h-3 w-3 mr-1" />
-              <span className="hidden md:inline">Возможности</span> ({opportunities.length})
+              <span className="hidden md:inline">Возможности</span> ({opportunitiesCount})
             </TabsTrigger>
             <TabsTrigger value="minor" className="data-[state=active]:text-blue-600">
               <Info className="h-3 w-3 mr-1" />
-              <span className="hidden md:inline">Незначительные</span> ({minorIssues.length})
+              <span className="hidden md:inline">Незначительные</span> ({minorIssues})
             </TabsTrigger>
             <TabsTrigger value="passed" className="data-[state=active]:text-green-600">
               <CheckCircle className="h-3 w-3 mr-1" />
-              <span className="hidden md:inline">Успешные</span> ({passedChecks.length})
+              <span className="hidden md:inline">Успешные</span> ({passedChecks})
             </TabsTrigger>
           </TabsList>
           
@@ -148,11 +168,18 @@ const AuditIssues: React.FC<AuditIssuesProps> = ({ auditData }) => {
           </TabsContent>
           
           <TabsContent value="minor" className="mt-0">
-            {renderIssueItems(minorIssues)}
+            {/* For minor issues, we might not have detailed item data */}
+            <div className="text-center py-12 border border-dashed rounded-lg border-gray-300 dark:border-gray-700">
+              <Info className="h-12 w-12 mx-auto text-muted-foreground opacity-50 mb-2" />
+              <p className="text-muted-foreground">Обнаружено {minorIssues} незначительных проблем</p>
+            </div>
           </TabsContent>
           
           <TabsContent value="passed" className="mt-0">
-            {renderIssueItems(passedChecks)}
+            <div className="text-center py-12 border border-dashed rounded-lg border-gray-300 dark:border-gray-700">
+              <CheckCircle className="h-12 w-12 mx-auto text-green-500 opacity-70 mb-2" />
+              <p className="text-muted-foreground">Успешно пройдено {passedChecks} проверок</p>
+            </div>
           </TabsContent>
         </Tabs>
       </CardContent>
