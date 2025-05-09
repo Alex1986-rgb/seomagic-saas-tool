@@ -2,7 +2,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import AuditOptimization from './AuditOptimization';
-import { OptimizationItem } from '@/features/audit/types/optimization-types';
+import { OptimizationItem } from '@/types/audit.d';
 
 interface AuditOptimizationSectionProps {
   optimizationCost: any;

@@ -12,7 +12,7 @@ import OptimizationDemo from '@/components/audit/results/components/Optimization
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
-import { AuditData, OptimizationItem } from '@/types/audit';
+import { AuditData, OptimizationItem } from '@/types/audit.d';
 
 interface OptimizationSectionProps {
   url: string;
@@ -84,7 +84,7 @@ const OptimizationSection: React.FC<OptimizationSectionProps> = ({ url, auditDat
   // Calculate average cost per page
   const costPerPage = pageCount > 0 ? Math.round(optimizationCost / pageCount) : 0;
 
-  // Calculate total errors across all items
+  // Calculate total errors across all items with optional chaining
   const totalErrors = optimizationItems.reduce((sum, item) => sum + (item.errorCount || 0), 0);
   
   const handlePromptTemplateChange = (value: string) => {

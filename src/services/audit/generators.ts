@@ -1,6 +1,6 @@
 import { faker } from '@faker-js/faker';
 import { PageContent } from './content';
-import { AuditData, OptimizationItem } from '@/types/audit';
+import { AuditData, OptimizationItem } from '@/types/audit.d';
 
 /**
  * Generates a random score between 0 and 100
@@ -241,8 +241,6 @@ export const generateMockPageContent = (url: string): PageContent => {
   };
 };
 
-import { AuditData, OptimizationItem } from '@/types/audit';
-
 /**
  * Generates mock optimization items for a website
  */
@@ -273,7 +271,7 @@ export const generateMockOptimizationItems = (pageCount: number = 10): Optimizat
     cost: 3000,
     priority: "high",
     category: "errors",
-    name: "Исправление критических ошибок",
+    name: "Исправление критических о��ибок",
     description: "Исправление ошибок, блокирующих индексацию и ранжирование",
     count: 1,
     price: 3000,
@@ -309,7 +307,7 @@ export const generateMockOptimizationItems = (pageCount: number = 10): Optimizat
     cost: linkFixCost * brokenLinksCount,
     priority: "medium",
     category: "links",
-    name: "Исправление битых ссылок",
+    name: "Исправление битых ��сылок",
     description: `Исправление ${brokenLinksCount} битых ссылок и настройка редиректов`,
     count: brokenLinksCount,
     price: linkFixCost,

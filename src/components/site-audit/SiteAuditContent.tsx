@@ -11,7 +11,7 @@ import OptimizationSummary from './OptimizationSummary';
 import { AlertCircle, ArrowRight } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from '@/components/ui/button';
-import { AuditData, OptimizationItem } from '@/types/audit';
+import { AuditData, OptimizationItem } from '@/types/audit.d';
 
 // Import the generator functions directly
 import { generateMockOptimizationItems, calculateTotalCost } from '@/services/audit/generators';
@@ -140,7 +140,7 @@ const SiteAuditContent: React.FC<SiteAuditContentProps> = ({ url }) => {
   if (data && !data.optimizationItems) {
     try {
       const pageCount = data.pageCount || 20;
-      const optimizationItems: OptimizationItem[] = generateMockOptimizationItems(pageCount);
+      const optimizationItems = generateMockOptimizationItems(pageCount);
       data.optimizationItems = optimizationItems;
       data.optimizationCost = calculateTotalCost(optimizationItems);
     } catch (err) {
