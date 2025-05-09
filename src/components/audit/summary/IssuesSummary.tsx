@@ -10,6 +10,12 @@ interface IssuesSummaryProps {
     opportunities: number | string[];
     minor?: number;
     passed?: number;
+    technical?: number | string[];
+    content?: number | string[];
+    meta?: number | string[];
+    links?: number | string[];
+    images?: number | string[];
+    performance?: number | string[];
   };
   previousIssues?: {
     critical: number;
@@ -17,6 +23,12 @@ interface IssuesSummaryProps {
     opportunities: number;
     minor?: number;
     passed?: number;
+    technical?: number;
+    content?: number;
+    meta?: number;
+    links?: number;
+    images?: number;
+    performance?: number;
   };
   animate?: boolean;
 }
@@ -100,6 +112,71 @@ const IssuesSummary: React.FC<IssuesSummaryProps> = ({
           {getTrend(getCount(issues.opportunities), previousIssues?.opportunities)}
         </span>
       </motion.div>
+
+      {issues.meta !== undefined && (
+        <motion.div 
+          variants={animate ? itemVariants : undefined}
+          className="flex justify-between items-center p-2 bg-blue-500/10 rounded-lg hover:bg-blue-500/15 transition-colors"
+        >
+          <span className="font-medium">Мета-теги</span>
+          <span className="font-bold flex items-center">
+            {getCount(issues.meta)}
+            {previousIssues?.meta !== undefined && getTrend(getCount(issues.meta), previousIssues.meta)}
+          </span>
+        </motion.div>
+      )}
+
+      {issues.images !== undefined && (
+        <motion.div 
+          variants={animate ? itemVariants : undefined}
+          className="flex justify-between items-center p-2 bg-purple-500/10 rounded-lg hover:bg-purple-500/15 transition-colors"
+        >
+          <span className="font-medium">Изображения</span>
+          <span className="font-bold flex items-center">
+            {getCount(issues.images)}
+            {previousIssues?.images !== undefined && getTrend(getCount(issues.images), previousIssues.images)}
+          </span>
+        </motion.div>
+      )}
+
+      {issues.links !== undefined && (
+        <motion.div 
+          variants={animate ? itemVariants : undefined}
+          className="flex justify-between items-center p-2 bg-pink-500/10 rounded-lg hover:bg-pink-500/15 transition-colors"
+        >
+          <span className="font-medium">Ссылки</span>
+          <span className="font-bold flex items-center">
+            {getCount(issues.links)}
+            {previousIssues?.links !== undefined && getTrend(getCount(issues.links), previousIssues.links)}
+          </span>
+        </motion.div>
+      )}
+
+      {issues.content !== undefined && (
+        <motion.div 
+          variants={animate ? itemVariants : undefined}
+          className="flex justify-between items-center p-2 bg-teal-500/10 rounded-lg hover:bg-teal-500/15 transition-colors"
+        >
+          <span className="font-medium">Контент</span>
+          <span className="font-bold flex items-center">
+            {getCount(issues.content)}
+            {previousIssues?.content !== undefined && getTrend(getCount(issues.content), previousIssues.content)}
+          </span>
+        </motion.div>
+      )}
+
+      {issues.performance !== undefined && (
+        <motion.div 
+          variants={animate ? itemVariants : undefined}
+          className="flex justify-between items-center p-2 bg-orange-500/10 rounded-lg hover:bg-orange-500/15 transition-colors"
+        >
+          <span className="font-medium">Производительность</span>
+          <span className="font-bold flex items-center">
+            {getCount(issues.performance)}
+            {previousIssues?.performance !== undefined && getTrend(getCount(issues.performance), previousIssues.performance)}
+          </span>
+        </motion.div>
+      )}
 
       {issues.minor !== undefined && (
         <motion.div 

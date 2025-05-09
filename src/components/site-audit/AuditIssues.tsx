@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { motion } from "framer-motion";
-import { AlertTriangle, CheckCircle, AlertCircle, Info, Lightbulb } from "lucide-react";
+import { AlertTriangle, CheckCircle, AlertCircle, Info, Lightbulb, FileText, Image, Link } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
 interface AuditIssue {
@@ -11,6 +11,7 @@ interface AuditIssue {
   title: string;
   description: string;
   impact?: string;
+  category?: string;
 }
 
 interface AuditIssuesProps {
@@ -30,12 +31,20 @@ const AuditIssues: React.FC<AuditIssuesProps> = ({ auditData }) => {
   const criticalIssues = auditData.issues?.critical || [];
   const importantIssues = auditData.issues?.important || [];
   const opportunities = auditData.issues?.opportunities || [];
+  const metaIssues = auditData.issues?.meta || [];
+  const contentIssues = auditData.issues?.content || [];
+  const linkIssues = auditData.issues?.links || [];
+  const imageIssues = auditData.issues?.images || [];
   const minorIssues = auditData.issues?.minor || 0;
   const passedChecks = auditData.issues?.passed || 0;
   
   const criticalCount = getIssueCount(criticalIssues);
   const importantCount = getIssueCount(importantIssues);
   const opportunitiesCount = getIssueCount(opportunities);
+  const metaCount = getIssueCount(metaIssues);
+  const contentCount = getIssueCount(contentIssues);
+  const linkCount = getIssueCount(linkIssues);
+  const imageCount = getIssueCount(imageIssues);
   
   const getIssueColor = (impact: string | undefined) => {
     switch(impact) {
@@ -57,7 +66,18 @@ const AuditIssues: React.FC<AuditIssuesProps> = ({ auditData }) => {
     }
   };
 
-  const getIssueIcon = (impact: string | undefined) => {
+  const getIssueIcon = (impact: string | undefined, category?: string) => {
+    // First check if we should use category-specific icon
+    if (category) {
+      if (category === 'meta' || category === 'meta-tags') 
+        return <FileText className="h-5 w-5 text-blue-600" />;
+      if (category === 'images' || category === 'image') 
+        return <Image className="h-5 w-5 text-purple-600" />;
+      if (category === 'links' || category === 'link') 
+        return <Link className="h-5 w-5 text-pink-600" />;
+    }
+    
+    // Fallback to impact-based icons
     switch(impact) {
       case 'high': return <AlertTriangle className="h-5 w-5 text-red-600" />;
       case 'medium': return <AlertCircle className="h-5 w-5 text-orange-600" />;
@@ -86,7 +106,7 @@ const AuditIssues: React.FC<AuditIssuesProps> = ({ auditData }) => {
             >
               <div className="flex items-start gap-3">
                 <div className="flex-shrink-0 mt-1">
-                  {getIssueIcon(item.impact)}
+                  {getIssueIcon(item.impact, item.category)}
                 </div>
                 <div className="flex-grow">
                   <h3 className={`text-lg font-medium mb-1 ${getIssueTextColor(item.impact)}`}>
@@ -121,18 +141,22 @@ const AuditIssues: React.FC<AuditIssuesProps> = ({ auditData }) => {
       <CardHeader className="pb-4">
         <CardTitle className="flex justify-between">
           <span>Проблемы и рекомендации</span>
-          <div className="flex gap-2 text-sm">
+          <div className="flex flex-wrap gap-2 text-sm">
             <span className="text-red-500">{criticalCount} крит.</span>
             <span className="text-amber-500">{importantCount} важн.</span>
             <span className="text-yellow-500">{opportunitiesCount} возм.</span>
-            <span className="text-blue-500">{minorIssues} мин.</span>
+            <span className="text-blue-500">{metaCount} мета</span>
+            <span className="text-purple-500">{imageCount} изобр.</span>
+            <span className="text-pink-500">{linkCount} ссыл.</span>
+            <span className="text-teal-500">{contentCount} конт.</span>
+            <span className="text-gray-500">{minorIssues} мин.</span>
             <span className="text-green-500">{passedChecks} проп.</span>
           </div>
         </CardTitle>
       </CardHeader>
       <CardContent>
         <Tabs value={activeIssueTab} onValueChange={setActiveIssueTab}>
-          <TabsList className="grid grid-cols-5 mb-6">
+          <TabsList className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-9 mb-6">
             <TabsTrigger value="critical" className="data-[state=active]:text-red-600">
               <AlertTriangle className="h-3 w-3 mr-1" />
               <span className="hidden md:inline">Критические</span> ({criticalCount})
@@ -145,9 +169,25 @@ const AuditIssues: React.FC<AuditIssuesProps> = ({ auditData }) => {
               <Lightbulb className="h-3 w-3 mr-1" />
               <span className="hidden md:inline">Возможности</span> ({opportunitiesCount})
             </TabsTrigger>
+            <TabsTrigger value="meta" className="data-[state=active]:text-blue-600">
+              <FileText className="h-3 w-3 mr-1" />
+              <span className="hidden md:inline">Мета-теги</span> ({metaCount})
+            </TabsTrigger>
+            <TabsTrigger value="content" className="data-[state=active]:text-teal-600">
+              <Info className="h-3 w-3 mr-1" />
+              <span className="hidden md:inline">Контент</span> ({contentCount})
+            </TabsTrigger>
+            <TabsTrigger value="images" className="data-[state=active]:text-purple-600">
+              <Image className="h-3 w-3 mr-1" />
+              <span className="hidden md:inline">Изображения</span> ({imageCount})
+            </TabsTrigger>
+            <TabsTrigger value="links" className="data-[state=active]:text-pink-600">
+              <Link className="h-3 w-3 mr-1" />
+              <span className="hidden md:inline">Ссылки</span> ({linkCount})
+            </TabsTrigger>
             <TabsTrigger value="minor" className="data-[state=active]:text-blue-600">
               <Info className="h-3 w-3 mr-1" />
-              <span className="hidden md:inline">Незначительные</span> ({minorIssues})
+              <span className="hidden md:inline">Незначит.</span> ({minorIssues})
             </TabsTrigger>
             <TabsTrigger value="passed" className="data-[state=active]:text-green-600">
               <CheckCircle className="h-3 w-3 mr-1" />
@@ -167,8 +207,23 @@ const AuditIssues: React.FC<AuditIssuesProps> = ({ auditData }) => {
             {renderIssueItems(opportunities)}
           </TabsContent>
           
+          <TabsContent value="meta" className="mt-0">
+            {renderIssueItems(metaIssues)}
+          </TabsContent>
+          
+          <TabsContent value="content" className="mt-0">
+            {renderIssueItems(contentIssues)}
+          </TabsContent>
+          
+          <TabsContent value="images" className="mt-0">
+            {renderIssueItems(imageIssues)}
+          </TabsContent>
+          
+          <TabsContent value="links" className="mt-0">
+            {renderIssueItems(linkIssues)}
+          </TabsContent>
+          
           <TabsContent value="minor" className="mt-0">
-            {/* For minor issues, we might not have detailed item data */}
             <div className="text-center py-12 border border-dashed rounded-lg border-gray-300 dark:border-gray-700">
               <Info className="h-12 w-12 mx-auto text-muted-foreground opacity-50 mb-2" />
               <p className="text-muted-foreground">Обнаружено {minorIssues} незначительных проблем</p>
