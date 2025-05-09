@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useToast } from "@/hooks/use-toast";
@@ -19,6 +20,7 @@ interface OptimizationCostProps {
   className?: string;
   optimizationItems?: OptimizationItem[];
   onGeneratePdfReport?: () => void;
+  onSelectPrompt?: (prompt: string) => void;
 }
 
 const OptimizationCost: React.FC<OptimizationCostProps> = ({
@@ -29,7 +31,8 @@ const OptimizationCost: React.FC<OptimizationCostProps> = ({
   isOptimized = false,
   className,
   optimizationItems = [],
-  onGeneratePdfReport
+  onGeneratePdfReport,
+  onSelectPrompt
 }) => {
   const { toast } = useToast();
   const [isPaymentComplete, setIsPaymentComplete] = useState(false);
@@ -56,6 +59,7 @@ const OptimizationCost: React.FC<OptimizationCostProps> = ({
       };
     };
   } | null>(null);
+  const [selectedPrompt, setSelectedPrompt] = useState<string>("");
   
   const isOptimizedState = isOptimized || localIsOptimized;
   
@@ -125,7 +129,21 @@ const OptimizationCost: React.FC<OptimizationCostProps> = ({
     
     toast({
       title: "Оптимизация начата",
-      description: "Процесс оптимизации сайта запущен",
+      description: selectedPrompt 
+        ? "Процесс оптимизации сайта запущен с выбранными параметрами" 
+        : "Процесс оптимизации сайта запущен",
+    });
+  };
+  
+  const handleSelectPrompt = (prompt: string) => {
+    setSelectedPrompt(prompt);
+    if (onSelectPrompt) {
+      onSelectPrompt(prompt);
+    }
+    
+    toast({
+      title: "Шаблон выбран",
+      description: "Параметры оптимизации установлены",
     });
   };
   
@@ -177,6 +195,7 @@ const OptimizationCost: React.FC<OptimizationCostProps> = ({
           onPayment={handlePayment}
           isDialogOpen={isDialogOpen}
           setIsDialogOpen={setIsDialogOpen}
+          onSelectPrompt={handleSelectPrompt}
         />
       </div>
     </motion.div>

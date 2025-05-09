@@ -4,6 +4,7 @@ import { OptimizationItem } from './components/optimization';
 import { Button } from "@/components/ui/button";
 import { ChevronDown, ChevronUp, FileText } from 'lucide-react';
 import CostDetailsTable from './components/optimization/CostDetailsTable';
+import PaymentDialog from '@/components/audit/results/components/optimization/PaymentDialog';
 
 interface AuditOptimizationProps {
   optimizationCost?: number;
@@ -35,6 +36,7 @@ const AuditOptimization: React.FC<AuditOptimizationProps> = ({
   setContentOptimizationPrompt
 }) => {
   const [showDetails, setShowDetails] = useState(false);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
   
   if (!optimizationCost && !showPrompt) return null;
   
@@ -43,6 +45,10 @@ const AuditOptimization: React.FC<AuditOptimizationProps> = ({
   
   const formatNumber = (num: number) => {
     return new Intl.NumberFormat('ru-RU').format(num);
+  };
+  
+  const handleSelectPrompt = (prompt: string) => {
+    setContentOptimizationPrompt(prompt);
   };
   
   return (
@@ -133,7 +139,7 @@ const AuditOptimization: React.FC<AuditOptimizationProps> = ({
             ) : (
               <>
                 <button 
-                  onClick={onOptimize}
+                  onClick={() => setIsDialogOpen(true)}
                   className="bg-primary text-white px-4 py-2 rounded-md hover:bg-primary/90"
                 >
                   Заказать оптимизацию
@@ -157,6 +163,15 @@ const AuditOptimization: React.FC<AuditOptimizationProps> = ({
               Скачать PDF отчет
             </button>
           </div>
+          
+          <PaymentDialog
+            url={url}
+            optimizationCost={optimizationCost}
+            onPayment={onOptimize}
+            isDialogOpen={isDialogOpen}
+            setIsDialogOpen={setIsDialogOpen}
+            onSelectPrompt={handleSelectPrompt}
+          />
         </div>
       )}
     </div>

@@ -1,157 +1,179 @@
 
 import { OptimizationItem } from '@/features/audit/types/optimization-types';
 
-// Basic pricing configuration
-export const getPricingConfig = () => {
-  return {
-    sitemap: 1500,
-    metaTagsPerItem: 50,
-    contentPerPage: 200,
-    imageAltPerItem: 20,
-    performancePerPage: 100,
-    linksPerItem: 30,
-    structurePerItem: 40,
-    basePrice: 5000
-  };
-};
-
-// Calculate optimization cost based on page count
-export const calculateOptimizationCost = (pageCount: number = 20) => {
-  const items = getStandardOptimizationItems();
-  const totalCost = calculateTotalOptimizationCost(items);
-  
-  return {
-    items,
-    totalCost,
-    pageCount
-  };
-};
-
-// Calculate total cost from items
-export const calculateTotalOptimizationCost = (items: OptimizationItem[]): number => {
-  let totalCost = items.reduce((sum, item) => sum + item.cost, 0);
-  
-  // Apply discount based on number of items
-  if (items.length > 30) {
-    totalCost = Math.round(totalCost * 0.85); // 15% discount
-  } else if (items.length > 15) {
-    totalCost = Math.round(totalCost * 0.9); // 10% discount
-  } else if (items.length > 5) {
-    totalCost = Math.round(totalCost * 0.95); // 5% discount
-  }
-  
-  return totalCost;
-};
-
-// Generate standardized optimization items
 export const getStandardOptimizationItems = (): OptimizationItem[] => {
-  const items: OptimizationItem[] = [
+  return [
     {
-      id: 'item-1',
-      page: 'all',
-      tasks: ['generate_sitemap'],
-      cost: 1500,
-      priority: 'high',
-      category: 'structure',
-      name: 'Создание XML-карты сайта',
-      description: 'Генерация и отправка XML-карты сайта в поисковые системы',
+      id: "base_cost",
+      name: "Базовая стоимость оптимизации",
+      description: "Базовая стоимость работ по оптимизации, включает диагностику и анализ",
+      count: 1,
+      price: 5000,
+      totalPrice: 5000,
+      priority: "high",
+      category: "base",
+      page: "все страницы",
+      tasks: ["Базовый анализ"],
+      cost: 5000,
+      errorCount: 0
+    },
+    {
+      id: "critical_errors",
+      name: "Исправление критических ошибок",
+      description: "Устранение критических ошибок, влияющих на индексацию",
+      count: 5,
+      price: 1000,
+      totalPrice: 5000,
+      priority: "high",
+      category: "errors",
+      page: "все страницы",
+      tasks: ["Исправление ошибок индексации"],
+      cost: 5000,
+      errorCount: 5
+    },
+    {
+      id: "meta_tags",
+      name: "Оптимизация мета-тегов",
+      description: "Оптимизация title, description и keywords для всех страниц",
+      count: 15,
+      price: 300,
+      totalPrice: 4500,
+      priority: "high",
+      category: "seo",
+      page: "все страницы",
+      tasks: ["Оптимизация мета-тегов"],
+      cost: 4500,
+      errorCount: 12
+    },
+    {
+      id: "broken_links",
+      name: "Исправление битых ссылок",
+      description: "Обнаружение и исправление неработающих ссылок",
+      count: 8,
+      price: 200,
+      totalPrice: 1600,
+      priority: "medium",
+      category: "technical",
+      page: "все страницы",
+      tasks: ["Анализ ссылок", "Коррекция ссылок"],
+      cost: 1600,
+      errorCount: 8
+    },
+    {
+      id: "image_optimization",
+      name: "Оптимизация изображений",
+      description: "Оптимизация изображений для ускорения загрузки и SEO",
+      count: 30,
+      price: 100,
+      totalPrice: 3000,
+      priority: "medium",
+      category: "media",
+      page: "все страницы",
+      tasks: ["Оптимизация изображений"],
+      cost: 3000,
+      errorCount: 24
+    },
+    {
+      id: "content_optimization",
+      name: "Оптимизация контента",
+      description: "Оптимизация текстового контента для поисковых систем",
+      count: 15,
+      price: 500,
+      totalPrice: 7500,
+      priority: "high",
+      category: "content",
+      page: "все страницы",
+      tasks: ["Оптимизация текстов", "Добавление ключевых слов"],
+      cost: 7500,
+      errorCount: 18
+    },
+    {
+      id: "heading_structure",
+      name: "Улучшение структуры заголовков",
+      description: "Оптимизация H1-H6 заголовков для лучшего SEO",
+      count: 15,
+      price: 200,
+      totalPrice: 3000,
+      priority: "medium",
+      category: "structure",
+      page: "все страницы",
+      tasks: ["Оптимизация заголовков"],
+      cost: 3000,
+      errorCount: 9
+    },
+    {
+      id: "sitemap",
+      name: "Создание карты сайта",
+      description: "Генерация XML и HTML карты сайта",
       count: 1,
       price: 1500,
-      pricePerUnit: 1500,
       totalPrice: 1500,
-      type: 'technical'
+      priority: "medium",
+      category: "technical",
+      page: "корень сайта",
+      tasks: ["Создание sitemap.xml"],
+      cost: 1500,
+      errorCount: 1
     },
     {
-      id: 'item-2',
-      page: 'all',
-      tasks: ['optimize_meta_tags'],
-      cost: 2500,
-      priority: 'high',
-      category: 'meta',
-      name: 'Оптимизация мета-тегов',
-      description: 'Улучшение заголовков и описаний страниц',
-      count: 50,
-      price: 2500,
-      pricePerUnit: 50,
-      totalPrice: 2500,
-      type: 'technical'
-    },
-    {
-      id: 'item-3',
-      page: 'content',
-      tasks: ['improve_content'],
-      cost: 5000,
-      priority: 'high',
-      category: 'content',
-      name: 'Улучшение контента',
-      description: 'Оптимизация текстового содержимого страниц',
-      count: 25,
-      price: 5000,
-      pricePerUnit: 200,
-      totalPrice: 5000,
-      type: 'content'
-    },
-    {
-      id: 'item-4',
-      page: 'images',
-      tasks: ['optimize_images'],
-      cost: 1200,
-      priority: 'medium',
-      category: 'images',
-      name: 'Оптимизация изображений',
-      description: 'Сжатие изображений и добавление атрибутов alt',
-      count: 60,
-      price: 1200,
-      pricePerUnit: 20,
-      totalPrice: 1200,
-      type: 'technical'
-    },
-    {
-      id: 'item-5',
-      page: 'performance',
-      tasks: ['optimize_speed'],
-      cost: 2000,
-      priority: 'high',
-      category: 'performance',
-      name: 'Оптимизация скорости',
-      description: 'Улучшение скорости загрузки сайта',
-      count: 20,
-      price: 2000,
-      pricePerUnit: 100,
+      id: "url_structure",
+      name: "Оптимизация структуры URL",
+      description: "Оптимизация URL-адресов для SEO",
+      count: 10,
+      price: 200,
       totalPrice: 2000,
-      type: 'technical'
+      priority: "low",
+      category: "structure",
+      page: "все страницы",
+      tasks: ["Анализ URL"],
+      cost: 2000,
+      errorCount: 14
     },
     {
-      id: 'item-6',
-      page: 'links',
-      tasks: ['fix_broken_links'],
-      cost: 900,
-      priority: 'medium',
-      category: 'links',
-      name: 'Исправление битых ссылок',
-      description: 'Поиск и исправление некорректных ссылок',
-      count: 30,
-      price: 900,
-      pricePerUnit: 30,
-      totalPrice: 900,
-      type: 'technical'
+      id: "conversion_texts",
+      name: "Улучшение текстов для конверсии",
+      description: "Оптимизация текстов для увеличения конверсии",
+      count: 5,
+      price: 800,
+      totalPrice: 4000,
+      priority: "high",
+      category: "content",
+      page: "ключевые страницы",
+      tasks: ["Оптимизация призывов к действию"],
+      cost: 4000,
+      errorCount: 7
     },
     {
-      id: 'item-7',
-      page: 'structure',
-      tasks: ['improve_structure'],
-      cost: 1600,
-      priority: 'medium',
-      category: 'structure',
-      name: 'Улучшение структуры сайта',
-      description: 'Оптимизация URL структуры и навигации',
-      count: 40,
-      price: 1600,
-      pricePerUnit: 40,
-      totalPrice: 1600,
-      type: 'technical'
+      id: "mobile_optimization",
+      name: "Оптимизация для мобильных устройств",
+      description: "Улучшение мобильной версии сайта",
+      count: 1,
+      price: 3000,
+      totalPrice: 3000,
+      priority: "high",
+      category: "technical",
+      page: "все страницы",
+      tasks: ["Mobile-friendly оптимизация"],
+      cost: 3000,
+      errorCount: 11
+    },
+    {
+      id: "speed_optimization",
+      name: "Улучшение производительности",
+      description: "Оптимизация скорости загрузки страниц",
+      count: 1,
+      price: 4000,
+      totalPrice: 4000,
+      priority: "medium",
+      category: "technical",
+      page: "все страницы",
+      tasks: ["Оптимизация скорости"],
+      cost: 4000,
+      errorCount: 16
     }
   ];
-  
-  return items;
+};
+
+export const calculateTotalOptimizationCost = (items: OptimizationItem[]): number => {
+  return items.reduce((total, item) => total + item.totalPrice, 0);
 };

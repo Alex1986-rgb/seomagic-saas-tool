@@ -4,8 +4,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { CheckCircle, CreditCard, AlertCircle } from 'lucide-react';
+import { CheckCircle, CreditCard, AlertCircle, ChevronDown, ChevronUp } from 'lucide-react';
 import { Card } from '@/components/ui/card';
+import OptimizationPromptTemplates from './OptimizationPromptTemplates';
 
 interface PaymentDialogProps {
   url: string;
@@ -13,6 +14,7 @@ interface PaymentDialogProps {
   onPayment: () => void;
   isDialogOpen: boolean;
   setIsDialogOpen: (open: boolean) => void;
+  onSelectPrompt?: (prompt: string) => void;
 }
 
 const PaymentDialog: React.FC<PaymentDialogProps> = ({ 
@@ -20,7 +22,8 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
   optimizationCost, 
   onPayment,
   isDialogOpen,
-  setIsDialogOpen
+  setIsDialogOpen,
+  onSelectPrompt
 }) => {
   const [cardNumber, setCardNumber] = useState('');
   const [expiryDate, setExpiryDate] = useState('');
@@ -28,6 +31,7 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
   const [cardName, setCardName] = useState('');
   const [processing, setProcessing] = useState(false);
   const [error, setError] = useState('');
+  const [showPromptTemplates, setShowPromptTemplates] = useState(false);
   
   const formatCardNumber = (value: string) => {
     // Remove all non-digit characters
@@ -92,15 +96,52 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
     }, 1500);
   };
 
+  const handleSelectPrompt = (prompt: string) => {
+    if (onSelectPrompt) {
+      onSelectPrompt(prompt);
+    }
+  };
+
   return (
     <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[600px]">
         <DialogHeader>
           <DialogTitle>Оплата оптимизации</DialogTitle>
           <DialogDescription>
             Оплата услуги оптимизации сайта {url}
           </DialogDescription>
         </DialogHeader>
+        
+        {onSelectPrompt && (
+          <div className="mb-6">
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="text-sm font-medium">Параметры оптимизации</h3>
+              <Button 
+                variant="ghost" 
+                size="sm"
+                onClick={() => setShowPromptTemplates(!showPromptTemplates)}
+                className="h-8 px-2 text-xs flex items-center gap-1"
+              >
+                {showPromptTemplates ? (
+                  <>
+                    <ChevronUp className="h-3 w-3" /> Скрыть шаблоны
+                  </>
+                ) : (
+                  <>
+                    <ChevronDown className="h-3 w-3" /> Выбрать шаблон оптимизации
+                  </>
+                )}
+              </Button>
+            </div>
+            
+            {showPromptTemplates && (
+              <OptimizationPromptTemplates 
+                onSelectPrompt={handleSelectPrompt}
+                className="mb-4"
+              />
+            )}
+          </div>
+        )}
         
         <form onSubmit={handleSubmit} className="space-y-6">
           <Card className="p-4 bg-muted/30">

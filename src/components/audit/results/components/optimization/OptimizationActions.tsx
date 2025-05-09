@@ -1,7 +1,7 @@
 
-import React from 'react';
-import { Download, FileText, Play } from 'lucide-react';
+import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
+import { Download, FileText, Bot, CreditCard } from 'lucide-react';
 import PaymentDialog from './PaymentDialog';
 
 interface OptimizationActionsProps {
@@ -15,6 +15,7 @@ interface OptimizationActionsProps {
   onPayment: () => void;
   isDialogOpen: boolean;
   setIsDialogOpen: (open: boolean) => void;
+  onSelectPrompt?: (prompt: string) => void;
 }
 
 const OptimizationActions: React.FC<OptimizationActionsProps> = ({
@@ -27,49 +28,66 @@ const OptimizationActions: React.FC<OptimizationActionsProps> = ({
   onStartOptimization,
   onPayment,
   isDialogOpen,
-  setIsDialogOpen
+  setIsDialogOpen,
+  onSelectPrompt
 }) => {
+  const handleOpenPaymentDialog = () => {
+    setIsDialogOpen(true);
+  };
+
   return (
-    <div className="flex gap-2">
-      {onGeneratePdfReport && (
-        <Button 
-          onClick={onGeneratePdfReport}
-          className="gap-2"
-          variant="outline"
-        >
-          <FileText className="h-4 w-4" />
-          Скачать PDF отчет
-        </Button>
-      )}
-      
-      {isOptimized ? (
-        <Button 
-          onClick={onDownloadOptimized}
-          className="gap-2"
-          variant="default"
-        >
-          <Download className="h-4 w-4" />
-          Скачать оптимизированный сайт
-        </Button>
-      ) : isPaymentComplete ? (
-        <Button 
-          onClick={onStartOptimization}
-          className="gap-2"
-          variant="default"
-        >
-          <Play className="h-4 w-4" />
-          Запустить оптимизацию
-        </Button>
-      ) : (
-        <PaymentDialog
-          url={url}
-          optimizationCost={optimizationCost}
-          onPayment={onPayment}
-          isDialogOpen={isDialogOpen}
-          setIsDialogOpen={setIsDialogOpen}
-        />
-      )}
-    </div>
+    <>
+      <div className="flex flex-wrap gap-2 justify-end">
+        {isOptimized ? (
+          <Button
+            onClick={onDownloadOptimized}
+            variant="default"
+            className="gap-2"
+          >
+            <Download className="h-4 w-4" />
+            Скачать оптимизированный сайт
+          </Button>
+        ) : isPaymentComplete ? (
+          <Button
+            onClick={onStartOptimization}
+            variant="default"
+            className="gap-2"
+          >
+            <Bot className="h-4 w-4" />
+            Запустить оптимизацию
+          </Button>
+        ) : (
+          <Button
+            onClick={handleOpenPaymentDialog}
+            variant="default"
+            className="gap-2"
+          >
+            <CreditCard className="h-4 w-4" />
+            Заказать оптимизацию
+          </Button>
+        )}
+
+        {onGeneratePdfReport && (
+          <Button
+            onClick={onGeneratePdfReport}
+            variant="outline"
+            className="gap-2"
+          >
+            <FileText className="h-4 w-4" />
+            Скачать PDF отчет
+          </Button>
+        )}
+      </div>
+
+      <PaymentDialog
+        url={url}
+        optimizationCost={optimizationCost}
+        onPayment={onPayment}
+        isDialogOpen={isDialogOpen}
+        setIsDialogOpen={setIsDialogOpen}
+        onSelectPrompt={onSelectPrompt}
+      />
+    </>
   );
 };
 

@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Info } from 'lucide-react';
 import {
@@ -26,9 +27,13 @@ const CostDetailsTable: React.FC<CostDetailsTableProps> = ({ optimizationItems }
     return new Intl.NumberFormat('ru-RU').format(num);
   };
 
-  console.log("CostDetailsTable rendering with items:", optimizationItems?.length);
-
-  if (!optimizationItems || !optimizationItems.length) return null;
+  if (!optimizationItems || !optimizationItems.length) {
+    return (
+      <div className="text-center p-4 text-muted-foreground">
+        Нет данных для отображения
+      </div>
+    );
+  }
 
   const totalSum = optimizationItems.reduce((sum, item) => sum + item.totalPrice, 0);
 
@@ -80,7 +85,7 @@ const CostDetailsTable: React.FC<CostDetailsTableProps> = ({ optimizationItems }
     return (
       <>
         <TableRow className="bg-muted">
-          <TableCell colSpan={5} className="font-semibold">{sectionTitle}</TableCell>
+          <TableCell colSpan={6} className="font-semibold">{sectionTitle}</TableCell>
         </TableRow>
         {items.map((item, index) => (
           <TableRow key={`${sectionTitle}-${index}`}>
@@ -101,6 +106,11 @@ const CostDetailsTable: React.FC<CostDetailsTableProps> = ({ optimizationItems }
               {item.description}
             </TableCell>
             <TableCell className="text-center">{formatNumber(item.count)}</TableCell>
+            {item.errorCount !== undefined && (
+              <TableCell className="text-center">
+                <span className="text-red-500 font-medium">{formatNumber(item.errorCount)}</span>
+              </TableCell>
+            )}
             <TableCell className="text-right">{formatNumber(item.pricePerUnit || item.price)} ₽</TableCell>
             <TableCell className="text-right font-medium">{formatNumber(item.totalPrice)} ₽</TableCell>
           </TableRow>
@@ -117,6 +127,7 @@ const CostDetailsTable: React.FC<CostDetailsTableProps> = ({ optimizationItems }
             <TableHead>Наименование</TableHead>
             <TableHead>Описание</TableHead>
             <TableHead className="text-center">Количество</TableHead>
+            <TableHead className="text-center">Ошибки</TableHead>
             <TableHead className="text-right">Цена за ед.</TableHead>
             <TableHead className="text-right">Сумма</TableHead>
           </TableRow>
@@ -131,7 +142,7 @@ const CostDetailsTable: React.FC<CostDetailsTableProps> = ({ optimizationItems }
         </TableBody>
         <TableFooter>
           <TableRow>
-            <TableCell colSpan={4} className="text-right font-medium">Итого:</TableCell>
+            <TableCell colSpan={5} className="text-right font-medium">Итого:</TableCell>
             <TableCell className="text-right font-bold text-primary">{formatNumber(totalSum)} ₽</TableCell>
           </TableRow>
         </TableFooter>
