@@ -1,4 +1,3 @@
-
 import { 
   OptimizationMetrics, 
   OptimizationCosts, 
@@ -164,6 +163,7 @@ export const generateFullOptimizationResults = (
   return {
     metrics,
     costs,
+    items: metrics.optimizationItems || [],
     recommendations
   };
 };

@@ -1,3 +1,4 @@
+
 export * from './generators';
 export * from './recommendations';
 export * from './history';
@@ -46,7 +47,7 @@ export {
 };
 
 import { AuditData } from "@/types/audit";
-import { generateAuditData } from '@/components/audit/results/components/optimization/mockOptimizationData';
+import { generateAuditData as mockGenerateAuditData } from '@/components/audit/results/components/optimization/mockOptimizationData';
 
 /**
  * Fetches audit data for a URL
@@ -56,7 +57,7 @@ export const fetchAuditData = async (url?: string): Promise<AuditData> => {
   return new Promise((resolve) => {
     setTimeout(() => {
       // First generate the data
-      const data = generateAuditData(url || "example.com");
+      const data = mockGenerateAuditData(url || "example.com");
       // Convert to the expected type using type assertion
       const auditData = {
         ...data,
@@ -67,9 +68,15 @@ export const fetchAuditData = async (url?: string): Promise<AuditData> => {
           opportunities: data.issues.opportunities,
           minor: data.issues.minor,
           passed: data.issues.passed
-        }
-      };
-      resolve(auditData as AuditData);
+        },
+        // Add missing required properties for AuditData type
+        id: `audit-${Date.now()}`,
+        score: 65,
+        date: new Date().toISOString(),
+        details: {}
+      } as AuditData;
+      
+      resolve(auditData);
     }, 1000);
   });
 };

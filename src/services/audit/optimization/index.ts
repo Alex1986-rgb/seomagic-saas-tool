@@ -2,7 +2,7 @@
 /**
  * Модуль оптимизации сайта
  */
-import { PageContent, OptimizationMetrics, OptimizationItem } from './types';
+import { PageContent, OptimizationMetrics, OptimizationItem } from '@/features/audit/types/optimization-types';
 import { analyzeContent } from './contentAnalyzer';
 
 /**
@@ -129,6 +129,11 @@ export const calculateOptimizationMetrics = (
   ];
   
   return {
+    beforeScore: Math.round(baseScore),
+    afterScore: Math.round(baseScore + potentialIncrease),
+    improvement: Math.round(potentialIncrease),
+    pageSpeedImprovement: Math.round(potentialIncrease * 0.7),
+    seoScoreImprovement: Math.round(potentialIncrease * 1.2),
     missingMetaDescriptions: analysis.missingMetaDescriptions,
     missingMetaKeywords: analysis.missingMetaKeywords,
     missingAltTags: analysis.missingAltTags,

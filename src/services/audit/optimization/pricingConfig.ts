@@ -1,59 +1,32 @@
 
 import { OptimizationItem } from '@/features/audit/types/optimization-types';
 
-// Define pricing constants
-const BASE_PRICE = 2500;
-const META_TAGS_PER_PAGE = 10;
-const CONTENT_PER_PAGE = 25;
-const IMAGE_ALT_PER_ITEM = 5;
-const PERFORMANCE_PER_PAGE = 15;
-const LINKS_PER_ITEM = 8;
-const STRUCTURE_PER_ITEM = 12;
-
-/**
- * Get the current pricing configuration
- */
+// Basic pricing configuration
 export const getPricingConfig = () => {
   return {
-    sitemap: BASE_PRICE,
-    metaTagsPerItem: META_TAGS_PER_PAGE,
-    contentPerPage: CONTENT_PER_PAGE,
-    imageAltPerItem: IMAGE_ALT_PER_ITEM,
-    performancePerPage: PERFORMANCE_PER_PAGE,
-    linksPerItem: LINKS_PER_ITEM,
-    structurePerItem: STRUCTURE_PER_ITEM
+    sitemap: 1500,
+    metaTagsPerItem: 50,
+    contentPerPage: 200,
+    imageAltPerItem: 20,
+    performancePerPage: 100,
+    linksPerItem: 30,
+    structurePerItem: 40,
+    basePrice: 5000
   };
 };
 
-/**
- * Calculate optimization cost and items based on page count
- */
-export const calculateOptimizationCost = (pageCount: number) => {
-  const baseCost = 2500;
-  const perPageCost = pageCount * 10;
-  
+// Generate standardized optimization items
+export const getStandardOptimizationItems = (): OptimizationItem[] => {
   const items: OptimizationItem[] = [
     {
-      name: 'Базовый аудит SEO',
-      description: 'Первичный аудит и анализ сайта',
-      count: 1,
-      price: baseCost,
-      pricePerUnit: baseCost,
-      totalPrice: baseCost,
-      type: 'base'
-    },
-    {
-      name: 'Оптимизация метатегов',
-      description: `Оптимизация метатегов для ${pageCount} страниц`,
-      count: pageCount,
-      price: perPageCost,
-      pricePerUnit: 10,
-      totalPrice: perPageCost,
-      type: 'content'
-    },
-    {
-      name: 'Внутренняя оптимизация',
-      description: 'Оптимизация структуры и внутренних ссылок',
+      id: 'item-1',
+      page: 'all',
+      tasks: ['generate_sitemap'],
+      cost: 1500,
+      priority: 'high',
+      category: 'structure',
+      name: 'Создание XML-карты сайта',
+      description: 'Генерация и отправка XML-карты сайта в поисковые системы',
       count: 1,
       price: 1500,
       pricePerUnit: 1500,
@@ -61,47 +34,96 @@ export const calculateOptimizationCost = (pageCount: number) => {
       type: 'technical'
     },
     {
+      id: 'item-2',
+      page: 'all',
+      tasks: ['optimize_meta_tags'],
+      cost: 2500,
+      priority: 'high',
+      category: 'meta',
+      name: 'Оптимизация мета-тегов',
+      description: 'Улучшение заголовков и описаний страниц',
+      count: 50,
+      price: 2500,
+      pricePerUnit: 50,
+      totalPrice: 2500,
+      type: 'technical'
+    },
+    {
+      id: 'item-3',
+      page: 'content',
+      tasks: ['improve_content'],
+      cost: 5000,
+      priority: 'high',
+      category: 'content',
+      name: 'Улучшение контента',
+      description: 'Оптимизация текстового содержимого страниц',
+      count: 25,
+      price: 5000,
+      pricePerUnit: 200,
+      totalPrice: 5000,
+      type: 'content'
+    },
+    {
+      id: 'item-4',
+      page: 'images',
+      tasks: ['optimize_images'],
+      cost: 1200,
+      priority: 'medium',
+      category: 'images',
+      name: 'Оптимизация изображений',
+      description: 'Сжатие изображений и добавление атрибутов alt',
+      count: 60,
+      price: 1200,
+      pricePerUnit: 20,
+      totalPrice: 1200,
+      type: 'technical'
+    },
+    {
+      id: 'item-5',
+      page: 'performance',
+      tasks: ['optimize_speed'],
+      cost: 2000,
+      priority: 'high',
+      category: 'performance',
       name: 'Оптимизация скорости',
-      description: 'Ускорение загрузки страниц',
-      count: 1,
+      description: 'Улучшение скорости загрузки сайта',
+      count: 20,
       price: 2000,
-      pricePerUnit: 2000,
+      pricePerUnit: 100,
       totalPrice: 2000,
       type: 'technical'
     },
     {
-      name: 'Скидка за объем',
-      description: 'Скидка при заказе комплексной оптимизации',
-      count: 1,
-      price: -1000,
-      pricePerUnit: -1000,
-      totalPrice: -1000,
-      type: 'discount'
+      id: 'item-6',
+      page: 'links',
+      tasks: ['fix_broken_links'],
+      cost: 900,
+      priority: 'medium',
+      category: 'links',
+      name: 'Исправление битых ссылок',
+      description: 'Поиск и исправление некорректных ссылок',
+      count: 30,
+      price: 900,
+      pricePerUnit: 30,
+      totalPrice: 900,
+      type: 'technical'
     },
     {
-      name: 'Гарантия результата',
-      description: 'Гарантируем улучшение позиций в течение 30 дней',
-      count: 1,
-      price: 0,
-      pricePerUnit: 0,
-      totalPrice: 0,
-      type: 'guarantee'
-    },
-    {
-      name: 'Дополнительные услуги',
-      description: 'Прочие услуги по оптимизации',
-      count: 1,
-      price: 1000,
-      pricePerUnit: 1000,
-      totalPrice: 1000,
-      type: 'other'
+      id: 'item-7',
+      page: 'structure',
+      tasks: ['improve_structure'],
+      cost: 1600,
+      priority: 'medium',
+      category: 'structure',
+      name: 'Улучшение структуры сайта',
+      description: 'Оптимизация URL структуры и навигации',
+      count: 40,
+      price: 1600,
+      pricePerUnit: 40,
+      totalPrice: 1600,
+      type: 'technical'
     }
   ];
   
-  const totalCost = items.reduce((sum, item) => sum + item.totalPrice, 0);
-  
-  return {
-    totalCost,
-    items
-  };
+  return items;
 };

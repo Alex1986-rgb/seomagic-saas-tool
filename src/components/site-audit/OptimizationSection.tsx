@@ -11,6 +11,7 @@ import OptimizationProgress from '@/components/seo-optimization/OptimizationProg
 import OptimizationDemo from '@/components/audit/results/components/OptimizationDemo';
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { AuditData } from '@/types/audit';
+import { OptimizationItem } from '@/features/audit/types/optimization-types';
 
 interface OptimizationSectionProps {
   url: string;
@@ -72,8 +73,8 @@ const OptimizationSection: React.FC<OptimizationSectionProps> = ({ url, auditDat
     };
   } | null>(null);
   
-  // Use the optimizationItems from auditData (confirmed to be OptimizationItem[])
-  const optimizationItems = auditData?.optimizationItems || [];
+  // Use the optimizationItems from auditData, ensuring it conforms to OptimizationItem[]
+  const optimizationItems = (auditData?.optimizationItems || []) as OptimizationItem[];
   
   const optimizationCost = auditData?.optimizationCost || 0;
   const pageCount = auditData.pageCount || 15;
@@ -166,7 +167,7 @@ const OptimizationSection: React.FC<OptimizationSectionProps> = ({ url, auditDat
                   },
                   optimized: {
                     title: 'Качественные товары и профессиональные услуги | Ваш надежный партнер с 2013 года',
-                    content: 'ООО "Компания" предлага��т широкий ассортимент высококачественных товаров и профессиональных услуг для бизнеса и частных лиц. За более чем 10 лет работы на рынке мы обслужили свыше 5000 клиентов и реализовали более 200 крупных проектов. Наши специалисты имеют сертификаты и регулярно проходят обучение для повышения квалификации. Свяжитесь с нами сегодня через форму обратной связи или по телефону +7 (XXX) XXX-XX-XX, чтобы получить бесплатную консультацию по вашему проекту.',
+                    content: 'ООО "Компания" предлага��т широкий ассортимент высококачественных товаров и профессиональных услуг для бизнеса и частных лиц. За более чем 10 лет работы на рынке мы обслужили свыше 5000 клиентов и реализовали более 200 крупных проектов. Наши с��ециалисты имеют сертификаты и регулярно проходят обучение для повышения квалификации. Свяжитесь с нами сегодня через форму обратной связи или по телефону +7 (XXX) XXX-XX-XX, чтобы получить бесплатную консультацию по вашему проекту.',
                     meta: {
                       description: 'Ведущая компания по предоставлению высококачественных товаров и профессиональных услуг в Москве с 2013 года. Индивидуальный подход, выгодные цены, гарантия качества. Звоните ☎ +7 (XXX) XXX-XX-XX',
                       keywords: 'качественные товары москва, профессиональные услуги, надежная компания, опытные специалисты, индивидуальный подход, гарантия качества'

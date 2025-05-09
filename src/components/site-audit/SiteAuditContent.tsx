@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
@@ -141,8 +142,8 @@ const SiteAuditContent: React.FC<SiteAuditContentProps> = ({ url }) => {
   if (data && !data.optimizationItems && demoAuditData) {
     try {
       const pageCount = data.pageCount || 20;
-      // This casts to correct OptimizationItem interface
-      const optimizationItems: OptimizationItem[] = generateMockOptimizationItems(pageCount);
+      // Generate mock optimization items and ensure they conform to OptimizationItem interface
+      const optimizationItems = generateMockOptimizationItems(pageCount) as unknown as OptimizationItem[];
       data.optimizationItems = optimizationItems;
       data.optimizationCost = calculateTotalCost(optimizationItems);
     } catch (err) {

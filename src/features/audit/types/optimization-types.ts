@@ -83,13 +83,6 @@ export interface OptimizationOptions {
   fixLinks?: boolean;
   improveStructure?: boolean;
   optimizeSpeed?: boolean;
-  minifyCode?: boolean;
-  compressImages?: boolean;
-  fixMetaTags?: boolean;
-  improveContent?: boolean;
-  fixLinks?: boolean;
-  improveStructure?: boolean;
-  optimizeSpeed?: boolean;
   optimizeMetaTags?: boolean;
   optimizeHeadings?: boolean;
   optimizeContent?: boolean;
@@ -98,6 +91,13 @@ export interface OptimizationOptions {
   fixHeadings?: boolean;
   generateSitemap?: boolean;
   optimizeContentSeo?: boolean;
+  maxTokens?: number;
+  temperature?: number;
+  max_tokens?: number;
+  contentQuality?: string | 'standard' | 'premium' | 'ultimate';
+  language?: string;
+  model?: string;
+  prompt?: string;
 }
 
 export interface OptimizationCosts {
@@ -152,4 +152,5 @@ export interface OptimizationResults {
   costs: OptimizationCosts;
   metrics: OptimizationMetrics;
   items: OptimizationItem[];
+  recommendations?: string[];
 }

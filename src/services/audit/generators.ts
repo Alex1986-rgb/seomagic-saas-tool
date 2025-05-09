@@ -1,4 +1,3 @@
-
 /**
  * Утилиты для генерирования данных оптимизации
  */
@@ -218,6 +217,32 @@ export const generateMockOptimizationItems = (pageCount: number = 20): Optimizat
   }
   
   return items;
+};
+
+/**
+ * Генерирует элементы оптимизации для демо
+ */
+export const generateOptimizationItem = (
+  id: string,
+  page: string,
+  tasks: string[],
+  cost: number,
+  priority: 'high' | 'medium' | 'low',
+  category: string
+): OptimizationItem => {
+  return {
+    id,
+    page,
+    tasks,
+    cost,
+    priority,
+    category,
+    name: `Optimization for ${page}`,
+    description: `Tasks: ${tasks.join(', ')}`,
+    count: 1,
+    price: cost,
+    totalPrice: cost
+  };
 };
 
 /**
