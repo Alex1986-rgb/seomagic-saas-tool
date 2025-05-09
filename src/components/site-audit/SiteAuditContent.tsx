@@ -61,23 +61,36 @@ const SiteAuditContent: React.FC<SiteAuditContentProps> = ({ url }) => {
   // Check if auditData is not of expected type or is a string (which might be HTML)
   if (!auditData || typeof auditData === 'string' || !Object.prototype.hasOwnProperty.call(auditData, 'pageCount')) {
     // Use demo data as fallback
-    data = { ...demoAuditData } as AuditData;
+    const processedData = { ...demoAuditData };
     
-    // Ensure status is one of the allowed values
-    if (data && data.status && typeof data.status === 'string' && 
-        !['completed', 'failed', 'in-progress'].includes(data.status)) {
-      data.status = 'completed'; // Set to a default allowed value
+    // Convert issues.minor from array to number if needed
+    if (Array.isArray(processedData.issues.minor)) {
+      processedData.issues.minor = (processedData.issues.minor as any[]).length || 0;
     }
     
+    // Ensure status is one of the allowed values
+    if (processedData.status && typeof processedData.status === 'string' && 
+        !['completed', 'failed', 'in-progress'].includes(processedData.status)) {
+      processedData.status = 'completed'; // Set to a default allowed value
+    }
+    
+    data = processedData as AuditData;
     console.warn("Using demo data because audit data is invalid:", typeof auditData);
   } else {
-    data = { ...auditData } as AuditData;
+    const processedData = { ...auditData };
+    
+    // Convert issues.minor from array to number if needed
+    if (processedData.issues && Array.isArray(processedData.issues.minor)) {
+      processedData.issues.minor = (processedData.issues.minor as any[]).length || 0;
+    }
     
     // Ensure status is one of the allowed values
-    if (data && data.status && typeof data.status === 'string' && 
-        !['completed', 'failed', 'in-progress'].includes(data.status)) {
-      data.status = 'completed'; // Set to a default allowed value
+    if (processedData.status && typeof processedData.status === 'string' && 
+        !['completed', 'failed', 'in-progress'].includes(processedData.status)) {
+      processedData.status = 'completed'; // Set to a default allowed value
     }
+    
+    data = processedData as AuditData;
   }
   
   // Make sure we have optimization data for demo purposes

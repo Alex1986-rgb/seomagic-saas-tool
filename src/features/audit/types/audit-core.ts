@@ -14,8 +14,8 @@ export interface AuditData {
     critical: string[] | any[];
     important: string[] | any[];
     opportunities: string[] | any[];
-    minor?: number;
-    passed?: number;
+    minor: number | any[]; // Updated to accept both number and array types
+    passed?: number | any[]; // Updated to match the pattern
   };
   details: AuditDetailsData;
   optimizationCost?: number;
