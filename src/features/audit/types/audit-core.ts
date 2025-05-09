@@ -1,4 +1,6 @@
 
+import { AuditDetailsData } from './audit-details';
+
 export interface AuditData {
   id: string;
   url: string;
@@ -7,17 +9,17 @@ export interface AuditData {
   previousScore?: number;
   pageCount?: number;
   crawledPages?: number;
-  date: string;
+  date: string; // Ensuring date property is present
   scanTime?: string;
   status: 'completed' | 'in-progress' | 'failed';
   issues: {
     critical: string[] | any[];
     important: string[] | any[];
     opportunities: string[] | any[];
-    minor: number | any[]; // Updated to accept both number and array types
-    passed?: number | any[]; // Updated to match the pattern
+    minor: number | any[]; // Can be number or array of objects
+    passed?: number | any[]; // Can be number or array of objects
   };
-  details: AuditDetailsData;
+  details: AuditDetailsData; // Ensuring details property is present
   optimizationCost?: number;
   optimizationItems?: {
     name: string;
@@ -58,5 +60,3 @@ export interface AuditHistoryData {
   url: string;
   items: AuditHistoryItem[];
 }
-
-import { AuditDetailsData } from './audit-details';

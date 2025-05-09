@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
@@ -63,9 +62,11 @@ const SiteAuditContent: React.FC<SiteAuditContentProps> = ({ url }) => {
     // Use demo data as fallback
     const processedData = { ...demoAuditData };
     
-    // Convert issues.minor from array to number if needed
-    if (Array.isArray(processedData.issues.minor)) {
-      processedData.issues.minor = (processedData.issues.minor as any[]).length || 0;
+    // Handle issues.minor properly based on its actual type
+    if (processedData.issues && Array.isArray(processedData.issues.minor)) {
+      // Keep it as an array, don't convert to number
+      // TypeScript will allow this because we've updated the AuditData type
+      processedData.issues.minor = processedData.issues.minor;
     }
     
     // Ensure status is one of the allowed values
@@ -79,9 +80,11 @@ const SiteAuditContent: React.FC<SiteAuditContentProps> = ({ url }) => {
   } else {
     const processedData = { ...auditData };
     
-    // Convert issues.minor from array to number if needed
+    // Handle issues.minor properly based on its actual type
     if (processedData.issues && Array.isArray(processedData.issues.minor)) {
-      processedData.issues.minor = (processedData.issues.minor as any[]).length || 0;
+      // Keep it as an array, don't convert to number
+      // TypeScript will allow this because we've updated the AuditData type
+      processedData.issues.minor = processedData.issues.minor;
     }
     
     // Ensure status is one of the allowed values
