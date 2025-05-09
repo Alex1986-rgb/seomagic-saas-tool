@@ -9,6 +9,7 @@ import { AlertCircle, CheckCircle, Download, Settings } from 'lucide-react';
 import ContentOptimizationPrompt from './ContentOptimizationPrompt';
 import OptimizationPricingTable from './OptimizationPricingTable';
 import { OptimizationItem } from '@/features/audit/types/optimization-types';
+import PaymentDialog from './optimization/PaymentDialog';
 
 interface AuditOptimizationProps {
   taskId?: string | null;
@@ -18,14 +19,14 @@ interface AuditOptimizationProps {
   isOptimized: boolean;
   currentScore?: number;
   estimatedScore?: number;
-  url: string; // URL prop
-  pageCount: number; // pageCount prop
+  url: string;
+  pageCount: number;
   showPrompt: boolean;
   onTogglePrompt: () => void;
   setContentPrompt: (prompt: string) => void;
   onOptimizeSiteContent: () => Promise<any>;
   onDownloadOptimizedSite?: () => Promise<void>;
-  onGeneratePdfReport: () => void; // Added this missing prop
+  onGeneratePdfReport: () => void;
 }
 
 const AuditOptimization: React.FC<AuditOptimizationProps> = ({
@@ -49,6 +50,12 @@ const AuditOptimization: React.FC<AuditOptimizationProps> = ({
   const [isProcessing, setIsProcessing] = useState(false);
   const [isOptimizing, setIsOptimizing] = useState(false);
   const [paymentStatus, setPaymentStatus] = useState<'idle' | 'success' | 'error'>('idle');
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+
+  // Рассчитываем общее количество ошибок
+  const totalErrors = optimizationItems.reduce((total, item) => {
+    return total + (item.errorCount || 0);
+  }, 0);
 
   const handleOptimize = async () => {
     if (!taskId) {
@@ -60,23 +67,27 @@ const AuditOptimization: React.FC<AuditOptimizationProps> = ({
       return;
     }
     
+    // Открываем диалог оплаты вместо прямой симуляции
+    setIsDialogOpen(true);
+  };
+  
+  const handlePaymentSuccess = async () => {
     try {
+      setIsDialogOpen(false);
       setIsProcessing(true);
-      // Simulate payment process
-      await new Promise(resolve => setTimeout(resolve, 2000));
       
-      // Set payment as successful
+      // Симуляция процесса оплаты
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      
+      // Устанавливаем статус оплаты как успешный
       setPaymentStatus('success');
       toast({
         title: "Оплата прошла успешно",
         description: "Начинаем процесс оптимизации сайта",
       });
       
-      // Move to content tab after successful payment
+      // Переходим на вкладку содержания после успешной оплаты
       setActiveTab("content");
-      
-      // Wait a moment before starting optimization
-      await new Promise(resolve => setTimeout(resolve, 1000));
       
     } catch (error) {
       console.error('Payment error:', error);
@@ -150,9 +161,17 @@ const AuditOptimization: React.FC<AuditOptimizationProps> = ({
     <div className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center">
-            <Settings className="mr-2 h-5 w-5" />
-            Оптимизация сайта AI-технологиями
+          <CardTitle className="flex items-center justify-between">
+            <div className="flex items-center">
+              <Settings className="mr-2 h-5 w-5" />
+              Оптимизация сайта AI-технологиями
+            </div>
+            {totalErrors > 0 && (
+              <div className="bg-red-100 text-red-800 px-2 py-1 rounded-md text-sm flex items-center">
+                <AlertCircle className="w-4 h-4 mr-1" />
+                {totalErrors} ошибок
+              </div>
+            )}
           </CardTitle>
           <CardDescription>
             Автоматическое исправление SEO-проблем и улучшение контента с помощью искусственного интеллекта
@@ -175,6 +194,7 @@ const AuditOptimization: React.FC<AuditOptimizationProps> = ({
                   estimatedScore={estimatedScore}
                   isOptimized={isOptimized}
                   onDownload={isOptimized ? handleDownloadOptimizedSite : undefined}
+                  totalErrors={totalErrors}
                 />
               ) : (
                 <Alert>
@@ -222,6 +242,15 @@ const AuditOptimization: React.FC<AuditOptimizationProps> = ({
                   </AlertDescription>
                 </Alert>
               )}
+
+              {/* Диалог оплаты */}
+              <PaymentDialog 
+                url={url}
+                optimizationCost={optimizationCost}
+                onPayment={handlePaymentSuccess}
+                isDialogOpen={isDialogOpen}
+                setIsDialogOpen={setIsDialogOpen}
+              />
             </TabsContent>
             
             <TabsContent value="content" className="pt-4">
