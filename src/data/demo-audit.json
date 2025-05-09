@@ -1,0 +1,154 @@
+
+{
+  "id": "demo-audit-123",
+  "url": "example.com",
+  "pageCount": 25,
+  "score": 65,
+  "timestamp": "2023-09-15T14:30:00Z",
+  "details": {
+    "seo": {
+      "score": 62,
+      "metrics": {
+        "titleLength": 45,
+        "descriptionQuality": "medium",
+        "keywordDensity": 2.1,
+        "headingStructure": "poor"
+      }
+    },
+    "performance": {
+      "score": 58,
+      "metrics": {
+        "loadingTime": 3.2,
+        "firstContentfulPaint": 1.8,
+        "timeToInteractive": 4.5,
+        "speedIndex": 3.9
+      }
+    },
+    "technical": {
+      "score": 70,
+      "metrics": {
+        "httpsEnabled": true,
+        "mobileFriendly": true,
+        "robotsTxt": true,
+        "sitemapXml": false
+      }
+    },
+    "content": {
+      "score": 68,
+      "metrics": {
+        "wordCount": 4500,
+        "readabilityScore": 65,
+        "imageAltTags": 42,
+        "contentQuality": "medium"
+      }
+    }
+  },
+  "issues": {
+    "critical": [
+      {
+        "id": "c1",
+        "title": "Отсутствует SSL-сертификат (HTTPS)",
+        "description": "Сайт не использует HTTPS протокол, что негативно влияет на SEO и безопасность",
+        "impact": "high"
+      },
+      {
+        "id": "c2",
+        "title": "Дубликаты мета-тегов",
+        "description": "Обнаружено 5 страниц с одинаковыми мета-тегами",
+        "impact": "high"
+      },
+      {
+        "id": "c3",
+        "title": "Низкая скорость загрузки мобильной версии",
+        "description": "Мобильная версия сайта загружается более 5 секунд",
+        "impact": "high"
+      }
+    ],
+    "important": [
+      {
+        "id": "i1", 
+        "title": "Отсутствует файл sitemap.xml",
+        "description": "Карта сайта не обнаружена, что затрудняет индексацию поисковыми системами",
+        "impact": "medium"
+      },
+      {
+        "id": "i2",
+        "title": "Неоптимизированные изображения",
+        "description": "8 изображений имеют большой размер и не оптимизированы",
+        "impact": "medium"
+      },
+      {
+        "id": "i3",
+        "title": "Неправильное использование заголовков H1-H6",
+        "description": "Структура заголовков нарушена на 12 страницах",
+        "impact": "medium"
+      },
+      {
+        "id": "i4",
+        "title": "Отсутствуют атрибуты alt у изображений",
+        "description": "15 изображений не имеют атрибута alt",
+        "impact": "medium"
+      }
+    ],
+    "opportunities": [
+      {
+        "id": "o1",
+        "title": "Внедрение структурированных данных",
+        "description": "Рекомендуется добавить разметку schema.org для улучшения отображения в поисковой выдаче",
+        "impact": "low"
+      },
+      {
+        "id": "o2",
+        "title": "Оптимизация внутренней перелинковки",
+        "description": "Улучшить структуру внутренних ссылок для более эффективного распределения веса страниц",
+        "impact": "low"
+      },
+      {
+        "id": "o3",
+        "title": "Ускорение загрузки CSS и JavaScript",
+        "description": "Рекомендуется минимизировать и объединить файлы CSS и JavaScript",
+        "impact": "low"
+      }
+    ],
+    "minor": [
+      {
+        "id": "m1",
+        "title": "Устаревшие внешние ссылки",
+        "description": "Обнаружено 3 ссылки на несуществующие ресурсы",
+        "impact": "info"
+      },
+      {
+        "id": "m2",
+        "title": "Некорректные URL-адреса",
+        "description": "4 URL содержат специальные символы или пробелы",
+        "impact": "info"
+      }
+    ],
+    "passed": [
+      {
+        "id": "p1",
+        "title": "Корректная настройка rel=canonical",
+        "description": "Все страницы правильно используют rel=canonical",
+        "impact": "success"
+      },
+      {
+        "id": "p2",
+        "title": "Правильная настройка robots.txt",
+        "description": "Файл robots.txt корректно настроен для индексации",
+        "impact": "success"
+      },
+      {
+        "id": "p3",
+        "title": "Корректная структура URL",
+        "description": "URL-адреса имеют правильную структуру и используют ключевые слова",
+        "impact": "success"
+      },
+      {
+        "id": "p4",
+        "title": "Отсутствие дублирования контента",
+        "description": "Не обнаружено дублирующегося контента на страницах сайта",
+        "impact": "success"
+      }
+    ]
+  }
+}
