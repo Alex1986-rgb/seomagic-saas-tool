@@ -20,7 +20,7 @@ interface SiteAuditContentProps {
 import demoAuditData from '@/data/demo-audit.json';
 
 const SiteAuditContent: React.FC<SiteAuditContentProps> = ({ url }) => {
-  const { auditData, isLoading, error, fetchAuditData } = useAuditContext();
+  const { auditData, isLoading, error, loadAuditData } = useAuditContext();
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState("overview");
   const [showOptimization, setShowOptimization] = useState(false);
@@ -29,18 +29,18 @@ const SiteAuditContent: React.FC<SiteAuditContentProps> = ({ url }) => {
   console.log("Current audit data:", auditData);
   
   useEffect(() => {
-    const loadAuditData = async () => {
+    const loadData = async () => {
       try {
-        await fetchAuditData(url);
+        await loadAuditData(false);
       } catch (error) {
         console.error("Failed to fetch audit data:", error);
       }
     };
     
     if (url) {
-      loadAuditData();
+      loadData();
     }
-  }, [url, fetchAuditData]);
+  }, [url, loadAuditData]);
   
   const handleOrderOptimization = () => {
     setShowOptimization(true);
@@ -80,7 +80,7 @@ const SiteAuditContent: React.FC<SiteAuditContentProps> = ({ url }) => {
         <AlertDescription className="mt-2">
           {error.toString()}
           <div className="mt-4">
-            <Button onClick={() => fetchAuditData(url)}>
+            <Button onClick={() => loadAuditData(true)}>
               Попробовать снова
             </Button>
           </div>
