@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
@@ -16,7 +15,7 @@ import { AuditData } from '@/types/audit';
 import { OptimizationItem } from '@/features/audit/types/optimization-types';
 
 // Import the generator functions directly
-import { generateMockOptimizationItems, calculateTotalCost } from '@/services/audit/generators';
+import { generateMockOptimizationItems, calculateTotalCost, generateAuditData } from '@/components/audit/results/components/optimization/mockOptimizationData';
 
 interface SiteAuditContentProps {
   url: string;
@@ -142,8 +141,9 @@ const SiteAuditContent: React.FC<SiteAuditContentProps> = ({ url }) => {
   if (data && !data.optimizationItems && demoAuditData) {
     try {
       const pageCount = data.pageCount || 20;
-      const optimizationItems = generateMockOptimizationItems(pageCount);
-      data.optimizationItems = optimizationItems as OptimizationItem[];
+      // This casts to correct OptimizationItem interface
+      const optimizationItems: OptimizationItem[] = generateMockOptimizationItems(pageCount);
+      data.optimizationItems = optimizationItems;
       data.optimizationCost = calculateTotalCost(optimizationItems);
     } catch (err) {
       console.error("Failed to generate mock optimization data:", err);

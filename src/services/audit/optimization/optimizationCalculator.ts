@@ -20,7 +20,9 @@ export const calculateOptimizationMetrics = (
   const metrics: OptimizationMetrics = {
     beforeScore: 0,
     afterScore: 0,
-    improvementPercent: 0,
+    improvement: 0,
+    pageSpeedImprovement: 0,
+    seoScoreImprovement: 0,
     missingMetaDescriptions: 0,
     missingMetaKeywords: 0,
     missingAltTags: 0,
@@ -63,8 +65,13 @@ export const calculateOptimizationCosts = (metrics: OptimizationMetrics, totalUr
   
   // Calculate individual costs
   const costs: OptimizationCosts = {
+    baseCost: 0,
+    pagesMultiplier: 0,
+    pagesCost: 0,
+    tasksCost: 0,
+    discounts: 0,
+    totalCost: 0,
     total: 0,
-    items: [],
     sitemap: pricingConfig.sitemap,
     metaTags: ((metrics.missingMetaDescriptions || 0) + (metrics.missingMetaKeywords || 0) + (metrics.duplicateMetaTags || 0)) * pricingConfig.metaTagsPerItem,
     content: (metrics.lowContentPages || 0) * pricingConfig.contentPerPage,
@@ -77,6 +84,7 @@ export const calculateOptimizationCosts = (metrics: OptimizationMetrics, totalUr
   // Calculate total
   costs.total = (costs.sitemap || 0) + (costs.metaTags || 0) + (costs.content || 0) + (costs.images || 0) + 
                 (costs.performance || 0) + (costs.links || 0) + (costs.structure || 0);
+  costs.totalCost = costs.total; // Sync both total fields
   
   // Apply discount
   const { discountPercentage, discountAmount, finalTotal } = calculateDiscount(costs.total, totalUrls);
@@ -84,6 +92,7 @@ export const calculateOptimizationCosts = (metrics: OptimizationMetrics, totalUr
   costs.discountPercentage = discountPercentage;
   costs.discountAmount = discountAmount;
   costs.finalTotal = finalTotal;
+  costs.discounts = discountAmount || 0;
   
   return costs;
 };

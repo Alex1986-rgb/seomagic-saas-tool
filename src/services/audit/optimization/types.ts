@@ -3,14 +3,27 @@
  * Типы данных для оптимизации сайта
  */
 
-import { 
-  OptimizationItem as BaseOptimizationItem,
-  PageContent as BasePageContent
-} from '@/features/audit/types/optimization-types';
-
-// Re-export types from the central type definitions
-export type OptimizationItem = BaseOptimizationItem;
-export type PageContent = BasePageContent;
+// Define comprehensive OptimizationItem type that works with all components
+export interface OptimizationItem {
+  // Required core properties
+  id: string;
+  page: string;
+  tasks: string[];
+  cost: number;
+  priority: 'high' | 'medium' | 'low';
+  category: string;
+  
+  // Required display properties 
+  name: string;
+  description: string;
+  count: number;
+  price: number;
+  totalPrice: number;
+  
+  // Optional properties
+  pricePerUnit?: number;
+  type?: string;
+}
 
 export interface OptimizationMetrics {
   missingMetaDescriptions: number;
@@ -31,6 +44,9 @@ export interface OptimizationMetrics {
   potentialScoreIncrease: number;
   estimatedCost: number;
   optimizationItems: OptimizationItem[];
+  beforeScore?: number;
+  afterScore?: number;
+  improvementPercent?: number;
 }
 
 export interface OptimizationResponse {
@@ -52,6 +68,7 @@ export interface OptimizationCosts {
   discountPercentage?: number;
   discountAmount?: number;
   finalTotal?: number;
+  items?: OptimizationItem[];
 }
 
 export interface PageStatistics {
@@ -68,4 +85,33 @@ export interface OptimizationResults {
   metrics: OptimizationMetrics;
   costs: OptimizationCosts;
   recommendations: string[];
+}
+
+export interface PageContent {
+  url: string;
+  title: string;
+  content: string;
+  meta?: {
+    description?: string;
+    keywords?: string;
+  };
+  // Add all required properties
+  images?: {
+    url: string;
+    alt: string | null;
+  }[];
+  headings?: {
+    h1: string[];
+    h2: string[];
+    h3: string[];
+  };
+  wordCount?: number;
+  optimized?: {
+    content: string;
+    meta?: {
+      description?: string;
+      keywords?: string;
+    };
+    score?: number;
+  };
 }

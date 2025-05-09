@@ -49,51 +49,81 @@ export const calculateOptimizationMetrics = (
   // Формируем список задач оптимизации
   const optimizationItems: OptimizationItem[] = [
     {
+      id: "base-opt",
+      page: "all",
+      tasks: ["base_optimization"],
+      cost: baseTotalCost,
+      priority: "high",
+      category: "base",
       name: "Базовая оптимизация",
       description: `Базовая оптимизация для ${totalPagesCount} страниц`,
       count: totalPagesCount,
       price: baseCost,
-      pricePerUnit: baseCost,
       totalPrice: baseTotalCost
     },
     {
+      id: "meta-desc",
+      page: "meta",
+      tasks: ["create_meta_descriptions"],
+      cost: metaDescriptionTotalCost,
+      priority: "high",
+      category: "meta",
       name: "Создание META-описаний",
       description: "Генерация отсутствующих мета-описаний",
       count: analysis.missingMetaDescriptions,
       price: metaDescriptionCost,
-      pricePerUnit: metaDescriptionCost,
       totalPrice: metaDescriptionTotalCost
     },
     {
+      id: "meta-keys",
+      page: "meta",
+      tasks: ["create_meta_keywords"],
+      cost: metaKeywordsTotalCost,
+      priority: "medium",
+      category: "meta",
       name: "Создание META-ключевых слов",
       description: "Генерация отсутствующих ключевых слов",
       count: analysis.missingMetaKeywords,
       price: metaKeywordsCost,
-      pricePerUnit: metaKeywordsCost,
       totalPrice: metaKeywordsTotalCost
     },
     {
+      id: "content-opt",
+      page: "content",
+      tasks: ["optimize_content"],
+      cost: contentTotalCost,
+      priority: "high",
+      category: "content",
       name: "Оптимизация текстов",
       description: "Оптимизация текстового содержимого страниц",
       count: analysis.contentToRewrite,
       price: contentOptimizationCost,
-      pricePerUnit: contentOptimizationCost,
       totalPrice: contentTotalCost
     },
     {
+      id: "url-fix",
+      page: "url",
+      tasks: ["fix_urls"],
+      cost: urlTotalCost,
+      priority: "medium",
+      category: "structure",
       name: "Исправление URL-адресов",
       description: "Исправление URL с подчеркиваниями",
       count: analysis.underscoreUrls,
       price: urlFixCost,
-      pricePerUnit: urlFixCost,
       totalPrice: urlTotalCost
     },
     {
+      id: "alt-tags",
+      page: "images",
+      tasks: ["add_alt_tags"],
+      cost: altTagTotalCost,
+      priority: "medium",
+      category: "images",
       name: "Добавление ALT-атрибутов",
       description: "Генерация ALT-текстов для изображений",
       count: analysis.missingAltTags,
       price: altTagCost,
-      pricePerUnit: altTagCost,
       totalPrice: altTagTotalCost
     }
   ];

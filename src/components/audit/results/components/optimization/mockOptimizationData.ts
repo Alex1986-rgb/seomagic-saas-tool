@@ -286,3 +286,25 @@ export const generateRandomPageCount = (): number => {
   // Generate a random page count between 15 and 250
   return Math.floor(Math.random() * 235) + 15;
 };
+
+// Add a fake generator function so files importing generateAuditData don't break
+export const generateAuditData = (url: string) => {
+  const pageCount = generateRandomPageCount();
+  const optimizationItems = generateMockOptimizationItems(pageCount);
+  const optimizationCost = calculateTotalCost(optimizationItems);
+  
+  return {
+    url,
+    pageCount,
+    optimizationItems,
+    optimizationCost,
+    status: 'completed',
+    issues: {
+      critical: [],
+      important: [],
+      opportunities: [],
+      minor: [],
+      passed: []
+    }
+  };
+};

@@ -2,7 +2,7 @@
 // Define optimization types used across the application
 
 export interface OptimizationItem {
-  // Core properties
+  // Required core properties
   id: string;
   page: string;
   tasks: string[];
@@ -10,12 +10,14 @@ export interface OptimizationItem {
   priority: 'high' | 'medium' | 'low';
   category: string;
   
-  // Component-specific properties
+  // Required display properties 
   name: string;
   description: string;
   count: number;
   price: number;
   totalPrice: number;
+  
+  // Optional properties
   pricePerUnit?: number;
   type?: string;
 }
@@ -42,7 +44,7 @@ export interface PageContent {
     description?: string;
     keywords?: string;
   };
-  // Add missing properties referenced in contentAnalyzer.ts
+  // Add all properties needed in contentAnalyzer.ts
   images?: {
     url: string;
     alt: string | null;
@@ -53,6 +55,14 @@ export interface PageContent {
     h3: string[];
   };
   wordCount?: number;
+  optimized?: {
+    content: string;
+    meta?: {
+      description?: string;
+      keywords?: string;
+    };
+    score?: number;
+  };
 }
 
 export interface OptimizationResponse {
@@ -66,6 +76,13 @@ export interface OptimizationOptions {
   includeImages?: boolean;
   optimizationLevel?: 'basic' | 'standard' | 'advanced';
   targetPageSpeed?: number;
+  minifyCode?: boolean;
+  compressImages?: boolean;
+  fixMetaTags?: boolean;
+  improveContent?: boolean;
+  fixLinks?: boolean;
+  improveStructure?: boolean;
+  optimizeSpeed?: boolean;
   minifyCode?: boolean;
   compressImages?: boolean;
   fixMetaTags?: boolean;
@@ -90,6 +107,18 @@ export interface OptimizationCosts {
   tasksCost: number;
   discounts: number;
   totalCost: number;
+  total?: number;
+  sitemap?: number;
+  metaTags?: number;
+  content?: number;
+  images?: number;
+  performance?: number;
+  links?: number;
+  structure?: number;
+  discountPercentage?: number;
+  discountAmount?: number;
+  finalTotal?: number;
+  items?: OptimizationItem[];
 }
 
 export interface OptimizationMetrics {
@@ -98,6 +127,25 @@ export interface OptimizationMetrics {
   improvement: number;
   pageSpeedImprovement: number;
   seoScoreImprovement: number;
+  missingMetaDescriptions?: number;
+  missingMetaKeywords?: number;
+  missingAltTags?: number;
+  duplicateMetaTags?: number;
+  lowContentPages?: number;
+  poorTitleTags?: number;
+  poorHeadingStructure?: number;
+  slowLoadingPages?: number;
+  poorMobileOptimization?: number;
+  brokenLinks?: number;
+  poorUrlStructure?: number;
+  underscoreUrls?: number;
+  duplicateContent?: number;
+  contentToRewrite?: number;
+  totalScore?: number;
+  potentialScoreIncrease?: number;
+  estimatedCost?: number;
+  optimizationItems?: OptimizationItem[];
+  improvementPercent?: number;
 }
 
 export interface OptimizationResults {

@@ -1,4 +1,3 @@
-
 export * from './generators';
 export * from './recommendations';
 export * from './history';
@@ -47,7 +46,7 @@ export {
 };
 
 import { AuditData } from "@/types/audit";
-import { generateAuditData } from './generators';
+import { generateAuditData } from '@/components/audit/results/components/optimization/mockOptimizationData';
 
 /**
  * Fetches audit data for a URL
