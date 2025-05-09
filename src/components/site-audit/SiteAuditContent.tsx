@@ -12,6 +12,9 @@ import { AlertCircle, ArrowRight } from "lucide-react";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { Button } from '@/components/ui/button';
 
+// Import the generator functions directly
+import { generateMockOptimizationItems, calculateTotalCost } from '@/services/audit/generators';
+
 interface SiteAuditContentProps {
   url: string;
 }
@@ -56,8 +59,6 @@ const SiteAuditContent: React.FC<SiteAuditContentProps> = ({ url }) => {
   
   // Make sure we have optimization data for demo purposes
   if (data && !data.optimizationItems && demoAuditData) {
-    // Import from services module to avoid circular dependencies
-    const { generateMockOptimizationItems, calculateTotalCost } = require('@/services/audit/generators');
     const pageCount = data.pageCount || 20;
     const optimizationItems = generateMockOptimizationItems(pageCount);
     data.optimizationItems = optimizationItems;
