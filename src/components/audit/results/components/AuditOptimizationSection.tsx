@@ -62,6 +62,7 @@ const AuditOptimizationSection: React.FC<AuditOptimizationSectionProps> = ({
         onTogglePrompt={onTogglePrompt}
         onOptimizeSiteContent={onOptimize}
         onDownloadOptimizedSite={onDownloadOptimizedSite}
+        onGeneratePdfReport={onGeneratePdfReport}
         setContentPrompt={setContentOptimizationPrompt}
       />
     </motion.div>
