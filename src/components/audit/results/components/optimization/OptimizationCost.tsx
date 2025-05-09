@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import { useToast } from "@/hooks/use-toast";
 import CostSummary from './CostSummary';
 import CostDetailsTable from './CostDetailsTable';
-import { OptimizationActions } from './OptimizationActions';
+import OptimizationActions from './OptimizationActions';
 import OptimizationHeading from './OptimizationHeading';
 import OptimizationSummary from './OptimizationSummary';
 import OptimizationProcessContainer from './process/OptimizationProcessContainer';
@@ -160,7 +160,7 @@ const OptimizationCost: React.FC<OptimizationCostProps> = ({
       
       <CostSummary pageCount={pageCount} optimizationCost={optimizationCost} />
       
-      <CostDetailsTable items={optimizationItems} />
+      <CostDetailsTable optimizationItems={optimizationItems} />
       
       {isOptimizing && !isOptimizedState && (
         <OptimizationProcessContainer 
