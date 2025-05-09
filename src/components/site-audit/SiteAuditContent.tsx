@@ -51,7 +51,18 @@ const SiteAuditContent: React.FC<SiteAuditContentProps> = ({ url }) => {
     });
   };
   
+  // Use demo data or real audit data
   const data = auditData || demoAuditData;
+  
+  // Make sure we have optimization data for demo purposes
+  if (data && !data.optimizationItems && demoAuditData) {
+    // Import from services module to avoid circular dependencies
+    const { generateMockOptimizationItems, calculateTotalCost } = require('@/services/audit/generators');
+    const pageCount = data.pageCount || 20;
+    const optimizationItems = generateMockOptimizationItems(pageCount);
+    data.optimizationItems = optimizationItems;
+    data.optimizationCost = calculateTotalCost(optimizationItems);
+  }
 
   if (isLoading) {
     return (
@@ -123,7 +134,10 @@ const SiteAuditContent: React.FC<SiteAuditContentProps> = ({ url }) => {
         </TabsContent>
         
         <TabsContent value="optimization">
-          <OptimizationSection url={url} auditData={data} />
+          <OptimizationSection 
+            url={url} 
+            auditData={data} 
+          />
         </TabsContent>
       </Tabs>
     </div>

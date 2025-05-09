@@ -3,44 +3,228 @@
   "id": "demo-audit-123",
   "url": "example.com",
   "pageCount": 25,
+  "crawledPages": 23,
   "score": 65,
+  "previousScore": 60,
   "timestamp": "2023-09-15T14:30:00Z",
+  "date": "2023-09-15T14:30:00Z",
+  "status": "completed",
   "details": {
     "seo": {
       "score": 62,
+      "passed": 15,
+      "warning": 8,
+      "failed": 5,
       "metrics": {
         "titleLength": 45,
         "descriptionQuality": "medium",
         "keywordDensity": 2.1,
         "headingStructure": "poor"
-      }
+      },
+      "items": [
+        {
+          "id": "s1",
+          "title": "Мета-теги description отсутствуют на 12 страницах",
+          "description": "META descriptions are essential for SEO and improving click-through rates from search results.",
+          "status": "error",
+          "score": 42,
+          "trend": "down",
+          "impact": "high"
+        },
+        {
+          "id": "s2",
+          "title": "Дублированные title на 5 страницах",
+          "description": "Duplicate title tags confuse search engines about which page is relevant for a specific search query.",
+          "status": "error",
+          "score": 45,
+          "trend": "neutral",
+          "impact": "high"
+        },
+        {
+          "id": "s3",
+          "title": "Низкая плотность ключевых слов на главной странице",
+          "description": "Optimal keyword density helps search engines understand your page's topic without appearing spammy.",
+          "status": "warning",
+          "score": 60,
+          "trend": "up",
+          "impact": "medium"
+        }
+      ]
     },
     "performance": {
       "score": 58,
+      "passed": 10,
+      "warning": 12,
+      "failed": 6,
       "metrics": {
         "loadingTime": 3.2,
         "firstContentfulPaint": 1.8,
         "timeToInteractive": 4.5,
         "speedIndex": 3.9
-      }
+      },
+      "items": [
+        {
+          "id": "p1",
+          "title": "Медленная загрузка на мобильных устройствах",
+          "description": "Slow loading pages lead to higher bounce rates and lower search engine rankings.",
+          "status": "error",
+          "score": 38,
+          "trend": "down",
+          "impact": "high"
+        },
+        {
+          "id": "p2",
+          "title": "Неоптимизированные изображения на 15 страницах",
+          "description": "Large image files slow down page loading and hurt user experience.",
+          "status": "warning",
+          "score": 55,
+          "trend": "neutral",
+          "impact": "medium"
+        },
+        {
+          "id": "p3",
+          "title": "Блокирующие ресурсы JavaScript",
+          "description": "Render-blocking JavaScript resources delay page rendering and hurt user experience.",
+          "status": "warning",
+          "score": 62,
+          "trend": "up",
+          "impact": "medium"
+        }
+      ]
     },
     "technical": {
       "score": 70,
+      "passed": 18,
+      "warning": 6,
+      "failed": 3,
       "metrics": {
         "httpsEnabled": true,
         "mobileFriendly": true,
         "robotsTxt": true,
         "sitemapXml": false
-      }
+      },
+      "items": [
+        {
+          "id": "t1",
+          "title": "Отсутствует файл sitemap.xml",
+          "description": "A sitemap.xml file helps search engines discover and index all important pages on your site.",
+          "status": "error",
+          "score": 45,
+          "trend": "neutral",
+          "impact": "medium"
+        },
+        {
+          "id": "t2",
+          "title": "Найдено 8 битых ссылок",
+          "description": "Broken links create a poor user experience and can negatively impact your site's crawlability.",
+          "status": "warning",
+          "score": 60,
+          "trend": "down",
+          "impact": "medium"
+        },
+        {
+          "id": "t3",
+          "title": "Неоптимальная структура URL",
+          "description": "Clean URL structures that include relevant keywords help both users and search engines.",
+          "status": "warning",
+          "score": 65,
+          "trend": "up",
+          "impact": "low"
+        }
+      ]
     },
     "content": {
       "score": 68,
+      "passed": 14,
+      "warning": 9,
+      "failed": 4,
       "metrics": {
         "wordCount": 4500,
         "readabilityScore": 65,
         "imageAltTags": 42,
         "contentQuality": "medium"
-      }
+      },
+      "items": [
+        {
+          "id": "c1",
+          "title": "Недостаточный объем контента на 6 страницах",
+          "description": "Pages with thin content may struggle to rank well in search engines.",
+          "status": "error",
+          "score": 40,
+          "trend": "down",
+          "impact": "high"
+        },
+        {
+          "id": "c2",
+          "title": "Неоптимальное распределение заголовков H1-H6",
+          "description": "Proper header structure helps both users and search engines understand your content hierarchy.",
+          "status": "warning",
+          "score": 58,
+          "trend": "neutral",
+          "impact": "medium"
+        },
+        {
+          "id": "c3",
+          "title": "Дублированный контент на 3 страницах",
+          "description": "Duplicate content confuses search engines and dilutes ranking signals.",
+          "status": "error",
+          "score": 45,
+          "trend": "down",
+          "impact": "high"
+        }
+      ]
+    },
+    "mobile": {
+      "score": 72,
+      "passed": 16,
+      "warning": 5,
+      "failed": 2,
+      "items": [
+        {
+          "id": "m1",
+          "title": "Проблемы с адаптивностью на 4 страницах",
+          "description": "Mobile-friendly websites are prioritized in search rankings due to the increasing mobile traffic.",
+          "status": "warning",
+          "score": 65,
+          "trend": "up",
+          "impact": "medium"
+        },
+        {
+          "id": "m2",
+          "title": "Слишком маленькие элементы взаимодействия",
+          "description": "Interactive elements like buttons and links should be large enough and spaced apart for easy tapping on mobile devices.",
+          "status": "warning",
+          "score": 60,
+          "trend": "neutral",
+          "impact": "medium"
+        }
+      ]
+    },
+    "usability": {
+      "score": 75,
+      "passed": 20,
+      "warning": 4,
+      "failed": 1,
+      "items": [
+        {
+          "id": "u1",
+          "title": "Низкий контраст текста на 3 страницах",
+          "description": "Sufficient contrast between text and background is essential for accessibility and readability.",
+          "status": "warning",
+          "score": 62,
+          "trend": "up",
+          "impact": "medium"
+        },
+        {
+          "id": "u2",
+          "title": "Отсутствие атрибутов alt у изображений",
+          "description": "Alt tags help search engines understand images and improve accessibility for visually impaired users.",
+          "status": "error",
+          "score": 48,
+          "trend": "down",
+          "impact": "high"
+        }
+      ]
     }
   },
   "issues": {
@@ -61,6 +245,12 @@
         "id": "c3",
         "title": "Низкая скорость загрузки мобильной версии",
         "description": "Мобильная версия сайта загружается более 5 секунд",
+        "impact": "high"
+      },
+      {
+        "id": "c4",
+        "title": "Критическая ошибка в robots.txt",
+        "description": "Файл robots.txt блокирует индексацию важных страниц",
         "impact": "high"
       }
     ],
@@ -88,6 +278,18 @@
         "title": "Отсутствуют атрибуты alt у изображений",
         "description": "15 изображений не имеют атрибута alt",
         "impact": "medium"
+      },
+      {
+        "id": "i5",
+        "title": "Неоптимальная структура URL",
+        "description": "URL-адреса содержат параметры и специальные символы",
+        "impact": "medium"
+      },
+      {
+        "id": "i6",
+        "title": "Отсутствуют мета-описания",
+        "description": "12 страниц не имеют мета-описаний",
+        "impact": "medium"
       }
     ],
     "opportunities": [
@@ -107,6 +309,18 @@
         "id": "o3",
         "title": "Ускорение загрузки CSS и JavaScript",
         "description": "Рекомендуется минимизировать и объединить файлы CSS и JavaScript",
+        "impact": "low"
+      },
+      {
+        "id": "o4",
+        "title": "Создание AMP версий страниц",
+        "description": "Создание AMP версий для повышения скорости загрузки на мобильных устройствах",
+        "impact": "low"
+      },
+      {
+        "id": "o5",
+        "title": "Улучшение юзабилити мобильной версии",
+        "description": "Оптимизация элементов взаимодействия для мобильных устройств",
         "impact": "low"
       }
     ],
@@ -150,5 +364,125 @@
         "impact": "success"
       }
     ]
-  }
+  },
+  "optimizationItems": [
+    {
+      "name": "Базовая стоимость обработки сайта",
+      "description": "Начальная стоимость анализа и подготовки к оптимизации",
+      "count": 1,
+      "price": 5000,
+      "pricePerUnit": 5000,
+      "totalPrice": 5000,
+      "type": "base"
+    },
+    {
+      "name": "Базовая стоимость обработки страниц",
+      "description": "Стоимость базовой обработки всех страниц сайта",
+      "count": 25,
+      "price": 200,
+      "pricePerUnit": 200,
+      "totalPrice": 5000,
+      "type": "base"
+    },
+    {
+      "name": "Исправление критических ошибок",
+      "description": "Устранение критических ошибок, блокирующих индексацию",
+      "count": 4,
+      "price": 1200,
+      "pricePerUnit": 300,
+      "totalPrice": 1200,
+      "type": "critical"
+    },
+    {
+      "name": "Исправление предупреждений",
+      "description": "Устранение предупреждений и некритичных ошибок",
+      "count": 6,
+      "price": 900,
+      "pricePerUnit": 150,
+      "totalPrice": 900,
+      "type": "warning"
+    },
+    {
+      "name": "Оптимизация мета-тегов",
+      "description": "Создание и оптимизация мета-тегов title и description",
+      "count": 19,
+      "price": 50,
+      "pricePerUnit": 50,
+      "totalPrice": 950,
+      "type": "technical"
+    },
+    {
+      "name": "Исправление битых ссылок",
+      "description": "Обнаружение и исправление некорректных ссылок",
+      "count": 7,
+      "price": 70,
+      "pricePerUnit": 70,
+      "totalPrice": 490,
+      "type": "technical"
+    },
+    {
+      "name": "Оптимизация изображений",
+      "description": "Оптимизация размера и добавление alt-тегов для изображений",
+      "count": 36,
+      "price": 40,
+      "pricePerUnit": 40,
+      "totalPrice": 1440,
+      "type": "technical"
+    },
+    {
+      "name": "Настройка редиректов",
+      "description": "Создание правильных редиректов для старых URL",
+      "count": 5,
+      "price": 60,
+      "pricePerUnit": 60,
+      "totalPrice": 300,
+      "type": "technical"
+    },
+    {
+      "name": "Оптимизация контента для SEO",
+      "description": "Оптимизация текстового содержимого для поисковых систем",
+      "count": 22,
+      "price": 120,
+      "pricePerUnit": 120,
+      "totalPrice": 2640,
+      "type": "content"
+    },
+    {
+      "name": "Структура заголовков",
+      "description": "Оптимизация структуры заголовков H1-H6",
+      "count": 17,
+      "price": 80,
+      "pricePerUnit": 80,
+      "totalPrice": 1360,
+      "type": "content"
+    },
+    {
+      "name": "Улучшение читабельности",
+      "description": "Работа над улучшением читабельности текста",
+      "count": 12,
+      "price": 90,
+      "pricePerUnit": 90,
+      "totalPrice": 1080,
+      "type": "content"
+    },
+    {
+      "name": "Уникализация контента",
+      "description": "Работа над повышением уникальности контента",
+      "count": 10,
+      "price": 150,
+      "pricePerUnit": 150,
+      "totalPrice": 1500,
+      "type": "content"
+    },
+    {
+      "name": "Гарантия результата",
+      "description": "Гарантированное повышение позиций в поисковой выдаче",
+      "count": 1,
+      "price": 0,
+      "pricePerUnit": 0,
+      "totalPrice": 0,
+      "type": "additional"
+    }
+  ],
+  "optimizationCost": 21860
 }
