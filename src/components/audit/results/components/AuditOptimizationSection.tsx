@@ -5,6 +5,7 @@ import OptimizationCost from './optimization/OptimizationCost';
 import OptimizationProcessContainer from './optimization/process/OptimizationProcessContainer';
 import OptimizationResults from './optimization/OptimizationResults';
 import { OptimizationItem } from '@/features/audit/types/optimization-types';
+import { OptimizationActions } from '@/components/audit/results/components/optimization/OptimizationActions';
 
 interface AuditOptimizationSectionProps {
   optimizationCost: number;
@@ -121,7 +122,14 @@ const AuditOptimizationSection: React.FC<AuditOptimizationSectionProps> = ({
       
       {isOptimizing && (
         <OptimizationProcessContainer 
-          progress={optimizationProgress} 
+          url={url}
+          progress={optimizationProgress}
+          setOptimizationResult={setOptimizationResult}
+          setLocalIsOptimized={(isOptimized) => {
+            // Call setIsOptimized which is the local state
+            setIsOptimizing(false);
+            setOptimizationResult(demoResult);
+          }} 
         />
       )}
       
@@ -139,7 +147,6 @@ const AuditOptimizationSection: React.FC<AuditOptimizationSectionProps> = ({
         <div className="flex flex-col sm:flex-row justify-between gap-3 mt-4">
           <div></div>
           <div>
-            {/* Pass all required props to OptimizationActions */}
             <OptimizationActions 
               url={url}
               optimizationCost={optimizationCost}

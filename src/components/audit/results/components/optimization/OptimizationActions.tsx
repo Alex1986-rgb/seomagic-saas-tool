@@ -18,7 +18,7 @@ interface OptimizationActionsProps {
   onSelectPrompt?: (prompt: string) => void;
 }
 
-const OptimizationActions: React.FC<OptimizationActionsProps> = ({
+export const OptimizationActions: React.FC<OptimizationActionsProps> = ({
   url,
   optimizationCost,
   isOptimized,

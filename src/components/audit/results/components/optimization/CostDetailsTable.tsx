@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Info } from 'lucide-react';
 import {
@@ -17,7 +18,7 @@ import {
 } from "@/components/ui/tooltip";
 import { OptimizationItem } from '@/features/audit/types/optimization-types';
 
-interface CostDetailsTableProps {
+export interface CostDetailsTableProps {
   items: OptimizationItem[];
 }
 
