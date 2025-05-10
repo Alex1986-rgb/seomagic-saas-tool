@@ -1,135 +1,99 @@
 
-import { faker } from '@faker-js/faker';
 import { OptimizationItem } from '@/features/audit/types/optimization-types';
+import { v4 as uuidv4 } from 'uuid';
 
 /**
- * Generate a list of mock optimization items
+ * Генерирует случайное количество страниц для оптимизации
+ */
+export const generateRandomPageCount = (): number => {
+  // Генерируем случайное число страниц от 5 до 300
+  return Math.floor(Math.random() * 295) + 5;
+};
+
+/**
+ * Генерирует массив элементов оптимизации на основе количества страниц
  */
 export const generateMockOptimizationItems = (pageCount: number): OptimizationItem[] => {
   const items: OptimizationItem[] = [
     {
-      id: faker.string.uuid(),
+      id: uuidv4(),
       name: 'Оптимизация мета-тегов',
-      description: 'Улучшение заголовков, описаний и ключевых слов для лучшей индексации',
-      count: Math.ceil(pageCount * 0.7),
-      price: 150,
-      pricePerUnit: 150,
-      totalPrice: Math.ceil(pageCount * 0.7) * 150,
-      category: 'meta',
-      priority: 'high'
+      description: 'Улучшение meta title и meta description для всех страниц',
+      pagesCount: pageCount,
+      costPerPage: 50,
+      totalCost: pageCount * 50
     },
     {
-      id: faker.string.uuid(),
-      name: 'Создание Schema.org разметки',
-      description: 'Микроразметка для улучшения отображения в результатах поиска',
-      count: Math.min(10, Math.ceil(pageCount * 0.3)),
-      price: 300,
-      pricePerUnit: 300,
-      totalPrice: Math.min(10, Math.ceil(pageCount * 0.3)) * 300,
-      category: 'structure',
-      priority: 'medium'
-    },
-    {
-      id: faker.string.uuid(),
+      id: uuidv4(),
       name: 'Оптимизация контента',
-      description: 'Улучшение текстового содержания страниц для повышения релевантности',
-      count: Math.ceil(pageCount * 0.5),
-      price: 500,
-      pricePerUnit: 500,
-      totalPrice: Math.ceil(pageCount * 0.5) * 500,
-      category: 'content',
-      priority: 'high'
+      description: 'Улучшение текстового содержимого с учетом ключевых слов',
+      pagesCount: Math.min(pageCount, 20),
+      costPerPage: 250,
+      totalCost: Math.min(pageCount, 20) * 250
     },
     {
-      id: faker.string.uuid(),
+      id: uuidv4(),
       name: 'Оптимизация изображений',
-      description: 'Сжатие и добавление атрибутов alt для улучшения SEO',
-      count: Math.ceil(pageCount * 2.5), // Примерно 2-3 изображения на страницу
-      price: 50,
-      pricePerUnit: 50,
-      totalPrice: Math.ceil(pageCount * 2.5) * 50,
-      category: 'images',
-      priority: 'medium'
+      description: 'Оптимизация alt-тегов и сжатие изображений',
+      count: Math.min(pageCount * 3, 50),
+      price: 30,
+      totalPrice: Math.min(pageCount * 3, 50) * 30
     },
     {
-      id: faker.string.uuid(),
-      name: 'Улучшение скорости загрузки',
-      description: 'Оптимизация кода и ресурсов для ускорения загрузки страниц',
-      count: Math.ceil(pageCount * 0.2),
-      price: 800,
-      pricePerUnit: 800,
-      totalPrice: Math.ceil(pageCount * 0.2) * 800,
-      category: 'performance',
-      priority: 'high'
+      id: uuidv4(),
+      name: 'Улучшение структуры',
+      description: 'Оптимизация заголовков H1-H6 и внутренней структуры страниц',
+      pagesCount: pageCount,
+      costPerPage: 100,
+      totalCost: pageCount * 100
+    },
+    {
+      id: uuidv4(),
+      name: 'Технический аудит',
+      description: 'Поиск и устранение технических проблем сайта',
+      price: 5000,
+      totalPrice: 5000
     }
   ];
-  
+
   return items;
 };
 
 /**
- * Calculate total cost for optimization
+ * Рассчитывает общую стоимость оптимизации
  */
 export const calculateTotalCost = (items: OptimizationItem[]): number => {
-  return items.reduce((total, item) => total + (item.totalPrice || 0), 0);
+  let total = 0;
+
+  items.forEach(item => {
+    if (item.totalCost) {
+      total += item.totalCost;
+    }
+    if (item.totalPrice) {
+      total += item.totalPrice;
+    }
+  });
+
+  return total;
 };
 
 /**
- * Generate a random page count for demos
+ * Генерирует демонстрационные данные аудита для тестирования
  */
-export const generateRandomPageCount = (): number => {
-  return faker.number.int({ min: 10, max: 200 });
-};
-
-/**
- * Generate mock audit data for demonstrations
- */
-export const generateAuditData = (url: string) => {
-  const pageCount = generateRandomPageCount();
-  const optimizationItems = generateMockOptimizationItems(pageCount);
-  const optimizationCost = calculateTotalCost(optimizationItems);
-  
+export const generateAuditData = (url: string, pageCount: number = 20) => {
   return {
     url,
-    pageCount,
-    score: faker.number.int({ min: 30, max: 70 }),
     status: 'completed',
-    crawlDate: faker.date.recent(),
+    pageCount: pageCount,
+    score: Math.floor(Math.random() * 40) + 40, // Случайное значение от 40 до 79
     issues: {
-      critical: [
-        'Отсутствуют мета-теги на 23 страницах',
-        'Дубликаты заголовков на 7 страницах',
-        'Отсутствует SSL-сертификат'
-      ],
-      important: [
-        'Медленная загрузка на мобильных устройствах',
-        'Отсутствует адаптивная версия на 12 страницах',
-        'Неоптимизированные изображения: 47 файлов'
-      ],
-      opportunities: [
-        'Улучшить структуру внутренних ссылок',
-        'Добавить Schema.org разметку',
-        'Оптимизировать контент на 18 страницах'
-      ],
-      minor: [
-        'Отсутствуют alt-атрибуты у 34 изображений',
-        'Устаревший формат изображений на 27 файлах',
-        'Отсутствуют заголовки h2 на 9 страницах'
-      ],
-      passed: [
-        'Правильная структура URL',
-        'Карта сайта XML присутствует',
-        'Правильная настройка robots.txt'
-      ]
+      critical: ["Отсутствуют метатеги на важных страницах", "Медленная загрузка страниц"],
+      important: ["Отсутствуют ALT-теги у изображений", "Недостаточно ключевых слов"],
+      opportunities: ["Улучшение мета-описаний", "Добавление схем разметки"],
+      minor: ["Мелкие ошибки верстки", "Некоторые ссылки не имеют описания"],
+      passed: ["Правильная структура URL", "Корректное использование заголовков"]
     },
-    optimizationItems,
-    optimizationCost,
-    recommendations: [
-      'Добавить мета-теги на страницы без описаний',
-      'Исправить дубликаты заголовков',
-      'Установить SSL-сертификат',
-      'Оптимизировать сайт для мобильных устройств',
-      'Оптимизировать изображения для ускорения загрузки'
-    ]
+    optimizationItems: generateMockOptimizationItems(pageCount),
+    optimizationCost: 15000
   };
 };

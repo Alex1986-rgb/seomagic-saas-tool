@@ -1,21 +1,24 @@
 
-// Re-export all components from the optimization folder
-export { default as CostSummary } from './CostSummary';
-export { default as CostDetailsTable } from './CostDetailsTable';
-export { default as DemonstrationCost } from './DemonstrationCost';
-export { default as OptimizationActions } from './OptimizationActions';
+// Основные компоненты
 export { default as OptimizationCost } from './OptimizationCost';
 export { default as OptimizationHeading } from './OptimizationHeading';
 export { default as OptimizationSummary } from './OptimizationSummary';
-export { default as OptimizationResults } from './OptimizationResults';
-export { default as OptimizationPlans } from './OptimizationPlans';
+export { default as OptimizationActions } from './OptimizationActions';
+export { default as DemonstrationCost } from './DemonstrationCost';
+export { default as CostDetailsTable } from './CostDetailsTable';
+export { default as CostSummary } from './CostSummary';
 export { default as PaymentDialog } from './PaymentDialog';
+export { default as OptimizationPlans } from './OptimizationPlans';
+export { default as OptimizationResults } from './OptimizationResults';
 
-// Export types
-export type { CostDetailsTableProps } from './types';
+// Экспорт типов
+export * from './types';
+export { 
+  calculateTotalCost, 
+  generateMockOptimizationItems, 
+  generateRandomPageCount,
+  generateAuditData
+} from './mockOptimizationData';
 
-// Re-export OptimizationItem type from the central types
-export type { OptimizationItem } from '@/features/audit/types/optimization-types';
-
-// Export utilities
-export { generateMockOptimizationItems, calculateTotalCost, generateRandomPageCount } from './mockOptimizationData';
+// Экспортируем компоненты для процесса
+export * from './process';

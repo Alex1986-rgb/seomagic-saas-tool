@@ -1,171 +1,79 @@
+/**
+ * Калькулятор стоимости оптимизации сайта
+ */
 
-import { 
-  OptimizationItem, 
-  OptimizationCosts, 
-  PageContent, 
-  OptimizationResults 
-} from '@/features/audit/types/optimization-types';
-
-import { calculateDiscount } from './discountCalculator';
-import { getPricingConfig } from './pricingConfig';
-import { analyzeContent } from './contentAnalyzer';
-
-export const calculateOptimizationMetrics = (
-  pagesContent: PageContent[],
-  totalUrls: number,
-  brokenLinks: number = 0
-) => {
-  // Default metrics
-  const metrics = {
-    beforeScore: 0,
-    afterScore: 0,
-    improvement: 0,
-    pageSpeedImprovement: 0,
-    seoScoreImprovement: 0,
-    missingMetaDescriptions: 0,
-    missingMetaKeywords: 0,
-    missingAltTags: 0,
-    duplicateMetaTags: 0,
-    lowContentPages: 0,
-    poorTitleTags: 0,
-    poorHeadingStructure: 0,
-    slowLoadingPages: Math.floor(totalUrls * 0.15), // Estimate
-    poorMobileOptimization: Math.floor(totalUrls * 0.25), // Estimate
-    brokenLinks,
-    poorUrlStructure: Math.floor(totalUrls * 0.1), // Estimate
-    totalScore: 0,
-    potentialScoreIncrease: 0,
-    estimatedCost: 0,
-    optimizationItems: [] as OptimizationItem[]
-  };
+// Базовая конфигурация цен
+export const pricingConfig = {
+  baseCost: 5000,
+  pagesMultiplier: 1.5,
   
-  // Analyze the content to fill in the metrics
-  const contentAnalysis = analyzeContent(pagesContent);
+  // Цены за единицу работы
+  sitemap: 3000,
+  metaTagsPerItem: 150,
+  contentPerPage: 500,
+  imageAltPerItem: 50,
+  performancePerPage: 200,
+  linksPerItem: 100,
+  structurePerItem: 250,
   
-  // Copy analysis data to metrics
-  if (contentAnalysis.missingMetaDescriptions !== undefined)
-    metrics.missingMetaDescriptions = contentAnalysis.missingMetaDescriptions;
-  if (contentAnalysis.missingMetaKeywords !== undefined)
-    metrics.missingMetaKeywords = contentAnalysis.missingMetaKeywords;
-  if (contentAnalysis.missingAltTags !== undefined)
-    metrics.missingAltTags = contentAnalysis.missingAltTags;
-  if (contentAnalysis.underscoreUrls !== undefined)
-    metrics.poorUrlStructure = contentAnalysis.underscoreUrls;
-  if (contentAnalysis.duplicateContent !== undefined)
-    metrics.duplicateMetaTags = contentAnalysis.duplicateContent;
-  if (contentAnalysis.contentToRewrite !== undefined)
-    metrics.lowContentPages = contentAnalysis.contentToRewrite;
+  // Скидки
+  smallSiteDiscount: 0.1,
+  mediumSiteDiscount: 0.05,
+  largeSiteDiscount: 0.15,
   
-  return metrics;
+  // Пороги для типов сайтов
+  smallSiteThreshold: 30,
+  mediumSiteThreshold: 100,
+  
+  // Добавляем поля для планов
+  basicPlan: 15000,
+  standardPlan: 35000,
+  premiumPlan: 75000
 };
 
-export const calculateOptimizationCosts = (metrics: any, totalUrls: number): OptimizationCosts => {
-  const pricingConfig = getPricingConfig();
+/**
+ * Функция для расчета стоимости оптимизации
+ * @param pageCount - количество страниц на сайте
+ * @param options - дополнительные опции для расчета
+ * @returns итоговая стоимость оптимизации
+ */
+export const calculateOptimizationCost = (pageCount: number, options: any): number => {
+  let cost = pricingConfig.baseCost;
   
-  // Calculate individual costs
-  const costs: OptimizationCosts = {
-    basic: pricingConfig.basicPlan || 5000,
-    standard: pricingConfig.standardPlan || 15000,
-    premium: pricingConfig.premiumPlan || 30000,
-    sitemap: pricingConfig.sitemap,
-    metaTags: ((metrics.missingMetaDescriptions || 0) + (metrics.missingMetaKeywords || 0) + (metrics.duplicateMetaTags || 0)) * pricingConfig.metaTagsPerItem,
-    content: (metrics.lowContentPages || 0) * pricingConfig.contentPerPage,
-    images: (metrics.missingAltTags || 0) * pricingConfig.imageAltPerItem,
-    performance: (metrics.slowLoadingPages || 0) * pricingConfig.performancePerPage,
-    links: (metrics.brokenLinks || 0) * pricingConfig.linksPerItem,
-    structure: ((metrics.poorUrlStructure || 0) + (metrics.poorHeadingStructure || 0)) * pricingConfig.structurePerItem,
-    total: 0,
-    discountPercentage: 0,
-    discountAmount: 0,
-    finalTotal: 0,
-    discounts: 0,
-    totalCost: 0
-  };
+  // Учет количества страниц
+  cost += pageCount * pricingConfig.pagesMultiplier;
   
-  // Calculate total
-  costs.total = (costs.sitemap || 0) + (costs.metaTags || 0) + (costs.content || 0) + (costs.images || 0) + 
-                (costs.performance || 0) + (costs.links || 0) + (costs.structure || 0);
-  costs.totalCost = costs.total; // Sync both total fields
-  
-  // Apply discount
-  const { discountPercentage, discountAmount, finalTotal } = calculateDiscount(costs.total, totalUrls);
-  
-  costs.discountPercentage = discountPercentage;
-  costs.discountAmount = discountAmount;
-  costs.finalTotal = finalTotal;
-  costs.discounts = discountAmount || 0;
-  
-  return costs;
-};
-
-export const generateOptimizationRecommendations = (metrics: any): string[] => {
-  const recommendations: string[] = [];
-  
-  if (metrics.missingMetaDescriptions && metrics.missingMetaDescriptions > 0) {
-    recommendations.push(`Add missing meta descriptions to ${metrics.missingMetaDescriptions} pages.`);
+  // Дополнительные опции
+  if (options.sitemap) {
+    cost += pricingConfig.sitemap;
+  }
+  if (options.metaTags) {
+    cost += options.metaTags * pricingConfig.metaTagsPerItem;
+  }
+  if (options.content) {
+    cost += options.content * pricingConfig.contentPerPage;
+  }
+  if (options.imageAlt) {
+    cost += options.imageAlt * pricingConfig.imageAltPerItem;
+  }
+  if (options.performance) {
+    cost += options.performance * pricingConfig.performancePerPage;
+  }
+  if (options.links) {
+    cost += options.links * pricingConfig.linksPerItem;
+  }
+  if (options.structure) {
+    cost += options.structure * pricingConfig.structurePerItem;
   }
   
-  if (metrics.missingMetaKeywords && metrics.missingMetaKeywords > 0) {
-    recommendations.push(`Add missing meta keywords to ${metrics.missingMetaKeywords} pages.`);
+  // Применение скидок
+  if (pageCount <= pricingConfig.smallSiteThreshold) {
+    cost -= cost * pricingConfig.smallSiteDiscount;
+  } else if (pageCount <= pricingConfig.mediumSiteThreshold) {
+    cost -= cost * pricingConfig.mediumSiteDiscount;
+  } else {
+    cost -= cost * pricingConfig.largeSiteDiscount;
   }
   
-  if (metrics.duplicateMetaTags && metrics.duplicateMetaTags > 0) {
-    recommendations.push(`Fix duplicate meta tags on ${metrics.duplicateMetaTags} pages.`);
-  }
-  
-  if (metrics.missingAltTags && metrics.missingAltTags > 0) {
-    recommendations.push(`Add alt text to ${metrics.missingAltTags} images.`);
-  }
-  
-  if (metrics.lowContentPages && metrics.lowContentPages > 0) {
-    recommendations.push(`Improve content quality on ${metrics.lowContentPages} pages with thin content.`);
-  }
-  
-  if (metrics.poorTitleTags && metrics.poorTitleTags > 0) {
-    recommendations.push(`Optimize title tags on ${metrics.poorTitleTags} pages.`);
-  }
-  
-  if (metrics.poorHeadingStructure && metrics.poorHeadingStructure > 0) {
-    recommendations.push(`Fix heading structure on ${metrics.poorHeadingStructure} pages.`);
-  }
-  
-  if (metrics.slowLoadingPages && metrics.slowLoadingPages > 0) {
-    recommendations.push(`Improve page load speed for ${metrics.slowLoadingPages} slow pages.`);
-  }
-  
-  if (metrics.poorMobileOptimization && metrics.poorMobileOptimization > 0) {
-    recommendations.push(`Optimize ${metrics.poorMobileOptimization} pages for mobile devices.`);
-  }
-  
-  if (metrics.brokenLinks && metrics.brokenLinks > 0) {
-    recommendations.push(`Fix ${metrics.brokenLinks} broken links.`);
-  }
-  
-  if (metrics.poorUrlStructure && metrics.poorUrlStructure > 0) {
-    recommendations.push(`Improve URL structure for ${metrics.poorUrlStructure} pages.`);
-  }
-  
-  // Add general recommendations
-  recommendations.push('Create and submit a comprehensive XML sitemap.');
-  recommendations.push('Implement structured data markup for rich snippets.');
-  recommendations.push('Consider implementing AMP for key pages.');
-  
-  return recommendations;
-};
-
-export const generateFullOptimizationResults = (
-  pagesContent: PageContent[],
-  totalUrls: number,
-  brokenLinks: number = 0
-): OptimizationResults => {
-  const metrics = calculateOptimizationMetrics(pagesContent, totalUrls, brokenLinks);
-  const costs = calculateOptimizationCosts(metrics, totalUrls);
-  const recommendations = generateOptimizationRecommendations(metrics);
-  
-  return {
-    metrics,
-    costs,
-    recommendations,
-    items: metrics.optimizationItems || []
-  };
+  return Math.max(cost, 0); // Ensure cost is not negative
 };
