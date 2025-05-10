@@ -1,24 +1,23 @@
 
-// Основные компоненты
-export { default as OptimizationCost } from './OptimizationCost';
-export { default as OptimizationHeading } from './OptimizationHeading';
-export { default as OptimizationSummary } from './OptimizationSummary';
-export { default as OptimizationActions } from './OptimizationActions';
-export { default as DemonstrationCost } from './DemonstrationCost';
+// Export basic components
 export { default as CostDetailsTable } from './CostDetailsTable';
 export { default as CostSummary } from './CostSummary';
-export { default as PaymentDialog } from './PaymentDialog';
+export { default as OptimizationHeading } from './OptimizationHeading';
+export { default as OptimizationSummary } from './OptimizationSummary';
+export { default as OptimizationCost } from './OptimizationCost';
 export { default as OptimizationPlans } from './OptimizationPlans';
-export { default as OptimizationResults } from './OptimizationResults';
 
-// Экспорт типов
-export * from './types';
-export { 
-  calculateTotalCost, 
-  generateMockOptimizationItems, 
+// Export data generators and utilities
+export {
   generateRandomPageCount,
-  generateAuditData
+  generateMockOptimizationItems,
+  calculateTotalCost,
+  calculatePricingTiers,
+  generateOptimizationCosts
 } from './mockOptimizationData';
 
-// Экспортируем компоненты для процесса
-export * from './process';
+// Export process components
+export { OptimizationProcessContainer } from './process';
+
+// Export types
+export type { OptimizationItem } from '@/features/audit/types/optimization-types';

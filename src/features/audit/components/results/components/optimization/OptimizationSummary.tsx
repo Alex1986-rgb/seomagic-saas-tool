@@ -7,10 +7,14 @@ interface OptimizationSummaryProps {
 
 const OptimizationSummary: React.FC<OptimizationSummaryProps> = ({ url }) => {
   return (
-    <div className="text-sm text-muted-foreground max-w-md">
-      <p>
-        Оптимизация улучшит SEO-показатели сайта {url} и повысит его позиции в поисковых системах.
-      </p>
+    <div className="my-4 p-3 bg-muted/30 rounded-lg">
+      <div className="text-sm">
+        <span className="font-medium">Сайт для оптимизации:</span> {url}
+      </div>
+      <div className="text-sm mt-1 text-muted-foreground">
+        Выберите подходящий тарифный план в зависимости от размера сайта. 
+        Чем больше страниц, тем выше скидка на оптимизацию.
+      </div>
     </div>
   );
 };

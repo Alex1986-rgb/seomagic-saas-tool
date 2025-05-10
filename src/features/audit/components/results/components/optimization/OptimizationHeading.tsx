@@ -1,18 +1,12 @@
 
 import React from 'react';
 
-interface OptimizationHeadingProps {
-  title?: string;
-}
-
-const OptimizationHeading: React.FC<OptimizationHeadingProps> = ({ 
-  title = "Оптимизация сайта"
-}) => {
+const OptimizationHeading: React.FC = () => {
   return (
-    <div className="mb-4">
-      <h3 className="text-lg font-semibold">{title}</h3>
-      <p className="text-muted-foreground">
-        Стоимость оптимизации рассчитана на основе количества страниц и найденных проблем
+    <div>
+      <h2 className="text-xl font-semibold">Стоимость оптимизации</h2>
+      <p className="text-sm text-muted-foreground">
+        Расчет стоимости работ по оптимизации сайта с учетом количества страниц
       </p>
     </div>
   );
