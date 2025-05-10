@@ -1,7 +1,7 @@
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { AuditData } from '@/types/audit';
-import type { OptimizationItem } from '@/components/audit/results/components/optimization';
+import { OptimizationItem } from '@/features/audit/types/optimization-types';
 import { addPaginationFooters, addTimestamp, extendJsPDF } from './helpers/index';
 import { pdfColors, getScoreColorRGB } from './styles/colors';
 import { generatePieChart, generateBarChart, generateScoreGauge, generateRadarChart } from './helpers/charts';

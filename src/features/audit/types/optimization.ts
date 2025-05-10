@@ -2,12 +2,11 @@
 import { 
   OptimizationItem,
   OptimizationCosts,
-  OptimizationResult,
+  OptimizationResults,
   OptimizationMetrics,
   OptimizationProgressState,
   PageContent,
   OptimizationResponse,
-  OptimizationResults,
   OptimizationOptions
 } from './optimization-types';
 
@@ -25,10 +24,9 @@ export type {
   OptimizationItem, 
   OptimizationCosts, 
   OptimizationMetrics,
-  OptimizationResult,
+  OptimizationResults,
   OptimizationProgressState,
   PageContent,
   OptimizationResponse,
-  OptimizationResults,
   OptimizationOptions
 };

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useToast } from "@/hooks/use-toast";
-import { generateAuditData } from '@/components/audit/results/components/optimization/mockOptimizationData';
+// import { generateAuditData } from '@/components/audit/results/components/optimization/mockOptimizationData';
 import { downloadAuditPdfReport, downloadErrorReport } from '@/services/audit/scanner';
 
 export const useWebsiteScan = () => {

@@ -1,4 +1,13 @@
 
-import { OptimizationItem, OptimizationResult, OptimizationProgressState } from '@/features/audit/types/optimization-types';
+import { 
+  OptimizationItem, 
+  OptimizationResults, 
+  OptimizationProgressState 
+} from '@/features/audit/types/optimization-types';
 
-export type { OptimizationItem, OptimizationResult, OptimizationProgressState };
+export type { OptimizationItem, OptimizationResults, OptimizationProgressState };
+
+export interface CostDetailsTableProps {
+  items: OptimizationItem[];
+  className?: string;
+}

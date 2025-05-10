@@ -1,51 +1,40 @@
 
 import React from 'react';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { OptimizationItem } from '@/features/audit/types/optimization-types';
+import { CostDetailsTableProps } from './types';
 
-export interface CostDetailsTableProps {
-  items: Array<{
-    id: string;
-    name: string;
-    description: string;
-    pagesCount?: number;
-    count?: number;
-    costPerPage?: number;
-    price?: number;
-    totalCost?: number;
-    totalPrice?: number;
-  }>;
-}
+const CostDetailsTable: React.FC<CostDetailsTableProps> = ({ items = [], className = '' }) => {
+  if (!items || items.length === 0) return null;
 
-const CostDetailsTable: React.FC<CostDetailsTableProps> = ({ items }) => {
-  if (!items || items.length === 0) {
-    return null;
-  }
+  // Format number to currency
+  const formatCurrency = (num: number) => {
+    return new Intl.NumberFormat('ru-RU', {
+      style: 'currency',
+      currency: 'RUB',
+      minimumFractionDigits: 0
+    }).format(num);
+  };
 
   return (
-    <div className="overflow-x-auto">
-      <Table className="w-full">
+    <div className={`overflow-auto ${className}`}>
+      <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Категория</TableHead>
-            <TableHead>Описание</TableHead>
-            <TableHead className="text-right">Страниц</TableHead>
-            <TableHead className="text-right">Цена/стр.</TableHead>
+            <TableHead className="w-[50%]">Оптимизация</TableHead>
+            <TableHead className="text-center">Количество</TableHead>
             <TableHead className="text-right">Стоимость</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {items.map((item) => (
-            <TableRow key={item.id} className="hover:bg-muted/50">
-              <TableCell className="font-medium">{item.name}</TableCell>
-              <TableCell>{item.description}</TableCell>
-              <TableCell className="text-right">{item.pagesCount || item.count || "-"}</TableCell>
-              <TableCell className="text-right">
-                {(item.costPerPage || item.price) ? `${item.costPerPage || item.price} ₽` : "-"}
+            <TableRow key={item.id}>
+              <TableCell className="font-medium">
+                <div>{item.name}</div>
+                <div className="text-xs text-muted-foreground">{item.description}</div>
               </TableCell>
-              <TableCell className="text-right font-medium">
-                {(item.totalCost || item.totalPrice) ? `${item.totalCost || item.totalPrice} ₽` : "-"}
-              </TableCell>
+              <TableCell className="text-center">{item.count}</TableCell>
+              <TableCell className="text-right">{formatCurrency(item.totalPrice)}</TableCell>
             </TableRow>
           ))}
         </TableBody>

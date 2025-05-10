@@ -11,6 +11,6 @@ export { default as OptimizationResults } from './OptimizationResults';
 // Re-export types from the centralized type system
 export type { 
   OptimizationItem,
-  OptimizationResult,
+  OptimizationResults,
   OptimizationProgressState 
 } from '@/features/audit/types/optimization-types';

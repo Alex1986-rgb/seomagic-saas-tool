@@ -10,17 +10,12 @@ export type {
   OptimizationItem,
   OptimizationCosts,
   OptimizationMetrics,
-  OptimizationResult,
+  OptimizationResults,
   OptimizationProgressState,
   PageContent,
-  OptimizationResponse
+  OptimizationResponse,
+  OptimizationOptions
 } from './optimization-types';
-
-// Export OptimizationOptions with explicit qualifier
-export type { OptimizationOptions } from './crawl-options';
-
-// Re-export with type qualifier to fix TS1205 errors
-export type { RecommendationData } from './recommendations';
 
 // Export from crawler with explicit type qualifier to avoid name conflicts
 export type {

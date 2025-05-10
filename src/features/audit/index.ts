@@ -9,14 +9,12 @@ export type {
   OptimizationItem,
   OptimizationCosts,
   OptimizationMetrics,
-  OptimizationResult,
+  OptimizationResults,
   OptimizationProgressState,
   PageContent,
-  OptimizationResponse
+  OptimizationResponse,
+  OptimizationOptions
 } from './types/optimization-types';
-
-// Import the OptimizationOptions from crawl-options to avoid conflicts
-export type { OptimizationOptions } from './types/crawl-options';
 
 // Export individual components to avoid name conflicts
 export * from './components/results/components';

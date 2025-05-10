@@ -7,7 +7,7 @@ export interface OptimizationProcessContainerProps {
 }
 
 export interface OptimizationItem {
-  id?: string;
+  id: string;  // Changed from optional to required
   page?: string;
   tasks?: string[];
   cost?: number;
@@ -23,7 +23,8 @@ export interface OptimizationItem {
   errorCount?: number;
 }
 
-export interface OptimizationResults {
+// Renamed from OptimizationResults to OptimizationResult for consistency
+export interface OptimizationResult {
   url: string;
   score_before: number;
   score_after: number;
@@ -50,11 +51,117 @@ export interface OptimizationProgressState {
 export interface OptimizationResponse {
   success: boolean;
   message: string;
-  data?: OptimizationResults;
+  data?: OptimizationResult;
 }
 
 export interface OptimizationCosts {
   basic: number;
   standard: number;
   premium: number;
+  // Adding fields needed by the calculator
+  sitemap?: number;
+  metaTags?: number;
+  content?: number;
+  images?: number;
+  performance?: number;
+  links?: number;
+  structure?: number;
+  total?: number;
+  discountPercentage?: number;
+  discountAmount?: number;
+  finalTotal?: number;
+  totalCost?: number;
+  discounts?: number;
+  baseCost?: number;
+  pagesMultiplier?: number;
+  pagesCost?: number;
+  tasksCost?: number;
+  items?: OptimizationItem[];
+}
+
+// Add missing types from errors
+export interface OptimizationMetrics {
+  beforeScore: number;
+  afterScore: number;
+  improvement?: number;
+  pageSpeedImprovement?: number;
+  seoScoreImprovement?: number;
+  missingMetaDescriptions: number;
+  missingMetaKeywords: number;
+  missingAltTags: number;
+  duplicateMetaTags: number;
+  lowContentPages: number;
+  poorTitleTags: number;
+  poorHeadingStructure: number;
+  slowLoadingPages: number;
+  poorMobileOptimization: number;
+  brokenLinks: number;
+  poorUrlStructure: number;
+  underscoreUrls?: number;
+  duplicateContent?: number;
+  contentToRewrite?: number;
+  totalScore: number;
+  potentialScoreIncrease: number;
+  estimatedCost: number;
+  optimizationItems: OptimizationItem[];
+}
+
+export interface PageContent {
+  url: string;
+  title: string;
+  content: string;
+  meta?: {
+    description?: string;
+    keywords?: string;
+  };
+  images?: {
+    url: string;
+    alt: string | null;
+  }[];
+  headings?: {
+    h1: string[];
+    h2: string[];
+    h3: string[];
+  };
+  wordCount?: number;
+  optimized?: {
+    content: string;
+    meta?: {
+      description?: string;
+      keywords?: string;
+    };
+    score?: number;
+  };
+}
+
+// Add OptimizationResults interface
+export interface OptimizationResults {
+  metrics: OptimizationMetrics;
+  costs: OptimizationCosts;
+  recommendations: string[];
+  items?: OptimizationItem[];
+}
+
+export interface OptimizationOptions {
+  includeImages?: boolean;
+  optimizationLevel?: 'basic' | 'standard' | 'advanced';
+  targetPageSpeed?: number;
+  minifyCode?: boolean;
+  compressImages?: boolean;
+  fixMetaTags?: boolean;
+  improveContent?: boolean;
+  fixLinks?: boolean;
+  improveStructure?: boolean;
+  optimizeSpeed?: boolean;
+  maxTokens?: number;
+  optimizeMetaTags?: boolean;
+  optimizeHeadings?: boolean;
+  optimizeContent?: boolean;
+  optimizeImages?: boolean;
+  temperature?: number;
+  max_tokens?: number;
+  contentQuality?: string | 'standard' | 'premium' | 'ultimate';
+  language?: string;
+  model?: string;
+  prompt?: string;
 }

@@ -1,9 +1,7 @@
-
 import { useState } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import { createOptimizedSite } from '@/services/audit/optimizedSite';
-import { OptimizationItem } from '../components/optimization';
-import { PageContent, OptimizationResponse } from '@/services/audit/optimization/types';
+import { OptimizationItem, PageContent, OptimizationResponse } from '@/features/audit/types/optimization-types';
 
 export const useOptimization = (url: string) => {
   const [optimizationCost, setOptimizationCost] = useState<number | undefined>(undefined);

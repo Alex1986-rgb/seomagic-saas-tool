@@ -1,9 +1,8 @@
-
 import { useToast } from "@/hooks/use-toast";
 import { AuditData, AuditHistoryItem } from '@/types/audit';
 import { generateAuditPdf } from '@/utils/pdf/auditPdf';
 import { generateHistoryPDF } from '@/utils/pdf/historyPdf';
-import { OptimizationItem } from '../components/optimization';
+import { OptimizationItem } from '@/features/audit/types/optimization-types';
 
 export const usePdfReport = () => {
   const { toast } = useToast();

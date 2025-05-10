@@ -1,6 +1,6 @@
 
 import { 
-  OptimizationResult, 
+  OptimizationResult,
   OptimizationProgressState,
   OptimizationItem 
 } from '@/features/audit/types/optimization-types';
