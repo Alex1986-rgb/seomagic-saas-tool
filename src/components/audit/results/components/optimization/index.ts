@@ -8,6 +8,7 @@ export { default as OptimizationCost } from './OptimizationCost';
 export { default as OptimizationHeading } from './OptimizationHeading';
 export { default as OptimizationResults } from './OptimizationResults';
 export { default as OptimizationSummary } from './OptimizationSummary';
+export { default as OptimizationPlans } from './OptimizationPlans';
 export { default as PaymentDialog } from './PaymentDialog';
 
 // Export types

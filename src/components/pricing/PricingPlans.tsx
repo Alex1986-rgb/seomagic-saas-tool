@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Check } from 'lucide-react';
 import { Badge } from "@/components/ui/badge";
@@ -102,56 +101,68 @@ const PricingPlans: React.FC = () => {
   ];
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-20">
-      {plans.map((plan) => (
-        <div 
-          key={plan.name} 
-          className={`neo-card relative p-6 border-2 transition-all hover:shadow-md ${
-            plan.recommended ? 'border-primary ring-2 ring-primary/10' : 'border-border'
-          }`}
-        >
-          {plan.recommended && (
-            <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 px-4 py-1">
-              <Badge className="bg-primary text-white">Рекомендуемый</Badge>
-            </div>
-          )}
-          
-          <div className="text-center mb-6">
-            <h3 className="text-xl font-semibold mb-2">{plan.name}</h3>
-            <div className="text-3xl font-bold">
-              {plan.price > 0 ? `${plan.price} ₽` : 'Бесплатно'}
-              <span className="text-sm font-normal text-muted-foreground">/{plan.period}</span>
-            </div>
-          </div>
-          
-          <div className="space-y-4 mb-8">
-            <p className="text-sm text-muted-foreground text-center">Включено:</p>
-            <ul className="space-y-2">
-              {plan.features.map((feature, idx) => (
-                <li key={idx} className="flex items-start gap-2 text-sm">
-                  <Check className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
-                  <span>{feature}</span>
-                </li>
-              ))}
-              
-              {plan.restrictions.map((restriction, idx) => (
-                <li key={`r-${idx}`} className="flex items-start gap-2 text-sm text-muted-foreground">
-                  <span className="text-xl leading-none mt-0.5">·</span>
-                  <span>{restriction}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-          
-          <Button 
-            variant={plan.buttonVariant} 
-            className="w-full"
-            asChild
+    <div>
+      <div className="text-center mb-8">
+        <h2 className="text-3xl font-bold mb-4">Тарифные планы</h2>
+        <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+          Выберите подходящий тариф для вашего проекта. У нас есть варианты для любого бюджета.
+          <Link to="/optimization-pricing" className="text-primary hover:underline ml-1">
+            Также доступны специальные тарифы для оптимизации сайта
+          </Link>.
+        </p>
+      </div>
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-20">
+        {plans.map((plan) => (
+          <div 
+            key={plan.name} 
+            className={`neo-card relative p-6 border-2 transition-all hover:shadow-md ${
+              plan.recommended ? 'border-primary ring-2 ring-primary/10' : 'border-border'
+            }`}
           >
-            <Link to="/auth?tab=register&plan={plan.name}">{plan.buttonText}</Link>
-          </Button>
-        </div>
-      ))}
+            {plan.recommended && (
+              <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 px-4 py-1">
+                <Badge className="bg-primary text-white">Рекомендуемый</Badge>
+              </div>
+            )}
+            
+            <div className="text-center mb-6">
+              <h3 className="text-xl font-semibold mb-2">{plan.name}</h3>
+              <div className="text-3xl font-bold">
+                {plan.price > 0 ? `${plan.price} ₽` : 'Бесплатно'}
+                <span className="text-sm font-normal text-muted-foreground">/{plan.period}</span>
+              </div>
+            </div>
+            
+            <div className="space-y-4 mb-8">
+              <p className="text-sm text-muted-foreground text-center">Включено:</p>
+              <ul className="space-y-2">
+                {plan.features.map((feature, idx) => (
+                  <li key={idx} className="flex items-start gap-2 text-sm">
+                    <Check className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
+                    <span>{feature}</span>
+                  </li>
+                ))}
+                
+                {plan.restrictions.map((restriction, idx) => (
+                  <li key={`r-${idx}`} className="flex items-start gap-2 text-sm text-muted-foreground">
+                    <span className="text-xl leading-none mt-0.5">·</span>
+                    <span>{restriction}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+            
+            <Button 
+              variant={plan.buttonVariant} 
+              className="w-full"
+              asChild
+            >
+              <Link to="/auth?tab=register&plan={plan.name}">{plan.buttonText}</Link>
+            </Button>
+          </div>
+        ))}
+      </div>
     </div>
   );
 };
