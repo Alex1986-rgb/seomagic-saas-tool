@@ -1,10 +1,17 @@
-
 /**
  * Creates an optimized copy of the site and packages it as ZIP
  */
-import { PageContent, OptimizationResponse } from './optimization/types';
+import { PageContent } from '@/features/audit/types/optimization-types';
 import { faker } from '@faker-js/faker';
 import { optimizePageContent, improveSeoDescription, generateSeoDescription, generateKeywords } from './content';
+
+// Define local interface to match what the function returns
+interface OptimizationResponse {
+  blob: Blob;
+  beforeScore: number;
+  afterScore: number;
+  demoPage?: PageContent;
+}
 
 export const createOptimizedSite = async (
   domain: string,

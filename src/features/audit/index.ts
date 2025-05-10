@@ -1,6 +1,5 @@
 
 // Re-export all audit components, hooks, and utilities
-// We'll use specific exports to avoid the OptimizationResults ambiguity
 export * from './utils';
 export * from './hooks';
 
@@ -8,7 +7,6 @@ export * from './hooks';
 export type {
   OptimizationItem,
   OptimizationCosts,
-  OptimizationMetrics,
   OptimizationResults,
   OptimizationProgressState,
   PageContent,
@@ -18,7 +16,6 @@ export type {
 
 // Export individual components to avoid name conflicts
 export * from './components/results/components';
-export * from './components/results';
 
-// For components with potential naming conflicts, we need to be explicit
-export { default as OptimizationResults } from './components/results/components/optimization/OptimizationResults';
+// For components with potential naming conflicts, export explicitly instead of re-exporting
+export { default as AuditOptimizationResults } from './components/results/components/optimization/OptimizationResults';

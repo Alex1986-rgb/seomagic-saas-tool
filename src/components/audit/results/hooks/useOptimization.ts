@@ -1,7 +1,17 @@
 import { useState } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import { createOptimizedSite } from '@/services/audit/optimizedSite';
-import { OptimizationItem, PageContent, OptimizationResponse } from '@/features/audit/types/optimization-types';
+import { OptimizationItem, PageContent } from '@/features/audit/types/optimization-types';
+
+// Define a local type for optimization response to match what createOptimizedSite returns
+interface OptimizationResponse {
+  blob: Blob;
+  beforeScore: number;
+  afterScore: number;
+  demoPage?: PageContent;
+  success?: boolean;
+  message?: string;
+}
 
 export const useOptimization = (url: string) => {
   const [optimizationCost, setOptimizationCost] = useState<number | undefined>(undefined);

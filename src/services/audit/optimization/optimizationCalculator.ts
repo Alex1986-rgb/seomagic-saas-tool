@@ -1,10 +1,9 @@
 
 import { 
-  OptimizationMetrics, 
+  OptimizationItem, 
   OptimizationCosts, 
   PageContent, 
-  OptimizationResults,
-  OptimizationItem
+  OptimizationResults 
 } from '@/features/audit/types/optimization-types';
 
 import { calculateDiscount } from './discountCalculator';
@@ -15,9 +14,9 @@ export const calculateOptimizationMetrics = (
   pagesContent: PageContent[],
   totalUrls: number,
   brokenLinks: number = 0
-): OptimizationMetrics => {
+) => {
   // Default metrics
-  const metrics: OptimizationMetrics = {
+  const metrics = {
     beforeScore: 0,
     afterScore: 0,
     improvement: 0,
@@ -37,7 +36,7 @@ export const calculateOptimizationMetrics = (
     totalScore: 0,
     potentialScoreIncrease: 0,
     estimatedCost: 0,
-    optimizationItems: []
+    optimizationItems: [] as OptimizationItem[]
   };
   
   // Analyze the content to fill in the metrics
@@ -60,25 +59,27 @@ export const calculateOptimizationMetrics = (
   return metrics;
 };
 
-export const calculateOptimizationCosts = (metrics: OptimizationMetrics, totalUrls: number): OptimizationCosts => {
+export const calculateOptimizationCosts = (metrics: any, totalUrls: number): OptimizationCosts => {
   const pricingConfig = getPricingConfig();
   
   // Calculate individual costs
   const costs: OptimizationCosts = {
-    baseCost: 0,
-    pagesMultiplier: 0,
-    pagesCost: 0,
-    tasksCost: 0,
-    discounts: 0,
-    totalCost: 0,
-    total: 0,
+    basic: pricingConfig.basicPlan || 5000,
+    standard: pricingConfig.standardPlan || 15000,
+    premium: pricingConfig.premiumPlan || 30000,
     sitemap: pricingConfig.sitemap,
     metaTags: ((metrics.missingMetaDescriptions || 0) + (metrics.missingMetaKeywords || 0) + (metrics.duplicateMetaTags || 0)) * pricingConfig.metaTagsPerItem,
     content: (metrics.lowContentPages || 0) * pricingConfig.contentPerPage,
     images: (metrics.missingAltTags || 0) * pricingConfig.imageAltPerItem,
     performance: (metrics.slowLoadingPages || 0) * pricingConfig.performancePerPage,
     links: (metrics.brokenLinks || 0) * pricingConfig.linksPerItem,
-    structure: ((metrics.poorUrlStructure || 0) + (metrics.poorHeadingStructure || 0)) * pricingConfig.structurePerItem
+    structure: ((metrics.poorUrlStructure || 0) + (metrics.poorHeadingStructure || 0)) * pricingConfig.structurePerItem,
+    total: 0,
+    discountPercentage: 0,
+    discountAmount: 0,
+    finalTotal: 0,
+    discounts: 0,
+    totalCost: 0
   };
   
   // Calculate total
@@ -97,7 +98,7 @@ export const calculateOptimizationCosts = (metrics: OptimizationMetrics, totalUr
   return costs;
 };
 
-export const generateOptimizationRecommendations = (metrics: OptimizationMetrics): string[] => {
+export const generateOptimizationRecommendations = (metrics: any): string[] => {
   const recommendations: string[] = [];
   
   if (metrics.missingMetaDescriptions && metrics.missingMetaDescriptions > 0) {

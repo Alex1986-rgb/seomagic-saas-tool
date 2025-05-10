@@ -23,22 +23,11 @@ export interface OptimizationItem {
   errorCount?: number;
 }
 
-// Renamed from OptimizationResults to OptimizationResult for consistency
-export interface OptimizationResult {
-  url: string;
-  score_before: number;
-  score_after: number;
-  improvements: string[];
-  content: {
-    before: string;
-    after: string;
-  };
-  metadata: {
-    title?: string;
-    description?: string;
-    keywords?: string;
-  };
-  completion_time: string;
+export interface OptimizationResults {
+  metrics: any;
+  costs: OptimizationCosts;
+  recommendations: string[];
+  items?: OptimizationItem[];
 }
 
 export interface OptimizationProgressState {
@@ -52,13 +41,17 @@ export interface OptimizationResponse {
   success: boolean;
   message: string;
   data?: OptimizationResult;
+  blob?: Blob;
+  beforeScore?: number;
+  afterScore?: number;
+  demoPage?: PageContent;
 }
 
 export interface OptimizationCosts {
   basic: number;
   standard: number;
   premium: number;
-  // Adding fields needed by the calculator
+  // Additional fields needed by the calculator
   sitemap?: number;
   metaTags?: number;
   content?: number;
@@ -79,7 +72,6 @@ export interface OptimizationCosts {
   items?: OptimizationItem[];
 }
 
-// Add missing types from errors
 export interface OptimizationMetrics {
   beforeScore: number;
   afterScore: number;
@@ -134,12 +126,22 @@ export interface PageContent {
   };
 }
 
-// Add OptimizationResults interface
-export interface OptimizationResults {
-  metrics: OptimizationMetrics;
-  costs: OptimizationCosts;
-  recommendations: string[];
-  items?: OptimizationItem[];
+// Added for backward compatibility 
+export interface OptimizationResult {
+  url: string;
+  score_before: number;
+  score_after: number;
+  improvements: string[];
+  content: {
+    before: string;
+    after: string;
+  };
+  metadata: {
+    title?: string;
+    description?: string;
+    keywords?: string;
+  };
+  completion_time: string;
 }
 
 export interface OptimizationOptions {
