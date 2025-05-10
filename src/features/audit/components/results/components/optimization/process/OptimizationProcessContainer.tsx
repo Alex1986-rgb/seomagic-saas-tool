@@ -1,27 +1,18 @@
 
 import React from 'react';
-import { OptimizationProcessContainerProps } from '@/features/audit/types/optimization-types';
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 
-const OptimizationProcessContainer: React.FC<OptimizationProcessContainerProps> = ({
-  url,
-  progress,
-  setOptimizationResult,
-  setLocalIsOptimized
-}) => {
+export const OptimizationProcessContainer: React.FC = () => {
   return (
-    <div className="p-4 border rounded-lg bg-card">
-      <h3 className="font-medium mb-2">Оптимизация {url}</h3>
-      <div className="w-full bg-muted rounded-full h-2.5">
-        <div 
-          className="bg-primary h-2.5 rounded-full" 
-          style={{ width: `${progress}%` }}
-        ></div>
-      </div>
-      <p className="text-sm text-muted-foreground mt-2">
-        Прогресс оптимизации: {progress}%
-      </p>
-    </div>
+    <Card>
+      <CardHeader>
+        <CardTitle>Процесс оптимизации</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <p className="text-muted-foreground">
+          Здесь будет отображаться прогресс оптимизации вашего сайта после оплаты и начала работ.
+        </p>
+      </CardContent>
+    </Card>
   );
 };
-
-export default OptimizationProcessContainer;

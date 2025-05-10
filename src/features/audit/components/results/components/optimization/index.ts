@@ -6,6 +6,7 @@ export { default as OptimizationHeading } from './OptimizationHeading';
 export { default as OptimizationSummary } from './OptimizationSummary';
 export { default as OptimizationCost } from './OptimizationCost';
 export { default as OptimizationPlans } from './OptimizationPlans';
+export { default as DemonstrationCost } from './DemonstrationCost';
 
 // Export data generators and utilities
 export {

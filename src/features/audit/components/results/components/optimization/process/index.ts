@@ -1,3 +1,2 @@
 
-// Export process components
-export { default as OptimizationProcessContainer } from './OptimizationProcessContainer';
+export { OptimizationProcessContainer } from './OptimizationProcessContainer';

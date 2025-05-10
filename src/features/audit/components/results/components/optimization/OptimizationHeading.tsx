@@ -6,7 +6,7 @@ const OptimizationHeading: React.FC = () => {
     <div>
       <h2 className="text-xl font-semibold">Стоимость оптимизации</h2>
       <p className="text-sm text-muted-foreground">
-        Расчет стоимости работ по оптимизации сайта с учетом количества страниц
+        Расчет стоимости работ с учетом количества страниц и применяемых скидок
       </p>
     </div>
   );

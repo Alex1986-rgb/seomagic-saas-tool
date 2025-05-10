@@ -1,141 +1,139 @@
 
-import { OptimizationItem } from '@/features/audit/types/optimization-types';
-import { getPricingConfig } from '@/services/audit/optimization/pricingConfig';
+import { OptimizationItem } from '../../../types/optimization-types';
 import { calculateDiscount } from '@/services/audit/optimization/discountCalculator';
+import { getStandardOptimizationItems } from '@/services/audit/optimization/pricingConfig';
 
-// Generate random page count for demo
-export const generateRandomPageCount = (): number => {
-  // Return a random number between 5 and 100
-  return Math.floor(Math.random() * 96) + 5;
+export const generateRandomPageCount = (min: number = 10, max: number = 1000): number => {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
 };
 
-// Generate mock optimization items
-export const generateMockOptimizationItems = (pageCount: number): OptimizationItem[] => {
-  const items: OptimizationItem[] = [
-    {
-      id: "meta_tags",
-      name: "Оптимизация мета-тегов",
-      description: "Улучшение title и description для повышения CTR в поиске",
-      count: Math.ceil(pageCount * 0.8),
-      price: 150,
-      totalPrice: Math.ceil(pageCount * 0.8) * 150,
-      priority: "high",
-      category: "seo",
-      type: "meta",
-      errorCount: Math.ceil(pageCount * 0.4)
-    },
-    {
-      id: "alt_tags",
-      name: "Оптимизация alt-тегов",
-      description: "Добавление и оптимизация alt-атрибутов для изображений",
-      count: Math.ceil(pageCount * 1.5),
-      price: 50,
-      totalPrice: Math.ceil(pageCount * 1.5) * 50,
-      priority: "medium",
-      category: "media",
-      type: "image",
-      errorCount: Math.ceil(pageCount * 0.8)
-    },
+export const generateMockOptimizationItems = (pageCount: number = 15): OptimizationItem[] => {
+  // Get base items
+  const baseItems = getStandardOptimizationItems();
+  
+  // Scale the counts based on the page count
+  return baseItems.map(item => {
+    // Scale count based on page count for some items
+    let scaledCount = item.count;
+    
+    if (['meta_tags', 'content_optimization', 'heading_structure', 'url_structure'].includes(item.id)) {
+      // These items scale directly with page count
+      scaledCount = Math.min(pageCount, 100); // Cap at 100 to prevent extreme numbers
+    } else if (['image_optimization'].includes(item.id)) {
+      // Assume more pages = more images
+      scaledCount = Math.min(Math.round(pageCount * 2), 200); // Cap at 200
+    } else if (['broken_links'].includes(item.id)) {
+      // More pages = more potential broken links
+      scaledCount = Math.min(Math.round(pageCount * 0.3), 50); // Cap at 50
+    }
+    
+    // Calculate new total price
+    const totalPrice = item.price * scaledCount;
+    
+    return {
+      ...item,
+      count: scaledCount,
+      totalPrice,
+      cost: totalPrice,
+    };
+  });
+};
+
+export const calculateTotalCost = (items: OptimizationItem[]): number => {
+  return items.reduce((total, item) => total + item.totalPrice, 0);
+};
+
+export const calculatePricingTiers = (pageCount: number) => {
+  // Define pricing tiers based on page count
+  if (pageCount <= 3) {
+    return { discountPercentage: 0, tier: 'Начальный' };
+  } else if (pageCount <= 50) {
+    return { discountPercentage: 20, tier: 'Базовый' };
+  } else if (pageCount <= 500) {
+    return { discountPercentage: 50, tier: 'Стандарт' };
+  } else {
+    return { discountPercentage: 80, tier: 'Корпоративный' };
+  }
+};
+
+export const generateOptimizationCosts = (pageCount: number = 15) => {
+  const items = generateMockOptimizationItems(pageCount);
+  const rawTotalCost = calculateTotalCost(items);
+  
+  // Calculate discount based on page count
+  const { discountPercentage, discountAmount, finalTotal } = calculateDiscount(rawTotalCost, pageCount);
+  
+  return {
+    items,
+    totalCost: rawTotalCost,
+    discountPercentage,
+    discountAmount,
+    finalCost: finalTotal,
+    pageCount
+  };
+};
+
+// Add this for implementation of missing component
+export const createDemonstrationOptimizationItems = (): OptimizationItem[] => {
+  return [
     {
       id: "technical_audit",
       name: "Технический аудит",
-      description: "Проверка и исправление технических ошибок сайта",
+      description: "Базовый технический аудит всего сайта",
       count: 1,
       price: 5000,
       totalPrice: 5000,
       priority: "high",
-      category: "technical",
-      type: "audit"
+      category: "base",
+      page: "весь сайт",
+      tasks: ["Технический анализ"],
+      cost: 5000,
+      errorCount: 1
+    },
+    {
+      id: "meta_tags",
+      name: "Оптимизация мета-тегов",
+      description: "Оптимизация title и description для всех страниц",
+      count: 10,
+      price: 300,
+      totalPrice: 3000,
+      priority: "high",
+      category: "seo",
+      page: "все страницы",
+      tasks: ["Оптимизация мета-тегов"],
+      cost: 3000,
+      errorCount: 18
+    },
+    {
+      id: "image_optimization",
+      name: "Оптимизация изображений",
+      description: "Оптимизация alt-тегов и сжатие изображений",
+      count: 25,
+      price: 100,
+      totalPrice: 2500,
+      priority: "medium",
+      category: "media",
+      page: "все страницы",
+      tasks: ["Оптимизация изображений"],
+      cost: 2500,
+      errorCount: 32
     }
   ];
-  
-  // Add items based on page count
-  if (pageCount > 10) {
-    items.push({
-      id: "content_optimization",
-      name: "Оптимизация контента",
-      description: "Улучшение текстового контента для SEO",
-      count: Math.ceil(pageCount * 0.7),
-      price: 500,
-      totalPrice: Math.ceil(pageCount * 0.7) * 500,
-      priority: "high",
-      category: "content",
-      type: "text",
-      errorCount: Math.ceil(pageCount * 0.3)
-    });
-  }
-  
-  if (pageCount > 20) {
-    items.push({
-      id: "schema_markup",
-      name: "Микроразметка Schema.org",
-      description: "Внедрение структурированных данных для rich snippets",
-      count: Math.min(10, Math.ceil(pageCount * 0.2)),
-      price: 300,
-      totalPrice: Math.min(10, Math.ceil(pageCount * 0.2)) * 300,
-      priority: "medium",
-      category: "technical",
-      type: "schema"
-    });
-  }
-  
-  return items;
 };
 
-// Calculate total optimization cost
-export const calculateTotalCost = (items: OptimizationItem[]): number => {
-  const totalCost = items.reduce((acc, item) => acc + item.totalPrice, 0);
+export const createDemonstrationCost = (pageCount: number = 20) => {
+  const items = createDemonstrationOptimizationItems();
+  const rawTotalCost = calculateTotalCost(items);
   
-  return Math.round(totalCost);
-};
-
-// Calculate pricing tiers with discounts
-export const calculatePricingTiers = (pageCount: number, basePrice: number): {
-  basic: number;
-  standard: number;
-  premium: number;
-  enterprise: number;
-} => {
-  const config = getPricingConfig();
-  
-  // Base prices for different tiers
-  let basic = Math.min(pageCount, 3) * basePrice;
-  let standard = pageCount <= 50 ? pageCount * basePrice * 0.8 : 50 * basePrice * 0.8;
-  let premium = pageCount <= 500 ? pageCount * basePrice * 0.5 : 500 * basePrice * 0.5;
-  let enterprise = pageCount * basePrice * 0.2; // 80% discount
-  
-  // Add fixed costs for each tier
-  basic += config.basicPlan;
-  standard += config.standardPlan;
-  premium += config.premiumPlan;
-  enterprise += config.premiumPlan * 1.5;
+  // Apply discount based on page count
+  const { discountPercentage, discountAmount, finalTotal } = calculateDiscount(rawTotalCost, pageCount);
   
   return {
-    basic: Math.round(basic),
-    standard: Math.round(standard),
-    premium: Math.round(premium),
-    enterprise: Math.round(enterprise)
-  };
-};
-
-// Generate optimization costs including discounts
-export const generateOptimizationCosts = (pageCount: number, items: OptimizationItem[]): {
-  basic: number;
-  standard: number;
-  premium: number;
-  enterprise: number;
-  totalCost: number;
-  discountAmount: number;
-  discountPercentage: number;
-} => {
-  const totalBeforeDiscount = calculateTotalCost(items);
-  const { discountPercentage, discountAmount, finalTotal } = calculateDiscount(totalBeforeDiscount, pageCount);
-  const pricingTiers = calculatePricingTiers(pageCount, totalBeforeDiscount / pageCount);
-  
-  return {
-    ...pricingTiers,
-    totalCost: finalTotal,
+    items,
+    totalCost: rawTotalCost,
+    discountPercentage,
     discountAmount,
-    discountPercentage
+    finalCost: finalTotal,
+    pageCount
   };
 };

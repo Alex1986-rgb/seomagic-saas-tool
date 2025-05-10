@@ -15,8 +15,6 @@ export const calculateDiscount = (
     discountPercentage = 50; // 50% discount for sites with 500-999 pages
   } else if (totalUrls >= 50) {
     discountPercentage = 20; // 20% discount for sites with 50-499 pages
-  } else if (totalUrls >= 10) {
-    discountPercentage = 10; // 10% discount for sites with 10-49 pages
   }
   
   // Calculate discount amount
@@ -62,5 +60,43 @@ export const calculateBulkDiscount = (
     discountPercentage,
     discountAmount,
     finalTotal
+  };
+};
+
+/**
+ * Calculate optimization costs for different page count ranges
+ */
+export const calculateTieredPricing = (
+  basePrice: number,
+  pageCount: number
+): { 
+  standardPrice: number; 
+  discountedPrice: number; 
+  discountPercentage: number;
+  pricePerPage: number;
+} => {
+  let discountPercentage = 0;
+  let standardPrice = basePrice * pageCount;
+  
+  // Apply discount based on page count
+  if (pageCount >= 1000) {
+    discountPercentage = 80;
+  } else if (pageCount >= 500) {
+    discountPercentage = 50;
+  } else if (pageCount >= 50) {
+    discountPercentage = 20;
+  }
+  
+  // Calculate discounted price
+  const discountedPrice = standardPrice * (1 - discountPercentage / 100);
+  
+  // Calculate price per page after discount
+  const pricePerPage = discountedPrice / pageCount;
+  
+  return {
+    standardPrice,
+    discountedPrice,
+    discountPercentage,
+    pricePerPage
   };
 };

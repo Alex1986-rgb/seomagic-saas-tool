@@ -1,11 +1,19 @@
 
-import React from 'react';
-import { Check } from 'lucide-react';
+import React, { useState } from 'react';
+import { Check, PlusCircle } from 'lucide-react';
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 
 const PricingPlans: React.FC = () => {
+  const [showWorkItems, setShowWorkItems] = useState(false);
+  
   // Список тарифных планов с обновленной логикой
   const plans = [
     {
@@ -141,20 +149,20 @@ const PricingPlans: React.FC = () => {
   return (
     <div>
       <div className="text-center mb-8">
-        <h2 className="text-3xl font-bold mb-4">Тарифные планы</h2>
-        <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-          Выберите подходящий тариф для оптимизации вашего сайта. Стоимость зависит от количества страниц.
+        <h2 className="text-3xl font-bold mb-4">Тарифные планы оптимизации</h2>
+        <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
+          Выберите подходящий тариф для оптимизации вашего сайта. Чем больше страниц для оптимизации, тем выше скидка на услуги.
           <Link to="/optimization-pricing" className="text-primary hover:underline ml-1">
             Также доступны индивидуальные расчеты.
           </Link>
         </p>
       </div>
       
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-20">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
         {plans.map((plan) => (
           <div 
             key={plan.name} 
-            className={`neo-card relative p-6 border-2 transition-all hover:shadow-md ${
+            className={`relative p-6 border-2 rounded-xl transition-all hover:shadow-md ${
               plan.recommended ? 'border-primary ring-2 ring-primary/10' : 'border-border'
             }`}
           >
@@ -188,7 +196,7 @@ const PricingPlans: React.FC = () => {
               </div>
             )}
             
-            <div className="space-y-4 mb-8">
+            <div className="space-y-4 mb-4">
               <p className="text-sm text-muted-foreground">Включено:</p>
               <ul className="space-y-2">
                 {plan.features.map((feature, idx) => (
@@ -200,43 +208,86 @@ const PricingPlans: React.FC = () => {
               </ul>
             </div>
             
-            <div className="border-t pt-4 pb-6 mb-4">
-              <p className="text-sm font-medium mb-2">Стоимость работ:</p>
-              <div className="space-y-1">
-                {plan.workItems.slice(0, 4).map((item, idx) => (
-                  <div key={idx} className="flex justify-between text-xs">
-                    <span>{item.name}</span>
-                    <span className="font-medium">{item.price} ₽/{item.unit}</span>
+            <Accordion type="single" collapsible className="border-t pt-2 mb-4">
+              <AccordionItem value="work-items" className="border-b-0">
+                <AccordionTrigger className="py-2 text-sm font-medium">
+                  Стоимость работ
+                </AccordionTrigger>
+                <AccordionContent>
+                  <div className="space-y-1 text-xs">
+                    {plan.workItems.map((item, idx) => (
+                      <div key={idx} className="flex justify-between">
+                        <span>{item.name}</span>
+                        <span className="font-medium">{item.price} ₽/{item.unit}</span>
+                      </div>
+                    ))}
                   </div>
-                ))}
-                {plan.workItems.length > 4 && (
-                  <div className="text-xs text-center text-muted-foreground pt-1">
-                    ... и другие работы
-                  </div>
-                )}
-              </div>
-            </div>
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
             
             <Button 
-              variant={plan.buttonVariant} 
+              variant={plan.recommended ? "default" : "outline"} 
               className="w-full"
               asChild
             >
-              <Link to="/auth?tab=register&plan={plan.name}">{plan.buttonText}</Link>
+              <Link to="/audit?plan={plan.name}">{plan.buttonText}</Link>
             </Button>
           </div>
         ))}
       </div>
       
       <div className="bg-muted/30 border rounded-xl p-6 mb-8">
-        <h3 className="text-xl font-bold mb-4">Виды оптимизации, которые мы выполняем</h3>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {optimizationTypes.map((type, index) => (
-            <div key={index} className="flex items-start">
-              <Check className="h-5 w-5 text-green-500 mr-2 shrink-0 mt-0.5" />
-              <span className="text-sm">{type}</span>
-            </div>
-          ))}
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-xl font-bold">Виды оптимизации, которые мы выполняем</h3>
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className="text-xs flex items-center gap-1"
+            onClick={() => setShowWorkItems(!showWorkItems)}
+          >
+            <PlusCircle className="h-3.5 w-3.5" />
+            {showWorkItems ? 'Скрыть детали' : 'Показать все виды работ'}
+          </Button>
+        </div>
+        
+        {showWorkItems ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {optimizationTypes.map((type, index) => (
+              <div key={index} className="flex items-start">
+                <Check className="h-5 w-5 text-green-500 mr-2 shrink-0 mt-0.5" />
+                <span className="text-sm">{type}</span>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {optimizationTypes.slice(0, 8).map((type, index) => (
+              <div key={index} className="flex items-start">
+                <Check className="h-5 w-5 text-green-500 mr-2 shrink-0 mt-0.5" />
+                <span className="text-sm">{type}</span>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+      
+      <div className="bg-primary/5 border-primary/10 border rounded-xl p-6 text-center">
+        <h3 className="text-xl font-semibold mb-2">Нужен индивидуальный подход?</h3>
+        <p className="text-muted-foreground mb-4">
+          Свяжитесь с нами для получения персонального предложения по оптимизации вашего сайта
+        </p>
+        <div className="flex flex-col sm:flex-row justify-center gap-4">
+          <Button asChild>
+            <Link to="/contact">
+              Получить персональное предложение
+            </Link>
+          </Button>
+          <Button variant="outline" asChild>
+            <Link to="/optimization-demo">
+              Демонстрация процесса
+            </Link>
+          </Button>
         </div>
       </div>
     </div>
