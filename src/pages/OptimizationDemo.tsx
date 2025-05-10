@@ -1,19 +1,19 @@
 
 import React from 'react';
-import { DemonstrationPage } from '@/components/audit/results/components';
-import Layout from '@/components/Layout';
-import { Helmet } from 'react-helmet-async';
+import Layout from '../components/Layout';
+import { DemonstrationCost } from '../components/audit/results/components/optimization';
 
 const OptimizationDemo: React.FC = () => {
-  console.log("Rendering OptimizationDemo page");
   return (
     <Layout>
-      <Helmet>
-        <title>Демонстрация оптимизации | SeoMarket</title>
-        <meta name="description" content="Демонстрация процесса оптимизации сайта и формирования сметы" />
-      </Helmet>
-      <div className="pt-16">
-        <DemonstrationPage />
+      <div className="container mx-auto py-10">
+        <h1 className="text-3xl font-bold mb-6">Демонстрация работы оптимизации сайта</h1>
+        <p className="mb-8 text-muted-foreground">
+          Это демонстрационная страница для показа функционала оптимизации сайта. 
+          Вы можете увидеть как выглядит интерфейс и процесс оптимизации.
+        </p>
+        
+        <DemonstrationCost />
       </div>
     </Layout>
   );

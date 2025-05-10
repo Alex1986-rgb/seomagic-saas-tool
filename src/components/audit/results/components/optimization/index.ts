@@ -1,12 +1,17 @@
 
+// Re-export all components from the optimization folder
 export { default as CostSummary } from './CostSummary';
 export { default as CostDetailsTable } from './CostDetailsTable';
+export { default as DemonstrationCost } from './DemonstrationCost';
 export { default as OptimizationActions } from './OptimizationActions';
-export { default as PaymentDialog } from './PaymentDialog';
 export { default as OptimizationCost } from './OptimizationCost';
 export { default as OptimizationHeading } from './OptimizationHeading';
-export { default as OptimizationSummary } from './OptimizationSummary';
 export { default as OptimizationResults } from './OptimizationResults';
+export { default as OptimizationSummary } from './OptimizationSummary';
+export { default as PaymentDialog } from './PaymentDialog';
 
-// Re-export types from the centralized type system
-export * from './types';
+// Export types
+export type { CostDetailsTableProps } from './CostDetailsTable';
+
+// Export utilities
+export { generateMockOptimizationItems, calculateTotalCost, generateRandomPageCount } from './mockOptimizationData';

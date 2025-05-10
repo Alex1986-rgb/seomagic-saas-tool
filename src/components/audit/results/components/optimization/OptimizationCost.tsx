@@ -160,7 +160,7 @@ const OptimizationCost: React.FC<OptimizationCostProps> = ({
       
       <CostSummary pageCount={pageCount} optimizationCost={optimizationCost} />
       
-      <CostDetailsTable optimizationItems={optimizationItems} />
+      <CostDetailsTable items={optimizationItems} />
       
       {isOptimizing && !isOptimizedState && (
         <OptimizationProcessContainer 

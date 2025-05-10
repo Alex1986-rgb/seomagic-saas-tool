@@ -1,169 +1,187 @@
 
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import OptimizationCost from './optimization/OptimizationCost';
+import { Link } from 'react-router-dom';
+import { Button } from "@/components/ui/button";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { useToast } from "@/hooks/use-toast";
+import CostSummary from './optimization/CostSummary';
+import CostDetailsTable from './optimization/CostDetailsTable';
 import OptimizationProcessContainer from './optimization/process/OptimizationProcessContainer';
 import OptimizationResults from './optimization/OptimizationResults';
-import { OptimizationItem } from '@/features/audit/types/optimization-types';
-import { OptimizationActions } from '@/components/audit/results/components/optimization/OptimizationActions';
+import OptimizationActions from './optimization/OptimizationActions';
 
 interface AuditOptimizationSectionProps {
-  optimizationCost: number;
-  optimizationItems: OptimizationItem[];
-  isOptimized: boolean;
-  contentPrompt: string;
   url: string;
+  optimizationCost?: number;
   pageCount: number;
-  showPrompt: boolean;
-  onTogglePrompt: () => void;
-  onOptimize: () => Promise<any>;
-  onDownloadOptimizedSite: () => Promise<void>;
-  onGeneratePdfReport: () => void;
-  setContentOptimizationPrompt: (prompt: string) => void;
+  optimizationItems?: any[];
+  isOptimized?: boolean;
+  showPrompt?: boolean;
+  onTogglePrompt?: () => void;
+  onOptimize?: () => void;
+  onDownloadOptimizedSite?: () => void;
+  onGeneratePdfReport?: () => void;
+  contentPrompt?: string;
+  setContentOptimizationPrompt?: (prompt: string) => void;
 }
 
 const AuditOptimizationSection: React.FC<AuditOptimizationSectionProps> = ({
-  optimizationCost,
-  optimizationItems,
-  isOptimized,
-  contentPrompt,
   url,
+  optimizationCost = 0,
   pageCount,
-  showPrompt,
+  optimizationItems = [],
+  isOptimized = false,
+  showPrompt = false,
   onTogglePrompt,
   onOptimize,
   onDownloadOptimizedSite,
   onGeneratePdfReport,
-  setContentOptimizationPrompt,
+  contentPrompt = "",
+  setContentOptimizationPrompt
 }) => {
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [isPaymentComplete, setIsPaymentComplete] = useState(false);
+  const { toast } = useToast();
   const [isOptimizing, setIsOptimizing] = useState(false);
   const [optimizationProgress, setOptimizationProgress] = useState(0);
+  const [isPaymentComplete, setIsPaymentComplete] = useState(false);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [optimizationResult, setOptimizationResult] = useState<any>(null);
-
-  // Demo result for visualization
-  const demoResult = {
-    beforeScore: 65,
-    afterScore: 89,
-    demoPage: {
-      title: "Главная страница",
-      content: "Добро пожаловать на наш сайт. Мы предлагаем лучшие решения для вашего бизнеса.",
-      meta: {
-        description: "Компания предлагающая услуги по оптимизации сайтов.",
-        keywords: "оптимизация, сайт, SEO"
-      },
-      optimized: {
-        content: "Добро пожаловать на наш сайт! Мы специализируемся на высококачественных решениях для развития вашего бизнеса в цифровой среде. Наши эксперты помогут достичь максимальных результатов.",
-        meta: {
-          description: "Профессиональные услуги по оптимизации и продвижению сайтов. Увеличим конверсию и привлечем целевых клиентов.",
-          keywords: "оптимизация сайта, SEO продвижение, улучшение конверсии, аудит сайта"
-        }
-      }
-    }
-  };
+  const [localIsOptimized, setLocalIsOptimized] = useState(isOptimized);
 
   const handlePayment = () => {
+    toast({
+      title: "Оплата успешно произведена",
+      description: "Теперь вы можете запустить процесс оптимизации"
+    });
     setIsPaymentComplete(true);
     setIsDialogOpen(false);
   };
 
-  const handleStartOptimization = async () => {
-    setIsOptimizing(true);
+  const startOptimization = () => {
+    if (onOptimize) {
+      onOptimize();
+    }
     
-    // Simulate optimization process
-    const intervalId = setInterval(() => {
+    setIsOptimizing(true);
+    setOptimizationProgress(0);
+    
+    // Simulate optimization progress
+    const interval = setInterval(() => {
       setOptimizationProgress(prev => {
-        const newProgress = prev + Math.random() * 10;
-        if (newProgress >= 100) {
-          clearInterval(intervalId);
+        if (prev >= 100) {
+          clearInterval(interval);
+          setLocalIsOptimized(true);
+          
+          // Set demo result after completion
           setTimeout(() => {
-            setIsOptimizing(false);
-            setOptimizationResult(demoResult);
+            setOptimizationResult({
+              beforeScore: 65,
+              afterScore: 92,
+            });
           }, 1000);
+          
           return 100;
         }
-        return newProgress;
+        return prev + Math.random() * 2;
       });
-    }, 500);
-    
-    try {
-      await onOptimize();
-    } catch (error) {
-      console.error("Error during optimization:", error);
-      clearInterval(intervalId);
-      setIsOptimizing(false);
-    }
+    }, 200);
   };
 
   const handleSelectPrompt = (prompt: string) => {
     if (setContentOptimizationPrompt) {
       setContentOptimizationPrompt(prompt);
     }
+    
+    toast({
+      title: "Шаблон выбран",
+      description: "Параметры оптимизации установлены"
+    });
   };
 
+  if (!optimizationCost && !isOptimized && !showPrompt) {
+    return (
+      <Card className="mb-8">
+        <CardHeader>
+          <CardTitle>Оптимизация сайта</CardTitle>
+        </CardHeader>
+        <CardContent className="text-center py-8">
+          <p className="text-muted-foreground mb-4">
+            Заказать оптимизацию сайта для улучшения его показателей в поисковых системах
+          </p>
+          <Link to="/optimization-demo">
+            <Button>Посмотреть демо-версию</Button>
+          </Link>
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
-      className="mt-6"
-    >
-      <h2 className="text-xl font-semibold mb-4">Оптимизация сайта</h2>
-      
-      {!isOptimized && !isOptimizing && (
-        <OptimizationCost 
-          url={url} 
-          optimizationCost={optimizationCost}
-          pageCount={pageCount}
-          optimizationItems={optimizationItems}
-        />
-      )}
-      
-      {isOptimizing && (
-        <OptimizationProcessContainer 
-          url={url}
-          progress={optimizationProgress}
-          setOptimizationResult={setOptimizationResult}
-          setLocalIsOptimized={(isOptimized) => {
-            // Call setIsOptimized which is the local state
-            setIsOptimizing(false);
-            setOptimizationResult(demoResult);
-          }} 
-        />
-      )}
-      
-      {(isOptimized || optimizationResult) && (
-        <OptimizationResults 
-          url={url}
-          optimizationResult={optimizationResult || demoResult}
-          onDownloadOptimized={onDownloadOptimizedSite}
-          onGeneratePdfReport={onGeneratePdfReport}
-          className="mb-4"
-        />
-      )}
-      
-      {!isOptimizing && !optimizationResult && (
-        <div className="flex flex-col sm:flex-row justify-between gap-3 mt-4">
-          <div></div>
-          <div>
-            <OptimizationActions 
-              url={url}
-              optimizationCost={optimizationCost}
-              isOptimized={isOptimized}
-              isPaymentComplete={isPaymentComplete}
-              onDownloadOptimized={onDownloadOptimizedSite}
-              onGeneratePdfReport={onGeneratePdfReport}
-              onStartOptimization={handleStartOptimization}
-              onPayment={handlePayment}
-              isDialogOpen={isDialogOpen}
-              setIsDialogOpen={setIsDialogOpen}
-              onSelectPrompt={handleSelectPrompt}
+    <Card className="mb-8">
+      <CardHeader>
+        <CardTitle>Оптимизация сайта</CardTitle>
+      </CardHeader>
+      <CardContent>
+        {showPrompt && setContentOptimizationPrompt && (
+          <motion.div
+            className="mb-4"
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+          >
+            <textarea
+              value={contentPrompt}
+              onChange={(e) => setContentOptimizationPrompt(e.target.value)}
+              className="w-full h-32 p-3 border rounded-md mb-3"
+              placeholder="Введите инструкции для оптимизации контента..."
             />
-          </div>
+          </motion.div>
+        )}
+
+        <CostSummary
+          pageCount={pageCount}
+          optimizationCost={optimizationCost}
+        />
+        
+        <div className="my-4">
+          <CostDetailsTable items={optimizationItems} />
         </div>
-      )}
-    </motion.div>
+        
+        {isOptimizing && !localIsOptimized && (
+          <OptimizationProcessContainer 
+            url={url} 
+            progress={optimizationProgress} 
+            setOptimizationResult={setOptimizationResult}
+            setLocalIsOptimized={setLocalIsOptimized}
+          />
+        )}
+        
+        {optimizationResult && (
+          <OptimizationResults
+            url={url}
+            optimizationResult={optimizationResult}
+            onDownloadOptimized={onDownloadOptimizedSite}
+            onGeneratePdfReport={onGeneratePdfReport}
+          />
+        )}
+        
+        <div className="flex justify-end mt-4">
+          <OptimizationActions
+            url={url}
+            optimizationCost={optimizationCost}
+            isOptimized={localIsOptimized || isOptimized}
+            isPaymentComplete={isPaymentComplete}
+            onDownloadOptimized={onDownloadOptimizedSite}
+            onGeneratePdfReport={onGeneratePdfReport}
+            onStartOptimization={startOptimization}
+            onPayment={handlePayment}
+            isDialogOpen={isDialogOpen}
+            setIsDialogOpen={setIsDialogOpen}
+            onSelectPrompt={handleSelectPrompt}
+          />
+        </div>
+      </CardContent>
+    </Card>
   );
 };
 
