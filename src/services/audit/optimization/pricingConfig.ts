@@ -194,6 +194,11 @@ export const getPricingConfig = () => {
     linksPerItem: 200,
     structurePerItem: 200,
     
+    // Plan pricing
+    basicPlan: 5000,
+    standardPlan: 15000,
+    premiumPlan: 30000,
+    
     // Discounts
     smallSiteDiscount: 0.1,  // 10% discount for small sites
     mediumSiteDiscount: 0.05, // 5% discount for medium sites
