@@ -19,17 +19,17 @@ export const generateMockOptimizationItems = (pageCount: number): OptimizationIt
       id: uuidv4(),
       name: 'Оптимизация мета-тегов',
       description: 'Улучшение meta title и meta description для всех страниц',
-      pagesCount: pageCount,
-      costPerPage: 50,
-      totalCost: pageCount * 50
+      count: pageCount,
+      price: 50,
+      totalPrice: pageCount * 50
     },
     {
       id: uuidv4(),
       name: 'Оптимизация контента',
       description: 'Улучшение текстового содержимого с учетом ключевых слов',
-      pagesCount: Math.min(pageCount, 20),
-      costPerPage: 250,
-      totalCost: Math.min(pageCount, 20) * 250
+      count: Math.min(pageCount, 20),
+      price: 250,
+      totalPrice: Math.min(pageCount, 20) * 250
     },
     {
       id: uuidv4(),
@@ -43,14 +43,15 @@ export const generateMockOptimizationItems = (pageCount: number): OptimizationIt
       id: uuidv4(),
       name: 'Улучшение структуры',
       description: 'Оптимизация заголовков H1-H6 и внутренней структуры страниц',
-      pagesCount: pageCount,
-      costPerPage: 100,
-      totalCost: pageCount * 100
+      count: pageCount,
+      price: 100,
+      totalPrice: pageCount * 100
     },
     {
       id: uuidv4(),
       name: 'Технический аудит',
       description: 'Поиск и устранение технических проблем сайта',
+      count: 1, // Adding the required 'count' property
       price: 5000,
       totalPrice: 5000
     }
@@ -66,9 +67,6 @@ export const calculateTotalCost = (items: OptimizationItem[]): number => {
   let total = 0;
 
   items.forEach(item => {
-    if (item.totalCost) {
-      total += item.totalCost;
-    }
     if (item.totalPrice) {
       total += item.totalPrice;
     }

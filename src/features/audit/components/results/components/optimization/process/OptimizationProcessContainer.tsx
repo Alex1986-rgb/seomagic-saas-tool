@@ -1,11 +1,12 @@
 
 import React from 'react';
+import { OptimizationProgressState } from '@/features/audit/types/optimization-types';
 
 interface OptimizationProcessContainerProps {
   url: string;
   progress: number;
-  setOptimizationResult: (result: any) => void;
-  setLocalIsOptimized: (isOptimized: boolean) => void;
+  setOptimizationResult?: (result: any) => void;
+  setLocalIsOptimized?: (value: boolean) => void;
 }
 
 const OptimizationProcessContainer: React.FC<OptimizationProcessContainerProps> = ({
