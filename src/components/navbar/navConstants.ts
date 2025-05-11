@@ -44,3 +44,51 @@ export const CLIENT_ITEMS = [
     href: "/dashboard/settings",
   },
 ];
+
+// Resource links for footer
+export const RESOURCE_ITEMS = [
+  {
+    label: "Блог",
+    href: "/blog",
+  },
+  {
+    label: "Руководства",
+    href: "/guides",
+  },
+  {
+    label: "Вебинары",
+    href: "/webinars",
+  },
+  {
+    label: "FAQ",
+    href: "/faq",
+  },
+  {
+    label: "API Документация",
+    href: "/api-docs",
+  }
+];
+
+// Company links for footer
+export const COMPANY_ITEMS = [
+  {
+    label: "О нас",
+    href: "/about",
+  },
+  {
+    label: "Команда",
+    href: "/team",
+  },
+  {
+    label: "Карьера",
+    href: "/careers",
+  },
+  {
+    label: "Партнеры",
+    href: "/partners",
+  },
+  {
+    label: "Контакты",
+    href: "/contact",
+  }
+];
