@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import ThemeSwitcher from '../ThemeSwitcher';
 import { CLIENT_ITEMS } from './navConstants';
+import { ShieldCheck } from 'lucide-react';
 
 interface NavbarMobileProps {
   isOpen: boolean;
@@ -84,7 +85,10 @@ const NavbarMobile: React.FC<NavbarMobileProps> = ({
                 to="/admin"
                 className="flex items-center justify-between px-4 py-2 hover:bg-accent rounded-md transition-colors"
               >
-                <span>Админ-панель</span>
+                <div className="flex items-center gap-2">
+                  <ShieldCheck className="h-4 w-4" />
+                  <span>Админ-панель</span>
+                </div>
                 <Badge variant="default" className="ml-1 py-0 px-1 text-[0.6rem] bg-purple-500">
                   ADMIN
                 </Badge>
