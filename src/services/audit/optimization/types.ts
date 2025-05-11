@@ -1,4 +1,3 @@
-
 /**
  * Типы данных для оптимизации сайта
  */
@@ -23,6 +22,7 @@ export interface OptimizationItem {
   // Optional properties
   pricePerUnit?: number;
   type?: string;
+  errorCount: number;
 }
 
 export interface OptimizationMetrics {
@@ -91,11 +91,16 @@ export interface PageContent {
   url: string;
   title: string;
   content: string;
+  metadata: {
+    title?: string;
+    description?: string;
+    keywords?: string;
+    canonicalUrl?: string;
+  };
   meta?: {
     description?: string;
     keywords?: string;
   };
-  // Add all required properties
   images?: {
     url: string;
     alt: string | null;

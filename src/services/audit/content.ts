@@ -9,6 +9,12 @@ export interface PageContent {
     description: string | null;
     keywords: string | null;
   };
+  metadata: {
+    title?: string;
+    description?: string;
+    keywords?: string;
+    canonicalUrl?: string;
+  };
   content: string;
   images: {
     url: string;
@@ -72,6 +78,12 @@ export const collectPagesContent = async (
         meta: {
           description: $('meta[name="description"]').attr('content') || null,
           keywords: $('meta[name="keywords"]').attr('content') || null,
+        },
+        metadata: {
+          title: $('title').text().trim() || '',
+          description: $('meta[name="description"]').attr('content') || undefined,
+          keywords: $('meta[name="keywords"]').attr('content') || undefined,
+          canonicalUrl: $('link[rel="canonical"]').attr('href') || undefined,
         },
         content: $('body').text().replace(/\s+/g, ' ').trim(),
         images: [],

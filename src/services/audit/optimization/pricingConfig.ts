@@ -1,4 +1,3 @@
-
 import { OptimizationItem } from '@/features/audit/types/optimization-types';
 
 /**
@@ -112,4 +111,11 @@ export const getPricingTierName = (pageCount: number): string => {
   } else {
     return 'Корпоративный';
   }
+};
+
+/**
+ * Calculate total optimization cost based on items
+ */
+export const calculateTotalOptimizationCost = (items: OptimizationItem[]): number => {
+  return items.reduce((total, item) => total + item.totalPrice, 0);
 };
