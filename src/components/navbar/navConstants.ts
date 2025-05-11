@@ -9,6 +9,11 @@ export const NAV_ITEMS = [
     href: "/site-audit",
   },
   {
+    label: "Демонстрация оптимизации",
+    href: "/optimization-demo",
+    isDemo: true,
+  },
+  {
     label: "О нас",
     href: "/about",
   },

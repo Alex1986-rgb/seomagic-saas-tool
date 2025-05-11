@@ -60,7 +60,7 @@ const NavbarDesktopLinks: React.FC<NavbarDesktopLinksProps> = ({ navItems }) => 
           }
         >
           <ShieldCheck className="h-4 w-4" />
-          <span>Админ</span>
+          <span>Админ-панель</span>
           <Badge variant="default" className="ml-1 py-0 px-1 text-[0.6rem] bg-purple-500">
             ADMIN
           </Badge>
