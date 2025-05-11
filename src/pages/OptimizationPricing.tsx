@@ -1,12 +1,27 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import Layout from '@/components/Layout';
 import { OptimizationPlans } from '@/features/audit/components/results/components/optimization';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useToast } from '@/hooks/use-toast';
 
 const OptimizationPricing: React.FC = () => {
+  const { toast } = useToast();
+  
+  const handleSelectPlan = (plan: string) => {
+    toast({
+      title: "Тариф выбран",
+      description: `Вы выбрали тариф "${plan}". Перенаправление на страницу аудита.`,
+    });
+    
+    // In a real implementation, you would redirect or perform some action
+    setTimeout(() => {
+      window.location.href = `/audit?plan=${plan}`;
+    }, 1000);
+  };
+  
   return (
     <Layout>
       <div className="container mx-auto py-10">
@@ -25,7 +40,7 @@ const OptimizationPricing: React.FC = () => {
           Чем больше страниц в вашем проекте, тем выше скидка на услуги оптимизации.
         </p>
         
-        <OptimizationPlans />
+        <OptimizationPlans onSelectPlan={handleSelectPlan} />
       </div>
     </Layout>
   );

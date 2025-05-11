@@ -59,7 +59,8 @@ export const calculateOptimizationMetrics = (
       description: `Базовая оптимизация для ${totalPagesCount} страниц`,
       count: totalPagesCount,
       price: baseCost,
-      totalPrice: baseTotalCost
+      totalPrice: baseTotalCost,
+      errorCount: 0
     },
     {
       id: "meta-desc",
@@ -72,7 +73,8 @@ export const calculateOptimizationMetrics = (
       description: "Генерация отсутствующих мета-описаний",
       count: analysis.missingMetaDescriptions,
       price: metaDescriptionCost,
-      totalPrice: metaDescriptionTotalCost
+      totalPrice: metaDescriptionTotalCost,
+      errorCount: analysis.missingMetaDescriptions
     },
     {
       id: "meta-keys",
@@ -85,7 +87,8 @@ export const calculateOptimizationMetrics = (
       description: "Генерация отсутствующих ключевых слов",
       count: analysis.missingMetaKeywords,
       price: metaKeywordsCost,
-      totalPrice: metaKeywordsTotalCost
+      totalPrice: metaKeywordsTotalCost,
+      errorCount: analysis.missingMetaKeywords
     },
     {
       id: "content-opt",
@@ -98,7 +101,8 @@ export const calculateOptimizationMetrics = (
       description: "Оптимизация текстового содержимого страниц",
       count: analysis.contentToRewrite,
       price: contentOptimizationCost,
-      totalPrice: contentTotalCost
+      totalPrice: contentTotalCost,
+      errorCount: analysis.contentToRewrite
     },
     {
       id: "url-fix",
@@ -111,7 +115,8 @@ export const calculateOptimizationMetrics = (
       description: "Исправление URL с подчеркиваниями",
       count: analysis.underscoreUrls,
       price: urlFixCost,
-      totalPrice: urlTotalCost
+      totalPrice: urlTotalCost,
+      errorCount: analysis.underscoreUrls
     },
     {
       id: "alt-tags",
@@ -124,33 +129,35 @@ export const calculateOptimizationMetrics = (
       description: "Генерация ALT-текстов для изображений",
       count: analysis.missingAltTags,
       price: altTagCost,
-      totalPrice: altTagTotalCost
+      totalPrice: altTagTotalCost,
+      errorCount: analysis.missingAltTags
     }
   ];
   
   return {
-    beforeScore: Math.round(baseScore),
-    afterScore: Math.round(baseScore + potentialIncrease),
-    improvement: Math.round(potentialIncrease),
-    pageSpeedImprovement: Math.round(potentialIncrease * 0.7),
-    seoScoreImprovement: Math.round(potentialIncrease * 1.2),
+    fixedIssues: totalIssues,
+    optimizedPages: pagesContent.length,
+    optimizedImages: analysis.missingAltTags,
+    totalTime: pagesContent.length * 5, // Estimate: 5 seconds per page
     missingMetaDescriptions: analysis.missingMetaDescriptions,
     missingMetaKeywords: analysis.missingMetaKeywords,
     missingAltTags: analysis.missingAltTags,
-    duplicateMetaTags: analysis.duplicateContent || 0,
-    lowContentPages: analysis.contentToRewrite || 0,
+    duplicateMetaTags: analysis.duplicateContent,
+    lowContentPages: analysis.contentToRewrite,
     poorTitleTags: Math.floor(totalPagesCount * 0.1),
     poorHeadingStructure: Math.floor(totalPagesCount * 0.15),
     slowLoadingPages: Math.floor(totalPagesCount * 0.2),
     poorMobileOptimization: Math.floor(totalPagesCount * 0.25),
     brokenLinks: Math.floor(totalPagesCount * 0.05),
-    poorUrlStructure: analysis.underscoreUrls || 0,
+    poorUrlStructure: analysis.underscoreUrls,
     underscoreUrls: analysis.underscoreUrls,
     duplicateContent: analysis.duplicateContent,
     contentToRewrite: analysis.contentToRewrite,
     totalScore: Math.round(baseScore),
     potentialScoreIncrease: Math.round(potentialIncrease),
     estimatedCost: totalCost,
-    optimizationItems
+    optimizationItems,
+    beforeScore: Math.round(baseScore),
+    afterScore: Math.round(baseScore + potentialIncrease)
   };
 };

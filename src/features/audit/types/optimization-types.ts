@@ -12,6 +12,8 @@ export interface OptimizationItem {
   tasks: string[];
   cost: number;
   errorCount: number;
+  pricePerUnit?: number;
+  type?: string;
 }
 
 export interface OptimizationCosts {
@@ -40,13 +42,29 @@ export interface OptimizationMetrics {
   optimizedPages: number;
   optimizedImages: number;
   totalTime: number; // seconds
-}
-
-export interface OptimizationProgressState {
-  status: 'idle' | 'processing' | 'completed' | 'failed';
-  progress: number; // 0-100
-  step: string;
-  error?: string;
+  missingMetaDescriptions?: number;
+  missingMetaKeywords?: number;
+  missingAltTags?: number;
+  duplicateMetaTags?: number;
+  lowContentPages?: number;
+  poorTitleTags?: number;
+  poorHeadingStructure?: number;
+  slowLoadingPages?: number;
+  poorMobileOptimization?: number;
+  brokenLinks?: number;
+  poorUrlStructure?: number;
+  underscoreUrls?: number;
+  duplicateContent?: number;
+  contentToRewrite?: number;
+  totalScore?: number;
+  potentialScoreIncrease?: number;
+  estimatedCost?: number;
+  optimizationItems?: OptimizationItem[];
+  beforeScore?: number;
+  afterScore?: number;
+  improvement?: number;
+  pageSpeedImprovement?: number;
+  seoScoreImprovement?: number;
 }
 
 export interface PageContent {
@@ -58,6 +76,28 @@ export interface PageContent {
     description?: string;
     keywords?: string;
     canonicalUrl?: string;
+  };
+  meta?: {
+    description?: string;
+    keywords?: string;
+  };
+  images?: {
+    url: string;
+    alt: string | null;
+  }[];
+  headings?: {
+    h1: string[];
+    h2: string[];
+    h3: string[];
+  };
+  wordCount?: number;
+  optimized?: {
+    content: string;
+    meta?: {
+      description?: string;
+      keywords?: string;
+    };
+    score?: number;
   };
 }
 
@@ -93,4 +133,18 @@ export interface OptimizationPlan {
 export interface BulkDiscountTier {
   threshold: number;
   discountPercentage: number;
+}
+
+export interface OptimizationProgressState {
+  status: 'idle' | 'processing' | 'completed' | 'failed';
+  progress: number; // 0-100
+  step: string;
+  error?: string;
+}
+
+export interface OptimizationProcessContainerProps {
+  url?: string;
+  progress?: number;
+  setOptimizationResult?: (result: any) => void;
+  setLocalIsOptimized?: (isOptimized: boolean) => void;
 }

@@ -1,3 +1,4 @@
+
 /**
  * Анализатор контента страниц
  */
@@ -30,12 +31,12 @@ export const analyzeContent = (pagesContent: PageContent[]): ContentAnalysis => 
   
   for (const page of pagesContent) {
     // Проверяем мета-описания
-    if (!page.meta?.description) {
+    if ((!page.metadata || !page.metadata.description) && (!page.meta || !page.meta.description)) {
       analysis.missingMetaDescriptions++;
     }
     
     // Проверяем мета-ключевые слова
-    if (!page.meta?.keywords) {
+    if ((!page.metadata || !page.metadata.keywords) && (!page.meta || !page.meta.keywords)) {
       analysis.missingMetaKeywords++;
     }
     
@@ -64,7 +65,10 @@ export const analyzeContent = (pagesContent: PageContent[]): ContentAnalysis => 
     
     // Проверяем необходимость переписывания контента
     // Если контент слишком короткий или имеет низкое соотношение ключевых слов
-    if ((page.wordCount !== undefined && page.wordCount < 300) || (!page.meta?.description && !page.meta?.keywords)) {
+    if (
+      (page.wordCount !== undefined && page.wordCount < 300) || 
+      ((!page.metadata || !page.metadata.description) && (!page.meta || !page.meta.description))
+    ) {
       analysis.contentToRewrite++;
     }
   }
@@ -79,8 +83,12 @@ export const calculatePageOptimizationScore = (page: PageContent): number => {
   let score = 100;
   
   // Проверка на наличие мета-тегов
-  if (!page.meta?.description) score -= 15;
-  if (!page.meta?.keywords) score -= 10;
+  if ((!page.metadata || !page.metadata.description) && (!page.meta || !page.meta.description)) {
+    score -= 15;
+  }
+  if ((!page.metadata || !page.metadata.keywords) && (!page.meta || !page.meta.keywords)) {
+    score -= 10;
+  }
   
   // Проверка на наличие заголовков
   if (page.headings) {

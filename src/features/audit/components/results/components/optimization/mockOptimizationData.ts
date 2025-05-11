@@ -1,5 +1,5 @@
 
-import { OptimizationItem } from '../../../types/optimization-types';
+import { OptimizationItem } from '@/features/audit/types/optimization-types';
 import { calculateDiscount } from '@/services/audit/optimization/discountCalculator';
 import { getStandardOptimizationItems } from '@/services/audit/optimization/pricingConfig';
 
@@ -35,6 +35,7 @@ export const generateMockOptimizationItems = (pageCount: number = 15): Optimizat
       count: scaledCount,
       totalPrice,
       cost: totalPrice,
+      errorCount: Math.floor(Math.random() * scaledCount) // Add random error count
     };
   });
 };
@@ -88,7 +89,8 @@ export const createDemonstrationOptimizationItems = (): OptimizationItem[] => {
       page: "весь сайт",
       tasks: ["Технический анализ"],
       cost: 5000,
-      errorCount: 1
+      errorCount: 1,
+      type: "base"
     },
     {
       id: "meta_tags",
@@ -102,7 +104,8 @@ export const createDemonstrationOptimizationItems = (): OptimizationItem[] => {
       page: "все страницы",
       tasks: ["Оптимизация мета-тегов"],
       cost: 3000,
-      errorCount: 18
+      errorCount: 18,
+      type: "meta"
     },
     {
       id: "image_optimization",
@@ -116,7 +119,8 @@ export const createDemonstrationOptimizationItems = (): OptimizationItem[] => {
       page: "все страницы",
       tasks: ["Оптимизация изображений"],
       cost: 2500,
-      errorCount: 32
+      errorCount: 32,
+      type: "media"
     }
   ];
 };
