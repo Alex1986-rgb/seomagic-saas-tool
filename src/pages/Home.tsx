@@ -3,8 +3,8 @@ import React from 'react';
 import { Navigate } from 'react-router-dom';
 
 const Home: React.FC = () => {
-  // Redirect to SiteAudit page which is now our homepage
-  return <Navigate to="/site-audit" replace />;
+  // Redirect to Index page which is our homepage
+  return <Navigate to="/" replace />;
 };
 
 export default Home;

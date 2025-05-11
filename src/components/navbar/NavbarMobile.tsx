@@ -1,9 +1,11 @@
 
 import React from 'react';
-import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { NAV_ITEMS, CLIENT_ITEMS, RESOURCE_ITEMS, COMPANY_ITEMS } from './navConstants';
+import { Link } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import ThemeSwitcher from '../ThemeSwitcher';
+import { CLIENT_ITEMS } from './navConstants';
 
 interface NavbarMobileProps {
   isOpen: boolean;
@@ -23,112 +25,120 @@ const NavbarMobile: React.FC<NavbarMobileProps> = ({
   navItems,
   isLoggedIn,
   isAdmin,
-  toggleAuth
+  toggleAuth,
 }) => {
-  console.log("NavbarMobile rendering with isOpen:", isOpen);
-  
+  const containerVariants = {
+    hidden: { opacity: 0, y: -5 },
+    visible: { 
+      opacity: 1, 
+      y: 0,
+      transition: { staggerChildren: 0.05 }
+    },
+    exit: { 
+      opacity: 0,
+      y: -5, 
+      transition: { staggerChildren: 0.05, staggerDirection: -1 }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: -10 },
+    visible: { opacity: 1, y: 0 },
+    exit: { opacity: 0, y: -10 }
+  };
+
   return (
-    <motion.div
-      className="md:hidden absolute top-16 left-0 w-full bg-background/95 backdrop-blur-lg shadow-lg border-t border-border z-40"
-      initial={{ height: 0, opacity: 0 }}
-      animate={{ height: 'auto', opacity: 1 }}
-      exit={{ height: 0, opacity: 0 }}
-      transition={{ duration: 0.2 }}
+    <motion.div 
+      className="bg-background border-b w-full overflow-hidden"
+      initial="hidden"
+      animate="visible"
+      exit="exit"
+      variants={containerVariants}
     >
-      <div className="px-4 py-6 max-h-[calc(100vh-4rem)] overflow-y-auto">
-        <div className="space-y-1 pb-4 border-b border-border">
+      <div className="container p-4">
+        <motion.nav className="flex flex-col space-y-1 mb-6" variants={containerVariants}>
           {navItems.map((item) => (
-            <Link
-              key={item.href}
-              to={item.href}
-              className="flex items-center px-3 py-2 text-base rounded-md hover:bg-accent"
-            >
-              {item.label}
-              {item.isNew && (
-                <Badge variant="default" className="ml-2 py-0 px-1 text-[0.6rem]">
-                  NEW
-                </Badge>
-              )}
-              {item.isDemo && (
-                <Badge variant="outline" className="ml-2 py-0 px-1 text-[0.6rem] border-green-400 text-green-500">
-                  DEMO
-                </Badge>
-              )}
-            </Link>
+            <motion.div key={item.href} variants={itemVariants}>
+              <Link 
+                to={item.href}
+                className="flex items-center justify-between px-4 py-2 hover:bg-accent rounded-md transition-colors"
+              >
+                <span>{item.label}</span>
+                {item.isNew && (
+                  <Badge variant="default" className="ml-1 py-0 px-1 text-[0.6rem]">
+                    NEW
+                  </Badge>
+                )}
+                {item.isDemo && (
+                  <Badge variant="outline" className="ml-1 py-0 px-1 text-[0.6rem] border-green-400 text-green-500">
+                    DEMO
+                  </Badge>
+                )}
+              </Link>
+            </motion.div>
           ))}
-        </div>
-        
-        <div className="pt-4 pb-2">
-          <h3 className="text-muted-foreground text-xs font-medium px-3 mb-2">Ресурсы</h3>
-          <div className="space-y-1">
-            {RESOURCE_ITEMS.map((item) => (
-              <Link
-                key={item.href}
-                to={item.href}
-                className="flex items-center px-3 py-2 text-sm rounded-md hover:bg-accent text-muted-foreground"
+
+          {isAdmin && (
+            <motion.div variants={itemVariants}>
+              <Link 
+                to="/admin"
+                className="flex items-center justify-between px-4 py-2 hover:bg-accent rounded-md transition-colors"
               >
-                {item.label}
+                <span>Админ-панель</span>
+                <Badge variant="default" className="ml-1 py-0 px-1 text-[0.6rem] bg-purple-500">
+                  ADMIN
+                </Badge>
               </Link>
-            ))}
-          </div>
-        </div>
-        
-        <div className="pt-2 pb-4 border-b border-border">
-          <h3 className="text-muted-foreground text-xs font-medium px-3 mb-2">Компания</h3>
-          <div className="space-y-1">
-            {COMPANY_ITEMS.map((item) => (
-              <Link
-                key={item.href}
-                to={item.href}
-                className="flex items-center px-3 py-2 text-sm rounded-md hover:bg-accent text-muted-foreground"
-              >
-                {item.label}
-              </Link>
-            ))}
-          </div>
-        </div>
-        
-        <div className="pt-4 flex flex-col">
-          {isLoggedIn ? (
-            <>
-              <Link
-                to="/dashboard"
-                className="px-3 py-2 text-sm font-medium text-center rounded-md bg-primary text-primary-foreground hover:bg-primary/90 mb-2"
-              >
-                Личный кабинет
-              </Link>
-              <button
-                onClick={toggleAuth}
-                className="px-3 py-2 text-sm font-medium text-center rounded-md border border-input bg-background hover:bg-accent"
-              >
-                Выйти
-              </button>
-              {isAdmin && (
-                <Link
-                  to="/admin"
-                  className="mt-2 px-3 py-2 text-sm font-medium text-center rounded-md bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                >
-                  Админ панель
-                </Link>
-              )}
-            </>
-          ) : (
-            <>
-              <Link
-                to="/auth"
-                className="px-3 py-2 text-sm font-medium text-center rounded-md border border-input bg-background hover:bg-accent mb-2"
-              >
-                Войти
-              </Link>
-              <Link
-                to="/auth?tab=register"
-                className="px-3 py-2 text-sm font-medium text-center rounded-md bg-primary text-primary-foreground hover:bg-primary/90"
-              >
-                Регистрация
-              </Link>
-            </>
+            </motion.div>
           )}
-        </div>
+        </motion.nav>
+        
+        {isLoggedIn && (
+          <motion.div className="border-t pt-3 mb-4" variants={containerVariants}>
+            <motion.div variants={itemVariants}>
+              <div className="px-4 py-2 font-medium">Личный кабинет</div>
+            </motion.div>
+            
+            {CLIENT_ITEMS.map(item => (
+              <motion.div key={item.href} variants={itemVariants}>
+                <Link 
+                  to={item.href}
+                  className="flex items-center px-4 py-2 hover:bg-accent rounded-md transition-colors text-muted-foreground"
+                >
+                  {item.label}
+                </Link>
+              </motion.div>
+            ))}
+          </motion.div>
+        )}
+        
+        <motion.div 
+          className="flex items-center gap-2 pt-3 border-t" 
+          variants={containerVariants}
+        >
+          <ThemeSwitcher />
+          
+          <motion.div className="flex-1" variants={itemVariants}>
+            {isLoggedIn ? (
+              <Button variant="outline" size="sm" onClick={toggleAuth} className="w-full">
+                Выйти
+              </Button>
+            ) : (
+              <div className="flex gap-2">
+                <Link to="/auth" className="flex-1">
+                  <Button variant="outline" size="sm" className="w-full">
+                    Войти
+                  </Button>
+                </Link>
+                <Link to="/auth?tab=register" className="flex-1">
+                  <Button size="sm" className="w-full">
+                    Регистрация
+                  </Button>
+                </Link>
+              </div>
+            )}
+          </motion.div>
+        </motion.div>
       </div>
     </motion.div>
   );

@@ -1,102 +1,46 @@
 
-// Define navigation items for the application
 export const NAV_ITEMS = [
   {
     label: "Главная",
     href: "/",
   },
   {
-    label: "SEO Аудит",
+    label: "Аудит сайта",
     href: "/site-audit",
   },
   {
-    label: "Отслеживание позиций",
-    href: "/position-tracking",
+    label: "О нас",
+    href: "/about",
   },
   {
     label: "Блог",
     href: "/blog",
   },
   {
-    label: "О нас",
-    href: "/about",
-  },
-  {
-    label: "Демо оптимизации",
-    href: "/optimization-demo",
-    isDemo: true
-  }
-];
-
-// Navigation items for client dashboard
-export const CLIENT_ITEMS = [
-  {
-    label: "Обзор",
-    href: "/dashboard",
-    icon: "layout-dashboard",
-  },
-  {
-    label: "Аудиты",
-    href: "/audit-history",
-    icon: "search-check",
-  },
-  {
-    label: "Отчеты",
-    href: "/reports",
-    icon: "bar-chart-3",
-  },
-  {
-    label: "Позиции",
-    href: "/position-tracking",
-    icon: "trending-up",
-  },
-  {
-    label: "Настройки",
-    href: "/settings",
-    icon: "settings",
-  },
-];
-
-// Resource navigation items
-export const RESOURCE_ITEMS = [
-  {
-    label: "Блог",
-    href: "/blog",
-  },
-  {
-    label: "Руководства",
-    href: "/guides",
-  },
-  {
-    label: "Документация API",
-    href: "/documentation",
-  },
-  {
-    label: "Партнерская программа",
-    href: "/partnership",
-  },
-  {
-    label: "Поддержка",
-    href: "/support",
-  },
-];
-
-// Company information items
-export const COMPANY_ITEMS = [
-  {
-    label: "О нас",
-    href: "/about",
+    label: "Цены",
+    href: "/pricing",
   },
   {
     label: "Контакты",
     href: "/contact",
   },
+];
+
+export const CLIENT_ITEMS = [
   {
-    label: "Карьера",
-    href: "/careers",
+    label: "Дашборд",
+    href: "/dashboard",
   },
   {
-    label: "Правовая информация",
-    href: "/legal",
+    label: "Аудиты",
+    href: "/dashboard/audits",
+  },
+  {
+    label: "Позиции",
+    href: "/dashboard/positions",
+  },
+  {
+    label: "Настройки",
+    href: "/dashboard/settings",
   },
 ];
