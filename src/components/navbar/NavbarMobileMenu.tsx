@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import ThemeSwitcher from "../ThemeSwitcher";
 import { NAV_ITEMS } from './navConstants';
-import { ShieldCheck } from 'lucide-react';
+import { ShieldCheck, LogIn } from 'lucide-react';
 import { Badge } from "@/components/ui/badge";
 
 interface NavbarMobileMenuProps {
@@ -37,7 +37,7 @@ const NavbarMobileMenu: React.FC<NavbarMobileMenuProps> = ({
             </Link>
           ))}
           
-          {/* Админ-панель всегда видима */}
+          {/* Админ-панель с проверкой авторизации */}
           <Link 
             to="/admin"
             className="px-4 py-2 hover:bg-accent rounded-md transition-colors flex items-center gap-2"
@@ -60,7 +60,8 @@ const NavbarMobileMenu: React.FC<NavbarMobileMenuProps> = ({
               </Button>
             </div>
           ) : (
-            <Button onClick={() => navigate('/auth')} variant="default" className="w-full">
+            <Button onClick={() => navigate('/auth')} variant="default" className="w-full flex items-center gap-2">
+              <LogIn className="h-4 w-4" />
               Войти
             </Button>
           )}

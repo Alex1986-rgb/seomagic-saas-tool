@@ -1,17 +1,41 @@
 
 import React, { useState } from 'react';
-import { Outlet } from 'react-router-dom';
+import { Outlet, useNavigate, Navigate } from 'react-router-dom';
 import { HelmetProvider } from 'react-helmet-async';
 import Layout from '@/components/Layout';
 import AdminSidebar from '@/components/admin/AdminSidebar';
 import { Button } from '@/components/ui/button';
-import { Menu, X } from 'lucide-react';
+import { Menu, X, LogIn } from 'lucide-react';
 import { useMobile } from '@/hooks/use-mobile';
 import { cn } from '@/lib/utils';
+import { useAuth } from '@/contexts/AuthContext';
 
 const AdminLayout: React.FC = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const isMobile = useMobile();
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  
+  // Redirect to auth if not logged in
+  if (!user?.isLoggedIn) {
+    return (
+      <Layout>
+        <div className="flex flex-col items-center justify-center min-h-[60vh] p-6">
+          <h1 className="text-2xl font-semibold mb-4">Необходим вход в систему</h1>
+          <p className="text-muted-foreground mb-6 text-center max-w-md">
+            Для доступа к панели администратора необходимо войти в систему.
+          </p>
+          <Button 
+            onClick={() => navigate('/auth')} 
+            className="flex items-center gap-2"
+          >
+            <LogIn className="h-4 w-4" />
+            Войти
+          </Button>
+        </div>
+      </Layout>
+    );
+  }
   
   const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
   

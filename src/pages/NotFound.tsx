@@ -3,7 +3,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { FileSearch, Home } from 'lucide-react';
+import { FileSearch, Home, ShieldCheck } from 'lucide-react';
 import Layout from '@/components/Layout';
 
 const NotFound: React.FC = () => {
@@ -16,6 +16,13 @@ const NotFound: React.FC = () => {
       location.pathname
     );
   }, [location.pathname]);
+
+  // Check if this is an admin route that's not found
+  const isAdminRoute = location.pathname.startsWith('/admin');
+  
+  const handleGoBack = () => navigate(-1);
+  const handleGoHome = () => navigate('/');
+  const handleGoAdmin = () => navigate('/admin');
 
   return (
     <Layout>
@@ -43,20 +50,30 @@ const NotFound: React.FC = () => {
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button 
-              onClick={() => navigate(-1)} 
+              onClick={handleGoBack}
               variant="outline"
               className="flex items-center gap-2"
             >
               <span>Вернуться назад</span>
             </Button>
             
-            <Button 
-              onClick={() => navigate('/')} 
-              className="flex items-center gap-2"
-            >
-              <Home className="h-4 w-4" />
-              <span>На главную</span>
-            </Button>
+            {isAdminRoute ? (
+              <Button 
+                onClick={handleGoAdmin} 
+                className="flex items-center gap-2"
+              >
+                <ShieldCheck className="h-4 w-4" />
+                <span>Панель администратора</span>
+              </Button>
+            ) : (
+              <Button 
+                onClick={handleGoHome} 
+                className="flex items-center gap-2"
+              >
+                <Home className="h-4 w-4" />
+                <span>На главную</span>
+              </Button>
+            )}
           </div>
         </motion.div>
       </div>
