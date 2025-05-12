@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { Outlet } from 'react-router-dom';
-import { Helmet } from 'react-helmet-async';
+import { HelmetProvider } from 'react-helmet-async';
 import Layout from '@/components/Layout';
 import AdminSidebar from '@/components/admin/AdminSidebar';
 import { Button } from '@/components/ui/button';
@@ -17,9 +17,9 @@ const AdminLayout: React.FC = () => {
   
   return (
     <Layout>
-      <Helmet>
+      <HelmetProvider>
         <title>Панель администратора | SeoMarket</title>
-      </Helmet>
+      </HelmetProvider>
       
       <div className="flex min-h-screen bg-background">
         {/* Mobile Header */}

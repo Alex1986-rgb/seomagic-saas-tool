@@ -1,35 +1,34 @@
 
 import React from 'react';
 import ReactDOM from 'react-dom/client';
+import { HelmetProvider } from 'react-helmet-async';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import App from './App';
+import { AuthProvider } from './contexts/AuthContext';
 import './index.css';
-import { setupQueryErrorHandler } from './lib/react-query-error-handler';
+import App from './App';
 
-console.log("main.tsx: Starting app initialization");
+console.info('main.tsx: Starting app initialization');
 
-// Create a new QueryClient with error handling
 const queryClient = new QueryClient();
-setupQueryErrorHandler(queryClient);
-
-// Make sure we have our DOM element
 const rootElement = document.getElementById('root');
-if (!rootElement) {
-  console.error("Could not find root element to mount app!");
+
+if (rootElement) {
+  console.info('Found root element, creating React root');
+  const root = ReactDOM.createRoot(rootElement);
+  
+  console.info('main.tsx: About to render App component');
+  root.render(
+    <React.StrictMode>
+      <HelmetProvider>
+        <QueryClientProvider client={queryClient}>
+          <AuthProvider>
+            <App />
+          </AuthProvider>
+        </QueryClientProvider>
+      </HelmetProvider>
+    </React.StrictMode>
+  );
+  console.info('main.tsx: App rendered');
 } else {
-  console.log("Found root element, creating React root");
+  console.error('Root element not found! Unable to mount React application.');
 }
-
-const root = ReactDOM.createRoot(rootElement!);
-
-console.log("main.tsx: About to render App component");
-
-root.render(
-  <React.StrictMode>
-    <QueryClientProvider client={queryClient}>
-      <App />
-    </QueryClientProvider>
-  </React.StrictMode>
-);
-
-console.log("main.tsx: App rendered");
