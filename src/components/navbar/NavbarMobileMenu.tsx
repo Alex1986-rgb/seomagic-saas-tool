@@ -4,6 +4,8 @@ import { Link } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import ThemeSwitcher from "../ThemeSwitcher";
 import { NAV_ITEMS } from './navConstants';
+import { ShieldCheck } from 'lucide-react';
+import { Badge } from "@/components/ui/badge";
 
 interface NavbarMobileMenuProps {
   isMenuOpen: boolean;
@@ -34,6 +36,18 @@ const NavbarMobileMenu: React.FC<NavbarMobileMenuProps> = ({
               {item.label}
             </Link>
           ))}
+          
+          {/* Админ-панель всегда видима */}
+          <Link 
+            to="/admin"
+            className="px-4 py-2 hover:bg-accent rounded-md transition-colors flex items-center gap-2"
+          >
+            <ShieldCheck className="h-4 w-4" />
+            <span>Админ-панель</span>
+            <Badge variant="default" className="ml-1 py-0 px-1 text-[0.6rem] bg-purple-500">
+              ADMIN
+            </Badge>
+          </Link>
         </nav>
         
         <div className="flex items-center gap-2 pt-4 border-t">

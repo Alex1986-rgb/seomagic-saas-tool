@@ -1,26 +1,17 @@
 
-import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Link } from 'react-router-dom';
+import React from 'react';
+import { motion } from 'framer-motion';
+import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import ThemeSwitcher from '../ThemeSwitcher';
-import { CLIENT_ITEMS } from './navConstants';
-import { ShieldCheck, ChevronDown, ChevronRight } from 'lucide-react';
+import { ShieldCheck } from 'lucide-react';
+import { Badge } from "@/components/ui/badge";
 
 interface NavbarMobileProps {
   isOpen: boolean;
   navItems: Array<{
     label: string;
     href: string;
-    isNew?: boolean;
-    isDemo?: boolean;
-    children?: Array<{
-      label: string;
-      href: string;
-      isNew?: boolean;
-      isDemo?: boolean;
-    }>;
   }>;
   isLoggedIn: boolean;
   isAdmin: boolean;
@@ -32,180 +23,78 @@ const NavbarMobile: React.FC<NavbarMobileProps> = ({
   navItems,
   isLoggedIn,
   isAdmin,
-  toggleAuth,
+  toggleAuth
 }) => {
-  const [expandedItems, setExpandedItems] = useState<string[]>([]);
+  const navigate = useNavigate();
 
-  const toggleExpandItem = (label: string) => {
-    setExpandedItems(prev => 
-      prev.includes(label) 
-        ? prev.filter(item => item !== label) 
-        : [...prev, label]
-    );
-  };
+  if (!isOpen) return null;
 
-  const containerVariants = {
-    hidden: { opacity: 0, y: -5 },
+  const menuAnimation = {
+    hidden: { opacity: 0, height: 0 },
     visible: { 
       opacity: 1, 
-      y: 0,
-      transition: { staggerChildren: 0.05 }
+      height: 'auto',
+      transition: {
+        duration: 0.3
+      }
     },
     exit: { 
-      opacity: 0,
-      y: -5, 
-      transition: { staggerChildren: 0.05, staggerDirection: -1 }
+      opacity: 0, 
+      height: 0,
+      transition: {
+        duration: 0.3
+      } 
     }
   };
 
-  const itemVariants = {
-    hidden: { opacity: 0, y: -10 },
-    visible: { opacity: 1, y: 0 },
-    exit: { opacity: 0, y: -10 }
-  };
-
   return (
-    <motion.div 
-      className="bg-background border-b w-full overflow-hidden"
+    <motion.div
       initial="hidden"
       animate="visible"
       exit="exit"
-      variants={containerVariants}
+      variants={menuAnimation}
+      className="md:hidden border-t py-4 bg-background"
     >
-      <div className="container p-4">
-        <motion.nav className="flex flex-col space-y-1 mb-6" variants={containerVariants}>
+      <div className="container space-y-4">
+        <nav className="flex flex-col space-y-2">
           {navItems.map((item) => (
-            <motion.div key={item.href || item.label} variants={itemVariants}>
-              {item.children ? (
-                <div className="flex flex-col">
-                  <button 
-                    onClick={() => toggleExpandItem(item.label)}
-                    className="flex items-center justify-between px-4 py-2 hover:bg-accent rounded-md transition-colors"
-                  >
-                    <span>{item.label}</span>
-                    {expandedItems.includes(item.label) ? (
-                      <ChevronDown className="h-4 w-4" />
-                    ) : (
-                      <ChevronRight className="h-4 w-4" />
-                    )}
-                  </button>
-                  
-                  <AnimatePresence>
-                    {expandedItems.includes(item.label) && (
-                      <motion.div
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: "auto", opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                        className="pl-6"
-                      >
-                        {item.children.map(child => (
-                          <Link 
-                            key={child.href}
-                            to={child.href}
-                            className="flex items-center justify-between px-4 py-2 hover:bg-accent rounded-md transition-colors"
-                          >
-                            <span>{child.label}</span>
-                            {child.isNew && (
-                              <Badge variant="default" className="ml-1 py-0 px-1 text-[0.6rem]">
-                                NEW
-                              </Badge>
-                            )}
-                            {child.isDemo && (
-                              <Badge variant="outline" className="ml-1 py-0 px-1 text-[0.6rem] border-green-400 text-green-500">
-                                DEMO
-                              </Badge>
-                            )}
-                          </Link>
-                        ))}
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </div>
-              ) : (
-                <Link 
-                  to={item.href}
-                  className="flex items-center justify-between px-4 py-2 hover:bg-accent rounded-md transition-colors"
-                >
-                  <span>{item.label}</span>
-                  {item.isNew && (
-                    <Badge variant="default" className="ml-1 py-0 px-1 text-[0.6rem]">
-                      NEW
-                    </Badge>
-                  )}
-                  {item.isDemo && (
-                    <Badge variant="outline" className="ml-1 py-0 px-1 text-[0.6rem] border-green-400 text-green-500">
-                      DEMO
-                    </Badge>
-                  )}
-                </Link>
-              )}
-            </motion.div>
+            <Link 
+              key={item.href}
+              to={item.href} 
+              className="px-4 py-2 hover:bg-accent rounded-md transition-colors"
+            >
+              {item.label}
+            </Link>
           ))}
-
-          {isAdmin && (
-            <motion.div variants={itemVariants}>
-              <Link 
-                to="/admin"
-                className="flex items-center justify-between px-4 py-2 hover:bg-accent rounded-md transition-colors"
-              >
-                <div className="flex items-center gap-2">
-                  <ShieldCheck className="h-4 w-4" />
-                  <span>Админ-панель</span>
-                </div>
-                <Badge variant="default" className="ml-1 py-0 px-1 text-[0.6rem] bg-purple-500">
-                  ADMIN
-                </Badge>
-              </Link>
-            </motion.div>
-          )}
-        </motion.nav>
+          
+          {/* Админ-панель всегда видима */}
+          <Link 
+            to="/admin"
+            className="px-4 py-2 hover:bg-accent rounded-md transition-colors flex items-center gap-2"
+          >
+            <ShieldCheck className="h-4 w-4" />
+            <span>Админ-панель</span>
+            <Badge variant="default" className="ml-1 py-0 px-1 text-[0.6rem] bg-purple-500">
+              ADMIN
+            </Badge>
+          </Link>
+        </nav>
         
-        {isLoggedIn && (
-          <motion.div className="border-t pt-3 mb-4" variants={containerVariants}>
-            <motion.div variants={itemVariants}>
-              <div className="px-4 py-2 font-medium">Личный кабинет</div>
-            </motion.div>
-            
-            {CLIENT_ITEMS.map(item => (
-              <motion.div key={item.href} variants={itemVariants}>
-                <Link 
-                  to={item.href}
-                  className="flex items-center px-4 py-2 hover:bg-accent rounded-md transition-colors text-muted-foreground"
-                >
-                  {item.label}
-                </Link>
-              </motion.div>
-            ))}
-          </motion.div>
-        )}
-        
-        <motion.div 
-          className="flex items-center gap-2 pt-3 border-t" 
-          variants={containerVariants}
-        >
+        <div className="flex items-center gap-2 pt-4 border-t">
           <ThemeSwitcher />
           
-          <motion.div className="flex-1" variants={itemVariants}>
-            {isLoggedIn ? (
-              <Button variant="outline" size="sm" onClick={toggleAuth} className="w-full">
+          {isLoggedIn ? (
+            <div className="flex items-center justify-between w-full">
+              <Button variant="outline" size="sm" onClick={toggleAuth}>
                 Выйти
               </Button>
-            ) : (
-              <div className="flex gap-2">
-                <Link to="/auth" className="flex-1">
-                  <Button variant="outline" size="sm" className="w-full">
-                    Войти
-                  </Button>
-                </Link>
-                <Link to="/auth?tab=register" className="flex-1">
-                  <Button size="sm" className="w-full">
-                    Регистрация
-                  </Button>
-                </Link>
-              </div>
-            )}
-          </motion.div>
-        </motion.div>
+            </div>
+          ) : (
+            <Button onClick={() => navigate('/auth')} variant="default" className="w-full">
+              Войти
+            </Button>
+          )}
+        </div>
       </div>
     </motion.div>
   );
