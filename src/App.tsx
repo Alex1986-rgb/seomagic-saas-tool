@@ -16,6 +16,19 @@ import Home from './pages/Home';
 import AdminRoutes from './routes/AdminRoutes';
 import AdminPanel from './pages/admin/AdminPanel';
 import AdminDashboard from './pages/AdminDashboard';
+import Demo from './pages/Demo';
+import Documentation from './pages/Documentation';
+import Features from './pages/Features';
+import PositionTracking from './pages/PositionTracking';
+
+// Import new pages
+import Webinars from './pages/Webinars';
+import Guides from './pages/Guides';
+import ApiDocs from './pages/ApiDocs';
+import Faq from './pages/Faq';
+import Team from './pages/Team';
+import Careers from './pages/Careers';
+import Partners from './pages/Partners';
 
 const App: React.FC = () => {
   return (
@@ -36,6 +49,20 @@ const App: React.FC = () => {
         <Route path="/admin" element={<AdminPanel />} />
         <Route path="/admin/*" element={<AdminRoutes />} />
         <Route path="/admin-dashboard" element={<AdminDashboard />} />
+        <Route path="/demo" element={<Demo />} />
+        <Route path="/documentation" element={<Documentation />} />
+        <Route path="/documentation/:tab" element={<Documentation />} />
+        <Route path="/features" element={<Features />} />
+        <Route path="/position-tracking" element={<PositionTracking />} />
+        
+        {/* New routes */}
+        <Route path="/webinars" element={<Webinars />} />
+        <Route path="/guides" element={<Guides />} />
+        <Route path="/api-docs" element={<ApiDocs />} />
+        <Route path="/faq" element={<Faq />} />
+        <Route path="/team" element={<Team />} />
+        <Route path="/careers" element={<Careers />} />
+        <Route path="/partners" element={<Partners />} />
       </Routes>
     </Router>
   );

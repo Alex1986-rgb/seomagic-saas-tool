@@ -5,6 +5,29 @@ export const NAV_ITEMS = [
     href: "/",
   },
   {
+    label: "Продукт",
+    href: "#",
+    children: [
+      {
+        label: "Возможности",
+        href: "/features",
+      },
+      {
+        label: "Демо",
+        href: "/demo",
+        isDemo: true,
+      },
+      {
+        label: "Документация",
+        href: "/documentation",
+      },
+      {
+        label: "API Документация",
+        href: "/api-docs",
+      },
+    ],
+  },
+  {
     label: "Аудит сайта",
     href: "/site-audit",
   },
@@ -14,16 +37,38 @@ export const NAV_ITEMS = [
     isDemo: true,
   },
   {
-    label: "О нас",
-    href: "/about",
-  },
-  {
-    label: "Блог",
-    href: "/blog",
-  },
-  {
     label: "Цены",
     href: "/pricing",
+  },
+  {
+    label: "Анализ позиций",
+    href: "/position-tracking",
+  },
+  {
+    label: "Ресурсы",
+    href: "#",
+    children: [
+      {
+        label: "Блог",
+        href: "/blog",
+      },
+      {
+        label: "Руководства",
+        href: "/guides",
+      },
+      {
+        label: "Вебинары",
+        href: "/webinars",
+      },
+      {
+        label: "FAQ",
+        href: "/faq",
+      },
+    ],
+  },
+  {
+    label: "О нас",
+    href: "/about",
   },
   {
     label: "Контакты",

@@ -1,12 +1,12 @@
 
-import React from 'react';
-import { motion } from 'framer-motion';
+import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import ThemeSwitcher from '../ThemeSwitcher';
 import { CLIENT_ITEMS } from './navConstants';
-import { ShieldCheck } from 'lucide-react';
+import { ShieldCheck, ChevronDown, ChevronRight } from 'lucide-react';
 
 interface NavbarMobileProps {
   isOpen: boolean;
@@ -15,6 +15,12 @@ interface NavbarMobileProps {
     href: string;
     isNew?: boolean;
     isDemo?: boolean;
+    children?: Array<{
+      label: string;
+      href: string;
+      isNew?: boolean;
+      isDemo?: boolean;
+    }>;
   }>;
   isLoggedIn: boolean;
   isAdmin: boolean;
@@ -28,6 +34,16 @@ const NavbarMobile: React.FC<NavbarMobileProps> = ({
   isAdmin,
   toggleAuth,
 }) => {
+  const [expandedItems, setExpandedItems] = useState<string[]>([]);
+
+  const toggleExpandItem = (label: string) => {
+    setExpandedItems(prev => 
+      prev.includes(label) 
+        ? prev.filter(item => item !== label) 
+        : [...prev, label]
+    );
+  };
+
   const containerVariants = {
     hidden: { opacity: 0, y: -5 },
     visible: { 
@@ -59,23 +75,70 @@ const NavbarMobile: React.FC<NavbarMobileProps> = ({
       <div className="container p-4">
         <motion.nav className="flex flex-col space-y-1 mb-6" variants={containerVariants}>
           {navItems.map((item) => (
-            <motion.div key={item.href} variants={itemVariants}>
-              <Link 
-                to={item.href}
-                className="flex items-center justify-between px-4 py-2 hover:bg-accent rounded-md transition-colors"
-              >
-                <span>{item.label}</span>
-                {item.isNew && (
-                  <Badge variant="default" className="ml-1 py-0 px-1 text-[0.6rem]">
-                    NEW
-                  </Badge>
-                )}
-                {item.isDemo && (
-                  <Badge variant="outline" className="ml-1 py-0 px-1 text-[0.6rem] border-green-400 text-green-500">
-                    DEMO
-                  </Badge>
-                )}
-              </Link>
+            <motion.div key={item.href || item.label} variants={itemVariants}>
+              {item.children ? (
+                <div className="flex flex-col">
+                  <button 
+                    onClick={() => toggleExpandItem(item.label)}
+                    className="flex items-center justify-between px-4 py-2 hover:bg-accent rounded-md transition-colors"
+                  >
+                    <span>{item.label}</span>
+                    {expandedItems.includes(item.label) ? (
+                      <ChevronDown className="h-4 w-4" />
+                    ) : (
+                      <ChevronRight className="h-4 w-4" />
+                    )}
+                  </button>
+                  
+                  <AnimatePresence>
+                    {expandedItems.includes(item.label) && (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: "auto", opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        className="pl-6"
+                      >
+                        {item.children.map(child => (
+                          <Link 
+                            key={child.href}
+                            to={child.href}
+                            className="flex items-center justify-between px-4 py-2 hover:bg-accent rounded-md transition-colors"
+                          >
+                            <span>{child.label}</span>
+                            {child.isNew && (
+                              <Badge variant="default" className="ml-1 py-0 px-1 text-[0.6rem]">
+                                NEW
+                              </Badge>
+                            )}
+                            {child.isDemo && (
+                              <Badge variant="outline" className="ml-1 py-0 px-1 text-[0.6rem] border-green-400 text-green-500">
+                                DEMO
+                              </Badge>
+                            )}
+                          </Link>
+                        ))}
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              ) : (
+                <Link 
+                  to={item.href}
+                  className="flex items-center justify-between px-4 py-2 hover:bg-accent rounded-md transition-colors"
+                >
+                  <span>{item.label}</span>
+                  {item.isNew && (
+                    <Badge variant="default" className="ml-1 py-0 px-1 text-[0.6rem]">
+                      NEW
+                    </Badge>
+                  )}
+                  {item.isDemo && (
+                    <Badge variant="outline" className="ml-1 py-0 px-1 text-[0.6rem] border-green-400 text-green-500">
+                      DEMO
+                    </Badge>
+                  )}
+                </Link>
+              )}
             </motion.div>
           ))}
 
