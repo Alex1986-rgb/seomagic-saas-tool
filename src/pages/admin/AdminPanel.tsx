@@ -12,12 +12,8 @@ const AdminPanel: React.FC = () => {
     return <Navigate to="/auth" replace />;
   }
   
-  // Redirect to the admin dashboard
-  return (
-    <HelmetProvider>
-      <Navigate to="/admin/" replace />
-    </HelmetProvider>
-  );
+  // Redirect directly to the admin dashboard page
+  return <Navigate to="/admin/" replace />;
 };
 
 export default AdminPanel;
