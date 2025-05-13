@@ -9,7 +9,7 @@ import NavbarDesktopAuth from './NavbarDesktopAuth';
 import NavbarMobileToggle from './NavbarMobileToggle';
 import NavbarMobile from './NavbarMobile';
 import DebugControls from './DebugControls';
-import { NAV_ITEMS, CLIENT_ITEMS } from './navConstants';
+import { NAV_ITEMS } from './navConstants';
 import { useAuth } from '@/contexts/AuthContext';
 
 const Navbar: React.FC = () => {
@@ -37,7 +37,7 @@ const Navbar: React.FC = () => {
 
   const navbarClass = `fixed top-0 w-full z-50 transition-all duration-500 ${
     isScrolled || isOpen
-      ? 'backdrop-blur-lg bg-background/90 shadow-md'
+      ? 'backdrop-blur-lg bg-background/95 shadow-md'
       : 'bg-transparent'
   }`;
 
@@ -50,9 +50,12 @@ const Navbar: React.FC = () => {
     >
       <div className="container mx-auto px-4 md:px-6">
         <div className="flex justify-between items-center h-16">
-          <NavbarLogo />
-
-          <NavbarDesktopLinks navItems={NAV_ITEMS} />
+          <div className="flex items-center">
+            <NavbarLogo />
+            <div className="ml-6">
+              <NavbarDesktopLinks navItems={NAV_ITEMS} />
+            </div>
+          </div>
 
           <NavbarDesktopAuth />
 
