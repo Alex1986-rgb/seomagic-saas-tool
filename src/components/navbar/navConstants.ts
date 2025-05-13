@@ -1,3 +1,4 @@
+
 export const NAV_ITEMS = [
   {
     label: 'Главная',
@@ -14,11 +15,13 @@ export const NAV_ITEMS = [
       {
         label: 'SEO Аудит',
         href: '/site-audit',
+        isNew: false,
       },
       {
         label: 'Демо оптимизации',
         href: '/optimization-demo',
         isDemo: true,
+        isNew: false,
       }
     ]
   },
