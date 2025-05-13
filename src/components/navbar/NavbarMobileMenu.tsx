@@ -23,19 +23,54 @@ const NavbarMobileMenu: React.FC<NavbarMobileMenuProps> = ({
 }) => {
   if (!isMenuOpen) return null;
 
+  // Helper function to handle nested navigation items
+  const renderNavItems = (items) => {
+    return items.map((item) => (
+      <div key={item.href} className="py-1">
+        {item.children ? (
+          <div className="mb-1">
+            <div className="px-4 py-1 text-sm font-semibold text-muted-foreground">
+              {item.label}
+            </div>
+            <div className="pl-4 border-l border-border ml-4 space-y-1">
+              {item.children.map(child => (
+                <Link
+                  key={child.href}
+                  to={child.href}
+                  className="px-4 py-2 hover:bg-accent text-sm rounded-md transition-colors flex items-center gap-1"
+                >
+                  <span>{child.label}</span>
+                  {child.isNew && (
+                    <Badge variant="default" className="ml-1 py-0 px-1 text-[0.6rem]">
+                      NEW
+                    </Badge>
+                  )}
+                  {child.isDemo && (
+                    <Badge variant="outline" className="ml-1 py-0 px-1 text-[0.6rem] border-green-400 text-green-500">
+                      DEMO
+                    </Badge>
+                  )}
+                </Link>
+              ))}
+            </div>
+          </div>
+        ) : (
+          <Link
+            to={item.href}
+            className="px-4 py-2 hover:bg-accent rounded-md transition-colors block"
+          >
+            {item.label}
+          </Link>
+        )}
+      </div>
+    ));
+  };
+
   return (
     <div className="md:hidden border-t py-4">
       <div className="container space-y-4">
-        <nav className="flex flex-col space-y-2">
-          {NAV_ITEMS.map((item) => (
-            <Link 
-              key={item.href}
-              to={item.href} 
-              className="px-4 py-2 hover:bg-accent rounded-md transition-colors"
-            >
-              {item.label}
-            </Link>
-          ))}
+        <nav className="flex flex-col space-y-1">
+          {renderNavItems(NAV_ITEMS)}
           
           {/* Админ-панель с проверкой авторизации */}
           <Link 

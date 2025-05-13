@@ -5,6 +5,7 @@ import Audit from './pages/Audit';
 import Pricing from './pages/Pricing';
 import Contact from './pages/Contact';
 import Blog from './pages/Blog';
+import BlogPost from './pages/BlogPost';
 import About from './pages/About';
 import Auth from './pages/Auth';
 import OptimizationDemo from './pages/OptimizationDemo';
@@ -21,7 +22,7 @@ import Documentation from './pages/Documentation';
 import Features from './pages/Features';
 import PositionTracking from './pages/PositionTracking';
 
-// Import new pages
+// Import pages
 import Webinars from './pages/Webinars';
 import Guides from './pages/Guides';
 import ApiDocs from './pages/ApiDocs';
@@ -29,6 +30,7 @@ import Faq from './pages/Faq';
 import Team from './pages/Team';
 import Careers from './pages/Careers';
 import Partners from './pages/Partners';
+import NotFound from './pages/NotFound';
 
 const App: React.FC = () => {
   return (
@@ -40,6 +42,7 @@ const App: React.FC = () => {
         <Route path="/pricing" element={<Pricing />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/blog" element={<Blog />} />
+        <Route path="/blog/:id" element={<BlogPost />} />
         <Route path="/about" element={<About />} />
         <Route path="/auth" element={<Auth />} />
         <Route path="/site-audit" element={<SiteAudit />} />
@@ -55,7 +58,7 @@ const App: React.FC = () => {
         <Route path="/features" element={<Features />} />
         <Route path="/position-tracking" element={<PositionTracking />} />
         
-        {/* New routes */}
+        {/* Content pages */}
         <Route path="/webinars" element={<Webinars />} />
         <Route path="/guides" element={<Guides />} />
         <Route path="/api-docs" element={<ApiDocs />} />
@@ -63,6 +66,9 @@ const App: React.FC = () => {
         <Route path="/team" element={<Team />} />
         <Route path="/careers" element={<Careers />} />
         <Route path="/partners" element={<Partners />} />
+        
+        {/* 404 page for any undefined routes */}
+        <Route path="*" element={<NotFound />} />
       </Routes>
     </Router>
   );

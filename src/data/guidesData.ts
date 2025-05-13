@@ -1,142 +1,88 @@
-import { Guide } from '../types/guides';
+
+export interface Guide {
+  id: string;
+  title: string;
+  description: string;
+  category: string;
+  level: string;
+  author: string;
+  date: string;
+  image: string;
+  readTime: string;
+  views: number;
+}
 
 export const guides: Guide[] = [
   {
-    id: 1,
-    title: 'Полное руководство по аудиту сайта',
-    description: 'Узнайте как проводить полный технический аудит вашего сайта от начала до конца, используя все доступные инструменты для анализа.',
-    category: 'SEO аудит',
-    level: 'Начинающий',
-    duration: '30 минут',
-    image: '/images/audit-guide-cover.jpg',
-    videoUrl: '/video/seo-demo.mp4',
-    content: [
-      {
-        title: 'Подготовка к аудиту сайта',
-        content: 'Перед началом технического аудита необходимо собрать все важные данные о сайте. Это включает в себя анализ текущей структуры сайта, его производительности и основных метрик. На этом этапе мы подготовим все необходимые инструменты и создадим план работы.',
-        image: '/images/audit-preparation.jpg',
-        videoUrl: '/video/seo-demo.mp4'
-      },
-      {
-        title: 'Технический анализ структуры',
-        content: 'Проведите глубокий технический анализ вашего сайта. Это включает проверку robots.txt, XML sitemap, анализ структуры URL и внутренней перелинковки. Особое внимание уделите скорости загрузки страниц и mobile-friendly оптимизации. В этом разделе мы рассмотрим каждый аспект технического SEO.',
-        image: '/images/technical-analysis.jpg',
-        videoUrl: '/video/seo-demo.mp4'
-      },
-      {
-        title: 'Оптимизация контента',
-        content: 'Проанализируйте качество контента на вашем сайте. Проверьте уникальность текстов, оптимизацию заголовков и мета-тегов. Используйте специальные инструменты для анализа семантического ядра и релевантности контента поисковым запросам. Важно обратить внимание на структуру текстов и их читабельность.',
-        image: '/images/content-optimization.jpg',
-        videoUrl: '/video/seo-demo.mp4'
-      }
-    ]
+    id: "1",
+    title: "Настройка отслеживания позиций сайта",
+    description: "Пошаговое руководство по настройке отслеживания позиций вашего сайта в поисковых системах",
+    category: "Отслеживание позиций",
+    level: "Начинающий",
+    author: "Алексей Петров",
+    date: "10 мая 2025",
+    image: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?ixid=MnwxMjA3fDB8MHxzZWFyY2h8MTJ8fHNlYXJjaCUyMGVuZ2luZXxlbnwwfHwwfHw%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=60",
+    readTime: "5 минут",
+    views: 1234
   },
   {
-    id: 2,
-    title: 'Как отслеживать позиции сайта в поисковых системах',
-    description: 'Пошаговое руководство по настройке и использованию инструментов для мониторинга позиций вашего сайта в поисковой выдаче.',
-    category: 'Позиции сайта',
-    level: 'Средний',
-    duration: '45 минут',
-    image: '/images/position-tracking-cover.jpg',
-    videoUrl: '/video/seo-demo.mp4',
-    content: [
-      {
-        title: 'Настройка инструментов отслеживания',
-        content: 'Начните с выбора правильных инструментов для мониторинга позиций. Мы рассмотрим популярные сервисы и их особенности. Научимся настраивать регулярные проверки и автоматические уведомления об изменении позиций. Это поможет вам оперативно реагировать на любые изменения в выдаче.',
-        image: '/images/tracking-tools.jpg',
-        videoUrl: '/video/seo-demo.mp4'
-      },
-      {
-        title: 'Анализ конкурентов',
-        content: 'Изучите, как отслеживать позиции конкурентов и анализировать их стратегии продвижения. Научитесь использовать эти данные для улучшения собственных позиций. Мы покажем, как создавать сравнительные отчеты и выявлять новые возможности для роста.',
-        image: '/images/competitor-analysis.jpg',
-        videoUrl: '/video/seo-demo.mp4'
-      }
-    ]
+    id: "2",
+    title: "Анализ конкурентов и их SEO стратегий",
+    description: "Как анализировать SEO стратегии конкурентов и использовать полученные данные для улучшения своего сайта",
+    category: "Аналитика",
+    level: "Средний",
+    author: "Мария Иванова",
+    date: "3 мая 2025",
+    image: "https://images.unsplash.com/photo-1562654501-a0ccc0fc3fb1?ixid=MnwxMjA3fDB8MHxzZWFyY2h8NHx8Y29tcGV0aXRvcnN8ZW58MHx8MHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=60",
+    readTime: "10 минут",
+    views: 982
   },
   {
-    id: 3,
-    title: 'Оптимизация мета-тегов для улучшения CTR',
-    description: 'Как создать привлекательные и эффективные title и description для ваших страниц.',
-    category: 'Оптимизация',
-    level: 'Начинающий',
-    duration: '20 минут',
-    image: '/images/placeholder.jpg',
-    content: [
-      {
-        title: 'Основы мета-тегов',
-        content: 'Что такое мета-теги и почему они важны...',
-        image: '/images/placeholder.jpg'
-      },
-      {
-        title: 'Оптимизация заголовков',
-        content: 'Как писать эффективные заголовки...',
-        image: '/images/placeholder.jpg'
-      }
-    ]
+    id: "3",
+    title: "Оптимизация контента для улучшения рейтинга в поисковых системах",
+    description: "Пошаговое руководство по созданию и оптимизации контента, который будет высоко ранжироваться в поисковых системах",
+    category: "Контент",
+    level: "Продвинутый",
+    author: "Дмитрий Соколов",
+    date: "27 апреля 2025",
+    image: "https://images.unsplash.com/photo-1471107340929-a87cd0f5b5f3?ixid=MnwxMjA3fDB8MHxzZWFyY2h8MTh8fGNvbnRlbnR8ZW58MHx8MHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=60",
+    readTime: "15 минут",
+    views: 1567
   },
   {
-    id: 4,
-    title: 'Углубленный анализ конкурентов',
-    description: 'Методики и инструменты для анализа стратегий ваших конкурентов в поисковой выдаче.',
-    category: 'Конкуренты',
-    level: 'Продвинутый',
-    duration: '60 минут',
-    image: '/images/placeholder.jpg',
-    content: [
-      {
-        title: 'Выявление конкурентов',
-        content: 'Как определить ваших основных конкурентов в поиске...',
-        image: '/images/placeholder.jpg'
-      },
-      {
-        title: 'Анализ стратегий',
-        content: 'Подробный разбор стратегий конкурентов...',
-        image: '/images/placeholder.jpg'
-      }
-    ]
+    id: "4",
+    title: "Ускорение загрузки сайта и оптимизация Core Web Vitals",
+    description: "Техническое руководство по улучшению скорости загрузки сайта и оптимизации показателей Core Web Vitals",
+    category: "Техническая оптимизация",
+    level: "Продвинутый",
+    author: "Александр Волков",
+    date: "21 апреля 2025",
+    image: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?ixid=MnwxMjA3fDB8MHxzZWFyY2h8MjB8fHNwZWVkfGVufDB8fDB8fA%3D%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=60",
+    readTime: "12 минут",
+    views: 2341
   },
   {
-    id: 5,
-    title: 'Работа с отчетами и экспорт данных',
-    description: 'Как интерпретировать и эффективно использовать отчеты по SEO аудиту и позициям.',
-    category: 'Отчеты',
-    level: 'Средний',
-    duration: '35 минут',
-    image: '/images/placeholder.jpg',
-    content: [
-      {
-        title: 'Типы отчетов',
-        content: 'Обзор различных типов отчетов и их использование...',
-        image: '/images/placeholder.jpg'
-      },
-      {
-        title: 'Экспорт и анализ',
-        content: 'Как экспортировать и анализировать данные...',
-        image: '/images/placeholder.jpg'
-      }
-    ]
+    id: "5",
+    title: "Локальное SEO для малого бизнеса",
+    description: "Как настроить и оптимизировать локальное SEO для привлечения клиентов из вашего региона",
+    category: "Локальное SEO",
+    level: "Начинающий",
+    author: "Анна Смирнова",
+    date: "15 апреля 2025",
+    image: "https://images.unsplash.com/photo-1534216511603-a359ae43bc54?ixid=MnwxMjA3fDB8MHxzZWFyY2h8MTZ8fGxvY2FsJTIwYnVzaW5lc3N8ZW58MHx8MHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=60",
+    readTime: "8 минут",
+    views: 1120
   },
   {
-    id: 6,
-    title: 'Настройка персонализированных уведомлений',
-    description: 'Получайте важные уведомления о изменениях позиций и проблемах на сайте.',
-    category: 'Уведомления',
-    level: 'Начинающий',
-    duration: '15 минут',
-    image: '/images/placeholder.jpg',
-    content: [
-      {
-        title: 'Настройка уведомлений',
-        content: 'Как настроить персонализированные уведомления...',
-        image: '/images/placeholder.jpg'
-      },
-      {
-        title: 'Типы оповещений',
-        content: 'Обзор различных типов уведомлений и их важность...',
-        image: '/images/placeholder.jpg'
-      }
-    ]
+    id: "6",
+    title: "Построение стратегии линкбилдинга",
+    description: "Эффективные методы и инструменты для построения качественной ссылочной массы",
+    category: "Линкбилдинг",
+    level: "Средний",
+    author: "Максим Кузнецов",
+    date: "9 апреля 2025",
+    image: "https://images.unsplash.com/photo-1550063873-ab792950096b?ixid=MnwxMjA3fDB8MHxzZWFyY2h8OHx8bGlua3N8ZW58MHx8MHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=60",
+    readTime: "11 минут",
+    views: 967
   }
 ];

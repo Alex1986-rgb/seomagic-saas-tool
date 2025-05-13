@@ -1,144 +1,133 @@
 
 export const NAV_ITEMS = [
   {
-    label: "Главная",
-    href: "/",
+    label: 'Главная',
+    href: '/',
   },
   {
-    label: "Продукт",
-    href: "#",
+    label: 'О нас',
+    href: '/about',
+  },
+  {
+    label: 'Функции',
+    href: '/features',
+  },
+  {
+    label: 'Аудит сайта',
+    href: '/audit',
     children: [
       {
-        label: "Возможности",
-        href: "/features",
+        label: 'SEO Аудит',
+        href: '/site-audit',
       },
       {
-        label: "Демо",
-        href: "/demo",
+        label: 'Демо оптимизации',
+        href: '/optimization-demo',
         isDemo: true,
-      },
-      {
-        label: "Документация",
-        href: "/documentation",
-      },
-      {
-        label: "API Документация",
-        href: "/api-docs",
-      },
-    ],
+      }
+    ]
   },
   {
-    label: "Аудит сайта",
-    href: "/site-audit",
-  },
-  {
-    label: "Демонстрация оптимизации",
-    href: "/optimization-demo",
-    isDemo: true,
-  },
-  {
-    label: "Цены",
-    href: "/pricing",
-  },
-  {
-    label: "Анализ позиций",
-    href: "/position-tracking",
-  },
-  {
-    label: "Ресурсы",
-    href: "#",
+    label: 'Позиции',
+    href: '/position-tracking',
     children: [
       {
-        label: "Блог",
-        href: "/blog",
+        label: 'Отслеживание позиций',
+        href: '/position-tracking',
       },
       {
-        label: "Руководства",
-        href: "/guides",
-      },
-      {
-        label: "Вебинары",
-        href: "/webinars",
-      },
-      {
-        label: "FAQ",
-        href: "/faq",
-      },
-    ],
+        label: 'Тарифы отслеживания',
+        href: '/position-pricing',
+      }
+    ]
   },
   {
-    label: "О нас",
-    href: "/about",
+    label: 'Блог',
+    href: '/blog',
   },
   {
-    label: "Контакты",
-    href: "/contact",
+    label: 'Справка',
+    href: '/documentation',
+    children: [
+      {
+        label: 'Документация',
+        href: '/documentation',
+      },
+      {
+        label: 'Руководства',
+        href: '/guides',
+      },
+      {
+        label: 'API документация',
+        href: '/api-docs',
+      },
+      {
+        label: 'Вебинары',
+        href: '/webinars',
+        isNew: true,
+      },
+      {
+        label: 'FAQ',
+        href: '/faq',
+      }
+    ]
+  },
+  {
+    label: 'Компания',
+    href: '/about',
+    children: [
+      {
+        label: 'О нас',
+        href: '/about',
+      },
+      {
+        label: 'Команда',
+        href: '/team',
+      },
+      {
+        label: 'Карьера',
+        href: '/careers',
+      },
+      {
+        label: 'Партнеры',
+        href: '/partners',
+      },
+      {
+        label: 'Контакты',
+        href: '/contact',
+      }
+    ]
+  },
+  {
+    label: 'Цены',
+    href: '/pricing',
   },
 ];
 
 export const CLIENT_ITEMS = [
   {
-    label: "Дашборд",
-    href: "/dashboard",
+    label: 'Обзор',
+    href: '/client/dashboard',
+    icon: 'layout-dashboard',
   },
   {
-    label: "Аудиты",
-    href: "/dashboard/audits",
+    label: 'Аудиты',
+    href: '/client/audits',
+    icon: 'search',
   },
   {
-    label: "Позиции",
-    href: "/dashboard/positions",
+    label: 'Позиции',
+    href: '/client/positions',
+    icon: 'trending-up',
   },
   {
-    label: "Настройки",
-    href: "/dashboard/settings",
-  },
-];
-
-// Resource links for footer
-export const RESOURCE_ITEMS = [
-  {
-    label: "Блог",
-    href: "/blog",
+    label: 'Отчеты',
+    href: '/client/reports',
+    icon: 'file-text',
   },
   {
-    label: "Руководства",
-    href: "/guides",
+    label: 'Настройки',
+    href: '/client/settings',
+    icon: 'settings',
   },
-  {
-    label: "Вебинары",
-    href: "/webinars",
-  },
-  {
-    label: "FAQ",
-    href: "/faq",
-  },
-  {
-    label: "API Документация",
-    href: "/api-docs",
-  }
-];
-
-// Company links for footer
-export const COMPANY_ITEMS = [
-  {
-    label: "О нас",
-    href: "/about",
-  },
-  {
-    label: "Команда",
-    href: "/team",
-  },
-  {
-    label: "Карьера",
-    href: "/careers",
-  },
-  {
-    label: "Партнеры",
-    href: "/partners",
-  },
-  {
-    label: "Контакты",
-    href: "/contact",
-  }
 ];
