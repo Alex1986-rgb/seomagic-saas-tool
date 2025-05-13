@@ -12,6 +12,7 @@ import GuideCallToAction from '@/components/guides/GuideCallToAction';
 
 const GuidePost: React.FC = () => {
   const { id } = useParams();
+  // Convert id from string to number for comparison
   const guide = guides.find(g => g.id === Number(id));
   
   if (!guide) {

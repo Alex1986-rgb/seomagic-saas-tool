@@ -131,3 +131,50 @@ export const CLIENT_ITEMS = [
     icon: 'settings',
   },
 ];
+
+// Add missing items needed for Footer.tsx
+export const RESOURCE_ITEMS = [
+  {
+    label: 'Блог',
+    href: '/blog',
+  },
+  {
+    label: 'Руководства',
+    href: '/guides',
+  },
+  {
+    label: 'API документация',
+    href: '/api-docs',
+  },
+  {
+    label: 'Вебинары',
+    href: '/webinars',
+  },
+  {
+    label: 'FAQ',
+    href: '/faq',
+  },
+];
+
+export const COMPANY_ITEMS = [
+  {
+    label: 'О нас',
+    href: '/about',
+  },
+  {
+    label: 'Команда',
+    href: '/team',
+  },
+  {
+    label: 'Карьера',
+    href: '/careers',
+  },
+  {
+    label: 'Партнеры',
+    href: '/partners',
+  },
+  {
+    label: 'Контакты',
+    href: '/contact',
+  },
+];
