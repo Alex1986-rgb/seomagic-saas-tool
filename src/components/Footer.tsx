@@ -2,7 +2,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { RESOURCE_ITEMS, COMPANY_ITEMS, FEATURES_ITEMS, SUPPORT_ITEMS } from './navbar/navConstants';
-import { Mail, Phone, MapPin, Facebook, Twitter, Instagram, Linkedin, Github } from 'lucide-react';
+import { Mail, Phone, MapPin, Facebook, Twitter, Instagram, Linkedin, Github, FileText } from 'lucide-react';
 
 const Footer: React.FC = () => {
   console.log("Footer rendering");
@@ -62,6 +62,10 @@ const Footer: React.FC = () => {
               {RESOURCE_ITEMS.map((item) => (
                 <FooterLink key={item.href} to={item.href}>{item.label}</FooterLink>
               ))}
+              <FooterLink to="/pages" className="flex items-center gap-2">
+                <FileText className="h-4 w-4" />
+                <span>Все страницы</span>
+              </FooterLink>
             </ul>
           </div>
           
@@ -95,24 +99,18 @@ const Footer: React.FC = () => {
   );
 };
 
-const FooterLink: React.FC<{ to: string; children: React.ReactNode }> = ({
-  to,
-  children,
-}) => (
+const FooterLink = ({ to, children, className = "" }) => (
   <li>
     <Link
       to={to}
-      className="text-muted-foreground hover:text-foreground transition-colors"
+      className={`text-muted-foreground hover:text-foreground transition-colors ${className}`}
     >
       {children}
     </Link>
   </li>
 );
 
-const FooterLegalLink: React.FC<{ to: string; children: React.ReactNode }> = ({
-  to,
-  children,
-}) => (
+const FooterLegalLink = ({ to, children }) => (
   <Link
     to={to}
     className="text-xs text-muted-foreground hover:text-foreground transition-colors"
@@ -121,17 +119,17 @@ const FooterLegalLink: React.FC<{ to: string; children: React.ReactNode }> = ({
   </Link>
 );
 
-const ContactItem: React.FC<{ icon: React.ReactNode; text: string }> = ({ icon, text }) => (
+const ContactItem = ({ icon, text }) => (
   <div className="flex items-center gap-2 text-muted-foreground">
     {icon}
     <span className="text-sm">{text}</span>
   </div>
 );
 
-const SocialIcon: React.FC<{
-  href: string;
-  icon: React.ReactNode;
-}> = ({ href, icon }) => (
+const SocialIcon = ({
+  href,
+  icon
+}) => (
   <a
     href={href}
     className="text-muted-foreground hover:text-foreground transition-colors p-2 hover:bg-background rounded-full"

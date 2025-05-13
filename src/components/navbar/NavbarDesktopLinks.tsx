@@ -116,6 +116,24 @@ const NavbarDesktopLinks: React.FC<NavbarDesktopLinksProps> = ({ navItems }) => 
           )}
         </div>
       ))}
+      
+      {/* Add Pages link */}
+      <Link 
+        to="/pages"
+        className={`px-3 py-2 rounded-md text-sm font-medium transition-colors relative ${
+          isActiveLink('/pages') 
+            ? 'text-primary' 
+            : 'text-foreground/80 hover:text-foreground hover:bg-accent/20'
+        }`}
+      >
+        Все страницы
+        {isActiveLink('/pages') && (
+          <motion.div 
+            layoutId="navbar-indicator" 
+            className="absolute -bottom-1 left-3 right-3 h-0.5 bg-primary rounded-full"
+          />
+        )}
+      </Link>
     </nav>
   );
 };

@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import ThemeSwitcher from '../ThemeSwitcher';
-import { ShieldCheck, ChevronDown, ChevronUp, LogIn } from 'lucide-react';
+import { ShieldCheck, ChevronDown, ChevronUp, LogIn, FileText } from 'lucide-react';
 import { Badge } from "@/components/ui/badge";
 import { NAV_ITEMS } from './navConstants';
 
@@ -119,6 +119,15 @@ const NavbarMobile: React.FC<NavbarMobileProps> = ({
               )}
             </div>
           ))}
+          
+          {/* Add All Pages Link */}
+          <Link
+            to="/pages"
+            className="flex items-center gap-2 px-4 py-3 hover:bg-accent/20 rounded-md transition-colors font-medium"
+          >
+            <FileText className="h-4 w-4 text-primary" />
+            Все страницы
+          </Link>
           
           {/* Админ-панель */}
           {isAdmin && (
