@@ -64,7 +64,6 @@ const Navbar: React.FC = () => {
         {isOpen && isMobile && (
           <NavbarMobile 
             isOpen={isOpen}
-            navItems={NAV_ITEMS}
             isLoggedIn={safeUser.isLoggedIn}
             isAdmin={safeUser.isAdmin}
             toggleAuth={logoutUser}

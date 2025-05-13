@@ -3,7 +3,6 @@ import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
-import { useAuth } from '@/contexts/AuthContext';
 import { ShieldCheck, ChevronDown } from 'lucide-react';
 import {
   NavigationMenu,
@@ -31,8 +30,6 @@ interface NavbarDesktopLinksProps {
 }
 
 const NavbarDesktopLinks: React.FC<NavbarDesktopLinksProps> = ({ navItems }) => {
-  const { user } = useAuth();
-
   return (
     <div className="hidden md:flex items-center gap-1">
       <NavigationMenu>
@@ -110,7 +107,7 @@ const NavbarDesktopLinks: React.FC<NavbarDesktopLinksProps> = ({ navItems }) => 
         </NavigationMenuList>
       </NavigationMenu>
       
-      {/* Админ-панель - теперь всегда видима */}
+      {/* Admin panel button - always visible */}
       <NavLink
         to="/admin"
         className={({ isActive }) =>

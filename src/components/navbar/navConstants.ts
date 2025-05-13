@@ -1,4 +1,3 @@
-
 export const NAV_ITEMS = [
   {
     label: 'Главная',
@@ -7,10 +6,6 @@ export const NAV_ITEMS = [
   {
     label: 'О нас',
     href: '/about',
-  },
-  {
-    label: 'Функции',
-    href: '/features',
   },
   {
     label: 'Аудит сайта',
@@ -30,73 +25,6 @@ export const NAV_ITEMS = [
   {
     label: 'Позиции',
     href: '/position-tracking',
-    children: [
-      {
-        label: 'Отслеживание позиций',
-        href: '/position-tracking',
-      },
-      {
-        label: 'Тарифы отслеживания',
-        href: '/position-pricing',
-      }
-    ]
-  },
-  {
-    label: 'Блог',
-    href: '/blog',
-  },
-  {
-    label: 'Справка',
-    href: '/documentation',
-    children: [
-      {
-        label: 'Документация',
-        href: '/documentation',
-      },
-      {
-        label: 'Руководства',
-        href: '/guides',
-      },
-      {
-        label: 'API документация',
-        href: '/api-docs',
-      },
-      {
-        label: 'Вебинары',
-        href: '/webinars',
-        isNew: true,
-      },
-      {
-        label: 'FAQ',
-        href: '/faq',
-      }
-    ]
-  },
-  {
-    label: 'Компания',
-    href: '/about',
-    children: [
-      {
-        label: 'О нас',
-        href: '/about',
-      },
-      {
-        label: 'Команда',
-        href: '/team',
-      },
-      {
-        label: 'Карьера',
-        href: '/careers',
-      },
-      {
-        label: 'Партнеры',
-        href: '/partners',
-      },
-      {
-        label: 'Контакты',
-        href: '/contact',
-      }
-    ]
   },
   {
     label: 'Цены',
@@ -132,7 +60,7 @@ export const CLIENT_ITEMS = [
   },
 ];
 
-// Add missing items needed for Footer.tsx
+// Footer navigation items organized by category
 export const RESOURCE_ITEMS = [
   {
     label: 'Блог',
@@ -176,5 +104,35 @@ export const COMPANY_ITEMS = [
   {
     label: 'Контакты',
     href: '/contact',
+  },
+];
+
+export const FEATURES_ITEMS = [
+  {
+    label: 'Функции',
+    href: '/features',
+  },
+  {
+    label: 'Тарифы отслеживания',
+    href: '/position-pricing',
+  },
+  {
+    label: 'Документация',
+    href: '/documentation',
+  },
+];
+
+export const SUPPORT_ITEMS = [
+  {
+    label: 'Справка',
+    href: '/documentation',
+  },
+  {
+    label: 'Руководства',
+    href: '/guides',
+  },
+  {
+    label: 'Поддержка',
+    href: '/support',
   },
 ];
