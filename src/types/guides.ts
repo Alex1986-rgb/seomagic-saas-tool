@@ -16,4 +16,8 @@ export interface Guide {
   image: string;
   videoUrl?: string;
   content?: GuideContent[];
+  author?: string;
+  date?: string;
+  readTime?: string;
+  views?: number;
 }
