@@ -112,9 +112,14 @@ const NavbarMobile: React.FC<NavbarMobileProps> = ({
               ) : (
                 <Link 
                   to={item.href} 
-                  className="block px-4 py-3 hover:bg-accent/20 rounded-md transition-colors font-medium"
+                  className="flex justify-between items-center px-4 py-3 hover:bg-accent/20 rounded-md transition-colors font-medium"
                 >
-                  {item.label}
+                  <span>{item.label}</span>
+                  {item.isNew && (
+                    <Badge variant="default" className="py-0 px-1.5 text-[0.6rem] h-4">
+                      New
+                    </Badge>
+                  )}
                 </Link>
               )}
             </div>
@@ -129,21 +134,19 @@ const NavbarMobile: React.FC<NavbarMobileProps> = ({
             Все страницы
           </Link>
           
-          {/* Админ-панель */}
-          {isAdmin && (
-            <Link 
-              to="/admin"
-              className="flex items-center justify-between px-4 py-3 bg-purple-500/10 hover:bg-purple-500/20 rounded-md transition-colors"
-            >
-              <div className="flex items-center gap-2">
-                <ShieldCheck className="h-4 w-4 text-purple-500" />
-                <span className="font-medium">Админ-панель</span>
-              </div>
-              <Badge variant="default" className="bg-purple-500">
-                ADMIN
-              </Badge>
-            </Link>
-          )}
+          {/* Admin Link - Always show in mobile menu */}
+          <Link 
+            to="/admin"
+            className="flex items-center justify-between px-4 py-3 bg-purple-500/10 hover:bg-purple-500/20 rounded-md transition-colors"
+          >
+            <div className="flex items-center gap-2">
+              <ShieldCheck className="h-4 w-4 text-purple-500" />
+              <span className="font-medium">Админ-панель</span>
+            </div>
+            <Badge variant="default" className="bg-purple-500">
+              ADMIN
+            </Badge>
+          </Link>
         </nav>
         
         <div className="flex items-center gap-3 pt-4 border-t border-border/50">

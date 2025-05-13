@@ -1,4 +1,3 @@
-
 export const NAV_ITEMS = [
   {
     label: 'Главная',
@@ -32,6 +31,11 @@ export const NAV_ITEMS = [
   {
     label: 'Цены',
     href: '/pricing',
+  },
+  {
+    label: 'Поддержка',
+    href: '/support',
+    isNew: true,
   },
 ];
 

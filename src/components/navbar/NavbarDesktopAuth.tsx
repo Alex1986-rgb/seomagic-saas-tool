@@ -2,7 +2,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { User, LogIn } from 'lucide-react';
+import { User, LogIn, ShieldCheck } from 'lucide-react';
 import ThemeSwitcher from '@/components/ThemeSwitcher';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -13,6 +13,18 @@ const NavbarDesktopAuth: React.FC = () => {
     <div className="hidden md:flex items-center gap-4">
       {user?.isLoggedIn ? (
         <>
+          {user?.isAdmin && (
+            <Link to="/admin">
+              <Button
+                variant="glassmorphic"
+                size="sm"
+                className="flex items-center gap-2 bg-purple-500/80 hover:bg-purple-500"
+              >
+                <ShieldCheck className="h-4 w-4" />
+                Админ
+              </Button>
+            </Link>
+          )}
           <Link to="/profile">
             <Button
               variant="glassmorphic"
@@ -34,6 +46,16 @@ const NavbarDesktopAuth: React.FC = () => {
         </>
       ) : (
         <>
+          <Link to="/admin">
+            <Button
+              variant="glassmorphic"
+              size="sm"
+              className="flex items-center gap-2 bg-purple-500/80 hover:bg-purple-500"
+            >
+              <ShieldCheck className="h-4 w-4" />
+              Админ
+            </Button>
+          </Link>
           <Link to="/auth">
             <Button
               variant="outline"
