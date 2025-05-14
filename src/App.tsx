@@ -22,7 +22,7 @@ import Documentation from './pages/Documentation';
 import Features from './pages/Features';
 import PositionTracking from './pages/PositionTracking';
 import AllPages from './pages/AllPages';
-import Channel from './pages/Channel'; // Import the new Channel component
+import Channel from './pages/Channel';
 
 // Import pages
 import Webinars from './pages/Webinars';
@@ -51,8 +51,6 @@ const App: React.FC = () => {
         <Route path="/optimization-demo" element={<OptimizationDemo />} />
         <Route path="/position-pricing" element={<PositionPricing />} />
         <Route path="/optimization-pricing" element={<OptimizationPricing />} />
-        <Route path="/admin" element={<AdminPanel />} />
-        <Route path="/admin/*" element={<AdminRoutes />} />
         <Route path="/admin-dashboard" element={<AdminDashboard />} />
         <Route path="/demo" element={<Demo />} />
         <Route path="/documentation" element={<Documentation />} />
@@ -60,7 +58,7 @@ const App: React.FC = () => {
         <Route path="/features" element={<Features />} />
         <Route path="/position-tracking" element={<PositionTracking />} />
         <Route path="/pages" element={<AllPages />} />
-        <Route path="/channel" element={<Channel />} /> {/* Add new route for Channel */}
+        <Route path="/channel" element={<Channel />} />
         
         {/* Content pages */}
         <Route path="/webinars" element={<Webinars />} />
@@ -70,6 +68,10 @@ const App: React.FC = () => {
         <Route path="/team" element={<Team />} />
         <Route path="/careers" element={<Careers />} />
         <Route path="/partners" element={<Partners />} />
+        
+        {/* Admin routes - Important correction here */}
+        <Route path="/admin" element={<AdminPanel />} />
+        <Route path="/admin/*" element={<AdminRoutes />} />
         
         {/* 404 page for any undefined routes */}
         <Route path="*" element={<NotFound />} />

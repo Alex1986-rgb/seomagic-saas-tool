@@ -61,18 +61,6 @@ const Navbar: React.FC = () => {
           </div>
 
           <div className="flex items-center gap-3">
-            {/* Admin Button - Always Visible */}
-            <Link to="/admin" className="hidden md:block">
-              <Button
-                variant="outline"
-                size="sm"
-                className="bg-purple-500/10 hover:bg-purple-500/20 text-purple-700 dark:text-purple-400 border-purple-500/30 flex items-center gap-2"
-              >
-                <ShieldCheck className="h-4 w-4" />
-                <span>Админ</span>
-              </Button>
-            </Link>
-            
             <NavbarDesktopAuth />
           </div>
 

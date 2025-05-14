@@ -1,7 +1,6 @@
 
 import React from 'react';
 import { Navigate } from 'react-router-dom';
-import { HelmetProvider } from 'react-helmet-async';
 import { useAuth } from '@/contexts/AuthContext';
 
 const AdminPanel: React.FC = () => {
@@ -12,7 +11,7 @@ const AdminPanel: React.FC = () => {
     return <Navigate to="/auth" replace />;
   }
   
-  // Redirect directly to the admin dashboard page
+  // Redirect directly to the admin dashboard
   return <Navigate to="/admin/" replace />;
 };
 
