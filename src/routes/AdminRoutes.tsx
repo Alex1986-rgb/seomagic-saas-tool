@@ -19,20 +19,20 @@ const SitesPage = React.lazy(() => import('@/pages/admin/SitesPage'));
 const AdminAuditsPage = React.lazy(() => import('@/pages/admin/AdminAuditsPage'));
 const AdminPositionsPage = React.lazy(() => import('@/pages/admin/AdminPositionsPage'));
 const AdminProxiesPage = React.lazy(() => import('@/pages/admin/AdminProxiesPage'));
+const AdminPaymentsPage = React.lazy(() => import('@/pages/admin/AdminPaymentsPage'));
 
 // Lazy load system settings sections
+const SystemSettingsPage = React.lazy(() => import('@/pages/admin/system/SystemSettingsPage'));
 const DatabaseSettingsPage = React.lazy(() => import('@/pages/admin/system/DatabaseSettingsPage'));
 const SecuritySettingsPage = React.lazy(() => import('@/pages/admin/system/SecuritySettingsPage'));
 const UsersManagementPage = React.lazy(() => import('@/pages/admin/system/UsersManagementPage'));
 const NotificationsSettingsPage = React.lazy(() => import('@/pages/admin/system/NotificationsSettingsPage'));
 const AnalyticsSettingsPage = React.lazy(() => import('@/pages/admin/system/AnalyticsSettingsPage'));
 const PerformanceSettingsPage = React.lazy(() => import('@/pages/admin/system/PerformanceSettingsPage'));
-const AdminPaymentsPage = React.lazy(() => import('@/pages/admin/AdminPaymentsPage'));
 const BackupSettingsPage = React.lazy(() => import('@/pages/admin/system/BackupSettingsPage'));
 const ApiKeysPage = React.lazy(() => import('@/pages/admin/system/ApiKeysPage'));
 const EmailSettingsPage = React.lazy(() => import('@/pages/admin/system/EmailSettingsPage'));
 const LogSettingsPage = React.lazy(() => import('@/pages/admin/system/LogSettingsPage'));
-const SystemSettingsPage = React.lazy(() => import('@/pages/admin/system/SystemSettingsPage'));
 
 // New content management pages - lazy loaded
 const HomePageEditor = React.lazy(() => import('@/pages/admin/content/HomePageEditor'));
@@ -114,6 +114,11 @@ const AdminRoutes: React.FC = () => {
             <AdminProxiesPage />
           </Suspense>
         } />
+        <Route path="payments" element={
+          <Suspense fallback={<FullscreenLoader />}>
+            <AdminPaymentsPage />
+          </Suspense>
+        } />
 
         {/* System Settings subroutes */}
         <Route path="system" element={
@@ -169,11 +174,6 @@ const AdminRoutes: React.FC = () => {
         <Route path="system/performance" element={
           <Suspense fallback={<FullscreenLoader />}>
             <PerformanceSettingsPage />
-          </Suspense>
-        } />
-        <Route path="payments" element={
-          <Suspense fallback={<FullscreenLoader />}>
-            <AdminPaymentsPage />
           </Suspense>
         } />
 
