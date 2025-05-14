@@ -1,4 +1,3 @@
-
 import React, { Suspense } from 'react';
 import { Route, Routes } from 'react-router-dom';
 import AdminLayout from '@/layouts/AdminLayout';
@@ -46,7 +45,7 @@ const HelpEditor = React.lazy(() => import('@/pages/admin/content/HelpEditor'));
 const AdminRoutes: React.FC = () => {
   return (
     <Routes>
-      <Route path="/" element={<AdminLayout />}>
+      <Route element={<AdminLayout />}>
         <Route index element={
           <Suspense fallback={<FullscreenLoader text="Загрузка панели управления..." />}>
             <Dashboard />
