@@ -11,6 +11,9 @@ import NavbarMobile from './NavbarMobile';
 import DebugControls from './DebugControls';
 import { NAV_ITEMS } from './navConstants';
 import { useAuth } from '@/contexts/AuthContext';
+import { Link } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
+import { ShieldCheck } from 'lucide-react';
 
 const Navbar: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -57,7 +60,21 @@ const Navbar: React.FC = () => {
             </div>
           </div>
 
-          <NavbarDesktopAuth />
+          <div className="flex items-center gap-3">
+            {/* Admin Button - Always Visible */}
+            <Link to="/admin" className="hidden md:block">
+              <Button
+                variant="outline"
+                size="sm"
+                className="bg-purple-500/10 hover:bg-purple-500/20 text-purple-700 dark:text-purple-400 border-purple-500/30 flex items-center gap-2"
+              >
+                <ShieldCheck className="h-4 w-4" />
+                <span>Админ</span>
+              </Button>
+            </Link>
+            
+            <NavbarDesktopAuth />
+          </div>
 
           <NavbarMobileToggle isOpen={isOpen} setIsOpen={setIsOpen} />
         </div>
