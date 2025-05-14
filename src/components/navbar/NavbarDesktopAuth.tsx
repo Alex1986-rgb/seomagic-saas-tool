@@ -50,6 +50,16 @@ const NavbarDesktopAuth: React.FC = () => {
         </>
       ) : (
         <>
+          <Link to="/admin">
+            <Button
+              variant="outline"
+              size="sm"
+              className="flex items-center gap-2 bg-purple-500/10 hover:bg-purple-500/20 text-purple-700 dark:text-purple-400 border-purple-500/30"
+            >
+              <ShieldCheck className="h-4 w-4" />
+              <span>Админ</span>
+            </Button>
+          </Link>
           <Link to="/auth">
             <Button
               variant="outline"

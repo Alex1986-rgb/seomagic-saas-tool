@@ -88,6 +88,17 @@ const Footer: React.FC = () => {
               Разработчик и веб-дизайнер: Kyrlan Alexandr
             </p>
           </div>
+          
+          {/* Custom attribution with stylized font */}
+          <div className="mt-4 md:mt-0 font-serif italic text-sm text-primary/70">
+            <p>
+              При поддержке сайта <a href="https://www.myarredo.ru" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors underline decoration-dashed">www.myarredo.ru</a>
+            </p>
+            <p className="text-center font-medium mt-1">
+              Клюшников Олег Владимирович
+            </p>
+          </div>
+
           <div className="flex space-x-6 mt-4 md:mt-0">
             <FooterLegalLink to="/terms">Условия использования</FooterLegalLink>
             <FooterLegalLink to="/privacy">Политика конфиденциальности</FooterLegalLink>

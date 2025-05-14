@@ -9,6 +9,10 @@ export const NAV_ITEMS = [
     href: '/about',
   },
   {
+    label: 'Канал',
+    href: '/channel',
+  },
+  {
     label: 'Аудит сайта',
     href: '/audit',
     children: [
