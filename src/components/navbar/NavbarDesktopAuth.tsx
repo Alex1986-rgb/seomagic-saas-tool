@@ -12,6 +12,21 @@ const NavbarDesktopAuth: React.FC = () => {
   
   return (
     <div className="hidden md:flex items-center gap-4">
+      {/* Admin Button - Always Visible */}
+      <Link to="/admin">
+        <Button
+          variant="outline"
+          size="sm"
+          className="flex items-center gap-2 bg-purple-500/10 hover:bg-purple-500/20 text-purple-700 dark:text-purple-400 border-purple-500/30"
+        >
+          <ShieldCheck className="h-4 w-4" />
+          <span>Админ</span>
+          <Badge variant="default" className="ml-1 bg-purple-500 text-[0.6rem] py-0 px-1.5">
+            ADMIN
+          </Badge>
+        </Button>
+      </Link>
+      
       {user?.isLoggedIn ? (
         <>
           {user.isAdmin && (
@@ -50,14 +65,14 @@ const NavbarDesktopAuth: React.FC = () => {
         </>
       ) : (
         <>
-          <Link to="/admin">
+          <Link to="/profile">
             <Button
-              variant="outline"
+              variant="glassmorphic"
               size="sm"
-              className="flex items-center gap-2 bg-purple-500/10 hover:bg-purple-500/20 text-purple-700 dark:text-purple-400 border-purple-500/30"
+              className="flex items-center gap-2"
             >
-              <ShieldCheck className="h-4 w-4" />
-              <span>Админ</span>
+              <User className="h-4 w-4" />
+              Профиль
             </Button>
           </Link>
           <Link to="/auth">
