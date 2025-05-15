@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import Audit from './pages/Audit';
@@ -35,6 +34,7 @@ import Partners from './pages/Partners';
 import NotFound from './pages/NotFound';
 
 const App: React.FC = () => {
+  console.log('App component rendering');
   return (
     <Router>
       <Routes>
@@ -69,7 +69,7 @@ const App: React.FC = () => {
         <Route path="/careers" element={<Careers />} />
         <Route path="/partners" element={<Partners />} />
         
-        {/* Admin routes - Important correction here */}
+        {/* Admin routes */}
         <Route path="/admin" element={<AdminPanel />} />
         <Route path="/admin/*" element={<AdminRoutes />} />
         

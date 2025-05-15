@@ -1,3 +1,4 @@
+
 import React, { Suspense } from 'react';
 import { Route, Routes } from 'react-router-dom';
 import AdminLayout from '@/layouts/AdminLayout';
@@ -43,6 +44,7 @@ const MarketingEditor = React.lazy(() => import('@/pages/admin/content/Marketing
 const HelpEditor = React.lazy(() => import('@/pages/admin/content/HelpEditor'));
 
 const AdminRoutes: React.FC = () => {
+  console.log('AdminRoutes component rendering');
   return (
     <Routes>
       <Route element={<AdminLayout />}>

@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { 
   BarChart2, 
@@ -14,6 +14,13 @@ import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 
 const Dashboard: React.FC = () => {
+  useEffect(() => {
+    console.log('Dashboard component mounted');
+    return () => {
+      console.log('Dashboard component unmounted');
+    };
+  }, []);
+
   return (
     <div className="container mx-auto px-6 py-10 max-w-6xl">
       <Helmet>
