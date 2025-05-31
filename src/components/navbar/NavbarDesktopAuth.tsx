@@ -29,21 +29,6 @@ const NavbarDesktopAuth: React.FC = () => {
       
       {user?.isLoggedIn ? (
         <>
-          {user.isAdmin && (
-            <Link to="/admin">
-              <Button
-                variant="outline"
-                size="sm"
-                className="flex items-center gap-2 bg-purple-500/10 hover:bg-purple-500/20 text-purple-700 dark:text-purple-400 border-purple-500/30"
-              >
-                <ShieldCheck className="h-4 w-4" />
-                <span>Админ</span>
-                <Badge variant="default" className="ml-1 bg-purple-500 text-[0.6rem] py-0 px-1.5">
-                  ADMIN
-                </Badge>
-              </Button>
-            </Link>
-          )}
           <Link to="/profile">
             <Button
               variant="glassmorphic"

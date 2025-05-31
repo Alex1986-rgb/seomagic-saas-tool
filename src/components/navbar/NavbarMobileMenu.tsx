@@ -72,7 +72,7 @@ const NavbarMobileMenu: React.FC<NavbarMobileMenuProps> = ({
         <nav className="flex flex-col space-y-1">
           {renderNavItems(NAV_ITEMS)}
           
-          {/* Админ-панель с проверкой авторизации */}
+          {/* Админ-панель */}
           <Link 
             to="/admin"
             className="px-4 py-2 hover:bg-accent rounded-md transition-colors flex items-center gap-2"
