@@ -1,11 +1,10 @@
-
 import React, { Suspense } from 'react';
 import { Route, Routes } from 'react-router-dom';
 import AdminLayout from '@/layouts/AdminLayout';
 import { FullscreenLoader } from '@/components/ui/loading';
+import ProtectedDashboard from '@/components/admin/ProtectedDashboard';
 
 // Lazy load all admin pages
-const Dashboard = React.lazy(() => import('@/pages/admin/Dashboard'));
 const WebsiteAnalyzer = React.lazy(() => import('@/pages/admin/WebsiteAnalyzer'));
 const NotFound = React.lazy(() => import('@/pages/NotFound'));
 const SystemStatusPage = React.lazy(() => import('@/pages/admin/SystemStatusPage'));
@@ -48,11 +47,7 @@ const AdminRoutes: React.FC = () => {
   return (
     <Routes>
       <Route element={<AdminLayout />}>
-        <Route index element={
-          <Suspense fallback={<FullscreenLoader text="Загрузка панели управления..." />}>
-            <Dashboard />
-          </Suspense>
-        } />
+        <Route index element={<ProtectedDashboard />} />
         
         {/* Main admin routes */}
         <Route path="website-analyzer" element={
@@ -60,6 +55,7 @@ const AdminRoutes: React.FC = () => {
             <WebsiteAnalyzer />
           </Suspense>
         } />
+        
         <Route path="system-status" element={
           <Suspense fallback={<FullscreenLoader />}>
             <SystemStatusPage />
