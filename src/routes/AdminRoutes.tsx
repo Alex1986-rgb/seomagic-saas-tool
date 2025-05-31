@@ -1,5 +1,6 @@
-import React, { Suspense, useLocation } from 'react';
-import { Route, Routes } from 'react-router-dom';
+
+import React, { Suspense } from 'react';
+import { Route, Routes, useLocation } from 'react-router-dom';
 import AdminLayout from '@/layouts/AdminLayout';
 import { FullscreenLoader } from '@/components/ui/loading';
 import ProtectedDashboard from '@/components/admin/ProtectedDashboard';
