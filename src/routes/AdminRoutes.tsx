@@ -4,10 +4,10 @@ import { Route, Routes } from 'react-router-dom';
 import AdminLayout from '@/layouts/AdminLayout';
 import { FullscreenLoader } from '@/components/ui/loading';
 import ProtectedDashboard from '@/components/admin/ProtectedDashboard';
+import NotFound from '@/pages/NotFound';
 
 // Lazy load all admin pages
 const WebsiteAnalyzer = React.lazy(() => import('@/pages/admin/WebsiteAnalyzer'));
-const NotFound = React.lazy(() => import('@/pages/NotFound'));
 const SystemStatusPage = React.lazy(() => import('@/pages/admin/SystemStatusPage'));
 const AdminNotificationsPage = React.lazy(() => import('@/pages/admin/AdminNotificationsPage'));
 const AdminMonitoringPage = React.lazy(() => import('@/pages/admin/AdminMonitoringPage'));
@@ -212,11 +212,7 @@ const AdminRoutes: React.FC = () => {
           </Suspense>
         } />
 
-        <Route path="*" element={
-          <Suspense fallback={<FullscreenLoader />}>
-            <NotFound />
-          </Suspense>
-        } />
+        <Route path="*" element={<NotFound />} />
       </Route>
     </Routes>
   );
