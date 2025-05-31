@@ -11,17 +11,11 @@ const ProtectedDashboard: React.FC = () => {
   
   // Если пользователь не залогинен, перенаправляем на страницу авторизации
   if (!user?.isLoggedIn) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] p-6">
-        <h1 className="text-2xl font-semibold mb-4">Необходим вход в систему</h1>
-        <p className="text-muted-foreground mb-6 text-center max-w-md">
-          Для доступа к панели администратора необходимо войти в систему.
-        </p>
-        <Navigate to="/auth" replace />
-      </div>
-    );
+    console.log('User not logged in, redirecting to auth');
+    return <Navigate to="/auth" replace />;
   }
   
+  console.log('User logged in, showing Dashboard');
   // Если пользователь залогинен, показываем Dashboard
   return <Dashboard />;
 };
