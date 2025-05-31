@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import Audit from './pages/Audit';
@@ -14,7 +15,6 @@ import SiteAudit from './pages/SiteAudit';
 import Index from './pages/Index';
 import Home from './pages/Home';
 import AdminRoutes from './routes/AdminRoutes';
-import AdminPanel from './pages/admin/AdminPanel';
 import AdminDashboard from './pages/AdminDashboard';
 import Demo from './pages/Demo';
 import Documentation from './pages/Documentation';
@@ -69,8 +69,7 @@ const App: React.FC = () => {
         <Route path="/careers" element={<Careers />} />
         <Route path="/partners" element={<Partners />} />
         
-        {/* Admin routes */}
-        <Route path="/admin" element={<AdminPanel />} />
+        {/* Admin routes - обрабатывает все пути начинающиеся с /admin */}
         <Route path="/admin/*" element={<AdminRoutes />} />
         
         {/* 404 page for any undefined routes */}
