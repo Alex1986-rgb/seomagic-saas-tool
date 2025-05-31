@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Outlet, useLocation } from 'react-router-dom';
+import { Outlet } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import AdminSidebar from '@/components/admin/AdminSidebar';
 import { Button } from '@/components/ui/button';
@@ -11,9 +11,8 @@ import { cn } from '@/lib/utils';
 const AdminLayout: React.FC = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const isMobile = useMobile();
-  const location = useLocation();
   
-  console.log('AdminLayout rendering at path:', location.pathname);
+  console.log('AdminLayout rendering');
   
   const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
   
@@ -66,10 +65,7 @@ const AdminLayout: React.FC = () => {
           <Helmet>
             <title>Панель администратора | SeoMarket</title>
           </Helmet>
-          <div>
-            <p className="text-sm text-muted-foreground mb-4">Debug: Rendering Outlet for path: {location.pathname}</p>
-            <Outlet />
-          </div>
+          <Outlet />
         </div>
       </main>
     </div>

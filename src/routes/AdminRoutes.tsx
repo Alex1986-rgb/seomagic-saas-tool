@@ -1,6 +1,5 @@
-
 import React, { Suspense } from 'react';
-import { Route, Routes, useLocation } from 'react-router-dom';
+import { Route, Routes } from 'react-router-dom';
 import AdminLayout from '@/layouts/AdminLayout';
 import { FullscreenLoader } from '@/components/ui/loading';
 import ProtectedDashboard from '@/components/admin/ProtectedDashboard';
@@ -44,9 +43,7 @@ const MarketingEditor = React.lazy(() => import('@/pages/admin/content/Marketing
 const HelpEditor = React.lazy(() => import('@/pages/admin/content/HelpEditor'));
 
 const AdminRoutes: React.FC = () => {
-  const location = useLocation();
-  console.log('AdminRoutes component rendering, current path:', location.pathname);
-  
+  console.log('AdminRoutes component rendering');
   return (
     <Routes>
       <Route element={<AdminLayout />}>
