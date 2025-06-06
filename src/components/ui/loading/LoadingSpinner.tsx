@@ -4,41 +4,28 @@ import { Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface LoadingSpinnerProps {
-  size?: 'xs' | 'sm' | 'md' | 'lg';
+  size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl';
   className?: string;
-  color?: string;
-  thickness?: 'thin' | 'regular' | 'thick';
 }
+
+const sizeClasses = {
+  xs: 'h-3 w-3',
+  sm: 'h-4 w-4',
+  md: 'h-6 w-6',
+  lg: 'h-8 w-8',
+  xl: 'h-12 w-12'
+};
 
 export const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
   size = 'md',
-  className,
-  color,
-  thickness = 'regular'
+  className
 }) => {
-  const sizeMap = {
-    xs: 'h-3 w-3',
-    sm: 'h-4 w-4',
-    md: 'h-6 w-6',
-    lg: 'h-10 w-10'
-  };
-
-  const thicknessMap = {
-    thin: 'stroke-[2px]',
-    regular: 'stroke-[3px]',
-    thick: 'stroke-[4px]'
-  };
-
   return (
-    <Loader2 
-      className={cn(
-        "animate-spin", 
-        sizeMap[size],
-        thicknessMap[thickness],
-        color || "text-primary",
-        className
-      )} 
-    />
+    <Loader2 className={cn(
+      'animate-spin',
+      sizeClasses[size],
+      className
+    )} />
   );
 };
 

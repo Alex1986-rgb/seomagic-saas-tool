@@ -18,3 +18,11 @@ export const FullscreenLoader: React.FC<FullscreenLoaderProps> = ({
     </div>
   );
 };
+
+// Re-export components from the loading directory
+export { LoadingSpinner } from './loading/LoadingSpinner';
+export { LoadingOverlay } from './loading/LoadingOverlay';
+export { ContentLoader } from './loading/ContentLoader';
+export { SectionLoader } from './loading/SectionLoader';
+export { ButtonLoader } from './loading/ButtonLoader';
+export { SkeletonTable } from './loading/SkeletonTable';
