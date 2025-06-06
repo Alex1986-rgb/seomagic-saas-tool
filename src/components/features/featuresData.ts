@@ -687,3 +687,51 @@ Google использует три основные метрики для оце
     ]
   }
 ];
+
+// Export additional functions needed by other components
+export const getAllFeatures = () => {
+  return featuresData;
+};
+
+export const featureCategories = [
+  {
+    title: 'Анализ',
+    features: featuresData.filter(feature => feature.category === 'Анализ')
+  },
+  {
+    title: 'SEO',
+    features: featuresData.filter(feature => feature.category === 'SEO')
+  },
+  {
+    title: 'Производительность',
+    features: featuresData.filter(feature => feature.category === 'Производительность')
+  },
+  {
+    title: 'Адаптивность',
+    features: featuresData.filter(feature => feature.category === 'Адаптивность')
+  },
+  {
+    title: 'Мониторинг',
+    features: featuresData.filter(feature => feature.category === 'Мониторинг')
+  },
+  {
+    title: 'Конкуренция',
+    features: featuresData.filter(feature => feature.category === 'Конкуренция')
+  },
+  {
+    title: 'Автоматизация',
+    features: featuresData.filter(feature => feature.category === 'Автоматизация')
+  },
+  {
+    title: 'Безопасность',
+    features: featuresData.filter(feature => feature.category === 'Безопасность')
+  },
+  {
+    title: 'Интеграция',
+    features: featuresData.filter(feature => feature.category === 'Интеграция')
+  },
+  {
+    title: 'Отчетность',
+    features: featuresData.filter(feature => feature.category === 'Отчетность')
+  }
+];
