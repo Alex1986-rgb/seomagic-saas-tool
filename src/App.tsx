@@ -78,6 +78,7 @@ const App: React.FC = () => {
         <Route path="/position-tracking" element={<PositionTracking />} />
         <Route path="/pages" element={<AllPages />} />
         <Route path="/channel" element={<Channel />} />
+        <Route path="/project-details" element={<ProjectDetails />} />
         
         {/* Feature articles */}
         <Route path="/features/site-scanning" element={<SiteScanning />} />

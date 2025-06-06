@@ -37,6 +37,16 @@ const AdminSidebar: React.FC = () => {
             Дашборд
           </SidebarLink>
           
+          <SidebarGroup title="Проект">
+            <SidebarLink 
+              to="/project-details" 
+              icon={File} 
+              active={currentPath.includes('/project-details')}
+            >
+              Детали проекта
+            </SidebarLink>
+          </SidebarGroup>
+          
           <SidebarGroup title="Анализ">
             <SidebarLink 
               to="/admin/website-analyzer" 
