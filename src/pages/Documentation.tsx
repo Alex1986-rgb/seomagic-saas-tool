@@ -109,11 +109,11 @@ const Documentation: React.FC = () => {
             </motion.p>
 
             <motion.div variants={itemVariants} className="flex flex-wrap justify-center gap-4 mb-12">
-              <Button variant="outline" className="gap-2">
+              <Button variant="outline" className="gap-2 hover:scale-105 transition-transform">
                 <Search className="w-4 h-4" />
                 Поиск в документации
               </Button>
-              <Button variant="outline" className="gap-2">
+              <Button variant="outline" className="gap-2 hover:scale-105 transition-transform">
                 <Download className="w-4 h-4" />
                 Скачать PDF
               </Button>
@@ -121,7 +121,7 @@ const Documentation: React.FC = () => {
 
             {/* Stats */}
             <motion.div variants={itemVariants} className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-2xl mx-auto">
-              <Card className="neo-card text-center">
+              <Card className="neo-card text-center hover:shadow-lg transition-all duration-300">
                 <CardContent className="p-4">
                   <Star className="w-8 h-8 text-primary mx-auto mb-2" />
                   <div className="text-2xl font-bold">4.9/5</div>
@@ -129,7 +129,7 @@ const Documentation: React.FC = () => {
                 </CardContent>
               </Card>
               
-              <Card className="neo-card text-center">
+              <Card className="neo-card text-center hover:shadow-lg transition-all duration-300">
                 <CardContent className="p-4">
                   <Users className="w-8 h-8 text-primary mx-auto mb-2" />
                   <div className="text-2xl font-bold">50K+</div>
@@ -137,7 +137,7 @@ const Documentation: React.FC = () => {
                 </CardContent>
               </Card>
               
-              <Card className="neo-card text-center">
+              <Card className="neo-card text-center hover:shadow-lg transition-all duration-300">
                 <CardContent className="p-4">
                   <Clock className="w-8 h-8 text-primary mx-auto mb-2" />
                   <div className="text-2xl font-bold">24/7</div>
@@ -154,7 +154,7 @@ const Documentation: React.FC = () => {
             transition={{ duration: 0.6, delay: 0.3 }}
           >
             <Tabs defaultValue={defaultTab} className="w-full">
-              {/* Proper Tab Navigation */}
+              {/* Proper Tab Navigation with visual cards */}
               <div className="mb-8">
                 <TabsList className="grid grid-cols-1 md:grid-cols-4 gap-4 h-auto bg-transparent p-0">
                   {tabsData.map((tabData) => (
@@ -163,22 +163,20 @@ const Documentation: React.FC = () => {
                       value={tabData.value}
                       className="h-auto p-0 data-[state=active]:bg-transparent"
                     >
-                      <Card className="neo-card w-full cursor-pointer transition-all duration-300 hover:shadow-xl hover:scale-105 data-[state=active]:ring-2 data-[state=active]:ring-primary">
-                        <CardContent className="p-6 text-center">
-                          <div className={`w-12 h-12 bg-gradient-to-br ${tabData.color} rounded-lg flex items-center justify-center mb-4 mx-auto`}>
-                            <tabData.icon className="w-6 h-6 text-white" />
-                          </div>
-                          <h3 className="font-semibold mb-2">{tabData.label}</h3>
-                          <p className="text-sm text-muted-foreground">{tabData.description}</p>
-                        </CardContent>
-                      </Card>
+                      <div className="neo-card w-full cursor-pointer transition-all duration-300 hover:shadow-xl hover:scale-105 data-[state=active]:ring-2 data-[state=active]:ring-primary p-6 text-center">
+                        <div className={`w-12 h-12 bg-gradient-to-br ${tabData.color} rounded-lg flex items-center justify-center mb-4 mx-auto`}>
+                          <tabData.icon className="w-6 h-6 text-white" />
+                        </div>
+                        <h3 className="font-semibold mb-2">{tabData.label}</h3>
+                        <p className="text-sm text-muted-foreground">{tabData.description}</p>
+                      </div>
                     </TabsTrigger>
                   ))}
                 </TabsList>
               </div>
               
               {/* Tab Content */}
-              <Card className="neo-card overflow-hidden">
+              <Card className="neo-card overflow-hidden shadow-lg">
                 <CardContent className="p-8">
                   <TabsContent value="user-guide" className="mt-0">
                     <UserGuide />
@@ -207,7 +205,7 @@ const Documentation: React.FC = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.6 }}
           >
-            <Card className="neo-card bg-gradient-to-r from-primary/10 via-secondary/10 to-primary/10">
+            <Card className="neo-card bg-gradient-to-r from-primary/10 via-secondary/10 to-primary/10 shadow-lg">
               <CardContent className="p-8">
                 <h3 className="text-2xl font-bold mb-4">Нужна дополнительная помощь?</h3>
                 <p className="text-muted-foreground mb-6 max-w-2xl mx-auto">
@@ -216,11 +214,11 @@ const Documentation: React.FC = () => {
                 </p>
                 
                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                  <Button size="lg" className="gap-2">
+                  <Button size="lg" className="gap-2 hover:scale-105 transition-transform">
                     Связаться с поддержкой
                     <ArrowRight className="w-4 h-4" />
                   </Button>
-                  <Button variant="outline" size="lg">
+                  <Button variant="outline" size="lg" className="hover:scale-105 transition-transform">
                     Сообщество пользователей
                   </Button>
                 </div>
