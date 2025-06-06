@@ -1,38 +1,26 @@
 
-import React, { useEffect } from 'react';
-import { HelmetProvider } from 'react-helmet-async';
-import { Toaster } from "@/components/ui/toaster";
-import { LoadingProvider } from '@/contexts/LoadingContext';
-import { ErrorHandlingProvider } from '@/contexts/ErrorHandlingContext';
-import { AuthProvider } from '@/contexts/AuthContext';
-import { GlobalErrorBoundary } from '@/components/ui/error-handler';
+import React from 'react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { Toaster } from '@/components/ui/toaster';
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 1,
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 
 interface AppProvidersProps {
   children: React.ReactNode;
 }
 
 export const AppProviders: React.FC<AppProvidersProps> = ({ children }) => {
-  useEffect(() => {
-    console.log("AppProviders mounted");
-    return () => {
-      console.log("AppProviders unmounted");
-    };
-  }, []);
-  
-  console.log("AppProviders rendering");
-  
   return (
-    <HelmetProvider>
-      <ErrorHandlingProvider>
-        <LoadingProvider>
-          <AuthProvider>
-            {children}
-            <Toaster />
-          </AuthProvider>
-        </LoadingProvider>
-      </ErrorHandlingProvider>
-    </HelmetProvider>
+    <QueryClientProvider client={queryClient}>
+      {children}
+      <Toaster />
+    </QueryClientProvider>
   );
 };
-
-export default AppProviders;

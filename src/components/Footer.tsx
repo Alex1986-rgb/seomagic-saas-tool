@@ -2,7 +2,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { RESOURCE_ITEMS, COMPANY_ITEMS, FEATURES_ITEMS, SUPPORT_ITEMS } from './navbar/navConstants';
-import { Mail, Phone, MapPin, Facebook, Twitter, Instagram, Linkedin, Github, FileText, Settings } from 'lucide-react';
+import { Mail, Phone, MapPin, Facebook, Twitter, Instagram, Linkedin, Github, FileText, Settings, Wand2, Target } from 'lucide-react';
 
 const Footer: React.FC = () => {
   console.log("Footer rendering");
@@ -52,8 +52,16 @@ const Footer: React.FC = () => {
           </div>
           
           <div>
-            <h3 className="font-semibold text-sm mb-3">Услуги</h3>
+            <h3 className="font-semibold text-sm mb-3">ИИ Оптимизация</h3>
             <ul className="space-y-2">
+              <FooterLink to="/seo-elements" className="flex items-center gap-1">
+                <Wand2 className="h-3.5 w-3.5" />
+                <span>SEO Элементы</span>
+              </FooterLink>
+              <FooterLink to="/keywords" className="flex items-center gap-1">
+                <Target className="h-3.5 w-3.5" />
+                <span>Анализ ключевых слов</span>
+              </FooterLink>
               {FEATURES_ITEMS.map((item) => (
                 <FooterLink key={item.href} to={item.href}>{item.label}</FooterLink>
               ))}
