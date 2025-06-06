@@ -64,11 +64,11 @@ const SitesPage: React.FC = () => {
       </div>
 
       <div className="flex flex-col sm:flex-row gap-4 mb-6">
-        <div className="flex-1">
+        <div className="flex-1 relative">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input
             placeholder="Поиск по названию или домену..."
-            className="w-full"
-            icon={<Search className="w-4 h-4" />}
+            className="w-full pl-10"
           />
         </div>
         <div className="flex gap-2">
