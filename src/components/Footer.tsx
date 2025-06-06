@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { RESOURCE_ITEMS, COMPANY_ITEMS, FEATURES_ITEMS, SUPPORT_ITEMS } from './navbar/navConstants';
@@ -68,10 +69,6 @@ const Footer: React.FC = () => {
               <FooterLink to="/pages" className="flex items-center gap-1">
                 <FileText className="h-3.5 w-3.5" />
                 <span>Все страницы</span>
-              </FooterLink>
-              <FooterLink to="/sitemap" className="flex items-center gap-1">
-                <Settings className="h-3.5 w-3.5" />
-                <span>Карта сайта</span>
               </FooterLink>
               <FooterLink to="/project-details" className="flex items-center gap-1">
                 <Settings className="h-3.5 w-3.5" />
