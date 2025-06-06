@@ -1,4 +1,3 @@
-
 export const NAV_ITEMS = [
   {
     label: 'Главная',
@@ -36,6 +35,10 @@ export const NAV_ITEMS = [
   {
     label: 'Цены',
     href: '/pricing',
+  },
+  {
+    label: 'Карта сайта',
+    href: '/sitemap',
   },
 ];
 

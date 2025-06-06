@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import Audit from './pages/Audit';
@@ -26,6 +25,7 @@ import FeatureDetail from './pages/features/FeatureDetail';
 import Profile from './pages/Profile';
 import ProjectDetails from './pages/ProjectDetails';
 import Brandbook from './pages/Brandbook';
+import SiteMap from './pages/SiteMap';
 
 // Feature articles imports
 import SiteScanning from './pages/features/SiteScanning';
@@ -84,6 +84,7 @@ const App: React.FC = () => {
           <Route path="/channel" element={<Channel />} />
           <Route path="/project-details" element={<ProjectDetails />} />
           <Route path="/brandbook" element={<Brandbook />} />
+          <Route path="/sitemap" element={<SiteMap />} />
           
           {/* Feature articles */}
           <Route path="/features/site-scanning" element={<SiteScanning />} />
