@@ -1,225 +1,86 @@
-
 import React from 'react';
-import { Helmet } from 'react-helmet-async';
+import { motion } from 'framer-motion';
+import { Button } from "@/components/ui/button";
 import Layout from '@/components/Layout';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Shield, Eye, Lock, Users, FileText, Mail } from 'lucide-react';
 
 const Privacy: React.FC = () => {
   return (
     <Layout>
-      <Helmet>
-        <title>Политика конфиденциальности | SEO Platform</title>
-        <meta name="description" content="Политика конфиденциальности нашей SEO платформы. Узнайте, как мы собираем, используем и защищаем ваши данные." />
-      </Helmet>
-
-      <div className="container mx-auto px-4 py-16 md:py-24">
+      <div className="container mx-auto px-4 py-32">
         <div className="max-w-4xl mx-auto">
-          <div className="text-center mb-16">
-            <div className="flex justify-center mb-6">
-              <div className="p-4 rounded-full bg-primary/10">
-                <Shield className="h-12 w-12 text-primary" />
-              </div>
-            </div>
-            <h1 className="text-4xl md:text-5xl font-bold mb-6">
-              Политика конфиденциальности
-            </h1>
-            <p className="text-xl text-muted-foreground">
-              Мы серьёзно относимся к защите ваших персональных данных и соблюдаем все требования законодательства
-            </p>
-            <p className="text-sm text-muted-foreground mt-4">
-              Последнее обновление: 1 января 2024 года
-            </p>
+          <motion.div 
+            className="text-center mb-10"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+          >
+            <h1 className="text-4xl font-bold mb-4">Политика конфиденциальности</h1>
+            <p className="text-muted-foreground">Последнее обновление: 10 апреля 2023 г.</p>
+          </motion.div>
+          
+          <div className="prose prose-lg max-w-none">
+            <p>Настоящая Политика конфиденциальности описывает, как SeoMarket собирает, использует и раскрывает информацию, полученную от пользователей нашего веб-сайта и сервисов.</p>
+            
+            <h2>1. Собираемая информация</h2>
+            <p>Мы можем собирать следующие типы информации:</p>
+            <ul>
+              <li><strong>Персональная информация:</strong> Имя, адрес электронной почты, номер телефона, платежная информация и другие данные, которые вы предоставляете при регистрации и использовании наших услуг.</li>
+              <li><strong>Данные об использовании:</strong> Информация о том, как вы взаимодействуете с нашим сайтом и сервисами, включая IP-адрес, тип браузера, посещенные страницы и время пребывания на сайте.</li>
+              <li><strong>Информация о устройстве:</strong> Тип устройства, операционная система и другие технические данные о вашем устройстве.</li>
+              <li><strong>Аналитические данные:</strong> Информация о ваших веб-сайтах, если вы используете наши инструменты для SEO-аудита и отслеживания позиций.</li>
+            </ul>
+            
+            <h2>2. Использование информации</h2>
+            <p>Мы используем собранную информацию для:</p>
+            <ul>
+              <li>Предоставления и улучшения наших услуг</li>
+              <li>Обработки платежей и поддержки аккаунта</li>
+              <li>Отправки уведомлений и обновлений о сервисе</li>
+              <li>Ответа на ваши запросы и предоставления поддержки</li>
+              <li>Анализа и улучшения производительности и функциональности нашего сайта</li>
+              <li>Защиты от мошенничества и обеспечения безопасности</li>
+            </ul>
+            
+            <h2>3. Раскрытие информации</h2>
+            <p>Мы можем раскрывать вашу информацию:</p>
+            <ul>
+              <li><strong>Поставщикам услуг:</strong> Компаниям, которые помогают нам предоставлять наши услуги, таким как провайдеры платежей, хостинг-провайдеры и сервисы аналитики.</li>
+              <li><strong>По требованию закона:</strong> Если это необходимо по закону или в ответ на законные запросы, такие как судебные приказы.</li>
+              <li><strong>Для защиты прав:</strong> Для защиты наших прав, собственности или безопасности наших пользователей.</li>
+              <li><strong>При бизнес-переходах:</strong> В случае слияния, продажи или иной передачи бизнеса.</li>
+            </ul>
+            
+            <h2>4. Защита информации</h2>
+            <p>Мы принимаем разумные меры для защиты вашей информации от несанкционированного доступа, использования или раскрытия. Однако, помните, что ни один метод передачи через интернет или электронного хранения не является 100% безопасным.</p>
+            
+            <h2>5. Международная передача данных</h2>
+            <p>Ваша информация может быть передана и обработана в странах, отличных от вашей страны проживания, где находятся наши серверы или работают наши поставщики услуг. Эти страны могут иметь иные законы о защите данных.</p>
+            
+            <h2>6. Ваши права</h2>
+            <p>В зависимости от вашего местоположения, вы можете иметь определенные права в отношении вашей информации, включая:</p>
+            <ul>
+              <li>Доступ к своей информации</li>
+              <li>Исправление неточной информации</li>
+              <li>Удаление вашей информации</li>
+              <li>Ограничение или возражение против обработки</li>
+              <li>Перенос данных</li>
+              <li>Отзыв согласия</li>
+            </ul>
+            
+            <h2>7. Файлы cookie</h2>
+            <p>Мы используем файлы cookie и аналогичные технологии для улучшения работы пользователей, анализа использования и персонализации контента. Вы можете управлять настройками файлов cookie в вашем браузере.</p>
+            
+            <h2>8. Изменения в политике конфиденциальности</h2>
+            <p>Мы можем обновлять эту политику конфidentialности время от времени. Мы уведомим вас о существенных изменениях, опубликовав новую версию на нашем сайте или отправив вам уведомление.</p>
+            
+            <h2>9. Контактная информация</h2>
+            <p>Если у вас есть вопросы или опасения относительно этой политики конфиденциальности или обработки ваших данных, пожалуйста, свяжитесь с нами по адресу privacy@seomarket.ru.</p>
           </div>
-
-          <div className="space-y-8">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-3">
-                  <Eye className="h-6 w-6 text-primary" />
-                  Какие данные мы собираем
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div>
-                  <h4 className="font-semibold mb-2">Персональная информация:</h4>
-                  <ul className="list-disc list-inside space-y-1 text-muted-foreground">
-                    <li>Имя и фамилия</li>
-                    <li>Адрес электронной почты</li>
-                    <li>Номер телефона (по желанию)</li>
-                    <li>Название компании (по желанию)</li>
-                  </ul>
-                </div>
-                <div>
-                  <h4 className="font-semibold mb-2">Техническая информация:</h4>
-                  <ul className="list-disc list-inside space-y-1 text-muted-foreground">
-                    <li>IP-адрес</li>
-                    <li>Данные браузера и устройства</li>
-                    <li>Время посещения сайта</li>
-                    <li>Страницы, которые вы посещаете</li>
-                  </ul>
-                </div>
-                <div>
-                  <h4 className="font-semibold mb-2">Данные использования сервиса:</h4>
-                  <ul className="list-disc list-inside space-y-1 text-muted-foreground">
-                    <li>URL сайтов для анализа</li>
-                    <li>Результаты SEO аудитов</li>
-                    <li>Настройки и предпочтения</li>
-                  </ul>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-3">
-                  <Users className="h-6 w-6 text-primary" />
-                  Как мы используем ваши данные
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <ul className="space-y-3">
-                  <li className="flex items-start gap-3">
-                    <div className="w-2 h-2 rounded-full bg-primary mt-2 flex-shrink-0"></div>
-                    <div>
-                      <span className="font-medium">Предоставление услуг:</span>
-                      <span className="text-muted-foreground ml-1">
-                        Проведение SEO анализа, генерация отчётов, сохранение истории аудитов
-                      </span>
-                    </div>
-                  </li>
-                  <li className="flex items-start gap-3">
-                    <div className="w-2 h-2 rounded-full bg-primary mt-2 flex-shrink-0"></div>
-                    <div>
-                      <span className="font-medium">Улучшение сервиса:</span>
-                      <span className="text-muted-foreground ml-1">
-                        Анализ использования платформы, разработка новых функций
-                      </span>
-                    </div>
-                  </li>
-                  <li className="flex items-start gap-3">
-                    <div className="w-2 h-2 rounded-full bg-primary mt-2 flex-shrink-0"></div>
-                    <div>
-                      <span className="font-medium">Коммуникация:</span>
-                      <span className="text-muted-foreground ml-1">
-                        Отправка уведомлений о завершении анализа, важных обновлениях
-                      </span>
-                    </div>
-                  </li>
-                  <li className="flex items-start gap-3">
-                    <div className="w-2 h-2 rounded-full bg-primary mt-2 flex-shrink-0"></div>
-                    <div>
-                      <span className="font-medium">Безопасность:</span>
-                      <span className="text-muted-foreground ml-1">
-                        Предотвращение мошенничества, защита от злоупотреблений
-                      </span>
-                    </div>
-                  </li>
-                </ul>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-3">
-                  <Lock className="h-6 w-6 text-primary" />
-                  Как мы защищаем ваши данные
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <p className="text-muted-foreground">
-                  Мы применяем современные технологии и методы для защиты ваших персональных данных:
-                </p>
-                <div className="grid md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <h4 className="font-semibold">Техническая защита:</h4>
-                    <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground">
-                      <li>SSL шифрование (HTTPS)</li>
-                      <li>Безопасное хранение данных</li>
-                      <li>Регулярные резервные копии</li>
-                      <li>Мониторинг безопасности 24/7</li>
-                    </ul>
-                  </div>
-                  <div className="space-y-2">
-                    <h4 className="font-semibold">Организационная защита:</h4>
-                    <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground">
-                      <li>Ограниченный доступ к данным</li>
-                      <li>Обучение сотрудников</li>
-                      <li>Политики безопасности</li>
-                      <li>Аудит безопасности</li>
-                    </ul>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-3">
-                  <FileText className="h-6 w-6 text-primary" />
-                  Ваши права
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground mb-4">
-                  В соответствии с законодательством о защите персональных данных, вы имеете следующие права:
-                </p>
-                <div className="grid md:grid-cols-2 gap-6">
-                  <div>
-                    <h4 className="font-semibold mb-2">Право на доступ</h4>
-                    <p className="text-sm text-muted-foreground">
-                      Получение информации о том, какие данные мы о вас храним
-                    </p>
-                  </div>
-                  <div>
-                    <h4 className="font-semibold mb-2">Право на исправление</h4>
-                    <p className="text-sm text-muted-foreground">
-                      Исправление неточных или неполных данных
-                    </p>
-                  </div>
-                  <div>
-                    <h4 className="font-semibold mb-2">Право на удаление</h4>
-                    <p className="text-sm text-muted-foreground">
-                      Удаление ваших персональных данных при определённых условиях
-                    </p>
-                  </div>
-                  <div>
-                    <h4 className="font-semibold mb-2">Право на переносимость</h4>
-                    <p className="text-sm text-muted-foreground">
-                      Получение ваших данных в структурированном формате
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-3">
-                  <Mail className="h-6 w-6 text-primary" />
-                  Свяжитесь с нами
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground mb-4">
-                  Если у вас есть вопросы о нашей политике конфиденциальности или вы хотите воспользоваться своими правами, свяжитесь с нами:
-                </p>
-                <div className="space-y-2">
-                  <p><span className="font-medium">Email:</span> privacy@seoplatform.com</p>
-                  <p><span className="font-medium">Почтовый адрес:</span> ООО "SEO Платформа", ул. Примерная, 123, Москва, 123456</p>
-                  <p><span className="font-medium">Ответственный за защиту данных:</span> privacy@seoplatform.com</p>
-                </div>
-              </CardContent>
-            </Card>
-
-            <div className="bg-muted/50 rounded-lg p-6">
-              <h3 className="font-semibold mb-3">Изменения в политике конфиденциальности</h3>
-              <p className="text-muted-foreground text-sm">
-                Мы можем время от времени обновлять эту политику конфиденциальности. 
-                Все изменения будут опубликованы на этой странице с указанием даты последнего обновления. 
-                Существенные изменения будут дополнительно доведены до вашего сведения по электронной почте.
-              </p>
-            </div>
+          
+          <div className="mt-12 text-center">
+            <Button variant="outline" onClick={() => window.history.back()}>
+              Вернуться назад
+            </Button>
           </div>
         </div>
       </div>

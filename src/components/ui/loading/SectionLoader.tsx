@@ -11,22 +11,20 @@ interface SectionLoaderProps {
 }
 
 export const SectionLoader: React.FC<SectionLoaderProps> = ({
-  text = 'Загрузка раздела...',
+  text = 'Загрузка...',
   className,
   spinnerSize = 'md',
-  minHeight
+  minHeight = 'min-h-[200px]'
 }) => {
   return (
-    <div 
-      className={cn(
-        "flex flex-col items-center justify-center py-12 px-4",
-        className
-      )}
-      style={minHeight ? { minHeight } : undefined}
-    >
+    <div className={cn(
+      "flex flex-col items-center justify-center w-full",
+      minHeight,
+      className
+    )}>
       <LoadingSpinner size={spinnerSize} />
       {text && (
-        <p className="mt-4 text-sm text-muted-foreground text-center">{text}</p>
+        <p className="mt-2 text-sm text-muted-foreground">{text}</p>
       )}
     </div>
   );

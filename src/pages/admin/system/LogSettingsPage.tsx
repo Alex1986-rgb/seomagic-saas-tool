@@ -1,128 +1,107 @@
 
-import React from 'react';
-import { Helmet } from 'react-helmet-async';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { FileText, Download, Trash2, Filter } from 'lucide-react';
+import React from "react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { FileText, Download, Filter, Search } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
-const LogSettingsPage: React.FC = () => {
-  const logs = [
-    {
-      id: 1,
-      type: 'System',
-      level: 'INFO',
-      message: 'Application started successfully',
-      timestamp: '2025-06-06 10:30:25'
-    },
-    {
-      id: 2,
-      type: 'Security',
-      level: 'WARNING',
-      message: 'Failed login attempt from IP 192.168.1.100',
-      timestamp: '2025-06-06 10:25:15'
-    },
-    {
-      id: 3,
-      type: 'Database',
-      level: 'ERROR',
-      message: 'Connection timeout to database server',
-      timestamp: '2025-06-06 10:20:00'
-    }
-  ];
-
-  const getLevelBadge = (level: string) => {
-    switch (level) {
-      case 'INFO':
-        return <Badge className="bg-blue-100 text-blue-800">INFO</Badge>;
-      case 'WARNING':
-        return <Badge className="bg-yellow-100 text-yellow-800">WARNING</Badge>;
-      case 'ERROR':
-        return <Badge className="bg-red-100 text-red-800">ERROR</Badge>;
-      default:
-        return <Badge variant="secondary">{level}</Badge>;
-    }
-  };
+const LogSettingsPage = () => {
+  const [logLevel, setLogLevel] = React.useState('info');
+  const [searchQuery, setSearchQuery] = React.useState('');
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-6xl">
-      <Helmet>
-        <title>Логирование | Системные настройки</title>
-      </Helmet>
-      
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-2">Логирование событий</h1>
-        <p className="text-muted-foreground">
-          Просмотр системных логов и настройка уровней логирования
-        </p>
-      </div>
+    <div className="container mx-auto px-4 py-8 max-w-3xl">
+      <h2 className="text-2xl font-bold mb-3">Логирование событий</h2>
+      <p className="mb-4 text-muted-foreground">
+        Просмотр и настройка системных логов, мониторинг событий.
+      </p>
 
-      <div className="grid gap-6">
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <FileText className="h-5 w-5 text-primary" />
-                Системные логи
+      <Card className="mb-6">
+        <CardContent className="p-6">
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-4">
+              <div>
+                <Select value={logLevel} onValueChange={setLogLevel}>
+                  <SelectTrigger className="w-[180px]">
+                    <SelectValue placeholder="Уровень логов" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="debug">Debug</SelectItem>
+                    <SelectItem value="info">Info</SelectItem>
+                    <SelectItem value="warning">Warning</SelectItem>
+                    <SelectItem value="error">Error</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
-              <div className="flex gap-2">
-                <Button variant="outline" size="sm">
-                  <Filter className="h-4 w-4 mr-2" />
-                  Фильтры
-                </Button>
-                <Button variant="outline" size="sm">
-                  <Download className="h-4 w-4 mr-2" />
-                  Экспорт
-                </Button>
-                <Button variant="outline" size="sm">
-                  <Trash2 className="h-4 w-4 mr-2" />
-                  Очистить
-                </Button>
-              </div>
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {logs.map((log) => (
-                <div key={log.id} className="p-4 border rounded-lg">
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center gap-2">
-                      <Badge variant="outline">{log.type}</Badge>
-                      {getLevelBadge(log.level)}
-                    </div>
-                    <span className="text-sm text-muted-foreground">{log.timestamp}</span>
-                  </div>
-                  <p className="font-mono text-sm">{log.message}</p>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Настройки логирования</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="p-4 border rounded-lg text-center">
-                <h3 className="font-semibold mb-2">Уровень логирования</h3>
-                <Badge className="bg-blue-100 text-blue-800">INFO</Badge>
-              </div>
-              <div className="p-4 border rounded-lg text-center">
-                <h3 className="font-semibold mb-2">Хранение логов</h3>
-                <span>30 дней</span>
-              </div>
-              <div className="p-4 border rounded-lg text-center">
-                <h3 className="font-semibold mb-2">Размер файла</h3>
-                <span>10 MB</span>
+              <div className="relative">
+                <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Поиск в логах..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-8"
+                />
               </div>
             </div>
-            <Button className="w-full">
-              Обновить настройки
+            <Button variant="outline" className="flex gap-2">
+              <Download className="h-4 w-4" />
+              Экспорт логов
             </Button>
-          </CardContent>
-        </Card>
+          </div>
+
+          <div className="space-y-4">
+            {[
+              { level: "error", message: "Failed to connect to database", timestamp: "2025-04-24 10:15:23" },
+              { level: "warning", message: "High CPU usage detected", timestamp: "2025-04-24 10:14:55" },
+              { level: "info", message: "User authentication successful", timestamp: "2025-04-24 10:14:30" },
+              { level: "info", message: "Backup completed successfully", timestamp: "2025-04-24 10:14:00" },
+              { level: "debug", message: "Cache cleared", timestamp: "2025-04-24 10:13:45" },
+            ].map((log, index) => (
+              <div
+                key={index}
+                className={`p-3 rounded-lg border ${
+                  log.level === 'error' ? 'bg-red-50 border-red-200' :
+                  log.level === 'warning' ? 'bg-yellow-50 border-yellow-200' :
+                  log.level === 'info' ? 'bg-blue-50 border-blue-200' :
+                  'bg-gray-50 border-gray-200'
+                }`}
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <FileText className={`h-4 w-4 ${
+                      log.level === 'error' ? 'text-red-500' :
+                      log.level === 'warning' ? 'text-yellow-500' :
+                      log.level === 'info' ? 'text-blue-500' :
+                      'text-gray-500'
+                    }`} />
+                    <div>
+                      <p className="font-medium">{log.message}</p>
+                      <p className="text-sm text-muted-foreground">{log.timestamp}</p>
+                    </div>
+                  </div>
+                  <span className={`text-xs font-medium px-2 py-1 rounded ${
+                    log.level === 'error' ? 'bg-red-100 text-red-700' :
+                    log.level === 'warning' ? 'bg-yellow-100 text-yellow-700' :
+                    log.level === 'info' ? 'bg-blue-100 text-blue-700' :
+                    'bg-gray-100 text-gray-700'
+                  }`}>
+                    {log.level.toUpperCase()}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      <div className="mt-8 text-sm text-muted-foreground space-y-2">
+        <div><b>Возможности:</b> фильтрация по уровню, поиск, экспорт логов.</div>
+        <ul className="list-disc pl-5">
+          <li>Автоматическая ротация логов</li>
+          <li>Уведомления о критических ошибках</li>
+          <li>Интеграция с системами мониторинга</li>
+        </ul>
       </div>
     </div>
   );

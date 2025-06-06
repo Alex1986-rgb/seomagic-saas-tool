@@ -1,28 +1,35 @@
 
 import React from 'react';
+import { Button, ButtonProps } from '@/components/ui/button';
 import { LoadingSpinner } from './LoadingSpinner';
-import { cn } from '@/lib/utils';
 
-interface ButtonLoaderProps {
-  isLoading?: boolean;
-  text?: string;
+interface ButtonLoaderProps extends ButtonProps {
+  isLoading: boolean;
   loadingText?: string;
-  className?: string;
-  spinnerSize?: 'xs' | 'sm' | 'md';
+  children: React.ReactNode;
 }
 
 export const ButtonLoader: React.FC<ButtonLoaderProps> = ({
-  isLoading = false,
-  text = 'Кнопка',
-  loadingText = 'Загрузка...',
-  className,
-  spinnerSize = 'sm'
+  isLoading,
+  loadingText,
+  children,
+  disabled,
+  ...props
 }) => {
   return (
-    <span className={cn("flex items-center gap-2", className)}>
-      {isLoading && <LoadingSpinner size={spinnerSize} />}
-      {isLoading ? loadingText : text}
-    </span>
+    <Button
+      {...props}
+      disabled={isLoading || disabled}
+    >
+      {isLoading ? (
+        <>
+          <LoadingSpinner size="sm" className="mr-2" />
+          {loadingText || children}
+        </>
+      ) : (
+        children
+      )}
+    </Button>
   );
 };
 

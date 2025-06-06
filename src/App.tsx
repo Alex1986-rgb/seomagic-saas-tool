@@ -1,95 +1,90 @@
 
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { HelmetProvider } from 'react-helmet-async';
-import { ThemeProvider } from 'next-themes';
-import { Toaster } from 'sonner';
-import { AppErrorBoundary } from './components/ErrorBoundary';
-import NetworkStatus from './components/NetworkStatus';
-
-// Pages
-import Index from './pages/Index';
-import About from './pages/About';
-import Contact from './pages/Contact';
-import Team from './pages/Team';
-import Pricing from './pages/Pricing';
-import Features from './pages/Features';
-import FeaturePageTemplate from './pages/features/FeaturePageTemplate';
-import ArticlePage from './pages/articles/ArticlePage';
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import Audit from './pages/Audit';
-import PositionTracker from './pages/PositionTracker';
+import Pricing from './pages/Pricing';
+import Contact from './pages/Contact';
+import Blog from './pages/Blog';
+import BlogPost from './pages/BlogPost';
+import About from './pages/About';
+import Auth from './pages/Auth';
+import OptimizationDemo from './pages/OptimizationDemo';
 import PositionPricing from './pages/PositionPricing';
-import Guides from './pages/Guides';
-import GuideDetail from './pages/GuideDetail';
-import Profile from './pages/Profile';
+import OptimizationPricing from './pages/OptimizationPricing';
+import SiteAudit from './pages/SiteAudit';
+import Index from './pages/Index';
+import Home from './pages/Home';
+import AdminRoutes from './routes/AdminRoutes';
+import AdminDashboard from './pages/AdminDashboard';
 import Demo from './pages/Demo';
 import Documentation from './pages/Documentation';
-import Channel from './pages/Channel';
+import Features from './pages/Features';
+import PositionTracking from './pages/PositionTracking';
 import AllPages from './pages/AllPages';
+import Channel from './pages/Channel';
+import FeatureDetail from './pages/features/FeatureDetail';
 
-// Admin Routes
-import AdminRoutes from './routes/AdminRoutes';
+// Import pages
+import Webinars from './pages/Webinars';
+import Guides from './pages/Guides';
+import ApiDocs from './pages/ApiDocs';
+import Faq from './pages/Faq';
+import Team from './pages/Team';
+import Careers from './pages/Careers';
+import Partners from './pages/Partners';
+import Support from './pages/Support';
+import Terms from './pages/Terms';
+import Privacy from './pages/Privacy';
+import NotFound from './pages/NotFound';
 
-// Create a client
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      staleTime: 5 * 60 * 1000, // 5 minutes
-      retry: 1,
-    },
-  },
-});
-
-function App() {
+const App: React.FC = () => {
+  console.log('App component rendering');
   return (
-    <AppErrorBoundary>
-      <HelmetProvider>
-        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-          <QueryClientProvider client={queryClient}>
-            <Router>
-              <div className="App">
-                <NetworkStatus />
-                <Routes>
-                  <Route path="/" element={<Index />} />
-                  <Route path="/about" element={<About />} />
-                  <Route path="/contact" element={<Contact />} />
-                  <Route path="/team" element={<Team />} />
-                  <Route path="/pricing" element={<Pricing />} />
-                  <Route path="/features" element={<Features />} />
-                  <Route path="/features/:featureId" element={<FeaturePageTemplate />} />
-                  <Route path="/articles/:slug" element={<ArticlePage />} />
-                  <Route path="/audit" element={<Audit />} />
-                  <Route path="/position-tracker" element={<PositionTracker />} />
-                  <Route path="/position-pricing" element={<PositionPricing />} />
-                  <Route path="/guides" element={<Guides />} />
-                  <Route path="/guides/:id" element={<GuideDetail />} />
-                  <Route path="/profile" element={<Profile />} />
-                  <Route path="/demo" element={<Demo />} />
-                  <Route path="/documentation" element={<Documentation />} />
-                  <Route path="/channel" element={<Channel />} />
-                  <Route path="/all-pages" element={<AllPages />} />
-                  
-                  {/* Admin Routes */}
-                  <Route path="/admin/*" element={<AdminRoutes />} />
-                </Routes>
-                <Toaster 
-                  position="top-right" 
-                  toastOptions={{
-                    style: {
-                      background: 'hsl(var(--background))',
-                      color: 'hsl(var(--foreground))',
-                      border: '1px solid hsl(var(--border))',
-                    },
-                  }}
-                />
-              </div>
-            </Router>
-          </QueryClientProvider>
-        </ThemeProvider>
-      </HelmetProvider>
-    </AppErrorBoundary>
+    <Router>
+      <Routes>
+        <Route path="/" element={<Index />} />
+        <Route path="/home" element={<Home />} />
+        <Route path="/audit" element={<Audit />} />
+        <Route path="/pricing" element={<Pricing />} />
+        <Route path="/contact" element={<Contact />} />
+        <Route path="/blog" element={<Blog />} />
+        <Route path="/blog/:id" element={<BlogPost />} />
+        <Route path="/about" element={<About />} />
+        <Route path="/auth" element={<Auth />} />
+        <Route path="/site-audit" element={<SiteAudit />} />
+        <Route path="/optimization-demo" element={<OptimizationDemo />} />
+        <Route path="/position-pricing" element={<PositionPricing />} />
+        <Route path="/optimization-pricing" element={<OptimizationPricing />} />
+        <Route path="/admin-dashboard" element={<AdminDashboard />} />
+        <Route path="/demo" element={<Demo />} />
+        <Route path="/documentation" element={<Documentation />} />
+        <Route path="/documentation/:tab" element={<Documentation />} />
+        <Route path="/features" element={<Features />} />
+        <Route path="/features/:featureId" element={<FeatureDetail />} />
+        <Route path="/position-tracking" element={<PositionTracking />} />
+        <Route path="/pages" element={<AllPages />} />
+        <Route path="/channel" element={<Channel />} />
+        
+        {/* Content pages */}
+        <Route path="/webinars" element={<Webinars />} />
+        <Route path="/guides" element={<Guides />} />
+        <Route path="/api-docs" element={<ApiDocs />} />
+        <Route path="/faq" element={<Faq />} />
+        <Route path="/team" element={<Team />} />
+        <Route path="/careers" element={<Careers />} />
+        <Route path="/partners" element={<Partners />} />
+        <Route path="/support" element={<Support />} />
+        <Route path="/terms" element={<Terms />} />
+        <Route path="/privacy" element={<Privacy />} />
+        
+        {/* Admin routes - обрабатывает все пути начинающиеся с /admin */}
+        <Route path="/admin/*" element={<AdminRoutes />} />
+        
+        {/* 404 page for any undefined routes */}
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+    </Router>
   );
-}
+};
 
 export default App;
