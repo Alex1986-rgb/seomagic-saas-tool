@@ -52,7 +52,7 @@ const NavbarUserActions: React.FC<NavbarUserActionsProps> = ({ isLoggedIn }) => 
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuItem>
-              <Link to="/dashboard" className="flex items-center">
+              <Link to="/admin/dashboard" className="flex items-center">
                 <LayoutDashboard className="mr-2 h-4 w-4" />
                 <span>Панель управления</span>
               </Link>
@@ -64,13 +64,13 @@ const NavbarUserActions: React.FC<NavbarUserActionsProps> = ({ isLoggedIn }) => 
               </Link>
             </DropdownMenuItem>
             <DropdownMenuItem>
-              <Link to="/settings" className="flex items-center">
+              <Link to="/profile" className="flex items-center">
                 <Settings className="mr-2 h-4 w-4" />
                 <span>Настройки</span>
               </Link>
             </DropdownMenuItem>
             <DropdownMenuItem>
-              <Link to="/reports" className="flex items-center">
+              <Link to="/profile" className="flex items-center">
                 <BarChart className="mr-2 h-4 w-4" />
                 <span>Отчеты</span>
               </Link>

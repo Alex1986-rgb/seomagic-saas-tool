@@ -23,6 +23,7 @@ import PositionTracking from './pages/PositionTracking';
 import AllPages from './pages/AllPages';
 import Channel from './pages/Channel';
 import FeatureDetail from './pages/features/FeatureDetail';
+import Profile from './pages/Profile';
 
 // Feature articles imports
 import SiteScanning from './pages/features/SiteScanning';
@@ -63,6 +64,7 @@ const App: React.FC = () => {
         <Route path="/blog/:id" element={<BlogPost />} />
         <Route path="/about" element={<About />} />
         <Route path="/auth" element={<Auth />} />
+        <Route path="/profile" element={<Profile />} />
         <Route path="/site-audit" element={<SiteAudit />} />
         <Route path="/optimization-demo" element={<OptimizationDemo />} />
         <Route path="/position-pricing" element={<PositionPricing />} />
