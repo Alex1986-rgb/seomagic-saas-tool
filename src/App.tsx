@@ -32,6 +32,15 @@ import Careers from './pages/Careers';
 import Partners from './pages/Partners';
 import NotFound from './pages/NotFound';
 
+// Client dashboard pages
+import Dashboard from './pages/Dashboard';
+import ClientDashboard from './pages/ClientDashboard';
+import AdminDashboard from './pages/AdminDashboard';
+import ClientProfile from './pages/ClientProfile';
+import Reports from './pages/Reports';
+import AuditHistory from './pages/AuditHistory';
+import Settings from './pages/Settings';
+
 const App: React.FC = () => {
   console.log('App component rendering');
   return (
@@ -57,6 +66,15 @@ const App: React.FC = () => {
         <Route path="/position-tracking" element={<PositionTracking />} />
         <Route path="/pages" element={<AllPages />} />
         <Route path="/channel" element={<Channel />} />
+        
+        {/* Dashboard and client pages */}
+        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/client-dashboard" element={<ClientDashboard />} />
+        <Route path="/admin-dashboard" element={<AdminDashboard />} />
+        <Route path="/client-profile" element={<ClientProfile />} />
+        <Route path="/reports" element={<Reports />} />
+        <Route path="/audit-history" element={<AuditHistory />} />
+        <Route path="/settings" element={<Settings />} />
         
         {/* Content pages */}
         <Route path="/webinars" element={<Webinars />} />
