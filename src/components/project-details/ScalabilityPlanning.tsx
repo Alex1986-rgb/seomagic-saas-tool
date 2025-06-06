@@ -360,7 +360,7 @@ const ScalabilityPlanning: React.FC = () => {
               <div className="space-y-3">
                 <div className="flex justify-between items-center p-3 border rounded">
                   <span>Время загрузки</span>
-                  <Badge variant="outline">< 1s</Badge>
+                  <Badge variant="outline">&lt; 1s</Badge>
                 </div>
                 <div className="flex justify-between items-center p-3 border rounded">
                   <span>Одновременные пользователи</span>
@@ -368,7 +368,7 @@ const ScalabilityPlanning: React.FC = () => {
                 </div>
                 <div className="flex justify-between items-center p-3 border rounded">
                   <span>API Response Time</span>
-                  <Badge variant="outline">< 100ms</Badge>
+                  <Badge variant="outline">&lt; 100ms</Badge>
                 </div>
                 <div className="flex justify-between items-center p-3 border rounded">
                   <span>Uptime</span>
