@@ -5,21 +5,10 @@ import ProjectOverview from '@/components/project-details/ProjectOverview';
 import TechnicalArchitecture from '@/components/project-details/TechnicalArchitecture';
 import FeaturesStatus from '@/components/project-details/FeaturesStatus';
 import DevelopmentRoadmap from '@/components/project-details/DevelopmentRoadmap';
-import ProjectExporter from '@/components/project-details/ProjectExporter';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card } from '@/components/ui/card';
 
 const ProjectDetails: React.FC = () => {
-  // Данные проекта для экспорта
-  const projectData = {
-    name: "SeoMarket",
-    description: "Комплексная SaaS-платформа для SEO-аудита и оптимизации сайтов",
-    progress: 72,
-    features: [], // Будет заполнено автоматически
-    architecture: {}, // Будет заполнено автоматически  
-    roadmap: [] // Будет заполнено автоматически
-  };
-
   return (
     <Layout>
       <div className="container mx-auto px-4 py-16 md:py-24">
@@ -33,19 +22,13 @@ const ProjectDetails: React.FC = () => {
             </p>
           </div>
 
-          {/* Компонент экспорта */}
-          <div className="mb-8">
-            <ProjectExporter projectData={projectData} />
-          </div>
-
           <Card className="p-6">
             <Tabs defaultValue="overview" className="w-full">
-              <TabsList className="grid w-full grid-cols-5">
+              <TabsList className="grid w-full grid-cols-4">
                 <TabsTrigger value="overview">Обзор</TabsTrigger>
                 <TabsTrigger value="architecture">Архитектура</TabsTrigger>
                 <TabsTrigger value="features">Статус функций</TabsTrigger>
                 <TabsTrigger value="roadmap">Роадмап</TabsTrigger>
-                <TabsTrigger value="export">Экспорт</TabsTrigger>
               </TabsList>
               
               <TabsContent value="overview" className="mt-6">
@@ -62,10 +45,6 @@ const ProjectDetails: React.FC = () => {
               
               <TabsContent value="roadmap" className="mt-6">
                 <DevelopmentRoadmap />
-              </TabsContent>
-              
-              <TabsContent value="export" className="mt-6">
-                <ProjectExporter projectData={projectData} />
               </TabsContent>
             </Tabs>
           </Card>
