@@ -1,128 +1,91 @@
 
-import React from "react";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Mail, Send, Save } from "lucide-react";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import React from 'react';
+import { Helmet } from 'react-helmet-async';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
+import { Mail, TestTube, Settings } from 'lucide-react';
 
-const EmailSettingsPage = () => {
-  const [testEmailStatus, setTestEmailStatus] = React.useState<'idle' | 'sending' | 'success' | 'error'>('idle');
-  const [smtpProvider, setSmtpProvider] = React.useState('smtp');
-
-  const handleTestEmail = () => {
-    setTestEmailStatus('sending');
-    setTimeout(() => {
-      setTestEmailStatus('success');
-    }, 2000);
-  };
-
+const EmailSettingsPage: React.FC = () => {
   return (
-    <div className="container mx-auto px-4 py-8 max-w-3xl">
-      <h2 className="text-2xl font-bold mb-3">Настройки почты</h2>
-      <p className="mb-4 text-muted-foreground">
-        Конфигурация почтового сервера и шаблонов уведомлений.
-      </p>
+    <div className="container mx-auto px-4 py-8 max-w-6xl">
+      <Helmet>
+        <title>Настройки почты | Системные настройки</title>
+      </Helmet>
+      
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold mb-2">Настройки почты</h1>
+        <p className="text-muted-foreground">
+          Конфигурация SMTP сервера и управление шаблонами писем
+        </p>
+      </div>
 
-      {testEmailStatus === 'success' && (
-        <Alert className="mb-6 bg-green-500/10 border-green-500/20">
-          <AlertDescription className="text-green-600">
-            Тестовое письмо успешно отправлено
-          </AlertDescription>
-        </Alert>
-      )}
-
-      <Card className="mb-6">
-        <CardContent className="p-6 space-y-6">
-          <div className="space-y-4">
-            <div>
-              <Label>Провайдер</Label>
-              <Select value={smtpProvider} onValueChange={setSmtpProvider}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Выберите провайдера" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="smtp">SMTP Сервер</SelectItem>
-                  <SelectItem value="sendgrid">SendGrid</SelectItem>
-                  <SelectItem value="mailgun">Mailgun</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-4">
+      <div className="grid gap-6">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Mail className="h-5 w-5 text-primary" />
+                SMTP настройки
+              </div>
+              <Badge className="bg-green-100 text-green-800">Подключено</Badge>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="smtpHost">SMTP Хост</Label>
-                <Input id="smtpHost" placeholder="smtp.example.com" />
+                <label className="block text-sm font-medium mb-1">SMTP сервер</label>
+                <Input defaultValue="smtp.gmail.com" />
               </div>
               <div>
-                <Label htmlFor="smtpPort">SMTP Порт</Label>
-                <Input id="smtpPort" placeholder="587" type="number" />
+                <label className="block text-sm font-medium mb-1">Порт</label>
+                <Input defaultValue="587" />
               </div>
               <div>
-                <Label htmlFor="smtpUser">Пользователь</Label>
-                <Input id="smtpUser" placeholder="user@example.com" />
+                <label className="block text-sm font-medium mb-1">Имя пользователя</label>
+                <Input defaultValue="noreply@example.com" />
               </div>
               <div>
-                <Label htmlFor="smtpPass">Пароль</Label>
-                <Input id="smtpPass" type="password" placeholder="••••••••" />
+                <label className="block text-sm font-medium mb-1">Пароль</label>
+                <Input type="password" defaultValue="••••••••" />
               </div>
             </div>
-
-            <div className="pt-4 flex justify-between items-center">
-              <Button 
-                onClick={handleTestEmail}
-                variant="outline"
-                disabled={testEmailStatus === 'sending'}
-                className="flex gap-2"
-              >
-                <Send className="h-4 w-4" />
-                {testEmailStatus === 'sending' ? 'Отправка...' : 'Отправить тест'}
-              </Button>
-              <Button className="flex gap-2">
-                <Save className="h-4 w-4" />
+            <div className="flex gap-2">
+              <Button>
+                <Settings className="h-4 w-4 mr-2" />
                 Сохранить настройки
               </Button>
+              <Button variant="outline">
+                <TestTube className="h-4 w-4 mr-2" />
+                Тестировать соединение
+              </Button>
             </div>
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
 
-      <Card>
-        <CardContent className="p-6">
-          <h3 className="font-medium mb-4">Шаблоны писем</h3>
-          <div className="space-y-4">
-            {[
-              { name: "Приветственное письмо", status: "Активен" },
-              { name: "Сброс пароля", status: "Активен" },
-              { name: "Подтверждение email", status: "Активен" },
-              { name: "Уведомление о входе", status: "Отключен" },
-            ].map((template, index) => (
-              <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
-                <div className="flex items-center gap-3">
-                  <Mail className="h-4 w-4 text-primary" />
-                  <div>
-                    <p className="font-medium">{template.name}</p>
-                    <p className="text-sm text-muted-foreground">Статус: {template.status}</p>
-                  </div>
+        <Card>
+          <CardHeader>
+            <CardTitle>Шаблоны писем</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {[
+                'Регистрация пользователя',
+                'Восстановление пароля',
+                'Уведомление о завершении аудита',
+                'Отчет по мониторингу позиций'
+              ].map((template, index) => (
+                <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
+                  <span>{template}</span>
+                  <Button variant="outline" size="sm">
+                    Редактировать
+                  </Button>
                 </div>
-                <Button variant="outline" size="sm">
-                  Редактировать
-                </Button>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-
-      <div className="mt-8 text-sm text-muted-foreground space-y-2">
-        <div><b>Возможности:</b> настройка SMTP, шаблоны писем, тестирование отправки.</div>
-        <ul className="list-disc pl-5">
-          <li>Поддержка различных почтовых провайдеров</li>
-          <li>Отслеживание статуса доставки</li>
-          <li>Кастомизация шаблонов</li>
-        </ul>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
