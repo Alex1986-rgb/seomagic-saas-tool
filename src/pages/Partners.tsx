@@ -4,8 +4,139 @@ import Layout from '@/components/Layout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Badge } from '@/components/ui/badge';
+import { Star, Users, Zap, Globe, Award, TrendingUp } from 'lucide-react';
 
 const Partners: React.FC = () => {
+  const partners = [
+    {
+      name: "Google Analytics",
+      logo: "🔍",
+      category: "analytics",
+      description: "Интеграция с Google Analytics для глубокой аналитики",
+      tier: "Premium"
+    },
+    {
+      name: "Yandex.Metrica",
+      logo: "📊",
+      category: "analytics", 
+      description: "Российская система веб-аналитики",
+      tier: "Free"
+    },
+    {
+      name: "SEMrush",
+      logo: "🎯",
+      category: "seo",
+      description: "Платформа для SEO и контент-маркетинга",
+      tier: "Premium"
+    },
+    {
+      name: "Ahrefs",
+      logo: "🔗",
+      category: "seo",
+      description: "Инструменты для анализа обратных ссылок",
+      tier: "Premium"
+    },
+    {
+      name: "Screaming Frog",
+      logo: "🐸",
+      category: "crawler",
+      description: "SEO-краулер для технического аудита",
+      tier: "Pro"
+    },
+    {
+      name: "Serpstat",
+      logo: "🐍",
+      category: "seo",
+      description: "Платформа для SEO и PPC исследований",
+      tier: "Pro"
+    },
+    {
+      name: "Majestic",
+      logo: "👑",
+      category: "seo",
+      description: "Анализ ссылочного профиля сайтов",
+      tier: "Premium"
+    },
+    {
+      name: "SpyFu",
+      logo: "🕵️",
+      category: "competitive",
+      description: "Конкурентная разведка в SEO и PPC",
+      tier: "Pro"
+    },
+    {
+      name: "Moz",
+      logo: "🦎",
+      category: "seo",
+      description: "SEO инструменты и метрики",
+      tier: "Premium"
+    },
+    {
+      name: "BrightLocal",
+      logo: "🌟",
+      category: "local-seo",
+      description: "Локальное SEO и управление репутацией",
+      tier: "Pro"
+    },
+    {
+      name: "GTmetrix",
+      logo: "⚡",
+      category: "performance",
+      description: "Анализ скорости загрузки сайта",
+      tier: "Free"
+    },
+    {
+      name: "PageSpeed Insights",
+      logo: "🚀",
+      category: "performance",
+      description: "Google инструмент анализа производительности",
+      tier: "Free"
+    }
+  ];
+
+  const testimonials = [
+    {
+      name: "Алексей Петров",
+      company: "Digital Agency Pro",
+      quote: "SeoMarket значительно упростил нашу работу с клиентами. Автоматизация отчетности сэкономила нам десятки часов в месяц.",
+      rating: 5
+    },
+    {
+      name: "Мария Сидорова", 
+      company: "SEO Expert",
+      quote: "Отличная интеграция с нашими любимыми инструментами. Все данные в одном месте - это именно то, что нам было нужно.",
+      rating: 5
+    },
+    {
+      name: "Дмитрий Волков",
+      company: "WebStudio Plus",
+      quote: "White Label решение позволило нам предложить клиентам профессиональные SEO отчеты под нашим брендом.",
+      rating: 5
+    }
+  ];
+
+  const getCategoryIcon = (category: string) => {
+    switch (category) {
+      case 'analytics': return <TrendingUp className="h-4 w-4" />;
+      case 'seo': return <Zap className="h-4 w-4" />;
+      case 'crawler': return <Globe className="h-4 w-4" />;
+      case 'competitive': return <Award className="h-4 w-4" />;
+      case 'local-seo': return <Users className="h-4 w-4" />;
+      case 'performance': return <Zap className="h-4 w-4" />;
+      default: return <Star className="h-4 w-4" />;
+    }
+  };
+
+  const getTierColor = (tier: string) => {
+    switch (tier) {
+      case 'Free': return 'bg-green-100 text-green-800';
+      case 'Pro': return 'bg-blue-100 text-blue-800';
+      case 'Premium': return 'bg-purple-100 text-purple-800';
+      default: return 'bg-gray-100 text-gray-800';
+    }
+  };
+
   return (
     <Layout>
       <div className="container mx-auto py-32 px-4">
@@ -143,36 +274,103 @@ const Partners: React.FC = () => {
           </TabsContent>
         </Tabs>
         
-        <div className="bg-accent/20 rounded-xl p-8 text-center max-w-4xl mx-auto">
-          <h2 className="text-2xl font-semibold mb-4">Наши партнеры</h2>
-          <p className="text-lg text-muted-foreground mb-8">
-            Мы гордимся сотрудничеством с ведущими компаниями отрасли
+        {/* Интеграции */}
+        <div className="mb-16">
+          <h2 className="text-3xl font-semibold text-center mb-8">Наши интеграции</h2>
+          <p className="text-center text-muted-foreground mb-12 max-w-2xl mx-auto">
+            SeoMarket интегрируется с ведущими SEO инструментами и платформами аналитики
           </p>
           
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-            <div className="flex items-center justify-center h-16 bg-background/50 rounded-md">
-              <div className="w-24 h-8 bg-muted/30"></div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {partners.map((partner, index) => (
+              <Card key={index} className="hover:shadow-lg transition-shadow">
+                <CardHeader className="pb-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="text-2xl">{partner.logo}</div>
+                      <div>
+                        <CardTitle className="text-sm">{partner.name}</CardTitle>
+                        <div className="flex items-center gap-1 mt-1">
+                          {getCategoryIcon(partner.category)}
+                          <span className="text-xs text-muted-foreground capitalize">
+                            {partner.category.replace('-', ' ')}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                    <Badge className={`text-xs ${getTierColor(partner.tier)}`}>
+                      {partner.tier}
+                    </Badge>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm text-muted-foreground">
+                    {partner.description}
+                  </p>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+
+        {/* Отзывы партнеров */}
+        <div className="mb-16">
+          <h2 className="text-3xl font-semibold text-center mb-8">Отзывы наших партнеров</h2>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {testimonials.map((testimonial, index) => (
+              <Card key={index} className="p-6">
+                <CardContent className="space-y-4">
+                  <div className="flex items-center gap-1">
+                    {[...Array(testimonial.rating)].map((_, i) => (
+                      <Star key={i} className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                    ))}
+                  </div>
+                  <p className="text-muted-foreground italic">
+                    "{testimonial.quote}"
+                  </p>
+                  <div>
+                    <p className="font-medium">{testimonial.name}</p>
+                    <p className="text-sm text-muted-foreground">{testimonial.company}</p>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+
+        {/* CTA секция */}
+        <div className="bg-accent/20 rounded-xl p-8 text-center max-w-4xl mx-auto">
+          <h2 className="text-2xl font-semibold mb-4">Готовы стать партнером?</h2>
+          <p className="text-lg text-muted-foreground mb-8">
+            Присоединяйтесь к экосистеме SeoMarket и развивайте свой бизнес вместе с нами
+          </p>
+          
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Button size="lg">
+              Стать партнером
+            </Button>
+            <Button variant="outline" size="lg">
+              Связаться с нами
+            </Button>
+          </div>
+          
+          <div className="mt-8 grid grid-cols-2 md:grid-cols-4 gap-8">
+            <div className="flex flex-col items-center">
+              <div className="text-2xl font-bold text-primary">50+</div>
+              <div className="text-sm text-muted-foreground">Активных партнеров</div>
             </div>
-            <div className="flex items-center justify-center h-16 bg-background/50 rounded-md">
-              <div className="w-24 h-8 bg-muted/30"></div>
+            <div className="flex flex-col items-center">
+              <div className="text-2xl font-bold text-primary">12</div>
+              <div className="text-sm text-muted-foreground">Интеграций</div>
             </div>
-            <div className="flex items-center justify-center h-16 bg-background/50 rounded-md">
-              <div className="w-24 h-8 bg-muted/30"></div>
+            <div className="flex flex-col items-center">
+              <div className="text-2xl font-bold text-primary">98%</div>
+              <div className="text-sm text-muted-foreground">Satisfaction rate</div>
             </div>
-            <div className="flex items-center justify-center h-16 bg-background/50 rounded-md">
-              <div className="w-24 h-8 bg-muted/30"></div>
-            </div>
-            <div className="flex items-center justify-center h-16 bg-background/50 rounded-md">
-              <div className="w-24 h-8 bg-muted/30"></div>
-            </div>
-            <div className="flex items-center justify-center h-16 bg-background/50 rounded-md">
-              <div className="w-24 h-8 bg-muted/30"></div>
-            </div>
-            <div className="flex items-center justify-center h-16 bg-background/50 rounded-md">
-              <div className="w-24 h-8 bg-muted/30"></div>
-            </div>
-            <div className="flex items-center justify-center h-16 bg-background/50 rounded-md">
-              <div className="w-24 h-8 bg-muted/30"></div>
+            <div className="flex flex-col items-center">
+              <div className="text-2xl font-bold text-primary">24/7</div>
+              <div className="text-sm text-muted-foreground">Поддержка</div>
             </div>
           </div>
         </div>
