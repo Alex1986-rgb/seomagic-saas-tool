@@ -19,6 +19,9 @@ const LazyContact = React.lazy(() => import('./pages/Contact'));
 const LazyProjectDetails = React.lazy(() => import('./pages/ProjectDetails'));
 const LazyNotFound = React.lazy(() => import('./pages/NotFound'));
 
+// Ленивая загрузка админ роутов
+const LazyAdminRoutes = React.lazy(() => import('./routes/AdminRoutes'));
+
 function App() {
   console.log("App component rendering");
   
@@ -33,6 +36,13 @@ function App() {
             <Route path="/audit" element={<Audit />} />
             <Route path="/seo-elements" element={<SeoElementsPage />} />
             <Route path="/keywords" element={<KeywordsPage />} />
+            
+            {/* Админ маршруты */}
+            <Route path="/admin/*" element={
+              <Suspense fallback={<FullscreenLoader text="Загрузка админ-панели..." />}>
+                <LazyAdminRoutes />
+              </Suspense>
+            } />
             
             {/* Некритичные страницы - ленивая загрузка */}
             <Route path="/features" element={

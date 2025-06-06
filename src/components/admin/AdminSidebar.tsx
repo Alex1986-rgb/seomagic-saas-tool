@@ -1,172 +1,130 @@
 
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { 
-  LayoutDashboard, Globe, Bell, MonitorCheck, Settings, Users, BarChart, 
-  Server, Database, File, Search, Activity, CreditCard, Shield, Webhook
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarGroupLabel,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarHeader,
+} from "@/components/ui/sidebar";
+import {
+  Home,
+  Users,
+  BarChart2,
+  FileText,
+  Globe,
+  Server,
+  Settings,
+  Monitor,
+  CreditCard,
+  MapPin,
+  Shield,
+  Bell,
 } from 'lucide-react';
-import SidebarGroup from './SidebarGroup';
-import SidebarLink from './SidebarLink';
-import { ScrollArea } from "../ui/scroll-area";
 
-// Define icon component type
-type IconType = React.ComponentType<React.SVGProps<SVGSVGElement>>;
+const menuItems = [
+  {
+    title: "Дашборд",
+    url: "/admin",
+    icon: Home,
+  },
+  {
+    title: "Пользователи",
+    url: "/admin/users",
+    icon: Users,
+  },
+  {
+    title: "Аналитика",
+    url: "/admin/analytics",
+    icon: BarChart2,
+  },
+  {
+    title: "Аудиты",
+    url: "/admin/audits",
+    icon: FileText,
+  },
+  {
+    title: "Сайты",
+    url: "/admin/sites",
+    icon: Globe,
+  },
+  {
+    title: "Хостинг",
+    url: "/admin/hosting",
+    icon: Server,
+  },
+  {
+    title: "Мониторинг",
+    url: "/admin/monitoring",
+    icon: Monitor,
+  },
+  {
+    title: "Анализатор сайтов",
+    url: "/admin/website-analyzer",
+    icon: Globe,
+  },
+  {
+    title: "Позиции",
+    url: "/admin/positions",
+    icon: MapPin,
+  },
+  {
+    title: "Платежи",
+    url: "/admin/payments",
+    icon: CreditCard,
+  },
+  {
+    title: "Прокси",
+    url: "/admin/proxies",
+    icon: Shield,
+  },
+  {
+    title: "Уведомления",
+    url: "/admin/notifications",
+    icon: Bell,
+  },
+  {
+    title: "Настройки",
+    url: "/admin/settings",
+    icon: Settings,
+  },
+];
 
-const AdminSidebar: React.FC = () => {
+export function AdminSidebar() {
   const location = useLocation();
-  const currentPath = location.pathname;
-  
-  return (
-    <div className="h-full bg-card border-r flex flex-col">
-      <div className="p-4 border-b">
-        <Link to="/" className="flex items-center gap-2">
-          <div className="bg-primary text-white p-1 rounded-sm">
-            <LayoutDashboard size={18} />
-          </div>
-          <span className="font-medium text-lg">SeoMarket</span>
-        </Link>
-      </div>
-      
-      <ScrollArea className="flex-1 py-4">
-        <nav className="space-y-2 px-2">
-          <SidebarLink 
-            to="/admin" 
-            icon={LayoutDashboard} 
-            active={currentPath === '/admin'}
-          >
-            Дашборд
-          </SidebarLink>
-          
-          <SidebarGroup title="Проект">
-            <SidebarLink 
-              to="/project-details" 
-              icon={File} 
-              active={currentPath.includes('/project-details')}
-            >
-              Детали проекта
-            </SidebarLink>
-          </SidebarGroup>
-          
-          <SidebarGroup title="Анализ">
-            <SidebarLink 
-              to="/admin/website-analyzer" 
-              icon={Globe} 
-              active={currentPath.includes('/admin/website-analyzer')}
-            >
-              Анализатор сайтов
-            </SidebarLink>
-            <SidebarLink 
-              to="/admin/positions" 
-              icon={Search} 
-              active={currentPath.includes('/admin/positions')}
-            >
-              Позиции
-            </SidebarLink>
-            <SidebarLink 
-              to="/admin/audits" 
-              icon={File} 
-              active={currentPath.includes('/admin/audits')}
-            >
-              Аудиты
-            </SidebarLink>
-            <SidebarLink 
-              to="/admin/proxies" 
-              icon={Webhook} 
-              active={currentPath.includes('/admin/proxies')}
-            >
-              Управление прокси
-            </SidebarLink>
-          </SidebarGroup>
-          
-          <SidebarGroup title="Управление">
-            <SidebarLink 
-              to="/admin/sites" 
-              icon={Globe} 
-              active={currentPath.includes('/admin/sites')}
-            >
-              Сайты
-            </SidebarLink>
-            <SidebarLink 
-              to="/admin/hosting" 
-              icon={Server} 
-              active={currentPath.includes('/admin/hosting')}
-            >
-              Хостинг
-            </SidebarLink>
-            <SidebarLink 
-              to="/admin/users" 
-              icon={Users} 
-              active={currentPath.includes('/admin/users')}
-            >
-              Пользователи
-            </SidebarLink>
-            <SidebarLink 
-              to="/admin/payments" 
-              icon={CreditCard} 
-              active={currentPath.includes('/admin/payments')}
-            >
-              Платежи
-            </SidebarLink>
-          </SidebarGroup>
-          
-          <SidebarGroup title="Мониторинг">
-            <SidebarLink 
-              to="/admin/analytics" 
-              icon={BarChart} 
-              active={currentPath.includes('/admin/analytics')}
-            >
-              Аналитика
-            </SidebarLink>
-            <SidebarLink 
-              to="/admin/monitoring" 
-              icon={Activity} 
-              active={currentPath.includes('/admin/monitoring')}
-            >
-              Мониторинг
-            </SidebarLink>
-            <SidebarLink 
-              to="/admin/system-status" 
-              icon={MonitorCheck} 
-              active={currentPath.includes('/admin/system-status')}
-            >
-              Статус системы
-            </SidebarLink>
-            <SidebarLink 
-              to="/admin/notifications" 
-              icon={Bell} 
-              active={currentPath.includes('/admin/notifications')}
-            >
-              Уведомления
-            </SidebarLink>
-          </SidebarGroup>
-          
-          <SidebarGroup title="Настройки">
-            <SidebarLink 
-              to="/admin/settings" 
-              icon={Settings} 
-              active={currentPath === '/admin/settings'}
-            >
-              Настройки
-            </SidebarLink>
-            <SidebarLink 
-              to="/admin/system" 
-              icon={Database} 
-              active={currentPath.includes('/admin/system')}
-            >
-              Система
-            </SidebarLink>
-            <SidebarLink 
-              to="/admin/system/security" 
-              icon={Shield} 
-              active={currentPath.includes('/admin/system/security')}
-            >
-              Безопасность
-            </SidebarLink>
-          </SidebarGroup>
-        </nav>
-      </ScrollArea>
-    </div>
-  );
-};
 
-export default AdminSidebar;
+  return (
+    <Sidebar>
+      <SidebarHeader className="p-4">
+        <h2 className="text-lg font-semibold text-primary">SEO Platform</h2>
+      </SidebarHeader>
+      <SidebarContent>
+        <SidebarGroup>
+          <SidebarGroupLabel>Управление</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {menuItems.map((item) => (
+                <SidebarMenuItem key={item.title}>
+                  <SidebarMenuButton 
+                    asChild 
+                    isActive={location.pathname === item.url}
+                  >
+                    <Link to={item.url}>
+                      <item.icon />
+                      <span>{item.title}</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+      </SidebarContent>
+    </Sidebar>
+  );
+}
