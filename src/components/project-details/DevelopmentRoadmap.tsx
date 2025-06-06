@@ -4,102 +4,136 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { 
   Calendar, 
-  Target, 
-  Users, 
+  CheckCircle, 
+  Clock, 
+  Target,
   Zap,
-  CheckCircle,
-  Clock,
-  AlertTriangle
+  Globe,
+  Shield,
+  BarChart3
 } from 'lucide-react';
 
 const DevelopmentRoadmap: React.FC = () => {
-  const phases = [
+  const roadmapItems = [
     {
-      phase: 'Фаза 1: Основная функциональность',
-      duration: '2-3 недели',
-      status: 'in-progress',
-      progress: 85,
-      tasks: [
-        { name: 'Завершение Supabase интеграции', priority: 'high', status: 'in-progress' },
-        { name: 'Настройка аутентификации', priority: 'high', status: 'in-progress' },
-        { name: 'Доработка SEO аудита', priority: 'medium', status: 'completed' },
-        { name: 'Тестирование основных функций', priority: 'medium', status: 'pending' }
+      quarter: "Q1 2024",
+      status: "completed",
+      title: "Основные модули",
+      items: [
+        "Crawler - рекурсивное сканирование",
+        "SEO Analyzer - анализ параметров",
+        "HTML Downloader - загрузка ресурсов",
+        "Report Generator - PDF отчеты"
       ]
     },
     {
-      phase: 'Фаза 2: Платежи и подписки',
-      duration: '2-3 недели',
-      status: 'pending',
-      progress: 15,
-      tasks: [
-        { name: 'Интеграция Stripe', priority: 'high', status: 'pending' },
-        { name: 'Система тарифных планов', priority: 'high', status: 'pending' },
-        { name: 'Биллинг и счета', priority: 'medium', status: 'pending' },
-        { name: 'Управление подписками', priority: 'medium', status: 'pending' }
+      quarter: "Q2 2024", 
+      status: "completed",
+      title: "ИИ интеграция",
+      items: [
+        "OpenAI Optimizer - улучшение контента",
+        "Site Packager - архивация",
+        "Publisher - загрузка на сервер",
+        "Sitemap Generator"
       ]
     },
     {
-      phase: 'Фаза 3: Расширенная аналитика',
-      duration: '1-2 недели',
-      status: 'pending',
-      progress: 30,
-      tasks: [
-        { name: 'Google APIs интеграция', priority: 'high', status: 'pending' },
-        { name: 'Улучшенная аналитика позиций', priority: 'medium', status: 'in-progress' },
-        { name: 'Экспорт отчетов', priority: 'medium', status: 'pending' },
-        { name: 'Email уведомления', priority: 'low', status: 'pending' }
+      quarter: "Q3 2024",
+      status: "in_progress", 
+      title: "Расширенные возможности",
+      items: [
+        "Position Checker - отслеживание позиций",
+        "Pinger - уведомление поисковиков",
+        "Task Pipeline - управление задачами",
+        "API интеграции"
       ]
     },
     {
-      phase: 'Фаза 4: Оптимизация и безопасность',
-      duration: '1-2 недели',
-      status: 'pending',
-      progress: 10,
-      tasks: [
-        { name: 'Производительность и оптимизация', priority: 'medium', status: 'pending' },
-        { name: 'Безопасность и RLS политики', priority: 'high', status: 'pending' },
-        { name: 'Мониторинг и логирование', priority: 'medium', status: 'pending' },
-        { name: 'Тестирование и QA', priority: 'high', status: 'pending' }
+      quarter: "Q4 2024",
+      status: "planned",
+      title: "Масштабирование",
+      items: [
+        "Мультисайтовая обработка",
+        "Расширенная аналитика",
+        "Интеграция с CMS",
+        "Мобильное приложение"
+      ]
+    },
+    {
+      quarter: "Q1 2025",
+      status: "planned", 
+      title: "Энтерпрайз функции",
+      items: [
+        "Белый лейбл решение",
+        "API для партнеров",
+        "Расширенная безопасность",
+        "Международная локализация"
       ]
     }
   ];
 
-  const getStatusBadge = (status: string) => {
+  const milestones = [
+    {
+      date: "Март 2024",
+      title: "MVP запуск", 
+      description: "Базовый функционал для аудита и оптимизации",
+      icon: Target,
+      status: "completed"
+    },
+    {
+      date: "Июнь 2024",
+      title: "ИИ интеграция",
+      description: "Автоматическая оптимизация через OpenAI",
+      icon: Zap,
+      status: "completed"
+    },
+    {
+      date: "Сентябрь 2024", 
+      title: "Продакшн готовность",
+      description: "Полноценная система для коммерческого использования",
+      icon: Globe,
+      status: "in_progress"
+    },
+    {
+      date: "Декабрь 2024",
+      title: "Масштабирование",
+      description: "Поддержка высоких нагрузок и множественных сайтов",
+      icon: BarChart3,
+      status: "planned"
+    },
+    {
+      date: "Март 2025",
+      title: "Энтерпрайз уровень",
+      description: "Корпоративные функции и безопасность",
+      icon: Shield,
+      status: "planned"
+    }
+  ];
+
+  const getStatusColor = (status: string) => {
     switch (status) {
-      case 'completed':
-        return <Badge variant="secondary" className="bg-green-100 text-green-800">Завершено</Badge>;
-      case 'in-progress':
-        return <Badge variant="outline" className="border-blue-500 text-blue-700">В работе</Badge>;
-      case 'pending':
-        return <Badge variant="outline">Запланировано</Badge>;
-      default:
-        return <Badge variant="outline">Неизвестно</Badge>;
+      case 'completed': return 'text-green-600 bg-green-100 border-green-200';
+      case 'in_progress': return 'text-blue-600 bg-blue-100 border-blue-200';
+      case 'planned': return 'text-gray-600 bg-gray-100 border-gray-200';
+      default: return 'text-gray-600 bg-gray-100 border-gray-200';
     }
   };
 
-  const getPriorityBadge = (priority: string) => {
-    switch (priority) {
-      case 'high':
-        return <Badge variant="destructive" className="text-xs">Высокий</Badge>;
-      case 'medium':
-        return <Badge variant="outline" className="text-xs">Средний</Badge>;
-      case 'low':
-        return <Badge variant="secondary" className="text-xs">Низкий</Badge>;
-      default:
-        return <Badge variant="outline" className="text-xs">Обычный</Badge>;
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case 'completed': return <CheckCircle className="h-4 w-4 text-green-500" />;
+      case 'in_progress': return <Clock className="h-4 w-4 text-blue-500" />;
+      case 'planned': return <Calendar className="h-4 w-4 text-gray-500" />;
+      default: return <Calendar className="h-4 w-4 text-gray-500" />;
     }
   };
 
-  const getTaskIcon = (status: string) => {
+  const getStatusLabel = (status: string) => {
     switch (status) {
-      case 'completed':
-        return <CheckCircle className="h-4 w-4 text-green-600" />;
-      case 'in-progress':
-        return <Clock className="h-4 w-4 text-blue-600" />;
-      case 'pending':
-        return <AlertTriangle className="h-4 w-4 text-gray-400" />;
-      default:
-        return null;
+      case 'completed': return 'Завершено';
+      case 'in_progress': return 'В работе';
+      case 'planned': return 'Запланировано';
+      default: return 'Неопределено';
     }
   };
 
@@ -108,110 +142,94 @@ const DevelopmentRoadmap: React.FC = () => {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Target className="h-5 w-5" />
-            План разработки
+            <Calendar className="h-5 w-5" />
+            Дорожная карта развития
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6 text-center">
-              <div className="p-4 border rounded-lg">
-                <Calendar className="h-8 w-8 mx-auto mb-2 text-primary" />
-                <div className="text-2xl font-bold">6-10</div>
-                <div className="text-sm text-muted-foreground">недель до MVP</div>
+            {roadmapItems.map((item, index) => (
+              <div key={index} className={`p-6 border-2 rounded-lg ${getStatusColor(item.status)}`}>
+                <div className="flex justify-between items-center mb-4">
+                  <div className="flex items-center gap-3">
+                    {getStatusIcon(item.status)}
+                    <h3 className="text-xl font-bold">{item.quarter}</h3>
+                    <Badge variant="outline">{getStatusLabel(item.status)}</Badge>
+                  </div>
+                  <h4 className="text-lg font-semibold">{item.title}</h4>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                  {item.items.map((feature, idx) => (
+                    <div key={idx} className="flex items-center gap-2">
+                      <div className="w-1.5 h-1.5 bg-current rounded-full"></div>
+                      <span className="text-sm">{feature}</span>
+                    </div>
+                  ))}
+                </div>
               </div>
-              <div className="p-4 border rounded-lg">
-                <Users className="h-8 w-8 mx-auto mb-2 text-primary" />
-                <div className="text-2xl font-bold">2-3</div>
-                <div className="text-sm text-muted-foreground">разработчика</div>
-              </div>
-              <div className="p-4 border rounded-lg">
-                <Zap className="h-8 w-8 mx-auto mb-2 text-primary" />
-                <div className="text-2xl font-bold">72%</div>
-                <div className="text-sm text-muted-foreground">готовности</div>
-              </div>
-              <div className="p-4 border rounded-lg">
-                <Target className="h-8 w-8 mx-auto mb-2 text-primary" />
-                <div className="text-2xl font-bold">4</div>
-                <div className="text-sm text-muted-foreground">основные фазы</div>
-              </div>
-            </div>
+            ))}
           </div>
         </CardContent>
       </Card>
 
-      <div className="space-y-6">
-        {phases.map((phase, index) => (
-          <Card key={index}>
-            <CardHeader>
-              <div className="flex justify-between items-start">
-                <div>
-                  <CardTitle className="text-lg">{phase.phase}</CardTitle>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    Длительность: {phase.duration}
-                  </p>
-                </div>
-                <div className="text-right">
-                  {getStatusBadge(phase.status)}
-                  <div className="text-sm text-muted-foreground mt-1">
-                    {phase.progress}% готово
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Target className="h-5 w-5" />
+            Ключевые вехи проекта
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-6">
+            {milestones.map((milestone, index) => {
+              const IconComponent = milestone.icon;
+              return (
+                <div key={index} className="flex items-start gap-4">
+                  <div className={`p-3 rounded-full ${getStatusColor(milestone.status)}`}>
+                    <IconComponent className="h-6 w-6" />
+                  </div>
+                  <div className="flex-1">
+                    <div className="flex justify-between items-start mb-2">
+                      <h4 className="font-semibold">{milestone.title}</h4>
+                      <Badge variant="outline">{milestone.date}</Badge>
+                    </div>
+                    <p className="text-sm text-muted-foreground">{milestone.description}</p>
                   </div>
                 </div>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                {phase.tasks.map((task, taskIndex) => (
-                  <div key={taskIndex} className="flex items-center justify-between p-3 border rounded-lg">
-                    <div className="flex items-center gap-3">
-                      {getTaskIcon(task.status)}
-                      <span className="text-sm font-medium">{task.name}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      {getPriorityBadge(task.priority)}
-                      {getStatusBadge(task.status)}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+              );
+            })}
+          </div>
+        </CardContent>
+      </Card>
 
       <Card>
         <CardHeader>
-          <CardTitle>Рекомендации по завершению проекта</CardTitle>
+          <CardTitle>Текущие приоритеты</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            <div>
-              <h4 className="font-semibold mb-2">Критические задачи (требуют немедленного внимания):</h4>
-              <ul className="list-disc pl-6 space-y-1 text-sm">
-                <li>Настройка Supabase RLS политик для безопасности данных</li>
-                <li>Завершение системы аутентификации и авторизации</li>
-                <li>Интеграция с внешними API (Google PageSpeed, OpenAI)</li>
-                <li>Создание edge functions для backend логики</li>
+            <div className="p-4 bg-blue-50 dark:bg-blue-900/10 border border-blue-200 dark:border-blue-900/50 rounded-lg">
+              <h4 className="font-semibold text-blue-800 dark:text-blue-400 mb-2">
+                🚀 Активная разработка
+              </h4>
+              <ul className="text-sm text-blue-700 dark:text-blue-300 space-y-1">
+                <li>• Завершение позиционного трекера</li>
+                <li>• Оптимизация производительности</li>
+                <li>• Расширенная отчетность</li>
+                <li>• Тестирование и отладка</li>
               </ul>
             </div>
             
-            <div>
-              <h4 className="font-semibold mb-2">Архитектурные решения:</h4>
-              <ul className="list-disc pl-6 space-y-1 text-sm">
-                <li>Реализация очередей для длительных задач (сканирование сайтов)</li>
-                <li>Кэширование результатов аудитов для повышения производительности</li>
-                <li>Настройка мониторинга и алертов для production среды</li>
-                <li>Создание CI/CD pipeline для автоматического деплоя</li>
-              </ul>
-            </div>
-            
-            <div>
-              <h4 className="font-semibold mb-2">Бизнес-логика:</h4>
-              <ul className="list-disc pl-6 space-y-1 text-sm">
-                <li>Определение лимитов для каждого тарифного плана</li>
-                <li>Создание системы биллинга и управления подписками</li>
-                <li>Настройка email-уведомлений для пользователей</li>
-                <li>Интеграция аналитики для отслеживания использования</li>
+            <div className="p-4 bg-green-50 dark:bg-green-900/10 border border-green-200 dark:border-green-900/50 rounded-lg">
+              <h4 className="font-semibold text-green-800 dark:text-green-400 mb-2">
+                ✅ Ближайшие планы
+              </h4>
+              <ul className="text-sm text-green-700 dark:text-green-300 space-y-1">
+                <li>• Запуск в продакшн (Q3 2024)</li>
+                <li>• Интеграция с популярными CMS</li>
+                <li>• Мобильная версия</li>
+                <li>• Партнерская программа</li>
               </ul>
             </div>
           </div>
