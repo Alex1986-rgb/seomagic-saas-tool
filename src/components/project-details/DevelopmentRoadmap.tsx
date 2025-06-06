@@ -10,7 +10,9 @@ import {
   Zap,
   Globe,
   Shield,
-  BarChart3
+  BarChart3,
+  Users,
+  Rocket
 } from 'lucide-react';
 
 const DevelopmentRoadmap: React.FC = () => {
@@ -18,56 +20,56 @@ const DevelopmentRoadmap: React.FC = () => {
     {
       quarter: "Q1 2024",
       status: "completed",
-      title: "Основные модули",
+      title: "Основная инфраструктура",
       items: [
         "Crawler - рекурсивное сканирование",
-        "SEO Analyzer - анализ параметров",
-        "HTML Downloader - загрузка ресурсов",
-        "Report Generator - PDF отчеты"
+        "SEO Analyzer - глубокий анализ параметров",
+        "HTML Processor - загрузка и обработка",
+        "Report Generator - PDF отчеты и аналитика"
       ]
     },
     {
       quarter: "Q2 2024", 
       status: "completed",
-      title: "ИИ интеграция",
+      title: "ИИ интеграция и оптимизация",
       items: [
-        "OpenAI Optimizer - улучшение контента",
-        "Site Packager - архивация",
-        "Publisher - загрузка на сервер",
-        "Sitemap Generator"
+        "OpenAI Optimizer - умная оптимизация контента",
+        "HTML Fixer - автоматическое исправление кода",
+        "Site Packager - упаковка готового сайта",
+        "Sitemap Generator - создание карт сайта"
       ]
     },
     {
       quarter: "Q3 2024",
-      status: "in_progress", 
-      title: "Расширенные возможности",
+      status: "completed", 
+      title: "Публикация и автоматизация",
       items: [
-        "Position Checker - отслеживание позиций",
-        "Pinger - уведомление поисковиков",
-        "Task Pipeline - управление задачами",
-        "API интеграции"
+        "FTP Publisher - автоматическая публикация",
+        "Search Pinger - уведомление поисковиков",
+        "Task Manager - управление очередями",
+        "SSL Manager - автоматические сертификаты"
       ]
     },
     {
       quarter: "Q4 2024",
-      status: "planned",
-      title: "Масштабирование",
+      status: "in_progress",
+      title: "Мониторинг и аналитика",
       items: [
-        "Мультисайтовая обработка",
-        "Расширенная аналитика",
-        "Интеграция с CMS",
-        "Мобильное приложение"
+        "Position Tracker - отслеживание позиций",
+        "Performance Monitor - мониторинг скорости",
+        "Analytics Dashboard - детальная аналитика",
+        "Competitor Analysis - анализ конкурентов"
       ]
     },
     {
       quarter: "Q1 2025",
       status: "planned", 
-      title: "Энтерпрайз функции",
+      title: "Расширенные возможности",
       items: [
+        "Мультисайтовая обработка",
+        "API для интеграций",
         "Белый лейбл решение",
-        "API для партнеров",
-        "Расширенная безопасность",
-        "Международная локализация"
+        "Мобильное приложение"
       ]
     }
   ];
@@ -75,36 +77,36 @@ const DevelopmentRoadmap: React.FC = () => {
   const milestones = [
     {
       date: "Март 2024",
-      title: "MVP запуск", 
-      description: "Базовый функционал для аудита и оптимизации",
+      title: "Альфа версия", 
+      description: "Базовый функционал сканирования и анализа",
       icon: Target,
       status: "completed"
     },
     {
       date: "Июнь 2024",
-      title: "ИИ интеграция",
-      description: "Автоматическая оптимизация через OpenAI",
+      title: "Бета версия",
+      description: "ИИ оптимизация и автоматическое исправление",
       icon: Zap,
       status: "completed"
     },
     {
       date: "Сентябрь 2024", 
-      title: "Продакшн готовность",
-      description: "Полноценная система для коммерческого использования",
-      icon: Globe,
-      status: "in_progress"
+      title: "Релиз 1.0",
+      description: "Полнофункциональная система для продакшн",
+      icon: Rocket,
+      status: "completed"
     },
     {
       date: "Декабрь 2024",
-      title: "Масштабирование",
-      description: "Поддержка высоких нагрузок и множественных сайтов",
+      title: "Версия 1.5",
+      description: "Расширенная аналитика и мониторинг",
       icon: BarChart3,
-      status: "planned"
+      status: "in_progress"
     },
     {
       date: "Март 2025",
-      title: "Энтерпрайз уровень",
-      description: "Корпоративные функции и безопасность",
+      title: "Версия 2.0",
+      description: "Энтерпрайз функции и масштабирование",
       icon: Shield,
       status: "planned"
     }
@@ -143,7 +145,7 @@ const DevelopmentRoadmap: React.FC = () => {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Calendar className="h-5 w-5" />
-            Дорожная карта развития
+            Дорожная карта развития проекта
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -203,38 +205,79 @@ const DevelopmentRoadmap: React.FC = () => {
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Текущие приоритеты</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            <div className="p-4 bg-blue-50 dark:bg-blue-900/10 border border-blue-200 dark:border-blue-900/50 rounded-lg">
-              <h4 className="font-semibold text-blue-800 dark:text-blue-400 mb-2">
-                🚀 Активная разработка
-              </h4>
-              <ul className="text-sm text-blue-700 dark:text-blue-300 space-y-1">
-                <li>• Завершение позиционного трекера</li>
-                <li>• Оптимизация производительности</li>
-                <li>• Расширенная отчетность</li>
-                <li>• Тестирование и отладка</li>
-              </ul>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Rocket className="h-5 w-5" />
+              Текущий фокус
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="p-4 bg-blue-50 dark:bg-blue-900/10 border border-blue-200 dark:border-blue-900/50 rounded-lg">
+                <h4 className="font-semibold text-blue-800 dark:text-blue-400 mb-2">
+                  🚧 Активная разработка
+                </h4>
+                <ul className="text-sm text-blue-700 dark:text-blue-300 space-y-1">
+                  <li>• Доработка позиционного трекера</li>
+                  <li>• Оптимизация производительности</li>
+                  <li>• Расширенные отчеты</li>
+                  <li>• Финальное тестирование</li>
+                </ul>
+              </div>
+              
+              <div className="p-4 bg-green-50 dark:bg-green-900/10 border border-green-200 dark:border-green-900/50 rounded-lg">
+                <h4 className="font-semibold text-green-800 dark:text-green-400 mb-2">
+                  ✅ Готово к использованию
+                </h4>
+                <ul className="text-sm text-green-700 dark:text-green-300 space-y-1">
+                  <li>• Полное сканирование сайтов</li>
+                  <li>• ИИ оптимизация контента</li>
+                  <li>• Автоматическое исправление HTML</li>
+                  <li>• Публикация на поддомен</li>
+                </ul>
+              </div>
             </div>
-            
-            <div className="p-4 bg-green-50 dark:bg-green-900/10 border border-green-200 dark:border-green-900/50 rounded-lg">
-              <h4 className="font-semibold text-green-800 dark:text-green-400 mb-2">
-                ✅ Ближайшие планы
-              </h4>
-              <ul className="text-sm text-green-700 dark:text-green-300 space-y-1">
-                <li>• Запуск в продакшн (Q3 2024)</li>
-                <li>• Интеграция с популярными CMS</li>
-                <li>• Мобильная версия</li>
-                <li>• Партнерская программа</li>
-              </ul>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Globe className="h-5 w-5" />
+              Ближайшие планы
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="p-4 bg-purple-50 dark:bg-purple-900/10 border border-purple-200 dark:border-purple-900/50 rounded-lg">
+                <h4 className="font-semibold text-purple-800 dark:text-purple-400 mb-2">
+                  🎯 Q1 2025
+                </h4>
+                <ul className="text-sm text-purple-700 dark:text-purple-300 space-y-1">
+                  <li>• Пакетная обработка сайтов</li>
+                  <li>• API для внешних интеграций</li>
+                  <li>• Расширенная аналитика</li>
+                  <li>• Система уведомлений</li>
+                </ul>
+              </div>
+              
+              <div className="p-4 bg-orange-50 dark:bg-orange-900/10 border border-orange-200 dark:border-orange-900/50 rounded-lg">
+                <h4 className="font-semibold text-orange-800 dark:text-orange-400 mb-2">
+                  🚀 Долгосрочные цели
+                </h4>
+                <ul className="text-sm text-orange-700 dark:text-orange-300 space-y-1">
+                  <li>• Машинное обучение для SEO</li>
+                  <li>• Интеграция с CMS</li>
+                  <li>• Мобильное приложение</li>
+                  <li>• Партнерская программа</li>
+                </ul>
+              </div>
             </div>
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 };
