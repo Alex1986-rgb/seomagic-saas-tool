@@ -10,13 +10,13 @@ import CTASection from '../components/sections/CTASection';
 
 const Index: React.FC = () => {
   useEffect(() => {
-    console.log("Index page mounted");
+    console.log("Index page mounted and rendering");
     return () => {
       console.log("Index page unmounted");
     };
   }, []);
 
-  console.log("Index page rendering");
+  console.log("Index page component rendering");
   
   return (
     <Layout>

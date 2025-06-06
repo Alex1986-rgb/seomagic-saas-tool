@@ -23,10 +23,11 @@ const Layout: React.FC<LayoutProps> = ({
   
   useEffect(() => {
     console.log("Layout mounted with path:", location.pathname);
+    console.log("Layout children:", children);
     return () => {
       console.log("Layout unmounted");
     };
-  }, [location.pathname]);
+  }, [location.pathname, children]);
   
   // Check if the current path starts with /admin
   const isAdminRoute = location.pathname.startsWith('/admin');
@@ -36,7 +37,13 @@ const Layout: React.FC<LayoutProps> = ({
   const shouldHideNavbar = hideNavbar || isAdminRoute;
   const shouldHideFooter = hideFooter || isAdminRoute;
 
-  console.log("Layout rendering with navbar:", !shouldHideNavbar, "footer:", !shouldHideFooter, "path:", location.pathname);
+  console.log("Layout rendering:", {
+    path: location.pathname,
+    isAdminRoute,
+    showNavbar: !shouldHideNavbar,
+    showFooter: !shouldHideFooter,
+    hasChildren: !!children
+  });
 
   return (
     <div className={cn("flex flex-col min-h-screen relative", className)}>
