@@ -1,7 +1,6 @@
 
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import './index.css';
 import App from './App';
 
@@ -47,15 +46,6 @@ class AppErrorBoundary extends React.Component<
   }
 }
 
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      retry: 1,
-      refetchOnWindowFocus: false,
-    },
-  },
-});
-
 const rootElement = document.getElementById('root');
 
 if (rootElement) {
@@ -66,9 +56,7 @@ if (rootElement) {
   root.render(
     <React.StrictMode>
       <AppErrorBoundary>
-        <QueryClientProvider client={queryClient}>
-          <App />
-        </QueryClientProvider>
+        <App />
       </AppErrorBoundary>
     </React.StrictMode>
   );

@@ -1,3 +1,4 @@
+
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
@@ -53,9 +54,6 @@ export default defineConfig(({ mode }) => ({
             }
             if (id.includes('framer-motion')) {
               return 'vendor-animation';
-            }
-            if (id.includes('@supabase')) {
-              return 'vendor-supabase';
             }
             if (id.includes('@tanstack/react-query')) {
               return 'vendor-query';
@@ -113,8 +111,7 @@ export default defineConfig(({ mode }) => ({
     exclude: [],
     esbuildOptions: {
       target: 'esnext'
-    },
-    force: true
+    }
   },
   experimental: {
     renderBuiltUrl(filename) {
@@ -123,8 +120,5 @@ export default defineConfig(({ mode }) => ({
   },
   define: {
     global: 'globalThis',
-  },
-  ssr: {
-    noExternal: ['@supabase/supabase-js']
   }
 }));
