@@ -33,9 +33,9 @@ const ArticlePage: React.FC = () => {
           animate={{ opacity: 1, y: 0 }}
           className="mb-8"
         >
-          <Link to="/features" className="inline-flex items-center text-muted-foreground hover:text-foreground transition-colors">
+          <Link to="/" className="inline-flex items-center text-muted-foreground hover:text-foreground transition-colors">
             <ArrowLeft className="w-4 h-4 mr-2" />
-            Вернуться к возможностям
+            Вернуться на главную
           </Link>
         </motion.div>
 
