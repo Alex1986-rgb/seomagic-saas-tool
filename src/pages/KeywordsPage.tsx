@@ -1,21 +1,21 @@
 
 import React from 'react';
 import Layout from '@/components/Layout';
-import KeywordsOptimizer from '@/components/seo-optimization/components/KeywordsOptimizer';
+import AdvancedKeywordsOptimizer from '@/components/seo-optimization/components/AdvancedKeywordsOptimizer';
 import { SEO } from '@/components/SEO';
 
 const KeywordsPage: React.FC = () => {
   return (
     <Layout>
       <SEO 
-        title="ИИ Анализ Ключевых Слов - Поиск и Оптимизация Keywords"
-        description="Автоматический анализ и поиск релевантных ключевых слов с помощью искусственного интеллекта. Найдите лучшие keywords для вашего контента."
-        keywords="анализ ключевых слов, keywords, поиск ключевых слов, seo keywords, оптимизация ключевых слов"
+        title="ИИ Анализ Ключевых Слов - Продвинутая SEO Оптимизация"
+        description="Комплексный анализ ключевых слов с использованием ИИ. Оптимизация ВЧ, СЧ, НЧ запросов. Анализ структуры контента и LSI-ключевых слов для максимального SEO-эффекта."
+        keywords="анализ ключевых слов, ВЧ СЧ НЧ запросы, LSI ключевые слова, SEO оптимизация контента, структура текста, мета-данные"
       />
       
       <div className="min-h-screen bg-gradient-to-br from-background via-background to-secondary/20">
         <div className="pt-20">
-          <KeywordsOptimizer />
+          <AdvancedKeywordsOptimizer />
         </div>
       </div>
     </Layout>
