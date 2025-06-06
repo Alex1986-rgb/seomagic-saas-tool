@@ -28,10 +28,9 @@ export default defineConfig(({ mode }) => ({
       'lucide-react',
       '@radix-ui/react-tabs',
       '@radix-ui/react-dialog',
-      '@radix-ui/react-toast',
-      '@supabase/supabase-js'
+      '@radix-ui/react-toast'
     ],
-    exclude: ['@supabase/postgrest-js']
+    exclude: ['@supabase/supabase-js', '@supabase/postgrest-js', '@supabase/storage-js', '@supabase/realtime-js']
   },
   build: {
     sourcemap: mode !== 'production',
@@ -39,7 +38,6 @@ export default defineConfig(({ mode }) => ({
       output: {
         manualChunks: {
           vendor: ['react', 'react-dom'],
-          supabase: ['@supabase/supabase-js']
         }
       }
     }
