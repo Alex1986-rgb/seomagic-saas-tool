@@ -17,10 +17,17 @@ export const SEO: React.FC<SEOProps> = ({
   canonicalUrl,
   ogImage = '/images/og-image.jpg'
 }) => {
-  // Use document properties directly to avoid window reference in SSR
-  const siteUrl = typeof window !== 'undefined' ? window.location.origin : '';
+  // Безопасное получение URL для SSR
+  const getBaseUrl = () => {
+    if (typeof window !== 'undefined') {
+      return window.location.origin;
+    }
+    return '';
+  };
+
+  const baseUrl = getBaseUrl();
   const fullCanonicalUrl = canonicalUrl 
-    ? `${siteUrl}${canonicalUrl}` 
+    ? `${baseUrl}${canonicalUrl}` 
     : typeof window !== 'undefined' ? window.location.href : '';
   
   return (
@@ -35,14 +42,14 @@ export const SEO: React.FC<SEOProps> = ({
       {fullCanonicalUrl && <meta property="og:url" content={fullCanonicalUrl} />}
       <meta property="og:title" content={title} />
       <meta property="og:description" content={description} />
-      <meta property="og:image" content={`${siteUrl}${ogImage}`} />
+      {baseUrl && <meta property="og:image" content={`${baseUrl}${ogImage}`} />}
       
       {/* Twitter */}
       <meta property="twitter:card" content="summary_large_image" />
       {fullCanonicalUrl && <meta property="twitter:url" content={fullCanonicalUrl} />}
       <meta property="twitter:title" content={title} />
       <meta property="twitter:description" content={description} />
-      <meta property="twitter:image" content={`${siteUrl}${ogImage}`} />
+      {baseUrl && <meta property="twitter:image" content={`${baseUrl}${ogImage}`} />}
     </Helmet>
   );
 };
