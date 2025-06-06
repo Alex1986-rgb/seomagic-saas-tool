@@ -8,8 +8,6 @@ import FeatureGrid from './FeatureGrid';
 import FloatingIndicators from './FloatingIndicators';
 
 const HeroSection: React.FC = () => {
-  console.log("HeroSection rendering");
-  
   // Animation container variants
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -25,6 +23,8 @@ const HeroSection: React.FC = () => {
     hidden: { opacity: 0, y: 20 },
     visible: { opacity: 1, y: 0 }
   };
+
+  console.log("HeroSection rendering");
 
   return (
     <section className="pt-20 pb-16 md:pt-32 md:pb-20 overflow-hidden relative">

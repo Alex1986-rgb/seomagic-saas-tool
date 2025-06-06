@@ -1,6 +1,6 @@
 
 import React, { useEffect } from 'react';
-import Navbar from './navbar/Navbar';
+import Navbar from './navbar';
 import Footer from './Footer';
 import StarryBackground from './backgrounds/StarryBackground';
 import { cn } from '@/lib/utils';
@@ -23,36 +23,27 @@ const Layout: React.FC<LayoutProps> = ({
   
   useEffect(() => {
     console.log("Layout mounted with path:", location.pathname);
-    console.log("Layout children exist:", !!children);
-    console.log("Layout rendering successfully");
     return () => {
       console.log("Layout unmounted");
     };
-  }, [location.pathname, children]);
+  }, [location.pathname]);
   
   // Check if the current path starts with /admin
   const isAdminRoute = location.pathname.startsWith('/admin');
   
   // On administrative pages we hide the standard navigation and footer
+  // since they have their own built-in navigation
   const shouldHideNavbar = hideNavbar || isAdminRoute;
   const shouldHideFooter = hideFooter || isAdminRoute;
 
-  console.log("Layout rendering:", {
-    path: location.pathname,
-    isAdminRoute,
-    showNavbar: !shouldHideNavbar,
-    showFooter: !shouldHideFooter,
-    hasChildren: !!children
-  });
+  console.log("Layout rendering with navbar:", !shouldHideNavbar, "footer:", !shouldHideFooter);
 
   return (
     <div className={cn("flex flex-col min-h-screen relative", className)}>
       {/* Background */}
-      {!isAdminRoute && (
-        <div className="fixed inset-0 z-[-1]">
-          <StarryBackground />
-        </div>
-      )}
+      <div className="fixed inset-0 z-[-1]">
+        <StarryBackground />
+      </div>
       
       {/* Navbar */}
       {!shouldHideNavbar && <Navbar />}
