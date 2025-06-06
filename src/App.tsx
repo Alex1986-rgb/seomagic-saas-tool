@@ -5,7 +5,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { HelmetProvider } from 'react-helmet-async';
 import { ThemeProvider } from 'next-themes';
 import { Toaster } from 'sonner';
-import ErrorBoundary from './components/ErrorBoundary';
+import { AppErrorBoundary } from './components/ErrorBoundary';
 import NetworkStatus from './components/NetworkStatus';
 
 // Pages
@@ -14,16 +14,13 @@ import About from './pages/About';
 import Contact from './pages/Contact';
 import Team from './pages/Team';
 import Pricing from './pages/Pricing';
-import Features from './pages/features/Features';
+import Features from './pages/Features';
 import FeaturePageTemplate from './pages/features/FeaturePageTemplate';
 import ArticlePage from './pages/articles/ArticlePage';
 import Audit from './pages/Audit';
 import PositionTracker from './pages/PositionTracker';
 import PositionPricing from './pages/PositionPricing';
 import Guides from './pages/Guides';
-import GuideDetail from './pages/GuideDetail';
-import Profile from './pages/Profile';
-import Admin from './pages/Admin';
 import Demo from './pages/Demo';
 import Documentation from './pages/Documentation';
 
@@ -39,7 +36,7 @@ const queryClient = new QueryClient({
 
 function App() {
   return (
-    <ErrorBoundary>
+    <AppErrorBoundary>
       <HelmetProvider>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <QueryClientProvider client={queryClient}>
@@ -59,9 +56,6 @@ function App() {
                   <Route path="/position-tracker" element={<PositionTracker />} />
                   <Route path="/position-pricing" element={<PositionPricing />} />
                   <Route path="/guides" element={<Guides />} />
-                  <Route path="/guides/:id" element={<GuideDetail />} />
-                  <Route path="/profile" element={<Profile />} />
-                  <Route path="/admin" element={<Admin />} />
                   <Route path="/demo" element={<Demo />} />
                   <Route path="/documentation" element={<Documentation />} />
                 </Routes>
@@ -80,7 +74,7 @@ function App() {
           </QueryClientProvider>
         </ThemeProvider>
       </HelmetProvider>
-    </ErrorBoundary>
+    </AppErrorBoundary>
   );
 }
 
