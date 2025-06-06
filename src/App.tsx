@@ -25,6 +25,7 @@ import Channel from './pages/Channel';
 import FeatureDetail from './pages/features/FeatureDetail';
 import Profile from './pages/Profile';
 import ProjectDetails from './pages/ProjectDetails';
+import Brandbook from './pages/Brandbook';
 
 // Feature articles imports
 import SiteScanning from './pages/features/SiteScanning';
@@ -82,6 +83,7 @@ const App: React.FC = () => {
           <Route path="/pages" element={<AllPages />} />
           <Route path="/channel" element={<Channel />} />
           <Route path="/project-details" element={<ProjectDetails />} />
+          <Route path="/brandbook" element={<Brandbook />} />
           
           {/* Feature articles */}
           <Route path="/features/site-scanning" element={<SiteScanning />} />
