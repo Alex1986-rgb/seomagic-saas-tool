@@ -20,7 +20,7 @@ interface AuditResultsDisplayProps {
   showPrompt: boolean;
   isRefreshing: boolean;
   onTogglePrompt: () => void;
-  loadAuditData: (refresh?: boolean, deepScan?: boolean) => Promise<void>;
+  loadAuditData: (refresh?: boolean, deepScan?: boolean) => void | Promise<void>;
   handleSelectHistoricalAudit: (auditId: string) => void;
   downloadSitemap?: () => void;
   exportJSONData: () => void;
@@ -52,6 +52,14 @@ const AuditResultsDisplay: React.FC<AuditResultsDisplayProps> = ({
   optimizeSiteContent,
   setContentOptimizationPrompt
 }) => {
+  // Ensure loadAuditData always returns a Promise
+  const handleLoadAuditData = async (refresh?: boolean, deepScan?: boolean) => {
+    const result = loadAuditData(refresh, deepScan);
+    if (result instanceof Promise) {
+      await result;
+    }
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -66,8 +74,8 @@ const AuditResultsDisplay: React.FC<AuditResultsDisplayProps> = ({
         recommendations={recommendations}
         historyData={historyData}
         taskId={taskId || ""}
-        onRefresh={() => loadAuditData(true)}
-        onDeepScan={() => loadAuditData(false, true)}
+        onRefresh={() => handleLoadAuditData(true)}
+        onDeepScan={() => handleLoadAuditData(false, true)}
         isRefreshing={isRefreshing}
         onDownloadSitemap={downloadSitemap}
         onTogglePrompt={onTogglePrompt}

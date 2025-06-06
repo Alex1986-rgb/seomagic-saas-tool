@@ -35,18 +35,18 @@ export function useMediaQuery(query: string): boolean {
     };
     
     // Добавляем слушатель с поддержкой старых браузеров
-    if (mediaQuery.addListener && !mediaQuery.addEventListener) {
-      mediaQuery.addListener(listener);
-    } else {
+    if (mediaQuery.addEventListener) {
       mediaQuery.addEventListener('change', listener);
+    } else if (mediaQuery.addListener) {
+      mediaQuery.addListener(listener);
     }
     
     // Очистка
     return () => {
-      if (mediaQuery.removeListener && !mediaQuery.removeEventListener) {
-        mediaQuery.removeListener(listener);
-      } else {
+      if (mediaQuery.removeEventListener) {
         mediaQuery.removeEventListener('change', listener);
+      } else if (mediaQuery.removeListener) {
+        mediaQuery.removeListener(listener);
       }
     };
   }, [query]);
