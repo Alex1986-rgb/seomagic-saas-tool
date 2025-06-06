@@ -1,3 +1,4 @@
+
 import React, { useState, useCallback, useMemo } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -11,11 +12,11 @@ import { Loader2, Wand2, Copy, CheckCircle2, AlertTriangle, Target, TrendingUp, 
 import { useToast } from "@/hooks/use-toast";
 import { motion, AnimatePresence } from "framer-motion";
 import { aiOptimizationService, type OptimizationResult } from "@/services/seo/aiOptimizationService";
-import { useMediaQuery } from "@/hooks/use-mobile";
+import { useMobile } from "@/hooks/use-mobile";
 
 const SeoElementsOptimizer: React.FC = () => {
   const { toast } = useToast();
-  const isMobile = useMediaQuery('(max-width: 768px)');
+  const { isMobile } = useMobile();
   const [isOptimizing, setIsOptimizing] = useState(false);
   const [content, setContent] = useState('');
   const [targetKeywords, setTargetKeywords] = useState('');
@@ -57,19 +58,7 @@ const SeoElementsOptimizer: React.FC = () => {
     }
   }, [content, targetKeywords, toast]);
 
-  function getScoreColor(score: number) {
-    if (score >= 80) return 'text-green-600 dark:text-green-400';
-    if (score >= 60) return 'text-yellow-600 dark:text-yellow-400';
-    return 'text-red-600 dark:text-red-400';
-  }
-
-  function getScoreIcon(score: number) {
-    if (score >= 80) return <CheckCircle2 className="h-4 w-4 text-green-600 dark:text-green-400" />;
-    if (score >= 60) return <AlertTriangle className="h-4 w-4 text-yellow-600 dark:text-yellow-400" />;
-    return <AlertTriangle className="h-4 w-4 text-red-600 dark:text-red-400" />;
-  }
-
-  function copyToClipboard(text: string) {
+  const copyToClipboard = useCallback((text: string) => {
     if (!navigator.clipboard) {
       // Fallback для старых браузеров
       const textArea = document.createElement('textarea');
@@ -97,7 +86,19 @@ const SeoElementsOptimizer: React.FC = () => {
     }).catch(err => {
       console.error('Copy failed:', err);
     });
-  }
+  }, [toast]);
+
+  const getScoreColor = useMemo(() => (score: number) => {
+    if (score >= 80) return 'text-green-600 dark:text-green-400';
+    if (score >= 60) return 'text-yellow-600 dark:text-yellow-400';
+    return 'text-red-600 dark:text-red-400';
+  }, []);
+
+  const getScoreIcon = useMemo(() => (score: number) => {
+    if (score >= 80) return <CheckCircle2 className="h-4 w-4 text-green-600 dark:text-green-400" />;
+    if (score >= 60) return <AlertTriangle className="h-4 w-4 text-yellow-600 dark:text-yellow-400" />;
+    return <AlertTriangle className="h-4 w-4 text-red-600 dark:text-red-400" />;
+  }, []);
 
   return (
     <div className="max-w-6xl mx-auto p-4 md:p-6">
