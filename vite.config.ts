@@ -9,14 +9,12 @@ export default defineConfig(({ mode }) => ({
   server: {
     host: "::",
     port: 8080,
-    // Улучшение производительности dev сервера
     hmr: {
       overlay: false
     }
   },
   plugins: [
     react({
-      // Оптимизация React компонентов
       plugins: mode === 'production' ? [
         ['transform-remove-console', { exclude: ['error', 'warn'] }]
       ] : []
@@ -34,7 +32,6 @@ export default defineConfig(({ mode }) => ({
     assetsDir: "assets",
     sourcemap: mode !== 'production',
     minify: mode === 'production' ? 'terser' : false,
-    // Настройки для оптимизации bundle
     terserOptions: mode === 'production' ? {
       compress: {
         drop_console: true,
@@ -44,9 +41,7 @@ export default defineConfig(({ mode }) => ({
     } : undefined,
     rollupOptions: {
       output: {
-        // Более агрессивное разделение chunks
         manualChunks: (id) => {
-          // Vendor chunks
           if (id.includes('node_modules')) {
             if (id.includes('react') || id.includes('react-dom')) {
               return 'vendor-react';
@@ -63,13 +58,15 @@ export default defineConfig(({ mode }) => ({
             if (id.includes('@supabase')) {
               return 'vendor-supabase';
             }
+            if (id.includes('@tanstack/react-query')) {
+              return 'vendor-query';
+            }
             if (id.includes('axios')) {
               return 'vendor-api';
             }
             return 'vendor-other';
           }
           
-          // Feature chunks
           if (id.includes('/components/ui/')) {
             return 'ui-components';
           }
@@ -94,21 +91,14 @@ export default defineConfig(({ mode }) => ({
             return 'services';
           }
         },
-        // Оптимизация имен файлов
         entryFileNames: 'assets/[name]-[hash].js',
         chunkFileNames: 'assets/[name]-[hash].js',
         assetFileNames: 'assets/[name]-[hash].[ext]'
       }
     },
-    // Увеличение лимита для chunk warnings
     chunkSizeWarningLimit: 1000,
-    // CSS оптимизация
     cssCodeSplit: true,
-    cssMinify: mode === 'production',
-    // Отключаем commonjsOptions для лучшей совместимости с ESM
-    commonjsOptions: {
-      include: []
-    }
+    cssMinify: mode === 'production'
   },
   optimizeDeps: {
     include: [
@@ -121,7 +111,6 @@ export default defineConfig(({ mode }) => ({
       '@radix-ui/react-dialog',
       '@radix-ui/react-toast'
     ],
-    // Полностью исключаем все Supabase packages из pre-bundling
     exclude: [
       '@supabase/supabase-js',
       '@supabase/postgrest-js',
@@ -130,19 +119,15 @@ export default defineConfig(({ mode }) => ({
       '@supabase/gotrue-js',
       '@supabase/functions-js'
     ],
-    // Принудительно обрабатываем как ESM
     esbuildOptions: {
-      target: 'esnext',
-      format: 'esm'
+      target: 'esnext'
     }
   },
-  // Настройки для предварительной загрузки
   experimental: {
     renderBuiltUrl(filename) {
       return `/${filename}`;
     }
   },
-  // Дополнительная настройка для обработки модулей
   define: {
     global: 'globalThis',
   }
