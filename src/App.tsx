@@ -55,7 +55,7 @@ const App: React.FC = () => {
   console.log('App component rendering');
   
   return (
-    <Router basename="/">
+    <Router>
       <div className="min-h-screen bg-background">
         <Routes>
           <Route path="/" element={<Index />} />
