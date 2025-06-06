@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import Audit from './pages/Audit';
@@ -24,6 +23,7 @@ import AllPages from './pages/AllPages';
 import Channel from './pages/Channel';
 import FeatureDetail from './pages/features/FeatureDetail';
 import Profile from './pages/Profile';
+import ProjectDetails from './pages/ProjectDetails';
 
 // Feature articles imports
 import SiteScanning from './pages/features/SiteScanning';
