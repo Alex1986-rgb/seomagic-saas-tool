@@ -12,40 +12,56 @@ export default defineConfig(({ mode }) => ({
   },
   plugins: [
     react(),
-    mode === 'development' && componentTagger(),
+    mode === 'development' &&
+    componentTagger(),
   ].filter(Boolean),
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
     },
   },
-  optimizeDeps: {
-    include: [
-      'react', 
-      'react-dom', 
-      'react-router-dom', 
-      'framer-motion', 
-      'lucide-react',
-      '@radix-ui/react-tabs',
-      '@radix-ui/react-dialog',
-      '@radix-ui/react-toast',
-      '@supabase/supabase-js',
-      '@supabase/postgrest-js',
-      '@supabase/storage-js',
-      '@supabase/realtime-js',
-      '@supabase/gotrue-js'
-    ],
-    force: true
-  },
+  base: "/",
   build: {
+    outDir: "dist",
+    assetsDir: "assets",
     sourcemap: mode !== 'production',
+    minify: mode === 'production',
     rollupOptions: {
       output: {
-        manualChunks: {
-          vendor: ['react', 'react-dom'],
-          supabase: ['@supabase/supabase-js']
+        manualChunks: (id) => {
+          if (id.includes('node_modules')) {
+            if (id.includes('react') || id.includes('react-dom')) {
+              return 'vendor-react';
+            }
+            if (id.includes('lucide') || id.includes('@radix-ui')) {
+              return 'vendor-ui';
+            }
+            if (id.includes('date-fns') || id.includes('recharts')) {
+              return 'vendor-data';
+            }
+            return 'vendor-other';
+          }
+          
+          if (id.includes('/components/ui/')) {
+            return 'ui-components';
+          }
+          
+          if (id.includes('/components/admin/')) {
+            return 'admin-components';
+          }
+          
+          if (id.includes('/pages/admin/')) {
+            return 'admin-pages';
+          }
+          
+          if (id.includes('/components/audit/')) {
+            return 'audit-components';
+          }
         }
       }
     }
-  }
+  },
+  optimizeDeps: {
+    include: ['react', 'react-dom', 'react-router-dom', 'framer-motion', 'lucide-react']
+  },
 }));
