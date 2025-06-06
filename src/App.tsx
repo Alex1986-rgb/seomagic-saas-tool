@@ -22,6 +22,7 @@ import Features from './pages/Features';
 import PositionTracking from './pages/PositionTracking';
 import AllPages from './pages/AllPages';
 import Channel from './pages/Channel';
+import FeatureDetail from './pages/features/FeatureDetail';
 
 // Import pages
 import Webinars from './pages/Webinars';
@@ -56,6 +57,7 @@ const App: React.FC = () => {
         <Route path="/documentation" element={<Documentation />} />
         <Route path="/documentation/:tab" element={<Documentation />} />
         <Route path="/features" element={<Features />} />
+        <Route path="/features/:featureId" element={<FeatureDetail />} />
         <Route path="/position-tracking" element={<PositionTracking />} />
         <Route path="/pages" element={<AllPages />} />
         <Route path="/channel" element={<Channel />} />

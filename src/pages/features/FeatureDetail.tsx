@@ -2,6 +2,7 @@
 import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Info } from 'lucide-react';
+import Layout from '@/components/Layout';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { featuresData } from '@/components/features/featuresData';
@@ -28,21 +29,23 @@ const FeatureDetail: React.FC = () => {
   
   if (!featureData) {
     return (
-      <div className="container mx-auto px-4 py-16 md:py-24">
-        <Alert variant="destructive" className="mb-8">
-          <Info className="h-4 w-4 mr-2" />
-          <AlertDescription>
-            Запрашиваемая функция не найдена. Возможно, URL введен неверно или функция была перемещена.
-          </AlertDescription>
-        </Alert>
-        
-        <div className="text-center">
-          <h1 className="text-3xl font-bold mb-8">Функция не найдена</h1>
-          <Button onClick={() => navigate('/features')}>
-            Вернуться к списку функций
-          </Button>
+      <Layout>
+        <div className="container mx-auto px-4 py-16 md:py-24">
+          <Alert variant="destructive" className="mb-8">
+            <Info className="h-4 w-4 mr-2" />
+            <AlertDescription>
+              Запрашиваемая функция не найдена. Возможно, URL введен неверно или функция была перемещена.
+            </AlertDescription>
+          </Alert>
+          
+          <div className="text-center">
+            <h1 className="text-3xl font-bold mb-8">Функция не найдена</h1>
+            <Button onClick={() => navigate('/features')}>
+              Вернуться к списку функций
+            </Button>
+          </div>
         </div>
-      </div>
+      </Layout>
     );
   }
 
@@ -71,27 +74,29 @@ ${featureData.description}
     .slice(0, 3);
 
   return (
-    <div className="container mx-auto px-4 py-16 md:py-24">
-      <FeatureHeader 
-        icon={featureData.icon}
-        title={featureData.title}
-        description={featureData.description}
-        category={featureData.category}
-      />
-      
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 mb-16">
-        <FeatureContent 
+    <Layout>
+      <div className="container mx-auto px-4 py-16 md:py-24">
+        <FeatureHeader 
           icon={featureData.icon}
           title={featureData.title}
-          content={featureData.content || defaultContent}
+          description={featureData.description}
+          category={featureData.category}
         />
-        <FeatureSidebar 
-          benefits={featureData.benefits || defaultBenefits}
-        />
+        
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 mb-16">
+          <FeatureContent 
+            icon={featureData.icon}
+            title={featureData.title}
+            content={featureData.content || defaultContent}
+          />
+          <FeatureSidebar 
+            benefits={featureData.benefits || defaultBenefits}
+          />
+        </div>
+        
+        <RelatedFeatures features={relatedFeatures} />
       </div>
-      
-      <RelatedFeatures features={relatedFeatures} />
-    </div>
+    </Layout>
   );
 };
 
