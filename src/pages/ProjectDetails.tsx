@@ -8,17 +8,14 @@ import DevelopmentRoadmap from '@/components/project-details/DevelopmentRoadmap'
 import ProductionReadiness from '@/components/project-details/ProductionReadiness';
 import ScalabilityPlanning from '@/components/project-details/ScalabilityPlanning';
 import ProjectExporter from '@/components/project-details/ProjectExporter';
-import PageExporter from '@/components/project-details/PageExporter';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card } from '@/components/ui/card';
 
 const ProjectDetails: React.FC = () => {
-  console.log('ProjectDetails component rendering');
-  
   return (
     <Layout>
       <div className="container mx-auto px-4 py-16 md:py-24">
-        <div className="max-w-7xl mx-auto project-details-container">
+        <div className="max-w-7xl mx-auto">
           <div className="text-center mb-12">
             <h1 className="text-4xl md:text-5xl font-bold mb-6">
               SeoMarket - Детали проекта
@@ -26,9 +23,8 @@ const ProjectDetails: React.FC = () => {
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
               Полное техническое описание проекта, готовность к продакшн и стратегия масштабирования
             </p>
-            <div className="mt-6 flex justify-center gap-4">
+            <div className="mt-6">
               <ProjectExporter />
-              <PageExporter />
             </div>
           </div>
 

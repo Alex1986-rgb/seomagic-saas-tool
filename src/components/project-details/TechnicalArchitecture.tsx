@@ -2,200 +2,108 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
 import { 
-  Code, 
-  Database, 
   Server, 
-  Globe,
-  Shield,
+  Database, 
+  Globe, 
   Zap,
-  Layers,
-  Package,
-  GitBranch,
-  Monitor
+  Code2,
+  Brain,
+  Archive,
+  Upload
 } from 'lucide-react';
 
 const TechnicalArchitecture: React.FC = () => {
-  const architectureComponents = [
-    {
-      category: "Frontend",
-      components: [
-        { name: "React 18", version: "18.3.1", status: "stable", description: "Основная библиотека UI" },
-        { name: "TypeScript", version: "5.0+", status: "stable", description: "Типизация и безопасность кода" },
-        { name: "Tailwind CSS", version: "3.4+", status: "stable", description: "Утилитарный CSS фреймворк" },
-        { name: "Shadcn/UI", version: "latest", status: "stable", description: "Компоненты пользовательского интерфейса" },
-        { name: "React Query", version: "5.0+", status: "stable", description: "Управление состоянием сервера" }
-      ]
-    },
-    {
-      category: "Backend", 
-      components: [
-        { name: "Python", version: "3.11+", status: "stable", description: "Основной язык бэкенда" },
-        { name: "FastAPI", version: "0.110+", status: "stable", description: "Веб-фреймворк для API" },
-        { name: "Celery", version: "5.3+", status: "stable", description: "Асинхронные задачи" },
-        { name: "Redis", version: "7.0+", status: "stable", description: "Кэш и брокер сообщений" },
-        { name: "PostgreSQL", version: "15+", status: "stable", description: "Основная база данных" }
-      ]
-    },
-    {
-      category: "AI/ML",
-      components: [
-        { name: "OpenAI API", version: "1.0+", status: "stable", description: "GPT-4 для оптимизации контента" },
-        { name: "BeautifulSoup", version: "4.12+", status: "stable", description: "Парсинг HTML" },
-        { name: "Selenium", version: "4.15+", status: "testing", description: "Автоматизация браузера" },
-        { name: "Requests", version: "2.31+", status: "stable", description: "HTTP клиент" }
-      ]
-    },
-    {
-      category: "Infrastructure",
-      components: [
-        { name: "Docker", version: "24+", status: "stable", description: "Контейнеризация" },
-        { name: "Nginx", version: "1.25+", status: "stable", description: "Веб-сервер и прокси" },
-        { name: "Let's Encrypt", version: "latest", status: "stable", description: "SSL сертификаты" },
-        { name: "Beget VPS", version: "Ubuntu 22.04", status: "stable", description: "Хостинг" }
-      ]
-    }
-  ];
-
-  const systemModules = [
+  const modules = [
     {
       name: "crawler.py",
-      description: "Рекурсивное сканирование сайтов",
-      status: "ready",
-      coverage: 100,
-      icon: Globe
+      description: "Рекурсивно обходит сайт, сохраняет URLs",
+      icon: Globe,
+      status: "готов"
     },
     {
-      name: "seo_analyzer.py", 
-      description: "Глубокий SEO анализ",
-      status: "ready",
-      coverage: 100,
-      icon: Monitor
+      name: "sitemap.py", 
+      description: "Генерирует sitemap.xml, site-map.html",
+      icon: Archive,
+      status: "готов"
     },
     {
-      name: "openai_optimizer.py",
-      description: "ИИ оптимизация контента",
-      status: "ready", 
-      coverage: 100,
-      icon: Zap
+      name: "html_downloader.py",
+      description: "Скачивает HTML страниц и ресурсы", 
+      icon: Code2,
+      status: "готов"
     },
     {
-      name: "html_fixer.py",
-      description: "Автоматическое исправление HTML",
-      status: "ready",
-      coverage: 100,
-      icon: Code
+      name: "seo_analyzer.py",
+      description: "Анализирует теги, alt, адаптивность",
+      icon: Zap,
+      status: "готов"
     },
     {
       name: "report_generator.py",
-      description: "Генерация PDF отчетов",
-      status: "ready",
-      coverage: 100,
-      icon: Package
+      description: "Генерация PDF-отчётов",
+      icon: Archive,
+      status: "готов"
     },
     {
-      name: "ftp_publisher.py",
-      description: "Публикация на сервер",
-      status: "ready",
-      coverage: 100,
-      icon: Server
+      name: "openai_optimizer.py",
+      description: "Обращение к OpenAI для оптимизации",
+      icon: Brain,
+      status: "готов"
+    },
+    {
+      name: "site_packager.py",
+      description: "Архивация всех исправленных HTML",
+      icon: Archive,
+      status: "готов"
+    },
+    {
+      name: "publisher.py",
+      description: "Загрузка на поддомен Beget (через API/FTP)",
+      icon: Upload,
+      status: "готов"
+    },
+    {
+      name: "positions_checker.py",
+      description: "Получение позиций из поисковиков",
+      icon: Server,
+      status: "готов"
+    },
+    {
+      name: "pinger.py",
+      description: "Пинг Google/Bing через curl/API",
+      icon: Globe,
+      status: "готов"
+    },
+    {
+      name: "task_pipeline.py",
+      description: "Celery / async FastAPI задачи и статусы",
+      icon: Database,
+      status: "готов"
     }
   ];
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'stable': return 'text-green-600 bg-green-100 border-green-200';
-      case 'testing': return 'text-yellow-600 bg-yellow-100 border-yellow-200';
-      case 'deprecated': return 'text-red-600 bg-red-100 border-red-200';
-      default: return 'text-gray-600 bg-gray-100 border-gray-200';
-    }
-  };
-
-  const getModuleStatusColor = (status: string) => {
-    switch (status) {
-      case 'ready': return 'text-green-600 bg-green-100';
-      case 'development': return 'text-blue-600 bg-blue-100';
-      case 'testing': return 'text-yellow-600 bg-yellow-100';
-      default: return 'text-gray-600 bg-gray-100';
-    }
-  };
 
   return (
     <div className="space-y-8">
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Layers className="h-5 w-5" />
-            Техническая архитектура
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            {architectureComponents.map((category, index) => (
-              <div key={index}>
-                <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                  {category.category === 'Frontend' && <Code className="h-5 w-5" />}
-                  {category.category === 'Backend' && <Server className="h-5 w-5" />}
-                  {category.category === 'AI/ML' && <Zap className="h-5 w-5" />}
-                  {category.category === 'Infrastructure' && <Shield className="h-5 w-5" />}
-                  {category.category}
-                </h3>
-                <div className="space-y-3">
-                  {category.components.map((component, idx) => (
-                    <div key={idx} className={`p-3 border-2 rounded-lg ${getStatusColor(component.status)}`}>
-                      <div className="flex justify-between items-center mb-2">
-                        <span className="font-medium">{component.name}</span>
-                        <Badge variant="outline" className="text-xs">
-                          {component.version}
-                        </Badge>
-                      </div>
-                      <p className="text-sm text-muted-foreground">
-                        {component.description}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Package className="h-5 w-5" />
-            Системные модули
+            <Server className="h-5 w-5" />
+            Серверные модули системы
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {systemModules.map((module, index) => {
+            {modules.map((module, index) => {
               const IconComponent = module.icon;
               return (
-                <div key={index} className={`p-4 border-2 rounded-lg ${getModuleStatusColor(module.status)}`}>
-                  <div className="flex items-center gap-3 mb-3">
-                    <IconComponent className="h-6 w-6" />
-                    <div>
-                      <h4 className="font-semibold">{module.name}</h4>
-                      <Badge variant="outline" className="text-xs mt-1">
-                        {module.status === 'ready' ? 'Готов' : 'В разработке'}
-                      </Badge>
-                    </div>
+                <div key={index} className="p-4 border rounded-lg">
+                  <div className="flex items-start justify-between mb-2">
+                    <IconComponent className="h-5 w-5 text-primary" />
+                    <Badge variant="secondary">{module.status}</Badge>
                   </div>
-                  
-                  <p className="text-sm text-muted-foreground mb-3">
-                    {module.description}
-                  </p>
-                  
-                  <div className="space-y-2">
-                    <div className="flex justify-between text-xs">
-                      <span>Покрытие кода</span>
-                      <span>{module.coverage}%</span>
-                    </div>
-                    <Progress value={module.coverage} className="h-2" />
-                  </div>
+                  <h4 className="font-semibold text-sm mb-1">{module.name}</h4>
+                  <p className="text-xs text-muted-foreground">{module.description}</p>
                 </div>
               );
             })}
@@ -203,92 +111,77 @@ const TechnicalArchitecture: React.FC = () => {
         </CardContent>
       </Card>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Database className="h-5 w-5" />
-              Схема базы данных
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="p-3 bg-muted rounded-lg">
-                <h4 className="font-medium mb-2">users</h4>
-                <ul className="text-sm text-muted-foreground space-y-1">
-                  <li>• id (UUID, PK)</li>
-                  <li>• email (varchar)</li>
-                  <li>• created_at (timestamp)</li>
-                  <li>• subscription_plan (varchar)</li>
-                </ul>
-              </div>
-              
-              <div className="p-3 bg-muted rounded-lg">
-                <h4 className="font-medium mb-2">audits</h4>
-                <ul className="text-sm text-muted-foreground space-y-1">
-                  <li>• id (UUID, PK)</li>
-                  <li>• user_id (UUID, FK)</li>
-                  <li>• url (varchar)</li>
-                  <li>• status (varchar)</li>
-                  <li>• results (jsonb)</li>
-                  <li>• created_at (timestamp)</li>
-                </ul>
-              </div>
-              
-              <div className="p-3 bg-muted rounded-lg">
-                <h4 className="font-medium mb-2">optimizations</h4>
-                <ul className="text-sm text-muted-foreground space-y-1">
-                  <li>• id (UUID, PK)</li>
-                  <li>• audit_id (UUID, FK)</li>
-                  <li>• type (varchar)</li>
-                  <li>• status (varchar)</li>
-                  <li>• results (jsonb)</li>
-                </ul>
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Database className="h-5 w-5" />
+            Архитектура системы
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-6">
+            <div>
+              <h3 className="font-semibold mb-3">Процесс обработки</h3>
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div className="text-center p-4 border rounded-lg">
+                  <Globe className="h-8 w-8 mx-auto mb-2 text-blue-500" />
+                  <h4 className="font-semibold mb-1">Сканирование</h4>
+                  <p className="text-sm text-muted-foreground">Обход всех страниц сайта</p>
+                </div>
+                <div className="text-center p-4 border rounded-lg">
+                  <Zap className="h-8 w-8 mx-auto mb-2 text-yellow-500" />
+                  <h4 className="font-semibold mb-1">Анализ</h4>
+                  <p className="text-sm text-muted-foreground">SEO аудит всех элементов</p>
+                </div>
+                <div className="text-center p-4 border rounded-lg">
+                  <Brain className="h-8 w-8 mx-auto mb-2 text-purple-500" />
+                  <h4 className="font-semibold mb-1">Оптимизация</h4>
+                  <p className="text-sm text-muted-foreground">ИИ улучшение контента</p>
+                </div>
+                <div className="text-center p-4 border rounded-lg">
+                  <Upload className="h-8 w-8 mx-auto mb-2 text-green-500" />
+                  <h4 className="font-semibold mb-1">Публикация</h4>
+                  <p className="text-sm text-muted-foreground">Размещение на сервере</p>
+                </div>
               </div>
             </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <GitBranch className="h-5 w-5" />
-              Архитектурные решения
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div>
-                <h4 className="font-medium mb-2">Микросервисная архитектура</h4>
-                <p className="text-sm text-muted-foreground">
-                  Модульная система с независимыми компонентами для лучшей масштабируемости
-                </p>
-              </div>
-              
-              <div>
-                <h4 className="font-medium mb-2">Event-driven архитектура</h4>
-                <p className="text-sm text-muted-foreground">
-                  Асинхронная обработка задач через Celery и Redis
-                </p>
-              </div>
-              
-              <div>
-                <h4 className="font-medium mb-2">RESTful API</h4>
-                <p className="text-sm text-muted-foreground">
-                  Стандартизированный API с FastAPI для взаимодействия с фронтендом
-                </p>
-              </div>
-              
-              <div>
-                <h4 className="font-medium mb-2">Контейнеризация</h4>
-                <p className="text-sm text-muted-foreground">
-                  Docker-контейнеры для изоляции и простого развертывания
-                </p>
+            
+            <div>
+              <h3 className="font-semibold mb-3">Технические характеристики</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <div className="flex justify-between">
+                    <span>Обработка запросов</span>
+                    <Badge>Async FastAPI</Badge>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Очереди задач</span>
+                    <Badge>Celery + Redis</Badge>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>База данных</span>
+                    <Badge>PostgreSQL</Badge>
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <div className="flex justify-between">
+                    <span>ИИ интеграция</span>
+                    <Badge>OpenAI API</Badge>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Хостинг</span>
+                    <Badge>Beget VPS</Badge>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Контейнеризация</span>
+                    <Badge>Docker</Badge>
+                  </div>
+                </div>
               </div>
             </div>
-          </CardContent>
-        </Card>
-      </div>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 };

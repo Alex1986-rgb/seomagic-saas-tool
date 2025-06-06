@@ -6,4 +6,3 @@ export { default as DevelopmentRoadmap } from './DevelopmentRoadmap';
 export { default as ProductionReadiness } from './ProductionReadiness';
 export { default as ScalabilityPlanning } from './ScalabilityPlanning';
 export { default as ProjectExporter } from './ProjectExporter';
-export { default as PageExporter } from './PageExporter';

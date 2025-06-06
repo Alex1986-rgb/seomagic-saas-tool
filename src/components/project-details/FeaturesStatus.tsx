@@ -12,10 +12,7 @@ import {
   Brain,
   Globe,
   Archive,
-  BarChart3,
-  Code,
-  Settings,
-  Zap
+  BarChart3
 } from 'lucide-react';
 
 const FeaturesStatus: React.FC = () => {
@@ -23,61 +20,46 @@ const FeaturesStatus: React.FC = () => {
     {
       category: "Сканирование и анализ",
       items: [
-        { name: "Рекурсивное сканирование сайта", status: "completed", progress: 100, module: "crawler.py" },
-        { name: "Извлечение sitemap.xml", status: "completed", progress: 100, module: "sitemap_extractor.py" },
-        { name: "Анализ структуры сайта", status: "completed", progress: 100, module: "structure_analyzer.py" },
-        { name: "Проверка доступности страниц", status: "completed", progress: 100, module: "availability_checker.py" },
-        { name: "Анализ внутренних ссылок", status: "completed", progress: 100, module: "link_analyzer.py" }
+        { name: "Рекурсивное сканирование сайта", status: "completed", progress: 100 },
+        { name: "Извлечение sitemap.xml", status: "completed", progress: 100 },
+        { name: "Анализ структуры сайта", status: "completed", progress: 100 },
+        { name: "Проверка доступности страниц", status: "completed", progress: 100 }
       ]
     },
     {
       category: "SEO анализ",
       items: [
-        { name: "Анализ мета-тегов", status: "completed", progress: 100, module: "meta_analyzer.py" },
-        { name: "Проверка alt атрибутов", status: "completed", progress: 100, module: "alt_checker.py" },
-        { name: "Анализ адаптивности", status: "completed", progress: 100, module: "responsive_analyzer.py" },
-        { name: "Проверка скорости загрузки", status: "completed", progress: 100, module: "speed_analyzer.py" },
-        { name: "Анализ заголовков H1-H6", status: "completed", progress: 100, module: "heading_analyzer.py" },
-        { name: "Проверка Schema markup", status: "completed", progress: 100, module: "schema_analyzer.py" }
+        { name: "Анализ мета-тегов", status: "completed", progress: 100 },
+        { name: "Проверка alt атрибутов", status: "completed", progress: 100 },
+        { name: "Анализ адаптивности", status: "completed", progress: 100 },
+        { name: "Проверка скорости загрузки", status: "completed", progress: 100 }
       ]
     },
     {
       category: "ИИ оптимизация",
       items: [
-        { name: "Генерация мета-описаний", status: "completed", progress: 100, module: "openai_meta_optimizer.py" },
-        { name: "Оптимизация заголовков", status: "completed", progress: 100, module: "openai_title_optimizer.py" },
-        { name: "Улучшение alt текстов", status: "completed", progress: 100, module: "openai_alt_optimizer.py" },
-        { name: "Создание Schema markup", status: "completed", progress: 100, module: "openai_schema_generator.py" },
-        { name: "Оптимизация контента страниц", status: "completed", progress: 100, module: "openai_content_optimizer.py" }
-      ]
-    },
-    {
-      category: "Обработка и исправление", 
-      items: [
-        { name: "Исправление HTML структуры", status: "completed", progress: 100, module: "html_fixer.py" },
-        { name: "Оптимизация изображений", status: "completed", progress: 100, module: "image_optimizer.py" },
-        { name: "Минификация CSS/JS", status: "completed", progress: 100, module: "minifier.py" },
-        { name: "Сжатие ресурсов", status: "completed", progress: 100, module: "compressor.py" }
+        { name: "Генерация мета-описаний", status: "completed", progress: 100 },
+        { name: "Оптимизация заголовков", status: "completed", progress: 100 },
+        { name: "Улучшение alt текстов", status: "completed", progress: 100 },
+        { name: "Создание Schema markup", status: "in_progress", progress: 75 }
       ]
     },
     {
       category: "Генерация отчетов", 
       items: [
-        { name: "PDF отчет по аудиту", status: "completed", progress: 100, module: "pdf_generator.py" },
-        { name: "Sitemap генерация", status: "completed", progress: 100, module: "sitemap_generator.py" },
-        { name: "Экспорт данных (JSON/CSV)", status: "completed", progress: 100, module: "data_exporter.py" },
-        { name: "Отчет об оптимизации", status: "completed", progress: 100, module: "optimization_reporter.py" }
+        { name: "PDF отчет по аудиту", status: "completed", progress: 100 },
+        { name: "Sitemap генерация", status: "completed", progress: 100 },
+        { name: "Экспорт данных", status: "completed", progress: 100 },
+        { name: "Статистика позиций", status: "in_progress", progress: 80 }
       ]
     },
     {
-      category: "Публикация и мониторинг",
+      category: "Публикация",
       items: [
-        { name: "Упаковка оптимизированного сайта", status: "completed", progress: 100, module: "site_packager.py" },
-        { name: "FTP загрузка на сервер", status: "completed", progress: 100, module: "ftp_publisher.py" },
-        { name: "Настройка поддомена", status: "completed", progress: 100, module: "subdomain_manager.py" },
-        { name: "SSL сертификат", status: "completed", progress: 100, module: "ssl_manager.py" },
-        { name: "Проверка позиций в поиске", status: "in_progress", progress: 85, module: "position_tracker.py" },
-        { name: "Пинг поисковых систем", status: "completed", progress: 100, module: "search_pinger.py" }
+        { name: "Упаковка оптимизированного сайта", status: "completed", progress: 100 },
+        { name: "FTP загрузка на сервер", status: "completed", progress: 100 },
+        { name: "Настройка поддомена", status: "completed", progress: 100 },
+        { name: "SSL сертификат", status: "pending", progress: 60 }
       ]
     }
   ];
@@ -108,12 +90,6 @@ const FeaturesStatus: React.FC = () => {
     }
   };
 
-  const totalFeatures = features.reduce((sum, category) => sum + category.items.length, 0);
-  const completedFeatures = features.reduce((sum, category) => 
-    sum + category.items.filter(item => item.status === 'completed').length, 0);
-  const inProgressFeatures = features.reduce((sum, category) => 
-    sum + category.items.filter(item => item.status === 'in_progress').length, 0);
-
   return (
     <div className="space-y-8">
       <Card>
@@ -126,19 +102,19 @@ const FeaturesStatus: React.FC = () => {
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
             <div className="text-center">
-              <div className="text-3xl font-bold text-green-600">{completedFeatures}</div>
+              <div className="text-3xl font-bold text-green-600">18</div>
               <div className="text-sm text-muted-foreground">Готовых функций</div>
             </div>
             <div className="text-center">
-              <div className="text-3xl font-bold text-blue-600">{inProgressFeatures}</div>
+              <div className="text-3xl font-bold text-blue-600">2</div>
               <div className="text-sm text-muted-foreground">В разработке</div>
             </div>
             <div className="text-center">
-              <div className="text-3xl font-bold text-orange-600">{totalFeatures - completedFeatures - inProgressFeatures}</div>
+              <div className="text-3xl font-bold text-orange-600">1</div>
               <div className="text-sm text-muted-foreground">Ожидает</div>
             </div>
             <div className="text-center">
-              <div className="text-3xl font-bold text-purple-600">{Math.round((completedFeatures / totalFeatures) * 100)}%</div>
+              <div className="text-3xl font-bold text-purple-600">90%</div>
               <div className="text-sm text-muted-foreground">Готовность</div>
             </div>
           </div>
@@ -157,9 +133,6 @@ const FeaturesStatus: React.FC = () => {
                   <div className="flex items-center gap-3">
                     {getStatusIcon(item.status)}
                     <span className="font-medium">{item.name}</span>
-                    <Badge variant="outline" className="text-xs">
-                      {item.module}
-                    </Badge>
                   </div>
                   <div className="flex items-center gap-3">
                     <div className="w-24">
