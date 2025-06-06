@@ -16,8 +16,7 @@ export default defineConfig(({ mode }) => ({
   },
   plugins: [
     react({
-      // Оптимизация React компонентов
-      jsxImportSource: '@emotion/react',
+      // Убираем jsxImportSource для обычного React
       plugins: mode === 'production' ? [
         ['transform-remove-console', { exclude: ['error', 'warn'] }]
       ] : []
