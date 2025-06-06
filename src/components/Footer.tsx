@@ -2,7 +2,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { RESOURCE_ITEMS, COMPANY_ITEMS, FEATURES_ITEMS, SUPPORT_ITEMS } from './navbar/navConstants';
-import { Mail, Phone, MapPin, Facebook, Twitter, Instagram, Linkedin, Github, FileText } from 'lucide-react';
+import { Mail, Phone, MapPin, Facebook, Twitter, Instagram, Linkedin, Github, FileText, Settings } from 'lucide-react';
 
 const Footer: React.FC = () => {
   console.log("Footer rendering");
@@ -69,6 +69,10 @@ const Footer: React.FC = () => {
               <FooterLink to="/pages" className="flex items-center gap-1">
                 <FileText className="h-3.5 w-3.5" />
                 <span>Все страницы</span>
+              </FooterLink>
+              <FooterLink to="/project-details" className="flex items-center gap-1">
+                <Settings className="h-3.5 w-3.5" />
+                <span>Детали проекта</span>
               </FooterLink>
             </ul>
           </div>
