@@ -5,6 +5,9 @@ import ProjectOverview from '@/components/project-details/ProjectOverview';
 import TechnicalArchitecture from '@/components/project-details/TechnicalArchitecture';
 import FeaturesStatus from '@/components/project-details/FeaturesStatus';
 import DevelopmentRoadmap from '@/components/project-details/DevelopmentRoadmap';
+import ProductionReadiness from '@/components/project-details/ProductionReadiness';
+import ScalabilityPlanning from '@/components/project-details/ScalabilityPlanning';
+import ProjectExporter from '@/components/project-details/ProjectExporter';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card } from '@/components/ui/card';
 
@@ -18,16 +21,21 @@ const ProjectDetails: React.FC = () => {
               SeoMarket - Детали проекта
             </h1>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-              Полное техническое описание проекта для разработчиков
+              Полное техническое описание проекта, готовность к продакшн и стратегия масштабирования
             </p>
+            <div className="mt-6">
+              <ProjectExporter />
+            </div>
           </div>
 
           <Card className="p-6">
             <Tabs defaultValue="overview" className="w-full">
-              <TabsList className="grid w-full grid-cols-4">
+              <TabsList className="grid w-full grid-cols-6">
                 <TabsTrigger value="overview">Обзор</TabsTrigger>
                 <TabsTrigger value="architecture">Архитектура</TabsTrigger>
                 <TabsTrigger value="features">Статус функций</TabsTrigger>
+                <TabsTrigger value="production">Продакшн</TabsTrigger>
+                <TabsTrigger value="scaling">Масштабирование</TabsTrigger>
                 <TabsTrigger value="roadmap">Роадмап</TabsTrigger>
               </TabsList>
               
@@ -41,6 +49,14 @@ const ProjectDetails: React.FC = () => {
               
               <TabsContent value="features" className="mt-6">
                 <FeaturesStatus />
+              </TabsContent>
+              
+              <TabsContent value="production" className="mt-6">
+                <ProductionReadiness />
+              </TabsContent>
+              
+              <TabsContent value="scaling" className="mt-6">
+                <ScalabilityPlanning />
               </TabsContent>
               
               <TabsContent value="roadmap" className="mt-6">
