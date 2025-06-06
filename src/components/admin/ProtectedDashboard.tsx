@@ -3,8 +3,7 @@ import React from 'react';
 import Dashboard from '@/pages/admin/Dashboard';
 
 const ProtectedDashboard: React.FC = () => {
-  console.log('ProtectedDashboard rendering - showing Dashboard');
-  
+  // В будущем здесь будет проверка авторизации
   return <Dashboard />;
 };
 

@@ -1,78 +1,63 @@
 
-import React, { useMemo, useCallback } from 'react';
-import { Helmet } from 'react-helmet-async';
-import { Globe } from 'lucide-react';
-import WebsiteAnalyzerHeader from '@/components/admin/website-analyzer/WebsiteAnalyzerHeader';
-import SupabaseWarning from '@/components/admin/website-analyzer/SupabaseWarning';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { useWebsiteAnalyzer } from '@/hooks/use-website-analyzer';
-import ScanForm from '@/components/admin/website-analyzer/ScanForm';
-import WebsiteAnalyzerTabs from '@/components/admin/website-analyzer/tabs/WebsiteAnalyzerTabs';
-import { AuditProvider } from '@/contexts/AuditContext';
+import React from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Globe, Search, BarChart3 } from 'lucide-react';
 
-const WebsiteAnalyzerPage: React.FC = () => {
-  const {
-    url,
-    isScanning,
-    scanProgress,
-    scanStage,
-    isError,
-    scannedUrls,
-    handleUrlChange,
-    startFullScan,
-  } = useWebsiteAnalyzer();
-
-  // Memoize the URL change handler to prevent unnecessary re-renders
-  const handleUrlInputChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
-    handleUrlChange(event.target.value);
-  }, [handleUrlChange]);
-
-  // Memoize the card title component for better performance
-  const cardTitle = useMemo(() => (
-    <CardTitle className="flex items-center gap-2 text-white">
-      <Globe className="h-6 w-6 text-[#36CFFF]" />
-      Полное сканирование сайта и создание Sitemap
-    </CardTitle>
-  ), []);
-
-  // Memoize the card description for better performance
-  const cardDescription = useMemo(() => (
-    <CardDescription className="text-[#A0A8FF]">
-      Запустите глубокое сканирование сайта без ограничений по количеству страниц и получите подробный отчет
-    </CardDescription>
-  ), []);
-
+const WebsiteAnalyzer: React.FC = () => {
   return (
-    <AuditProvider initialUrl={url}>
-      <Helmet>
-        <title>Анализатор сайтов | Админ панель</title>
-      </Helmet>
-      <div className="container mx-auto px-2 md:px-4 py-6 md:py-10 max-w-4xl">
-        <WebsiteAnalyzerHeader />
-        <SupabaseWarning />
-        
-        <Card className="mb-8 bg-[#181929] border-[#22213B] shadow-lg">
+    <div className="container mx-auto px-4 py-8">
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold mb-2">Анализатор веб-сайтов</h1>
+        <p className="text-muted-foreground">
+          Комплексный анализ веб-сайтов для SEO оптимизации
+        </p>
+      </div>
+
+      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <Card>
           <CardHeader>
-            {cardTitle}
-            {cardDescription}
+            <CardTitle className="flex items-center gap-2">
+              <Globe className="w-5 h-5" />
+              Анализ структуры
+            </CardTitle>
           </CardHeader>
           <CardContent>
-            <ScanForm
-              url={url}
-              isScanning={isScanning}
-              scanProgress={scanProgress}
-              scanStage={scanStage}
-              isError={isError}
-              onUrlChange={handleUrlInputChange}
-              onStartScan={startFullScan}
-            />
+            <p className="text-muted-foreground">
+              Анализ структуры сайта, навигации и внутренних ссылок.
+            </p>
           </CardContent>
         </Card>
 
-        <WebsiteAnalyzerTabs scannedUrls={scannedUrls ?? []} />
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Search className="w-5 h-5" />
+              SEO аудит
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-muted-foreground">
+              Комплексная проверка SEO факторов и рекомендации.
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <BarChart3 className="w-5 h-5" />
+              Аналитика
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-muted-foreground">
+              Детальная аналитика производительности сайта.
+            </p>
+          </CardContent>
+        </Card>
       </div>
-    </AuditProvider>
+    </div>
   );
 };
 
-export default React.memo(WebsiteAnalyzerPage);
+export default WebsiteAnalyzer;
