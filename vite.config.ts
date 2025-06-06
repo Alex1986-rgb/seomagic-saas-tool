@@ -29,11 +29,9 @@ export default defineConfig(({ mode }) => ({
       '@radix-ui/react-tabs',
       '@radix-ui/react-dialog',
       '@radix-ui/react-toast',
-      '@supabase/supabase-js',
-      '@supabase/postgrest-js',
-      '@supabase/storage-js',
-      '@supabase/realtime-js'
+      '@supabase/supabase-js'
     ],
+    exclude: ['@supabase/postgrest-js']
   },
   build: {
     sourcemap: mode !== 'production',
