@@ -36,14 +36,16 @@ const Layout: React.FC<LayoutProps> = ({
   const shouldHideNavbar = hideNavbar || isAdminRoute;
   const shouldHideFooter = hideFooter || isAdminRoute;
 
-  console.log("Layout rendering with navbar:", !shouldHideNavbar, "footer:", !shouldHideFooter);
+  console.log("Layout rendering with navbar:", !shouldHideNavbar, "footer:", !shouldHideFooter, "path:", location.pathname);
 
   return (
     <div className={cn("flex flex-col min-h-screen relative", className)}>
       {/* Background */}
-      <div className="fixed inset-0 z-[-1]">
-        <StarryBackground />
-      </div>
+      {!isAdminRoute && (
+        <div className="fixed inset-0 z-[-1]">
+          <StarryBackground />
+        </div>
+      )}
       
       {/* Navbar */}
       {!shouldHideNavbar && <Navbar />}
