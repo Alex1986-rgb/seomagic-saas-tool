@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { RESOURCE_ITEMS, COMPANY_ITEMS, FEATURES_ITEMS, SUPPORT_ITEMS } from './navbar/navConstants';
@@ -65,10 +66,6 @@ const Footer: React.FC = () => {
               {RESOURCE_ITEMS.map((item) => (
                 <FooterLink key={item.href} to={item.href}>{item.label}</FooterLink>
               ))}
-              <FooterLink to="/brandbook" className="flex items-center gap-1">
-                <Settings className="h-3.5 w-3.5" />
-                <span>Брендбук</span>
-              </FooterLink>
               <FooterLink to="/pages" className="flex items-center gap-1">
                 <FileText className="h-3.5 w-3.5" />
                 <span>Все страницы</span>
