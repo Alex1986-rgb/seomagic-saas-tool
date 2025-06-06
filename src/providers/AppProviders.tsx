@@ -5,7 +5,6 @@ import { Toaster } from "@/components/ui/toaster";
 import { LoadingProvider } from '@/contexts/LoadingContext';
 import { ErrorHandlingProvider } from '@/contexts/ErrorHandlingContext';
 import { AuthProvider } from '@/contexts/AuthContext';
-import { GlobalErrorBoundary } from '@/components/ui/error-handler';
 
 interface AppProvidersProps {
   children: React.ReactNode;

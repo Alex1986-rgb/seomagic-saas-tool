@@ -1,15 +1,13 @@
 
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import { HelmetProvider } from 'react-helmet-async';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { AuthProvider } from './contexts/AuthContext';
 import './index.css';
 import App from './App';
 
 console.info('main.tsx: Starting app initialization');
 
-// Error boundary for the entire app
+// Error boundary для всего приложения
 class AppErrorBoundary extends React.Component<
   { children: React.ReactNode },
   { hasError: boolean; error?: Error }
@@ -68,13 +66,9 @@ if (rootElement) {
   root.render(
     <React.StrictMode>
       <AppErrorBoundary>
-        <HelmetProvider>
-          <QueryClientProvider client={queryClient}>
-            <AuthProvider>
-              <App />
-            </AuthProvider>
-          </QueryClientProvider>
-        </HelmetProvider>
+        <QueryClientProvider client={queryClient}>
+          <App />
+        </QueryClientProvider>
       </AppErrorBoundary>
     </React.StrictMode>
   );
@@ -82,7 +76,7 @@ if (rootElement) {
 } else {
   console.error('Root element not found! Unable to mount React application.');
   
-  // Fallback HTML if React fails to mount
+  // Fallback HTML если React не смог запуститься
   document.body.innerHTML = `
     <div style="min-height: 100vh; display: flex; align-items: center; justify-content: center; font-family: system-ui; background: white;">
       <div style="text-align: center; padding: 2rem;">
