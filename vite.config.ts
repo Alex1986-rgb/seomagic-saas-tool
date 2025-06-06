@@ -28,9 +28,7 @@ export default defineConfig(({ mode }) => ({
       'lucide-react',
       '@radix-ui/react-tabs',
       '@radix-ui/react-dialog',
-      '@radix-ui/react-toast'
-    ],
-    exclude: [
+      '@radix-ui/react-toast',
       '@supabase/supabase-js',
       '@supabase/postgrest-js',
       '@supabase/storage-js',
@@ -38,9 +36,6 @@ export default defineConfig(({ mode }) => ({
       '@supabase/gotrue-js'
     ],
     force: true
-  },
-  ssr: {
-    noExternal: ['@supabase/supabase-js']
   },
   build: {
     sourcemap: mode !== 'production',
