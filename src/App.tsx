@@ -21,8 +21,13 @@ import Audit from './pages/Audit';
 import PositionTracker from './pages/PositionTracker';
 import PositionPricing from './pages/PositionPricing';
 import Guides from './pages/Guides';
+import GuideDetail from './pages/GuideDetail';
+import Profile from './pages/Profile';
+import Admin from './pages/Admin';
 import Demo from './pages/Demo';
 import Documentation from './pages/Documentation';
+import Channel from './pages/Channel';
+import AllPages from './pages/AllPages';
 
 // Create a client
 const queryClient = new QueryClient({
@@ -56,8 +61,13 @@ function App() {
                   <Route path="/position-tracker" element={<PositionTracker />} />
                   <Route path="/position-pricing" element={<PositionPricing />} />
                   <Route path="/guides" element={<Guides />} />
+                  <Route path="/guides/:id" element={<GuideDetail />} />
+                  <Route path="/profile" element={<Profile />} />
+                  <Route path="/admin" element={<Admin />} />
                   <Route path="/demo" element={<Demo />} />
                   <Route path="/documentation" element={<Documentation />} />
+                  <Route path="/channel" element={<Channel />} />
+                  <Route path="/all-pages" element={<AllPages />} />
                 </Routes>
                 <Toaster 
                   position="top-right" 
