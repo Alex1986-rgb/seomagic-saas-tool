@@ -27,7 +27,7 @@ const ProjectDetails: React.FC = () => {
               <ProjectExporter />
             </div>
           </div>
-
+          
           <Card className="p-6">
             <Tabs defaultValue="overview" className="w-full">
               <TabsList className="grid w-full grid-cols-6">
@@ -39,27 +39,27 @@ const ProjectDetails: React.FC = () => {
                 <TabsTrigger value="roadmap">Роадмап</TabsTrigger>
               </TabsList>
               
-              <TabsContent value="overview" className="mt-6">
+              <TabsContent value="overview" className="mt-8">
                 <ProjectOverview />
               </TabsContent>
               
-              <TabsContent value="architecture" className="mt-6">
+              <TabsContent value="architecture" className="mt-8">
                 <TechnicalArchitecture />
               </TabsContent>
               
-              <TabsContent value="features" className="mt-6">
+              <TabsContent value="features" className="mt-8">
                 <FeaturesStatus />
               </TabsContent>
               
-              <TabsContent value="production" className="mt-6">
+              <TabsContent value="production" className="mt-8">
                 <ProductionReadiness />
               </TabsContent>
               
-              <TabsContent value="scaling" className="mt-6">
+              <TabsContent value="scaling" className="mt-8">
                 <ScalabilityPlanning />
               </TabsContent>
               
-              <TabsContent value="roadmap" className="mt-6">
+              <TabsContent value="roadmap" className="mt-8">
                 <DevelopmentRoadmap />
               </TabsContent>
             </Tabs>
