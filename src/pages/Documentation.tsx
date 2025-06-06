@@ -154,28 +154,26 @@ const Documentation: React.FC = () => {
             transition={{ duration: 0.6, delay: 0.3 }}
           >
             <Tabs defaultValue={defaultTab} className="w-full">
-              {/* Proper Tab Navigation */}
-              <div className="mb-8">
-                <TabsList className="grid grid-cols-1 md:grid-cols-4 gap-4 h-auto bg-transparent p-0">
-                  {tabsData.map((tabData) => (
-                    <TabsTrigger
-                      key={tabData.value}
-                      value={tabData.value}
-                      className="h-auto p-0 data-[state=active]:bg-transparent"
-                    >
-                      <Card className="neo-card w-full cursor-pointer transition-all duration-300 hover:shadow-xl hover:scale-105 data-[state=active]:ring-2 data-[state=active]:ring-primary">
-                        <CardContent className="p-6 text-center">
-                          <div className={`w-12 h-12 bg-gradient-to-br ${tabData.color} rounded-lg flex items-center justify-center mb-4 mx-auto`}>
-                            <tabData.icon className="w-6 h-6 text-white" />
-                          </div>
-                          <h3 className="font-semibold mb-2">{tabData.label}</h3>
-                          <p className="text-sm text-muted-foreground">{tabData.description}</p>
-                        </CardContent>
-                      </Card>
-                    </TabsTrigger>
-                  ))}
-                </TabsList>
-              </div>
+              {/* Simple Tab Navigation */}
+              <TabsList className="grid grid-cols-1 md:grid-cols-4 gap-4 h-auto bg-transparent p-0 mb-8">
+                {tabsData.map((tabData) => (
+                  <TabsTrigger
+                    key={tabData.value}
+                    value={tabData.value}
+                    className="h-auto bg-transparent data-[state=active]:bg-transparent data-[state=active]:text-primary"
+                  >
+                    <Card className="neo-card w-full cursor-pointer transition-all duration-300 hover:shadow-xl hover:scale-105 data-[state=active]:ring-2 data-[state=active]:ring-primary">
+                      <CardContent className="p-6 text-center">
+                        <div className={`w-12 h-12 bg-gradient-to-br ${tabData.color} rounded-lg flex items-center justify-center mb-4 mx-auto`}>
+                          <tabData.icon className="w-6 h-6 text-white" />
+                        </div>
+                        <h3 className="font-semibold mb-2">{tabData.label}</h3>
+                        <p className="text-sm text-muted-foreground">{tabData.description}</p>
+                      </CardContent>
+                    </Card>
+                  </TabsTrigger>
+                ))}
+              </TabsList>
               
               {/* Tab Content */}
               <Card className="neo-card overflow-hidden">
