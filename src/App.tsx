@@ -34,6 +34,7 @@ import Careers from './pages/Careers';
 import Partners from './pages/Partners';
 import Support from './pages/Support';
 import Terms from './pages/Terms';
+import Privacy from './pages/Privacy';
 import NotFound from './pages/NotFound';
 
 const App: React.FC = () => {
@@ -74,6 +75,7 @@ const App: React.FC = () => {
         <Route path="/partners" element={<Partners />} />
         <Route path="/support" element={<Support />} />
         <Route path="/terms" element={<Terms />} />
+        <Route path="/privacy" element={<Privacy />} />
         
         {/* Admin routes - обрабатывает все пути начинающиеся с /admin */}
         <Route path="/admin/*" element={<AdminRoutes />} />
