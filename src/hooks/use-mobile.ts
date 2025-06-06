@@ -62,6 +62,8 @@ export function useMobile() {
   return {
     isMobile,
     isTablet,
-    isDesktop
+    isDesktop,
+    // Для обратной совместимости
+    ...{ [Symbol.toPrimitive]: () => isMobile }
   };
 }
