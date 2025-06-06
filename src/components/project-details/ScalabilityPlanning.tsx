@@ -5,209 +5,161 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { 
   TrendingUp, 
-  Users, 
-  Database, 
-  Zap,
+  Server, 
+  Database,
+  Users,
   Globe,
-  Settings,
+  Zap,
   BarChart3,
-  Clock,
   Target,
-  AlertTriangle,
-  Server,
-  Shield
+  Layers,
+  Cloud
 } from 'lucide-react';
 
 const ScalabilityPlanning: React.FC = () => {
-  const scalingMilestones = [
+  const scalabilityMetrics = [
     {
-      users: "0-1K",
-      traffic: "До 10K запросов/день",
-      infrastructure: "Базовая",
-      features: ["Serverless функции", "PostgreSQL", "Базовое кеширование"],
-      challenges: ["Оптимизация кода", "Базовый мониторинг"],
-      timeline: "Q1 2024",
-      status: "current"
+      title: "Текущая нагрузка",
+      value: "1,250",
+      unit: "запросов/час",
+      trend: "+12%",
+      color: "text-blue-600"
     },
     {
-      users: "1K-10K", 
-      traffic: "До 100K запросов/день",
-      infrastructure: "Улучшенная",
-      features: ["Redis кеш", "CDN", "Read replicas", "Error tracking"],
-      challenges: ["Производительность БД", "Кеширование стратегий"],
-      timeline: "Q2-Q3 2024",
-      status: "planned"
+      title: "Пиковая нагрузка",
+      value: "5,000",
+      unit: "запросов/час",
+      trend: "+25%",
+      color: "text-green-600"
     },
     {
-      users: "10K-100K",
-      traffic: "До 1M запросов/день", 
-      infrastructure: "Масштабируемая",
-      features: ["Микросервисы", "Auto-scaling", "Multiple regions"],
-      challenges: ["Архитектурная сложность", "Команда разработчиков"],
-      timeline: "Q4 2024 - Q2 2025",
-      status: "future"
+      title: "Использование CPU",
+      value: "35%",
+      unit: "среднее",
+      trend: "-5%",
+      color: "text-yellow-600"
     },
     {
-      users: "100K+",
-      traffic: "Свыше 1M запросов/день",
-      infrastructure: "Enterprise",
-      features: ["Шардинг БД", "Dedicated infrastructure", "Advanced monitoring"],
-      challenges: ["Организационные процессы", "Compliance"],
-      timeline: "2025+",
-      status: "vision"
+      title: "Использование RAM",
+      value: "2.8GB",
+      unit: "из 8GB",
+      trend: "+8%",
+      color: "text-purple-600"
     }
   ];
 
-  const technicalScalingAreas = [
+  const infrastructureComponents = [
     {
-      area: "База данных",
-      current: "PostgreSQL на Supabase",
-      improvements: [
-        { stage: "1K users", action: "Query optimization, indices" },
-        { stage: "10K users", action: "Read replicas, connection pooling" },
-        { stage: "100K users", action: "Шардинг, multiple DB instances" }
-      ]
+      component: "Web серверы",
+      current: 2,
+      recommended: 4,
+      maxCapacity: "10,000 req/h",
+      status: "good",
+      cost: "$120/мес"
     },
     {
-      area: "Frontend", 
-      current: "React SPA",
-      improvements: [
-        { stage: "1K users", action: "Code splitting, lazy loading" },
-        { stage: "10K users", action: "CDN, advanced caching" },
-        { stage: "100K users", action: "Multiple regions, edge computing" }
-      ]
+      component: "База данных",
+      current: 1,
+      recommended: 2,
+      maxCapacity: "50,000 записей/мин",
+      status: "planning",
+      cost: "$200/мес"
     },
     {
-      area: "API",
-      current: "Supabase Edge Functions",
-      improvements: [
-        { stage: "1K users", action: "Rate limiting, monitoring" },
-        { stage: "10K users", action: "API versioning, load balancing" },
-        { stage: "100K users", action: "Микросервисы, API gateway" }
-      ]
+      component: "Redis кэш",
+      current: 1,
+      recommended: 1,
+      maxCapacity: "100GB памяти",
+      status: "good",
+      cost: "$50/мес"
     },
     {
-      area: "Безопасность",
-      current: "Supabase Auth + RLS",
-      improvements: [
-        { stage: "1K users", action: "Advanced auth policies" },
-        { stage: "10K users", action: "WAF, DDoS protection" },
-        { stage: "100K users", action: "Security audits, compliance" }
-      ]
+      component: "CDN узлы",
+      current: 3,
+      recommended: 6,
+      maxCapacity: "1TB трафика",
+      status: "planning",
+      cost: "$80/мес"
     }
   ];
 
-  const performanceMetrics = [
-    { 
-      category: "Производительность",
-      metrics: [
-        { name: "Время загрузки", current: "1.2s", target: "&lt; 1s" },
-        { name: "API Response", current: "150ms", target: "&lt; 100ms" },
-        { name: "Throughput", current: "500 RPS", target: "5000 RPS" }
-      ]
+  const scalingStrategies = [
+    {
+      strategy: "Горизонтальное масштабирование",
+      description: "Добавление новых серверов для распределения нагрузки",
+      priority: "Высокий",
+      timeline: "Q1 2025",
+      benefits: ["Повышение надежности", "Линейное увеличение производительности"],
+      icon: Server
     },
     {
-      category: "Надежность", 
-      metrics: [
-        { name: "Uptime", current: "99.5%", target: "99.9%" },
-        { name: "Error Rate", current: "0.1%", target: "&lt; 0.01%" },
-        { name: "Recovery Time", current: "5 min", target: "&lt; 1 min" }
-      ]
+      strategy: "Кэширование данных",
+      description: "Внедрение многоуровневого кэширования",
+      priority: "Средний",
+      timeline: "Q2 2025",
+      benefits: ["Снижение нагрузки на БД", "Ускорение ответов"],
+      icon: Zap
     },
     {
-      category: "Масштабируемость",
-      metrics: [
-        { name: "Concurrent Users", current: "100", target: "10,000" },
-        { name: "DB Connections", current: "50", target: "1000" },
-        { name: "Memory Usage", current: "512MB", target: "Elastic" }
-      ]
+      strategy: "Микросервисная архитектура",
+      description: "Разделение на независимые сервисы",
+      priority: "Средний",
+      timeline: "Q3 2025",
+      benefits: ["Независимое масштабирование", "Изоляция отказов"],
+      icon: Layers
+    },
+    {
+      strategy: "Cloud-native решения",
+      description: "Переход на облачную инфраструктуру",
+      priority: "Низкий",
+      timeline: "Q4 2025",
+      benefits: ["Автомасштабирование", "Снижение операционных затрат"],
+      icon: Cloud
     }
   ];
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'current': return 'bg-green-100 text-green-800 border-green-200';
-      case 'planned': return 'bg-blue-100 text-blue-800 border-blue-200';
-      case 'future': return 'bg-purple-100 text-purple-800 border-purple-200';
-      case 'vision': return 'bg-gray-100 text-gray-800 border-gray-200';
-      default: return 'bg-gray-100 text-gray-800 border-gray-200';
+      case 'good': return 'text-green-600 bg-green-100';
+      case 'warning': return 'text-yellow-600 bg-yellow-100';
+      case 'planning': return 'text-blue-600 bg-blue-100';
+      default: return 'text-gray-600 bg-gray-100';
     }
   };
 
-  const getStatusLabel = (status: string) => {
-    switch (status) {
-      case 'current': return 'Текущее состояние';
-      case 'planned': return 'Запланировано';
-      case 'future': return 'Будущее развитие';
-      case 'vision': return 'Долгосрочная цель';
-      default: return 'Неопределено';
+  const getPriorityColor = (priority: string) => {
+    switch (priority) {
+      case 'Высокий': return 'text-red-600 bg-red-100';
+      case 'Средний': return 'text-yellow-600 bg-yellow-100';
+      case 'Низкий': return 'text-green-600 bg-green-100';
+      default: return 'text-gray-600 bg-gray-100';
     }
   };
 
   return (
     <div className="space-y-8">
-      {/* Scaling Roadmap */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <TrendingUp className="h-5 w-5" />
-            Дорожная карта масштабирования
+            Планирование масштабирования
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="space-y-6">
-            {scalingMilestones.map((milestone, index) => (
-              <div key={index} className={`p-6 border-2 rounded-lg ${getStatusColor(milestone.status)}`}>
-                <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-4">
-                  <div className="flex items-center gap-3 mb-2 lg:mb-0">
-                    <Users className="h-5 w-5" />
-                    <h3 className="text-xl font-bold">{milestone.users} пользователей</h3>
-                    <Badge variant="outline">{getStatusLabel(milestone.status)}</Badge>
-                  </div>
-                  <div className="flex gap-4 text-sm">
-                    <span className="flex items-center gap-1">
-                      <BarChart3 className="h-4 w-4" />
-                      {milestone.traffic}
-                    </span>
-                    <span className="flex items-center gap-1">
-                      <Clock className="h-4 w-4" />
-                      {milestone.timeline}
-                    </span>
-                  </div>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+            {scalabilityMetrics.map((metric, index) => (
+              <div key={index} className="text-center">
+                <div className={`text-2xl font-bold ${metric.color}`}>
+                  {metric.value}
                 </div>
-                
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-                  <div>
-                    <h4 className="font-semibold mb-2">Ключевые технологии:</h4>
-                    <ul className="text-sm space-y-1">
-                      {milestone.features.map((feature, idx) => (
-                        <li key={idx} className="flex items-center gap-2">
-                          <div className="w-1.5 h-1.5 bg-current rounded-full"></div>
-                          {feature}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                  
-                  <div>
-                    <h4 className="font-semibold mb-2">Основные вызовы:</h4>
-                    <ul className="text-sm space-y-1">
-                      {milestone.challenges.map((challenge, idx) => (
-                        <li key={idx} className="flex items-center gap-2">
-                          <AlertTriangle className="h-3 w-3" />
-                          {challenge}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                  
-                  <div>
-                    <h4 className="font-semibold mb-2">Инфраструктура:</h4>
-                    <p className="text-sm mb-2">{milestone.infrastructure}</p>
-                    <Badge variant="secondary">
-                      {milestone.infrastructure} уровень
-                    </Badge>
-                  </div>
+                <div className="text-sm text-muted-foreground">
+                  {metric.unit}
+                </div>
+                <div className="text-xs text-muted-foreground mt-1">
+                  {metric.trend}
+                </div>
+                <div className="text-sm font-medium mt-1">
+                  {metric.title}
                 </div>
               </div>
             ))}
@@ -215,32 +167,33 @@ const ScalabilityPlanning: React.FC = () => {
         </CardContent>
       </Card>
 
-      {/* Technical Scaling Areas */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Settings className="h-5 w-5" />
-            Технические области масштабирования
+            <Server className="h-5 w-5" />
+            Инфраструктура
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="space-y-6">
-            {technicalScalingAreas.map((area, index) => (
-              <div key={index} className="border rounded-lg p-4">
-                <div className="flex justify-between items-center mb-3">
-                  <h3 className="text-lg font-semibold">{area.area}</h3>
-                  <Badge variant="outline">Текущее: {area.current}</Badge>
+          <div className="space-y-4">
+            {infrastructureComponents.map((component, index) => (
+              <div key={index} className="flex items-center justify-between p-4 border rounded-lg">
+                <div className="flex-1">
+                  <h4 className="font-semibold">{component.component}</h4>
+                  <div className="text-sm text-muted-foreground">
+                    Текущее: {component.current} | Рекомендуемое: {component.recommended}
+                  </div>
+                  <div className="text-xs text-muted-foreground">
+                    Максимальная нагрузка: {component.maxCapacity}
+                  </div>
                 </div>
-                
-                <div className="space-y-3">
-                  {area.improvements.map((improvement, idx) => (
-                    <div key={idx} className="flex items-center gap-4 p-3 bg-muted/30 rounded-md">
-                      <Badge variant="secondary" className="min-w-fit">
-                        {improvement.stage}
-                      </Badge>
-                      <span className="text-sm">{improvement.action}</span>
-                    </div>
-                  ))}
+                <div className="text-right">
+                  <Badge variant="outline" className={getStatusColor(component.status)}>
+                    {component.status === 'good' ? 'Достаточно' : 'Планируется'}
+                  </Badge>
+                  <div className="text-sm text-muted-foreground mt-1">
+                    {component.cost}
+                  </div>
                 </div>
               </div>
             ))}
@@ -248,154 +201,126 @@ const ScalabilityPlanning: React.FC = () => {
         </CardContent>
       </Card>
 
-      {/* Performance Metrics */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <BarChart3 className="h-5 w-5" />
-            Метрики производительности
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {performanceMetrics.map((category, index) => (
-              <div key={index} className="space-y-4">
-                <h4 className="font-semibold text-center">{category.category}</h4>
-                <div className="space-y-3">
-                  {category.metrics.map((metric, idx) => (
-                    <div key={idx} className="space-y-2">
-                      <div className="flex justify-between text-sm">
-                        <span>{metric.name}</span>
-                        <span className="text-muted-foreground">{metric.current} → {metric.target}</span>
-                      </div>
-                      <div className="h-2 bg-muted rounded-full overflow-hidden">
-                        <div className="h-full bg-primary rounded-full w-3/4"></div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Infrastructure Strategy */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Server className="h-5 w-5" />
-              Инфраструктурная стратегия
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div>
-              <h4 className="font-semibold mb-3">Этап 1: Базовая инфраструктура</h4>
-              <ul className="text-sm space-y-1 text-muted-foreground">
-                <li>• Serverless функции (Vercel/Netlify)</li>
-                <li>• PostgreSQL (Supabase)</li>
-                <li>• Статический контент через CDN</li>
-                <li>• Базовый мониторинг</li>
-              </ul>
-            </div>
-            
-            <div>
-              <h4 className="font-semibold mb-3">Этап 2: Масштабирование</h4>
-              <ul className="text-sm space-y-1 text-muted-foreground">
-                <li>• Redis для кеширования</li>
-                <li>• Load balancer</li>
-                <li>• Read replicas БД</li>
-                <li>• Advanced monitoring</li>
-              </ul>
-            </div>
-            
-            <div>
-              <h4 className="font-semibold mb-3">Этап 3: Энтерпрайз</h4>
-              <ul className="text-sm space-y-1 text-muted-foreground">
-                <li>• Микросервисная архитектура</li>
-                <li>• Kubernetes</li>
-                <li>• Multi-region deployment</li>
-                <li>• Advanced security</li>
-              </ul>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Shield className="h-5 w-5" />
-              Безопасность и соответствие
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div>
-              <h4 className="font-semibold mb-3">Текущие меры</h4>
-              <ul className="text-sm space-y-1 text-muted-foreground">
-                <li>• SSL/TLS шифрование</li>
-                <li>• Supabase Authentication</li>
-                <li>• Row Level Security (RLS)</li>
-                <li>• CORS защита</li>
-              </ul>
-            </div>
-            
-            <div>
-              <h4 className="font-semibold mb-3">Планируемые улучшения</h4>
-              <ul className="text-sm space-y-1 text-muted-foreground">
-                <li>• Web Application Firewall (WAF)</li>
-                <li>• DDoS защита</li>
-                <li>• Penetration testing</li>
-                <li>• GDPR compliance</li>
-              </ul>
-            </div>
-            
-            <div>
-              <h4 className="font-semibold mb-3">Мониторинг безопасности</h4>
-              <ul className="text-sm space-y-1 text-muted-foreground">
-                <li>• Security logs анализ</li>
-                <li>• Intrusion detection</li>
-                <li>• Vulnerability scanning</li>
-                <li>• Incident response plan</li>
-              </ul>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Target Architecture */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Target className="h-5 w-5" />
-            Целевая архитектура
+            Стратегии масштабирования
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="text-center p-4 border rounded-lg">
-              <Globe className="h-8 w-8 mx-auto mb-2 text-blue-500" />
-              <h4 className="font-semibold mb-1">Multi-Region</h4>
-              <p className="text-sm text-muted-foreground">Развертывание в нескольких регионах</p>
-            </div>
-            <div className="text-center p-4 border rounded-lg">
-              <Zap className="h-8 w-8 mx-auto mb-2 text-yellow-500" />
-              <h4 className="font-semibold mb-1">Auto-scaling</h4>
-              <p className="text-sm text-muted-foreground">Автоматическое масштабирование</p>
-            </div>
-            <div className="text-center p-4 border rounded-lg">
-              <Database className="h-8 w-8 mx-auto mb-2 text-green-500" />
-              <h4 className="font-semibold mb-1">Distributed DB</h4>
-              <p className="text-sm text-muted-foreground">Распределенная база данных</p>
-            </div>
-            <div className="text-center p-4 border rounded-lg">
-              <Shield className="h-8 w-8 mx-auto mb-2 text-red-500" />
-              <h4 className="font-semibold mb-1">Zero-trust</h4>
-              <p className="text-sm text-muted-foreground">Архитектура нулевого доверия</p>
-            </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {scalingStrategies.map((strategy, index) => {
+              const IconComponent = strategy.icon;
+              return (
+                <div key={index} className="p-6 border rounded-lg">
+                  <div className="flex items-start justify-between mb-4">
+                    <IconComponent className="h-6 w-6 text-primary" />
+                    <Badge variant="outline" className={getPriorityColor(strategy.priority)}>
+                      {strategy.priority}
+                    </Badge>
+                  </div>
+                  
+                  <h4 className="font-semibold mb-2">{strategy.strategy}</h4>
+                  <p className="text-sm text-muted-foreground mb-3">
+                    {strategy.description}
+                  </p>
+                  
+                  <div className="text-xs text-muted-foreground mb-3">
+                    Планируемая реализация: {strategy.timeline}
+                  </div>
+                  
+                  <div>
+                    <h5 className="text-sm font-medium mb-2">Преимущества:</h5>
+                    <ul className="text-xs text-muted-foreground space-y-1">
+                      {strategy.benefits.map((benefit, idx) => (
+                        <li key={idx} className="flex items-center gap-1">
+                          <div className="w-1 h-1 bg-current rounded-full"></div>
+                          {benefit}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </CardContent>
       </Card>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <BarChart3 className="h-5 w-5" />
+              Прогноз роста
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div>
+                <div className="flex justify-between text-sm mb-2">
+                  <span>Пользователи (6 мес)</span>
+                  <span>+150%</span>
+                </div>
+                <Progress value={75} className="h-2" />
+              </div>
+              
+              <div>
+                <div className="flex justify-between text-sm mb-2">
+                  <span>Запросы (6 мес)</span>
+                  <span>+200%</span>
+                </div>
+                <Progress value={85} className="h-2" />
+              </div>
+              
+              <div>
+                <div className="flex justify-between text-sm mb-2">
+                  <span>Данные (6 мес)</span>
+                  <span>+120%</span>
+                </div>
+                <Progress value={60} className="h-2" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Users className="h-5 w-5" />
+              Целевые показатели
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="flex justify-between items-center">
+                <span className="text-sm">Concurrent пользователи</span>
+                <div className="text-right">
+                  <div className="font-semibold">10,000</div>
+                  <div className="text-xs text-muted-foreground">к концу 2025</div>
+                </div>
+              </div>
+              
+              <div className="flex justify-between items-center">
+                <span className="text-sm">Время отклика</span>
+                <div className="text-right">
+                  <div className="font-semibold">&lt; 200ms</div>
+                  <div className="text-xs text-muted-foreground">95 percentile</div>
+                </div>
+              </div>
+              
+              <div className="flex justify-between items-center">
+                <span className="text-sm">Uptime</span>
+                <div className="text-right">
+                  <div className="font-semibold">99.95%</div>
+                  <div className="text-xs text-muted-foreground">SLA цель</div>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 };
