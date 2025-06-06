@@ -30,7 +30,17 @@ export default defineConfig(({ mode }) => ({
       '@radix-ui/react-dialog',
       '@radix-ui/react-toast'
     ],
-    exclude: ['@supabase/supabase-js', '@supabase/postgrest-js', '@supabase/storage-js', '@supabase/realtime-js']
+    exclude: [
+      '@supabase/supabase-js',
+      '@supabase/postgrest-js',
+      '@supabase/storage-js',
+      '@supabase/realtime-js',
+      '@supabase/gotrue-js'
+    ],
+    force: true
+  },
+  ssr: {
+    noExternal: ['@supabase/supabase-js']
   },
   build: {
     sourcemap: mode !== 'production',
@@ -38,6 +48,7 @@ export default defineConfig(({ mode }) => ({
       output: {
         manualChunks: {
           vendor: ['react', 'react-dom'],
+          supabase: ['@supabase/supabase-js']
         }
       }
     }
