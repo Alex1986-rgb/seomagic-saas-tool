@@ -7,46 +7,6 @@ import App from './App';
 
 console.info('main.tsx: Starting app initialization');
 
-// Error boundary для всего приложения
-class AppErrorBoundary extends React.Component<
-  { children: React.ReactNode },
-  { hasError: boolean; error?: Error }
-> {
-  constructor(props: { children: React.ReactNode }) {
-    super(props);
-    this.state = { hasError: false };
-  }
-
-  static getDerivedStateFromError(error: Error) {
-    return { hasError: true, error };
-  }
-
-  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-    console.error('App Error:', error, errorInfo);
-  }
-
-  render() {
-    if (this.state.hasError) {
-      return (
-        <div className="min-h-screen flex items-center justify-center bg-white">
-          <div className="text-center p-8">
-            <h1 className="text-2xl font-bold mb-4 text-gray-900">Что-то пошло не так</h1>
-            <p className="text-gray-600 mb-4">Произошла ошибка при загрузке приложения</p>
-            <button 
-              onClick={() => window.location.reload()} 
-              className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-            >
-              Перезагрузить страницу
-            </button>
-          </div>
-        </div>
-      );
-    }
-
-    return this.props.children;
-  }
-}
-
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -65,11 +25,9 @@ if (rootElement) {
   console.info('main.tsx: About to render App component');
   root.render(
     <React.StrictMode>
-      <AppErrorBoundary>
-        <QueryClientProvider client={queryClient}>
-          <App />
-        </QueryClientProvider>
-      </AppErrorBoundary>
+      <QueryClientProvider client={queryClient}>
+        <App />
+      </QueryClientProvider>
     </React.StrictMode>
   );
   console.info('main.tsx: App rendered successfully');

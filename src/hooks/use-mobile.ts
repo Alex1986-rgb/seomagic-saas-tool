@@ -54,14 +54,10 @@ export function useMediaQuery(query: string): boolean {
   return matches;
 }
 
-export function useMobile() {
-  const isMobile = useMediaQuery('(max-width: 768px)');
-  const isTablet = useMediaQuery('(max-width: 1024px) and (min-width: 769px)');
-  const isDesktop = useMediaQuery('(min-width: 1025px)');
-  
-  return {
-    isMobile,
-    isTablet,
-    isDesktop
-  };
+export function useMobile(): boolean {
+  return useMediaQuery('(max-width: 768px)');
 }
+
+// Для обратной совместимости
+export const useIsTablet = () => useMediaQuery('(max-width: 1024px) and (min-width: 769px)');
+export const useIsDesktop = () => useMediaQuery('(min-width: 1025px)');

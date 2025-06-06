@@ -16,7 +16,7 @@ export default defineConfig(({ mode }) => ({
   },
   plugins: [
     react({
-      // Оптимизация React компонентов
+      // Убираем jsxImportSource для обычного React
       plugins: mode === 'production' ? [
         ['transform-remove-console', { exclude: ['error', 'warn'] }]
       ] : []
@@ -112,26 +112,15 @@ export default defineConfig(({ mode }) => ({
       'lucide-react',
       '@radix-ui/react-tabs',
       '@radix-ui/react-dialog',
-      '@radix-ui/react-toast',
-      '@supabase/supabase-js'
+      '@radix-ui/react-toast'
     ],
-    // Исключаем проблемные dependencies из pre-bundling
-    exclude: [],
-    // Принудительно используем ESM для Supabase
-    force: true
+    // Исключаем heavy dependencies из pre-bundling
+    exclude: ['@supabase/supabase-js']
   },
   // Настройки для предварительной загрузки
   experimental: {
     renderBuiltUrl(filename) {
       return `/${filename}`;
     }
-  },
-  // Исправление проблем с модулями
-  define: {
-    global: 'globalThis',
-  },
-  // Настройки SSR для правильной работы с модулями
-  ssr: {
-    noExternal: ['@supabase/supabase-js']
   }
 }));

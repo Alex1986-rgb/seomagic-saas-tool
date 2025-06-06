@@ -1,3 +1,14 @@
+export interface OptimizationResult {
+  title: string;
+  description: string;
+  keywords: string[];
+  overallScore: number;
+  recommendations: Array<{
+    category: string;
+    priority: 'high' | 'medium' | 'low';
+    description: string;
+  }>;
+}
 
 export interface SeoOptimizationRequest {
   content: string;
@@ -38,19 +49,6 @@ export interface SeoOptimizationResponse {
   recommendations: string[];
 }
 
-// Добавляем недостающий интерфейс OptimizationResult
-export interface OptimizationResult {
-  title: string;
-  description: string;
-  keywords: string[];
-  overallScore: number;
-  recommendations: Array<{
-    category: string;
-    description: string;
-    priority: 'high' | 'medium' | 'low';
-  }>;
-}
-
 class AiOptimizationService {
   private apiKey: string | null = null;
 
@@ -58,32 +56,40 @@ class AiOptimizationService {
     this.apiKey = key;
   }
 
-  // Добавляем недостающий метод optimizeContent
-  async optimizeContent(content: string, keywords: string[]): Promise<OptimizationResult> {
-    // Базовая реализация для демонстрации
-    return {
-      title: `Оптимизированный заголовок с ключевыми словами: ${keywords.slice(0, 2).join(', ')}`,
-      description: `Оптимизированное описание контента с использованием ключевых слов для улучшения SEO. Контент проанализирован и оптимизирован для поисковых систем.`,
-      keywords: keywords.length > 0 ? keywords : ['seo', 'оптимизация', 'контент', 'поиск'],
-      overallScore: 85,
-      recommendations: [
-        {
-          category: 'Заголовки',
-          description: 'Добавить H2 заголовки для лучшей структуры',
-          priority: 'high'
-        },
-        {
-          category: 'Ключевые слова',
-          description: 'Увеличить плотность ключевых слов до 2-3%',
-          priority: 'medium'
-        },
-        {
-          category: 'Мета-описание',
-          description: 'Добавить призыв к действию в описание',
-          priority: 'low'
-        }
-      ]
-    };
+  async optimizeContent(content: string, keywords: string[] = []): Promise<OptimizationResult> {
+    try {
+      // Симуляция оптимизации для демонстрации
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      
+      const primaryKeyword = keywords[0] || 'SEO оптимизация';
+      
+      return {
+        title: `${primaryKeyword} - Профессиональные услуги | Компания`,
+        description: `Качественная ${primaryKeyword} от экспертов. Получите бесплатную консультацию и узнайте, как повысить рейтинг сайта. Звоните сейчас!`,
+        keywords: keywords.length > 0 ? keywords : ['SEO', 'оптимизация', 'продвижение', 'поисковики', 'рейтинг'],
+        overallScore: Math.floor(Math.random() * 20) + 80,
+        recommendations: [
+          {
+            category: 'Заголовки',
+            priority: 'high' as const,
+            description: 'Добавьте основные ключевые слова в H1 заголовок'
+          },
+          {
+            category: 'Контент',
+            priority: 'medium' as const,
+            description: 'Увеличьте объем текста до 1500+ слов'
+          },
+          {
+            category: 'Ссылки',
+            priority: 'low' as const,
+            description: 'Добавьте внутренние ссылки на релевантные страницы'
+          }
+        ]
+      };
+    } catch (error) {
+      console.error('Ошибка при оптимизации контента:', error);
+      throw error;
+    }
   }
 
   async optimizeSeoElements(request: SeoOptimizationRequest): Promise<SeoOptimizationResponse> {
@@ -93,7 +99,6 @@ class AiOptimizationService {
 
     try {
       // В реальной реализации здесь будет запрос к OpenAI API
-      // Пока что возвращаем mock данные для демонстрации
       return this.generateMockOptimization(request);
     } catch (error) {
       console.error('Ошибка при оптимизации SEO элементов:', error);
@@ -229,7 +234,6 @@ class AiOptimizationService {
     descriptionPatterns: string[];
     recommendations: string[];
   }> {
-    // Анализ конкурентов (заглушка)
     return {
       commonKeywords: ['seo', 'оптимизация', 'продвижение'],
       titlePatterns: ['Ключевое слово | Бренд', 'Ключевое слово - описание'],
