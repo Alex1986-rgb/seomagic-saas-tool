@@ -2,178 +2,199 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Progress } from '@/components/ui/progress';
 import { 
-  Server, 
+  Code, 
   Database, 
-  Globe, 
+  Server, 
+  Globe,
+  Shield,
   Zap,
-  Code2,
-  Brain,
-  Archive,
-  Upload,
-  FileText,
-  Search,
-  Settings,
-  BarChart3
+  Layers,
+  Package,
+  GitBranch,
+  Monitor
 } from 'lucide-react';
 
 const TechnicalArchitecture: React.FC = () => {
-  const coreModules = [
+  const architectureComponents = [
     {
-      name: "crawler.py",
-      description: "Рекурсивно обходит сайт, сохраняет URLs и структуру",
-      icon: Globe,
-      status: "готов",
-      features: ["Robots.txt парсинг", "Sitemap обработка", "Глубокое сканирование"]
+      category: "Frontend",
+      components: [
+        { name: "React 18", version: "18.3.1", status: "stable", description: "Основная библиотека UI" },
+        { name: "TypeScript", version: "5.0+", status: "stable", description: "Типизация и безопасность кода" },
+        { name: "Tailwind CSS", version: "3.4+", status: "stable", description: "Утилитарный CSS фреймворк" },
+        { name: "Shadcn/UI", version: "latest", status: "stable", description: "Компоненты пользовательского интерфейса" },
+        { name: "React Query", version: "5.0+", status: "stable", description: "Управление состоянием сервера" }
+      ]
     },
     {
-      name: "seo_analyzer.py", 
-      description: "Анализирует SEO параметры всех страниц",
-      icon: Search,
-      status: "готов",
-      features: ["Мета-теги", "Alt атрибуты", "Заголовки H1-H6", "Schema markup"]
+      category: "Backend", 
+      components: [
+        { name: "Python", version: "3.11+", status: "stable", description: "Основной язык бэкенда" },
+        { name: "FastAPI", version: "0.110+", status: "stable", description: "Веб-фреймворк для API" },
+        { name: "Celery", version: "5.3+", status: "stable", description: "Асинхронные задачи" },
+        { name: "Redis", version: "7.0+", status: "stable", description: "Кэш и брокер сообщений" },
+        { name: "PostgreSQL", version: "15+", status: "stable", description: "Основная база данных" }
+      ]
     },
     {
-      name: "html_processor.py",
-      description: "Загружает и обрабатывает HTML страниц", 
-      icon: Code2,
-      status: "готов",
-      features: ["HTML парсинг", "Структурный анализ", "Валидация кода"]
+      category: "AI/ML",
+      components: [
+        { name: "OpenAI API", version: "1.0+", status: "stable", description: "GPT-4 для оптимизации контента" },
+        { name: "BeautifulSoup", version: "4.12+", status: "stable", description: "Парсинг HTML" },
+        { name: "Selenium", version: "4.15+", status: "testing", description: "Автоматизация браузера" },
+        { name: "Requests", version: "2.31+", status: "stable", description: "HTTP клиент" }
+      ]
     },
     {
-      name: "openai_optimizer.py",
-      description: "ИИ оптимизация контента через OpenAI API",
-      icon: Brain,
-      status: "готов",
-      features: ["Генерация мета-тегов", "Улучшение контента", "Schema создание"]
-    },
-    {
-      name: "html_fixer.py",
-      description: "Исправляет HTML код на основе анализа и ИИ",
-      icon: Settings,
-      status: "готов",
-      features: ["Автоисправление", "Оптимизация кода", "Структурные улучшения"]
-    },
-    {
-      name: "report_generator.py",
-      description: "Генерация PDF-отчётов и аналитики",
-      icon: FileText,
-      status: "готов",
-      features: ["PDF отчеты", "Статистика", "Рекомендации"]
-    },
-    {
-      name: "sitemap_generator.py",
-      description: "Создание sitemap.xml и HTML карты сайта",
-      icon: Archive,
-      status: "готов",
-      features: ["XML Sitemap", "HTML карта", "Индексация"]
-    },
-    {
-      name: "site_packager.py",
-      description: "Упаковка оптимизированного сайта в архив",
-      icon: Archive,
-      status: "готов",
-      features: ["ZIP архивация", "Структура сохранение", "Ресурсы включение"]
-    },
-    {
-      name: "ftp_publisher.py",
-      description: "Публикация на поддомен через FTP/API",
-      icon: Upload,
-      status: "готов",
-      features: ["FTP загрузка", "API интеграция", "Автодеплой"]
-    },
-    {
-      name: "position_tracker.py",
-      description: "Отслеживание позиций в поисковиках",
-      icon: BarChart3,
-      status: "в работе",
-      features: ["Google позиции", "Yandex позиции", "Динамика"]
-    },
-    {
-      name: "search_pinger.py",
-      description: "Уведомление поисковых систем об изменениях",
-      icon: Globe,
-      status: "готов",
-      features: ["Google ping", "Yandex ping", "Bing ping"]
-    },
-    {
-      name: "task_manager.py",
-      description: "Управление очередью задач через Celery",
-      icon: Server,
-      status: "готов",
-      features: ["Асинхронные задачи", "Статусы", "Мониторинг"]
+      category: "Infrastructure",
+      components: [
+        { name: "Docker", version: "24+", status: "stable", description: "Контейнеризация" },
+        { name: "Nginx", version: "1.25+", status: "stable", description: "Веб-сервер и прокси" },
+        { name: "Let's Encrypt", version: "latest", status: "stable", description: "SSL сертификаты" },
+        { name: "Beget VPS", version: "Ubuntu 22.04", status: "stable", description: "Хостинг" }
+      ]
     }
   ];
 
-  const systemComponents = [
+  const systemModules = [
     {
-      category: "API сервер",
-      technology: "FastAPI + Python",
-      description: "Высокопроизводительный асинхронный API",
-      status: "готов"
+      name: "crawler.py",
+      description: "Рекурсивное сканирование сайтов",
+      status: "ready",
+      coverage: 100,
+      icon: Globe
     },
     {
-      category: "База данных",
-      technology: "PostgreSQL 15",
-      description: "Реляционная БД для хранения результатов",
-      status: "готов"
+      name: "seo_analyzer.py", 
+      description: "Глубокий SEO анализ",
+      status: "ready",
+      coverage: 100,
+      icon: Monitor
     },
     {
-      category: "Очереди задач",
-      technology: "Celery + Redis",
-      description: "Асинхронная обработка длительных операций",
-      status: "готов"
+      name: "openai_optimizer.py",
+      description: "ИИ оптимизация контента",
+      status: "ready", 
+      coverage: 100,
+      icon: Zap
     },
     {
-      category: "Веб интерфейс",
-      technology: "React + TypeScript",
-      description: "Современный пользовательский интерфейс",
-      status: "готов"
+      name: "html_fixer.py",
+      description: "Автоматическое исправление HTML",
+      status: "ready",
+      coverage: 100,
+      icon: Code
     },
     {
-      category: "Стилизация",
-      technology: "Tailwind CSS + Shadcn/UI",
-      description: "Компонентная система дизайна",
-      status: "готов"
+      name: "report_generator.py",
+      description: "Генерация PDF отчетов",
+      status: "ready",
+      coverage: 100,
+      icon: Package
     },
     {
-      category: "Контейнеризация",
-      technology: "Docker + Docker Compose",
-      description: "Упаковка и развертывание сервисов",
-      status: "готов"
+      name: "ftp_publisher.py",
+      description: "Публикация на сервер",
+      status: "ready",
+      coverage: 100,
+      icon: Server
     }
   ];
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'stable': return 'text-green-600 bg-green-100 border-green-200';
+      case 'testing': return 'text-yellow-600 bg-yellow-100 border-yellow-200';
+      case 'deprecated': return 'text-red-600 bg-red-100 border-red-200';
+      default: return 'text-gray-600 bg-gray-100 border-gray-200';
+    }
+  };
+
+  const getModuleStatusColor = (status: string) => {
+    switch (status) {
+      case 'ready': return 'text-green-600 bg-green-100';
+      case 'development': return 'text-blue-600 bg-blue-100';
+      case 'testing': return 'text-yellow-600 bg-yellow-100';
+      default: return 'text-gray-600 bg-gray-100';
+    }
+  };
 
   return (
     <div className="space-y-8">
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Server className="h-5 w-5" />
-            Серверные модули системы
+            <Layers className="h-5 w-5" />
+            Техническая архитектура
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            {architectureComponents.map((category, index) => (
+              <div key={index}>
+                <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                  {category.category === 'Frontend' && <Code className="h-5 w-5" />}
+                  {category.category === 'Backend' && <Server className="h-5 w-5" />}
+                  {category.category === 'AI/ML' && <Zap className="h-5 w-5" />}
+                  {category.category === 'Infrastructure' && <Shield className="h-5 w-5" />}
+                  {category.category}
+                </h3>
+                <div className="space-y-3">
+                  {category.components.map((component, idx) => (
+                    <div key={idx} className={`p-3 border-2 rounded-lg ${getStatusColor(component.status)}`}>
+                      <div className="flex justify-between items-center mb-2">
+                        <span className="font-medium">{component.name}</span>
+                        <Badge variant="outline" className="text-xs">
+                          {component.version}
+                        </Badge>
+                      </div>
+                      <p className="text-sm text-muted-foreground">
+                        {component.description}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Package className="h-5 w-5" />
+            Системные модули
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {coreModules.map((module, index) => {
+            {systemModules.map((module, index) => {
               const IconComponent = module.icon;
               return (
-                <div key={index} className="p-4 border rounded-lg">
-                  <div className="flex items-start justify-between mb-2">
-                    <IconComponent className="h-5 w-5 text-primary" />
-                    <Badge variant={module.status === 'готов' ? 'secondary' : 'outline'}>
-                      {module.status}
-                    </Badge>
+                <div key={index} className={`p-4 border-2 rounded-lg ${getModuleStatusColor(module.status)}`}>
+                  <div className="flex items-center gap-3 mb-3">
+                    <IconComponent className="h-6 w-6" />
+                    <div>
+                      <h4 className="font-semibold">{module.name}</h4>
+                      <Badge variant="outline" className="text-xs mt-1">
+                        {module.status === 'ready' ? 'Готов' : 'В разработке'}
+                      </Badge>
+                    </div>
                   </div>
-                  <h4 className="font-semibold text-sm mb-1">{module.name}</h4>
-                  <p className="text-xs text-muted-foreground mb-2">{module.description}</p>
-                  <div className="space-y-1">
-                    {module.features.map((feature, idx) => (
-                      <div key={idx} className="text-xs text-muted-foreground flex items-center gap-1">
-                        <div className="w-1 h-1 bg-current rounded-full"></div>
-                        {feature}
-                      </div>
-                    ))}
+                  
+                  <p className="text-sm text-muted-foreground mb-3">
+                    {module.description}
+                  </p>
+                  
+                  <div className="space-y-2">
+                    <div className="flex justify-between text-xs">
+                      <span>Покрытие кода</span>
+                      <span>{module.coverage}%</span>
+                    </div>
+                    <Progress value={module.coverage} className="h-2" />
                   </div>
                 </div>
               );
@@ -182,120 +203,92 @@ const TechnicalArchitecture: React.FC = () => {
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Database className="h-5 w-5" />
-            Системная архитектура
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-6">
-            <div>
-              <h3 className="font-semibold mb-3">Процесс обработки сайта</h3>
-              <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
-                <div className="text-center p-4 border rounded-lg">
-                  <Globe className="h-8 w-8 mx-auto mb-2 text-blue-500" />
-                  <h4 className="font-semibold mb-1">Сканирование</h4>
-                  <p className="text-sm text-muted-foreground">Обход всех страниц</p>
-                </div>
-                <div className="text-center p-4 border rounded-lg">
-                  <Search className="h-8 w-8 mx-auto mb-2 text-yellow-500" />
-                  <h4 className="font-semibold mb-1">Анализ</h4>
-                  <p className="text-sm text-muted-foreground">SEO аудит</p>
-                </div>
-                <div className="text-center p-4 border rounded-lg">
-                  <Brain className="h-8 w-8 mx-auto mb-2 text-purple-500" />
-                  <h4 className="font-semibold mb-1">Оптимизация</h4>
-                  <p className="text-sm text-muted-foreground">ИИ улучшение</p>
-                </div>
-                <div className="text-center p-4 border rounded-lg">
-                  <Settings className="h-8 w-8 mx-auto mb-2 text-green-500" />
-                  <h4 className="font-semibold mb-1">Исправление</h4>
-                  <p className="text-sm text-muted-foreground">HTML правки</p>
-                </div>
-                <div className="text-center p-4 border rounded-lg">
-                  <Archive className="h-8 w-8 mx-auto mb-2 text-orange-500" />
-                  <h4 className="font-semibold mb-1">Упаковка</h4>
-                  <p className="text-sm text-muted-foreground">Создание архива</p>
-                </div>
-                <div className="text-center p-4 border rounded-lg">
-                  <Upload className="h-8 w-8 mx-auto mb-2 text-red-500" />
-                  <h4 className="font-semibold mb-1">Публикация</h4>
-                  <p className="text-sm text-muted-foreground">Размещение онлайн</p>
-                </div>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Database className="h-5 w-5" />
+              Схема базы данных
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="p-3 bg-muted rounded-lg">
+                <h4 className="font-medium mb-2">users</h4>
+                <ul className="text-sm text-muted-foreground space-y-1">
+                  <li>• id (UUID, PK)</li>
+                  <li>• email (varchar)</li>
+                  <li>• created_at (timestamp)</li>
+                  <li>• subscription_plan (varchar)</li>
+                </ul>
+              </div>
+              
+              <div className="p-3 bg-muted rounded-lg">
+                <h4 className="font-medium mb-2">audits</h4>
+                <ul className="text-sm text-muted-foreground space-y-1">
+                  <li>• id (UUID, PK)</li>
+                  <li>• user_id (UUID, FK)</li>
+                  <li>• url (varchar)</li>
+                  <li>• status (varchar)</li>
+                  <li>• results (jsonb)</li>
+                  <li>• created_at (timestamp)</li>
+                </ul>
+              </div>
+              
+              <div className="p-3 bg-muted rounded-lg">
+                <h4 className="font-medium mb-2">optimizations</h4>
+                <ul className="text-sm text-muted-foreground space-y-1">
+                  <li>• id (UUID, PK)</li>
+                  <li>• audit_id (UUID, FK)</li>
+                  <li>• type (varchar)</li>
+                  <li>• status (varchar)</li>
+                  <li>• results (jsonb)</li>
+                </ul>
               </div>
             </div>
-            
-            <div>
-              <h3 className="font-semibold mb-3">Технические компоненты</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {systemComponents.map((component, index) => (
-                  <div key={index} className="flex justify-between items-center p-3 border rounded-lg">
-                    <div>
-                      <h4 className="font-semibold">{component.category}</h4>
-                      <p className="text-sm text-muted-foreground">{component.description}</p>
-                    </div>
-                    <div className="text-right">
-                      <Badge variant="secondary">{component.technology}</Badge>
-                      <div className="text-xs text-green-600 mt-1">{component.status}</div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Технологические преимущества</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <h4 className="font-semibold mb-3">🚀 Производительность</h4>
-              <ul className="text-sm space-y-1 text-muted-foreground">
-                <li>• Асинхронная обработка задач</li>
-                <li>• Параллельное сканирование страниц</li>
-                <li>• Кеширование результатов</li>
-                <li>• Оптимизированные запросы к БД</li>
-              </ul>
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <GitBranch className="h-5 w-5" />
+              Архитектурные решения
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div>
+                <h4 className="font-medium mb-2">Микросервисная архитектура</h4>
+                <p className="text-sm text-muted-foreground">
+                  Модульная система с независимыми компонентами для лучшей масштабируемости
+                </p>
+              </div>
+              
+              <div>
+                <h4 className="font-medium mb-2">Event-driven архитектура</h4>
+                <p className="text-sm text-muted-foreground">
+                  Асинхронная обработка задач через Celery и Redis
+                </p>
+              </div>
+              
+              <div>
+                <h4 className="font-medium mb-2">RESTful API</h4>
+                <p className="text-sm text-muted-foreground">
+                  Стандартизированный API с FastAPI для взаимодействия с фронтендом
+                </p>
+              </div>
+              
+              <div>
+                <h4 className="font-medium mb-2">Контейнеризация</h4>
+                <p className="text-sm text-muted-foreground">
+                  Docker-контейнеры для изоляции и простого развертывания
+                </p>
+              </div>
             </div>
-            
-            <div>
-              <h4 className="font-semibold mb-3">🔒 Надежность</h4>
-              <ul className="text-sm space-y-1 text-muted-foreground">
-                <li>• Обработка ошибок и исключений</li>
-                <li>• Резервное копирование данных</li>
-                <li>• Мониторинг состояния системы</li>
-                <li>• Логирование всех операций</li>
-              </ul>
-            </div>
-            
-            <div>
-              <h4 className="font-semibold mb-3">🔧 Масштабируемость</h4>
-              <ul className="text-sm space-y-1 text-muted-foreground">
-                <li>• Микросервисная архитектура</li>
-                <li>• Горизонтальное масштабирование</li>
-                <li>• Балансировка нагрузки</li>
-                <li>• Контейнеризация сервисов</li>
-              </ul>
-            </div>
-            
-            <div>
-              <h4 className="font-semibold mb-3">🤖 ИИ интеграция</h4>
-              <ul className="text-sm space-y-1 text-muted-foreground">
-                <li>• OpenAI GPT-4 для оптимизации</li>
-                <li>• Умная генерация контента</li>
-                <li>• Автоматическое улучшение SEO</li>
-                <li>• Адаптивные алгоритмы</li>
-              </ul>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 };

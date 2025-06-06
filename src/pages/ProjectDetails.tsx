@@ -13,6 +13,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card } from '@/components/ui/card';
 
 const ProjectDetails: React.FC = () => {
+  console.log('ProjectDetails component rendering');
+  
   return (
     <Layout>
       <div className="container mx-auto px-4 py-16 md:py-24">
