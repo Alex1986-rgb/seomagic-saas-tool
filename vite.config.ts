@@ -1,4 +1,3 @@
-
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
@@ -112,26 +111,15 @@ export default defineConfig(({ mode }) => ({
       'lucide-react',
       '@radix-ui/react-tabs',
       '@radix-ui/react-dialog',
-      '@radix-ui/react-toast',
-      '@supabase/supabase-js'
+      '@radix-ui/react-toast'
     ],
-    // Исключаем проблемные dependencies из pre-bundling
-    exclude: [],
-    // Принудительно используем ESM для Supabase
-    force: true
+    // Исключаем heavy dependencies из pre-bundling
+    exclude: ['@supabase/supabase-js']
   },
   // Настройки для предварительной загрузки
   experimental: {
     renderBuiltUrl(filename) {
       return `/${filename}`;
     }
-  },
-  // Исправление проблем с модулями
-  define: {
-    global: 'globalThis',
-  },
-  // Настройки SSR для правильной работы с модулями
-  ssr: {
-    noExternal: ['@supabase/supabase-js']
   }
 }));
