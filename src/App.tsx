@@ -24,6 +24,18 @@ import AllPages from './pages/AllPages';
 import Channel from './pages/Channel';
 import FeatureDetail from './pages/features/FeatureDetail';
 
+// Feature articles imports
+import SiteScanning from './pages/features/SiteScanning';
+import MetadataAnalysis from './pages/features/MetadataAnalysis';
+import SpeedAnalysis from './pages/features/SpeedAnalysis';
+import MobileOptimization from './pages/features/MobileOptimization';
+import PositionTrackingFeature from './pages/features/PositionTrackingFeature';
+import CompetitorAnalysis from './pages/features/CompetitorAnalysis';
+import AutoFix from './pages/features/AutoFix';
+import DataSecurity from './pages/features/DataSecurity';
+import CMSIntegration from './pages/features/CMSIntegration';
+import PerformanceReports from './pages/features/PerformanceReports';
+
 // Import pages
 import Webinars from './pages/Webinars';
 import Guides from './pages/Guides';
@@ -64,6 +76,18 @@ const App: React.FC = () => {
         <Route path="/position-tracking" element={<PositionTracking />} />
         <Route path="/pages" element={<AllPages />} />
         <Route path="/channel" element={<Channel />} />
+        
+        {/* Feature articles */}
+        <Route path="/features/site-scanning" element={<SiteScanning />} />
+        <Route path="/features/metadata-analysis" element={<MetadataAnalysis />} />
+        <Route path="/features/speed-analysis" element={<SpeedAnalysis />} />
+        <Route path="/features/mobile-optimization" element={<MobileOptimization />} />
+        <Route path="/features/position-tracking-feature" element={<PositionTrackingFeature />} />
+        <Route path="/features/competitor-analysis" element={<CompetitorAnalysis />} />
+        <Route path="/features/auto-fix" element={<AutoFix />} />
+        <Route path="/features/security" element={<DataSecurity />} />
+        <Route path="/features/cms-integration" element={<CMSIntegration />} />
+        <Route path="/features/performance-reports" element={<PerformanceReports />} />
         
         {/* Content pages */}
         <Route path="/webinars" element={<Webinars />} />

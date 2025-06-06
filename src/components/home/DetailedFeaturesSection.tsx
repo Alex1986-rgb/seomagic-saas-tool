@@ -46,7 +46,7 @@ const DetailedFeaturesSection: React.FC = () => {
       icon: BarChart3,
       title: 'Отслеживание позиций',
       description: 'Ежедневный мониторинг позиций вашего сайта в поисковых системах по ключевым словам.',
-      link: '/features/position-tracking'
+      link: '/features/position-tracking-feature'
     },
     {
       icon: Users,
