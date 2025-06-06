@@ -66,24 +66,14 @@ const Footer: React.FC = () => {
               {RESOURCE_ITEMS.map((item) => (
                 <FooterLink key={item.href} to={item.href}>{item.label}</FooterLink>
               ))}
-              <li>
-                <Link
-                  to="/pages"
-                  className="text-muted-foreground hover:text-foreground transition-colors text-xs flex items-center gap-1"
-                >
-                  <FileText className="h-3.5 w-3.5" />
-                  <span>Все страницы</span>
-                </Link>
-              </li>
-              <li>
-                <Link
-                  to="/project-details"
-                  className="text-muted-foreground hover:text-foreground transition-colors text-xs flex items-center gap-1"
-                >
-                  <Settings className="h-3.5 w-3.5" />
-                  <span>Детали проекта</span>
-                </Link>
-              </li>
+              <FooterLink to="/pages" className="flex items-center gap-1">
+                <FileText className="h-3.5 w-3.5" />
+                <span>Все страницы</span>
+              </FooterLink>
+              <FooterLink to="/project-details" className="flex items-center gap-1">
+                <Settings className="h-3.5 w-3.5" />
+                <span>Детали проекта</span>
+              </FooterLink>
             </ul>
           </div>
           
