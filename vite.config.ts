@@ -60,7 +60,10 @@ export default defineConfig(({ mode }) => ({
             if (id.includes('framer-motion')) {
               return 'vendor-animation';
             }
-            if (id.includes('@supabase') || id.includes('axios')) {
+            if (id.includes('@supabase')) {
+              return 'vendor-supabase';
+            }
+            if (id.includes('axios')) {
               return 'vendor-api';
             }
             return 'vendor-other';
@@ -101,7 +104,11 @@ export default defineConfig(({ mode }) => ({
     chunkSizeWarningLimit: 1000,
     // CSS оптимизация
     cssCodeSplit: true,
-    cssMinify: mode === 'production'
+    cssMinify: mode === 'production',
+    // Отключаем commonjsOptions для лучшей совместимости с ESM
+    commonjsOptions: {
+      include: []
+    }
   },
   optimizeDeps: {
     include: [
@@ -114,19 +121,29 @@ export default defineConfig(({ mode }) => ({
       '@radix-ui/react-dialog',
       '@radix-ui/react-toast'
     ],
-    // Исключаем Supabase packages из pre-bundling чтобы избежать проблем с ESM/CJS
+    // Полностью исключаем все Supabase packages из pre-bundling
     exclude: [
       '@supabase/supabase-js',
       '@supabase/postgrest-js',
       '@supabase/realtime-js',
       '@supabase/storage-js',
-      '@supabase/gotrue-js'
-    ]
+      '@supabase/gotrue-js',
+      '@supabase/functions-js'
+    ],
+    // Принудительно обрабатываем как ESM
+    esbuildOptions: {
+      target: 'esnext',
+      format: 'esm'
+    }
   },
   // Настройки для предварительной загрузки
   experimental: {
     renderBuiltUrl(filename) {
       return `/${filename}`;
     }
+  },
+  // Дополнительная настройка для обработки модулей
+  define: {
+    global: 'globalThis',
   }
 }));
