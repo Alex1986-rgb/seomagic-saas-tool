@@ -137,7 +137,7 @@ const PageExporter: React.FC = () => {
 
       setExportProgress(60);
 
-      // Создаем полный HTML документ
+      // Создаем полный HTML документ с интерактивными вкладками
       const fullHTML = `
 <!DOCTYPE html>
 <html lang="ru">
@@ -149,23 +149,154 @@ const PageExporter: React.FC = () => {
         ${styles}
         body { margin: 0; padding: 20px; font-family: system-ui, -apple-system, sans-serif; }
         .project-details-container { max-width: 1200px; margin: 0 auto; }
-        button { cursor: pointer; }
+        button { cursor: pointer; transition: opacity 0.2s; }
         button:hover { opacity: 0.8; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .tab-trigger.active { 
+            background-color: hsl(var(--background));
+            color: hsl(var(--foreground));
+            box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+        }
+        .interactive-message {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #4ade80;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            font-weight: 500;
+            z-index: 1000;
+        }
     </style>
     <script>
-        // Добавляем интерактивность для кнопок
         document.addEventListener('DOMContentLoaded', function() {
-            const buttons = document.querySelectorAll('button');
-            buttons.forEach(button => {
-                button.addEventListener('click', function() {
-                    alert('Кнопка: ' + this.textContent.trim());
+            // Показываем сообщение об интерактивности
+            const message = document.createElement('div');
+            message.className = 'interactive-message';
+            message.textContent = '✨ Интерактивный экспорт - кнопки работают!';
+            document.body.appendChild(message);
+            setTimeout(() => message.remove(), 3000);
+
+            // Функция переключения вкладок
+            function switchTab(targetTab) {
+                // Скрываем все вкладки
+                const allTabContents = document.querySelectorAll('[data-tab-content]');
+                allTabContents.forEach(content => {
+                    content.style.display = 'none';
+                    content.classList.remove('active');
+                });
+
+                // Убираем активное состояние со всех триггеров
+                const allTabTriggers = document.querySelectorAll('[data-tab-trigger]');
+                allTabTriggers.forEach(trigger => {
+                    trigger.classList.remove('active');
+                });
+
+                // Показываем нужную вкладку
+                const targetContent = document.querySelector('[data-tab-content="' + targetTab + '"]');
+                if (targetContent) {
+                    targetContent.style.display = 'block';
+                    targetContent.classList.add('active');
+                }
+
+                // Активируем соответствующий триггер
+                const targetTrigger = document.querySelector('[data-tab-trigger="' + targetTab + '"]');
+                if (targetTrigger) {
+                    targetTrigger.classList.add('active');
+                }
+            }
+
+            // Добавляем обработчики для кнопок вкладок
+            const tabButtons = document.querySelectorAll('[data-tab-trigger]');
+            tabButtons.forEach(button => {
+                const tabValue = button.getAttribute('data-tab-trigger');
+                button.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    switchTab(tabValue);
                 });
             });
+
+            // Добавляем data-атрибуты для вкладок
+            const tabTriggers = [
+                { value: 'overview', text: 'Обзор' },
+                { value: 'architecture', text: 'Архитектура' },
+                { value: 'features', text: 'Статус функций' },
+                { value: 'production', text: 'Продакшн' },
+                { value: 'scaling', text: 'Масштабирование' },
+                { value: 'roadmap', text: 'Роадмап' }
+            ];
+
+            tabTriggers.forEach(tab => {
+                const triggerElements = Array.from(document.querySelectorAll('button')).filter(btn => 
+                    btn.textContent && btn.textContent.trim() === tab.text
+                );
+                triggerElements.forEach(el => {
+                    el.setAttribute('data-tab-trigger', tab.value);
+                });
+
+                // Находим соответствующий контент
+                const contentElements = document.querySelectorAll('[role="tabpanel"]');
+                contentElements.forEach((content, index) => {
+                    if (index === tabTriggers.findIndex(t => t.value === tab.value)) {
+                        content.setAttribute('data-tab-content', tab.value);
+                    }
+                });
+            });
+
+            // Показываем первую вкладку по умолчанию
+            switchTab('overview');
+
+            // Добавляем интерактивность для других кнопок
+            const actionButtons = document.querySelectorAll('button:not([data-tab-trigger])');
+            actionButtons.forEach(button => {
+                if (!button.hasAttribute('data-tab-trigger')) {
+                    button.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        const buttonText = this.textContent.trim();
+                        
+                        if (buttonText.includes('Экспортировать')) {
+                            alert('Функция экспорта: ' + buttonText);
+                        } else if (buttonText.includes('Запустить') || buttonText.includes('Пинг') || 
+                                 buttonText.includes('Проверить') || buttonText.includes('Сгенерировать')) {
+                            alert('Выполняется: ' + buttonText);
+                            
+                            // Имитация прогресса
+                            const progressBar = this.parentNode.querySelector('.progress-bar, [role="progressbar"]');
+                            if (progressBar) {
+                                let progress = 0;
+                                const interval = setInterval(() => {
+                                    progress += 10;
+                                    progressBar.style.width = progress + '%';
+                                    if (progress >= 100) {
+                                        clearInterval(interval);
+                                        alert('Операция завершена: ' + buttonText);
+                                    }
+                                }, 200);
+                            }
+                        } else {
+                            alert('Кнопка активна: ' + buttonText);
+                        }
+                    });
+                }
+            });
+
+            console.log('✨ SeoMarket - Интерактивный экспорт загружен!');
+            console.log('📊 Доступные вкладки:', tabTriggers.map(t => t.text).join(', '));
         });
     </script>
 </head>
 <body>
+    <div style="margin-bottom: 20px; padding: 16px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 12px; text-align: center;">
+        <h1 style="margin: 0; font-size: 28px; font-weight: bold;">🚀 SeoMarket - Детали проекта</h1>
+        <p style="margin: 8px 0 0 0; opacity: 0.9;">Интерактивный HTML экспорт с кликабельной навигацией</p>
+    </div>
     ${htmlContent}
+    <footer style="margin-top: 40px; padding: 20px; text-align: center; border-top: 2px solid #e5e7eb; color: #6b7280;">
+        <p>📄 Экспортировано из SeoMarket • ${new Date().toLocaleDateString('ru-RU')} • Все кнопки интерактивны</p>
+    </footer>
 </body>
 </html>`;
 
@@ -176,14 +307,14 @@ const PageExporter: React.FC = () => {
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = 'seomarket-project-details.html';
+      a.download = 'seomarket-project-details-interactive.html';
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
 
       setExportProgress(100);
-      toast.success("HTML версия страницы готова!");
+      toast.success("HTML версия с интерактивными кнопками готова!");
       
     } catch (error) {
       console.error('Ошибка экспорта HTML:', error);
@@ -320,6 +451,18 @@ const PageExporter: React.FC = () => {
             <span className="text-sm">Кликабельные кнопки</span>
           </label>
         </div>
+
+        {exportOptions.format === 'html' && (
+          <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+            <div className="flex items-center gap-2 text-blue-700 font-medium text-sm mb-1">
+              <Globe className="h-4 w-4" />
+              Интерактивный HTML
+            </div>
+            <p className="text-xs text-blue-600">
+              Все кнопки вкладок будут кликабельными и позволят переключаться между разделами
+            </p>
+          </div>
+        )}
 
         {isExporting && (
           <div className="space-y-2">
