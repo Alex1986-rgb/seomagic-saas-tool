@@ -1,62 +1,26 @@
 
-import React, { useEffect } from 'react';
-import { HelmetProvider } from 'react-helmet-async';
-import { Toaster } from "@/components/ui/toaster";
-import { LoadingProvider } from '@/contexts/LoadingContext';
-import { ErrorHandlingProvider } from '@/contexts/ErrorHandlingContext';
-import { AuthProvider } from '@/contexts/AuthContext';
-import PerformanceMonitor from '@/components/shared/performance/PerformanceMonitor';
+import React from 'react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { Toaster } from '@/components/ui/toaster';
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 1,
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 
 interface AppProvidersProps {
   children: React.ReactNode;
 }
 
 export const AppProviders: React.FC<AppProvidersProps> = ({ children }) => {
-  useEffect(() => {
-    console.log("AppProviders mounted");
-    
-    // Регистрация Service Worker для кеширования (если поддерживается)
-    if ('serviceWorker' in navigator && process.env.NODE_ENV === 'production') {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/service-worker.js')
-          .then((registration) => {
-            console.log('SW registered: ', registration);
-          })
-          .catch((registrationError) => {
-            console.log('SW registration failed: ', registrationError);
-          });
-      });
-    }
-    
-    return () => {
-      console.log("AppProviders unmounted");
-    };
-  }, []);
-  
-  console.log("AppProviders rendering");
-  
   return (
-    <HelmetProvider>
-      <ErrorHandlingProvider>
-        <LoadingProvider>
-          <AuthProvider>
-            {children}
-            <Toaster />
-            <PerformanceMonitor 
-              enabled={process.env.NODE_ENV === 'development'} 
-              showDebugInfo={false}
-              onMetricsCollected={(metrics) => {
-                // Отправка метрик в аналитику (если настроена)
-                if (process.env.NODE_ENV === 'production') {
-                  // gtag('event', 'performance_metrics', metrics);
-                }
-              }}
-            />
-          </AuthProvider>
-        </LoadingProvider>
-      </ErrorHandlingProvider>
-    </HelmetProvider>
+    <QueryClientProvider client={queryClient}>
+      {children}
+      <Toaster />
+    </QueryClientProvider>
   );
 };
-
-export default AppProviders;
