@@ -1,3 +1,4 @@
+
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
@@ -113,8 +114,14 @@ export default defineConfig(({ mode }) => ({
       '@radix-ui/react-dialog',
       '@radix-ui/react-toast'
     ],
-    // Исключаем heavy dependencies из pre-bundling
-    exclude: ['@supabase/supabase-js']
+    // Исключаем Supabase packages из pre-bundling чтобы избежать проблем с ESM/CJS
+    exclude: [
+      '@supabase/supabase-js',
+      '@supabase/postgrest-js',
+      '@supabase/realtime-js',
+      '@supabase/storage-js',
+      '@supabase/gotrue-js'
+    ]
   },
   // Настройки для предварительной загрузки
   experimental: {
