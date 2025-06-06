@@ -11,7 +11,8 @@ import {
   Zap,
   Lock,
   Layers,
-  Star
+  Star,
+  ArrowRight
 } from 'lucide-react';
 import DetailedFeatureCard from '../features/DetailedFeatureCard';
 
