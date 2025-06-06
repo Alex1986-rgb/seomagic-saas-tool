@@ -7,16 +7,19 @@ interface SectionLoaderProps {
   text?: string;
   className?: string;
   spinnerSize?: 'xs' | 'sm' | 'md' | 'lg';
+  minHeight?: string;
 }
 
 export const SectionLoader: React.FC<SectionLoaderProps> = ({
   text = 'Загрузка раздела...',
   className,
-  spinnerSize = 'md'
+  spinnerSize = 'md',
+  minHeight
 }) => {
   return (
     <div className={cn(
       "flex flex-col items-center justify-center py-12 px-4",
+      minHeight,
       className
     )}>
       <LoadingSpinner size={spinnerSize} />

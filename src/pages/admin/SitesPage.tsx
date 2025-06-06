@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -68,7 +67,7 @@ const SitesPage: React.FC = () => {
           <Input
             placeholder="Поиск по названию или домену..."
             className="w-full"
-            icon={<Search className="w-4 h-4" />}
+            prefix={<Search className="w-4 h-4" />}
           />
         </div>
         <div className="flex gap-2">
