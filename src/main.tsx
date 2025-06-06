@@ -28,7 +28,7 @@ if (rootElement) {
       </HelmetProvider>
     </React.StrictMode>
   );
-  console.info('main.tsx: App rendered');
+  console.info('main.tsx: App rendered successfully');
 } else {
   console.error('Root element not found! Unable to mount React application.');
 }

@@ -23,7 +23,7 @@ const Layout: React.FC<LayoutProps> = ({
   
   useEffect(() => {
     console.log("Layout mounted with path:", location.pathname);
-    console.log("Layout children:", children);
+    console.log("Layout children:", !!children);
     return () => {
       console.log("Layout unmounted");
     };
@@ -33,7 +33,6 @@ const Layout: React.FC<LayoutProps> = ({
   const isAdminRoute = location.pathname.startsWith('/admin');
   
   // On administrative pages we hide the standard navigation and footer
-  // since they have their own built-in navigation
   const shouldHideNavbar = hideNavbar || isAdminRoute;
   const shouldHideFooter = hideFooter || isAdminRoute;
 
