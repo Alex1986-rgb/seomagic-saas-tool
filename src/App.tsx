@@ -4,11 +4,15 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AppProviders } from './providers/AppProviders';
 import ErrorBoundary from './components/shared/ErrorBoundary';
 import { FullscreenLoader } from './components/ui/loading';
+import AdminLayout from './layouts/AdminLayout';
 
 // Импорт критичных страниц
 import Index from './pages/Index';
 import About from './pages/About';
 import Audit from './pages/Audit';
+
+// Админ страницы
+import AdminDashboard from './pages/admin/AdminDashboard';
 
 // Ленивая загрузка некритичных страниц
 const LazyFeatures = React.lazy(() => import('./pages/Features'));
@@ -31,6 +35,11 @@ function App() {
             <Route path="/" element={<Index />} />
             <Route path="/about" element={<About />} />
             <Route path="/audit" element={<Audit />} />
+            
+            {/* Админ-панель */}
+            <Route path="/admin" element={<AdminLayout />}>
+              <Route index element={<AdminDashboard />} />
+            </Route>
             
             {/* Некритичные страницы - ленивая загрузка */}
             <Route path="/seo-elements" element={
