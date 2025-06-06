@@ -18,10 +18,9 @@ export default defineConfig(({ mode }) => ({
     react({
       // Оптимизация React компонентов
       jsxImportSource: '@emotion/react',
-      plugins: [
-        // Удаление console.log в production
-        mode === 'production' && ['transform-remove-console', { exclude: ['error', 'warn'] }]
-      ].filter(Boolean)
+      plugins: mode === 'production' ? [
+        ['transform-remove-console', { exclude: ['error', 'warn'] }]
+      ] : []
     }),
     mode === 'development' && componentTagger(),
   ].filter(Boolean),
