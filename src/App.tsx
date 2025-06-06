@@ -4,15 +4,13 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AppProviders } from './providers/AppProviders';
 import ErrorBoundary from './components/shared/ErrorBoundary';
 import { FullscreenLoader } from './components/ui/loading';
-import AdminLayout from './layouts/AdminLayout';
 
 // Импорт критичных страниц
 import Index from './pages/Index';
 import About from './pages/About';
 import Audit from './pages/Audit';
-
-// Админ страницы
-import AdminDashboard from './pages/admin/AdminDashboard';
+import SeoElementsPage from './pages/SeoElementsPage';
+import KeywordsPage from './pages/KeywordsPage';
 
 // Ленивая загрузка некритичных страниц
 const LazyFeatures = React.lazy(() => import('./pages/Features'));
@@ -20,8 +18,6 @@ const LazyPricing = React.lazy(() => import('./pages/Pricing'));
 const LazyContact = React.lazy(() => import('./pages/Contact'));
 const LazyProjectDetails = React.lazy(() => import('./pages/ProjectDetails'));
 const LazyNotFound = React.lazy(() => import('./pages/NotFound'));
-const LazySeoElementsPage = React.lazy(() => import('./pages/SeoElementsPage'));
-const LazyKeywordsPage = React.lazy(() => import('./pages/KeywordsPage'));
 
 function App() {
   console.log("App component rendering");
@@ -35,23 +31,10 @@ function App() {
             <Route path="/" element={<Index />} />
             <Route path="/about" element={<About />} />
             <Route path="/audit" element={<Audit />} />
-            
-            {/* Админ-панель */}
-            <Route path="/admin" element={<AdminLayout />}>
-              <Route index element={<AdminDashboard />} />
-            </Route>
+            <Route path="/seo-elements" element={<SeoElementsPage />} />
+            <Route path="/keywords" element={<KeywordsPage />} />
             
             {/* Некритичные страницы - ленивая загрузка */}
-            <Route path="/seo-elements" element={
-              <Suspense fallback={<FullscreenLoader text="Загрузка оптимизации..." />}>
-                <LazySeoElementsPage />
-              </Suspense>
-            } />
-            <Route path="/keywords" element={
-              <Suspense fallback={<FullscreenLoader text="Загрузка ключевых слов..." />}>
-                <LazyKeywordsPage />
-              </Suspense>
-            } />
             <Route path="/features" element={
               <Suspense fallback={<FullscreenLoader text="Загрузка функций..." />}>
                 <LazyFeatures />
