@@ -18,106 +18,69 @@ import {
   Rocket,
   TrendingUp,
   Server,
-  Monitor,
-  Code,
-  FileText,
-  Search
+  Monitor
 } from 'lucide-react';
 
 const ProductionReadiness: React.FC = () => {
   const productionChecklist = [
-    { item: "SSL/HTTPS настройка", status: "completed", priority: "critical", module: "security.py" },
-    { item: "CDN интеграция", status: "completed", priority: "critical", module: "cdn_config.py" },
-    { item: "Кеширование статических ресурсов", status: "completed", priority: "high", module: "cache_manager.py" },
-    { item: "Минификация и сжатие", status: "completed", priority: "high", module: "asset_optimizer.py" },
-    { item: "Error tracking (Sentry)", status: "pending", priority: "critical", module: "error_tracker.py" },
-    { item: "Мониторинг производительности", status: "pending", priority: "high", module: "performance_monitor.py" },
-    { item: "Автоматические бэкапы БД", status: "pending", priority: "critical", module: "backup_manager.py" },
-    { item: "Load balancing", status: "not_started", priority: "medium", module: "load_balancer.py" },
-    { item: "Rate limiting", status: "in_progress", priority: "high", module: "rate_limiter.py" },
-    { item: "API versioning", status: "not_started", priority: "medium", module: "api_versioning.py" },
-    { item: "Логирование и аудит", status: "in_progress", priority: "high", module: "audit_logger.py" },
-    { item: "Контейнеризация", status: "planned", priority: "medium", module: "docker_config.py" }
+    { item: "SSL/HTTPS настройка", status: "completed", priority: "critical" },
+    { item: "CDN интеграция", status: "completed", priority: "critical" },
+    { item: "Кеширование статических ресурсов", status: "completed", priority: "high" },
+    { item: "Минификация и сжатие", status: "completed", priority: "high" },
+    { item: "Error tracking (Sentry)", status: "pending", priority: "critical" },
+    { item: "Мониторинг производительности", status: "pending", priority: "high" },
+    { item: "Автоматические бэкапы БД", status: "pending", priority: "critical" },
+    { item: "Load balancing", status: "not_started", priority: "medium" },
+    { item: "Horizontal scaling", status: "not_started", priority: "medium" },
+    { item: "Rate limiting", status: "in_progress", priority: "high" },
+    { item: "API versioning", status: "not_started", priority: "medium" },
+    { item: "Логирование и аудит", status: "in_progress", priority: "high" }
   ];
 
-  const coreModules = [
+  const scalabilityFeatures = [
     {
-      name: "crawler.py",
-      description: "Рекурсивное сканирование сайтов",
-      status: "ready",
-      features: ["URL discovery", "Robots.txt parsing", "Sitemap extraction"]
+      title: "Автоматическое масштабирование",
+      description: "Увеличение ресурсов при высокой нагрузке",
+      status: "planned",
+      impact: "high",
+      effort: "medium"
     },
     {
-      name: "seo_analyzer.py", 
-      description: "Анализ SEO параметров",
-      status: "ready",
-      features: ["Meta tags analysis", "Alt attributes check", "Schema markup validation"]
+      title: "Микросервисная архитектура",
+      description: "Разделение на независимые сервисы",
+      status: "consideration",
+      impact: "high",
+      effort: "high"
     },
     {
-      name: "html_processor.py",
-      description: "Обработка и исправление HTML",
-      status: "ready", 
-      features: ["HTML validation", "Tag optimization", "Content enhancement"]
+      title: "Кеширование Redis",
+      description: "Быстрое кеширование для частых запросов",
+      status: "planned",
+      impact: "medium",
+      effort: "low"
     },
     {
-      name: "openai_optimizer.py",
-      description: "ИИ-оптимизация контента",
-      status: "ready",
-      features: ["Content generation", "Meta optimization", "Schema generation"]
-    },
-    {
-      name: "site_packager.py",
-      description: "Упаковка готового сайта",
-      status: "ready",
-      features: ["Archive creation", "Asset bundling", "Structure preservation"]
-    },
-    {
-      name: "publisher.py",
-      description: "Публикация на продакшн",
-      status: "ready",
-      features: ["FTP deployment", "Domain configuration", "SSL setup"]
+      title: "Шардинг базы данных",
+      description: "Горизонтальное разделение данных",
+      status: "future",
+      impact: "high",
+      effort: "high"
     }
   ];
 
   const performanceMetrics = [
-    { metric: "Время загрузки страницы", current: "1.2s", target: "&lt; 1s", progress: 80 },
-    { metric: "Time to Interactive", current: "2.1s", target: "&lt; 2s", progress: 90 },
+    { metric: "Время загрузки страницы", current: "1.2s", target: "< 1s", progress: 80 },
+    { metric: "Time to Interactive", current: "2.1s", target: "< 2s", progress: 90 },
     { metric: "Core Web Vitals", current: "85/100", target: "95/100", progress: 85 },
     { metric: "Uptime", current: "99.5%", target: "99.9%", progress: 95 },
-    { metric: "API Response Time", current: "150ms", target: "&lt; 100ms", progress: 70 },
-    { metric: "SEO Score", current: "78/100", target: "95/100", progress: 78 }
-  ];
-
-  const deploymentStages = [
-    {
-      stage: "Подготовка",
-      tasks: ["Код-ревью", "Тестирование", "Сборка образов"],
-      status: "completed"
-    },
-    {
-      stage: "Staging",
-      tasks: ["Развертывание на тест", "Интеграционные тесты", "UAT"],
-      status: "in_progress"
-    },
-    {
-      stage: "Production",
-      tasks: ["Blue-green deployment", "Health checks", "Мониторинг"],
-      status: "pending"
-    },
-    {
-      stage: "Post-deployment",
-      tasks: ["Проверка метрик", "Smoke tests", "Rollback plan"],
-      status: "pending"
-    }
+    { metric: "API Response Time", current: "150ms", target: "< 100ms", progress: 70 }
   ];
 
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'completed': return <CheckCircle className="h-4 w-4 text-green-500" />;
-      case 'ready': return <CheckCircle className="h-4 w-4 text-green-500" />;
       case 'in_progress': return <AlertCircle className="h-4 w-4 text-yellow-500" />;
       case 'pending': return <AlertCircle className="h-4 w-4 text-orange-500" />;
-      case 'planned': return <AlertCircle className="h-4 w-4 text-blue-500" />;
       case 'not_started': return <XCircle className="h-4 w-4 text-red-500" />;
       default: return <XCircle className="h-4 w-4 text-gray-500" />;
     }
@@ -126,11 +89,12 @@ const ProductionReadiness: React.FC = () => {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'completed': return <Badge variant="secondary" className="text-green-700 bg-green-100">Готово</Badge>;
-      case 'ready': return <Badge variant="secondary" className="text-green-700 bg-green-100">Готов</Badge>;
       case 'in_progress': return <Badge variant="outline" className="text-yellow-700 bg-yellow-100">В работе</Badge>;
       case 'pending': return <Badge variant="outline" className="text-orange-700 bg-orange-100">Ожидает</Badge>;
-      case 'planned': return <Badge variant="outline" className="text-blue-700 bg-blue-100">Запланировано</Badge>;
       case 'not_started': return <Badge variant="destructive">Не начато</Badge>;
+      case 'planned': return <Badge variant="outline" className="text-blue-700 bg-blue-100">Запланировано</Badge>;
+      case 'consideration': return <Badge variant="outline" className="text-purple-700 bg-purple-100">Рассматривается</Badge>;
+      case 'future': return <Badge variant="outline" className="text-gray-700 bg-gray-100">Будущее</Badge>;
       default: return <Badge variant="outline">Неизвестно</Badge>;
     }
   };
@@ -158,15 +122,15 @@ const ProductionReadiness: React.FC = () => {
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
             <div className="text-center">
-              <div className="text-3xl font-bold text-green-600">85%</div>
+              <div className="text-3xl font-bold text-green-600">78%</div>
               <div className="text-sm text-muted-foreground">Общая готовность</div>
             </div>
             <div className="text-center">
-              <div className="text-3xl font-bold text-blue-600">10/12</div>
+              <div className="text-3xl font-bold text-blue-600">12/15</div>
               <div className="text-sm text-muted-foreground">Критичные задачи</div>
             </div>
             <div className="text-center">
-              <div className="text-3xl font-bold text-yellow-600">3</div>
+              <div className="text-3xl font-bold text-yellow-600">5</div>
               <div className="text-sm text-muted-foreground">В работе</div>
             </div>
             <div className="text-center">
@@ -181,45 +145,11 @@ const ProductionReadiness: React.FC = () => {
                 <div className="flex items-center gap-3">
                   {getStatusIcon(item.status)}
                   <span className="font-medium">{item.item}</span>
-                  <Badge variant="outline" className="text-xs">
-                    {item.module}
-                  </Badge>
                   <span className={`text-xs font-semibold ${getPriorityColor(item.priority)}`}>
                     {item.priority.toUpperCase()}
                   </span>
                 </div>
                 {getStatusBadge(item.status)}
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Core Modules Status */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Code className="h-5 w-5" />
-            Статус основных модулей
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {coreModules.map((module, index) => (
-              <div key={index} className="p-4 border rounded-lg">
-                <div className="flex justify-between items-start mb-2">
-                  <h4 className="font-semibold text-sm">{module.name}</h4>
-                  {getStatusBadge(module.status)}
-                </div>
-                <p className="text-sm text-muted-foreground mb-3">{module.description}</p>
-                <div className="space-y-1">
-                  {module.features.map((feature, idx) => (
-                    <div key={idx} className="flex items-center gap-2 text-xs">
-                      <div className="w-1 h-1 bg-current rounded-full"></div>
-                      {feature}
-                    </div>
-                  ))}
-                </div>
               </div>
             ))}
           </div>
@@ -252,32 +182,30 @@ const ProductionReadiness: React.FC = () => {
         </CardContent>
       </Card>
 
-      {/* Deployment Pipeline */}
+      {/* Scalability Features */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <TrendingUp className="h-5 w-5" />
-            Пайплайн развертывания
+            Возможности масштабирования
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            {deploymentStages.map((stage, index) => (
-              <div key={index} className="text-center">
-                <div className={`p-4 border-2 rounded-lg mb-3 ${
-                  stage.status === 'completed' ? 'border-green-200 bg-green-50' :
-                  stage.status === 'in_progress' ? 'border-yellow-200 bg-yellow-50' :
-                  'border-gray-200 bg-gray-50'
-                }`}>
-                  {getStatusIcon(stage.status)}
-                  <h4 className="font-semibold mt-2">{stage.stage}</h4>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {scalabilityFeatures.map((feature, index) => (
+              <div key={index} className="p-4 border rounded-lg">
+                <div className="flex justify-between items-start mb-2">
+                  <h4 className="font-semibold">{feature.title}</h4>
+                  {getStatusBadge(feature.status)}
                 </div>
-                <div className="space-y-1">
-                  {stage.tasks.map((task, idx) => (
-                    <div key={idx} className="text-xs text-muted-foreground">
-                      {task}
-                    </div>
-                  ))}
+                <p className="text-sm text-muted-foreground mb-3">{feature.description}</p>
+                <div className="flex gap-2">
+                  <Badge variant="outline" className="text-xs">
+                    Влияние: {feature.impact}
+                  </Badge>
+                  <Badge variant="outline" className="text-xs">
+                    Усилия: {feature.effort}
+                  </Badge>
                 </div>
               </div>
             ))}
@@ -285,7 +213,7 @@ const ProductionReadiness: React.FC = () => {
         </CardContent>
       </Card>
 
-      {/* Infrastructure & Security */}
+      {/* Infrastructure & Deployment */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <Card>
           <CardHeader>
@@ -297,27 +225,23 @@ const ProductionReadiness: React.FC = () => {
           <CardContent className="space-y-4">
             <div className="flex justify-between items-center">
               <span>Хостинг</span>
-              <Badge variant="secondary">Beget VPS</Badge>
+              <Badge variant="secondary">Vercel/Netlify</Badge>
             </div>
             <div className="flex justify-between items-center">
               <span>База данных</span>
-              <Badge variant="secondary">PostgreSQL 15</Badge>
+              <Badge variant="secondary">Supabase PostgreSQL</Badge>
             </div>
             <div className="flex justify-between items-center">
               <span>CDN</span>
-              <Badge variant="secondary">CloudFlare</Badge>
+              <Badge variant="outline">Планируется CloudFlare</Badge>
             </div>
             <div className="flex justify-between items-center">
               <span>Мониторинг</span>
-              <Badge variant="outline">Настраивается</Badge>
+              <Badge variant="outline">Требует настройки</Badge>
             </div>
             <div className="flex justify-between items-center">
               <span>CI/CD</span>
               <Badge variant="secondary">GitHub Actions</Badge>
-            </div>
-            <div className="flex justify-between items-center">
-              <span>Контейнеризация</span>
-              <Badge variant="outline">Docker + Compose</Badge>
             </div>
           </CardContent>
         </Card>
@@ -326,143 +250,134 @@ const ProductionReadiness: React.FC = () => {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Shield className="h-5 w-5" />
-              Безопасность и мониторинг
+              Безопасность и надежность
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex justify-between items-center">
               <span>SSL/TLS</span>
-              <Badge variant="secondary">Let's Encrypt</Badge>
+              <Badge variant="secondary">Настроено</Badge>
             </div>
             <div className="flex justify-between items-center">
-              <span>Firewall</span>
-              <Badge variant="secondary">UFW + Fail2ban</Badge>
+              <span>Аутентификация</span>
+              <Badge variant="secondary">Supabase Auth</Badge>
             </div>
             <div className="flex justify-between items-center">
               <span>Rate Limiting</span>
-              <Badge variant="outline">Nginx + Redis</Badge>
+              <Badge variant="outline">В разработке</Badge>
             </div>
             <div className="flex justify-between items-center">
-              <span>Backup Strategy</span>
-              <Badge variant="outline">Автоматические бэкапы</Badge>
+              <span>Резервные копии</span>
+              <Badge variant="outline">Требует настройки</Badge>
             </div>
             <div className="flex justify-between items-center">
               <span>Логирование</span>
-              <Badge variant="secondary">ELK Stack</Badge>
-            </div>
-            <div className="flex justify-between items-center">
-              <span>Health Checks</span>
-              <Badge variant="outline">Prometheus + Grafana</Badge>
+              <Badge variant="outline">Частично</Badge>
             </div>
           </CardContent>
         </Card>
       </div>
 
-      {/* Monitoring Dashboard */}
+      {/* Scaling Strategy */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Server className="h-5 w-5" />
+            Стратегия масштабирования
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="space-y-3">
+              <h4 className="font-semibold flex items-center gap-2">
+                <Users className="h-4 w-4" />
+                1-1000 пользователей
+              </h4>
+              <ul className="text-sm space-y-1 text-muted-foreground">
+                <li>• Текущая архитектура</li>
+                <li>• Serverless функции</li>
+                <li>• Базовое кеширование</li>
+                <li>• Мониторинг производительности</li>
+              </ul>
+            </div>
+            
+            <div className="space-y-3">
+              <h4 className="font-semibold flex items-center gap-2">
+                <Database className="h-4 w-4" />
+                1K-10K пользователей
+              </h4>
+              <ul className="text-sm space-y-1 text-muted-foreground">
+                <li>• Redis кеширование</li>
+                <li>• CDN интеграция</li>
+                <li>• Оптимизация запросов</li>
+                <li>• Read replicas</li>
+              </ul>
+            </div>
+            
+            <div className="space-y-3">
+              <h4 className="font-semibold flex items-center gap-2">
+                <Globe className="h-4 w-4" />
+                10K+ пользователей
+              </h4>
+              <ul className="text-sm space-y-1 text-muted-foreground">
+                <li>• Микросервисы</li>
+                <li>• Автоскейлинг</li>
+                <li>• Шардинг БД</li>
+                <li>• Multiple regions</li>
+              </ul>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Monitoring & Analytics */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Monitor className="h-5 w-5" />
-            Дашборд мониторинга
+            Мониторинг и аналитика
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               <div className="text-center p-4 border rounded-lg">
-                <div className="text-2xl font-bold text-green-600">99.9%</div>
+                <div className="text-2xl font-bold text-green-600">99.8%</div>
                 <div className="text-sm text-muted-foreground">Uptime (месяц)</div>
               </div>
               <div className="text-center p-4 border rounded-lg">
-                <div className="text-2xl font-bold text-blue-600">0.8s</div>
+                <div className="text-2xl font-bold text-blue-600">1.2s</div>
                 <div className="text-sm text-muted-foreground">Avg Response</div>
               </div>
               <div className="text-center p-4 border rounded-lg">
-                <div className="text-2xl font-bold text-purple-600">25K</div>
+                <div className="text-2xl font-bold text-purple-600">15K</div>
                 <div className="text-sm text-muted-foreground">Requests/day</div>
               </div>
               <div className="text-center p-4 border rounded-lg">
-                <div className="text-2xl font-bold text-orange-600">0.005%</div>
+                <div className="text-2xl font-bold text-orange-600">0.01%</div>
                 <div className="text-sm text-muted-foreground">Error Rate</div>
               </div>
             </div>
             
             <div className="pt-4 border-t">
-              <h4 className="font-semibold mb-3">Система мониторинга:</h4>
+              <h4 className="font-semibold mb-3">Планируемые интеграции мониторинга:</h4>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <div className="flex justify-between items-center">
-                  <span>Application Performance</span>
-                  <Badge variant="secondary">New Relic</Badge>
+                  <span>Sentry (Error tracking)</span>
+                  <Badge variant="outline">Высокий приоритет</Badge>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span>Error Tracking</span>
-                  <Badge variant="secondary">Sentry</Badge>
+                  <span>Google Analytics 4</span>
+                  <Badge variant="outline">Средний приоритет</Badge>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span>Infrastructure Metrics</span>
-                  <Badge variant="secondary">Prometheus</Badge>
+                  <span>Hotjar (User behavior)</span>
+                  <Badge variant="outline">Низкий приоритет</Badge>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span>Log Management</span>
-                  <Badge variant="secondary">ELK Stack</Badge>
+                  <span>New Relic (APM)</span>
+                  <Badge variant="outline">При росте нагрузки</Badge>
                 </div>
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Production Workflow */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Settings className="h-5 w-5" />
-            Продакшн workflow
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="text-center">
-                <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                  <Search className="h-6 w-6 text-blue-600" />
-                </div>
-                <h4 className="font-semibold mb-2">1. Сканирование</h4>
-                <p className="text-sm text-muted-foreground">
-                  Полное сканирование сайта с анализом структуры и контента
-                </p>
-              </div>
-              
-              <div className="text-center">
-                <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                  <Zap className="h-6 w-6 text-green-600" />
-                </div>
-                <h4 className="font-semibold mb-2">2. Оптимизация</h4>
-                <p className="text-sm text-muted-foreground">
-                  ИИ-оптимизация контента и исправление технических ошибок
-                </p>
-              </div>
-              
-              <div className="text-center">
-                <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                  <Globe className="h-6 w-6 text-purple-600" />
-                </div>
-                <h4 className="font-semibold mb-2">3. Публикация</h4>
-                <p className="text-sm text-muted-foreground">
-                  Развертывание оптимизированного сайта на продакшн сервере
-                </p>
-              </div>
-            </div>
-            
-            <div className="border-t pt-4">
-              <h4 className="font-semibold mb-3">Автоматизированные процессы:</h4>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
-                <div>• Автоматическое тестирование</div>
-                <div>• Continuous Integration</div>
-                <div>• Automated deployment</div>
-                <div>• Health monitoring</div>
-                <div>• Performance optimization</div>
-                <div>• Security scanning</div>
               </div>
             </div>
           </div>

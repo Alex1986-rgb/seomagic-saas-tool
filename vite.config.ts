@@ -9,19 +9,11 @@ export default defineConfig(({ mode }) => ({
   server: {
     host: "::",
     port: 8080,
-    // Улучшение производительности dev сервера
-    hmr: {
-      overlay: false
-    }
   },
   plugins: [
-    react({
-      // Оптимизация React компонентов
-      plugins: mode === 'production' ? [
-        ['transform-remove-console', { exclude: ['error', 'warn'] }]
-      ] : []
-    }),
-    mode === 'development' && componentTagger(),
+    react(),
+    mode === 'development' &&
+    componentTagger(),
   ].filter(Boolean),
   resolve: {
     alias: {
@@ -33,20 +25,10 @@ export default defineConfig(({ mode }) => ({
     outDir: "dist",
     assetsDir: "assets",
     sourcemap: mode !== 'production',
-    minify: mode === 'production' ? 'terser' : false,
-    // Настройки для оптимизации bundle
-    terserOptions: mode === 'production' ? {
-      compress: {
-        drop_console: true,
-        drop_debugger: true,
-        pure_funcs: ['console.log', 'console.debug']
-      }
-    } : undefined,
+    minify: mode === 'production',
     rollupOptions: {
       output: {
-        // Более агрессивное разделение chunks
         manualChunks: (id) => {
-          // Vendor chunks
           if (id.includes('node_modules')) {
             if (id.includes('react') || id.includes('react-dom')) {
               return 'vendor-react';
@@ -57,16 +39,9 @@ export default defineConfig(({ mode }) => ({
             if (id.includes('date-fns') || id.includes('recharts')) {
               return 'vendor-data';
             }
-            if (id.includes('framer-motion')) {
-              return 'vendor-animation';
-            }
-            if (id.includes('@supabase') || id.includes('axios')) {
-              return 'vendor-api';
-            }
             return 'vendor-other';
           }
           
-          // Feature chunks
           if (id.includes('/components/ui/')) {
             return 'ui-components';
           }
@@ -82,56 +57,11 @@ export default defineConfig(({ mode }) => ({
           if (id.includes('/components/audit/')) {
             return 'audit-components';
           }
-          
-          if (id.includes('/components/seo-optimization/')) {
-            return 'seo-components';
-          }
-          
-          if (id.includes('/services/')) {
-            return 'services';
-          }
-        },
-        // Оптимизация имен файлов
-        entryFileNames: 'assets/[name]-[hash].js',
-        chunkFileNames: 'assets/[name]-[hash].js',
-        assetFileNames: 'assets/[name]-[hash].[ext]'
+        }
       }
-    },
-    // Увеличение лимита для chunk warnings
-    chunkSizeWarningLimit: 1000,
-    // CSS оптимизация
-    cssCodeSplit: true,
-    cssMinify: mode === 'production'
-  },
-  optimizeDeps: {
-    include: [
-      'react', 
-      'react-dom', 
-      'react-router-dom', 
-      'framer-motion', 
-      'lucide-react',
-      '@radix-ui/react-tabs',
-      '@radix-ui/react-dialog',
-      '@radix-ui/react-toast',
-      '@supabase/supabase-js'
-    ],
-    // Исключаем проблемные dependencies из pre-bundling
-    exclude: [],
-    // Принудительно используем ESM для Supabase
-    force: true
-  },
-  // Настройки для предварительной загрузки
-  experimental: {
-    renderBuiltUrl(filename) {
-      return `/${filename}`;
     }
   },
-  // Исправление проблем с модулями
-  define: {
-    global: 'globalThis',
+  optimizeDeps: {
+    include: ['react', 'react-dom', 'react-router-dom', 'framer-motion', 'lucide-react']
   },
-  // Настройки SSR для правильной работы с модулями
-  ssr: {
-    noExternal: ['@supabase/supabase-js']
-  }
 }));

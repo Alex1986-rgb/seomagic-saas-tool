@@ -4,92 +4,120 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { 
+  Code, 
+  Database, 
+  Server, 
   Globe, 
-  Search, 
-  Zap, 
-  Target,
-  Users,
+  Users, 
   BarChart3,
-  Code,
-  Shield
+  Shield,
+  Zap
 } from 'lucide-react';
 
 const ProjectOverview: React.FC = () => {
   return (
     <div className="space-y-8">
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Globe className="h-5 w-5" />
-            Обзор проекта SeoMarket
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <h3 className="text-lg font-semibold mb-3">Описание проекта</h3>
-              <p className="text-muted-foreground mb-4">
-                SeoMarket - это автоматизированная платформа для SEO аудита и оптимизации сайтов. 
-                Система выполняет глубокое сканирование сайтов, анализирует SEO параметры и создает 
-                оптимизированную версию с исправленными HTML параметрами.
-              </p>
-              
-              <div className="space-y-2">
-                <div className="flex justify-between">
-                  <span>Готовность проекта</span>
-                  <span>85%</span>
-                </div>
-                <Progress value={85} className="h-2" />
-              </div>
-            </div>
-            
-            <div>
-              <h3 className="text-lg font-semibold mb-3">Ключевые возможности</h3>
-              <div className="space-y-2">
-                <div className="flex items-center gap-2">
-                  <Search className="h-4 w-4 text-blue-500" />
-                  <span className="text-sm">Рекурсивное сканирование сайтов</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Zap className="h-4 w-4 text-yellow-500" />
-                  <span className="text-sm">ИИ-оптимизация контента</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Code className="h-4 w-4 text-green-500" />
-                  <span className="text-sm">Автоматическое исправление HTML</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Globe className="h-4 w-4 text-purple-500" />
-                  <span className="text-sm">Публикация на продакшн</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <Card>
+          <CardContent className="p-6 text-center">
+            <Code className="h-12 w-12 mx-auto mb-4 text-primary" />
+            <h3 className="font-semibold mb-2">Frontend</h3>
+            <Progress value={85} className="mb-2" />
+            <p className="text-sm text-muted-foreground">85% готово</p>
+          </CardContent>
+        </Card>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <Card>
           <CardContent className="p-6 text-center">
-            <Users className="h-8 w-8 mx-auto mb-2 text-blue-500" />
-            <div className="text-2xl font-bold">500+</div>
-            <div className="text-sm text-muted-foreground">Проанализированных сайтов</div>
+            <Server className="h-12 w-12 mx-auto mb-4 text-primary" />
+            <h3 className="font-semibold mb-2">Backend</h3>
+            <Progress value={60} className="mb-2" />
+            <p className="text-sm text-muted-foreground">60% готово</p>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardContent className="p-6 text-center">
-            <BarChart3 className="h-8 w-8 mx-auto mb-2 text-green-500" />
-            <div className="text-2xl font-bold">95%</div>
-            <div className="text-sm text-muted-foreground">Успешных оптимизаций</div>
+            <Database className="h-12 w-12 mx-auto mb-4 text-primary" />
+            <h3 className="font-semibold mb-2">Database</h3>
+            <Progress value={75} className="mb-2" />
+            <p className="text-sm text-muted-foreground">75% готово</p>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardContent className="p-6 text-center">
-            <Target className="h-8 w-8 mx-auto mb-2 text-purple-500" />
-            <div className="text-2xl font-bold">12</div>
-            <div className="text-sm text-muted-foreground">Модулей системы</div>
+            <Shield className="h-12 w-12 mx-auto mb-4 text-primary" />
+            <h3 className="font-semibold mb-2">Security</h3>
+            <Progress value={70} className="mb-2" />
+            <p className="text-sm text-muted-foreground">70% готово</p>
+          </CardContent>
+        </Card>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Globe className="h-5 w-5" />
+              Описание проекта
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <p className="text-muted-foreground">
+              SeoMarket - это комплексная SaaS-платформа для SEO-аудита и оптимизации сайтов. 
+              Проект включает в себя инструменты для анализа сайта, отслеживания позиций, 
+              автоматической оптимизации и детальной отчетности.
+            </p>
+            
+            <div className="space-y-2">
+              <h4 className="font-semibold">Ключевые особенности:</h4>
+              <ul className="list-disc pl-6 space-y-1 text-sm text-muted-foreground">
+                <li>Полнофункциональный SEO-аудит сайтов</li>
+                <li>ИИ-powered оптимизация контента</li>
+                <li>Отслеживание позиций в реальном времени</li>
+                <li>Административная панель с аналитикой</li>
+                <li>Система пользователей и подписок</li>
+                <li>Интеграция с внешними API</li>
+              </ul>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <BarChart3 className="h-5 w-5" />
+              Технические характеристики
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-3">
+              <div className="flex justify-between items-center">
+                <span className="text-sm">React 18.3</span>
+                <Badge variant="secondary">Готово</Badge>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-sm">TypeScript 5.0</span>
+                <Badge variant="secondary">Готово</Badge>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-sm">Tailwind CSS</span>
+                <Badge variant="secondary">Готово</Badge>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-sm">Supabase Backend</span>
+                <Badge variant="outline">В разработке</Badge>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-sm">Edge Functions</span>
+                <Badge variant="outline">В разработке</Badge>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-sm">Payment Integration</span>
+                <Badge variant="destructive">Не начато</Badge>
+              </div>
+            </div>
           </CardContent>
         </Card>
       </div>
@@ -97,45 +125,32 @@ const ProjectOverview: React.FC = () => {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Shield className="h-5 w-5" />
-            Технологический стек
+            <Zap className="h-5 w-5" />
+            Общий прогресс проекта
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="text-center">
-              <Badge variant="secondary" className="mb-2">Frontend</Badge>
-              <div className="text-sm space-y-1">
-                <div>React + TypeScript</div>
-                <div>Tailwind CSS</div>
-                <div>Framer Motion</div>
+          <div className="space-y-6">
+            <div>
+              <div className="flex justify-between items-center mb-2">
+                <span className="font-semibold">Общая готовность</span>
+                <span className="text-sm text-muted-foreground">72%</span>
               </div>
+              <Progress value={72} className="h-3" />
             </div>
             
-            <div className="text-center">
-              <Badge variant="secondary" className="mb-2">Backend</Badge>
-              <div className="text-sm space-y-1">
-                <div>Python + FastAPI</div>
-                <div>Celery</div>
-                <div>PostgreSQL</div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
+              <div>
+                <div className="text-2xl font-bold text-green-600">147</div>
+                <div className="text-sm text-muted-foreground">Готовых компонентов</div>
               </div>
-            </div>
-            
-            <div className="text-center">
-              <Badge variant="secondary" className="mb-2">AI/ML</Badge>
-              <div className="text-sm space-y-1">
-                <div>OpenAI GPT</div>
-                <div>Content Analysis</div>
-                <div>SEO Optimization</div>
+              <div>
+                <div className="text-2xl font-bold text-yellow-600">38</div>
+                <div className="text-sm text-muted-foreground">В разработке</div>
               </div>
-            </div>
-            
-            <div className="text-center">
-              <Badge variant="secondary" className="mb-2">Infrastructure</Badge>
-              <div className="text-sm space-y-1">
-                <div>Beget VPS</div>
-                <div>Docker</div>
-                <div>Redis</div>
+              <div>
+                <div className="text-2xl font-bold text-red-600">23</div>
+                <div className="text-sm text-muted-foreground">Не начато</div>
               </div>
             </div>
           </div>

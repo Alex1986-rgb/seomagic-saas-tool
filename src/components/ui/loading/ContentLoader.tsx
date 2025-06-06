@@ -1,70 +1,88 @@
 
 import React from 'react';
 import { cn } from '@/lib/utils';
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface ContentLoaderProps {
+  isLoading: boolean;
+  children: React.ReactNode;
   lines?: number;
   className?: string;
-  animate?: boolean;
-  height?: 'sm' | 'md' | 'lg';
-  showAvatar?: boolean;
+  skeletonClassName?: string;
+  variant?: 'default' | 'card' | 'table' | 'list';
 }
 
 export const ContentLoader: React.FC<ContentLoaderProps> = ({
+  isLoading,
+  children,
   lines = 3,
   className,
-  animate = true,
-  height = 'md',
-  showAvatar = false
+  skeletonClassName,
+  variant = 'default'
 }) => {
-  const lineHeights = {
-    sm: 'h-3',
-    md: 'h-4',
-    lg: 'h-5'
-  };
-
-  const lineHeight = lineHeights[height];
-
-  return (
-    <div className={cn("space-y-3", className)} role="status" aria-label="Загрузка контента">
-      {showAvatar && (
-        <div className="flex items-center space-x-4">
-          <div className={cn(
-            "rounded-full bg-slate-200 dark:bg-slate-700 w-12 h-12",
-            animate && "animate-pulse"
-          )} />
-          <div className="space-y-2">
-            <div className={cn(
-              "bg-slate-200 dark:bg-slate-700 rounded w-24",
-              lineHeight,
-              animate && "animate-pulse"
-            )} />
-            <div className={cn(
-              "bg-slate-200 dark:bg-slate-700 rounded w-32",
-              lineHeight,
-              animate && "animate-pulse"
-            )} />
+  const renderSkeleton = () => {
+    if (variant === 'card') {
+      return (
+        <div className={cn("space-y-2", skeletonClassName)}>
+          <Skeleton className="h-4 w-[250px]" />
+          <Skeleton className="h-12 w-full" />
+          <Skeleton className="h-4 w-[200px]" />
+          <Skeleton className="h-32 w-full" />
+          <div className="flex gap-2 pt-2">
+            <Skeleton className="h-8 w-20" />
+            <Skeleton className="h-8 w-20" />
           </div>
         </div>
-      )}
-      
-      <div className="space-y-2">
-        {Array.from({ length: lines }).map((_, index) => (
-          <div
-            key={index}
-            className={cn(
-              "bg-slate-200 dark:bg-slate-700 rounded",
-              lineHeight,
-              // Варьируем ширину для реалистичности
-              index === lines - 1 ? 'w-2/3' : 'w-full',
-              animate && "animate-pulse"
-            )}
-            style={{
-              animationDelay: animate ? `${index * 0.1}s` : undefined
-            }}
-          />
+      );
+    }
+
+    if (variant === 'table') {
+      return (
+        <div className={cn("space-y-4", skeletonClassName)}>
+          <div className="flex gap-4 w-full">
+            <Skeleton className="h-6 w-full" />
+          </div>
+          {Array.from({ length: lines }).map((_, i) => (
+            <div key={i} className="flex gap-2 w-full">
+              <Skeleton className="h-6 w-[20%]" />
+              <Skeleton className="h-6 w-[30%]" />
+              <Skeleton className="h-6 w-[35%]" />
+              <Skeleton className="h-6 w-[15%]" />
+            </div>
+          ))}
+        </div>
+      );
+    }
+
+    if (variant === 'list') {
+      return (
+        <div className={cn("space-y-2", skeletonClassName)}>
+          {Array.from({ length: lines }).map((_, i) => (
+            <div key={i} className="flex items-center gap-2">
+              <Skeleton className="h-4 w-4 rounded-full" />
+              <Skeleton className="h-4 w-full" />
+            </div>
+          ))}
+        </div>
+      );
+    }
+
+    // Default skeleton
+    return (
+      <div className={cn("space-y-2", skeletonClassName)}>
+        {Array.from({ length: lines }).map((_, i) => (
+          <Skeleton key={i} className={cn(
+            "h-4 w-full",
+            i === 0 ? "w-[90%]" : i === lines - 1 ? "w-[70%]" : "w-full"
+          )} />
         ))}
       </div>
+    );
+  };
+
+  return (
+    <div className={className}>
+      {isLoading ? renderSkeleton() : children}
     </div>
   );
 };
