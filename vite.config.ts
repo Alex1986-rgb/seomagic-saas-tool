@@ -20,15 +20,14 @@ export default defineConfig(({ mode }) => ({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  base: "/",
   build: {
-    // Enable chunk splitting for better caching
-    cssCodeSplit: true,
-    chunkSizeWarningLimit: 1000, // Increase warning limit for chunks
+    outDir: "dist",
+    assetsDir: "assets",
     sourcemap: mode !== 'production',
     minify: mode === 'production',
     rollupOptions: {
       output: {
-        // Split code chunks by features
         manualChunks: (id) => {
           if (id.includes('node_modules')) {
             if (id.includes('react') || id.includes('react-dom')) {

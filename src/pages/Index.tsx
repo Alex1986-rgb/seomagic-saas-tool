@@ -11,6 +11,7 @@ import CTASection from '../components/sections/CTASection';
 const Index: React.FC = () => {
   useEffect(() => {
     console.log("Index page mounted");
+    document.title = "SEO Аудит и Оптимизация - SeoMarket";
     return () => {
       console.log("Index page unmounted");
     };
