@@ -11,6 +11,7 @@ import CTASection from '../components/sections/CTASection';
 const Index: React.FC = () => {
   useEffect(() => {
     console.log("Index page mounted and rendering");
+    console.log("All components loaded successfully");
     return () => {
       console.log("Index page unmounted");
     };

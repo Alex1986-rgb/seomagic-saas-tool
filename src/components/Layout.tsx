@@ -1,6 +1,6 @@
 
 import React, { useEffect } from 'react';
-import Navbar from './navbar';
+import Navbar from './navbar/Navbar';
 import Footer from './Footer';
 import StarryBackground from './backgrounds/StarryBackground';
 import { cn } from '@/lib/utils';
@@ -23,7 +23,8 @@ const Layout: React.FC<LayoutProps> = ({
   
   useEffect(() => {
     console.log("Layout mounted with path:", location.pathname);
-    console.log("Layout children:", !!children);
+    console.log("Layout children exist:", !!children);
+    console.log("Layout rendering successfully");
     return () => {
       console.log("Layout unmounted");
     };

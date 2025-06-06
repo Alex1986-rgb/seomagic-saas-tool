@@ -11,9 +11,6 @@ import NavbarMobile from './NavbarMobile';
 import DebugControls from './DebugControls';
 import { NAV_ITEMS } from './navConstants';
 import { useAuth } from '@/contexts/AuthContext';
-import { Link } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import { ShieldCheck } from 'lucide-react';
 
 const Navbar: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -21,6 +18,8 @@ const Navbar: React.FC = () => {
   const isMobile = useMobile();
   const location = useLocation();
   const { user, logoutUser, toggleAdmin } = useAuth();
+
+  console.log('Navbar rendering');
 
   useEffect(() => {
     setIsOpen(false);

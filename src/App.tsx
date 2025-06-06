@@ -43,6 +43,8 @@ import Settings from './pages/Settings';
 
 const App: React.FC = () => {
   console.log('App component rendering - starting application');
+  console.log('Setting up routes and navigation');
+  
   return (
     <Router>
       <div className="App">
