@@ -41,6 +41,8 @@ import CMSIntegration from './pages/features/CMSIntegration';
 import SeoAudit from './pages/features/SeoAudit';
 import AIOptimization from './pages/features/AIOptimization';
 import PositionTracking from './pages/features/PositionTracking';
+import SpeedAnalysis from './pages/features/SpeedAnalysis';
+import MobileOptimization from './pages/features/MobileOptimization';
 
 // Admin Routes
 import AdminRoutes from './routes/AdminRoutes';
@@ -108,9 +110,9 @@ function App() {
                 <Route path="/features/ai-optimization" element={<AIOptimization />} />
                 <Route path="/features/position-tracking" element={<PositionTracking />} />
                 
-                {/* Additional missing feature routes */}
-                <Route path="/features/speed-analysis" element={<PerformanceReports />} />
-                <Route path="/features/mobile-optimization" element={<SeoAudit />} />
+                {/* Speed and Mobile optimization routes */}
+                <Route path="/features/speed-analysis" element={<SpeedAnalysis />} />
+                <Route path="/features/mobile-optimization" element={<MobileOptimization />} />
                 
                 {/* Admin Routes */}
                 <Route path="/admin/*" element={<AdminRoutes />} />
