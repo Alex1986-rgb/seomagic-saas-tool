@@ -31,6 +31,7 @@ import Guides from './pages/Guides';
 
 // Feature pages
 import SiteScanning from './pages/features/SiteScanning';
+import MetadataAnalysis from './pages/features/MetadataAnalysis';
 import AutoFix from './pages/features/AutoFix';
 import PositionTrackingFeature from './pages/features/PositionTrackingFeature';
 import CompetitorAnalysis from './pages/features/CompetitorAnalysis';
@@ -88,6 +89,8 @@ function App() {
                 
                 {/* Feature pages - Russian URLs */}
                 <Route path="/features/полное-сканирование-сайта" element={<SiteScanning />} />
+                <Route path="/features/site-scanning" element={<SiteScanning />} />
+                <Route path="/features/metadata-analysis" element={<MetadataAnalysis />} />
                 <Route path="/features/автоматическое-исправление" element={<AutoFix />} />
                 <Route path="/features/отслеживание-позиций" element={<PositionTrackingFeature />} />
                 <Route path="/features/анализ-конкурентов" element={<CompetitorAnalysis />} />
