@@ -1,2 +1,23 @@
 
+# Netlify/Vercel redirects for SPA routing
 /*    /index.html   200
+
+# Security headers
+/*
+  X-Frame-Options: DENY
+  X-Content-Type-Options: nosniff
+  X-XSS-Protection: 1; mode=block
+  Referrer-Policy: strict-origin-when-cross-origin
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https:; style-src 'self' 'unsafe-inline' https:; img-src 'self' data: https:; font-src 'self' https:; connect-src 'self' https:
+
+# Cache static assets
+/static/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# Don't cache service worker
+/service-worker.js
+  Cache-Control: public, max-age=0, must-revalidate
+
+# Admin panel protection (redirect to auth if not logged in)
+/admin/*
+  X-Robots-Tag: noindex, nofollow
