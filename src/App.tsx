@@ -27,6 +27,7 @@ import PositionTracker from './pages/PositionTracker';
 import SiteAudit from './pages/SiteAudit';
 import ProjectDetails from './pages/ProjectDetails';
 import Support from './pages/Support';
+import Guides from './pages/Guides';
 
 // Feature pages
 import SiteScanning from './pages/features/SiteScanning';
@@ -68,6 +69,7 @@ function App() {
                 <Route path="/position-pricing" element={<PositionPricing />} />
                 <Route path="/contact" element={<Contact />} />
                 <Route path="/support" element={<Support />} />
+                <Route path="/guides" element={<Guides />} />
                 <Route path="/privacy" element={<Privacy />} />
                 <Route path="/terms" element={<Terms />} />
                 <Route path="/dashboard" element={<Dashboard />} />
