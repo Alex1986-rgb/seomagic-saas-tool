@@ -78,6 +78,7 @@ function App() {
                 <Route path="/blog" element={<Blog />} />
                 <Route path="/blog/:slug" element={<BlogPost />} />
                 <Route path="/docs" element={<Documentation />} />
+                <Route path="/documentation" element={<Documentation />} />
                 <Route path="/position-tracker" element={<PositionTracker />} />
                 <Route path="/site-audit" element={<SiteAudit />} />
                 <Route path="/project-details" element={<ProjectDetails />} />
