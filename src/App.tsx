@@ -92,16 +92,25 @@ function App() {
                 <Route path="/features/site-scanning" element={<SiteScanning />} />
                 <Route path="/features/metadata-analysis" element={<MetadataAnalysis />} />
                 <Route path="/features/автоматическое-исправление" element={<AutoFix />} />
+                <Route path="/features/auto-fix" element={<AutoFix />} />
                 <Route path="/features/отслеживание-позиций" element={<PositionTrackingFeature />} />
                 <Route path="/features/анализ-конкурентов" element={<CompetitorAnalysis />} />
+                <Route path="/features/competitor-analysis" element={<CompetitorAnalysis />} />
                 <Route path="/features/отчеты-производительности" element={<PerformanceReports />} />
+                <Route path="/features/performance-reports" element={<PerformanceReports />} />
                 <Route path="/features/безопасность-данных" element={<DataSecurity />} />
+                <Route path="/features/data-security" element={<DataSecurity />} />
                 <Route path="/features/интеграция-cms" element={<CMSIntegration />} />
+                <Route path="/features/cms-integration" element={<CMSIntegration />} />
                 
                 {/* New feature pages - English URLs */}
                 <Route path="/features/seo-audit" element={<SeoAudit />} />
                 <Route path="/features/ai-optimization" element={<AIOptimization />} />
                 <Route path="/features/position-tracking" element={<PositionTracking />} />
+                
+                {/* Additional missing feature routes */}
+                <Route path="/features/speed-analysis" element={<PerformanceReports />} />
+                <Route path="/features/mobile-optimization" element={<SeoAudit />} />
                 
                 {/* Admin Routes */}
                 <Route path="/admin/*" element={<AdminRoutes />} />
