@@ -78,7 +78,7 @@ function App() {
                 <Route path="/site-audit" element={<SiteAudit />} />
                 <Route path="/project-details" element={<ProjectDetails />} />
                 
-                {/* Feature pages */}
+                {/* Feature pages - Russian URLs */}
                 <Route path="/features/полное-сканирование-сайта" element={<SiteScanning />} />
                 <Route path="/features/автоматическое-исправление" element={<AutoFix />} />
                 <Route path="/features/отслеживание-позиций" element={<PositionTrackingFeature />} />
@@ -87,7 +87,7 @@ function App() {
                 <Route path="/features/безопасность-данных" element={<DataSecurity />} />
                 <Route path="/features/интеграция-cms" element={<CMSIntegration />} />
                 
-                {/* New feature pages */}
+                {/* New feature pages - English URLs */}
                 <Route path="/features/seo-audit" element={<SeoAudit />} />
                 <Route path="/features/ai-optimization" element={<AIOptimization />} />
                 <Route path="/features/position-tracking" element={<PositionTracking />} />
