@@ -4,7 +4,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from './components/ui/sonner';
 import { GlobalErrorBoundary } from './components/ui/error-handler';
-import { ThemeProvider } from './components/context/ThemeProvider';
+import { ThemeProvider } from './contexts/ThemeContext';
 
 // Pages
 import Index from './pages/Index';
@@ -19,17 +19,13 @@ import Privacy from './pages/Privacy';
 import Terms from './pages/Terms';
 import Dashboard from './pages/Dashboard';
 import Profile from './pages/Profile';
-import Admin from './pages/Admin';
 import Auth from './pages/Auth';
 import Blog from './pages/Blog';
 import BlogPost from './pages/BlogPost';
 import Documentation from './pages/Documentation';
 import PositionTracker from './pages/PositionTracker';
-import SEOOptimization from './pages/SEOOptimization';
 import SiteAudit from './pages/SiteAudit';
 import ProjectDetails from './pages/ProjectDetails';
-import DemoGuide from './pages/DemoGuide';
-import DesignSystem from './pages/DesignSystem';
 
 // Feature pages
 import SiteScanning from './pages/features/SiteScanning';
@@ -74,17 +70,13 @@ function App() {
                 <Route path="/terms" element={<Terms />} />
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/profile" element={<Profile />} />
-                <Route path="/admin" element={<Admin />} />
                 <Route path="/auth" element={<Auth />} />
                 <Route path="/blog" element={<Blog />} />
                 <Route path="/blog/:slug" element={<BlogPost />} />
                 <Route path="/docs" element={<Documentation />} />
                 <Route path="/position-tracker" element={<PositionTracker />} />
-                <Route path="/seo-optimization" element={<SEOOptimization />} />
                 <Route path="/site-audit" element={<SiteAudit />} />
                 <Route path="/project-details" element={<ProjectDetails />} />
-                <Route path="/demo" element={<DemoGuide />} />
-                <Route path="/design" element={<DesignSystem />} />
                 
                 {/* Feature pages */}
                 <Route path="/features/полное-сканирование-сайта" element={<SiteScanning />} />
