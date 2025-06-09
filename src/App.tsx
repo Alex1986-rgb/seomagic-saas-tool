@@ -41,6 +41,9 @@ import SeoAudit from './pages/features/SeoAudit';
 import AIOptimization from './pages/features/AIOptimization';
 import PositionTracking from './pages/features/PositionTracking';
 
+// Admin Routes
+import AdminRoutes from './routes/AdminRoutes';
+
 import './App.css';
 
 const queryClient = new QueryClient({
@@ -96,6 +99,9 @@ function App() {
                 <Route path="/features/seo-audit" element={<SeoAudit />} />
                 <Route path="/features/ai-optimization" element={<AIOptimization />} />
                 <Route path="/features/position-tracking" element={<PositionTracking />} />
+                
+                {/* Admin Routes */}
+                <Route path="/admin/*" element={<AdminRoutes />} />
               </Routes>
               <Toaster />
             </div>
