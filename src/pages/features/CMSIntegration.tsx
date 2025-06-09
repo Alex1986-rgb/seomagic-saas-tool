@@ -290,11 +290,11 @@ const CMSIntegration: React.FC = () => {
                           <span className="text-muted-foreground">Запуск аудита</span>
                         </div>
                         <div className="flex justify-between items-center p-2 bg-muted/30 rounded">
-                          <code>GET /audit/{id}/status</code>
+                          <code>GET /audit/{selectedCMS}/status</code>
                           <span className="text-muted-foreground">Статус проверки</span>
                         </div>
                         <div className="flex justify-between items-center p-2 bg-muted/30 rounded">
-                          <code>GET /audit/{id}/results</code>
+                          <code>GET /audit/{selectedCMS}/results</code>
                           <span className="text-muted-foreground">Результаты аудита</span>
                         </div>
                         <div className="flex justify-between items-center p-2 bg-muted/30 rounded">
