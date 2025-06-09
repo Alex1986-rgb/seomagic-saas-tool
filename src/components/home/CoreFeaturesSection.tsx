@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Search, Zap, BarChart, CheckCircle, ArrowRight, Sparkles } from 'lucide-react';
@@ -13,7 +12,7 @@ const CoreFeaturesSection: React.FC = () => {
       color: 'from-blue-500 to-cyan-500',
       bgColor: 'bg-blue-50',
       iconColor: 'text-blue-600',
-      link: '/features/полное-сканирование-сайта',
+      link: '/features/seo-audit',
       stats: '200+ проверок'
     },
     {
@@ -23,7 +22,7 @@ const CoreFeaturesSection: React.FC = () => {
       color: 'from-purple-500 to-pink-500',
       bgColor: 'bg-purple-50',
       iconColor: 'text-purple-600',
-      link: '/features/автоматическое-исправление',
+      link: '/features/ai-optimization',
       stats: 'До 90% автоматизации'
     },
     {
@@ -33,7 +32,7 @@ const CoreFeaturesSection: React.FC = () => {
       color: 'from-green-500 to-emerald-500',
       bgColor: 'bg-green-50',
       iconColor: 'text-green-600',
-      link: '/features/отслеживание-позиций',
+      link: '/features/position-tracking',
       stats: 'Ежедневный мониторинг'
     }
   ];
