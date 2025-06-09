@@ -10,29 +10,18 @@ import CTASection from '../components/sections/CTASection';
 
 const Index: React.FC = () => {
   useEffect(() => {
-    console.log("Index page mounted - DEBUGGING");
+    console.log("Index page mounted");
     document.title = "SEO Аудит и Оптимизация - SeoMarket";
-    
-    // Debug: Check if DOM elements are being created
-    setTimeout(() => {
-      const rootElement = document.getElementById('root');
-      console.log("Root element:", rootElement);
-      console.log("Root children count:", rootElement?.children.length);
-    }, 1000);
-    
     return () => {
-      console.log("Index page unmounted - DEBUGGING");
+      console.log("Index page unmounted");
     };
   }, []);
 
-  console.log("Index page rendering - DEBUGGING");
+  console.log("Index page rendering");
   
   return (
     <Layout>
-      <div className="flex flex-col min-h-[calc(100vh-4rem)]" style={{ backgroundColor: 'red', minHeight: '100px' }}>
-        <div style={{ backgroundColor: 'blue', color: 'white', padding: '20px', margin: '10px' }}>
-          DEBUG: If you see this blue box, React is rendering correctly
-        </div>
+      <div className="flex flex-col min-h-[calc(100vh-4rem)]">
         <HeroSection />
         <VideoSection />
         <CoreFeaturesSection />

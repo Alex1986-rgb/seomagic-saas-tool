@@ -59,17 +59,12 @@ const queryClient = new QueryClient({
 });
 
 function App() {
-  console.log("App component rendering - DEBUGGING");
-  
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider defaultTheme="system" storageKey="seo-market-theme">
         <GlobalErrorBoundary>
           <Router>
-            <div className="App" style={{ backgroundColor: 'lightblue', minHeight: '100vh' }}>
-              <div style={{ backgroundColor: 'pink', color: 'black', padding: '10px' }}>
-                DEBUG App: Router is active
-              </div>
+            <div className="App">
               <Routes>
                 <Route path="/" element={<Index />} />
                 <Route path="/home" element={<Home />} />
