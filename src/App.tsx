@@ -1,121 +1,112 @@
 
 import React from 'react';
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
-import Audit from './pages/Audit';
-import Pricing from './pages/Pricing';
-import Contact from './pages/Contact';
-import Blog from './pages/Blog';
-import BlogPost from './pages/BlogPost';
-import About from './pages/About';
-import Auth from './pages/Auth';
-import OptimizationDemo from './pages/OptimizationDemo';
-import PositionPricing from './pages/PositionPricing';
-import OptimizationPricing from './pages/OptimizationPricing';
-import SiteAudit from './pages/SiteAudit';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { Toaster } from './components/ui/sonner';
+import { GlobalErrorBoundary } from './components/ui/error-handler';
+import { ThemeProvider } from './components/context/ThemeProvider';
+
+// Pages
 import Index from './pages/Index';
 import Home from './pages/Home';
-import AdminRoutes from './routes/AdminRoutes';
-import AdminDashboard from './pages/AdminDashboard';
-import Demo from './pages/Demo';
-import Documentation from './pages/Documentation';
+import About from './pages/About';
+import Audit from './pages/Audit';
 import Features from './pages/Features';
-import PositionTracking from './pages/PositionTracking';
-import AllPages from './pages/AllPages';
-import Channel from './pages/Channel';
-import FeatureDetail from './pages/features/FeatureDetail';
+import Pricing from './pages/Pricing';
+import PositionPricing from './pages/PositionPricing';
+import Contact from './pages/Contact';
+import Privacy from './pages/Privacy';
+import Terms from './pages/Terms';
+import Dashboard from './pages/Dashboard';
 import Profile from './pages/Profile';
+import Admin from './pages/Admin';
+import Auth from './pages/Auth';
+import Blog from './pages/Blog';
+import BlogPost from './pages/BlogPost';
+import Documentation from './pages/Documentation';
+import PositionTracker from './pages/PositionTracker';
+import SEOOptimization from './pages/SEOOptimization';
+import SiteAudit from './pages/SiteAudit';
 import ProjectDetails from './pages/ProjectDetails';
+import DemoGuide from './pages/DemoGuide';
+import DesignSystem from './pages/DesignSystem';
 
-// Feature articles imports
+// Feature pages
 import SiteScanning from './pages/features/SiteScanning';
-import MetadataAnalysis from './pages/features/MetadataAnalysis';
-import SpeedAnalysis from './pages/features/SpeedAnalysis';
-import MobileOptimization from './pages/features/MobileOptimization';
+import AutoFix from './pages/features/AutoFix';
 import PositionTrackingFeature from './pages/features/PositionTrackingFeature';
 import CompetitorAnalysis from './pages/features/CompetitorAnalysis';
-import AutoFix from './pages/features/AutoFix';
+import PerformanceReports from './pages/features/PerformanceReports';
 import DataSecurity from './pages/features/DataSecurity';
 import CMSIntegration from './pages/features/CMSIntegration';
-import PerformanceReports from './pages/features/PerformanceReports';
+import SeoAudit from './pages/features/SeoAudit';
+import AIOptimization from './pages/features/AIOptimization';
+import PositionTracking from './pages/features/PositionTracking';
 
-// Import pages
-import Webinars from './pages/Webinars';
-import Guides from './pages/Guides';
-import ApiDocs from './pages/ApiDocs';
-import Faq from './pages/Faq';
-import Team from './pages/Team';
-import Careers from './pages/Careers';
-import Partners from './pages/Partners';
-import Support from './pages/Support';
-import Terms from './pages/Terms';
-import Privacy from './pages/Privacy';
-import NotFound from './pages/NotFound';
+import './App.css';
 
-const App: React.FC = () => {
-  console.log('App component rendering');
-  
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 5 * 60 * 1000, // 5 minutes
+      gcTime: 10 * 60 * 1000, // 10 minutes
+    },
+  },
+});
+
+function App() {
   return (
-    <Router>
-      <div className="min-h-screen bg-background">
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/home" element={<Home />} />
-          <Route path="/audit" element={<Audit />} />
-          <Route path="/pricing" element={<Pricing />} />
-          <Route path="/contact" element={<Contact />} />
-          <Route path="/blog" element={<Blog />} />
-          <Route path="/blog/:id" element={<BlogPost />} />
-          <Route path="/about" element={<About />} />
-          <Route path="/auth" element={<Auth />} />
-          <Route path="/profile" element={<Profile />} />
-          <Route path="/site-audit" element={<SiteAudit />} />
-          <Route path="/optimization-demo" element={<OptimizationDemo />} />
-          <Route path="/position-pricing" element={<PositionPricing />} />
-          <Route path="/optimization-pricing" element={<OptimizationPricing />} />
-          <Route path="/admin-dashboard" element={<AdminDashboard />} />
-          <Route path="/demo" element={<Demo />} />
-          <Route path="/documentation" element={<Documentation />} />
-          <Route path="/documentation/:tab" element={<Documentation />} />
-          <Route path="/features" element={<Features />} />
-          <Route path="/features/:featureId" element={<FeatureDetail />} />
-          <Route path="/position-tracking" element={<PositionTracking />} />
-          <Route path="/pages" element={<AllPages />} />
-          <Route path="/channel" element={<Channel />} />
-          <Route path="/project-details" element={<ProjectDetails />} />
-          
-          {/* Feature articles */}
-          <Route path="/features/site-scanning" element={<SiteScanning />} />
-          <Route path="/features/metadata-analysis" element={<MetadataAnalysis />} />
-          <Route path="/features/speed-analysis" element={<SpeedAnalysis />} />
-          <Route path="/features/mobile-optimization" element={<MobileOptimization />} />
-          <Route path="/features/position-tracking-feature" element={<PositionTrackingFeature />} />
-          <Route path="/features/competitor-analysis" element={<CompetitorAnalysis />} />
-          <Route path="/features/auto-fix" element={<AutoFix />} />
-          <Route path="/features/security" element={<DataSecurity />} />
-          <Route path="/features/cms-integration" element={<CMSIntegration />} />
-          <Route path="/features/performance-reports" element={<PerformanceReports />} />
-          
-          {/* Content pages */}
-          <Route path="/webinars" element={<Webinars />} />
-          <Route path="/guides" element={<Guides />} />
-          <Route path="/api-docs" element={<ApiDocs />} />
-          <Route path="/faq" element={<Faq />} />
-          <Route path="/team" element={<Team />} />
-          <Route path="/careers" element={<Careers />} />
-          <Route path="/partners" element={<Partners />} />
-          <Route path="/support" element={<Support />} />
-          <Route path="/terms" element={<Terms />} />
-          <Route path="/privacy" element={<Privacy />} />
-          
-          {/* Admin routes */}
-          <Route path="/admin/*" element={<AdminRoutes />} />
-          
-          {/* 404 page for any undefined routes */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </div>
-    </Router>
+    <QueryClientProvider client={queryClient}>
+      <ThemeProvider defaultTheme="system" storageKey="seo-market-theme">
+        <GlobalErrorBoundary>
+          <Router>
+            <div className="App">
+              <Routes>
+                <Route path="/" element={<Index />} />
+                <Route path="/home" element={<Home />} />
+                <Route path="/about" element={<About />} />
+                <Route path="/audit" element={<Audit />} />
+                <Route path="/features" element={<Features />} />
+                <Route path="/pricing" element={<Pricing />} />
+                <Route path="/position-pricing" element={<PositionPricing />} />
+                <Route path="/contact" element={<Contact />} />
+                <Route path="/privacy" element={<Privacy />} />
+                <Route path="/terms" element={<Terms />} />
+                <Route path="/dashboard" element={<Dashboard />} />
+                <Route path="/profile" element={<Profile />} />
+                <Route path="/admin" element={<Admin />} />
+                <Route path="/auth" element={<Auth />} />
+                <Route path="/blog" element={<Blog />} />
+                <Route path="/blog/:slug" element={<BlogPost />} />
+                <Route path="/docs" element={<Documentation />} />
+                <Route path="/position-tracker" element={<PositionTracker />} />
+                <Route path="/seo-optimization" element={<SEOOptimization />} />
+                <Route path="/site-audit" element={<SiteAudit />} />
+                <Route path="/project-details" element={<ProjectDetails />} />
+                <Route path="/demo" element={<DemoGuide />} />
+                <Route path="/design" element={<DesignSystem />} />
+                
+                {/* Feature pages */}
+                <Route path="/features/полное-сканирование-сайта" element={<SiteScanning />} />
+                <Route path="/features/автоматическое-исправление" element={<AutoFix />} />
+                <Route path="/features/отслеживание-позиций" element={<PositionTrackingFeature />} />
+                <Route path="/features/анализ-конкурентов" element={<CompetitorAnalysis />} />
+                <Route path="/features/отчеты-производительности" element={<PerformanceReports />} />
+                <Route path="/features/безопасность-данных" element={<DataSecurity />} />
+                <Route path="/features/интеграция-cms" element={<CMSIntegration />} />
+                
+                {/* New feature pages */}
+                <Route path="/features/seo-audit" element={<SeoAudit />} />
+                <Route path="/features/ai-optimization" element={<AIOptimization />} />
+                <Route path="/features/position-tracking" element={<PositionTracking />} />
+              </Routes>
+              <Toaster />
+            </div>
+          </Router>
+        </GlobalErrorBoundary>
+      </ThemeProvider>
+    </QueryClientProvider>
   );
-};
+}
 
 export default App;
