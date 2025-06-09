@@ -1,137 +1,106 @@
 
 import React from 'react';
-import { motion } from 'framer-motion';
-import { BellRing, Bell, Check, XCircle } from 'lucide-react';
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-
-interface Notification {
-  id: string;
-  title: string;
-  message: string;
-  date: string;
-  read: boolean;
-  type: 'info' | 'success' | 'warning' | 'error';
-}
-
-const mockNotifications: Notification[] = [
-  {
-    id: '1',
-    title: 'Завершен аудит сайта',
-    message: 'Аудит для myarredo.ru завершен. SEO оценка составила 78/100.',
-    date: '2023-09-15T10:30:00',
-    read: false,
-    type: 'success'
-  },
-  {
-    id: '2',
-    title: 'Новые рекомендации',
-    message: 'Доступны новые рекомендации по оптимизации для сайта example.com',
-    date: '2023-09-14T14:45:00',
-    read: false,
-    type: 'info'
-  },
-  {
-    id: '3',
-    title: 'Обнаружены проблемы',
-    message: 'На сайте mysite.ru обнаружены проблемы с индексацией. Требуется внимание.',
-    date: '2023-09-12T09:15:00',
-    read: true,
-    type: 'warning'
-  },
-  {
-    id: '4',
-    title: 'Ошибка сканирования',
-    message: 'Не удалось завершить сканирование сайта broken-site.ru из-за технических проблем.',
-    date: '2023-09-10T18:20:00',
-    read: true,
-    type: 'error'
-  }
-];
-
-const NotificationIcon: React.FC<{ type: Notification['type'] }> = ({ type }) => {
-  switch (type) {
-    case 'success':
-      return <Check className="h-5 w-5 text-green-500" />;
-    case 'warning':
-      return <Bell className="h-5 w-5 text-amber-500" />;
-    case 'error':
-      return <XCircle className="h-5 w-5 text-red-500" />;
-    case 'info':
-    default:
-      return <BellRing className="h-5 w-5 text-blue-500" />;
-  }
-};
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Switch } from '@/components/ui/switch';
+import { Bell, Mail, MessageSquare } from 'lucide-react';
 
 const ClientNotifications: React.FC = () => {
-  const [notifications, setNotifications] = React.useState<Notification[]>(mockNotifications);
-  
-  const markAllAsRead = () => {
-    setNotifications(notifications.map(notification => ({ ...notification, read: true })));
-  };
-  
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleString('ru-RU', { 
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-  };
-  
-  const unreadCount = notifications.filter(n => !n.read).length;
-  
+  const notifications = [
+    {
+      title: 'Аудит завершен',
+      message: 'SEO аудит для example.com завершен',
+      time: '2 часа назад',
+      unread: true
+    },
+    {
+      title: 'Изменение позиций',
+      message: 'Позиция по ключевому слову "seo аудит" улучшилась',
+      time: '1 день назад',
+      unread: true
+    },
+    {
+      title: 'Платеж обработан',
+      message: 'Подписка продлена до 15 января 2025',
+      time: '3 дня назад',
+      unread: false
+    }
+  ];
+
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center mb-4">
-        <div className="flex items-center">
-          <h3 className="text-lg font-semibold">Уведомления</h3>
-          {unreadCount > 0 && (
-            <Badge variant="destructive" className="ml-2">
-              {unreadCount} новых
-            </Badge>
-          )}
-        </div>
-        <Button variant="outline" size="sm" onClick={markAllAsRead}>
-          Отметить все как прочитанные
-        </Button>
-      </div>
+      <h3 className="text-lg md:text-xl font-semibold">Уведомления</h3>
       
-      {notifications.length === 0 ? (
-        <div className="text-center py-8 text-muted-foreground">
-          У вас нет уведомлений
-        </div>
-      ) : (
-        <div className="space-y-3">
-          {notifications.map((notification) => (
-            <motion.div
-              key={notification.id}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className={`p-4 rounded-lg border ${
-                notification.read ? 'border-border' : 'border-primary/30 bg-primary/5'
-              }`}
-            >
-              <div className="flex items-start gap-3">
-                <div className="flex-shrink-0 mt-1">
-                  <NotificationIcon type={notification.type} />
-                </div>
-                <div className="flex-grow">
-                  <div className="flex justify-between items-start mb-1">
-                    <h4 className="font-medium">{notification.title}</h4>
-                    <span className="text-xs text-muted-foreground">
-                      {formatDate(notification.date)}
-                    </span>
+      <Card>
+        <CardHeader>
+          <CardTitle>Настройки уведомлений</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Mail className="h-5 w-5 text-muted-foreground" />
+              <div>
+                <p className="font-medium">Email уведомления</p>
+                <p className="text-sm text-muted-foreground">Получать важные уведомления на email</p>
+              </div>
+            </div>
+            <Switch defaultChecked />
+          </div>
+          
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Bell className="h-5 w-5 text-muted-foreground" />
+              <div>
+                <p className="font-medium">Push уведомления</p>
+                <p className="text-sm text-muted-foreground">Показывать уведомления в браузере</p>
+              </div>
+            </div>
+            <Switch defaultChecked />
+          </div>
+          
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <MessageSquare className="h-5 w-5 text-muted-foreground" />
+              <div>
+                <p className="font-medium">SMS уведомления</p>
+                <p className="text-sm text-muted-foreground">Критически важные уведомления по SMS</p>
+              </div>
+            </div>
+            <Switch />
+          </div>
+        </CardContent>
+      </Card>
+      
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <CardTitle>Последние уведомления</CardTitle>
+            <Button size="sm" variant="outline">Отметить все как прочитанные</Button>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-3">
+            {notifications.map((notification, index) => (
+              <div
+                key={index}
+                className={`p-3 rounded-md border-l-4 ${
+                  notification.unread 
+                    ? 'border-l-primary bg-primary/5' 
+                    : 'border-l-muted bg-muted/20'
+                }`}
+              >
+                <div className="flex items-start justify-between">
+                  <div>
+                    <p className="font-medium text-sm">{notification.title}</p>
+                    <p className="text-xs text-muted-foreground mt-1">{notification.message}</p>
                   </div>
-                  <p className="text-sm text-muted-foreground">{notification.message}</p>
+                  <span className="text-xs text-muted-foreground">{notification.time}</span>
                 </div>
               </div>
-            </motion.div>
-          ))}
-        </div>
-      )}
+            ))}
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 };

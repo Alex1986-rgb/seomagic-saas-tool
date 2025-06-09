@@ -1,94 +1,76 @@
-import React, { useState } from 'react';
-import { FileText } from 'lucide-react';
-import { Button } from "@/components/ui/button";
-import { useNavigate } from 'react-router-dom';
-import { AuditCard } from './audits/AuditCard';
-import { AuditFilters } from './audits/AuditFilters';
-import { EmptyAuditState } from './audits/EmptyAuditState';
 
-// Мок-данные аудитов пользователя
-const mockUserAudits = [
-  {
-    id: '1',
-    url: 'https://example.com',
-    score: 78,
-    date: '2023-06-08T14:30:00Z',
-    status: 'completed',
-    issues: { critical: 3, important: 8, opportunities: 12 },
-    optimized: true,
-  },
-  {
-    id: '2',
-    url: 'https://mywebsite.ru',
-    score: 45,
-    date: '2023-06-07T09:15:00Z',
-    status: 'completed',
-    issues: { critical: 12, important: 15, opportunities: 7 },
-    optimized: false,
-  },
-  {
-    id: '3',
-    url: 'https://shop.example.com',
-    score: 92,
-    date: '2023-06-06T10:20:00Z',
-    status: 'completed',
-    issues: { critical: 0, important: 4, opportunities: 8 },
-    optimized: true,
-  },
-  {
-    id: '4',
-    url: 'https://blog.mywebsite.ru',
-    score: null,
-    date: '2023-06-08T16:45:00Z',
-    status: 'processing',
-    issues: null,
-    optimized: false,
-  },
-];
+import React from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Clock, ExternalLink, TrendingUp } from 'lucide-react';
 
-interface ClientAuditsProps {
-  onStartNewAudit?: () => void;
-}
-
-const ClientAudits: React.FC<ClientAuditsProps> = ({ onStartNewAudit }) => {
-  const [searchTerm, setSearchTerm] = useState('');
-  const navigate = useNavigate();
-  
-  const filteredAudits = mockUserAudits.filter(audit => 
-    audit.url.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
-  const handleNewAudit = () => {
-    if (onStartNewAudit) {
-      onStartNewAudit();
-    } else {
-      navigate('/audit');
+const ClientAudits: React.FC = () => {
+  const audits = [
+    {
+      id: 1,
+      url: 'example.com',
+      date: '15 декабря 2024',
+      score: 87,
+      status: 'completed',
+      issues: 12
+    },
+    {
+      id: 2,
+      url: 'shop.example.com',
+      date: '10 декабря 2024',
+      score: 72,
+      status: 'completed',
+      issues: 23
+    },
+    {
+      id: 3,
+      url: 'blog.example.com',
+      date: '5 декабря 2024',
+      score: 94,
+      status: 'completed',
+      issues: 5
     }
-  };
+  ];
 
   return (
-    <div>
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-xl font-semibold">Ваши SEO аудиты</h2>
-        <Button className="gap-2" onClick={handleNewAudit}>
-          <FileText className="h-4 w-4" />
-          <span>Новый аудит</span>
-        </Button>
-      </div>
-      
-      <AuditFilters 
-        searchTerm={searchTerm}
-        onSearchChange={setSearchTerm}
-      />
-      
-      <div className="space-y-4">
-        {filteredAudits.length === 0 ? (
-          <EmptyAuditState onStartNewAudit={handleNewAudit} />
-        ) : (
-          filteredAudits.map(audit => (
-            <AuditCard key={audit.id} audit={audit} />
-          ))
-        )}
+    <div className="space-y-4">
+      <h3 className="text-lg md:text-xl font-semibold">История SEO аудитов</h3>
+      <div className="grid gap-4">
+        {audits.map((audit) => (
+          <Card key={audit.id}>
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-base md:text-lg">{audit.url}</CardTitle>
+                <Badge variant="outline" className="bg-green-500/10 text-green-500">
+                  Завершен
+                </Badge>
+              </div>
+            </CardHeader>
+            <CardContent className="pt-0">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+                <div>
+                  <p className="text-xs md:text-sm text-muted-foreground">Дата</p>
+                  <p className="font-medium text-sm md:text-base">{audit.date}</p>
+                </div>
+                <div>
+                  <p className="text-xs md:text-sm text-muted-foreground">SEO балл</p>
+                  <p className="font-bold text-lg text-primary">{audit.score}/100</p>
+                </div>
+                <div>
+                  <p className="text-xs md:text-sm text-muted-foreground">Проблем</p>
+                  <p className="font-medium text-sm md:text-base">{audit.issues}</p>
+                </div>
+                <div className="flex items-end">
+                  <Button size="sm" variant="outline" className="w-full text-xs md:text-sm">
+                    <ExternalLink className="h-3 w-3 md:h-4 md:w-4 mr-1" />
+                    Открыть
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
       </div>
     </div>
   );

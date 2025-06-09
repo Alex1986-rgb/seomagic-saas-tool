@@ -1,171 +1,71 @@
-import React, { useState, useEffect } from 'react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { BarChart, FileText, Search, TrendingUp } from 'lucide-react';
-import { getHistoricalData } from '@/services/position/positionHistory';
-import { PositionData, checkPositions } from '@/services/position/positionTracker';
-import { useToast } from "@/hooks/use-toast";
-import {
-  PositionTrackerHeader,
-  OverviewTab,
-  KeywordsTab,
-  TrendsTab,
-  ReportsTab,
-  OrderDialog
-} from './position-tracker';
+
+import React from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { TrendingUp, TrendingDown, Minus, Plus } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 const ClientPositionTracker: React.FC = () => {
-  const [history, setHistory] = useState<PositionData[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [orderDialogOpen, setOrderDialogOpen] = useState(false);
-  const [orderType, setOrderType] = useState<'audit' | 'position' | 'optimization'>('audit');
-  const { toast } = useToast();
-
-  useEffect(() => {
-    loadHistory();
-  }, []);
-
-  const loadHistory = async () => {
-    setIsLoading(true);
-    try {
-      const data = await getHistoricalData();
-      setHistory(data);
-    } catch (error) {
-      console.error('Error loading position history:', error);
-      toast({
-        title: "Ошибка загрузки данных",
-        description: "Не удалось загрузить историю проверок позиций",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
+  const positions = [
+    {
+      keyword: 'seo аудит',
+      position: 3,
+      previousPosition: 5,
+      searchEngine: 'Google'
+    },
+    {
+      keyword: 'оптимизация сайта',
+      position: 7,
+      previousPosition: 7,
+      searchEngine: 'Yandex'
+    },
+    {
+      keyword: 'анализ сайта',
+      position: 12,
+      previousPosition: 8,
+      searchEngine: 'Google'
     }
-  };
+  ];
 
-  const handleOrder = (type: 'audit' | 'position' | 'optimization') => {
-    setOrderType(type);
-    setOrderDialogOpen(true);
-  };
-
-  const submitOrder = () => {
-    toast({
-      title: "Заказ размещен",
-      description: `Ваш заказ на ${
-        orderType === 'audit' ? 'аудит сайта' : 
-        orderType === 'position' ? 'проверку позиций' : 
-        'оптимизацию сайта'
-      } успешно размещен`,
-    });
-    setOrderDialogOpen(false);
-
-    // If it's a position check, simulate starting a check
-    if (orderType === 'position') {
-      runPositionCheck();
-    }
-  };
-
-  const runPositionCheck = async () => {
-    setIsLoading(true);
-    toast({
-      title: "Проверка позиций запущена",
-      description: "Процесс проверки позиций сайта начат, это может занять несколько минут",
-    });
-
-    try {
-      // Sample data for testing
-      const testData = {
-        domain: "example.com",
-        keywords: ["SEO оптимизация", "продвижение сайта", "анализ сайта", "проверка позиций", "аудит сайта"],
-        searchEngine: "all",
-        region: "Москва",
-        depth: 100,
-        scanFrequency: "once"
-      };
-
-      // Run the check
-      const result = await checkPositions(testData);
-      
-      // Reload history to show the new check
-      const updatedHistory = await getHistoricalData();
-      setHistory(updatedHistory);
-      
-      toast({
-        title: "Проверка позиций завершена",
-        description: "Результаты проверки позиций сайта доступны в разделе отчетов",
-      });
-    } catch (error) {
-      console.error('Error checking positions:', error);
-      toast({
-        title: "Ошибка проверки позиций",
-        description: "Не удалось выполнить проверку позиций",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const getLastCheckDate = () => {
-    if (history.length > 0) {
-      return history[0].date || history[0].timestamp;
-    }
-    return undefined;
+  const getTrendIcon = (current: number, previous: number) => {
+    if (current < previous) return <TrendingUp className="h-4 w-4 text-green-500" />;
+    if (current > previous) return <TrendingDown className="h-4 w-4 text-red-500" />;
+    return <Minus className="h-4 w-4 text-gray-500" />;
   };
 
   return (
-    <div className="space-y-6">
-      <PositionTrackerHeader 
-        handleOrder={handleOrder} 
-        lastCheckDate={getLastCheckDate()}
-        domainName={history.length > 0 ? history[0].domain : undefined}
-      />
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <h3 className="text-lg md:text-xl font-semibold">Отслеживание позиций</h3>
+        <Link to="/position-tracker">
+          <Button size="sm">
+            <Plus className="h-4 w-4 mr-2" />
+            Добавить ключевое слово
+          </Button>
+        </Link>
+      </div>
       
-      <Tabs defaultValue="overview">
-        <TabsList className="mb-6">
-          <TabsTrigger value="overview" className="flex items-center gap-2">
-            <BarChart className="h-4 w-4" />
-            <span>Обзор</span>
-          </TabsTrigger>
-          <TabsTrigger value="keywords" className="flex items-center gap-2">
-            <Search className="h-4 w-4" />
-            <span>Ключевые слова</span>
-          </TabsTrigger>
-          <TabsTrigger value="trends" className="flex items-center gap-2">
-            <TrendingUp className="h-4 w-4" />
-            <span>Тренды</span>
-          </TabsTrigger>
-          <TabsTrigger value="reports" className="flex items-center gap-2">
-            <FileText className="h-4 w-4" />
-            <span>Отчёты</span>
-          </TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="overview" className="space-y-6">
-          <OverviewTab 
-            history={history} 
-            isLoading={isLoading}
-            onRefresh={loadHistory}
-          />
-        </TabsContent>
-
-        <TabsContent value="keywords" className="space-y-6">
-          <KeywordsTab history={history} />
-        </TabsContent>
-
-        <TabsContent value="trends" className="space-y-6">
-          <TrendsTab history={history} />
-        </TabsContent>
-
-        <TabsContent value="reports" className="space-y-6">
-          <ReportsTab handleOrder={handleOrder} />
-        </TabsContent>
-      </Tabs>
-      
-      <OrderDialog
-        open={orderDialogOpen}
-        orderType={orderType}
-        onOpenChange={setOrderDialogOpen}
-        onSubmit={submitOrder}
-      />
+      <div className="grid gap-4">
+        {positions.map((item, index) => (
+          <Card key={index}>
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div className="flex-1">
+                  <p className="font-medium text-sm md:text-base">{item.keyword}</p>
+                  <p className="text-xs text-muted-foreground">{item.searchEngine}</p>
+                </div>
+                <div className="text-center">
+                  <div className="flex items-center gap-2">
+                    <span className="text-lg font-bold">{item.position}</span>
+                    {getTrendIcon(item.position, item.previousPosition)}
+                  </div>
+                  <p className="text-xs text-muted-foreground">позиция</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
     </div>
   );
 };
