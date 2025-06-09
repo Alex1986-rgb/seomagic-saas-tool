@@ -22,9 +22,9 @@ const Layout: React.FC<LayoutProps> = ({
   const location = useLocation();
   
   useEffect(() => {
-    console.log("Layout mounted with path:", location.pathname);
+    console.log("Layout mounted with path:", location.pathname, "- DEBUGGING");
     return () => {
-      console.log("Layout unmounted");
+      console.log("Layout unmounted - DEBUGGING");
     };
   }, [location.pathname]);
   
@@ -36,10 +36,14 @@ const Layout: React.FC<LayoutProps> = ({
   const shouldHideNavbar = hideNavbar || isAdminRoute;
   const shouldHideFooter = hideFooter || isAdminRoute;
 
-  console.log("Layout rendering with navbar:", !shouldHideNavbar, "footer:", !shouldHideFooter);
+  console.log("Layout rendering with navbar:", !shouldHideNavbar, "footer:", !shouldHideFooter, "- DEBUGGING");
 
   return (
-    <div className={cn("flex flex-col min-h-screen relative", className)}>
+    <div className={cn("flex flex-col min-h-screen relative", className)} style={{ backgroundColor: 'green' }}>
+      <div style={{ backgroundColor: 'yellow', color: 'black', padding: '10px' }}>
+        DEBUG Layout: Path = {location.pathname}
+      </div>
+      
       {/* Background */}
       <div className="fixed inset-0 z-[-1]">
         <StarryBackground />
@@ -49,7 +53,10 @@ const Layout: React.FC<LayoutProps> = ({
       {!shouldHideNavbar && <Navbar />}
       
       {/* Main content */}
-      <main className="flex-grow relative z-10 w-full">
+      <main className="flex-grow relative z-10 w-full" style={{ backgroundColor: 'orange' }}>
+        <div style={{ backgroundColor: 'purple', color: 'white', padding: '10px' }}>
+          DEBUG Main: Content should appear below
+        </div>
         {children}
       </main>
       
