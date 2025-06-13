@@ -22,38 +22,58 @@ const Layout: React.FC<LayoutProps> = ({
   const location = useLocation();
   
   useEffect(() => {
-    console.log("Layout mounted with path:", location.pathname);
+    console.log("Layout mounted - WORKING!", location.pathname);
+    
+    // Ensure consistent styling
+    document.body.style.backgroundColor = '#ffffff';
+    document.body.style.margin = '0';
+    document.body.style.padding = '0';
+    
     return () => {
       console.log("Layout unmounted");
     };
   }, [location.pathname]);
   
-  // Check if the current path starts with /admin
   const isAdminRoute = location.pathname.startsWith('/admin');
-  
-  // On administrative pages we hide the standard navigation and footer
-  // since they have their own built-in navigation
   const shouldHideNavbar = hideNavbar || isAdminRoute;
   const shouldHideFooter = hideFooter || isAdminRoute;
 
-  console.log("Layout rendering with navbar:", !shouldHideNavbar, "footer:", !shouldHideFooter);
+  console.log("Layout rendering - VISIBLE!", "navbar:", !shouldHideNavbar, "footer:", !shouldHideFooter);
 
   return (
-    <div className={cn("flex flex-col min-h-screen relative", className)}>
-      {/* Background */}
-      <div className="fixed inset-0 z-[-1]">
+    <div 
+      className={cn("flex flex-col min-h-screen relative", className)}
+      style={{ backgroundColor: '#ffffff', minHeight: '100vh' }}
+    >
+      {/* Background with fallback */}
+      <div className="fixed inset-0 z-[-1]" style={{ backgroundColor: '#ffffff' }}>
         <StarryBackground />
       </div>
       
-      {/* Navbar */}
+      {/* Debug indicator */}
+      <div style={{
+        position: 'fixed',
+        top: '10px',
+        right: '10px',
+        background: '#4CAF50',
+        color: 'white',
+        padding: '5px 10px',
+        borderRadius: '4px',
+        fontSize: '12px',
+        zIndex: 1000
+      }}>
+        ✅ Layout Active
+      </div>
+      
       {!shouldHideNavbar && <Navbar />}
       
-      {/* Main content */}
-      <main className="flex-grow relative z-10 w-full">
+      <main 
+        className="flex-grow relative z-10 w-full" 
+        style={{ backgroundColor: '#ffffff', minHeight: '50vh' }}
+      >
         {children}
       </main>
       
-      {/* Footer */}
       {!shouldHideFooter && <Footer />}
     </div>
   );
