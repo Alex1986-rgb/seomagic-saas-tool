@@ -1,18 +1,14 @@
+
 import React from 'react';
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { z } from "zod";
+import { registerSchema } from './validationSchemas';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Checkbox } from "@/components/ui/checkbox";
-import { registerSchema } from './validationSchemas';
 import { useAuth } from '@/contexts/AuthContext';
-
-// Правильное расширение схемы:
-const extendedRegisterSchema = registerSchema.extend({
-  fullName: z.string().min(2, "Имя должно содержать минимум 2 символа").optional(),
-});
+import type { RegisterFormValues } from './validationSchemas';
 
 interface RegisterFormProps {
   onSuccess: () => void;
@@ -21,18 +17,18 @@ interface RegisterFormProps {
 const RegisterForm: React.FC<RegisterFormProps> = ({ onSuccess }) => {
   const { register } = useAuth();
   
-  const form = useForm<z.infer<typeof extendedRegisterSchema>>({
-    resolver: zodResolver(extendedRegisterSchema),
+  const form = useForm<RegisterFormValues>({
+    resolver: zodResolver(registerSchema),
     defaultValues: {
+      fullName: "",
       email: "",
       password: "",
       confirmPassword: "",
-      fullName: "",
       termsAccepted: false,
     },
   });
 
-  const onSubmit = async (values: z.infer<typeof extendedRegisterSchema>) => {
+  const onSubmit = async (values: RegisterFormValues) => {
     await register(values.email, values.password, values.fullName);
     onSuccess();
   };

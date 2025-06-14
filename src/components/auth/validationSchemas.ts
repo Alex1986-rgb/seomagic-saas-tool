@@ -9,6 +9,7 @@ export const loginSchema = z.object({
 
 // Registration validation schema
 export const registerSchema = z.object({
+  fullName: z.string().min(2, "Имя должно содержать минимум 2 символа").optional(),
   email: z.string().email({ message: "Введите корректный email" }),
   password: z.string().min(6, { message: "Пароль должен содержать минимум 6 символов" }),
   confirmPassword: z.string().min(6, { message: "Пароль должен содержать минимум 6 символов" }),
