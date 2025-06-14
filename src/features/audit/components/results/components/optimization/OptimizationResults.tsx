@@ -1,30 +1,42 @@
 
 import React from 'react';
 
-interface OptimizationResultsProps {
-  url: string;
-  optimizationResult: {
-    beforeScore: number;
-    afterScore: number;
-    demoPage?: {
-      title: string;
-      content: string;
-      meta?: {
-        description?: string;
-        keywords?: string;
-      };
-      optimized?: {
-        content: string;
-        meta?: {
-          description?: string;
-          keywords?: string;
-        };
-      };
+interface DemoPage {
+  title: string;
+  content: string;
+  meta?: {
+    description?: string;
+    keywords?: string;
+  };
+  optimized?: {
+    content: string;
+    meta?: {
+      description?: string;
+      keywords?: string;
     };
   };
+}
+
+interface OptimizationResultsProps {
+  url: string;
+  optimizationResult?: {
+    beforeScore: number;
+    afterScore: number;
+    demoPage?: DemoPage;
+  } | null;
   onDownloadOptimized?: () => void;
   onGeneratePdfReport?: () => void;
   className?: string;
+
+  // Legacy props for backwards compatibility
+  beforeTitle?: string;
+  afterTitle?: string;
+  beforeContent?: string;
+  afterContent?: string;
+  beforeMeta?: { description?: string; keywords?: string };
+  afterMeta?: { description?: string; keywords?: string };
+  beforeScore?: number;
+  afterScore?: number;
 }
 
 const OptimizationResults: React.FC<OptimizationResultsProps> = ({
@@ -32,10 +44,40 @@ const OptimizationResults: React.FC<OptimizationResultsProps> = ({
   optimizationResult,
   onDownloadOptimized,
   onGeneratePdfReport,
-  className
+  className,
+  // Legacy props
+  beforeTitle,
+  afterTitle,
+  beforeContent,
+  afterContent,
+  beforeMeta,
+  afterMeta,
+  beforeScore,
+  afterScore
 }) => {
-  const { beforeScore, afterScore, demoPage } = optimizationResult;
-  const scoreIncrease = afterScore - beforeScore;
+  // Check if we have legacy props and construct optimizationResult from them
+  let finalOptimizationResult = optimizationResult;
+  
+  if (beforeScore !== undefined && afterScore !== undefined) {
+    finalOptimizationResult = {
+      beforeScore,
+      afterScore,
+      demoPage: {
+        title: beforeTitle || "",
+        content: beforeContent || "",
+        meta: beforeMeta,
+        optimized: {
+          content: afterContent || "",
+          meta: afterMeta,
+        },
+      }
+    };
+  }
+
+  if (!finalOptimizationResult) return null;
+
+  const { beforeScore: finalBeforeScore, afterScore: finalAfterScore, demoPage } = finalOptimizationResult;
+  const scoreIncrease = finalAfterScore - finalBeforeScore;
   
   return (
     <div className={`border border-green-500/20 rounded-lg p-4 bg-green-50/10 ${className || ''}`}>
@@ -44,7 +86,7 @@ const OptimizationResults: React.FC<OptimizationResultsProps> = ({
       <div className="flex gap-8 mb-4">
         <div>
           <p className="text-sm text-muted-foreground">Было</p>
-          <p className="text-xl font-semibold">{beforeScore}/100</p>
+          <p className="text-xl font-semibold">{finalBeforeScore}/100</p>
         </div>
         <div className="flex items-center">
           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -54,7 +96,7 @@ const OptimizationResults: React.FC<OptimizationResultsProps> = ({
         </div>
         <div>
           <p className="text-sm text-muted-foreground">Стало</p>
-          <p className="text-xl font-semibold text-green-600">{afterScore}/100</p>
+          <p className="text-xl font-semibold text-green-600">{finalAfterScore}/100</p>
         </div>
         <div className="flex items-center">
           <p className="text-sm text-green-600">+{scoreIncrease} баллов</p>
