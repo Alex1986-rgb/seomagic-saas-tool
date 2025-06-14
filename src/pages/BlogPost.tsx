@@ -103,7 +103,7 @@ const BlogPost: React.FC = () => {
             transition={{ duration: 0.5 }}
           >
             <BlogPostHeader post={post} />
-            <BlogPostContent post={post} />
+            <BlogPostContent content={post.content} />
             <RelatedPosts posts={relatedPosts} />
           </motion.div>
         </div>

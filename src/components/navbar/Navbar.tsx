@@ -43,6 +43,12 @@ const Navbar: React.FC = () => {
       : 'bg-transparent'
   }`;
 
+  // Добавим заглушку-действие:
+  const toggleAdmin = () => {
+    // Здесь может быть логика для debug
+    console.log("toggleAdmin debug");
+  };
+
   return (
     <motion.nav 
       className={navbarClass}
@@ -83,6 +89,7 @@ const Navbar: React.FC = () => {
           isLoggedIn={safeUser.isLoggedIn}
           isAdmin={safeUser.isAdmin}
           toggleAuth={logout}
+          toggleAdmin={toggleAdmin} // добавлено!
         />
       )}
     </motion.nav>

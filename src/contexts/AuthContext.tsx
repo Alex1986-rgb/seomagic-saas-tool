@@ -171,6 +171,20 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   };
 
+  // Logout function
+  const logout = async () => {
+    try {
+      setIsLoading(true);
+      await signOut();
+      setUser({ isLoggedIn: false, isAdmin: false });
+      // никаких toast здесь не добавляем, хватит UI...
+    } catch (error: any) {
+      // можно добавить toast, если хочется
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   // Provide context to children
   return (
     <AuthContext.Provider

@@ -43,9 +43,9 @@ const OptimizationResults: React.FC<OptimizationResultsProps> = ({
   className
 }) => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  
+
   if (!optimizationResult) return null;
-  
+
   // Dummy handlers for required props
   const handlePayment = () => {
     // This function is required but won't be used
@@ -59,32 +59,34 @@ const OptimizationResults: React.FC<OptimizationResultsProps> = ({
   
   return (
     <div className={className}>
-      <OptimizationDemo
-        beforeTitle={optimizationResult.demoPage?.title || ''}
-        afterTitle={optimizationResult.demoPage?.title || ''}
-        beforeContent={optimizationResult.demoPage?.content || ''}
-        afterContent={optimizationResult.demoPage?.optimized?.content || ''}
-        beforeMeta={optimizationResult.demoPage?.meta}
-        afterMeta={optimizationResult.demoPage?.optimized?.meta}
-        beforeScore={optimizationResult.beforeScore}
-        afterScore={optimizationResult.afterScore}
-        className="mt-6 mb-4"
-      />
-      
+      {/* Вместо OptimizationDemo просто краткое summary */}
+      <div className="mb-6">
+        <h4 className="text-lg font-semibold">{optimizationResult.demoPage?.title || 'Демо-страница'}</h4>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-2 text-sm">
+          <div>
+            <div className="text-muted-foreground text-xs mb-1">До оптимизации:</div>
+            <div>{optimizationResult.demoPage?.content || ''}</div>
+          </div>
+          <div>
+            <div className="text-green-600 text-xs mb-1">После оптимизации:</div>
+            <div>{optimizationResult.demoPage?.optimized?.content || ''}</div>
+          </div>
+        </div>
+      </div>
+
       <div className="flex flex-col sm:flex-row gap-3 justify-between items-center">
         <OptimizationSummary url={url} />
-        
         <div className="flex gap-2">
           {onGeneratePdfReport && (
             <OptimizationActions
-              url={url} 
-              optimizationCost={0} // Providing default value
+              url={url}
+              optimizationCost={0}
               isOptimized={true}
-              isPaymentComplete={true} // Since optimization is complete
+              isPaymentComplete={true}
               onDownloadOptimized={onDownloadOptimized}
               onGeneratePdfReport={onGeneratePdfReport}
-              onStartOptimization={handleStartOptimization}
-              onPayment={handlePayment}
+              onStartOptimization={() => {}}
+              onPayment={() => {}}
               isDialogOpen={isDialogOpen}
               setIsDialogOpen={setIsDialogOpen}
             />

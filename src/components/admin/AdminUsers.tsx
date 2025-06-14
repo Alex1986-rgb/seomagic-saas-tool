@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Check, ChevronDown, Edit, Trash, UserRound, Search } from 'lucide-react';
 import { Input } from "@/components/ui/input";
@@ -48,9 +47,10 @@ const AdminUsers: React.FC = () => {
       if (error) throw error;
 
       const formattedUsers = (data || []).map(user => {
-        let role = 'user';
+        let role: 'user' | 'admin' = 'user';
         if (user.user_roles && Array.isArray(user.user_roles) && user.user_roles[0]) {
-          role = user.user_roles[0].role || 'user';
+          const userRole = user.user_roles[0].role;
+          role = userRole === 'admin' ? 'admin' : 'user';
         }
         // If projects returns an object { count: X }, use that; else fallback to 0
         let projects_count = 0;
@@ -63,7 +63,7 @@ const AdminUsers: React.FC = () => {
           full_name: user.full_name,
           avatar_url: user.avatar_url,
           created_at: user.created_at,
-          role,
+          role, // now 'admin' | 'user'
           projects_count
         };
       });
