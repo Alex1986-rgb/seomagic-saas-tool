@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { CreditCard } from 'lucide-react';
@@ -9,40 +10,76 @@ import OptimizationSummary from './OptimizationSummary';
 import OptimizationActions from './OptimizationActions';
 import { OptimizationItem } from '@/features/audit/types/optimization-types';
 
+interface DemoPage {
+  title: string;
+  content: string;
+  meta?: {
+    description?: string;
+    keywords?: string;
+  };
+  optimized?: {
+    content: string;
+    meta?: {
+      description?: string;
+      keywords?: string;
+    };
+  };
+}
+
 interface OptimizationResultsProps {
   url: string;
-  optimizationResult: {
+  optimizationResult?: {
     beforeScore: number;
     afterScore: number;
-    demoPage?: {
-      title: string;
-      content: string;
-      meta?: {
-        description?: string;
-        keywords?: string;
-      };
-      optimized?: {
-        content: string;
-        meta?: {
-          description?: string;
-          keywords?: string;
-        };
-      };
-    };
+    demoPage?: DemoPage;
   } | null;
   onDownloadOptimized?: () => void;
   onGeneratePdfReport?: () => void;
   className?: string;
+
+  // Compatibility: support old-style props as a fallback
+  beforeTitle?: string;
+  afterTitle?: string;
+  beforeContent?: string;
+  afterContent?: string;
+  beforeMeta?: { description?: string; keywords?: string };
+  afterMeta?: { description?: string; keywords?: string };
+  beforeScore?: number;
+  afterScore?: number;
 }
 
-const OptimizationResults: React.FC<OptimizationResultsProps> = ({
-  url,
-  optimizationResult,
-  onDownloadOptimized,
-  onGeneratePdfReport,
-  className
-}) => {
+const OptimizationResults: React.FC<OptimizationResultsProps> = (props) => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+
+  // See if old-style incoming props are set
+  const hasLegacyProps =
+    props.beforeTitle !== undefined ||
+    props.afterTitle !== undefined ||
+    props.beforeContent !== undefined ||
+    props.afterContent !== undefined ||
+    props.beforeMeta !== undefined ||
+    props.afterMeta !== undefined ||
+    props.beforeScore !== undefined ||
+    props.afterScore !== undefined;
+
+  // Compute optimizationResult based on which input style is present
+  let optimizationResult = props.optimizationResult;
+  if (hasLegacyProps) {
+    // Compose compatible optimizationResult
+    optimizationResult = {
+      beforeScore: props.beforeScore ?? 0,
+      afterScore: props.afterScore ?? 0,
+      demoPage: {
+        title: props.beforeTitle || "",
+        content: props.beforeContent || "",
+        meta: props.beforeMeta,
+        optimized: {
+          content: props.afterContent || "",
+          meta: props.afterMeta,
+        },
+      }
+    };
+  }
 
   if (!optimizationResult) return null;
 
@@ -58,7 +95,7 @@ const OptimizationResults: React.FC<OptimizationResultsProps> = ({
   };
   
   return (
-    <div className={className}>
+    <div className={props.className}>
       {/* Вместо OptimizationDemo просто краткое summary */}
       <div className="mb-6">
         <h4 className="text-lg font-semibold">{optimizationResult.demoPage?.title || 'Демо-страница'}</h4>
@@ -75,16 +112,16 @@ const OptimizationResults: React.FC<OptimizationResultsProps> = ({
       </div>
 
       <div className="flex flex-col sm:flex-row gap-3 justify-between items-center">
-        <OptimizationSummary url={url} />
+        <OptimizationSummary url={props.url} />
         <div className="flex gap-2">
-          {onGeneratePdfReport && (
+          {props.onGeneratePdfReport && (
             <OptimizationActions
-              url={url}
+              url={props.url}
               optimizationCost={0}
               isOptimized={true}
               isPaymentComplete={true}
-              onDownloadOptimized={onDownloadOptimized}
-              onGeneratePdfReport={onGeneratePdfReport}
+              onDownloadOptimized={props.onDownloadOptimized}
+              onGeneratePdfReport={props.onGeneratePdfReport}
               onStartOptimization={() => {}}
               onPayment={() => {}}
               isDialogOpen={isDialogOpen}
@@ -98,3 +135,4 @@ const OptimizationResults: React.FC<OptimizationResultsProps> = ({
 };
 
 export default OptimizationResults;
+
