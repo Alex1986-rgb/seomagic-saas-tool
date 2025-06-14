@@ -9,28 +9,34 @@ import { useAuth } from '@/contexts/AuthContext';
 const Auth: React.FC = () => {
   const [searchParams] = useSearchParams();
   const defaultTab = searchParams.get('tab') === 'register' ? 'register' : 'login';
+  const redirectUrl = searchParams.get('redirect') || '/dashboard';
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, isLoading } = useAuth();
 
   // Redirect to dashboard if user is already logged in
   useEffect(() => {
-    if (user.isLoggedIn) {
-      navigate('/dashboard');
+    if (!isLoading && user.isLoggedIn) {
+      navigate(redirectUrl);
     }
-  }, [user.isLoggedIn, navigate]);
+  }, [user.isLoggedIn, isLoading, navigate, redirectUrl]);
 
   // Set focus on container when component mounts
   useEffect(() => {
     document.getElementById('auth-container')?.focus();
   }, []);
 
-  const handleLoginSuccess = () => {
-    // The redirection will be handled inside the AuthContext loginWithEmail function
+  const handleSuccess = () => {
+    // Redirection will be handled by the auth state change
+    navigate(redirectUrl);
   };
 
-  const handleRegisterSuccess = () => {
-    // Redirection will be handled in the context
-  };
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
 
   return (
     <AuthContainer
@@ -44,11 +50,11 @@ const Auth: React.FC = () => {
         </TabsList>
         
         <TabsContent value="login">
-          <LoginForm onSuccess={handleLoginSuccess} />
+          <LoginForm onSuccess={handleSuccess} />
         </TabsContent>
         
         <TabsContent value="register">
-          <RegisterForm onSuccess={handleRegisterSuccess} />
+          <RegisterForm onSuccess={handleSuccess} />
         </TabsContent>
       </Tabs>
 

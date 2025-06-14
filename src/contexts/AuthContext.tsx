@@ -1,28 +1,38 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { checkAuthStatus, AuthUser, loginWithEmailPassword, loginWithGoogle, logout, registerUser, toggleAdminStatus } from '@/services/auth/authService';
+import { supabase } from '@/integrations/supabase/client';
+import type { User, Session } from '@supabase/supabase-js';
+import { 
+  getCurrentUser, 
+  signUpUser, 
+  signInWithEmail, 
+  signInWithGoogle, 
+  signOut,
+  AuthUser,
+  UserProfile
+} from '@/services/auth/authService';
 import { useToast } from "@/hooks/use-toast";
 
 // Defining interface for auth context
 interface AuthContextType {
   user: AuthUser;
-  loginWithEmail: (email: string, password: string, redirectUrl?: string) => Promise<void>;
+  login: (email: string, password: string) => Promise<void>;
   loginWithGoogle: () => Promise<void>;
-  register: (email: string, password: string) => Promise<void>;
-  logoutUser: () => void;
-  toggleAdmin: () => void;
+  register: (email: string, password: string, fullName?: string) => Promise<void>;
+  logout: () => Promise<void>;
   isLoading: boolean;
+  refreshUser: () => Promise<void>;
 }
 
 // Creating context with initial values
 const AuthContext = createContext<AuthContextType>({
   user: { isLoggedIn: false, isAdmin: false },
-  loginWithEmail: async () => {},
+  login: async () => {},
   loginWithGoogle: async () => {},
   register: async () => {},
-  logoutUser: () => {},
-  toggleAdmin: () => {},
+  logout: async () => {},
   isLoading: true,
+  refreshUser: async () => {},
 });
 
 // Hook for using the auth context
@@ -34,128 +44,164 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
 
-  // Check auth status on mount and when localStorage changes
+  // Function to refresh user data
+  const refreshUser = async () => {
+    const userData = await getCurrentUser();
+    setUser(userData);
+  };
+
+  // Check auth status on mount and listen for changes
   useEffect(() => {
-    const updateAuthStatus = () => {
-      const status = checkAuthStatus();
-      setUser(status);
+    // Get initial session
+    const getInitialSession = async () => {
+      const userData = await getCurrentUser();
+      setUser(userData);
       setIsLoading(false);
     };
 
-    updateAuthStatus();
-    
-    // Listen for localStorage changes
-    window.addEventListener('storage', updateAuthStatus);
-    
+    getInitialSession();
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        console.log('Auth state changed:', event, session?.user?.email);
+        
+        // Defer the user data refresh to avoid callback conflicts
+        setTimeout(async () => {
+          const userData = await getCurrentUser();
+          setUser(userData);
+          setIsLoading(false);
+        }, 0);
+      }
+    );
+
     return () => {
-      window.removeEventListener('storage', updateAuthStatus);
+      subscription.unsubscribe();
     };
   }, []);
 
   // Email login function
-  const loginWithEmail = async (email: string, password: string, redirectUrl?: string) => {
+  const login = async (email: string, password: string) => {
     try {
-      await loginWithEmailPassword(email, password);
+      setIsLoading(true);
+      const { data, error } = await signInWithEmail(email, password);
       
+      if (error) {
+        toast({
+          title: "Ошибка входа",
+          description: error.message || "Неверный email или пароль",
+          variant: "destructive",
+        });
+        return;
+      }
+
       toast({
         title: "Вход выполнен успешно",
         description: "Добро пожаловать в личный кабинет SeoMarket",
       });
-      
-      // Use window.location for navigation instead of useNavigate
-      if (redirectUrl) {
-        window.location.href = redirectUrl;
-      } else {
-        window.location.href = '/dashboard';
-      }
-      
-      // Update user state
-      setUser(checkAuthStatus());
-    } catch (error) {
+
+      // User state will be updated by the auth state change listener
+    } catch (error: any) {
       toast({
         title: "Ошибка входа",
-        description: "Неверный email или пароль",
+        description: error?.message || "Произошла ошибка при входе",
         variant: "destructive",
       });
+    } finally {
+      setIsLoading(false);
     }
   };
 
   // Google login function
-  const handleGoogleLogin = async () => {
+  const loginWithGoogle = async () => {
     try {
+      setIsLoading(true);
+      const { data, error } = await signInWithGoogle();
+      
+      if (error) {
+        toast({
+          title: "Ошибка входа через Google",
+          description: error.message || "Не удалось выполнить вход через Google",
+          variant: "destructive",
+        });
+        return;
+      }
+
       toast({
         title: "Выполняется вход через Google",
         description: "Пожалуйста, подождите...",
       });
-      
-      await loginWithGoogle();
-      
-      toast({
-        title: "Вход через Google выполнен успешно",
-        description: "Добро пожаловать в личный кабинет SeoMarket",
-      });
-      
-      // Use window.location for navigation
-      window.location.href = '/dashboard';
-      
-      // Update user state
-      setUser(checkAuthStatus());
-    } catch (error) {
+    } catch (error: any) {
       toast({
         title: "Ошибка входа через Google",
-        description: "Не удалось выполнить вход через Google",
+        description: error?.message || "Произошла ошибка при входе через Google",
         variant: "destructive",
       });
+    } finally {
+      setIsLoading(false);
     }
   };
 
   // Registration function
-  const register = async (email: string, password: string) => {
+  const register = async (email: string, password: string, fullName?: string) => {
     try {
-      await registerUser(email, password);
+      setIsLoading(true);
+      const { data, error } = await signUpUser(email, password, fullName);
       
+      if (error) {
+        toast({
+          title: "Ошибка регистрации",
+          description: error.message || "Не удалось зарегистрировать пользователя",
+          variant: "destructive",
+        });
+        return;
+      }
+
       toast({
         title: "Регистрация выполнена успешно",
-        description: "Теперь вы можете войти в систему",
+        description: "Проверьте вашу почту для подтверждения аккаунта",
       });
-      
-      // Use window.location for navigation
-      window.location.href = '/auth';
-    } catch (error) {
+    } catch (error: any) {
       toast({
         title: "Ошибка регистрации",
-        description: "Не удалось зарегистрировать пользователя",
+        description: error?.message || "Произошла ошибка при регистрации",
         variant: "destructive",
       });
+    } finally {
+      setIsLoading(false);
     }
   };
 
   // Logout function
-  const logoutUser = () => {
-    logout();
-    
-    toast({
-      title: "Выход выполнен",
-      description: "Вы успешно вышли из системы",
-    });
-    
-    // Use window.location for navigation
-    window.location.href = '/';
-    
-    // Update user state
-    setUser({ isLoggedIn: false, isAdmin: false });
-  };
+  const logout = async () => {
+    try {
+      setIsLoading(true);
+      const { error } = await signOut();
+      
+      if (error) {
+        toast({
+          title: "Ошибка выхода",
+          description: error.message || "Не удалось выйти из системы",
+          variant: "destructive",
+        });
+        return;
+      }
 
-  // Toggle admin status function (for demo only)
-  const toggleAdmin = () => {
-    toggleAdminStatus();
-    // Update user state
-    setUser(checkAuthStatus());
-    
-    toast({
-      title: "Статус администратора изменен",
-      description: user.isAdmin ? "Права администратора отключены" : "Права администратора включены",
-    });
+      toast({
+        title: "Выход выполнен",
+        description: "Вы успешно вышли из системы",
+      });
+
+      // User state will be updated by the auth state change listener
+    } catch (error: any) {
+      toast({
+        title: "Ошибка выхода",
+        description: error?.message || "Произошла ошибка при выходе",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   // Provide context to children
@@ -163,12 +209,12 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     <AuthContext.Provider
       value={{
         user,
-        loginWithEmail,
-        loginWithGoogle: handleGoogleLogin,
+        login,
+        loginWithGoogle,
         register,
-        logoutUser,
-        toggleAdmin,
-        isLoading
+        logout,
+        isLoading,
+        refreshUser
       }}
     >
       {children}

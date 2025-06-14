@@ -1,28 +1,25 @@
 
 import React from 'react';
-import { Tag } from 'lucide-react';
-import { BlogPost } from '@/types/blog';
+import SafeContent from '@/components/shared/SafeContent';
 
 interface BlogPostContentProps {
-  post: BlogPost;
+  content: string;
 }
 
-export const BlogPostContent: React.FC<BlogPostContentProps> = ({ post }) => {
+const BlogPostContent: React.FC<BlogPostContentProps> = ({ content }) => {
   return (
-    <div className="prose prose-lg max-w-none mb-12">
-      <p className="text-xl text-muted-foreground mb-8">{post.excerpt}</p>
-      
-      <div dangerouslySetInnerHTML={{ __html: post.content }}></div>
-      
-      <div className="flex flex-wrap gap-2 mt-8 mb-4">
-        <h3 className="text-lg font-medium mr-2">Теги:</h3>
-        {post.tags.map((tag, index) => (
-          <div key={index} className="bg-muted/50 px-3 py-1 rounded-full flex items-center">
-            <Tag className="mr-1 h-4 w-4 text-primary" />
-            <span>{tag}</span>
-          </div>
-        ))}
-      </div>
+    <div className="prose prose-lg max-w-none">
+      <SafeContent 
+        content={content}
+        className="blog-content"
+        allowedTags={[
+          'p', 'br', 'strong', 'em', 'u', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 
+          'ul', 'ol', 'li', 'blockquote', 'pre', 'code', 'a', 'img'
+        ]}
+        allowedAttributes={['class', 'id', 'href', 'src', 'alt', 'title']}
+      />
     </div>
   );
 };
+
+export default BlogPostContent;

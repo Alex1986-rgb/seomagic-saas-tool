@@ -10,6 +10,11 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { registerSchema } from './validationSchemas';
 import { useAuth } from '@/contexts/AuthContext';
 
+// Extended schema to include full name
+const extendedRegisterSchema = registerSchema.extend({
+  fullName: z.string().min(2, "Имя должно содержать минимум 2 символа").optional(),
+});
+
 interface RegisterFormProps {
   onSuccess: () => void;
 }
@@ -17,24 +22,38 @@ interface RegisterFormProps {
 const RegisterForm: React.FC<RegisterFormProps> = ({ onSuccess }) => {
   const { register } = useAuth();
   
-  const form = useForm<z.infer<typeof registerSchema>>({
-    resolver: zodResolver(registerSchema),
+  const form = useForm<z.infer<typeof extendedRegisterSchema>>({
+    resolver: zodResolver(extendedRegisterSchema),
     defaultValues: {
       email: "",
       password: "",
       confirmPassword: "",
+      fullName: "",
       termsAccepted: false,
     },
   });
 
-  const onSubmit = async (values: z.infer<typeof registerSchema>) => {
-    await register(values.email, values.password);
+  const onSubmit = async (values: z.infer<typeof extendedRegisterSchema>) => {
+    await register(values.email, values.password, values.fullName);
     onSuccess();
   };
 
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        <FormField
+          control={form.control}
+          name="fullName"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Полное имя</FormLabel>
+              <FormControl>
+                <Input placeholder="Иван Иванов" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
         <FormField
           control={form.control}
           name="email"
