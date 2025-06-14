@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Button } from "@/components/ui/button";
 import { Search } from "lucide-react";
@@ -11,7 +10,7 @@ interface NavbarActionsProps {
 }
 
 const NavbarActions: React.FC<NavbarActionsProps> = ({ isLoggedIn }) => {
-  const { logoutUser } = useAuth();
+  const { logout } = useAuth();
   
   return (
     <div className="flex items-center gap-2">

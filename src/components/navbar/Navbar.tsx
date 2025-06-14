@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
@@ -20,7 +19,7 @@ const Navbar: React.FC = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const isMobile = useMobile();
   const location = useLocation();
-  const { user, logoutUser, toggleAdmin } = useAuth();
+  const { user, logout } = useAuth();
 
   useEffect(() => {
     setIsOpen(false);
@@ -74,7 +73,7 @@ const Navbar: React.FC = () => {
             isOpen={isOpen}
             isLoggedIn={safeUser.isLoggedIn}
             isAdmin={safeUser.isAdmin}
-            toggleAuth={logoutUser}
+            toggleAuth={logout}
           />
         )}
       </AnimatePresence>
@@ -83,8 +82,7 @@ const Navbar: React.FC = () => {
         <DebugControls 
           isLoggedIn={safeUser.isLoggedIn}
           isAdmin={safeUser.isAdmin}
-          toggleAuth={logoutUser}
-          toggleAdmin={toggleAdmin}
+          toggleAuth={logout}
         />
       )}
     </motion.nav>

@@ -41,22 +41,32 @@ const AdminUsers: React.FC = () => {
           full_name,
           avatar_url,
           created_at,
-          user_roles!inner(role),
+          user_roles: user_roles(role),
           projects(count)
         `);
 
       if (error) throw error;
 
-      const formattedUsers = data?.map(user => ({
-        id: user.id,
-        email: user.email || '',
-        full_name: user.full_name,
-        avatar_url: user.avatar_url,
-        created_at: user.created_at,
-        role: user.user_roles?.role || 'user',
-        projects_count: user.projects?.length || 0
-      })) || [];
-
+      const formattedUsers = (data || []).map(user => {
+        let role = 'user';
+        if (user.user_roles && Array.isArray(user.user_roles) && user.user_roles[0]) {
+          role = user.user_roles[0].role || 'user';
+        }
+        // If projects returns an object { count: X }, use that; else fallback to 0
+        let projects_count = 0;
+        if (user.projects && Array.isArray(user.projects) && user.projects[0] && user.projects[0].count !== undefined) {
+          projects_count = user.projects[0].count;
+        }
+        return {
+          id: user.id,
+          email: user.email || '',
+          full_name: user.full_name,
+          avatar_url: user.avatar_url,
+          created_at: user.created_at,
+          role,
+          projects_count
+        };
+      });
       setUsers(formattedUsers);
     } catch (error: any) {
       console.error('Error fetching users:', error);

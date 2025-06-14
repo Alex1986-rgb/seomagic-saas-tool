@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import type { User, Session } from '@supabase/supabase-js';
@@ -165,38 +164,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       toast({
         title: "Ошибка регистрации",
         description: error?.message || "Произошла ошибка при регистрации",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  // Logout function
-  const logout = async () => {
-    try {
-      setIsLoading(true);
-      const { error } = await signOut();
-      
-      if (error) {
-        toast({
-          title: "Ошибка выхода",
-          description: error.message || "Не удалось выйти из системы",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      toast({
-        title: "Выход выполнен",
-        description: "Вы успешно вышли из системы",
-      });
-
-      // User state will be updated by the auth state change listener
-    } catch (error: any) {
-      toast({
-        title: "Ошибка выхода",
-        description: error?.message || "Произошла ошибка при выходе",
         variant: "destructive",
       });
     } finally {

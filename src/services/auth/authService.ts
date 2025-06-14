@@ -24,22 +24,28 @@ export interface UserProfile {
 export const getCurrentUser = async (): Promise<AuthUser> => {
   try {
     const { data: { session } } = await supabase.auth.getSession();
-    
+
     if (!session?.user) {
       return { isLoggedIn: false, isAdmin: false };
     }
 
     // Get user profile and role
-    const { data: profile } = await supabase
+    const { data: profile, error: profileError } = await supabase
       .from('profiles')
       .select(`
         *,
-        user_roles!inner(role)
+        user_roles: user_roles(role)
       `)
       .eq('id', session.user.id)
-      .single();
+      .maybeSingle(); // avoid .single() to prevent errors
 
-    const isAdmin = profile?.user_roles?.role === 'admin';
+    // Get user_roles row for this user
+    let isAdmin = false;
+    let role: 'admin' | 'user' | undefined = undefined;
+    if (profile && (profile as any).user_roles && Array.isArray((profile as any).user_roles) && (profile as any).user_roles[0]) {
+      role = (profile as any).user_roles[0].role as 'admin' | 'user';
+      isAdmin = role === 'admin';
+    }
 
     return {
       isLoggedIn: true,
@@ -50,7 +56,7 @@ export const getCurrentUser = async (): Promise<AuthUser> => {
         email: session.user.email || '',
         full_name: profile?.full_name,
         avatar_url: profile?.avatar_url,
-        role: profile?.user_roles?.role
+        role
       }
     };
   } catch (error) {

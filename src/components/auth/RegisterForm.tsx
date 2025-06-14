@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -10,10 +9,14 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { registerSchema } from './validationSchemas';
 import { useAuth } from '@/contexts/AuthContext';
 
-// Extended schema to include full name
-const extendedRegisterSchema = registerSchema.extend({
+// Merge full name into schema properly:
+import { z } from "zod";
+const fullNameSchema = z.object({
   fullName: z.string().min(2, "Имя должно содержать минимум 2 символа").optional(),
 });
+
+// Merge fullNameSchema into registerSchema (which is ZodEffects)
+const extendedRegisterSchema = registerSchema.pipe(z.object({})).merge(fullNameSchema);
 
 interface RegisterFormProps {
   onSuccess: () => void;

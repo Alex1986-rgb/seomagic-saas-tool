@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -8,7 +7,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Badge } from '@/components/ui/badge';
 
 const NavbarDesktopAuth: React.FC = () => {
-  const { user, logoutUser } = useAuth();
+  const { user, logout } = useAuth();
   
   return (
     <div className="hidden md:flex items-center gap-4">
@@ -43,7 +42,7 @@ const NavbarDesktopAuth: React.FC = () => {
             variant="outline"
             size="sm"
             className="hover:bg-destructive/10 hover:text-destructive hover:border-destructive/30 transition-colors"
-            onClick={logoutUser}
+            onClick={logout}
           >
             Выйти
           </Button>

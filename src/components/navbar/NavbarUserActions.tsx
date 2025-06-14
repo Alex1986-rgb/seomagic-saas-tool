@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
@@ -26,7 +25,7 @@ interface NavbarUserActionsProps {
 }
 
 const NavbarUserActions: React.FC<NavbarUserActionsProps> = ({ isLoggedIn }) => {
-  const { logoutUser } = useAuth();
+  const { logout } = useAuth();
   const { toast } = useToast();
 
   return (
@@ -76,7 +75,7 @@ const NavbarUserActions: React.FC<NavbarUserActionsProps> = ({ isLoggedIn }) => 
               </Link>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={logoutUser}>
+            <DropdownMenuItem onClick={logout}>
               <LogOut className="mr-2 h-4 w-4" />
               <span>Выйти</span>
             </DropdownMenuItem>

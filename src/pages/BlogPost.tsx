@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState, useMemo } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -6,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { mockBlogPosts } from '@/data/mockData';
 import Layout from '@/components/Layout';
 import { BlogPostHeader } from '@/components/blog/BlogPostHeader';
-import { BlogPostContent } from '@/components/blog/BlogPostContent';
+import BlogPostContent from '@/components/blog/BlogPostContent';
 import { RelatedPosts } from '@/components/blog/RelatedPosts';
 import { BlogPost as BlogPostType } from '@/types/blog';
 

@@ -9,25 +9,24 @@ interface SafeContentProps {
   allowedAttributes?: string[];
 }
 
-const SafeContent: React.FC<SafeContentProps> = ({ 
-  content, 
+const SafeContent: React.FC<SafeContentProps> = ({
+  content,
   className = "",
   allowedTags = ['p', 'br', 'strong', 'em', 'u', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'ul', 'ol', 'li'],
   allowedAttributes = ['class', 'id']
 }) => {
-  // Configure DOMPurify with strict settings
+  // Configure DOMPurify with strict settings (fix: remove RETURN_DOM_IMPORT)
   const sanitizedContent = DOMPurify.sanitize(content, {
     ALLOWED_TAGS: allowedTags,
     ALLOWED_ATTR: allowedAttributes,
     KEEP_CONTENT: true,
     RETURN_DOM: false,
     RETURN_DOM_FRAGMENT: false,
-    RETURN_DOM_IMPORT: false,
     SANITIZE_DOM: true
   });
 
   return (
-    <div 
+    <div
       className={className}
       dangerouslySetInnerHTML={{ __html: sanitizedContent }}
     />
