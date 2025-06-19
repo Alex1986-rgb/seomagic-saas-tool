@@ -37,7 +37,7 @@ interface OptimizationResultsProps {
   onGeneratePdfReport?: () => void;
   className?: string;
 
-  // Compatibility: support old-style props as a fallback
+  // Legacy props for backwards compatibility
   beforeTitle?: string;
   afterTitle?: string;
   beforeContent?: string;
@@ -51,24 +51,13 @@ interface OptimizationResultsProps {
 const OptimizationResults: React.FC<OptimizationResultsProps> = (props) => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-  // See if old-style incoming props are set
-  const hasLegacyProps =
-    props.beforeTitle !== undefined ||
-    props.afterTitle !== undefined ||
-    props.beforeContent !== undefined ||
-    props.afterContent !== undefined ||
-    props.beforeMeta !== undefined ||
-    props.afterMeta !== undefined ||
-    props.beforeScore !== undefined ||
-    props.afterScore !== undefined;
-
-  // Compute optimizationResult based on which input style is present
+  // Check if we have legacy props and construct optimizationResult from them
   let optimizationResult = props.optimizationResult;
-  if (hasLegacyProps) {
-    // Compose compatible optimizationResult
+  
+  if (props.beforeScore !== undefined && props.afterScore !== undefined) {
     optimizationResult = {
-      beforeScore: props.beforeScore ?? 0,
-      afterScore: props.afterScore ?? 0,
+      beforeScore: props.beforeScore,
+      afterScore: props.afterScore,
       demoPage: {
         title: props.beforeTitle || "",
         content: props.beforeContent || "",
@@ -85,18 +74,16 @@ const OptimizationResults: React.FC<OptimizationResultsProps> = (props) => {
 
   // Dummy handlers for required props
   const handlePayment = () => {
-    // This function is required but won't be used
     console.log("Payment handler called");
   };
   
   const handleStartOptimization = () => {
-    // This function is required but won't be used
     console.log("Start optimization handler called");
   };
   
   return (
     <div className={props.className}>
-      {/* Вместо OptimizationDemo просто краткое summary */}
+      {/* Simple summary instead of OptimizationDemo */}
       <div className="mb-6">
         <h4 className="text-lg font-semibold">{optimizationResult.demoPage?.title || 'Демо-страница'}</h4>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-2 text-sm">
@@ -122,8 +109,8 @@ const OptimizationResults: React.FC<OptimizationResultsProps> = (props) => {
               isPaymentComplete={true}
               onDownloadOptimized={props.onDownloadOptimized}
               onGeneratePdfReport={props.onGeneratePdfReport}
-              onStartOptimization={() => {}}
-              onPayment={() => {}}
+              onStartOptimization={handleStartOptimization}
+              onPayment={handlePayment}
               isDialogOpen={isDialogOpen}
               setIsDialogOpen={setIsDialogOpen}
             />
@@ -135,4 +122,3 @@ const OptimizationResults: React.FC<OptimizationResultsProps> = (props) => {
 };
 
 export default OptimizationResults;
-
