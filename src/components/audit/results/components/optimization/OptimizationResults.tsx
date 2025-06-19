@@ -27,7 +27,7 @@ interface DemoPage {
 }
 
 interface OptimizationResultsProps {
-  url: string;
+  url?: string;
   optimizationResult?: {
     beforeScore: number;
     afterScore: number;
@@ -37,7 +37,7 @@ interface OptimizationResultsProps {
   onGeneratePdfReport?: () => void;
   className?: string;
 
-  // Legacy props for backwards compatibility
+  // Legacy props for backwards compatibility - all required to match the calling component
   beforeTitle?: string;
   afterTitle?: string;
   beforeContent?: string;
@@ -99,11 +99,11 @@ const OptimizationResults: React.FC<OptimizationResultsProps> = (props) => {
       </div>
 
       <div className="flex flex-col sm:flex-row gap-3 justify-between items-center">
-        <OptimizationSummary url={props.url} />
+        <OptimizationSummary url={props.url || ''} />
         <div className="flex gap-2">
           {props.onGeneratePdfReport && (
             <OptimizationActions
-              url={props.url}
+              url={props.url || ''}
               optimizationCost={0}
               isOptimized={true}
               isPaymentComplete={true}
