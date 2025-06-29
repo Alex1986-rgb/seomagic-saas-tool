@@ -13,12 +13,6 @@ const Index: React.FC = () => {
     console.log("✅ Index page mounted successfully!");
     document.title = "SEO Аудит и Оптимизация - SeoMarket";
     
-    // Ensure clean background
-    document.body.style.backgroundColor = '#ffffff';
-    document.body.style.color = '#000000';
-    document.body.style.margin = '0';
-    document.body.style.padding = '0';
-    
     return () => {
       console.log("❌ Index page unmounted");
     };

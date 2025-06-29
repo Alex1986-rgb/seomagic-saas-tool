@@ -24,11 +24,6 @@ const Layout: React.FC<LayoutProps> = ({
   useEffect(() => {
     console.log("Layout mounted - working properly!", location.pathname);
     
-    // Ensure consistent styling
-    document.body.style.backgroundColor = '#ffffff';
-    document.body.style.margin = '0';
-    document.body.style.padding = '0';
-    
     return () => {
       console.log("Layout unmounted");
     };
@@ -39,21 +34,15 @@ const Layout: React.FC<LayoutProps> = ({
   const shouldHideFooter = hideFooter || isAdminRoute;
 
   return (
-    <div 
-      className={cn("flex flex-col min-h-screen relative", className)}
-      style={{ backgroundColor: '#ffffff', minHeight: '100vh' }}
-    >
+    <div className={cn("flex flex-col min-h-screen relative", className)}>
       {/* Background */}
-      <div className="fixed inset-0 z-[-1]" style={{ backgroundColor: '#ffffff' }}>
+      <div className="fixed inset-0 z-[-1]">
         <StarryBackground />
       </div>
       
       {!shouldHideNavbar && <Navbar />}
       
-      <main 
-        className="flex-grow relative z-10 w-full" 
-        style={{ backgroundColor: 'transparent', minHeight: '50vh' }}
-      >
+      <main className="flex-grow relative z-10 w-full">
         {children}
       </main>
       

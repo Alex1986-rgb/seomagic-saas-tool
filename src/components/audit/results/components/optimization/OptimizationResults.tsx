@@ -1,14 +1,5 @@
 
-import React, { useState } from 'react';
-import { motion } from 'framer-motion';
-import { CreditCard } from 'lucide-react';
-import { useToast } from "@/hooks/use-toast";
-import OptimizationProgress from '../OptimizationProgress';
-import OptimizationDemo from '../OptimizationDemo';
-import OptimizationHeading from './OptimizationHeading';
-import OptimizationSummary from './OptimizationSummary';
-import OptimizationActions from './OptimizationActions';
-import { OptimizationItem } from '@/features/audit/types/optimization-types';
+import React from 'react';
 
 interface DemoPage {
   title: string;
@@ -37,7 +28,7 @@ interface OptimizationResultsProps {
   onGeneratePdfReport?: () => void;
   className?: string;
 
-  // Legacy props for backwards compatibility
+  // Legacy props for backwards compatibility - все обязательные для совместимости
   beforeTitle?: string;
   afterTitle?: string;
   beforeContent?: string;
@@ -64,9 +55,7 @@ const OptimizationResults: React.FC<OptimizationResultsProps> = ({
   beforeScore,
   afterScore
 }) => {
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-
-  // Check if we have legacy props and construct optimizationResult from them
+  // Проверяем есть ли legacy props и строим optimizationResult из них
   let finalOptimizationResult = optimizationResult;
   
   if (beforeScore !== undefined && afterScore !== undefined) {
