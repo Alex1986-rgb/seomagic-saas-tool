@@ -37,7 +37,7 @@ interface OptimizationResultsProps {
   onGeneratePdfReport?: () => void;
   className?: string;
 
-  // Legacy props for backwards compatibility - all required to match the calling component
+  // Legacy props for backwards compatibility
   beforeTitle?: string;
   afterTitle?: string;
   beforeContent?: string;
@@ -48,50 +48,56 @@ interface OptimizationResultsProps {
   afterScore?: number;
 }
 
-const OptimizationResults: React.FC<OptimizationResultsProps> = (props) => {
+const OptimizationResults: React.FC<OptimizationResultsProps> = ({
+  url,
+  optimizationResult,
+  onDownloadOptimized,
+  onGeneratePdfReport,
+  className,
+  // Legacy props
+  beforeTitle,
+  afterTitle,
+  beforeContent,
+  afterContent,
+  beforeMeta,
+  afterMeta,
+  beforeScore,
+  afterScore
+}) => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   // Check if we have legacy props and construct optimizationResult from them
-  let optimizationResult = props.optimizationResult;
+  let finalOptimizationResult = optimizationResult;
   
-  if (props.beforeScore !== undefined && props.afterScore !== undefined) {
-    optimizationResult = {
-      beforeScore: props.beforeScore,
-      afterScore: props.afterScore,
+  if (beforeScore !== undefined && afterScore !== undefined) {
+    finalOptimizationResult = {
+      beforeScore,
+      afterScore,
       demoPage: {
-        title: props.beforeTitle || "",
-        content: props.beforeContent || "",
-        meta: props.beforeMeta,
+        title: beforeTitle || "",
+        content: beforeContent || "",
+        meta: beforeMeta,
         optimized: {
-          content: props.afterContent || "",
-          meta: props.afterMeta,
+          content: afterContent || "",
+          meta: afterMeta,
         },
       }
     };
   }
 
-  if (!optimizationResult) return null;
+  if (!finalOptimizationResult) return null;
 
-  // Dummy handlers for required props
-  const handlePayment = () => {
-    console.log("Payment handler called");
-  };
-  
-  const handleStartOptimization = () => {
-    console.log("Start optimization handler called");
-  };
-  
-  const { beforeScore, afterScore, demoPage } = optimizationResult;
-  const scoreIncrease = afterScore - beforeScore;
+  const { beforeScore: finalBeforeScore, afterScore: finalAfterScore, demoPage } = finalOptimizationResult;
+  const scoreIncrease = finalAfterScore - finalBeforeScore;
   
   return (
-    <div className={`border border-green-500/20 rounded-lg p-4 bg-green-50/10 ${props.className || ''}`}>
+    <div className={`border border-green-500/20 rounded-lg p-4 bg-green-50/10 ${className || ''}`}>
       <h4 className="font-semibold text-green-700 mb-2">Оптимизация завершена!</h4>
       
       <div className="flex gap-8 mb-4">
         <div>
           <p className="text-sm text-muted-foreground">Было</p>
-          <p className="text-xl font-semibold">{beforeScore}/100</p>
+          <p className="text-xl font-semibold">{finalBeforeScore}/100</p>
         </div>
         <div className="flex items-center">
           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -101,7 +107,7 @@ const OptimizationResults: React.FC<OptimizationResultsProps> = (props) => {
         </div>
         <div>
           <p className="text-sm text-muted-foreground">Стало</p>
-          <p className="text-xl font-semibold text-green-600">{afterScore}/100</p>
+          <p className="text-xl font-semibold text-green-600">{finalAfterScore}/100</p>
         </div>
         <div className="flex items-center">
           <p className="text-sm text-green-600">+{scoreIncrease} баллов</p>
@@ -126,13 +132,13 @@ const OptimizationResults: React.FC<OptimizationResultsProps> = (props) => {
       
       <div className="flex flex-wrap gap-2 mt-4">
         <button 
-          onClick={props.onDownloadOptimized}
+          onClick={onDownloadOptimized}
           className="bg-primary text-white px-4 py-2 rounded hover:bg-primary/90"
         >
           Скачать оптимизированный сайт
         </button>
         <button 
-          onClick={props.onGeneratePdfReport}
+          onClick={onGeneratePdfReport}
           className="border border-primary px-4 py-2 rounded hover:bg-primary/10"
         >
           Скачать PDF-отчет
