@@ -18,7 +18,7 @@ interface DemoPage {
 }
 
 interface OptimizationResultsProps {
-  url: string;
+  url?: string;
   optimizationResult?: {
     beforeScore: number;
     afterScore: number;
@@ -28,7 +28,7 @@ interface OptimizationResultsProps {
   onGeneratePdfReport?: () => void;
   className?: string;
 
-  // Legacy props for backwards compatibility
+  // Legacy props for backwards compatibility - all required to match the calling component
   beforeTitle?: string;
   afterTitle?: string;
   beforeContent?: string;
