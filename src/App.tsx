@@ -42,6 +42,9 @@ import AIOptimization from './pages/features/AIOptimization';
 import PositionTracking from './pages/features/PositionTracking';
 import SpeedAnalysis from './pages/features/SpeedAnalysis';
 import MobileOptimization from './pages/features/MobileOptimization';
+import OptimizationDemo from './pages/OptimizationDemo';
+import AllPages from './pages/AllPages';
+import SeoOptimizationPage from './pages/SeoOptimizationPage';
 
 // Admin Routes
 import AdminRoutes from './routes/AdminRoutes';
@@ -112,6 +115,11 @@ function App() {
                   {/* Speed and Mobile optimization routes */}
                   <Route path="/features/speed-analysis" element={<SpeedAnalysis />} />
                   <Route path="/features/mobile-optimization" element={<MobileOptimization />} />
+                  
+                  {/* Additional pages */}
+                  <Route path="/optimization-demo" element={<OptimizationDemo />} />
+                  <Route path="/all-pages" element={<AllPages />} />
+                  <Route path="/seo-optimization" element={<SeoOptimizationPage />} />
                   
                   {/* Admin Routes */}
                   <Route path="/admin/*" element={<AdminRoutes />} />
