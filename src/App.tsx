@@ -46,7 +46,7 @@ import MobileOptimization from './pages/features/MobileOptimization';
 // Admin Routes
 import AdminRoutes from './routes/AdminRoutes';
 
-import './App.css';
+
 
 const queryClient = new QueryClient({
   defaultOptions: {
