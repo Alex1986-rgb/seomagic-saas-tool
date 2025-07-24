@@ -58,33 +58,12 @@ const queryClient = new QueryClient({
 });
 
 function App() {
-  console.log("🚀 App component loading...");
-  
   return (
-    <div style={{ 
-      backgroundColor: '#ffffff', 
-      minHeight: '100vh',
-      color: '#000000'
-    }}>
-      {/* Emergency visibility test */}
-      <div style={{
-        position: 'fixed',
-        top: '0',
-        left: '0',
-        background: '#ff0000',
-        color: '#ffffff',
-        padding: '10px',
-        zIndex: 9999,
-        fontSize: '14px'
-      }}>
-        🔥 APP LOADING - VISIBLE!
-      </div>
-      
-      <QueryClientProvider client={queryClient}>
-        <ThemeProvider defaultTheme="system" storageKey="seo-market-theme">
-          <GlobalErrorBoundary>
-            <Router>
-              <div className="App" style={{ backgroundColor: '#ffffff', minHeight: '100vh' }}>
+    <QueryClientProvider client={queryClient}>
+      <ThemeProvider defaultTheme="system" storageKey="seo-market-theme">
+        <GlobalErrorBoundary>
+          <Router>
+            <div className="App">
                 <Routes>
                   <Route path="/" element={<Index />} />
                   <Route path="/home" element={<Home />} />
@@ -143,7 +122,6 @@ function App() {
           </GlobalErrorBoundary>
         </ThemeProvider>
       </QueryClientProvider>
-    </div>
   );
 }
 

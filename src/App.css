@@ -1,44 +1,33 @@
-
-/* Emergency visibility fixes */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-html, body {
-  height: 100% !important;
-  background-color: #ffffff !important;
-  color: #000000 !important;
-  font-family: 'Inter', sans-serif !important;
-}
-
-#root {
-  min-height: 100vh !important;
-  background-color: #ffffff !important;
-  color: #000000 !important;
-}
-
 .App {
-  min-height: 100vh !important;
-  background-color: #ffffff !important;
-  color: #000000 !important;
+  text-align: center;
 }
 
-/* Force visibility for main content */
-main {
-  background-color: #ffffff !important;
-  min-height: 50vh !important;
-  color: #000000 !important;
+.App-logo {
+  height: 40vmin;
+  pointer-events: none;
 }
 
-/* Emergency debug styles */
-.emergency-visible {
-  background-color: #ff0000 !important;
-  color: #ffffff !important;
-  border: 3px solid #00ff00 !important;
-  padding: 20px !important;
-  margin: 10px !important;
-  font-size: 18px !important;
-  font-weight: bold !important;
+@media (prefers-reduced-motion: no-preference) {
+  .App-logo {
+    animation: App-logo-spin infinite 20s linear;
+  }
+}
+
+.App-header {
+  background-color: #282c34;
+  padding: 20px;
+  color: white;
+}
+
+.App-link {
+  color: #61dafb;
+}
+
+@keyframes App-logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
