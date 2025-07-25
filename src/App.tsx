@@ -27,6 +27,7 @@ import PositionTracker from './pages/PositionTracker';
 import SiteAudit from './pages/SiteAudit';
 import ProjectDetails from './pages/ProjectDetails';
 import Support from './pages/Support';
+import Team from './pages/Team';
 import Guides from './pages/Guides';
 
 // Feature pages
@@ -79,6 +80,7 @@ function App() {
                   <Route path="/position-pricing" element={<PositionPricing />} />
                   <Route path="/contact" element={<Contact />} />
                   <Route path="/support" element={<Support />} />
+                  <Route path="/team" element={<Team />} />
                   <Route path="/guides" element={<Guides />} />
                   <Route path="/privacy" element={<Privacy />} />
                   <Route path="/terms" element={<Terms />} />
