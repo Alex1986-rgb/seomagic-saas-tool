@@ -29,6 +29,7 @@ import ProjectDetails from './pages/ProjectDetails';
 import Support from './pages/Support';
 import Team from './pages/Team';
 import Guides from './pages/Guides';
+import Webinars from './pages/Webinars';
 import Reports from './pages/Reports';
 import Settings from './pages/Settings';
 import AuditHistory from './pages/AuditHistory';
@@ -87,6 +88,7 @@ function App() {
                   <Route path="/support" element={<Support />} />
                   <Route path="/team" element={<Team />} />
                   <Route path="/guides" element={<Guides />} />
+                  <Route path="/webinars" element={<Webinars />} />
                   <Route path="/privacy" element={<Privacy />} />
                   <Route path="/terms" element={<Terms />} />
                   <Route path="/dashboard" element={<Dashboard />} />
