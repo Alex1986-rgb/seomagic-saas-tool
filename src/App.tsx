@@ -29,6 +29,11 @@ import ProjectDetails from './pages/ProjectDetails';
 import Support from './pages/Support';
 import Team from './pages/Team';
 import Guides from './pages/Guides';
+import Reports from './pages/Reports';
+import Settings from './pages/Settings';
+import AuditHistory from './pages/AuditHistory';
+import ClientDashboard from './pages/ClientDashboard';
+import AdminDashboard from './pages/AdminDashboard';
 
 // Feature pages
 import SiteScanning from './pages/features/SiteScanning';
@@ -124,6 +129,13 @@ function App() {
                   <Route path="/optimization-demo" element={<OptimizationDemo />} />
                   <Route path="/all-pages" element={<AllPages />} />
                   <Route path="/seo-optimization" element={<SeoOptimizationPage />} />
+                  
+                  {/* Client and Admin Dashboard Routes */}
+                  <Route path="/reports" element={<Reports />} />
+                  <Route path="/settings" element={<Settings />} />
+                  <Route path="/audit-history" element={<AuditHistory />} />
+                  <Route path="/client-dashboard" element={<ClientDashboard />} />
+                  <Route path="/admin-dashboard" element={<AdminDashboard />} />
                   
                   {/* Admin Routes */}
                   <Route path="/admin/*" element={<AdminRoutes />} />
