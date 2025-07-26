@@ -79,6 +79,16 @@ if (rootElement) {
     </React.StrictMode>
   );
   console.info('main.tsx: App rendered successfully');
+  
+  // Add timeout to check if app loaded
+  setTimeout(() => {
+    const appContent = document.querySelector('.App');
+    if (!appContent) {
+      console.error('App content not found after 2 seconds!');
+    } else {
+      console.info('App content successfully loaded');
+    }
+  }, 2000);
 } else {
   console.error('Root element not found! Unable to mount React application.');
   
