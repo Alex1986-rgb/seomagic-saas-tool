@@ -36,6 +36,10 @@ import Settings from './pages/Settings';
 import AuditHistory from './pages/AuditHistory';
 import ClientDashboard from './pages/ClientDashboard';
 import AdminDashboard from './pages/AdminDashboard';
+import ApiDocs from './pages/ApiDocs';
+import Faq from './pages/Faq';
+import Partners from './pages/Partners';
+import IPInfo from './pages/IPInfo';
 
 // Feature pages
 import SiteScanning from './pages/features/SiteScanning';
@@ -132,7 +136,12 @@ function App() {
                   {/* Additional pages */}
                   <Route path="/optimization-demo" element={<OptimizationDemo />} />
                   <Route path="/all-pages" element={<AllPages />} />
+                  <Route path="/pages" element={<AllPages />} />
                   <Route path="/seo-optimization" element={<SeoOptimizationPage />} />
+                  <Route path="/api-docs" element={<ApiDocs />} />
+                  <Route path="/faq" element={<Faq />} />
+                  <Route path="/partners" element={<Partners />} />
+                  <Route path="/ip-info" element={<IPInfo />} />
                   
                   {/* Client and Admin Dashboard Routes */}
                   <Route path="/reports" element={<Reports />} />
