@@ -28,13 +28,23 @@ class AppErrorBoundary extends React.Component<
   render() {
     if (this.state.hasError) {
       return (
-        <div className="min-h-screen flex items-center justify-center bg-white">
+        <div className="min-h-screen flex items-center justify-center" style={{
+          background: 'hsl(225, 71%, 5%)',
+          color: 'hsl(210, 40%, 98%)'
+        }}>
           <div className="text-center p-8">
-            <h1 className="text-2xl font-bold mb-4 text-gray-900">Что-то пошло не так</h1>
-            <p className="text-gray-600 mb-4">Произошла ошибка при загрузке приложения</p>
+            <h1 className="text-2xl font-bold mb-4" style={{color: 'hsl(0, 84%, 60%)'}}>Что-то пошло не так</h1>
+            <p className="mb-4" style={{color: 'hsl(215, 16%, 57%)'}}>Произошла ошибка при загрузке приложения</p>
+            <div className="mb-4 p-3 rounded bg-gray-800 text-left text-sm">
+              <code style={{color: 'hsl(210, 40%, 98%)'}}>{this.state.error?.message || 'Unknown error'}</code>
+            </div>
             <button 
               onClick={() => window.location.reload()} 
-              className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+              className="px-4 py-2 rounded"
+              style={{
+                background: 'hsl(30, 85%, 50%)',
+                color: 'hsl(210, 40%, 98%)'
+              }}
             >
               Перезагрузить страницу
             </button>

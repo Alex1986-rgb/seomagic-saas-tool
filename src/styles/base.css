@@ -12,6 +12,9 @@
     position: relative;
     min-height: 100vh;
     overflow-x: hidden;
+    /* Force dark theme colors as fallback */
+    background: hsl(225, 71%, 5%) !important;
+    color: hsl(210, 40%, 98%) !important;
   }
 
   /* Clean typography */
@@ -65,10 +68,10 @@
     backdrop-filter: blur(3px);
   }
 
-  /* Card style updates for starry background */
+  /* Card style updates for starry background - using CSS variables */
   .card, .battle-card {
     backdrop-filter: blur(8px);
-    background: rgba(255, 255, 255, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: hsl(var(--card) / 0.8);
+    border: 1px solid hsl(var(--border) / 0.2);
   }
 }

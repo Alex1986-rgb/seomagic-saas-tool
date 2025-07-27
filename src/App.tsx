@@ -65,8 +65,23 @@ import AdminRoutes from './routes/AdminRoutes';
 function App() {
   console.log('🚀 App component rendering');
   
+  // Add debug logging to detect issues
+  React.useEffect(() => {
+    console.log('✅ App component mounted');
+    console.log('📊 Current theme:', document.documentElement.classList.toString());
+    console.log('🎨 CSS Variables test:', {
+      background: getComputedStyle(document.documentElement).getPropertyValue('--background'),
+      foreground: getComputedStyle(document.documentElement).getPropertyValue('--foreground'),
+      primary: getComputedStyle(document.documentElement).getPropertyValue('--primary')
+    });
+    
+    return () => {
+      console.log('❌ App component unmounted');
+    };
+  }, []);
+  
   return (
-    <ThemeProvider defaultTheme="system" storageKey="seo-market-theme">
+    <ThemeProvider defaultTheme="dark" storageKey="seo-market-theme">
       <Router>
         <div className="App" data-app="true">
           <Routes>
