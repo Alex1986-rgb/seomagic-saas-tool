@@ -1,8 +1,6 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from './components/ui/sonner';
-import { GlobalErrorBoundary } from './components/ui/error-handler';
 import { ThemeProvider } from './contexts/ThemeContext';
 
 // Pages
@@ -64,25 +62,14 @@ import AdminRoutes from './routes/AdminRoutes';
 
 
 
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      staleTime: 5 * 60 * 1000, // 5 minutes
-      gcTime: 10 * 60 * 1000, // 10 minutes
-    },
-  },
-});
-
 function App() {
   console.log('🚀 App component rendering');
   
   return (
-    <QueryClientProvider client={queryClient}>
-      <ThemeProvider defaultTheme="system" storageKey="seo-market-theme">
-        <GlobalErrorBoundary>
-          <Router>
-            <div className="App">
-                <Routes>
+    <ThemeProvider defaultTheme="system" storageKey="seo-market-theme">
+      <Router>
+        <div className="App" data-app="true">
+          <Routes>
                   <Route path="/" element={<Index />} />
                   <Route path="/home" element={<Home />} />
                   <Route path="/about" element={<About />} />
@@ -154,13 +141,11 @@ function App() {
                   
                   {/* Admin Routes */}
                   <Route path="/admin/*" element={<AdminRoutes />} />
-                </Routes>
-                <Toaster />
-              </div>
-            </Router>
-          </GlobalErrorBoundary>
-        </ThemeProvider>
-      </QueryClientProvider>
+          </Routes>
+          <Toaster />
+        </div>
+      </Router>
+    </ThemeProvider>
   );
 }
 

@@ -30,6 +30,8 @@
   --input: 216 34% 17%;
   --ring: 30 85% 50%;
 
+  --radius: 0.5rem;
+
   --sidebar-background: 225 71% 5%;
   --sidebar-foreground: 210 40% 98%;
   --sidebar-primary: 210 40% 98%;
@@ -50,4 +52,43 @@
   --pdf-dark: 222 28% 14%;          /* #1A1F2C - Dark background */
   --pdf-light: 210 20% 96%;         /* #F1F5F9 - Light background */
   --pdf-gray: 220 3% 57%;           /* #8E9196 - Neutral gray */
+}
+
+.light {
+  --background: 0 0% 100%;
+  --foreground: 240 10% 3.9%;
+
+  --card: 0 0% 100%;
+  --card-foreground: 240 10% 3.9%;
+
+  --popover: 0 0% 100%;
+  --popover-foreground: 240 10% 3.9%;
+
+  --primary: 30 85% 50%;
+  --primary-foreground: 0 0% 98%;
+
+  --secondary: 240 4.8% 95.9%;
+  --secondary-foreground: 240 5.9% 10%;
+
+  --muted: 240 4.8% 95.9%;
+  --muted-foreground: 240 3.8% 46.1%;
+
+  --accent: 240 4.8% 95.9%;
+  --accent-foreground: 240 5.9% 10%;
+
+  --destructive: 0 84.2% 60.2%;
+  --destructive-foreground: 0 0% 98%;
+
+  --border: 240 5.9% 90%;
+  --input: 240 5.9% 90%;
+  --ring: 30 85% 50%;
+
+  --sidebar-background: 0 0% 98%;
+  --sidebar-foreground: 240 5.3% 26.1%;
+  --sidebar-primary: 240 5.9% 10%;
+  --sidebar-primary-foreground: 0 0% 98%;
+  --sidebar-accent: 240 4.8% 95.9%;
+  --sidebar-accent-foreground: 240 5.9% 10%;
+  --sidebar-border: 220 13% 91%;
+  --sidebar-ring: 217 91% 60%;
 }

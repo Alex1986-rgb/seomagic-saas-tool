@@ -1,9 +1,7 @@
 
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import { HelmetProvider } from 'react-helmet-async';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { AuthProvider } from './contexts/AuthContext';
+import AppProviders from './providers/AppProviders';
 import './index.css';
 import App from './App';
 
@@ -49,44 +47,32 @@ class AppErrorBoundary extends React.Component<
   }
 }
 
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      retry: 1,
-      refetchOnWindowFocus: false,
-    },
-  },
-});
-
 const rootElement = document.getElementById('root');
 
 if (rootElement) {
-  console.info('Found root element, creating React root');
+  console.info('✅ Found root element, creating React root');
   const root = ReactDOM.createRoot(rootElement);
   
-  console.info('main.tsx: About to render App component');
+  console.info('🚀 main.tsx: About to render App component');
   root.render(
     <React.StrictMode>
       <AppErrorBoundary>
-        <HelmetProvider>
-          <QueryClientProvider client={queryClient}>
-            <AuthProvider>
-              <App />
-            </AuthProvider>
-          </QueryClientProvider>
-        </HelmetProvider>
+        <AppProviders>
+          <App />
+        </AppProviders>
       </AppErrorBoundary>
     </React.StrictMode>
   );
-  console.info('main.tsx: App rendered successfully');
+  console.info('✅ main.tsx: App rendered successfully');
   
   // Add timeout to check if app loaded
   setTimeout(() => {
-    const appContent = document.querySelector('.App');
+    const appContent = document.querySelector('.App, [data-app="true"], main, [class*="layout"]');
     if (!appContent) {
-      console.error('App content not found after 2 seconds!');
+      console.error('❌ App content not found after 2 seconds!');
+      console.log('🔍 Available DOM elements:', document.body.innerHTML.slice(0, 500));
     } else {
-      console.info('App content successfully loaded');
+      console.info('✅ App content successfully loaded');
     }
   }, 2000);
 } else {
