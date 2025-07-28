@@ -12,9 +12,6 @@
     position: relative;
     min-height: 100vh;
     overflow-x: hidden;
-    /* Force dark theme colors as fallback */
-    background: hsl(225, 71%, 5%) !important;
-    color: hsl(210, 40%, 98%) !important;
   }
 
   /* Clean typography */

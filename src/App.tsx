@@ -83,7 +83,7 @@ function App() {
   return (
     <ThemeProvider defaultTheme="dark" storageKey="seo-market-theme">
       <Router>
-        <div className="App" data-app="true">
+        <div className="App min-h-screen bg-background text-foreground" data-app="true">
           <Routes>
                   <Route path="/" element={<Index />} />
                   <Route path="/home" element={<Home />} />
