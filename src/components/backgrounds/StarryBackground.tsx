@@ -20,60 +20,93 @@ const StarryBackground: React.FC<StarProps> = ({
   
   useEffect(() => {
     if (!containerRef.current) return;
+
+    const container = containerRef.current;
+    let cleanup: (() => void) | undefined;
     
-    // Clear any existing stars
-    const existingGroups = containerRef.current.querySelectorAll('.star-group, .shooting-star, .nebula');
-    existingGroups.forEach(group => group.remove());
-    
-    // Create star groups
-    for (let g = 1; g <= groupCount; g++) {
-      const group = document.createElement('div');
-      group.className = `star-group star-group-${g}`;
+    // Defer DOM manipulation to avoid blocking
+    const createStars = () => {
+      if (!container) return;
       
-      // Create stars for this group
-      for (let i = 0; i < starsPerGroup; i++) {
-        const star = document.createElement('div');
-        const size = Math.ceil(Math.random() * maxSize);
-        star.className = `star star-size-${size}`;
-        
-        // Random position
-        star.style.left = `${Math.random() * 100}%`;
-        star.style.top = `${Math.random() * 100}%`;
-        
-        // Add to group
-        group.appendChild(star);
+      // Clear existing content
+      container.innerHTML = '';
+
+      // Create star groups with different patterns
+      for (let group = 0; group < groupCount; group++) {
+        for (let i = 0; i < starsPerGroup; i++) {
+          const star = document.createElement('div');
+          star.className = 'star';
+          
+          // Position and style
+          const x = Math.random() * 100;
+          const y = Math.random() * 100;
+          const size = Math.random() * maxSize + 1;
+          const opacity = Math.random() * 0.8 + 0.2;
+          
+          star.style.cssText = `
+            position: absolute;
+            left: ${x}%;
+            top: ${y}%;
+            width: ${size}px;
+            height: ${size}px;
+            background: white;
+            border-radius: 50%;
+            opacity: ${opacity};
+            animation: twinkle ${2 + Math.random() * 3}s infinite;
+          `;
+          
+          container.appendChild(star);
+        }
       }
-      
-      // Add group to container
-      containerRef.current.appendChild(group);
-    }
-    
-    // Add shooting stars
-    for (let i = 0; i < shootingStarsCount; i++) {
-      const shootingStar = document.createElement('div');
-      shootingStar.className = 'shooting-star';
-      
-      // Random starting position
-      const randomTop = Math.random() * 60; // Keep in upper part of screen
-      const randomLeft = 30 + Math.random() * 60; // Keep in middle-ish of screen
-      shootingStar.style.top = `${randomTop}%`;
-      shootingStar.style.left = `${randomLeft}%`;
-      
-      // Random animation delay
-      const delay = Math.random() * 20;
-      shootingStar.style.animationDelay = `${delay}s`;
-      
-      containerRef.current.appendChild(shootingStar);
-    }
-    
-    // Add nebula clouds if enabled
-    if (includeNebula) {
-      for (let i = 1; i <= 3; i++) {
-        const nebula = document.createElement('div');
-        nebula.className = `nebula nebula-${i}`;
-        containerRef.current.appendChild(nebula);
+
+      // Add shooting stars
+      for (let i = 0; i < shootingStarsCount; i++) {
+        const shootingStar = document.createElement('div');
+        shootingStar.className = 'shooting-star';
+        shootingStar.style.cssText = `
+          position: absolute;
+          left: ${Math.random() * 100}%;
+          top: ${Math.random() * 100}%;
+          width: 2px;
+          height: 2px;
+          background: white;
+          border-radius: 50%;
+          animation: shoot ${3 + Math.random() * 4}s infinite ${Math.random() * 5}s;
+        `;
+        container.appendChild(shootingStar);
       }
-    }
+
+      // Add nebula effects
+      if (includeNebula) {
+        for (let i = 0; i < 3; i++) {
+          const nebula = document.createElement('div');
+          nebula.className = `nebula nebula-${i}`;
+          nebula.style.cssText = `
+            position: absolute;
+            left: ${Math.random() * 80}%;
+            top: ${Math.random() * 80}%;
+            width: ${100 + Math.random() * 200}px;
+            height: ${100 + Math.random() * 200}px;
+            background: radial-gradient(circle, rgba(138, 43, 226, 0.1) 0%, transparent 70%);
+            border-radius: 50%;
+            animation: pulse ${8 + Math.random() * 4}s infinite ease-in-out;
+          `;
+          container.appendChild(nebula);
+        }
+      }
+    };
+
+    // Use RAF for smooth performance
+    const raf = requestAnimationFrame(createStars);
+    
+    cleanup = () => {
+      cancelAnimationFrame(raf);
+      if (container) {
+        container.innerHTML = '';
+      }
+    };
+    
+    return cleanup;
   }, [groupCount, starsPerGroup, maxSize, shootingStarsCount, includeNebula]);
   
   return <div ref={containerRef} className="stars-container" />;

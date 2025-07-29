@@ -81,7 +81,7 @@ function App() {
   }, []);
   
   return (
-    <ThemeProvider defaultTheme="dark" storageKey="seo-market-theme">
+    <ThemeProvider defaultTheme="system" storageKey="seo-market-theme">
       <Router>
         <div className="App min-h-screen bg-background text-foreground" data-app="true">
           <Routes>
