@@ -60,20 +60,17 @@ class AppErrorBoundary extends React.Component<
 const rootElement = document.getElementById('root');
 
 if (rootElement) {
-  // Add loading state immediately
-  rootElement.innerHTML = `
-    <div style="display: flex; justify-content: center; align-items: center; min-height: 100vh; background: hsl(225, 71%, 5%); color: hsl(210, 40%, 98%);">
-      <div style="text-align: center;">
-        <div style="width: 40px; height: 40px; border: 3px solid hsl(216, 34%, 17%); border-top: 3px solid hsl(30, 85%, 50%); border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 1rem;"></div>
-        <p>Загрузка...</p>
-      </div>
-    </div>
-    <style>
-      @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-    </style>
-  `;
-
   console.info('✅ Found root element, creating React root');
+  
+  // Скрыть fallback если он есть
+  const loadingFallback = document.getElementById('loading-fallback');
+  if (loadingFallback) {
+    setTimeout(() => {
+      loadingFallback.style.opacity = '0';
+      setTimeout(() => loadingFallback.remove(), 300);
+    }, 100);
+  }
+  
   const root = ReactDOM.createRoot(rootElement);
   
   console.info('🚀 main.tsx: About to render App component');
