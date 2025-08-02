@@ -1,12 +1,6 @@
 
 import React, { useEffect } from 'react';
 import Layout from '../components/Layout';
-import HeroSection from '../components/hero/HeroSection';
-import VideoSection from '../components/home/VideoSection';
-import CoreFeaturesSection from '../components/home/CoreFeaturesSection';
-import PositionTrackerSection from '../components/position-tracker/PositionTrackerSection';
-import DetailedFeaturesSection from '../components/home/DetailedFeaturesSection';
-import CTASection from '../components/sections/CTASection';
 
 const Index: React.FC = () => {
   useEffect(() => {
@@ -22,12 +16,14 @@ const Index: React.FC = () => {
   
   return (
     <Layout>
-      <HeroSection />
-      <VideoSection />
-      <CoreFeaturesSection />
-      <PositionTrackerSection />
-      <DetailedFeaturesSection />
-      <CTASection />
+      <div className="min-h-screen bg-background text-foreground p-8">
+        <div className="max-w-4xl mx-auto text-center">
+          <h1 className="text-4xl font-bold mb-6 text-primary">SEO Market</h1>
+          <p className="text-xl text-muted-foreground">
+            Добро пожаловать в систему SEO анализа и оптимизации
+          </p>
+        </div>
+      </div>
     </Layout>
   );
 };
