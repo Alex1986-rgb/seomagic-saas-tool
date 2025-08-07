@@ -17,8 +17,8 @@ import OptimizationDemo from './pages/OptimizationDemo';
 import AdminPanel from './pages/admin/AdminPanel';
 
 // Simple inline components
-const Toaster = () => null;
-const ThemeProvider = ({ children }: { children: React.ReactNode }) => children;
+import AppProviders from './providers/AppProviders';
+import { Toaster } from '@/components/ui/sonner';
 
 function App() {
   console.log('🚀 App component rendering');
@@ -31,7 +31,7 @@ function App() {
   }, []);
   
   return (
-    <ThemeProvider>
+    <AppProviders>
       <Router>
         <div className="App min-h-screen bg-background text-foreground" data-app="true">
           <Routes>
@@ -54,7 +54,7 @@ function App() {
           <Toaster />
         </div>
       </Router>
-    </ThemeProvider>
+    </AppProviders>
   );
 }
 

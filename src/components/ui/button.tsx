@@ -9,16 +9,18 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default: "bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg shadow-primary/25",
+        default: "bg-gradient-primary text-primary-foreground hover:shadow-glow transition-all duration-300",
         destructive:
-          "bg-destructive text-destructive-foreground hover:bg-destructive/90",
+          "bg-destructive text-destructive-foreground hover:bg-destructive/90 shadow-lg",
         outline:
-          "border border-input bg-background hover:bg-accent/10 hover:text-accent-foreground",
+          "border border-border bg-background/50 backdrop-blur-sm hover:bg-accent/20 hover:border-primary/50 transition-all duration-300",
         secondary:
-          "bg-secondary text-secondary-foreground hover:bg-secondary/80",
-        ghost: "hover:bg-accent/10 hover:text-accent-foreground",
-        link: "text-primary underline-offset-4 hover:underline",
-        glassmorphic: "bg-primary/80 backdrop-blur-sm text-primary-foreground hover:bg-primary border border-primary/20 shadow-md hover:shadow-lg hover:shadow-primary/20",
+          "bg-secondary text-secondary-foreground hover:bg-secondary/80 shadow-md",
+        ghost: "hover:bg-accent/10 hover:text-accent-foreground transition-all duration-200",
+        link: "text-primary underline-offset-4 hover:underline hover:text-primary-glow",
+        hero: "bg-gradient-primary text-white border border-primary/20 hover:shadow-glow hover:scale-105 transition-all duration-300",
+        glassmorphic: "bg-card/80 backdrop-blur-md text-foreground hover:bg-card border border-border/50 shadow-card hover:shadow-elegant transition-all duration-300",
+        premium: "bg-gradient-to-r from-primary to-primary-glow text-white hover:from-primary-glow hover:to-primary hover:scale-105 shadow-elegant transition-all duration-300",
       },
       size: {
         default: "h-10 px-6 py-2 rounded-lg",
