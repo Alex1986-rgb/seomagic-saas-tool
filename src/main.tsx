@@ -1,6 +1,7 @@
 
 import React from 'react';
 import ReactDOM from 'react-dom/client';
+import AppProviders from './providers/AppProviders';
 import './index.css';
 import App from './App';
 
@@ -76,7 +77,9 @@ if (rootElement) {
   root.render(
     <React.StrictMode>
       <AppErrorBoundary>
-        <App />
+        <AppProviders>
+          <App />
+        </AppProviders>
       </AppErrorBoundary>
     </React.StrictMode>
   );
