@@ -19,69 +19,8 @@
     <title>SEO Аудит и Оптимизация</title>
   </head>
   <body>
-    <div id="root">
-      <div id="loading-fallback" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; z-index: 9999;">
-        <div style="text-align: center; color: white; font-family: Arial, sans-serif;">
-          <div style="width: 40px; height: 40px; border: 3px solid rgba(255,255,255,0.3); border-top: 3px solid white; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 20px;"></div>
-          <h2 style="margin: 0 0 10px 0; font-size: 24px;">SEO Аудит</h2>
-          <p style="margin: 0; opacity: 0.8;">Загрузка приложения...</p>
-        </div>
-      </div>
-    </div>
-    
-    <noscript>
-      <div style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #f8fafc; display: flex; align-items: center; justify-content: center; z-index: 10000;">
-        <div style="text-align: center; padding: 2rem; font-family: Arial, sans-serif; max-width: 500px;">
-          <h1 style="color: #1e293b; margin-bottom: 1rem;">SEO Аудит и Оптимизация</h1>
-          <p style="color: #64748b; margin-bottom: 1rem;">Для работы этого сайта необходим JavaScript.</p>
-          <p style="color: #64748b;">Пожалуйста, включите JavaScript в настройках браузера и обновите страницу.</p>
-        </div>
-      </div>
-    </noscript>
-    
-    <style>
-      @keyframes spin {
-        0% { transform: rotate(0deg); }
-        100% { transform: rotate(360deg); }
-      }
-      
-      #loading-fallback {
-        transition: opacity 0.3s ease-out;
-      }
-      
-      .loading-hidden {
-        opacity: 0;
-        pointer-events: none;
-      }
-    </style>
-    
-    <script>
-      // Скрыть loading fallback когда React загрузится
-      window.hideLoadingFallback = function() {
-        const fallback = document.getElementById('loading-fallback');
-        if (fallback) {
-          fallback.classList.add('loading-hidden');
-          setTimeout(() => fallback.remove(), 300);
-        }
-      };
-      
-      // Если через 10 секунд приложение не загрузилось, показать ошибку
-      setTimeout(function() {
-        const fallback = document.getElementById('loading-fallback');
-        if (fallback && !fallback.classList.contains('loading-hidden')) {
-          fallback.innerHTML = `
-            <div style="text-align: center; color: white; font-family: Arial, sans-serif;">
-              <h2 style="margin: 0 0 15px 0; font-size: 24px;">Ошибка загрузки</h2>
-              <p style="margin: 0 0 20px 0; opacity: 0.8;">Приложение не удалось загрузить</p>
-              <button onclick="location.reload()" style="background: white; color: #667eea; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-size: 16px;">
-                Перезагрузить страницу
-              </button>
-            </div>
-          `;
-        }
-      }, 10000);
-    </script>
-    
+    <div id="root"></div>
+    <script src="https://cdn.gpteng.co/gptengineer.js" type="module"></script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

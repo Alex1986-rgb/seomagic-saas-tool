@@ -61,16 +61,6 @@ const rootElement = document.getElementById('root');
 
 if (rootElement) {
   console.info('✅ Found root element, creating React root');
-  
-  // Скрыть fallback если он есть
-  const loadingFallback = document.getElementById('loading-fallback');
-  if (loadingFallback) {
-    setTimeout(() => {
-      loadingFallback.style.opacity = '0';
-      setTimeout(() => loadingFallback.remove(), 300);
-    }, 100);
-  }
-  
   const root = ReactDOM.createRoot(rootElement);
   
   console.info('🚀 main.tsx: About to render App component');
@@ -89,35 +79,22 @@ if (rootElement) {
   setTimeout(() => {
     const appContent = document.querySelector('.App, [data-app="true"], main, [class*="layout"]');
     if (!appContent) {
-      console.error('❌ App content not found after 3 seconds!');
+      console.error('❌ App content not found after 2 seconds!');
       console.log('🔍 Available DOM elements:', document.body.innerHTML.slice(0, 500));
-      
-      // Show fallback UI if React didn't mount
-      rootElement.innerHTML = `
-        <div style="display: flex; justify-content: center; align-items: center; min-height: 100vh; font-family: Arial, sans-serif; background: hsl(225, 71%, 5%); color: hsl(210, 40%, 98%);">
-          <div style="text-align: center; padding: 2rem;">
-            <h1 style="color: hsl(0, 84%, 60%); margin-bottom: 1rem; font-size: 1.5rem;">Ошибка загрузки React</h1>
-            <p style="margin-bottom: 2rem; color: hsl(215, 16%, 57%);">Приложение не смогло запуститься.</p>
-            <button onclick="window.location.reload()" style="background: hsl(30, 85%, 50%); color: hsl(210, 40%, 98%); border: none; padding: 0.5rem 1rem; border-radius: 0.25rem; cursor: pointer;">
-              Перезагрузить
-            </button>
-          </div>
-        </div>
-      `;
     } else {
       console.info('✅ App content successfully loaded');
     }
-  }, 3000);
+  }, 2000);
 } else {
   console.error('Root element not found! Unable to mount React application.');
   
   // Fallback HTML if React fails to mount
   document.body.innerHTML = `
-    <div style="min-height: 100vh; display: flex; align-items: center; justify-content: center; font-family: system-ui; background: hsl(225, 71%, 5%); color: hsl(210, 40%, 98%);">
+    <div style="min-height: 100vh; display: flex; align-items: center; justify-content: center; font-family: system-ui; background: white;">
       <div style="text-align: center; padding: 2rem;">
-        <h1 style="font-size: 2rem; margin-bottom: 1rem; color: hsl(0, 84%, 60%);">Ошибка загрузки</h1>
-        <p style="margin-bottom: 1rem; color: hsl(215, 16%, 57%);">Не удалось найти корневой элемент для React приложения.</p>
-        <button onclick="window.location.reload()" style="padding: 0.5rem 1rem; background: hsl(30, 85%, 50%); color: hsl(210, 40%, 98%); border: none; border-radius: 0.375rem; cursor: pointer;">
+        <h1 style="font-size: 2rem; margin-bottom: 1rem; color: #1f2937;">Ошибка загрузки</h1>
+        <p style="margin-bottom: 1rem; color: #6b7280;">Не удалось загрузить приложение</p>
+        <button onclick="window.location.reload()" style="padding: 0.5rem 1rem; background: #3b82f6; color: white; border: none; border-radius: 0.375rem; cursor: pointer;">
           Перезагрузить
         </button>
       </div>
