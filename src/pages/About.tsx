@@ -1,27 +1,36 @@
-import React from 'react';
-import Layout from '../components/Layout';
 
-const About: React.FC = () => {
+import React from 'react';
+import { motion } from 'framer-motion';
+import Layout from '@/components/Layout';
+import AboutHero from '@/components/about/AboutHero';
+import MissionSection from '@/components/about/MissionSection';
+import FeaturesSection from '@/components/about/FeaturesSection';
+import TeamSection from '@/components/about/TeamSection';
+import TestimonialsSection from '@/components/about/TestimonialsSection';
+import CtaSection from '@/components/about/CtaSection';
+import { Separator } from '@/components/ui/separator';
+
+const About = () => {
   return (
     <Layout>
-      <div className="container mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold mb-8">О нас</h1>
-        <div className="prose max-w-none">
-          <p className="text-lg mb-4">
-            SEO Market - это современная платформа для комплексного анализа и оптимизации веб-сайтов.
-          </p>
-          <p className="mb-4">
-            Мы предоставляем профессиональные инструменты для:
-          </p>
-          <ul className="list-disc pl-6 mb-4">
-            <li>Полного аудита SEO</li>
-            <li>Анализа технических характеристик</li>
-            <li>Отслеживания позиций</li>
-            <li>Мониторинга конкурентов</li>
-            <li>Автоматической оптимизации</li>
-          </ul>
-        </div>
-      </div>
+      <motion.div 
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.5 }}
+        className="container px-4 py-8 mx-auto relative"
+      >
+        <div className="absolute inset-0 bg-gradient-to-b from-secondary/20 to-transparent -z-10" />
+        <AboutHero />
+        <div className="elegant-divider" />
+        <MissionSection />
+        <div className="elegant-divider-alt" />
+        <FeaturesSection />
+        <div className="elegant-divider" />
+        <TeamSection />
+        <div className="elegant-divider-alt" />
+        <TestimonialsSection />
+        <CtaSection />
+      </motion.div>
     </Layout>
   );
 };
