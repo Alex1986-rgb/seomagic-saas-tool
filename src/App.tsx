@@ -105,7 +105,7 @@ function App() {
                   <Route path="/profile" element={<Profile />} />
                   <Route path="/auth" element={<Auth />} />
                   <Route path="/blog" element={<Blog />} />
-                  <Route path="/blog/:slug" element={<BlogPost />} />
+                  <Route path="/blog/:id" element={<BlogPost />} />
                   <Route path="/docs" element={<Documentation />} />
                   <Route path="/documentation" element={<Documentation />} />
                   <Route path="/position-tracker" element={<PositionTracker />} />
