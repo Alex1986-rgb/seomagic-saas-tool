@@ -81,6 +81,33 @@ if (rootElement) {
     if (!appContent) {
       console.error('❌ App content not found after 2 seconds!');
       console.log('🔍 Available DOM elements:', document.body.innerHTML.slice(0, 500));
+
+      // Inject visible safety overlay to help users recover
+      const existing = document.getElementById('app-fallback-overlay');
+      if (!existing) {
+        const overlay = document.createElement('div');
+        overlay.id = 'app-fallback-overlay';
+        overlay.setAttribute('role', 'alert');
+        overlay.style.position = 'fixed';
+        overlay.style.inset = '0';
+        overlay.style.zIndex = '9999';
+        overlay.style.background = '#0b1020'; // dark navy
+        overlay.style.color = '#f8fafc'; // near white
+        overlay.style.display = 'flex';
+        overlay.style.alignItems = 'center';
+        overlay.style.justifyContent = 'center';
+        overlay.style.padding = '24px';
+        overlay.innerHTML = `
+          <div style="max-width: 720px; width: 100%; text-align: center;">
+            <h1 style="font-size: 24px; font-weight: 700; margin-bottom: 12px;">Что-то пошло не так</h1>
+            <p style="opacity: 0.8; margin-bottom: 16px;">Интерфейс не загрузился корректно. Попробуйте перезагрузить страницу.</p>
+            <button id="app-fallback-reload" style="padding: 10px 16px; border-radius: 8px; border: 1px solid #94a3b8; background: transparent; color: inherit; cursor: pointer;">Перезагрузить</button>
+          </div>
+        `;
+        document.body.appendChild(overlay);
+        const btn = document.getElementById('app-fallback-reload');
+        btn?.addEventListener('click', () => window.location.reload());
+      }
     } else {
       console.info('✅ App content successfully loaded');
     }
