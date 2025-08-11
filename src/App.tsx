@@ -2,6 +2,8 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { Toaster } from './components/ui/sonner';
 import { ThemeProvider } from './contexts/ThemeContext';
+import DefaultSEO from './components/seo/DefaultSEO';
+import SkipLink from './components/accessibility/SkipLink';
 
 // Pages
 import Index from './pages/Index';
@@ -83,80 +85,84 @@ function App() {
   return (
     <ThemeProvider defaultTheme="dark" storageKey="seo-market-theme">
       <Router>
+        <SkipLink />
         <div className="App min-h-screen bg-background text-foreground" data-app="true">
-          <Routes>
-                  <Route path="/" element={<Index />} />
-                  <Route path="/home" element={<Home />} />
-                  <Route path="/about" element={<About />} />
-                  <Route path="/channel" element={<Channel />} />
-                  <Route path="/audit" element={<Audit />} />
-                  <Route path="/features" element={<Features />} />
-                  <Route path="/pricing" element={<Pricing />} />
-                  <Route path="/position-pricing" element={<PositionPricing />} />
-                  <Route path="/contact" element={<Contact />} />
-                  <Route path="/support" element={<Support />} />
-                  <Route path="/team" element={<Team />} />
-                  <Route path="/guides" element={<Guides />} />
-                  <Route path="/webinars" element={<Webinars />} />
-                  <Route path="/careers" element={<Careers />} />
-                  <Route path="/privacy" element={<Privacy />} />
-                  <Route path="/terms" element={<Terms />} />
-                  <Route path="/dashboard" element={<Dashboard />} />
-                  <Route path="/profile" element={<Profile />} />
-                  <Route path="/auth" element={<Auth />} />
-                  <Route path="/blog" element={<Blog />} />
-                  <Route path="/blog/:id" element={<BlogPost />} />
-                  <Route path="/docs" element={<Documentation />} />
-                  <Route path="/documentation" element={<Documentation />} />
-                  <Route path="/position-tracker" element={<PositionTracker />} />
-                  <Route path="/site-audit" element={<SiteAudit />} />
-                  <Route path="/project-details" element={<ProjectDetails />} />
-                  
-                  {/* Feature pages - Russian URLs */}
-                  <Route path="/features/полное-сканирование-сайта" element={<SiteScanning />} />
-                  <Route path="/features/site-scanning" element={<SiteScanning />} />
-                  <Route path="/features/metadata-analysis" element={<MetadataAnalysis />} />
-                  <Route path="/features/автоматическое-исправление" element={<AutoFix />} />
-                  <Route path="/features/auto-fix" element={<AutoFix />} />
-                  <Route path="/features/отслеживание-позиций" element={<PositionTrackingFeature />} />
-                  <Route path="/features/анализ-конкурентов" element={<CompetitorAnalysis />} />
-                  <Route path="/features/competitor-analysis" element={<CompetitorAnalysis />} />
-                  <Route path="/features/отчеты-производительности" element={<PerformanceReports />} />
-                  <Route path="/features/performance-reports" element={<PerformanceReports />} />
-                  <Route path="/features/безопасность-данных" element={<DataSecurity />} />
-                  <Route path="/features/data-security" element={<DataSecurity />} />
-                  <Route path="/features/интеграция-cms" element={<CMSIntegration />} />
-                  <Route path="/features/cms-integration" element={<CMSIntegration />} />
-                  
-                  {/* New feature pages - English URLs */}
-                  <Route path="/features/seo-audit" element={<SeoAudit />} />
-                  <Route path="/features/ai-optimization" element={<AIOptimization />} />
-                  <Route path="/features/position-tracking" element={<PositionTracking />} />
-                  
-                  {/* Speed and Mobile optimization routes */}
-                  <Route path="/features/speed-analysis" element={<SpeedAnalysis />} />
-                  <Route path="/features/mobile-optimization" element={<MobileOptimization />} />
-                  
-                  {/* Additional pages */}
-                  <Route path="/optimization-demo" element={<OptimizationDemo />} />
-                  <Route path="/all-pages" element={<AllPages />} />
-                  <Route path="/pages" element={<AllPages />} />
-                  <Route path="/seo-optimization" element={<SeoOptimizationPage />} />
-                  <Route path="/api-docs" element={<ApiDocs />} />
-                  <Route path="/faq" element={<Faq />} />
-                  <Route path="/partners" element={<Partners />} />
-                  <Route path="/ip-info" element={<IPInfo />} />
-                  
-                  {/* Client and Admin Dashboard Routes */}
-                  <Route path="/reports" element={<Reports />} />
-                  <Route path="/settings" element={<Settings />} />
-                  <Route path="/audit-history" element={<AuditHistory />} />
-                  <Route path="/client-dashboard" element={<ClientDashboard />} />
-                  <Route path="/admin-dashboard" element={<AdminDashboard />} />
-                  
-                  {/* Admin Routes */}
-                  <Route path="/admin/*" element={<AdminRoutes />} />
-          </Routes>
+          <DefaultSEO />
+          <main id="main-content" role="main">
+            <Routes>
+                    <Route path="/" element={<Index />} />
+                    <Route path="/home" element={<Home />} />
+                    <Route path="/about" element={<About />} />
+                    <Route path="/channel" element={<Channel />} />
+                    <Route path="/audit" element={<Audit />} />
+                    <Route path="/features" element={<Features />} />
+                    <Route path="/pricing" element={<Pricing />} />
+                    <Route path="/position-pricing" element={<PositionPricing />} />
+                    <Route path="/contact" element={<Contact />} />
+                    <Route path="/support" element={<Support />} />
+                    <Route path="/team" element={<Team />} />
+                    <Route path="/guides" element={<Guides />} />
+                    <Route path="/webinars" element={<Webinars />} />
+                    <Route path="/careers" element={<Careers />} />
+                    <Route path="/privacy" element={<Privacy />} />
+                    <Route path="/terms" element={<Terms />} />
+                    <Route path="/dashboard" element={<Dashboard />} />
+                    <Route path="/profile" element={<Profile />} />
+                    <Route path="/auth" element={<Auth />} />
+                    <Route path="/blog" element={<Blog />} />
+                    <Route path="/blog/:id" element={<BlogPost />} />
+                    <Route path="/docs" element={<Documentation />} />
+                    <Route path="/documentation" element={<Documentation />} />
+                    <Route path="/position-tracker" element={<PositionTracker />} />
+                    <Route path="/site-audit" element={<SiteAudit />} />
+                    <Route path="/project-details" element={<ProjectDetails />} />
+                    
+                    {/* Feature pages - Russian URLs */}
+                    <Route path="/features/полное-сканирование-сайта" element={<SiteScanning />} />
+                    <Route path="/features/site-scanning" element={<SiteScanning />} />
+                    <Route path="/features/metadata-analysis" element={<MetadataAnalysis />} />
+                    <Route path="/features/автоматическое-исправление" element={<AutoFix />} />
+                    <Route path="/features/auto-fix" element={<AutoFix />} />
+                    <Route path="/features/отслеживание-позиций" element={<PositionTrackingFeature />} />
+                    <Route path="/features/анализ-конкурентов" element={<CompetitorAnalysis />} />
+                    <Route path="/features/competitor-analysis" element={<CompetitorAnalysis />} />
+                    <Route path="/features/отчеты-производительности" element={<PerformanceReports />} />
+                    <Route path="/features/performance-reports" element={<PerformanceReports />} />
+                    <Route path="/features/безопасность-данных" element={<DataSecurity />} />
+                    <Route path="/features/data-security" element={<DataSecurity />} />
+                    <Route path="/features/интеграция-cms" element={<CMSIntegration />} />
+                    <Route path="/features/cms-integration" element={<CMSIntegration />} />
+                    
+                    {/* New feature pages - English URLs */}
+                    <Route path="/features/seo-audit" element={<SeoAudit />} />
+                    <Route path="/features/ai-optimization" element={<AIOptimization />} />
+                    <Route path="/features/position-tracking" element={<PositionTracking />} />
+                    
+                    {/* Speed and Mobile optimization routes */}
+                    <Route path="/features/speed-analysis" element={<SpeedAnalysis />} />
+                    <Route path="/features/mobile-optimization" element={<MobileOptimization />} />
+                    
+                    {/* Additional pages */}
+                    <Route path="/optimization-demo" element={<OptimizationDemo />} />
+                    <Route path="/all-pages" element={<AllPages />} />
+                    <Route path="/pages" element={<AllPages />} />
+                    <Route path="/seo-optimization" element={<SeoOptimizationPage />} />
+                    <Route path="/api-docs" element={<ApiDocs />} />
+                    <Route path="/faq" element={<Faq />} />
+                    <Route path="/partners" element={<Partners />} />
+                    <Route path="/ip-info" element={<IPInfo />} />
+                    
+                    {/* Client and Admin Dashboard Routes */}
+                    <Route path="/reports" element={<Reports />} />
+                    <Route path="/settings" element={<Settings />} />
+                    <Route path="/audit-history" element={<AuditHistory />} />
+                    <Route path="/client-dashboard" element={<ClientDashboard />} />
+                    <Route path="/admin-dashboard" element={<AdminDashboard />} />
+                    
+                    {/* Admin Routes */}
+                    <Route path="/admin/*" element={<AdminRoutes />} />
+            </Routes>
+          </main>
           <Toaster />
         </div>
       </Router>
