@@ -514,14 +514,146 @@ console.log(`Average score: ${stats.average_seo_score}`);
 
 ---
 
+## Optimization Functions
+
+### optimization-start
+**Purpose**: Initialize optimization job for audit results
+**Status**: ✅ Implemented
+
+**Request**:
+```json
+{
+  "task_id": "uuid",
+  "options": {
+    "fixMetaTags": true,
+    "improveContent": true,
+    "improveStructure": true,
+    "contentQuality": "premium",
+    "language": "ru"
+  }
+}
+```
+
+**Response**:
+```json
+{
+  "success": true,
+  "optimization_id": "uuid",
+  "status": "queued",
+  "message": "Optimization started"
+}
+```
+
+**Features**:
+- Creates optimization job in database
+- Validates audit exists
+- Invokes processor asynchronously
+- Returns immediately with job ID
+
+---
+
+### optimization-processor
+**Purpose**: Process optimization using Lovable AI
+**Status**: ✅ Implemented
+
+**Features**:
+- Uses Lovable AI Gateway (google/gemini-2.5-flash)
+- Processes up to 50 pages per job
+- Generates SEO recommendations per page
+- Saves results to optimization_jobs table
+- Calculates cost and score improvements
+
+**AI Integration**:
+- Model: `google/gemini-2.5-flash`
+- System prompt: SEO expert with actionable recommendations
+- Temperature: 0.7
+- Max tokens: 2000 per page
+
+**Result Data Structure**:
+```json
+{
+  "optimized_pages": 45,
+  "total_pages": 50,
+  "improvements": [
+    {
+      "url": "https://example.com/page",
+      "original": {
+        "title": "Old Title",
+        "meta_description": "Old description",
+        "word_count": 150,
+        "h1_count": 1
+      },
+      "recommendations": "AI-generated recommendations",
+      "timestamp": "2024-01-15T10:00:00Z"
+    }
+  ],
+  "total_cost": 2.25,
+  "estimated_score_improvement": 25,
+  "completed_at": "2024-01-15T10:05:00Z",
+  "options": {}
+}
+```
+
+---
+
+### optimization-status
+**Purpose**: Check optimization job status and results
+**Status**: ✅ Implemented
+
+**Request**:
+```json
+{
+  "optimization_id": "uuid"
+}
+```
+
+**Response**:
+```json
+{
+  "success": true,
+  "optimization_id": "uuid",
+  "status": "completed",
+  "cost": 2.25,
+  "result_data": {
+    "optimized_pages": 45,
+    "total_cost": 2.25,
+    "improvements": []
+  },
+  "created_at": "2024-01-15T10:00:00Z",
+  "updated_at": "2024-01-15T10:05:00Z"
+}
+```
+
+**Statuses**:
+- `queued`: Job created, waiting to process
+- `processing`: AI optimization in progress
+- `completed`: Optimization finished successfully
+- `failed`: Error occurred during processing
+
+---
+
+### optimization-content
+**Purpose**: Legacy optimization function (to be deprecated)
+**Status**: ⚠️ Legacy
+
+**Note**: Use optimization-start + optimization-processor for new implementations
+
+---
+
 ## Заключение
 
 Edge Functions обеспечивают:
-- ✅ Серверное сканирование
-- ✅ Реальное сохранение данных
-- ✅ Отслеживание прогресса
+- ✅ Серверное сканирование сайтов
+- ✅ AI оптимизация контента (Lovable AI)
+- ✅ Реальное сохранение данных в БД
+- ✅ Отслеживание прогресса в реальном времени
 - ✅ Безопасность через RLS
 - ✅ Масштабируемость
-- ✅ Логирование
+- ✅ Полное логирование API
+
+**Реализованные функции:**
+- `audit-start`, `audit-processor`, `audit-status`, `audit-cancel`
+- `optimization-start`, `optimization-processor`, `optimization-status`
+- `optimization-content` (legacy)
 
 Все готово для интеграции с frontend и создания дашбордов!

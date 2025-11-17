@@ -1,5 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -7,11 +7,13 @@ const corsHeaders = {
 };
 
 interface OptimizationOptions {
-  fixMeta: boolean;
-  fixHeadings: boolean;
-  fixImages: boolean;
-  generateSitemap: boolean;
-  optimizeContentSeo: boolean;
+  fixMetaTags?: boolean;
+  improveContent?: boolean;
+  fixLinks?: boolean;
+  improveStructure?: boolean;
+  optimizeSpeed?: boolean;
+  contentQuality?: 'standard' | 'premium' | 'ultimate';
+  language?: string;
 }
 
 serve(async (req) => {
@@ -20,106 +22,94 @@ serve(async (req) => {
   }
 
   try {
-    const supabaseClient = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
-      {
-        global: {
-          headers: { Authorization: req.headers.get('Authorization')! },
-        },
-      }
-    );
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    const supabase = createClient(supabaseUrl, supabaseKey);
 
-    const { data: { user }, error: userError } = await supabaseClient.auth.getUser();
-    if (userError || !user) {
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) {
+      throw new Error('Missing authorization header');
+    }
+
+    const token = authHeader.replace('Bearer ', '');
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+    
+    if (authError || !user) {
       throw new Error('Unauthorized');
     }
 
-    const { task_id, options }: { task_id: string; options: OptimizationOptions } = await req.json();
+    const { task_id, options = {} } = await req.json();
 
-    if (!task_id || !options) {
-      throw new Error('task_id and options are required');
+    if (!task_id) {
+      throw new Error('task_id is required');
     }
 
-    console.log(`Starting optimization for task: ${task_id}`);
+    console.log('Starting optimization for task:', task_id);
 
-    // Get audit results
-    const { data: auditResult, error: auditError } = await supabaseClient
+    // Verify audit exists and is completed
+    const { data: auditResult, error: auditError } = await supabase
       .from('audit_results')
-      .select('audit_data')
+      .select('id, page_count')
       .eq('task_id', task_id)
       .single();
 
     if (auditError || !auditResult) {
-      throw new Error('Audit results not found');
+      throw new Error('Audit not found or not completed');
     }
 
     // Create optimization job
-    const { data: optimizationJob, error: jobError } = await supabaseClient
+    const { data: optimizationJob, error: createError } = await supabase
       .from('optimization_jobs')
       .insert({
-        task_id,
         user_id: user.id,
-        status: 'running',
+        task_id,
+        status: 'queued',
         options,
-        result_data: {},
         cost: 0,
       })
       .select()
       .single();
 
-    if (jobError) {
-      throw jobError;
+    if (createError || !optimizationJob) {
+      throw new Error('Failed to create optimization job');
     }
 
-    // Start background optimization process
-    // This would be async - for now we'll mark it as completed
-    const optimizationResults: any = {};
+    console.log('Created optimization job:', optimizationJob.id);
 
-    if (options.fixMeta) {
-      optimizationResults.meta_fixed = true;
-    }
-
-    if (options.fixHeadings) {
-      optimizationResults.headings_fixed = true;
-    }
-
-    if (options.fixImages) {
-      optimizationResults.images_fixed = true;
-    }
-
-    if (options.generateSitemap) {
-      optimizationResults.sitemap_generated = true;
-    }
-
-    if (options.optimizeContentSeo) {
-      optimizationResults.content_optimized = true;
-    }
-
-    // Update job with results
-    await supabaseClient
-      .from('optimization_jobs')
-      .update({
-        status: 'completed',
-        result_data: optimizationResults,
+    // Invoke optimization processor asynchronously
+    const processorUrl = `${supabaseUrl}/functions/v1/optimization-processor`;
+    
+    fetch(processorUrl, {
+      method: 'POST',
+      headers: {
+        'Authorization': authHeader,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        optimization_id: optimizationJob.id,
+        task_id,
+        options
       })
-      .eq('id', optimizationJob.id);
+    }).catch(error => {
+      console.error('Failed to invoke optimization processor:', error);
+    });
 
-    // Log API call
-    await supabaseClient.from('api_logs').insert({
-      user_id: user.id,
+    // Log API usage
+    await supabase.from('api_logs').insert({
       function_name: 'optimization-start',
+      user_id: user.id,
       request_data: { task_id, options },
-      response_data: { success: true, optimization_id: optimizationJob.id },
+      response_data: { optimization_id: optimizationJob.id },
       status_code: 200,
-      duration_ms: 0,
+      duration_ms: 0
     });
 
     return new Response(
       JSON.stringify({
         success: true,
         optimization_id: optimizationJob.id,
-        message: 'Optimization started successfully',
+        status: 'queued',
+        message: 'Optimization started'
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -127,16 +117,15 @@ serve(async (req) => {
       }
     );
   } catch (error) {
-    console.error('Error in optimization-start:', error);
+    console.error('Optimization start error:', error);
     
     return new Response(
       JSON.stringify({
-        success: false,
-        error: error.message,
+        error: error instanceof Error ? error.message : 'Unknown error'
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: error.message === 'Unauthorized' ? 401 : 500,
+        status: 500,
       }
     );
   }
