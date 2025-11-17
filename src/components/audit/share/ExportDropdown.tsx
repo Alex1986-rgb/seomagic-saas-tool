@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Download } from 'lucide-react';
+import { Download, FileText, Files } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { 
   DropdownMenu,
@@ -8,7 +8,9 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
+  DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { AuditData, AuditHistoryItem } from '@/types/audit';
 import { OptimizationItem } from '@/features/audit/types/optimization-types';
 import { 
@@ -18,8 +20,11 @@ import {
   ExportHistoryPDF,
   ExportHTML,
   ExportSitemap,
-  ExportErrorReport
+  ExportErrorReport,
+  ExportCrawledPages
 } from './export-actions';
+import { CrawledPagesViewer } from './viewers/CrawledPagesViewer';
+import { AuditFilesViewer } from './viewers/AuditFilesViewer';
 
 interface ExportDropdownProps {
   auditData?: AuditData;
@@ -27,6 +32,7 @@ interface ExportDropdownProps {
   historyItems?: AuditHistoryItem[];
   urls?: string[];
   taskId?: string | null;
+  auditId?: string;
   optimizationItems?: OptimizationItem[];
   optimizationCost?: number;
   pageStats?: any;
@@ -38,11 +44,14 @@ const ExportDropdown: React.FC<ExportDropdownProps> = ({
   historyItems,
   urls,
   taskId,
+  auditId,
   optimizationItems,
   optimizationCost,
   pageStats
 }) => {
   const [isExporting, setIsExporting] = useState<string | null>(null);
+  const [showCrawledPages, setShowCrawledPages] = useState(false);
+  const [showGeneratedFiles, setShowGeneratedFiles] = useState(false);
   
   return (
     <DropdownMenu>
@@ -119,7 +128,47 @@ const ExportDropdown: React.FC<ExportDropdownProps> = ({
           setIsExporting={setIsExporting}
           taskId={taskId}
         />
+        
+        {auditId && (
+          <>
+            <DropdownMenuSeparator />
+            <DropdownMenuLabel>Собранные данные</DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            
+            <DropdownMenuItem onClick={() => setShowCrawledPages(true)}>
+              <FileText className="mr-2 h-4 w-4" />
+              Просмотр HTML страниц
+            </DropdownMenuItem>
+            
+            <ExportCrawledPages
+              auditId={auditId}
+              isExporting={isExporting}
+              setIsExporting={setIsExporting}
+            />
+            
+            <DropdownMenuItem onClick={() => setShowGeneratedFiles(true)}>
+              <Files className="mr-2 h-4 w-4" />
+              Сгенерированные файлы
+            </DropdownMenuItem>
+          </>
+        )}
       </DropdownMenuContent>
+      
+      {auditId && (
+        <>
+          <Dialog open={showCrawledPages} onOpenChange={setShowCrawledPages}>
+            <DialogContent className="max-w-5xl">
+              <CrawledPagesViewer auditId={auditId} />
+            </DialogContent>
+          </Dialog>
+          
+          <Dialog open={showGeneratedFiles} onOpenChange={setShowGeneratedFiles}>
+            <DialogContent className="max-w-4xl">
+              <AuditFilesViewer auditId={auditId} />
+            </DialogContent>
+          </Dialog>
+        </>
+      )}
     </DropdownMenu>
   );
 };

@@ -149,6 +149,7 @@ const AuditShareResults: React.FC<AuditShareResultsProps> = ({
           historyItems={historyItems}
           urls={urls}
           taskId={taskId}
+          auditId={auditId}
           optimizationItems={optimizationItems}
           optimizationCost={optimizationCost}
           pageStats={pageStats}
