@@ -1,38 +1,43 @@
 
 import { useState } from 'react';
 import { useToast } from "@/hooks/use-toast";
-import { seoApiService } from '@/api/seoApiService';
+import { auditService } from '@/modules/audit';
 import { ScanDetails } from '@/types/api';
 
 export const useScanAPI = (url: string) => {
   const { toast } = useToast();
-  const [taskId, setTaskId] = useState<string | null>(seoApiService.getTaskIdForUrl(url));
+  const [taskId, setTaskId] = useState<string | null>(null);
   const [isPolling, setIsPolling] = useState<boolean>(false);
   const [scanPollingInterval, setScanPollingInterval] = useState<NodeJS.Timeout | null>(null);
 
   /**
-   * Start a website scan
+   * Start a website scan using new audit module
    */
   const startBackendScan = async (deepScan = false) => {
     try {
       const maxPages = deepScan ? 500000 : 10000;
+      const type = deepScan ? 'deep' : 'quick';
       
-      const response = await seoApiService.startCrawl(url, maxPages);
-      setTaskId(response.task_id);
+      const response = await auditService.startAudit(url, { maxPages, type });
       
-      setIsPolling(true);
-      
-      if (scanPollingInterval) {
-        clearInterval(scanPollingInterval);
+      if (response.success && response.task_id) {
+        setTaskId(response.task_id);
+        setIsPolling(true);
+        
+        if (scanPollingInterval) {
+          clearInterval(scanPollingInterval);
+        }
+        
+        return response.task_id;
+      } else {
+        throw new Error(response.message || 'Failed to start audit');
       }
-      
-      return response.task_id;
     } catch (error) {
       setIsPolling(false);
       
       toast({
         title: "Ошибка запуска сканирования",
-        description: "Не удалось запустить сканирование сайта",
+        description: error instanceof Error ? error.message : "Не удалось запустить сканирование сайта",
         variant: "destructive"
       });
       
@@ -42,7 +47,7 @@ export const useScanAPI = (url: string) => {
   };
 
   /**
-   * Set up polling for scan status
+   * Set up polling for scan status using new audit module
    */
   const setupPolling = (
     taskId: string, 
@@ -56,13 +61,13 @@ export const useScanAPI = (url: string) => {
     
     const intervalId = setInterval(async () => {
       try {
-        const statusResponse = await seoApiService.getStatus(taskId);
+        const statusResponse = await auditService.getAuditStatus(taskId);
         
         const currentScanDetails: ScanDetails = {
-          current_url: statusResponse.status === 'in_progress' ? `Scanning ${url}...` : '',
+          current_url: statusResponse.current_url || (statusResponse.status === 'scanning' ? `Scanning ${url}...` : ''),
           pages_scanned: statusResponse.pages_scanned || 0,
           estimated_pages: statusResponse.total_pages || 0,
-          stage: statusResponse.status
+          stage: statusResponse.stage || statusResponse.status
         };
         
         onStatusUpdate(currentScanDetails);
@@ -73,7 +78,7 @@ export const useScanAPI = (url: string) => {
           onComplete(statusResponse);
         }
         
-        if (statusResponse.status === 'failed') {
+        if (statusResponse.status === 'failed' || statusResponse.error) {
           setIsPolling(false);
           clearInterval(intervalId);
           
@@ -89,13 +94,13 @@ export const useScanAPI = (url: string) => {
   };
 
   /**
-   * Cancel current scan
+   * Cancel current scan using new audit module
    */
   const cancelScan = async () => {
     if (!taskId) return { success: false };
     
     try {
-      await seoApiService.cancelScan(taskId);
+      await auditService.cancelAudit(taskId);
       
       if (scanPollingInterval) {
         clearInterval(scanPollingInterval);

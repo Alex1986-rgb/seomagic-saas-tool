@@ -3,6 +3,7 @@ import React, { createContext, useContext, useState, useCallback, ReactNode } fr
 import { AuditDataProvider, useAuditDataContext } from './AuditDataContext';
 import { ScanProvider, useScanContext } from './ScanContext';
 import { OptimizationProvider, useOptimizationContext } from './OptimizationContext';
+import { AuditModuleProvider, useAuditModuleContext } from './AuditModuleContext';
 
 // Define the context type (now much smaller, mostly just combining the other contexts)
 interface AuditContextType {
@@ -33,7 +34,9 @@ export const AuditProvider: React.FC<{ children: ReactNode; initialUrl?: string 
       <AuditDataProvider url={url}>
         <ScanProvider url={url}>
           <OptimizationProvider taskId={useScanContext().taskId}>
-            {children}
+            <AuditModuleProvider>
+              {children}
+            </AuditModuleProvider>
           </OptimizationProvider>
         </ScanProvider>
       </AuditDataProvider>
@@ -47,6 +50,7 @@ export const useAuditContext = () => {
   const auditDataContext = useAuditDataContext();
   const scanContext = useScanContext();
   const optimizationContext = useOptimizationContext();
+  const moduleContext = useAuditModuleContext();
   
   if (auditContext === undefined) {
     throw new Error('useAuditContext must be used within an AuditProvider');
@@ -87,6 +91,29 @@ export const useAuditContext = () => {
     contentPrompt: optimizationContext.contentPrompt,
     setContentOptimizationPrompt: optimizationContext.setContentOptimizationPrompt,
     optimizeSiteContent: (prompt: string) => optimizationContext.optimizeSiteContent(scanContext.taskId || '', prompt),
-    downloadOptimizedSite: () => optimizationContext.downloadOptimizedSite(scanContext.taskId || '')
+    downloadOptimizedSite: () => optimizationContext.downloadOptimizedSite(scanContext.taskId || ''),
+    
+    // From AuditModuleContext (new modular architecture)
+    moduleContext: {
+      isStartingAudit: moduleContext.isStartingAudit,
+      startAuditNew: moduleContext.startAudit,
+      cancelAuditNew: moduleContext.cancelAudit,
+      currentTaskId: moduleContext.currentTaskId,
+      auditStatus: moduleContext.auditStatus,
+      isPollingStatus: moduleContext.isPollingStatus,
+      startPolling: moduleContext.startPolling,
+      stopPolling: moduleContext.stopPolling,
+      audits: moduleContext.audits,
+      isLoadingAudits: moduleContext.isLoadingAudits,
+      auditsError: moduleContext.auditsError,
+      refetchAudits: moduleContext.refetchAudits,
+      isOptimizing: moduleContext.isOptimizing,
+      optimizationId: moduleContext.optimizationId,
+      startOptimizationNew: moduleContext.startOptimization,
+      reports: moduleContext.reports,
+      isLoadingReports: moduleContext.isLoadingReports,
+      reportsError: moduleContext.reportsError,
+      refetchReports: moduleContext.refetchReports
+    }
   };
 };
