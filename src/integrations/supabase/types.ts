@@ -14,6 +14,232 @@ export type Database = {
   }
   public: {
     Tables: {
+      api_logs: {
+        Row: {
+          created_at: string | null
+          duration_ms: number | null
+          function_name: string
+          id: string
+          request_data: Json | null
+          response_data: Json | null
+          status_code: number | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          duration_ms?: number | null
+          function_name: string
+          id?: string
+          request_data?: Json | null
+          response_data?: Json | null
+          status_code?: number | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          duration_ms?: number | null
+          function_name?: string
+          id?: string
+          request_data?: Json | null
+          response_data?: Json | null
+          status_code?: number | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      audit_results: {
+        Row: {
+          audit_data: Json | null
+          audit_id: string | null
+          created_at: string | null
+          id: string
+          issues_count: number | null
+          page_count: number | null
+          score: number | null
+          task_id: string | null
+          user_id: string
+        }
+        Insert: {
+          audit_data?: Json | null
+          audit_id?: string | null
+          created_at?: string | null
+          id?: string
+          issues_count?: number | null
+          page_count?: number | null
+          score?: number | null
+          task_id?: string | null
+          user_id: string
+        }
+        Update: {
+          audit_data?: Json | null
+          audit_id?: string | null
+          created_at?: string | null
+          id?: string
+          issues_count?: number | null
+          page_count?: number | null
+          score?: number | null
+          task_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "audit_results_audit_id_fkey"
+            columns: ["audit_id"]
+            isOneToOne: false
+            referencedRelation: "audits"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "audit_results_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "audit_tasks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      audit_tasks: {
+        Row: {
+          audit_id: string | null
+          created_at: string | null
+          current_url: string | null
+          error_message: string | null
+          estimated_pages: number | null
+          id: string
+          pages_scanned: number | null
+          progress: number | null
+          stage: string | null
+          status: string
+          task_type: string | null
+          updated_at: string | null
+          url: string
+          user_id: string
+        }
+        Insert: {
+          audit_id?: string | null
+          created_at?: string | null
+          current_url?: string | null
+          error_message?: string | null
+          estimated_pages?: number | null
+          id?: string
+          pages_scanned?: number | null
+          progress?: number | null
+          stage?: string | null
+          status?: string
+          task_type?: string | null
+          updated_at?: string | null
+          url: string
+          user_id: string
+        }
+        Update: {
+          audit_id?: string | null
+          created_at?: string | null
+          current_url?: string | null
+          error_message?: string | null
+          estimated_pages?: number | null
+          id?: string
+          pages_scanned?: number | null
+          progress?: number | null
+          stage?: string | null
+          status?: string
+          task_type?: string | null
+          updated_at?: string | null
+          url?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "audit_tasks_audit_id_fkey"
+            columns: ["audit_id"]
+            isOneToOne: false
+            referencedRelation: "audits"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      audits: {
+        Row: {
+          completed_at: string | null
+          created_at: string | null
+          error_message: string | null
+          id: string
+          pages_scanned: number | null
+          seo_score: number | null
+          status: string
+          total_pages: number | null
+          url: string
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string | null
+          error_message?: string | null
+          id?: string
+          pages_scanned?: number | null
+          seo_score?: number | null
+          status?: string
+          total_pages?: number | null
+          url: string
+          user_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string | null
+          error_message?: string | null
+          id?: string
+          pages_scanned?: number | null
+          seo_score?: number | null
+          status?: string
+          total_pages?: number | null
+          url?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      optimization_jobs: {
+        Row: {
+          cost: number | null
+          created_at: string | null
+          id: string
+          options: Json | null
+          result_data: Json | null
+          status: string
+          task_id: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          cost?: number | null
+          created_at?: string | null
+          id?: string
+          options?: Json | null
+          result_data?: Json | null
+          status?: string
+          task_id?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          cost?: number | null
+          created_at?: string | null
+          id?: string
+          options?: Json | null
+          result_data?: Json | null
+          status?: string
+          task_id?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "optimization_jobs_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "audit_tasks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       page_analysis: {
         Row: {
           audit_id: string | null
