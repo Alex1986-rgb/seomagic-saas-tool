@@ -2,6 +2,7 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { AuditData } from '@/types/audit';
 import { OptimizationItem } from '@/features/audit/types/optimization-types';
+import { PdfCustomizationOptions } from '@/components/audit/share/pdf-customization';
 import { addPaginationFooters, addTimestamp, extendJsPDF, addCoverPage, addTableOfContents, generateTocSections } from './helpers/index';
 import { pdfColors, getScoreColorRGB } from './styles/colors';
 import { generatePieChart, generateBarChart, generateScoreGauge, generateRadarChart } from './helpers/charts';
@@ -20,6 +21,7 @@ export interface GenerateAuditPdfOptions {
   optimizationCost?: number;
   optimizationItems?: OptimizationItem[];
   date?: string;
+  customization?: PdfCustomizationOptions;
 }
 
 interface AuditIssue {
@@ -40,8 +42,22 @@ export const generateAuditPdf = async (options: GenerateAuditPdfOptions): Promis
     pageStats, 
     optimizationCost, 
     optimizationItems, 
-    date = auditData.date
+    date = auditData.date,
+    customization
   } = options;
+  
+  // Default customization options
+  const opts = customization || {
+    includeCoverPage: true,
+    includeTableOfContents: true,
+    includeSummary: true,
+    includeSeoAnalysis: true,
+    includeTechnicalAnalysis: true,
+    includePageAnalysis: true,
+    includeRecommendations: true,
+    includeOptimizations: true,
+    reportTitle: 'SEO АУДИТ САЙТА',
+  };
   
   const doc = new jsPDF({
     orientation: 'portrait',
@@ -62,34 +78,42 @@ export const generateAuditPdf = async (options: GenerateAuditPdfOptions): Promis
                      (auditData.issues.important?.length || 0) + 
                      (auditData.issues.opportunities?.length || 0);
   
-  addCoverPage(doc, {
-    title: 'SEO АУДИТ САЙТА',
-    subtitle: 'Полный анализ и рекомендации по оптимизации',
-    url: url,
-    date: date,
-    overallScore: auditData.score,
-    statistics: {
-      pagesScanned: auditData.pageCount || 1,
-      issuesFound: totalIssues,
-      criticalIssues: auditData.issues.critical?.length || 0
-    },
-    qrCodeUrl: url,
-    companyInfo: {
-      name: 'SEO Market',
-      website: 'seomarket.com'
-    }
-  });
+  if (opts.includeCoverPage) {
+    addCoverPage(doc, {
+      title: opts.reportTitle || 'SEO АУДИТ САЙТА',
+      subtitle: opts.companyName ? opts.companyName : 'Полный анализ и рекомендации по оптимизации',
+      url: url,
+      date: date,
+      overallScore: auditData.score,
+      statistics: {
+        pagesScanned: auditData.pageCount || 1,
+        issuesFound: totalIssues,
+        criticalIssues: auditData.issues.critical?.length || 0
+      },
+      qrCodeUrl: url,
+      companyInfo: opts.companyName ? {
+        name: opts.companyName,
+        website: ''
+      } : {
+        name: 'SEO Market',
+        website: 'seomarket.com'
+      }
+    });
+  }
 
   // === ОГЛАВЛЕНИЕ ===
-  doc.addPage();
-  const tocSections = generateTocSections();
-  addTableOfContents(doc, {
-    title: 'Оглавление',
-    sections: tocSections
-  });
+  if (opts.includeTableOfContents) {
+    doc.addPage();
+    const tocSections = generateTocSections();
+    addTableOfContents(doc, {
+      title: 'Оглавление',
+      sections: tocSections
+    });
+  }
 
   // === ИСПОЛНИТЕЛЬНОЕ РЕЗЮМЕ ===
-  doc.addPage();
+  if (opts.includeSummary) {
+    doc.addPage();
   
   doc.setFillColor(...pdfColors.dark);
   doc.rect(0, 0, 210, 20, 'F');
@@ -135,9 +159,11 @@ export const generateAuditPdf = async (options: GenerateAuditPdfOptions): Promis
   
   const categoryScoresDetailed = createCategoryScoresFromAudit(auditData);
   drawAllCategoryScores(doc, categoryScoresDetailed, 30);
+  }
 
   // === SEO АНАЛИЗ ===
-  doc.addPage();
+  if (opts.includeSeoAnalysis) {
+    doc.addPage();
   
   // Подготовка данных для SEO анализа из auditData
   const seoAnalysisData = {
@@ -172,9 +198,11 @@ export const generateAuditPdf = async (options: GenerateAuditPdfOptions): Promis
   };
   
   addSeoAnalysisSection(doc, seoAnalysisData, 20);
+  }
 
   // === ТЕХНИЧЕСКИЙ АНАЛИЗ ===
-  doc.addPage();
+  if (opts.includeTechnicalAnalysis) {
+    doc.addPage();
   
   // Подготовка данных для технического анализа
   const technicalAnalysisData = {
@@ -218,9 +246,11 @@ export const generateAuditPdf = async (options: GenerateAuditPdfOptions): Promis
   };
   
   addTechnicalAnalysisSection(doc, technicalAnalysisData, 20);
+  }
 
   // === РЕКОМЕНДАЦИИ И ПЛАН ДЕЙСТВИЙ ===
-  doc.addPage();
+  if (opts.includeRecommendations) {
+    doc.addPage();
   
   // Подготовка рекомендаций из данных аудита
   const recommendationsData = {
@@ -230,9 +260,10 @@ export const generateAuditPdf = async (options: GenerateAuditPdfOptions): Promis
   };
   
   addRecommendationsSection(doc, recommendationsData, 20);
+  }
 
   // === СМЕТА ОПТИМИЗАЦИИ ===
-  if (optimizationItems && optimizationItems.length > 0) {
+  if (opts.includeOptimizations && optimizationItems && optimizationItems.length > 0) {
     doc.addPage();
     
     const pricingData = {
@@ -248,7 +279,7 @@ export const generateAuditPdf = async (options: GenerateAuditPdfOptions): Promis
   }
 
   // === АНАЛИЗ СТРАНИЦ ===
-  if (auditData.pageCount && auditData.pageCount > 1) {
+  if (opts.includePageAnalysis && auditData.pageCount && auditData.pageCount > 1) {
     doc.addPage();
     
     // Подготовка данных для анализа страниц
