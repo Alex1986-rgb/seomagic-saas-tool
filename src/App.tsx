@@ -64,6 +64,7 @@ import MobileOptimization from './pages/features/MobileOptimization';
 import OptimizationDemo from './pages/OptimizationDemo';
 import AllPages from './pages/AllPages';
 import SeoOptimizationPage from './pages/SeoOptimizationPage';
+import OptimizationTest from './pages/OptimizationTest';
 
 // Admin Routes
 import AdminRoutes from './routes/AdminRoutes';
@@ -152,6 +153,7 @@ function App() {
                     
                     {/* Additional pages */}
                     <Route path="/optimization-demo" element={<OptimizationDemo />} />
+                    <Route path="/optimization-test" element={<OptimizationTest />} />
                     <Route path="/all-pages" element={<AllPages />} />
                     <Route path="/pages" element={<AllPages />} />
                     <Route path="/seo-optimization" element={<SeoOptimizationPage />} />
