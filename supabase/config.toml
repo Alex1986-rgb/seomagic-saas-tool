@@ -35,3 +35,6 @@ verify_jwt = true
 
 [functions.health-check]
 verify_jwt = false
+
+[functions.audit-processor]
+verify_jwt = false
