@@ -33,9 +33,9 @@ serve(async (req) => {
       throw new Error('task_id and prompt are required');
     }
 
-    const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY');
-    if (!OPENAI_API_KEY) {
-      throw new Error('OPENAI_API_KEY not configured');
+    const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
+    if (!LOVABLE_API_KEY) {
+      throw new Error('LOVABLE_API_KEY not configured');
     }
 
     console.log(`Optimizing content for task: ${task_id}`);
@@ -51,15 +51,15 @@ serve(async (req) => {
       throw new Error('Audit results not found');
     }
 
-    // Call OpenAI API for content optimization
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    // Call Lovable AI Gateway for content optimization
+    const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${OPENAI_API_KEY}`,
+        'Authorization': `Bearer ${LOVABLE_API_KEY}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-5-nano-2025-08-07',
+        model: 'google/gemini-2.5-flash',
         messages: [
           {
             role: 'system',
@@ -70,14 +70,20 @@ serve(async (req) => {
             content: `${prompt}\n\nAudit data: ${JSON.stringify(auditResult.audit_data)}`,
           },
         ],
-        max_completion_tokens: 2000,
+        max_tokens: 2000,
       }),
     });
 
     if (!response.ok) {
+      if (response.status === 429) {
+        throw new Error('Rate limits exceeded, please try again later.');
+      }
+      if (response.status === 402) {
+        throw new Error('Payment required, please add funds to your Lovable AI workspace.');
+      }
       const errorData = await response.text();
-      console.error('OpenAI API error:', errorData);
-      throw new Error(`OpenAI API error: ${response.status}`);
+      console.error('Lovable AI error:', errorData);
+      throw new Error(`Lovable AI error: ${response.status}`);
     }
 
     const data = await response.json();

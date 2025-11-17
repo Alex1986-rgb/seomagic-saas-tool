@@ -20,7 +20,6 @@ export const useSeoOptimization = () => {
   const [taskId, setTaskId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isValid, setIsValid] = useState(false);
-  const [openaiKey, setOpenaiKey] = useState("");
   const [task, setTask] = useState<any>(null);
   const [advancedOptions, setAdvancedOptions] = useState<AdvancedOptions>({
     maxPages: 10000,
@@ -50,14 +49,6 @@ export const useSeoOptimization = () => {
     validateUrl(value);
   };
 
-  const handleApiKeyChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    setOpenaiKey(value);
-    if (value.startsWith("sk-")) {
-      openaiService.setApiKey(value);
-    }
-  };
-
   const toggleOption = (option: keyof AdvancedOptions) => {
     setAdvancedOptions(prev => ({
       ...prev,
@@ -76,22 +67,8 @@ export const useSeoOptimization = () => {
       return;
     }
 
-    const apiKey = openaiService.getApiKey() || openaiKey;
-    if (!apiKey || !apiKey.startsWith("sk-")) {
-      toast({
-        title: "Требуется API ключ OpenAI",
-        description: "Пожалуйста, введите корректный API ключ OpenAI в настройках системы или в форме",
-        variant: "destructive",
-      });
-      return;
-    }
-
     try {
       setIsLoading(true);
-
-      if (openaiKey && openaiKey.startsWith("sk-")) {
-        openaiService.setApiKey(openaiKey);
-      }
 
       const aiSettings = openaiService.getSettings();
 
@@ -177,11 +154,9 @@ export const useSeoOptimization = () => {
     taskId,
     isLoading,
     isValid,
-    openaiKey,
     task,
     advancedOptions,
     handleUrlChange,
-    handleApiKeyChange,
     toggleOption,
     startOptimization,
     setAdvancedOptions,
