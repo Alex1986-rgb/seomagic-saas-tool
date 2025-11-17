@@ -65,6 +65,8 @@ import OptimizationDemo from './pages/OptimizationDemo';
 import AllPages from './pages/AllPages';
 import SeoOptimizationPage from './pages/SeoOptimizationPage';
 import OptimizationTest from './pages/OptimizationTest';
+import AuditsHistory from './pages/AuditsHistory';
+import OptimizationsHistory from './pages/OptimizationsHistory';
 
 // Admin Routes
 import AdminRoutes from './routes/AdminRoutes';
@@ -154,6 +156,7 @@ function App() {
                     {/* Additional pages */}
                     <Route path="/optimization-demo" element={<OptimizationDemo />} />
                     <Route path="/optimization-test" element={<OptimizationTest />} />
+                    <Route path="/optimizations" element={<OptimizationsHistory />} />
                     <Route path="/all-pages" element={<AllPages />} />
                     <Route path="/pages" element={<AllPages />} />
                     <Route path="/seo-optimization" element={<SeoOptimizationPage />} />
@@ -170,6 +173,7 @@ function App() {
                     <Route path="/reports" element={<Reports />} />
                     <Route path="/settings" element={<Settings />} />
                     <Route path="/audit-history" element={<AuditHistory />} />
+                    <Route path="/audits" element={<AuditsHistory />} />
                     <Route path="/client-dashboard" element={<ClientDashboard />} />
                     <Route path="/admin-dashboard" element={<AdminDashboard />} />
                     
