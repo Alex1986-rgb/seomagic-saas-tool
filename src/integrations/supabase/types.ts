@@ -14,13 +14,132 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      page_analysis: {
+        Row: {
+          analysis_data: Json | null
+          created_at: string | null
+          id: string
+          score: number | null
+          url: string
+          user_id: string | null
+        }
+        Insert: {
+          analysis_data?: Json | null
+          created_at?: string | null
+          id?: string
+          score?: number | null
+          url: string
+          user_id?: string | null
+        }
+        Update: {
+          analysis_data?: Json | null
+          created_at?: string | null
+          id?: string
+          score?: number | null
+          url?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      pdf_reports: {
+        Row: {
+          company_name: string | null
+          created_at: string | null
+          downloaded_count: number | null
+          file_path: string
+          file_size: number | null
+          id: string
+          last_downloaded_at: string | null
+          report_title: string | null
+          sections_included: Json | null
+          task_id: string | null
+          url: string
+          user_id: string | null
+        }
+        Insert: {
+          company_name?: string | null
+          created_at?: string | null
+          downloaded_count?: number | null
+          file_path: string
+          file_size?: number | null
+          id?: string
+          last_downloaded_at?: string | null
+          report_title?: string | null
+          sections_included?: Json | null
+          task_id?: string | null
+          url: string
+          user_id?: string | null
+        }
+        Update: {
+          company_name?: string | null
+          created_at?: string | null
+          downloaded_count?: number | null
+          file_path?: string
+          file_size?: number | null
+          id?: string
+          last_downloaded_at?: string | null
+          report_title?: string | null
+          sections_included?: Json | null
+          task_id?: string | null
+          url?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string | null
+          email: string | null
+          full_name: string | null
+          id: string
+          updated_at: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string | null
+          email?: string | null
+          full_name?: string | null
+          id: string
+          updated_at?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string | null
+          email?: string | null
+          full_name?: string | null
+          id?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          created_at: string | null
+          id: string
+          role: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          role: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          role?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      clean_old_pdf_reports: { Args: never; Returns: undefined }
     }
     Enums: {
       [_ in never]: never
