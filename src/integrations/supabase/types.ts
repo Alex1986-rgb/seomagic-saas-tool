@@ -47,6 +47,44 @@ export type Database = {
         }
         Relationships: []
       }
+      audit_files: {
+        Row: {
+          audit_id: string | null
+          created_at: string | null
+          file_size: number | null
+          file_type: string
+          file_url: string
+          id: string
+          user_id: string | null
+        }
+        Insert: {
+          audit_id?: string | null
+          created_at?: string | null
+          file_size?: number | null
+          file_type: string
+          file_url: string
+          id?: string
+          user_id?: string | null
+        }
+        Update: {
+          audit_id?: string | null
+          created_at?: string | null
+          file_size?: number | null
+          file_type?: string
+          file_url?: string
+          id?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "audit_files_audit_id_fkey"
+            columns: ["audit_id"]
+            isOneToOne: false
+            referencedRelation: "audits"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       audit_results: {
         Row: {
           audit_data: Json | null
@@ -195,6 +233,47 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      crawled_pages: {
+        Row: {
+          audit_id: string | null
+          crawled_at: string | null
+          headers: Json | null
+          html: string | null
+          id: string
+          status_code: number | null
+          url: string
+          user_id: string | null
+        }
+        Insert: {
+          audit_id?: string | null
+          crawled_at?: string | null
+          headers?: Json | null
+          html?: string | null
+          id?: string
+          status_code?: number | null
+          url: string
+          user_id?: string | null
+        }
+        Update: {
+          audit_id?: string | null
+          crawled_at?: string | null
+          headers?: Json | null
+          html?: string | null
+          id?: string
+          status_code?: number | null
+          url?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crawled_pages_audit_id_fkey"
+            columns: ["audit_id"]
+            isOneToOne: false
+            referencedRelation: "audits"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       optimization_jobs: {
         Row: {

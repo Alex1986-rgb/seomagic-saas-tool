@@ -7,14 +7,27 @@ export class AuditService {
    */
   async startAudit(url: string, options: StartAuditOptions = {}) {
     try {
+      console.log('🚀 Starting audit:', { url, options });
+      
       const { data, error } = await supabase.functions.invoke('audit-start', {
         body: { url, options }
       });
 
-      if (error) throw error;
+      console.log('Edge function response:', { data, error });
+
+      if (error) {
+        console.error('❌ Edge function error:', error);
+        throw new Error(error.message || 'Failed to start audit');
+      }
+      
+      if (!data?.task_id) {
+        throw new Error('No task_id returned from audit service');
+      }
+      
+      console.log('✅ Audit started successfully, task_id:', data.task_id);
       return data;
     } catch (error) {
-      console.error('Error starting audit:', error);
+      console.error('❌ Error starting audit:', error);
       throw error;
     }
   }

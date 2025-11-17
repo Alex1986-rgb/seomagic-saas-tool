@@ -110,23 +110,27 @@ const SiteAudit: React.FC = () => {
     
     try {
       const formattedUrl = url.startsWith('http') ? url : `https://${url}`;
-      const maxPages = type === 'quick' ? 10 : 100;
+      console.log(`🚀 Starting ${type} audit for:`, formattedUrl);
       
-      const result = await auditService.startAudit(formattedUrl, { maxPages, type });
+      const result = await auditService.startAudit(formattedUrl, {
+        maxPages: type === 'quick' ? 10 : 100,
+        type: type
+      });
       
-      if (result.success && result.task_id) {
-        localStorage.setItem(`task_id_${url}`, result.task_id);
-        
-        toast({
-          title: type === 'quick' ? "Быстрый аудит запущен" : "Глубокий аудит запущен",
-          description: `Начинается сканирование до ${maxPages} страниц`,
-        });
-        
-        // Reload to show audit results
-        window.location.reload();
-      } else {
-        throw new Error(result.message || 'Failed to start audit');
+      console.log('✅ Audit started successfully:', result);
+      
+      if (!result?.task_id) {
+        throw new Error('No task_id returned from audit service');
       }
+      
+      localStorage.setItem(`task_id_${url}`, result.task_id);
+      
+      toast({
+        title: "Аудит запущен",
+        description: `Сканирование ${type === 'quick' ? 'быстрого' : 'глубокого'} аудита начато. Task ID: ${result.task_id}`,
+      });
+      
+      window.location.reload();
     } catch (error) {
       console.error('Error starting audit:', error);
       toast({
