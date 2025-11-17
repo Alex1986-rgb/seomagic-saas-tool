@@ -7,6 +7,7 @@ import { generateAuditPdf } from '@/utils/pdf/auditPdf';
 import { AuditData } from '@/types/audit';
 import { OptimizationItem } from '@/features/audit/types/optimization-types';
 import { seoApiService } from '@/api/seoApiService';
+import { PdfCustomizationDialog, PdfCustomizationOptions } from '../pdf-customization';
 
 interface ExportPDFProps {
   auditData?: AuditData;
@@ -31,8 +32,9 @@ const ExportPDF: React.FC<ExportPDFProps> = ({
 }) => {
   const { toast } = useToast();
   const [progress, setProgress] = useState<string>('');
+  const [showCustomization, setShowCustomization] = useState(false);
   
-  const handleExportPDF = async () => {
+  const handleExportPDF = async (customOptions?: PdfCustomizationOptions) => {
     setIsExporting('pdf');
     setProgress('Инициализация...');
     
@@ -71,7 +73,8 @@ const ExportPDF: React.FC<ExportPDFProps> = ({
           optimizationCost,
           optimizationItems,
           pageStats,
-          date: new Date().toISOString()
+          date: new Date().toISOString(),
+          customization: customOptions
         });
         
         setProgress('Сохранение файла...');
@@ -117,22 +120,30 @@ const ExportPDF: React.FC<ExportPDFProps> = ({
   };
   
   return (
-    <DropdownMenuItem 
-      onClick={handleExportPDF}
-      disabled={isExporting !== null}
-    >
-      {isExporting === 'pdf' ? (
-        <>
-          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-          <span className="text-sm">{progress || 'Создание PDF...'}</span>
-        </>
-      ) : (
-        <>
-          <FileText className="mr-2 h-4 w-4" />
-          <span>Экспорт PDF</span>
-        </>
-      )}
-    </DropdownMenuItem>
+    <>
+      <DropdownMenuItem 
+        onClick={() => setShowCustomization(true)}
+        disabled={isExporting !== null}
+      >
+        {isExporting === 'pdf' ? (
+          <>
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            <span className="text-sm">{progress || 'Создание PDF...'}</span>
+          </>
+        ) : (
+          <>
+            <FileText className="mr-2 h-4 w-4" />
+            <span>Экспорт PDF</span>
+          </>
+        )}
+      </DropdownMenuItem>
+
+      <PdfCustomizationDialog
+        open={showCustomization}
+        onOpenChange={setShowCustomization}
+        onConfirm={handleExportPDF}
+      />
+    </>
   );
 };
 
