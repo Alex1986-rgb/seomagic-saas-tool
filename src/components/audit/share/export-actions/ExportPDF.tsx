@@ -8,6 +8,7 @@ import { AuditData } from '@/types/audit';
 import { OptimizationItem } from '@/features/audit/types/optimization-types';
 import { seoApiService } from '@/api/seoApiService';
 import { PdfCustomizationDialog, PdfCustomizationOptions } from '../pdf-customization';
+import { usePdfLocalStorage } from '@/hooks/usePdfLocalStorage';
 
 interface ExportPDFProps {
   auditData?: AuditData;
@@ -33,6 +34,7 @@ const ExportPDF: React.FC<ExportPDFProps> = ({
   const { toast } = useToast();
   const [progress, setProgress] = useState<string>('');
   const [showCustomization, setShowCustomization] = useState(false);
+  const { savePdfMetadata } = usePdfLocalStorage();
   
   const handleExportPDF = async (customOptions?: PdfCustomizationOptions) => {
     setIsExporting('pdf');
@@ -88,6 +90,16 @@ const ExportPDF: React.FC<ExportPDFProps> = ({
         link.click();
         document.body.removeChild(link);
         URL.revokeObjectURL(downloadUrl);
+        
+        // Save metadata to local history
+        await savePdfMetadata({
+          url,
+          taskId: taskId || undefined,
+          reportTitle: customOptions?.reportTitle || 'SEO Аудит сайта',
+          companyName: customOptions?.companyName,
+          sectionsIncluded: customOptions || {},
+          fileSize: pdfBlob.size
+        });
         
         toast({
           title: "PDF отчет готов!",
