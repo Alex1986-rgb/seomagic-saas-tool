@@ -1,10 +1,65 @@
 
 import jsPDF from 'jspdf';
+import QRCode from 'qrcode';
 
 /**
- * Adds a QR code to the specified page of the PDF document
- * This is a simplified implementation - in a real application, 
- * we would use a QR code generation library
+ * Generates a QR code as a data URL
+ */
+export async function generateQRCodeDataUrl(
+  data: string,
+  size: number = 150
+): Promise<string> {
+  try {
+    return await QRCode.toDataURL(data, {
+      width: size,
+      margin: 1,
+      errorCorrectionLevel: 'M',
+      color: {
+        dark: '#000000',
+        light: '#FFFFFF'
+      }
+    });
+  } catch (error) {
+    console.error('Error generating QR code:', error);
+    throw error;
+  }
+}
+
+/**
+ * Adds a QR code image to the PDF document
+ * The QR code should be pre-generated as a data URL
+ */
+export function addQRCodeImage(
+  doc: jsPDF,
+  qrCodeDataUrl: string,
+  x: number = 170,
+  y: number = 20,
+  size: number = 30
+): void {
+  try {
+    // Draw white background
+    doc.setFillColor(255, 255, 255);
+    doc.roundedRect(x - 2, y - 2, size + 4, size + 4, 2, 2, 'F');
+    
+    // Add QR code image to PDF
+    doc.addImage(qrCodeDataUrl, 'PNG', x, y, size, size);
+  } catch (error) {
+    console.error('Error adding QR code to PDF:', error);
+    
+    // Fallback: draw a simple placeholder
+    doc.setDrawColor(200, 200, 200);
+    doc.setFillColor(245, 245, 245);
+    doc.roundedRect(x, y, size, size, 2, 2, 'FD');
+    
+    doc.setFontSize(8);
+    doc.setTextColor(150, 150, 150);
+    doc.text('QR Code', x + size / 2, y + size / 2, { align: 'center' });
+  }
+}
+
+/**
+ * Legacy function that draws a placeholder QR code
+ * Use generateQRCodeDataUrl + addQRCodeImage for real QR codes
  */
 export function addQRCodeToPage(
   doc: jsPDF, 
@@ -58,3 +113,4 @@ export function addQRCodeToPage(
   doc.setTextColor(100, 100, 100);
   doc.text('Scan for report', x + size / 2, y + size + 8, { align: 'center' });
 }
+

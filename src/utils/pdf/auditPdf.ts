@@ -519,19 +519,33 @@ function prepareCriticalRecommendations(auditData: AuditData): Recommendation[] 
   const recommendations: Recommendation[] = [];
   
   if (auditData.issues.critical && auditData.issues.critical.length > 0) {
-    auditData.issues.critical.slice(0, 3).forEach((issue: any) => {
+    auditData.issues.critical.slice(0, 5).forEach((issue: any) => {
       const title = typeof issue === 'string' ? issue : issue.title || issue;
+      const description = typeof issue === 'object' && issue.description 
+        ? issue.description 
+        : 'Критическая проблема, требующая немедленного исправления';
+      
+      // Попытка найти дополнительную информацию из details
+      let affectedUrls: string[] = [];
+      let impact = 'Критическое влияние на SEO и ранжирование';
+      let solution = 'Требуется немедленное исправление';
+      
+      if (typeof issue === 'object') {
+        affectedUrls = issue.affectedUrls || [];
+        impact = issue.impact || impact;
+        solution = issue.solution || issue.recommendation || solution;
+      }
+      
       recommendations.push({
         title: title,
         priority: 'high',
-        description: typeof issue === 'object' && issue.description 
-          ? issue.description 
-          : 'Критическая проблема, требующая немедленного исправления',
-        impact: 'Значительное негативное влияние на ранжирование в поисковых системах и видимость сайта',
-        solution: 'Требуется срочное исправление данной проблемы специалистами',
-        expectedResult: 'Улучшение позиций в поисковой выдаче и увеличение органического трафика',
+        description: description,
+        impact: impact,
+        solution: solution,
+        expectedResult: 'Значительное улучшение SEO показателей и видимости в поисковых системах',
         timeframe: '1-2 недели',
-        cost: 15000
+        cost: 15000,
+        urls: affectedUrls.slice(0, 5)
       });
     });
   }
@@ -548,17 +562,30 @@ function prepareImportantRecommendations(auditData: AuditData): Recommendation[]
   if (auditData.issues.important && auditData.issues.important.length > 0) {
     auditData.issues.important.slice(0, 3).forEach((issue: any) => {
       const title = typeof issue === 'string' ? issue : issue.title || issue;
+      const description = typeof issue === 'object' && issue.description 
+        ? issue.description 
+        : 'Важная проблема, влияющая на эффективность SEO';
+      
+      let affectedUrls: string[] = [];
+      let impact = 'Среднее влияние на ранжирование и пользовательский опыт';
+      let solution = 'Рекомендуется исправить в течение месяца';
+      
+      if (typeof issue === 'object') {
+        affectedUrls = issue.affectedUrls || [];
+        impact = issue.impact || impact;
+        solution = issue.solution || issue.recommendation || solution;
+      }
+      
       recommendations.push({
         title: title,
         priority: 'medium',
-        description: typeof issue === 'object' && issue.description 
-          ? issue.description 
-          : 'Важная проблема, влияющая на эффективность SEO',
-        impact: 'Среднее влияние на ранжирование и пользовательский опыт',
-        solution: 'Рекомендуется исправить в течение месяца',
+        description: description,
+        impact: impact,
+        solution: solution,
         expectedResult: 'Повышение общего качества сайта и улучшение пользовательских метрик',
         timeframe: '2-4 недели',
-        cost: 8000
+        cost: 8000,
+        urls: affectedUrls.slice(0, 5)
       });
     });
   }
@@ -575,17 +602,30 @@ function prepareOpportunitiesRecommendations(auditData: AuditData): Recommendati
   if (auditData.issues.opportunities && auditData.issues.opportunities.length > 0) {
     auditData.issues.opportunities.slice(0, 3).forEach((issue: any) => {
       const title = typeof issue === 'string' ? issue : issue.title || issue;
+      const description = typeof issue === 'object' && issue.description 
+        ? issue.description 
+        : 'Возможность для улучшения и дальнейшей оптимизации';
+      
+      let affectedUrls: string[] = [];
+      let impact = 'Положительное влияние на долгосрочную стратегию SEO';
+      let solution = 'Рекомендуется внедрить для достижения максимальной эффективности';
+      
+      if (typeof issue === 'object') {
+        affectedUrls = issue.affectedUrls || [];
+        impact = issue.impact || impact;
+        solution = issue.solution || issue.recommendation || solution;
+      }
+      
       recommendations.push({
         title: title,
         priority: 'low',
-        description: typeof issue === 'object' && issue.description 
-          ? issue.description 
-          : 'Возможность для улучшения и дальнейшей оптимизации',
-        impact: 'Положительное влияние на долгосрочную стратегию SEO',
-        solution: 'Рекомендуется внедрить для достижения максимальной эффективности',
+        description: description,
+        impact: impact,
+        solution: solution,
         expectedResult: 'Дополнительное увеличение трафика и улучшение конверсии',
         timeframe: '1-2 месяца',
-        cost: 5000
+        cost: 5000,
+        urls: affectedUrls.slice(0, 5)
       });
     });
   }
