@@ -27,10 +27,9 @@ serve(async (req) => {
       throw new Error('Unauthorized');
     }
 
-    const url = new URL(req.url);
-    const taskId = url.searchParams.get('task_id');
+    const { task_id } = await req.json();
 
-    if (!taskId) {
+    if (!task_id) {
       throw new Error('task_id parameter is required');
     }
 
@@ -38,7 +37,7 @@ serve(async (req) => {
     const { data: task, error: taskError } = await supabaseClient
       .from('audit_tasks')
       .select('*')
-      .eq('id', taskId)
+      .eq('id', task_id)
       .eq('user_id', user.id)
       .single();
 
@@ -48,11 +47,11 @@ serve(async (req) => {
 
     // Get audit results if completed
     let auditData = null;
-    if (task.status === 'completed') {
+    if (task.status === 'completed' && task.audit_id) {
       const { data: result } = await supabaseClient
         .from('audit_results')
         .select('audit_data, score, page_count, issues_count')
-        .eq('task_id', taskId)
+        .eq('task_id', task_id)
         .single();
       
       auditData = result;
@@ -65,11 +64,13 @@ serve(async (req) => {
         url: task.url,
         status: task.status,
         task_type: task.task_type,
-        pages_scanned: task.pages_scanned,
+        pages_scanned: task.pages_scanned || 0,
+        total_pages: task.estimated_pages || 0,
         estimated_pages: task.estimated_pages,
-        current_url: task.current_url,
-        stage: task.stage,
-        progress: task.progress,
+        current_url: task.current_url || '',
+        stage: task.stage || task.status,
+        progress: task.progress || 0,
+        error: task.error_message || null,
         error_message: task.error_message,
         created_at: task.created_at,
         audit_data: auditData,

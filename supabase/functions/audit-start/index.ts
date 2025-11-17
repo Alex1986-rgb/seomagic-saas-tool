@@ -49,10 +49,28 @@ serve(async (req) => {
 
     console.log(`Starting ${taskType} audit for ${url}, max pages: ${maxPages}`);
 
-    // Create audit task
+    // Create audit record first
+    const { data: audit, error: auditError } = await supabaseClient
+      .from('audits')
+      .insert({
+        user_id: user.id,
+        url: url,
+        status: 'pending',
+        total_pages: maxPages,
+      })
+      .select()
+      .single();
+
+    if (auditError) {
+      console.error('Error creating audit:', auditError);
+      throw auditError;
+    }
+
+    // Create audit task linked to audit
     const { data: task, error: taskError } = await supabaseClient
       .from('audit_tasks')
       .insert({
+        audit_id: audit.id,
         user_id: user.id,
         url: url,
         status: 'queued',
@@ -68,6 +86,11 @@ serve(async (req) => {
       console.error('Error creating task:', taskError);
       throw taskError;
     }
+
+    // Trigger audit processor
+    await supabaseClient.functions.invoke('audit-processor', {
+      body: { task_id: task.id }
+    });
 
     // Log API call
     await supabaseClient.from('api_logs').insert({

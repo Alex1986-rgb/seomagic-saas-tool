@@ -35,18 +35,39 @@ serve(async (req) => {
 
     console.log(`Cancelling audit task: ${task_id}`);
 
+    // Get task to find audit_id
+    const { data: task, error: getError } = await supabaseClient
+      .from('audit_tasks')
+      .select('audit_id')
+      .eq('id', task_id)
+      .eq('user_id', user.id)
+      .single();
+
+    if (getError) {
+      throw getError;
+    }
+
     // Update task status to cancelled
     const { error: updateError } = await supabaseClient
       .from('audit_tasks')
       .update({
         status: 'cancelled',
         stage: 'cancelled',
+        error_message: 'Cancelled by user'
       })
       .eq('id', task_id)
       .eq('user_id', user.id);
 
     if (updateError) {
       throw updateError;
+    }
+
+    // Update audit status if exists
+    if (task?.audit_id) {
+      await supabaseClient
+        .from('audits')
+        .update({ status: 'failed' })
+        .eq('id', task.audit_id);
     }
 
     return new Response(
