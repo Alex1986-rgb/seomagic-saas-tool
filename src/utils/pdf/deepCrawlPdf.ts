@@ -46,13 +46,25 @@ export const generateDeepCrawlPdf = async (options: DeepCrawlOptions): Promise<B
     creator: 'SEO Market'
   });
 
+  // Calculate total issues
+  const totalIssues = (issues?.brokenLinks?.length || 0) + 
+                     (issues?.missingMetaTags?.length || 0) + 
+                     (issues?.slowPages?.length || 0) + 
+                     (issues?.duplicateContent?.length || 0);
+  
   // Add cover page
-  addCoverPage(
-    doc,
-    'Отчет о глубоком сканировании сайта',
-    `Домен: ${domain}`,
-    date
-  );
+  addCoverPage(doc, {
+    title: 'SEO АУДИТ САЙТА',
+    subtitle: 'Отчет о глубоком сканировании',
+    url: domain,
+    date: date,
+    overallScore: 0,
+    statistics: {
+      pagesScanned: urls.length,
+      issuesFound: totalIssues,
+      criticalIssues: issues?.brokenLinks?.length || 0
+    }
+  });
 
   // Add summary page
   doc.addPage();

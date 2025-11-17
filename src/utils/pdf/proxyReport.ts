@@ -47,12 +47,18 @@ export const generateProxyReportPdf = async (data: ProxyReportData): Promise<Blo
   });
   
   // Добавляем обложку
-  addCoverPage(
-    doc, 
-    'Отчет о прокси серверах', 
-    `Всего прокси: ${data.stats.total} | Активных: ${data.stats.active}`, 
-    data.date
-  );
+  addCoverPage(doc, {
+    title: 'Отчет о прокси серверах',
+    subtitle: `Всего прокси: ${data.stats.total} | Активных: ${data.stats.active}`,
+    url: 'Proxy Report',
+    date: data.date,
+    overallScore: Math.round((data.stats.active / data.stats.total) * 100),
+    statistics: {
+      pagesScanned: data.stats.total,
+      issuesFound: data.stats.total - data.stats.active,
+      criticalIssues: 0
+    }
+  });
   
   // Добавляем статистику
   doc.addPage();
