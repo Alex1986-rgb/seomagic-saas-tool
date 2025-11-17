@@ -4,6 +4,7 @@ import { pdfColors } from '../styles/colors';
 import { pdfFonts } from '../styles/fonts';
 import { drawTechnicalIcon, drawCheckIcon, drawErrorIcon, drawWarningIcon } from '../helpers/icons';
 import { generatePieChart, generateBarChart } from '../helpers/charts';
+import { formatUrlForDisplay, createLinkCellHandler } from '../helpers/links';
 
 interface TechnicalAnalysisData {
   https?: {
@@ -197,10 +198,17 @@ function addHttpsAnalysis(
 
   // Таблица проблем
   if (data?.issues && data.issues.length > 0) {
-    const issuesData = data.issues.slice(0, 5).map(issue => [
-      { content: issue.url, styles: { textColor: pdfColors.primary, fontStyle: 'italic' as const, fontSize: 8 } },
-      issue.issue
-    ]);
+    const linkMap = new Map<string, string>();
+    
+    const issuesData = data.issues.slice(0, 5).map(issue => {
+      const displayUrl = formatUrlForDisplay(issue.url, 90);
+      linkMap.set(displayUrl, issue.url);
+      
+      return [
+        displayUrl,
+        issue.issue
+      ];
+    });
 
     autoTable(doc, {
       startY: currentY,
@@ -219,9 +227,10 @@ function addHttpsAnalysis(
         textColor: pdfColors.dark
       },
       columnStyles: {
-        0: { cellWidth: 100 },
+        0: { cellWidth: 100, textColor: pdfColors.primary },
         1: { cellWidth: 80 }
-      }
+      },
+      didDrawCell: createLinkCellHandler(linkMap)
     });
 
     currentY = (doc as any).lastAutoTable.finalY + 5;

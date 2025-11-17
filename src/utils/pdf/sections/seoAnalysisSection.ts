@@ -3,6 +3,7 @@ import autoTable from 'jspdf-autotable';
 import { pdfColors } from '../styles/colors';
 import { pdfFonts } from '../styles/fonts';
 import { drawCheckIcon, drawErrorIcon, drawWarningIcon, drawSeoIcon } from '../helpers/icons';
+import { formatUrlForDisplay, createLinkCellHandler } from '../helpers/links';
 
 interface SeoAnalysisData {
   metaTags?: {
@@ -152,11 +153,19 @@ function addMetaTagsAnalysis(
 
   // Таблица с проблемами
   if (data?.issues && data.issues.length > 0) {
-    const issuesData = data.issues.slice(0, 10).map(issue => [
-      { content: issue.url, styles: { textColor: pdfColors.primary, fontStyle: 'italic' as const } },
-      issue.type === 'title' ? 'Title' : 'Description',
-      issue.issue
-    ]);
+    // Создаем карту URL -> полный URL для ссылок
+    const linkMap = new Map<string, string>();
+    
+    const issuesData = data.issues.slice(0, 10).map(issue => {
+      const displayUrl = formatUrlForDisplay(issue.url, 70);
+      linkMap.set(displayUrl, issue.url);
+      
+      return [
+        displayUrl,
+        issue.type === 'title' ? 'Title' : 'Description',
+        issue.issue
+      ];
+    });
 
     autoTable(doc, {
       startY: currentY,
@@ -178,10 +187,11 @@ function addMetaTagsAnalysis(
         fillColor: [245, 247, 250]
       },
       columnStyles: {
-        0: { cellWidth: 80 },
+        0: { cellWidth: 80, textColor: pdfColors.primary },
         1: { cellWidth: 30 },
         2: { cellWidth: 70 }
-      }
+      },
+      didDrawCell: createLinkCellHandler(linkMap)
     });
 
     currentY = (doc as any).lastAutoTable.finalY + 5;
@@ -234,10 +244,17 @@ function addHeadingsAnalysis(
 
   // Таблица проблемных страниц
   if (data?.issues && data.issues.length > 0) {
-    const issuesData = data.issues.slice(0, 10).map(issue => [
-      { content: issue.url, styles: { textColor: pdfColors.primary, fontStyle: 'italic' as const } },
-      issue.issue
-    ]);
+    const linkMap = new Map<string, string>();
+    
+    const issuesData = data.issues.slice(0, 10).map(issue => {
+      const displayUrl = formatUrlForDisplay(issue.url, 80);
+      linkMap.set(displayUrl, issue.url);
+      
+      return [
+        displayUrl,
+        issue.issue
+      ];
+    });
 
     autoTable(doc, {
       startY: currentY,
@@ -259,9 +276,10 @@ function addHeadingsAnalysis(
         fillColor: [245, 247, 250]
       },
       columnStyles: {
-        0: { cellWidth: 90 },
+        0: { cellWidth: 90, textColor: pdfColors.primary },
         1: { cellWidth: 90 }
-      }
+      },
+      didDrawCell: createLinkCellHandler(linkMap)
     });
 
     currentY = (doc as any).lastAutoTable.finalY + 5;
@@ -307,11 +325,18 @@ function addUrlStructureAnalysis(
 
   // Таблица проблемных URL
   if (data?.issues && data.issues.length > 0) {
-    const issuesData = data.issues.slice(0, 10).map(issue => [
-      { content: issue.url, styles: { textColor: pdfColors.primary, fontStyle: 'italic' as const, fontSize: 7 } },
-      issue.length ? `${issue.length} символов` : '-',
-      issue.issue
-    ]);
+    const linkMap = new Map<string, string>();
+    
+    const issuesData = data.issues.slice(0, 10).map(issue => {
+      const displayUrl = formatUrlForDisplay(issue.url, 100);
+      linkMap.set(displayUrl, issue.url);
+      
+      return [
+        displayUrl,
+        issue.length ? `${issue.length} символов` : '-',
+        issue.issue
+      ];
+    });
 
     autoTable(doc, {
       startY: currentY,
@@ -333,10 +358,11 @@ function addUrlStructureAnalysis(
         fillColor: [245, 247, 250]
       },
       columnStyles: {
-        0: { cellWidth: 110 },
+        0: { cellWidth: 110, textColor: pdfColors.primary },
         1: { cellWidth: 20 },
         2: { cellWidth: 50 }
-      }
+      },
+      didDrawCell: createLinkCellHandler(linkMap)
     });
 
     currentY = (doc as any).lastAutoTable.finalY + 5;
@@ -381,11 +407,21 @@ function addInternalLinksAnalysis(
 
   // Таблица битых ссылок
   if (data?.issues && data.issues.length > 0) {
-    const issuesData = data.issues.slice(0, 8).map(issue => [
-      { content: issue.sourceUrl, styles: { textColor: pdfColors.primary, fontStyle: 'italic' as const, fontSize: 7 } },
-      { content: issue.targetUrl, styles: { textColor: pdfColors.danger, fontSize: 7 } },
-      issue.issue
-    ]);
+    const linkMapSource = new Map<string, string>();
+    const linkMapTarget = new Map<string, string>();
+    
+    const issuesData = data.issues.slice(0, 8).map(issue => {
+      const displaySource = formatUrlForDisplay(issue.sourceUrl, 65);
+      const displayTarget = formatUrlForDisplay(issue.targetUrl, 65);
+      linkMapSource.set(displaySource, issue.sourceUrl);
+      linkMapTarget.set(displayTarget, issue.targetUrl);
+      
+      return [
+        displaySource,
+        displayTarget,
+        issue.issue
+      ];
+    });
 
     autoTable(doc, {
       startY: currentY,
@@ -407,9 +443,25 @@ function addInternalLinksAnalysis(
         fillColor: [245, 247, 250]
       },
       columnStyles: {
-        0: { cellWidth: 70 },
-        1: { cellWidth: 70 },
+        0: { cellWidth: 70, textColor: pdfColors.primary },
+        1: { cellWidth: 70, textColor: pdfColors.danger },
         2: { cellWidth: 40 }
+      },
+      didDrawCell: (data: any) => {
+        const cellText = data.cell.text[0];
+        const sourceUrl = linkMapSource.get(cellText);
+        const targetUrl = linkMapTarget.get(cellText);
+        const url = sourceUrl || targetUrl;
+        
+        if (url) {
+          data.doc.link(
+            data.cell.x,
+            data.cell.y,
+            data.cell.width,
+            data.cell.height,
+            { url }
+          );
+        }
       }
     });
 
