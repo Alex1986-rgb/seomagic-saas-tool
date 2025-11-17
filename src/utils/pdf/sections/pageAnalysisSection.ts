@@ -3,6 +3,7 @@ import autoTable from 'jspdf-autotable';
 import { pdfColors } from '../styles/colors';
 import { pdfFonts } from '../styles/fonts';
 import { drawContentIcon, drawCheckIcon, drawErrorIcon, drawWarningIcon } from '../helpers/icons';
+import { formatUrlForDisplay } from '../helpers/links';
 
 export interface PageAnalysisItem {
   url: string;
@@ -107,59 +108,30 @@ export function addPageAnalysisSection(
 
     const chunkPages = sortedPages.slice(chunk * pageSize, (chunk + 1) * pageSize);
     
+    // Создаем карту для ссылок
+    const linkMap = new Map<string, string>();
+    
     const tableData = chunkPages.map(page => {
       const totalIssues = page.issues.critical + page.issues.warning + page.issues.info;
       const statusIcon = getStatusCodeIcon(page.statusCode);
       const seoScoreColor = getScoreColor(page.seoScore);
+      const displayUrl = shortenUrl(page.url);
+      
+      linkMap.set(displayUrl, page.url);
       
       return [
-        {
-          content: shortenUrl(page.url),
-          styles: {
-            textColor: pdfColors.primary,
-            fontSize: 7,
-            fontStyle: 'italic' as const
-          }
-        },
-        {
-          content: `${statusIcon} ${page.statusCode}`,
-          styles: {
-            textColor: getStatusCodeColor(page.statusCode),
-            fontSize: 8,
-            halign: 'center' as const
-          }
-        },
-        {
-          content: page.seoScore.toString(),
-          styles: {
-            textColor: seoScoreColor,
-            fontSize: 9,
-            fontStyle: 'bold' as const,
-            halign: 'center' as const
-          }
-        },
-        {
-          content: `${page.loadTime}ms`,
-          styles: {
-            fontSize: 8,
-            halign: 'center' as const
-          }
-        },
-        {
-          content: totalIssues > 0 ? formatIssues(page.issues) : '✓',
-          styles: {
-            fontSize: 7,
-            textColor: totalIssues > 0 ? pdfColors.danger : pdfColors.success,
-            halign: 'center' as const
-          }
-        }
+        displayUrl,
+        `${statusIcon} ${page.statusCode}`,
+        page.seoScore.toString(),
+        `${page.loadTime}ms`,
+        totalIssues > 0 ? formatIssues(page.issues) : '✓'
       ];
     });
 
     autoTable(doc, {
       startY: currentY,
       head: [['URL страницы', 'Статус', 'SEO', 'Время', 'Проблемы']],
-      body: tableData as any,
+      body: tableData,
       margin: { left: margin, right: margin },
       theme: 'striped',
       headStyles: {
@@ -177,11 +149,28 @@ export function addPageAnalysisSection(
         fillColor: [245, 247, 250]
       },
       columnStyles: {
-        0: { cellWidth: 90, halign: 'left' as const },
+        0: { cellWidth: 90, halign: 'left' as const, textColor: pdfColors.primary },
         1: { cellWidth: 22, halign: 'center' as const },
         2: { cellWidth: 18, halign: 'center' as const },
         3: { cellWidth: 22, halign: 'center' as const },
         4: { cellWidth: 28, halign: 'center' as const }
+      },
+      didDrawCell: (data: any) => {
+        // Добавляем ссылки только для первой колонки (URL)
+        if (data.column.index === 0 && data.section === 'body') {
+          const cellText = data.cell.text[0];
+          const url = linkMap.get(cellText);
+          
+          if (url) {
+            data.doc.link(
+              data.cell.x,
+              data.cell.y,
+              data.cell.width,
+              data.cell.height,
+              { url }
+            );
+          }
+        }
       }
     });
 
