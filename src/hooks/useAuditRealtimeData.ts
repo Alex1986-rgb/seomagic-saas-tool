@@ -134,42 +134,58 @@ export const useAuditRealtimeData = (statusData: AuditStatusData | null) => {
   const auditStages: AuditStage[] = useMemo(() => {
     if (!statusData) {
       return [
-        { id: 'initialization', label: 'Инициализация', icon: 'Play', progress: 0, status: 'pending' },
-        { id: 'crawling', label: 'Сканирование страниц', icon: 'Search', progress: 0, status: 'pending' },
-        { id: 'analysis', label: 'SEO и технический анализ', icon: 'BarChart3', progress: 0, status: 'pending' },
-        { id: 'completed', label: 'Сохранение результатов', icon: 'CheckCircle', progress: 0, status: 'pending' },
+        { id: 'queued', label: 'Инициализация', icon: 'Clock', progress: 0, status: 'pending' },
+        { id: 'discovery', label: 'Поиск страниц', icon: 'Search', progress: 0, status: 'pending' },
+        { id: 'fetching', label: 'Загрузка HTML', icon: 'Download', progress: 0, status: 'pending' },
+        { id: 'analysis', label: 'SEO анализ', icon: 'BarChart3', progress: 0, status: 'pending' },
+        { id: 'generating', label: 'Генерация отчетов', icon: 'FileText', progress: 0, status: 'pending' },
+        { id: 'completed', label: 'Завершено', icon: 'CheckCircle', progress: 0, status: 'pending' },
       ];
     }
 
     const progress = statusData.progress || 0;
-    const stage = statusData.stage || 'initialization';
+    const stage = statusData.stage || 'queued';
     const status = statusData.status || 'queued';
 
     return [
       {
-        id: 'initialization',
+        id: 'queued',
         label: 'Инициализация',
-        icon: 'Play',
+        icon: 'Clock',
         progress: Math.min(progress, 10),
-        status: (stage === 'initialization' || status === 'queued') ? 'active' : progress > 10 ? 'completed' : 'pending',
+        status: stage === 'queued' ? 'active' : progress > 10 ? 'completed' : 'pending',
       },
       {
-        id: 'crawling',
-        label: 'Сканирование страниц',
+        id: 'discovery',
+        label: 'Поиск страниц',
         icon: 'Search',
-        progress: (stage === 'crawling' || status === 'scanning') ? progress : progress > 90 ? 90 : 0,
-        status: (stage === 'crawling' || status === 'scanning') ? 'active' : progress > 90 ? 'completed' : 'pending',
+        progress: stage === 'discovery' ? progress : progress > 25 ? 25 : 0,
+        status: stage === 'discovery' ? 'active' : progress > 25 ? 'completed' : 'pending',
+      },
+      {
+        id: 'fetching',
+        label: 'Загрузка HTML',
+        icon: 'Download',
+        progress: stage === 'fetching' ? progress : progress > 50 ? 50 : 0,
+        status: stage === 'fetching' ? 'active' : progress > 50 ? 'completed' : 'pending',
       },
       {
         id: 'analysis',
-        label: 'SEO и технический анализ',
+        label: 'SEO анализ',
         icon: 'BarChart3',
-        progress: (stage === 'analysis' || status === 'analyzing') ? progress : status === 'completed' || progress === 100 ? 100 : 0,
-        status: (stage === 'analysis' || status === 'analyzing') ? 'active' : status === 'completed' || progress === 100 ? 'completed' : 'pending',
+        progress: stage === 'analysis' ? progress : progress > 80 ? 80 : 0,
+        status: stage === 'analysis' ? 'active' : progress > 80 ? 'completed' : 'pending',
+      },
+      {
+        id: 'generating',
+        label: 'Генерация отчетов',
+        icon: 'FileText',
+        progress: stage === 'generating' ? progress : progress === 100 ? 100 : 0,
+        status: stage === 'generating' ? 'active' : progress === 100 ? 'completed' : 'pending',
       },
       {
         id: 'completed',
-        label: 'Сохранение результатов',
+        label: 'Завершено',
         icon: 'CheckCircle',
         progress: status === 'completed' ? 100 : 0,
         status: status === 'completed' ? 'completed' : 'pending',

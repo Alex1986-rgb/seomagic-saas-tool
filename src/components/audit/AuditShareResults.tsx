@@ -85,6 +85,7 @@ const AuditShareResults: React.FC<AuditShareResultsProps> = ({
                   auditData={auditData}
                   url={url}
                   historyItems={historyItems}
+                  auditId={auditId}
                 />
               </div>
               

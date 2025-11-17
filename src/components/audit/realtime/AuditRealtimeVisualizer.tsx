@@ -20,7 +20,21 @@ export const AuditRealtimeVisualizer = ({ url, statusData }: AuditRealtimeVisual
   const { flowNodes, auditStages, metrics, issues } = useAuditRealtimeData(statusData);
 
   const progress = statusData?.progress || 0;
-  const stage = statusData?.stage || 'initialization';
+  const stage = statusData?.stage || 'queued';
+  const status = statusData?.status || 'queued';
+
+  // Get stage label
+  const getStageLabel = (stage: string) => {
+    const labels: Record<string, string> = {
+      queued: 'Инициализация',
+      discovery: 'Поиск страниц',
+      fetching: 'Загрузка HTML',
+      analysis: 'SEO анализ',
+      generating: 'Генерация отчетов',
+      completed: 'Завершено'
+    };
+    return labels[stage] || stage;
+  };
 
   // Debug logging
   console.log('AuditRealtimeVisualizer render:', { 
@@ -28,6 +42,7 @@ export const AuditRealtimeVisualizer = ({ url, statusData }: AuditRealtimeVisual
     statusData, 
     progress, 
     stage, 
+    status,
     metricsCount: metrics.pagesScanned,
     issuesCount: issues.length,
     flowNodesCount: flowNodes.length
@@ -44,9 +59,14 @@ export const AuditRealtimeVisualizer = ({ url, statusData }: AuditRealtimeVisual
           <CardHeader>
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <CardTitle className="text-2xl">
-                  Аудит в реальном времени
-                </CardTitle>
+                <div>
+                  <CardTitle className="text-2xl">
+                    Аудит в реальном времени
+                  </CardTitle>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    {getStageLabel(stage)}
+                  </p>
+                </div>
                 <div className="text-right">
                   <p className="text-3xl font-bold text-primary">
                     {progress}%
@@ -57,9 +77,33 @@ export const AuditRealtimeVisualizer = ({ url, statusData }: AuditRealtimeVisual
                 </div>
               </div>
               <Progress value={progress} className="h-2" />
-              <p className="text-sm text-muted-foreground">
-                {url}
-              </p>
+              <div className="flex items-center justify-between text-sm">
+                <p className="text-muted-foreground truncate flex-1">
+                  {url}
+                </p>
+                {statusData?.current_url && statusData.current_url !== url && (
+                  <p className="text-xs text-muted-foreground ml-2">
+                    Обработка: {new URL(statusData.current_url).pathname}
+                  </p>
+                )}
+              </div>
+              {metrics.pagesScanned > 0 && (
+                <div className="flex items-center gap-4 text-sm">
+                  <span className="text-muted-foreground">
+                    Страниц обработано: <span className="font-semibold text-foreground">{metrics.pagesScanned}</span>
+                  </span>
+                  {metrics.totalPages > 0 && (
+                    <span className="text-muted-foreground">
+                      / {metrics.totalPages}
+                    </span>
+                  )}
+                  {metrics.processingSpeed > 0 && (
+                    <span className="text-muted-foreground">
+                      Скорость: <span className="font-semibold text-foreground">{metrics.processingSpeed}</span> стр/мин
+                    </span>
+                  )}
+                </div>
+              )}
             </div>
           </CardHeader>
         </Card>

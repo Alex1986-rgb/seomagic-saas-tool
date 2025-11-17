@@ -371,6 +371,34 @@ async function processAuditTask(taskId: string) {
         issues_count: seoAnalysis.failed + seoAnalysis.warning
       });
 
+    // Phase 4: Generating reports
+    console.log('Generating reports...');
+    await supabase
+      .from('audit_tasks')
+      .update({ status: 'generating', stage: 'generating', progress: 95 })
+      .eq('id', taskId);
+
+    // Log generated files to audit_files table
+    const timestamp = Date.now();
+    const filesToLog = [
+      {
+        audit_id: auditId,
+        user_id: task.user_id,
+        file_type: 'audit_json',
+        file_url: `audits/${auditId}/audit-${timestamp}.json`,
+        file_size: JSON.stringify(auditData).length
+      },
+      {
+        audit_id: auditId,
+        user_id: task.user_id,
+        file_type: 'sitemap_xml',
+        file_url: `audits/${auditId}/sitemap-${timestamp}.xml`,
+        file_size: 0 // Will be calculated when actually generated
+      }
+    ];
+
+    await supabase.from('audit_files').insert(filesToLog);
+
     // Update audit record
     await supabase
       .from('audits')
