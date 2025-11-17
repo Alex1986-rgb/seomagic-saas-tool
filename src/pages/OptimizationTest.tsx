@@ -5,7 +5,9 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { Loader2, CheckCircle, XCircle, Clock, Sparkles } from 'lucide-react';
+import { Loader2, CheckCircle, XCircle, Clock, Sparkles, AlertCircle, Play } from 'lucide-react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { useNavigate } from 'react-router-dom';
 
 interface AuditTask {
   task_id: string;
@@ -31,6 +33,7 @@ interface OptimizationResult {
 
 export default function OptimizationTest() {
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [audits, setAudits] = useState<AuditTask[]>([]);
   const [selectedTaskId, setSelectedTaskId] = useState<string>('');
   const [optimizationId, setOptimizationId] = useState<string>('');
@@ -38,6 +41,7 @@ export default function OptimizationTest() {
   const [resultData, setResultData] = useState<OptimizationResult | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isPolling, setIsPolling] = useState(false);
+  const [isLoadingAudits, setIsLoadingAudits] = useState(true);
 
   // Load completed audits
   useEffect(() => {
@@ -56,6 +60,7 @@ export default function OptimizationTest() {
   }, [optimizationId, isPolling]);
 
   const loadAudits = async () => {
+    setIsLoadingAudits(true);
     try {
       const { data, error } = await supabase
         .from('audit_tasks')
@@ -91,6 +96,8 @@ export default function OptimizationTest() {
         description: 'Failed to load completed audits',
         variant: 'destructive',
       });
+    } finally {
+      setIsLoadingAudits(false);
     }
   };
 
@@ -222,7 +229,11 @@ export default function OptimizationTest() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            {audits.length === 0 ? (
+            {isLoadingAudits ? (
+              <div className="flex items-center justify-center py-8">
+                <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+              </div>
+            ) : audits.length === 0 ? (
               <p className="text-sm text-muted-foreground">
                 No completed audits found. Run an audit first.
               </p>
