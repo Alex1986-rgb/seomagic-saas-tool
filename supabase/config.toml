@@ -12,6 +12,12 @@ verify_jwt = true
 [functions.audit-processor]
 verify_jwt = false
 
+[functions.optimization-content]
+verify_jwt = true
+
+[functions.optimization-processor]
+verify_jwt = true
+
 [functions.optimization-start]
 verify_jwt = true
 
