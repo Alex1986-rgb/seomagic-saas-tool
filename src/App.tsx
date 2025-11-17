@@ -40,6 +40,12 @@ import ApiDocs from './pages/ApiDocs';
 import Faq from './pages/Faq';
 import Partners from './pages/Partners';
 import IPInfo from './pages/IPInfo';
+import NotFound from './pages/NotFound';
+import Demo from './pages/Demo';
+import Partnership from './pages/Partnership';
+import GuidePost from './pages/GuidePost';
+import OptimizationPricing from './pages/OptimizationPricing';
+import ClientProfile from './pages/ClientProfile';
 
 // Feature pages
 import SiteScanning from './pages/features/SiteScanning';
@@ -102,6 +108,7 @@ function App() {
                     <Route path="/support" element={<Support />} />
                     <Route path="/team" element={<Team />} />
                     <Route path="/guides" element={<Guides />} />
+                    <Route path="/guides/:id" element={<GuidePost />} />
                     <Route path="/webinars" element={<Webinars />} />
                     <Route path="/careers" element={<Careers />} />
                     <Route path="/privacy" element={<Privacy />} />
@@ -137,6 +144,7 @@ function App() {
                     <Route path="/features/seo-audit" element={<SeoAudit />} />
                     <Route path="/features/ai-optimization" element={<AIOptimization />} />
                     <Route path="/features/position-tracking" element={<PositionTracking />} />
+                    <Route path="/position-tracking" element={<PositionTracking />} />
                     
                     {/* Speed and Mobile optimization routes */}
                     <Route path="/features/speed-analysis" element={<SpeedAnalysis />} />
@@ -151,6 +159,10 @@ function App() {
                     <Route path="/faq" element={<Faq />} />
                     <Route path="/partners" element={<Partners />} />
                     <Route path="/ip-info" element={<IPInfo />} />
+                    <Route path="/demo" element={<Demo />} />
+                    <Route path="/partnership" element={<Partnership />} />
+                    <Route path="/optimization-pricing" element={<OptimizationPricing />} />
+                    <Route path="/client-profile" element={<ClientProfile />} />
                     
                     {/* Client and Admin Dashboard Routes */}
                     <Route path="/reports" element={<Reports />} />
@@ -161,6 +173,9 @@ function App() {
                     
                     {/* Admin Routes */}
                     <Route path="/admin/*" element={<AdminRoutes />} />
+                    
+                    {/* 404 - Must be last */}
+                    <Route path="*" element={<NotFound />} />
             </Routes>
           </main>
           <Toaster />
