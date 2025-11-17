@@ -41,3 +41,11 @@ export function addTimestamp(doc: jsPDF, x: number, y: number): void {
   doc.setTextColor(150, 150, 150);
   doc.text(`Отчет создан: ${timestamp}`, x, y, { align: 'left' });
 }
+
+export * from './formatting';
+export * from './qrcode';
+export * from './coverPage';
+export * from './tableOfContents';
+export * from './icons';
+export * from './detailedScores';
+export * from './charts';
