@@ -52,7 +52,9 @@ export interface AuditStatusResponse {
   progress: number;
   pages_scanned: number;
   total_pages: number;
+  estimated_pages?: number;
   stage?: string;
   current_url?: string;
   error?: string;
+  audit_data?: any;
 }

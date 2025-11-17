@@ -10,6 +10,8 @@ export type ScanDetails = {
   estimated_pages: number;
   stage: string;
   progress?: number;
+  status?: string;
+  audit_data?: any;
 };
 
 // Page statistics from the scan

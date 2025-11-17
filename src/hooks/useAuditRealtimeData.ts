@@ -19,7 +19,7 @@ export const useAuditRealtimeData = (statusData: AuditStatusData | null) => {
 
   // Track start time
   useEffect(() => {
-    if (statusData?.status === 'scanning' && !startTime) {
+    if (statusData && (statusData.status === 'scanning' || statusData.status === 'analyzing') && !startTime) {
       setStartTime(Date.now());
     }
   }, [statusData?.status, startTime]);
@@ -37,64 +37,113 @@ export const useAuditRealtimeData = (statusData: AuditStatusData | null) => {
 
   // Extract issues from audit_data
   useEffect(() => {
-    if (statusData?.audit_data?.seo?.items) {
-      const seoItems = statusData.audit_data.seo.items || [];
-      const newIssues: Issue[] = seoItems.map((item: any) => ({
-        type: item.type || 'unknown',
-        description: item.message || item.description || 'Unknown issue',
-        severity: item.status === 'error' ? 'error' : item.status === 'warning' ? 'warning' : 'good',
-        url: statusData.current_url || '',
-        timestamp: new Date(),
-      }));
+    if (!statusData?.audit_data) {
+      return;
+    }
+
+    const auditData = statusData.audit_data;
+    const newIssues: Issue[] = [];
+    
+    // Extract from audit_data structure (when completed)
+    if (auditData.audit_data) {
+      const data = auditData.audit_data;
       
-      setIssues(prev => [...prev, ...newIssues].slice(-50)); // Keep last 50
+      // Extract SEO issues
+      if (data.seo?.items) {
+        data.seo.items.forEach((item: any) => {
+          newIssues.push({
+            type: item.type || 'seo',
+            description: item.message || item.description || 'SEO issue detected',
+            severity: item.status === 'error' ? 'error' : item.status === 'warning' ? 'warning' : 'good',
+            url: item.url || statusData.current_url || '',
+            timestamp: new Date(),
+          });
+        });
+      }
+      
+      // Extract technical issues
+      if (data.technical?.items) {
+        data.technical.items.forEach((item: any) => {
+          newIssues.push({
+            type: item.type || 'technical',
+            description: item.message || item.description || 'Technical issue detected',
+            severity: item.status === 'error' ? 'error' : item.status === 'warning' ? 'warning' : 'good',
+            url: item.url || statusData.current_url || '',
+            timestamp: new Date(),
+          });
+        });
+      }
+    }
+    
+    if (newIssues.length > 0) {
+      setIssues(newIssues.slice(-100)); // Keep last 100 unique issues
     }
   }, [statusData?.audit_data, statusData?.current_url]);
 
   // Generate flow nodes
   const flowNodes: FlowNode[] = useMemo(() => {
-    const stage = statusData?.stage || 'initialization';
-    const progress = statusData?.progress || 0;
+    if (!statusData) {
+      return [
+        { id: 'start', label: 'Инициализация', icon: 'Play', status: 'idle', progress: 0 },
+        { id: 'crawling', label: 'Сканирование', icon: 'Search', status: 'idle', progress: 0 },
+        { id: 'analyzing', label: 'Анализ', icon: 'BarChart3', status: 'idle', progress: 0 },
+        { id: 'results', label: 'Результаты', icon: 'CheckCircle', status: 'idle', progress: 0 },
+      ];
+    }
+
+    const stage = statusData.stage || 'initialization';
+    const progress = statusData.progress || 0;
+    const status = statusData.status || 'queued';
 
     return [
       {
         id: 'start',
         label: 'Инициализация',
         icon: 'Play',
-        status: progress > 0 ? 'completed' : stage === 'initialization' ? 'active' : 'idle',
+        status: progress > 0 || status === 'completed' ? 'completed' : stage === 'initialization' || status === 'queued' ? 'active' : 'idle',
         progress: Math.min(progress, 10),
       },
       {
         id: 'crawling',
         label: 'Сканирование',
         icon: 'Search',
-        status: stage === 'crawling' ? 'active' : progress > 10 ? 'completed' : 'idle',
-        progress: stage === 'crawling' ? Math.min(Math.max(progress, 10), 90) : progress > 90 ? 90 : 0,
-        metrics: stage === 'crawling' ? [
-          { label: 'Страниц', value: statusData?.pages_scanned || 0 },
+        status: stage === 'crawling' || status === 'scanning' ? 'active' : progress > 10 ? 'completed' : 'idle',
+        progress: (stage === 'crawling' || status === 'scanning') ? Math.min(Math.max(progress, 10), 90) : progress > 90 ? 90 : 0,
+        metrics: (stage === 'crawling' || status === 'scanning') ? [
+          { label: 'Страниц', value: statusData.pages_scanned || 0 },
         ] : undefined,
       },
       {
         id: 'analyzing',
         label: 'Анализ',
         icon: 'BarChart3',
-        status: stage === 'analysis' ? 'active' : progress >= 90 ? 'completed' : 'idle',
-        progress: stage === 'analysis' ? Math.min(Math.max(progress, 90), 100) : progress === 100 ? 100 : 0,
+        status: stage === 'analysis' || status === 'analyzing' ? 'active' : (status === 'completed' || progress >= 90) ? 'completed' : 'idle',
+        progress: (stage === 'analysis' || status === 'analyzing') ? Math.min(Math.max(progress, 90), 100) : status === 'completed' || progress === 100 ? 100 : 0,
       },
       {
         id: 'results',
         label: 'Результаты',
         icon: 'CheckCircle',
-        status: statusData?.status === 'completed' ? 'completed' : 'idle',
-        progress: statusData?.status === 'completed' ? 100 : 0,
+        status: status === 'completed' ? 'completed' : 'idle',
+        progress: status === 'completed' ? 100 : 0,
       },
     ];
   }, [statusData]);
 
   // Generate audit stages
   const auditStages: AuditStage[] = useMemo(() => {
-    const progress = statusData?.progress || 0;
-    const stage = statusData?.stage || 'initialization';
+    if (!statusData) {
+      return [
+        { id: 'initialization', label: 'Инициализация', icon: 'Play', progress: 0, status: 'pending' },
+        { id: 'crawling', label: 'Сканирование страниц', icon: 'Search', progress: 0, status: 'pending' },
+        { id: 'analysis', label: 'SEO и технический анализ', icon: 'BarChart3', progress: 0, status: 'pending' },
+        { id: 'completed', label: 'Сохранение результатов', icon: 'CheckCircle', progress: 0, status: 'pending' },
+      ];
+    }
+
+    const progress = statusData.progress || 0;
+    const stage = statusData.stage || 'initialization';
+    const status = statusData.status || 'queued';
 
     return [
       {
@@ -102,28 +151,28 @@ export const useAuditRealtimeData = (statusData: AuditStatusData | null) => {
         label: 'Инициализация',
         icon: 'Play',
         progress: Math.min(progress, 10),
-        status: stage === 'initialization' ? 'active' : progress > 10 ? 'completed' : 'pending',
+        status: (stage === 'initialization' || status === 'queued') ? 'active' : progress > 10 ? 'completed' : 'pending',
       },
       {
         id: 'crawling',
         label: 'Сканирование страниц',
         icon: 'Search',
-        progress: stage === 'crawling' ? progress : progress > 90 ? 90 : 0,
-        status: stage === 'crawling' ? 'active' : progress > 90 ? 'completed' : 'pending',
+        progress: (stage === 'crawling' || status === 'scanning') ? progress : progress > 90 ? 90 : 0,
+        status: (stage === 'crawling' || status === 'scanning') ? 'active' : progress > 90 ? 'completed' : 'pending',
       },
       {
         id: 'analysis',
         label: 'SEO и технический анализ',
         icon: 'BarChart3',
-        progress: stage === 'analysis' ? progress : progress === 100 ? 100 : 0,
-        status: stage === 'analysis' ? 'active' : progress === 100 ? 'completed' : 'pending',
+        progress: (stage === 'analysis' || status === 'analyzing') ? progress : status === 'completed' || progress === 100 ? 100 : 0,
+        status: (stage === 'analysis' || status === 'analyzing') ? 'active' : status === 'completed' || progress === 100 ? 'completed' : 'pending',
       },
       {
         id: 'completed',
         label: 'Сохранение результатов',
         icon: 'CheckCircle',
-        progress: statusData?.status === 'completed' ? 100 : 0,
-        status: statusData?.status === 'completed' ? 'completed' : 'pending',
+        progress: status === 'completed' ? 100 : 0,
+        status: status === 'completed' ? 'completed' : 'pending',
       },
     ];
   }, [statusData]);

@@ -67,7 +67,10 @@ export const useScanAPI = (url: string) => {
           current_url: statusResponse.current_url || (statusResponse.status === 'scanning' ? `Scanning ${url}...` : ''),
           pages_scanned: statusResponse.pages_scanned || 0,
           estimated_pages: statusResponse.total_pages || 0,
-          stage: statusResponse.stage || statusResponse.status
+          stage: statusResponse.stage || statusResponse.status,
+          progress: statusResponse.progress || 0,
+          status: statusResponse.status,
+          audit_data: (statusResponse as any).audit_data
         };
         
         onStatusUpdate(currentScanDetails);
