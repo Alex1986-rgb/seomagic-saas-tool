@@ -13,6 +13,10 @@ export { auditDataService } from './services/auditDataService';
 export * from './services/optimizationService';
 export * from './services/firecrawl';
 
+// Export new Supabase-based services
+export { auditService } from './services/auditService';
+export { reportService } from './services/reportService';
+
 // Export auditApiService
 export { auditApiService } from './api/auditApiService';
 

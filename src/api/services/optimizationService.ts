@@ -1,10 +1,8 @@
-
-import { apiClient } from '../client/apiClient';
-import { formatApiError } from '../client/errorHandler';
+import { supabase } from '@/integrations/supabase/client';
 import { OptimizationItem } from '@/services/audit/optimization/types';
 
 /**
- * Service for handling optimization-related API calls
+ * Service for handling optimization-related API calls using Supabase Edge Functions
  */
 class OptimizationService {
   /**
@@ -15,10 +13,21 @@ class OptimizationService {
     items: OptimizationItem[];
   }> {
     try {
-      return await apiClient.get(`/api/optimization/${taskId}/cost`);
+      const { data, error } = await supabase.functions.invoke('optimization-calculate', {
+        body: { task_id: taskId }
+      });
+
+      if (error) {
+        console.error('Error getting optimization cost:', error);
+        throw error;
+      }
+
+      return {
+        totalCost: data.totalCost || 0,
+        items: data.items || []
+      };
     } catch (error) {
-      const formattedError = formatApiError(error);
-      console.error('Error getting optimization cost:', formattedError);
+      console.error('Error getting optimization cost:', error);
       
       // Return fallback data
       return {
@@ -34,17 +43,34 @@ class OptimizationService {
   async optimizeContent(taskId: string, contentPrompt: string): Promise<{
     success: boolean;
     message?: string;
+    optimized_content?: string;
   }> {
     try {
-      return await apiClient.post(`/api/optimization/${taskId}/content`, {
-        prompt: contentPrompt
+      const { data, error } = await supabase.functions.invoke('optimization-content', {
+        body: { 
+          task_id: taskId,
+          prompt: contentPrompt
+        }
       });
-    } catch (error) {
-      const formattedError = formatApiError(error);
-      console.error('Error optimizing content:', formattedError);
+
+      if (error) {
+        console.error('Error optimizing content:', error);
+        return {
+          success: false,
+          message: error.message || 'Failed to optimize content'
+        };
+      }
+
+      return {
+        success: data.success || false,
+        message: data.message,
+        optimized_content: data.optimized_content
+      };
+    } catch (error: any) {
+      console.error('Error optimizing content:', error);
       return {
         success: false,
-        message: formattedError.message
+        message: error.message || 'Unknown error occurred'
       };
     }
   }
@@ -61,14 +87,69 @@ class OptimizationService {
   }): Promise<{
     success: boolean;
     optimizationId?: string;
+    message?: string;
   }> {
     try {
-      return await apiClient.post(`/api/optimization/${taskId}/start`, options);
-    } catch (error) {
-      const formattedError = formatApiError(error);
-      console.error('Error starting optimization:', formattedError);
+      const { data, error } = await supabase.functions.invoke('optimization-start', {
+        body: { 
+          task_id: taskId,
+          options
+        }
+      });
+
+      if (error) {
+        console.error('Error starting optimization:', error);
+        return {
+          success: false,
+          message: error.message || 'Failed to start optimization'
+        };
+      }
+
       return {
-        success: false
+        success: data.success || false,
+        optimizationId: data.optimization_id,
+        message: data.message
+      };
+    } catch (error: any) {
+      console.error('Error starting optimization:', error);
+      return {
+        success: false,
+        message: error.message || 'Unknown error occurred'
+      };
+    }
+  }
+
+  /**
+   * Get optimization status
+   */
+  async getOptimizationStatus(optimizationId: string): Promise<{
+    status: string;
+    progress: number;
+    message: string;
+    result_data?: any;
+  }> {
+    try {
+      const { data, error } = await supabase.functions.invoke('optimization-status', {
+        body: { optimization_id: optimizationId }
+      });
+
+      if (error) {
+        console.error('Error getting optimization status:', error);
+        throw error;
+      }
+
+      return {
+        status: data.status || 'unknown',
+        progress: data.progress || 0,
+        message: data.message || '',
+        result_data: data.result_data
+      };
+    } catch (error) {
+      console.error('Error getting optimization status:', error);
+      return {
+        status: 'error',
+        progress: 0,
+        message: 'Failed to get status'
       };
     }
   }
