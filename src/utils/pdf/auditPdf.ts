@@ -8,6 +8,8 @@ import { generatePieChart, generateBarChart, generateScoreGauge, generateRadarCh
 import { createCategoryScoresFromAudit, drawAllCategoryScores } from './helpers/detailedScores';
 import { addSeoAnalysisSection } from './sections/seoAnalysisSection';
 import { addTechnicalAnalysisSection } from './sections/technicalAnalysisSection';
+import { addRecommendationsSection, Recommendation } from './sections/recommendationsSection';
+import { addPricingSection } from './sections/pricingSection';
 
 export interface GenerateAuditPdfOptions {
   auditData: AuditData;
@@ -216,7 +218,35 @@ export const generateAuditPdf = async (options: GenerateAuditPdfOptions): Promis
   
   addTechnicalAnalysisSection(doc, technicalAnalysisData, 20);
 
-  // === ДЕТАЛЬНЫЙ АНАЛИЗ ПРОБЛЕМ ===
+  // === РЕКОМЕНДАЦИИ И ПЛАН ДЕЙСТВИЙ ===
+  doc.addPage();
+  
+  // Подготовка рекомендаций из данных аудита
+  const recommendationsData = {
+    critical: prepareCriticalRecommendations(auditData),
+    important: prepareImportantRecommendations(auditData),
+    opportunities: prepareOpportunitiesRecommendations(auditData)
+  };
+  
+  addRecommendationsSection(doc, recommendationsData, 20);
+
+  // === СМЕТА ОПТИМИЗАЦИИ ===
+  if (optimizationItems && optimizationItems.length > 0) {
+    doc.addPage();
+    
+    const pricingData = {
+      url: url,
+      date: date,
+      validUntil: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+      items: optimizationItems,
+      discount: 10, // 10% скидка
+      recommendedPackage: 'standard' as const
+    };
+    
+    addPricingSection(doc, pricingData, 20);
+  }
+
+  // === ДЕТАЛЬНЫЙ АНАЛИЗ ПРОБЛЕМ (старая версия - оставим для совместимости) ===
   doc.addPage();
   
   doc.setFillColor(...pdfColors.dark);
@@ -471,3 +501,84 @@ export const generateAuditPdf = async (options: GenerateAuditPdfOptions): Promis
   
   return doc.output('blob');
 };
+
+/**
+ * Подготовка критических рекомендаций из данных аудита
+ */
+function prepareCriticalRecommendations(auditData: AuditData): Recommendation[] {
+  const recommendations: Recommendation[] = [];
+  
+  if (auditData.issues.critical && auditData.issues.critical.length > 0) {
+    auditData.issues.critical.slice(0, 3).forEach((issue: any) => {
+      const title = typeof issue === 'string' ? issue : issue.title || issue;
+      recommendations.push({
+        title: title,
+        priority: 'high',
+        description: typeof issue === 'object' && issue.description 
+          ? issue.description 
+          : 'Критическая проблема, требующая немедленного исправления',
+        impact: 'Значительное негативное влияние на ранжирование в поисковых системах и видимость сайта',
+        solution: 'Требуется срочное исправление данной проблемы специалистами',
+        expectedResult: 'Улучшение позиций в поисковой выдаче и увеличение органического трафика',
+        timeframe: '1-2 недели',
+        cost: 15000
+      });
+    });
+  }
+  
+  return recommendations;
+}
+
+/**
+ * Подготовка важных рекомендаций из данных аудита
+ */
+function prepareImportantRecommendations(auditData: AuditData): Recommendation[] {
+  const recommendations: Recommendation[] = [];
+  
+  if (auditData.issues.important && auditData.issues.important.length > 0) {
+    auditData.issues.important.slice(0, 3).forEach((issue: any) => {
+      const title = typeof issue === 'string' ? issue : issue.title || issue;
+      recommendations.push({
+        title: title,
+        priority: 'medium',
+        description: typeof issue === 'object' && issue.description 
+          ? issue.description 
+          : 'Важная проблема, влияющая на эффективность SEO',
+        impact: 'Среднее влияние на ранжирование и пользовательский опыт',
+        solution: 'Рекомендуется исправить в течение месяца',
+        expectedResult: 'Повышение общего качества сайта и улучшение пользовательских метрик',
+        timeframe: '2-4 недели',
+        cost: 8000
+      });
+    });
+  }
+  
+  return recommendations;
+}
+
+/**
+ * Подготовка рекомендаций по улучшению из данных аудита
+ */
+function prepareOpportunitiesRecommendations(auditData: AuditData): Recommendation[] {
+  const recommendations: Recommendation[] = [];
+  
+  if (auditData.issues.opportunities && auditData.issues.opportunities.length > 0) {
+    auditData.issues.opportunities.slice(0, 3).forEach((issue: any) => {
+      const title = typeof issue === 'string' ? issue : issue.title || issue;
+      recommendations.push({
+        title: title,
+        priority: 'low',
+        description: typeof issue === 'object' && issue.description 
+          ? issue.description 
+          : 'Возможность для улучшения и дальнейшей оптимизации',
+        impact: 'Положительное влияние на долгосрочную стратегию SEO',
+        solution: 'Рекомендуется внедрить для достижения максимальной эффективности',
+        expectedResult: 'Дополнительное увеличение трафика и улучшение конверсии',
+        timeframe: '1-2 месяца',
+        cost: 5000
+      });
+    });
+  }
+  
+  return recommendations;
+}
