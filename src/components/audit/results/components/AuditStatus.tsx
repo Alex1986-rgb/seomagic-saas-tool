@@ -1,9 +1,8 @@
-
 import React from 'react';
 import AuditLoading from '../../AuditLoading';
 import AuditError from '../AuditError';
-import AuditScanning from './AuditScanning';
 import AuditRefreshing from './AuditRefreshing';
+import { AuditRealtimeVisualizer } from '@/components/audit/realtime/AuditRealtimeVisualizer';
 import { ErrorDisplay } from '@/components/ui/error-handler';
 import { Card } from "@/components/ui/card";
 
@@ -17,6 +16,10 @@ interface AuditStatusProps {
     pages_scanned: number;
     estimated_pages: number;
     current_url: string;
+    status?: string;
+    stage?: string;
+    progress?: number;
+    audit_data?: any;
   };
   url: string;
   onRetry: () => void;
@@ -44,17 +47,10 @@ const AuditStatus: React.FC<AuditStatusProps> = ({
 
   if (isScanning) {
     return (
-      <Card className="bg-card/90 backdrop-blur-sm border-border">
-        <AuditScanning 
-          url={url} 
-          scanDetails={{
-            pagesScanned: scanDetails.pages_scanned,
-            totalPages: scanDetails.estimated_pages,
-            currentUrl: scanDetails.current_url
-          }} 
-          onDownloadSitemap={onDownloadSitemap} 
-        />
-      </Card>
+      <AuditRealtimeVisualizer
+        url={url}
+        statusData={scanDetails}
+      />
     );
   }
 
