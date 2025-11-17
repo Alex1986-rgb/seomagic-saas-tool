@@ -7,6 +7,12 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// Constants for batch processing large sites
+const BATCH_SIZE = 500; // Pages to process in one batch
+const MAX_EXECUTION_TIME = 50000; // 50 seconds (buffer before timeout)
+const CRAWL_DELAY = 50; // ms between requests to avoid overload
+const MAX_CONCURRENT_REQUESTS = 10; // Parallel crawling
+
 interface PageData {
   url: string;
   title?: string;
@@ -25,32 +31,41 @@ interface PageData {
   issues?: Array<{ type: string; description: string; severity: string }>;
 }
 
+interface TaskState {
+  urlsQueue: string[];
+  visitedUrls: Set<string>;
+  pages: PageData[];
+}
+
 async function crawlPage(url: string, domain: string): Promise<PageData> {
   const startTime = Date.now();
   
   try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout per page
+    
     const response = await fetch(url, {
       headers: {
         'User-Agent': 'Mozilla/5.0 (compatible; SEO-Auditor/1.0; +https://example.com/bot)'
       },
-      redirect: 'follow'
+      redirect: 'follow',
+      signal: controller.signal
     });
+    
+    clearTimeout(timeoutId);
 
     const loadTime = Date.now() - startTime;
     const html = await response.text();
     const $ = cheerio.load(html);
     
-    // Extract meta data
     const title = $('title').text().trim();
     const description = $('meta[name="description"]').attr('content') || '';
     
-    // Extract H1 tags
     const h1Tags: string[] = [];
     $('h1').each((_, el) => {
       h1Tags.push($(el).text().trim());
     });
     
-    // Extract links
     const allLinks: string[] = [];
     const internalLinks: string[] = [];
     const externalLinks: string[] = [];
@@ -73,7 +88,6 @@ async function crawlPage(url: string, domain: string): Promise<PageData> {
       }
     });
     
-    // Extract images
     const images: Array<{ src: string; alt: string }> = [];
     $('img').each((_, el) => {
       const src = $(el).attr('src');
@@ -83,7 +97,6 @@ async function crawlPage(url: string, domain: string): Promise<PageData> {
       }
     });
     
-    // Check indexability
     const robotsMeta = $('meta[name="robots"]').attr('content') || '';
     const isIndexable = !robotsMeta.includes('noindex');
     
@@ -119,15 +132,71 @@ async function crawlPage(url: string, domain: string): Promise<PageData> {
   }
 }
 
+async function crawlBatch(
+  urls: string[],
+  domain: string
+): Promise<PageData[]> {
+  const results: PageData[] = [];
+  
+  // Process in chunks for concurrent requests
+  for (let i = 0; i < urls.length; i += MAX_CONCURRENT_REQUESTS) {
+    const chunk = urls.slice(i, i + MAX_CONCURRENT_REQUESTS);
+    const chunkResults = await Promise.all(
+      chunk.map(url => crawlPage(url, domain))
+    );
+    results.push(...chunkResults);
+    
+    // Small delay between chunks
+    if (i + MAX_CONCURRENT_REQUESTS < urls.length) {
+      await new Promise(resolve => setTimeout(resolve, CRAWL_DELAY));
+    }
+  }
+  
+  return results;
+}
+
+async function loadTaskState(supabase: any, taskId: string): Promise<TaskState> {
+  const { data: task } = await supabase
+    .from('audit_tasks')
+    .select('task_state')
+    .eq('id', taskId)
+    .single();
+    
+  if (task?.task_state) {
+    return {
+      urlsQueue: task.task_state.urlsQueue || [],
+      visitedUrls: new Set(task.task_state.visitedUrls || []),
+      pages: task.task_state.pages || []
+    };
+  }
+  
+  return {
+    urlsQueue: [],
+    visitedUrls: new Set(),
+    pages: []
+  };
+}
+
+async function saveTaskState(supabase: any, taskId: string, state: TaskState) {
+  await supabase
+    .from('audit_tasks')
+    .update({
+      task_state: {
+        urlsQueue: state.urlsQueue,
+        visitedUrls: Array.from(state.visitedUrls),
+        pages: state.pages
+      }
+    })
+    .eq('id', taskId);
+}
+
 async function processSEOAnalysis(pages: PageData[]) {
   const items = [];
   let totalScore = 0;
   let scoreCount = 0;
 
-  // Meta Titles Analysis
   const missingTitles = pages.filter(p => !p.title || p.title.trim() === '');
   const tooLongTitles = pages.filter(p => p.title && p.title.length > 60);
-  const tooShortTitles = pages.filter(p => p.title && p.title.length < 30);
   
   let titleScore = 100;
   if (missingTitles.length > 0) {
@@ -139,29 +208,14 @@ async function processSEOAnalysis(pages: PageData[]) {
       status: 'error',
       score: 0,
       impact: 'high',
-      affectedUrls: missingTitles.map(p => p.url)
-    });
-  }
-  
-  if (tooLongTitles.length > 0) {
-    titleScore -= 15;
-    items.push({
-      id: 'long-title',
-      title: 'Слишком длинные meta title',
-      description: `${tooLongTitles.length} страниц с title длиннее 60 символов`,
-      status: 'warning',
-      score: 70,
-      impact: 'medium',
-      affectedUrls: tooLongTitles.map(p => p.url)
+      affectedUrls: missingTitles.map(p => p.url).slice(0, 10) // Limit URLs to save space
     });
   }
   
   totalScore += titleScore;
   scoreCount++;
 
-  // H1 Analysis
   const missingH1 = pages.filter(p => !p.h1 || p.h1.length === 0);
-  const multipleH1 = pages.filter(p => p.h1 && p.h1.length > 1);
   
   let h1Score = 100;
   if (missingH1.length > 0) {
@@ -173,14 +227,14 @@ async function processSEOAnalysis(pages: PageData[]) {
       status: 'error',
       score: 0,
       impact: 'high',
-      affectedUrls: missingH1.map(p => p.url)
+      affectedUrls: missingH1.map(p => p.url).slice(0, 10)
     });
   }
   
   totalScore += h1Score;
   scoreCount++;
 
-  const finalScore = Math.round(totalScore / scoreCount);
+  const finalScore = scoreCount > 0 ? Math.round(totalScore / scoreCount) : 100;
   
   return {
     score: finalScore,
@@ -196,7 +250,6 @@ async function processTechnicalAnalysis(pages: PageData[]) {
   let totalScore = 0;
   let scoreCount = 0;
 
-  // HTTPS Analysis
   const httpPages = pages.filter(p => p.url.startsWith('http://'));
   let httpsScore = 100;
   
@@ -209,14 +262,13 @@ async function processTechnicalAnalysis(pages: PageData[]) {
       status: 'error',
       score: 0,
       impact: 'high',
-      affectedUrls: httpPages.map(p => p.url)
+      affectedUrls: httpPages.map(p => p.url).slice(0, 10)
     });
   }
   
   totalScore += httpsScore;
   scoreCount++;
 
-  // Status Codes Analysis
   const clientErrors = pages.filter(p => p.statusCode && p.statusCode >= 400 && p.statusCode < 500);
   const serverErrors = pages.filter(p => p.statusCode && p.statusCode >= 500);
   
@@ -230,49 +282,14 @@ async function processTechnicalAnalysis(pages: PageData[]) {
       status: 'error',
       score: 0,
       impact: 'high',
-      affectedUrls: serverErrors.map(p => p.url)
-    });
-  }
-  
-  if (clientErrors.length > 0) {
-    statusScore -= 30;
-    items.push({
-      id: 'client-errors',
-      title: 'Найдены ошибки 4xx',
-      description: `${clientErrors.length} страниц возвращают ошибки клиента`,
-      status: 'error',
-      score: 30,
-      impact: 'high',
-      affectedUrls: clientErrors.map(p => p.url)
+      affectedUrls: serverErrors.map(p => p.url).slice(0, 10)
     });
   }
   
   totalScore += statusScore;
   scoreCount++;
 
-  // Response Time Analysis
-  const pagesWithLoadTime = pages.filter(p => p.loadTime !== undefined);
-  if (pagesWithLoadTime.length > 0) {
-    const avgLoadTime = pagesWithLoadTime.reduce((sum, p) => sum + (p.loadTime || 0), 0) / pagesWithLoadTime.length;
-    let perfScore = 100;
-    
-    if (avgLoadTime > 3000) {
-      perfScore -= 30;
-      items.push({
-        id: 'slow-response-time',
-        title: 'Медленное время загрузки',
-        description: `Среднее время: ${(avgLoadTime / 1000).toFixed(2)}с`,
-        status: 'error',
-        score: 40,
-        impact: 'high'
-      });
-    }
-    
-    totalScore += perfScore;
-    scoreCount++;
-  }
-
-  const finalScore = Math.round(totalScore / scoreCount);
+  const finalScore = scoreCount > 0 ? Math.round(totalScore / scoreCount) : 100;
   
   return {
     score: finalScore,
@@ -288,17 +305,19 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  const executionStart = Date.now();
+
   try {
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    // Get pending tasks
+    // Get one task to process
     const { data: tasks, error: tasksError } = await supabaseClient
       .from('audit_tasks')
       .select('*')
-      .eq('status', 'queued')
+      .in('status', ['queued', 'processing'])
       .order('created_at', { ascending: true })
       .limit(1);
 
@@ -309,116 +328,163 @@ serve(async (req) => {
     }
 
     const task = tasks[0];
+    const isResuming = task.status === 'processing';
+    const maxPages = task.estimated_pages || 1000;
     
-    // Update task status
-    await supabaseClient
-      .from('audit_tasks')
-      .update({ 
-        status: 'processing',
-        stage: 'crawling',
-        started_at: new Date().toISOString()
-      })
-      .eq('id', task.id);
+    console.log(`${isResuming ? 'Resuming' : 'Starting'} task ${task.id} for URL: ${task.url}`);
+    console.log(`Target: ${maxPages} pages, Already scanned: ${task.pages_scanned || 0}`);
 
-    console.log(`Processing task ${task.id} for URL: ${task.url}`);
-
-    // Extract domain
-    const domain = new URL(task.url).hostname;
-    
-    // Crawl pages
-    const maxPages = task.estimated_pages || 10;
-    const pages: PageData[] = [];
-    const urlsToVisit = [task.url];
-    const visitedUrls = new Set<string>();
-    
-    while (urlsToVisit.length > 0 && pages.length < maxPages) {
-      const currentUrl = urlsToVisit.shift()!;
-      
-      if (visitedUrls.has(currentUrl)) continue;
-      visitedUrls.add(currentUrl);
-      
-      console.log(`Crawling: ${currentUrl}`);
-      const pageData = await crawlPage(currentUrl, domain);
-      pages.push(pageData);
-      
-      // Update progress
+    // Update status if starting fresh
+    if (!isResuming) {
       await supabaseClient
         .from('audit_tasks')
-        .update({
-          pages_scanned: pages.length,
-          progress: Math.round((pages.length / maxPages) * 100),
-          current_url: currentUrl
+        .update({ 
+          status: 'processing',
+          stage: 'crawling',
+          started_at: new Date().toISOString()
         })
         .eq('id', task.id);
+    }
+
+    const domain = new URL(task.url).hostname;
+    
+    // Load or initialize state
+    let state = await loadTaskState(supabaseClient, task.id);
+    
+    if (state.urlsQueue.length === 0 && state.pages.length === 0) {
+      // First run - initialize with start URL
+      state.urlsQueue = [task.url];
+    }
+    
+    // Process batch
+    const batchStart = Date.now();
+    const pagesInBatch: PageData[] = [];
+    
+    while (
+      state.urlsQueue.length > 0 && 
+      state.pages.length < maxPages &&
+      pagesInBatch.length < BATCH_SIZE &&
+      (Date.now() - batchStart) < MAX_EXECUTION_TIME
+    ) {
+      // Get URLs for this iteration
+      const urlsToProcess = [];
+      while (urlsToProcess.length < MAX_CONCURRENT_REQUESTS && state.urlsQueue.length > 0) {
+        const url = state.urlsQueue.shift()!;
+        if (!state.visitedUrls.has(url)) {
+          urlsToProcess.push(url);
+          state.visitedUrls.add(url);
+        }
+      }
       
-      // Add internal links to queue
-      if (pageData.internalLinks && pages.length < maxPages) {
-        for (const link of pageData.internalLinks) {
-          if (!visitedUrls.has(link) && !urlsToVisit.includes(link)) {
-            urlsToVisit.push(link);
+      if (urlsToProcess.length === 0) break;
+      
+      // Crawl batch
+      const batchResults = await crawlBatch(urlsToProcess, domain);
+      pagesInBatch.push(...batchResults);
+      state.pages.push(...batchResults);
+      
+      // Add new URLs to queue
+      for (const page of batchResults) {
+        if (page.internalLinks) {
+          for (const link of page.internalLinks) {
+            if (!state.visitedUrls.has(link) && !state.urlsQueue.includes(link)) {
+              state.urlsQueue.push(link);
+            }
           }
         }
       }
+      
+      // Update progress
+      const progress = Math.min(Math.round((state.pages.length / maxPages) * 100), 100);
+      await supabaseClient
+        .from('audit_tasks')
+        .update({
+          pages_scanned: state.pages.length,
+          progress: progress,
+          current_url: urlsToProcess[0],
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', task.id);
+        
+      console.log(`Processed batch: ${pagesInBatch.length} pages, Total: ${state.pages.length}/${maxPages}`);
     }
+    
+    // Check if we're done or need to continue
+    const isDone = state.pages.length >= maxPages || state.urlsQueue.length === 0;
+    
+    if (isDone) {
+      console.log(`Task ${task.id} crawling complete with ${state.pages.length} pages. Starting analysis...`);
+      
+      // Perform analyses
+      const seoAnalysis = await processSEOAnalysis(state.pages);
+      const technicalAnalysis = await processTechnicalAnalysis(state.pages);
+      
+      const overallScore = Math.round((seoAnalysis.score * 0.4 + technicalAnalysis.score * 0.4 + 100 * 0.2));
 
-    console.log(`Crawled ${pages.length} pages, analyzing...`);
+      // Store results
+      await supabaseClient
+        .from('audit_results')
+        .insert({
+          task_id: task.id,
+          url: task.url,
+          domain: domain,
+          score: overallScore,
+          pages_analyzed: state.pages.length,
+          seo_score: seoAnalysis.score,
+          technical_score: technicalAnalysis.score,
+          seo_data: seoAnalysis,
+          technical_data: technicalAnalysis,
+          pages_data: state.pages,
+          completed_at: new Date().toISOString()
+        });
 
-    // Update stage to analysis
-    await supabaseClient
-      .from('audit_tasks')
-      .update({ stage: 'analyzing' })
-      .eq('id', task.id);
+      // Mark task as completed
+      await supabaseClient
+        .from('audit_tasks')
+        .update({
+          status: 'completed',
+          stage: 'completed',
+          progress: 100,
+          completed_at: new Date().toISOString(),
+          task_state: null // Clear state
+        })
+        .eq('id', task.id);
 
-    // Perform analyses
-    const seoAnalysis = await processSEOAnalysis(pages);
-    const technicalAnalysis = await processTechnicalAnalysis(pages);
-
-    // Calculate overall score
-    const overallScore = Math.round((seoAnalysis.score * 0.4 + technicalAnalysis.score * 0.4 + 100 * 0.2));
-
-    // Store results
-    const auditResult = {
-      task_id: task.id,
-      url: task.url,
-      domain: domain,
-      score: overallScore,
-      pages_analyzed: pages.length,
-      seo_score: seoAnalysis.score,
-      technical_score: technicalAnalysis.score,
-      seo_data: seoAnalysis,
-      technical_data: technicalAnalysis,
-      pages_data: pages,
-      completed_at: new Date().toISOString()
-    };
-
-    await supabaseClient
-      .from('audit_results')
-      .insert(auditResult);
-
-    // Update task as completed
-    await supabaseClient
-      .from('audit_tasks')
-      .update({
-        status: 'completed',
-        stage: 'completed',
-        progress: 100,
-        completed_at: new Date().toISOString()
-      })
-      .eq('id', task.id);
-
-    console.log(`Task ${task.id} completed successfully`);
-
-    return new Response(
-      JSON.stringify({
-        success: true,
-        task_id: task.id,
-        pages_analyzed: pages.length,
-        score: overallScore
-      }),
-      {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-      }
-    );
+      console.log(`Task ${task.id} completed successfully`);
+      
+      return new Response(
+        JSON.stringify({
+          success: true,
+          task_id: task.id,
+          pages_analyzed: state.pages.length,
+          score: overallScore,
+          completed: true
+        }),
+        {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      );
+    } else {
+      // Save state for next batch
+      await saveTaskState(supabaseClient, task.id, state);
+      
+      console.log(`Batch completed. Progress: ${state.pages.length}/${maxPages}. Queue: ${state.urlsQueue.length} URLs remaining`);
+      
+      return new Response(
+        JSON.stringify({
+          success: true,
+          task_id: task.id,
+          pages_analyzed: state.pages.length,
+          progress: Math.round((state.pages.length / maxPages) * 100),
+          remaining_urls: state.urlsQueue.length,
+          completed: false,
+          message: 'Batch processed, more to come'
+        }),
+        {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      );
+    }
 
   } catch (error) {
     console.error('Error in audit-processor:', error);
