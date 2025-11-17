@@ -1,7 +1,16 @@
 import { motion } from 'framer-motion';
-import { Check, Loader2, Circle } from 'lucide-react';
+import { Check, Loader2, Circle, Search, Download, Brain, FileText } from 'lucide-react';
 import { AuditStage } from './types';
 import { Progress } from '@/components/ui/progress';
+
+const STAGE_ICONS = {
+  queued: Circle,
+  discovery: Search,
+  fetching: Download,
+  analysis: Brain,
+  generating: FileText,
+  completed: Check,
+};
 
 interface AuditStageIndicatorProps {
   stages: AuditStage[];
@@ -10,13 +19,15 @@ interface AuditStageIndicatorProps {
 
 export const AuditStageIndicator = ({ stages, currentStage }: AuditStageIndicatorProps) => {
   const getIcon = (stage: AuditStage) => {
+    const IconComponent = STAGE_ICONS[stage.id] || Circle;
+    
     if (stage.status === 'completed') {
       return <Check className="w-5 h-5 text-primary" />;
     }
     if (stage.status === 'active') {
       return <Loader2 className="w-5 h-5 text-primary animate-spin" />;
     }
-    return <Circle className="w-5 h-5 text-muted-foreground" />;
+    return <IconComponent className="w-5 h-5 text-muted-foreground" />;
   };
 
   return (

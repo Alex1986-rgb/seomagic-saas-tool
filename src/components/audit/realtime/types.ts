@@ -12,7 +12,7 @@ export interface FlowNode {
 }
 
 export interface AuditStage {
-  id: string;
+  id: 'discovery' | 'fetching' | 'analysis' | 'generating' | 'completed' | 'queued';
   label: string;
   icon: string;
   progress: number;

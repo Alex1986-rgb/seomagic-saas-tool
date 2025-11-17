@@ -15,6 +15,9 @@ interface AuditStartRequest {
 }
 
 serve(async (req) => {
+  console.log('=== AUDIT START CALLED ===');
+  console.log('Method:', req.method);
+  
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
@@ -33,6 +36,7 @@ serve(async (req) => {
     );
 
     const { url, options }: AuditStartRequest = await req.json();
+    console.log('Request body:', { url, options });
 
     // Validate URL
     if (!url || !url.startsWith('http')) {
@@ -42,8 +46,11 @@ serve(async (req) => {
     const taskType = options?.type || 'quick';
     const maxPages = options?.maxPages || (taskType === 'quick' ? 10 : 100);
 
+    console.log('Task type:', taskType, 'Max pages:', maxPages);
+
     // Get user if authenticated
     const { data: { user } } = await supabaseClient.auth.getUser();
+    console.log('User:', user?.id || 'anonymous');
     
     // For deep audit, require authentication
     if (taskType === 'deep' && !user) {
@@ -83,7 +90,7 @@ serve(async (req) => {
       status: 'queued',
       task_type: taskType,
       estimated_pages: maxPages,
-      stage: 'initialization',
+      stage: 'queued',
       progress: 0,
     };
     
@@ -102,7 +109,10 @@ serve(async (req) => {
       throw taskError;
     }
 
+    console.log('✅ Task created with ID:', task.id);
+
     // Trigger audit processor
+    console.log('Triggering audit processor...');
     await supabaseClient.functions.invoke('audit-processor', {
       body: { task_id: task.id }
     });
