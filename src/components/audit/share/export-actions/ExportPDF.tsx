@@ -37,8 +37,22 @@ const ExportPDF: React.FC<ExportPDFProps> = ({
           description: "PDF-отчет успешно сохранен",
         });
       } else if (auditData) {
-        // Use frontend implementation
-        await generateAuditPdf({ auditData, url });
+        // Use frontend implementation with new PDF generator
+        const pdfBlob = await generateAuditPdf({ 
+          auditData, 
+          url,
+          date: new Date().toISOString()
+        });
+        
+        // Create download link
+        const downloadUrl = URL.createObjectURL(pdfBlob);
+        const link = document.createElement('a');
+        link.href = downloadUrl;
+        link.download = `seo-audit-${new Date().toISOString().split('T')[0]}.pdf`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(downloadUrl);
         
         toast({
           title: "PDF сохранен",
