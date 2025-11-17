@@ -1,1 +1,19 @@
 project_id = "dllusofuxonaemrttmwl"
+
+[functions.audit-start]
+verify_jwt = true
+
+[functions.audit-status]
+verify_jwt = true
+
+[functions.audit-cancel]
+verify_jwt = true
+
+[functions.audit-processor]
+verify_jwt = false
+
+[functions.optimization-start]
+verify_jwt = true
+
+[functions.optimization-status]
+verify_jwt = true

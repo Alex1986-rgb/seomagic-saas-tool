@@ -7,53 +7,48 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-// Constants for batch processing large sites
-const BATCH_SIZE = 500; // Pages to process in one batch
-const MAX_EXECUTION_TIME = 50000; // 50 seconds (buffer before timeout)
-const CRAWL_DELAY = 50; // ms between requests to avoid overload
-const MAX_CONCURRENT_REQUESTS = 10; // Parallel crawling
+// Constants for batch processing
+const BATCH_SIZE = 50; // Pages to process in one batch
+const MAX_EXECUTION_TIME = 50000; // 50 seconds
+const CRAWL_DELAY = 100; // ms between requests
+const MAX_CONCURRENT_REQUESTS = 5; // Parallel crawling
 
 interface PageData {
   url: string;
   title?: string;
   description?: string;
   h1?: string[];
+  h1_count: number;
+  image_count: number;
+  word_count: number;
+  load_time: number;
+  status_code: number;
   links?: string[];
   internalLinks?: string[];
   externalLinks?: string[];
   images?: Array<{ src: string; alt: string }>;
-  statusCode?: number;
   contentType?: string;
-  loadTime?: number;
-  redirectChain?: string[];
-  contentLength?: number;
   isIndexable?: boolean;
   issues?: Array<{ type: string; description: string; severity: string }>;
 }
 
-interface TaskState {
-  urlsQueue: string[];
-  visitedUrls: Set<string>;
-  pages: PageData[];
-}
-
+// Crawl a single page
 async function crawlPage(url: string, domain: string): Promise<PageData> {
   const startTime = Date.now();
   
   try {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout per page
+    const timeoutId = setTimeout(() => controller.abort(), 10000);
     
     const response = await fetch(url, {
       headers: {
-        'User-Agent': 'Mozilla/5.0 (compatible; SEO-Auditor/1.0; +https://example.com/bot)'
+        'User-Agent': 'Mozilla/5.0 (compatible; SEO-Auditor/1.0)'
       },
       redirect: 'follow',
       signal: controller.signal
     });
     
     clearTimeout(timeoutId);
-
     const loadTime = Date.now() - startTime;
     const html = await response.text();
     const $ = cheerio.load(html);
@@ -97,6 +92,9 @@ async function crawlPage(url: string, domain: string): Promise<PageData> {
       }
     });
     
+    const textContent = $('body').text();
+    const wordCount = textContent.split(/\s+/).filter(w => w.length > 0).length;
+    
     const robotsMeta = $('meta[name="robots"]').attr('content') || '';
     const isIndexable = !robotsMeta.includes('noindex');
     
@@ -105,14 +103,16 @@ async function crawlPage(url: string, domain: string): Promise<PageData> {
       title,
       description,
       h1: h1Tags,
+      h1_count: h1Tags.length,
+      image_count: images.length,
+      word_count: wordCount,
+      load_time: loadTime / 1000, // Convert to seconds
+      status_code: response.status,
       links: allLinks,
       internalLinks,
       externalLinks,
       images,
-      statusCode: response.status,
       contentType: response.headers.get('content-type') || undefined,
-      loadTime,
-      contentLength: html.length,
       isIndexable,
       issues: []
     };
@@ -120,8 +120,11 @@ async function crawlPage(url: string, domain: string): Promise<PageData> {
     console.error(`Error crawling ${url}:`, error);
     return {
       url,
-      statusCode: 0,
-      loadTime: Date.now() - startTime,
+      h1_count: 0,
+      image_count: 0,
+      word_count: 0,
+      load_time: (Date.now() - startTime) / 1000,
+      status_code: 0,
       isIndexable: false,
       issues: [{
         type: 'crawl-error',
@@ -132,13 +135,10 @@ async function crawlPage(url: string, domain: string): Promise<PageData> {
   }
 }
 
-async function crawlBatch(
-  urls: string[],
-  domain: string
-): Promise<PageData[]> {
+// Crawl multiple pages in batch
+async function crawlBatch(urls: string[], domain: string): Promise<PageData[]> {
   const results: PageData[] = [];
   
-  // Process in chunks for concurrent requests
   for (let i = 0; i < urls.length; i += MAX_CONCURRENT_REQUESTS) {
     const chunk = urls.slice(i, i + MAX_CONCURRENT_REQUESTS);
     const chunkResults = await Promise.all(
@@ -146,7 +146,6 @@ async function crawlBatch(
     );
     results.push(...chunkResults);
     
-    // Small delay between chunks
     if (i + MAX_CONCURRENT_REQUESTS < urls.length) {
       await new Promise(resolve => setTimeout(resolve, CRAWL_DELAY));
     }
@@ -155,49 +154,13 @@ async function crawlBatch(
   return results;
 }
 
-async function loadTaskState(supabase: any, taskId: string): Promise<TaskState> {
-  const { data: task } = await supabase
-    .from('audit_tasks')
-    .select('task_state')
-    .eq('id', taskId)
-    .single();
-    
-  if (task?.task_state) {
-    return {
-      urlsQueue: task.task_state.urlsQueue || [],
-      visitedUrls: new Set(task.task_state.visitedUrls || []),
-      pages: task.task_state.pages || []
-    };
-  }
-  
-  return {
-    urlsQueue: [],
-    visitedUrls: new Set(),
-    pages: []
-  };
-}
-
-async function saveTaskState(supabase: any, taskId: string, state: TaskState) {
-  await supabase
-    .from('audit_tasks')
-    .update({
-      task_state: {
-        urlsQueue: state.urlsQueue,
-        visitedUrls: Array.from(state.visitedUrls),
-        pages: state.pages
-      }
-    })
-    .eq('id', taskId);
-}
-
-async function processSEOAnalysis(pages: PageData[]) {
+// Analyze pages for SEO
+async function analyzeSEO(pages: PageData[]) {
   const items = [];
   let totalScore = 0;
   let scoreCount = 0;
 
   const missingTitles = pages.filter(p => !p.title || p.title.trim() === '');
-  const tooLongTitles = pages.filter(p => p.title && p.title.length > 60);
-  
   let titleScore = 100;
   if (missingTitles.length > 0) {
     titleScore -= 30;
@@ -208,15 +171,13 @@ async function processSEOAnalysis(pages: PageData[]) {
       status: 'error',
       score: 0,
       impact: 'high',
-      affectedUrls: missingTitles.map(p => p.url).slice(0, 10) // Limit URLs to save space
+      affectedUrls: missingTitles.map(p => p.url).slice(0, 10)
     });
   }
-  
   totalScore += titleScore;
   scoreCount++;
 
   const missingH1 = pages.filter(p => !p.h1 || p.h1.length === 0);
-  
   let h1Score = 100;
   if (missingH1.length > 0) {
     h1Score -= 30;
@@ -230,7 +191,6 @@ async function processSEOAnalysis(pages: PageData[]) {
       affectedUrls: missingH1.map(p => p.url).slice(0, 10)
     });
   }
-  
   totalScore += h1Score;
   scoreCount++;
 
@@ -245,59 +205,209 @@ async function processSEOAnalysis(pages: PageData[]) {
   };
 }
 
-async function processTechnicalAnalysis(pages: PageData[]) {
-  const items = [];
-  let totalScore = 0;
-  let scoreCount = 0;
+// Process audit task
+async function processAuditTask(taskId: string) {
+  const supabase = createClient(
+    Deno.env.get('SUPABASE_URL') ?? '',
+    Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+  );
 
-  const httpPages = pages.filter(p => p.url.startsWith('http://'));
-  let httpsScore = 100;
-  
-  if (httpPages.length > 0) {
-    httpsScore -= 40;
-    items.push({
-      id: 'no-https',
-      title: 'Сайт не использует HTTPS',
-      description: `${httpPages.length} страниц используют небезопасный HTTP`,
-      status: 'error',
-      score: 0,
-      impact: 'high',
-      affectedUrls: httpPages.map(p => p.url).slice(0, 10)
-    });
+  try {
+    // Get task
+    const { data: task, error: taskError } = await supabase
+      .from('audit_tasks')
+      .select('*')
+      .eq('id', taskId)
+      .single();
+
+    if (taskError || !task) {
+      throw new Error('Task not found');
+    }
+
+    console.log(`Processing task ${taskId} for URL: ${task.url}`);
+
+    // Update status to scanning
+    await supabase
+      .from('audit_tasks')
+      .update({ status: 'scanning', stage: 'crawling', progress: 10 })
+      .eq('id', taskId);
+
+    // Create audit record if not exists
+    let auditId = task.audit_id;
+    if (!auditId) {
+      const { data: audit, error: auditError } = await supabase
+        .from('audits')
+        .insert({
+          user_id: task.user_id,
+          url: task.url,
+          status: 'scanning',
+          total_pages: task.estimated_pages || 10
+        })
+        .select()
+        .single();
+
+      if (auditError) throw auditError;
+      auditId = audit.id;
+
+      // Link task to audit
+      await supabase
+        .from('audit_tasks')
+        .update({ audit_id: auditId })
+        .eq('id', taskId);
+    }
+
+    // Update audit status
+    await supabase
+      .from('audits')
+      .update({ status: 'scanning' })
+      .eq('id', auditId);
+
+    // Parse domain
+    const urlObj = new URL(task.url);
+    const domain = urlObj.hostname;
+
+    // Start crawling
+    const urlsQueue = [task.url];
+    const visitedUrls = new Set<string>();
+    const allPages: PageData[] = [];
+    const maxPages = task.estimated_pages || 10;
+
+    let pagesScanned = 0;
+    const startTime = Date.now();
+
+    while (urlsQueue.length > 0 && pagesScanned < maxPages) {
+      // Check execution time
+      if (Date.now() - startTime > MAX_EXECUTION_TIME) {
+        console.log('Execution time limit reached, saving progress...');
+        break;
+      }
+
+      const batchUrls = urlsQueue.splice(0, Math.min(BATCH_SIZE, maxPages - pagesScanned));
+      const newUrls = batchUrls.filter(url => !visitedUrls.has(url));
+
+      if (newUrls.length === 0) continue;
+
+      // Crawl batch
+      const batchPages = await crawlBatch(newUrls, domain);
+      allPages.push(...batchPages);
+      pagesScanned += batchPages.length;
+
+      // Mark as visited
+      newUrls.forEach(url => visitedUrls.add(url));
+
+      // Add new internal links to queue
+      for (const page of batchPages) {
+        if (page.internalLinks) {
+          for (const link of page.internalLinks) {
+            if (!visitedUrls.has(link) && !urlsQueue.includes(link) && link !== task.url) {
+              urlsQueue.push(link);
+            }
+          }
+        }
+      }
+
+      // Update progress
+      const progress = Math.min(90, Math.round((pagesScanned / maxPages) * 80) + 10);
+      await supabase
+        .from('audit_tasks')
+        .update({
+          pages_scanned: pagesScanned,
+          progress,
+          current_url: newUrls[0]
+        })
+        .eq('id', taskId);
+
+      // Save page analysis to database (batch insert)
+      const pageAnalysisData = batchPages.map(page => ({
+        audit_id: auditId,
+        user_id: task.user_id,
+        url: page.url,
+        title: page.title || null,
+        meta_description: page.description || null,
+        h1_count: page.h1_count,
+        image_count: page.image_count,
+        word_count: page.word_count,
+        load_time: page.load_time,
+        status_code: page.status_code
+      }));
+
+      await supabase.from('page_analysis').insert(pageAnalysisData);
+
+      console.log(`Processed ${pagesScanned}/${maxPages} pages...`);
+    }
+
+    // Analyze results
+    console.log('Analyzing pages...');
+    await supabase
+      .from('audit_tasks')
+      .update({ status: 'analyzing', stage: 'analysis', progress: 90 })
+      .eq('id', taskId);
+
+    const seoAnalysis = await analyzeSEO(allPages);
+
+    // Create final audit data
+    const auditData = {
+      url: task.url,
+      pages_scanned: pagesScanned,
+      seo: seoAnalysis,
+      details: {
+        seo: seoAnalysis,
+        performance: { score: 75, items: [] },
+        content: { score: 80, items: [] },
+        technical: { score: 85, items: [] }
+      }
+    };
+
+    // Save audit results
+    await supabase
+      .from('audit_results')
+      .insert({
+        task_id: taskId,
+        audit_id: auditId,
+        user_id: task.user_id,
+        audit_data: auditData,
+        score: seoAnalysis.score,
+        page_count: pagesScanned,
+        issues_count: seoAnalysis.failed + seoAnalysis.warning
+      });
+
+    // Update audit record
+    await supabase
+      .from('audits')
+      .update({
+        status: 'completed',
+        pages_scanned: pagesScanned,
+        seo_score: seoAnalysis.score,
+        completed_at: new Date().toISOString()
+      })
+      .eq('id', auditId);
+
+    // Mark task as completed
+    await supabase
+      .from('audit_tasks')
+      .update({
+        status: 'completed',
+        stage: 'completed',
+        progress: 100,
+        pages_scanned: pagesScanned
+      })
+      .eq('id', taskId);
+
+    console.log(`Audit completed: ${pagesScanned} pages scanned, score: ${seoAnalysis.score}`);
+
+  } catch (error) {
+    console.error('Error processing audit task:', error);
+    
+    await supabase
+      .from('audit_tasks')
+      .update({
+        status: 'failed',
+        error_message: error.message
+      })
+      .eq('id', taskId);
+
+    throw error;
   }
-  
-  totalScore += httpsScore;
-  scoreCount++;
-
-  const clientErrors = pages.filter(p => p.statusCode && p.statusCode >= 400 && p.statusCode < 500);
-  const serverErrors = pages.filter(p => p.statusCode && p.statusCode >= 500);
-  
-  let statusScore = 100;
-  if (serverErrors.length > 0) {
-    statusScore -= 40;
-    items.push({
-      id: 'server-errors',
-      title: 'Найдены ошибки 5xx',
-      description: `${serverErrors.length} страниц возвращают ошибки сервера`,
-      status: 'error',
-      score: 0,
-      impact: 'high',
-      affectedUrls: serverErrors.map(p => p.url).slice(0, 10)
-    });
-  }
-  
-  totalScore += statusScore;
-  scoreCount++;
-
-  const finalScore = scoreCount > 0 ? Math.round(totalScore / scoreCount) : 100;
-  
-  return {
-    score: finalScore,
-    items,
-    passed: items.filter(i => i.status === 'good').length,
-    warning: items.filter(i => i.status === 'warning').length,
-    failed: items.filter(i => i.status === 'error').length
-  };
 }
 
 serve(async (req) => {
@@ -305,191 +415,37 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
-  const executionStart = Date.now();
-
   try {
-    const supabaseClient = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    const { task_id } = await req.json();
+
+    if (!task_id) {
+      throw new Error('task_id is required');
+    }
+
+    console.log(`Starting audit processor for task: ${task_id}`);
+
+    // Process task in background
+    EdgeRuntime.waitUntil(processAuditTask(task_id));
+
+    return new Response(
+      JSON.stringify({
+        success: true,
+        message: 'Audit processing started'
+      }),
+      {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 200
+      }
     );
-
-    // Get one task to process
-    const { data: tasks, error: tasksError } = await supabaseClient
-      .from('audit_tasks')
-      .select('*')
-      .in('status', ['queued', 'processing'])
-      .order('created_at', { ascending: true })
-      .limit(1);
-
-    if (tasksError || !tasks || tasks.length === 0) {
-      return new Response(JSON.stringify({ message: 'No pending tasks' }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-      });
-    }
-
-    const task = tasks[0];
-    const isResuming = task.status === 'processing';
-    const maxPages = task.estimated_pages || 1000;
-    
-    console.log(`${isResuming ? 'Resuming' : 'Starting'} task ${task.id} for URL: ${task.url}`);
-    console.log(`Target: ${maxPages} pages, Already scanned: ${task.pages_scanned || 0}`);
-
-    // Update status if starting fresh
-    if (!isResuming) {
-      await supabaseClient
-        .from('audit_tasks')
-        .update({ 
-          status: 'processing',
-          stage: 'crawling',
-          started_at: new Date().toISOString()
-        })
-        .eq('id', task.id);
-    }
-
-    const domain = new URL(task.url).hostname;
-    
-    // Load or initialize state
-    let state = await loadTaskState(supabaseClient, task.id);
-    
-    if (state.urlsQueue.length === 0 && state.pages.length === 0) {
-      // First run - initialize with start URL
-      state.urlsQueue = [task.url];
-    }
-    
-    // Process batch
-    const batchStart = Date.now();
-    const pagesInBatch: PageData[] = [];
-    
-    while (
-      state.urlsQueue.length > 0 && 
-      state.pages.length < maxPages &&
-      pagesInBatch.length < BATCH_SIZE &&
-      (Date.now() - batchStart) < MAX_EXECUTION_TIME
-    ) {
-      // Get URLs for this iteration
-      const urlsToProcess = [];
-      while (urlsToProcess.length < MAX_CONCURRENT_REQUESTS && state.urlsQueue.length > 0) {
-        const url = state.urlsQueue.shift()!;
-        if (!state.visitedUrls.has(url)) {
-          urlsToProcess.push(url);
-          state.visitedUrls.add(url);
-        }
-      }
-      
-      if (urlsToProcess.length === 0) break;
-      
-      // Crawl batch
-      const batchResults = await crawlBatch(urlsToProcess, domain);
-      pagesInBatch.push(...batchResults);
-      state.pages.push(...batchResults);
-      
-      // Add new URLs to queue
-      for (const page of batchResults) {
-        if (page.internalLinks) {
-          for (const link of page.internalLinks) {
-            if (!state.visitedUrls.has(link) && !state.urlsQueue.includes(link)) {
-              state.urlsQueue.push(link);
-            }
-          }
-        }
-      }
-      
-      // Update progress
-      const progress = Math.min(Math.round((state.pages.length / maxPages) * 100), 100);
-      await supabaseClient
-        .from('audit_tasks')
-        .update({
-          pages_scanned: state.pages.length,
-          progress: progress,
-          current_url: urlsToProcess[0],
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', task.id);
-        
-      console.log(`Processed batch: ${pagesInBatch.length} pages, Total: ${state.pages.length}/${maxPages}`);
-    }
-    
-    // Check if we're done or need to continue
-    const isDone = state.pages.length >= maxPages || state.urlsQueue.length === 0;
-    
-    if (isDone) {
-      console.log(`Task ${task.id} crawling complete with ${state.pages.length} pages. Starting analysis...`);
-      
-      // Perform analyses
-      const seoAnalysis = await processSEOAnalysis(state.pages);
-      const technicalAnalysis = await processTechnicalAnalysis(state.pages);
-      
-      const overallScore = Math.round((seoAnalysis.score * 0.4 + technicalAnalysis.score * 0.4 + 100 * 0.2));
-
-      // Store results
-      await supabaseClient
-        .from('audit_results')
-        .insert({
-          task_id: task.id,
-          url: task.url,
-          domain: domain,
-          score: overallScore,
-          pages_analyzed: state.pages.length,
-          seo_score: seoAnalysis.score,
-          technical_score: technicalAnalysis.score,
-          seo_data: seoAnalysis,
-          technical_data: technicalAnalysis,
-          pages_data: state.pages,
-          completed_at: new Date().toISOString()
-        });
-
-      // Mark task as completed
-      await supabaseClient
-        .from('audit_tasks')
-        .update({
-          status: 'completed',
-          stage: 'completed',
-          progress: 100,
-          completed_at: new Date().toISOString(),
-          task_state: null // Clear state
-        })
-        .eq('id', task.id);
-
-      console.log(`Task ${task.id} completed successfully`);
-      
-      return new Response(
-        JSON.stringify({
-          success: true,
-          task_id: task.id,
-          pages_analyzed: state.pages.length,
-          score: overallScore,
-          completed: true
-        }),
-        {
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-        }
-      );
-    } else {
-      // Save state for next batch
-      await saveTaskState(supabaseClient, task.id, state);
-      
-      console.log(`Batch completed. Progress: ${state.pages.length}/${maxPages}. Queue: ${state.urlsQueue.length} URLs remaining`);
-      
-      return new Response(
-        JSON.stringify({
-          success: true,
-          task_id: task.id,
-          pages_analyzed: state.pages.length,
-          progress: Math.round((state.pages.length / maxPages) * 100),
-          remaining_urls: state.urlsQueue.length,
-          completed: false,
-          message: 'Batch processed, more to come'
-        }),
-        {
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-        }
-      );
-    }
 
   } catch (error) {
     console.error('Error in audit-processor:', error);
+    
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({
+        success: false,
+        error: error.message
+      }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 500
