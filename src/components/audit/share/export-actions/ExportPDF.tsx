@@ -9,6 +9,7 @@ import { OptimizationItem } from '@/features/audit/types/optimization-types';
 import { seoApiService } from '@/api/seoApiService';
 import { PdfCustomizationDialog, PdfCustomizationOptions } from '../pdf-customization';
 import { usePdfLocalStorage } from '@/hooks/usePdfLocalStorage';
+import { supabase } from '@/integrations/supabase/client';
 
 interface ExportPDFProps {
   auditData?: AuditData;
@@ -80,6 +81,39 @@ const ExportPDF: React.FC<ExportPDFProps> = ({
         });
         
         setProgress('Сохранение файла...');
+        
+        // Save to database if user is authenticated
+        const { data: { user } } = await supabase.auth.getUser();
+        
+        if (user) {
+          try {
+            // Upload PDF to storage
+            const fileName = `${user.id}/${hostname}_${new Date().toISOString().split('T')[0]}.pdf`;
+            const { error: uploadError } = await supabase.storage
+              .from('pdf-reports')
+              .upload(fileName, pdfBlob, {
+                contentType: 'application/pdf',
+                upsert: true
+              });
+            
+            if (!uploadError) {
+              // Save metadata to database
+              await supabase.from('pdf_reports').insert({
+                user_id: user.id,
+                url,
+                task_id: taskId || null,
+                report_title: customOptions?.reportTitle || 'SEO Аудит сайта',
+                company_name: customOptions?.companyName,
+                sections_included: customOptions || {},
+                file_size: pdfBlob.size,
+                file_path: fileName
+              });
+            }
+          } catch (dbError) {
+            console.error('Error saving to database:', dbError);
+            // Continue with download even if database save fails
+          }
+        }
         
         // Create download link
         const downloadUrl = URL.createObjectURL(pdfBlob);

@@ -2,6 +2,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { SitemapExtractor } from '../services/audit/crawler/sitemapExtractor';
 import { firecrawlService } from '../services/api/firecrawl/index';
 import { CrawlTask } from '../services/api/firecrawl/types';
+import { supabase } from '@/integrations/supabase/client';
 
 export type ScanDetails = {
   current_url: string;
@@ -95,16 +96,6 @@ class SeoApiService {
         pageCount: 0,
         status: 'error'
       };
-    }
-  }
-
-  async getPageAnalysis(auditId: string) {
-    try {
-      // Mock implementation for now
-      return [];
-    } catch (error) {
-      console.error('Error getting page analysis:', error);
-      return [];
     }
   }
 
@@ -204,6 +195,31 @@ class SeoApiService {
         success: false,
         message: error instanceof Error ? error.message : "Ошибка при оптимизации контента"
       };
+    }
+  }
+
+  async getPageAnalysis(auditId: string): Promise<any[]> {
+    try {
+      const { data, error } = await supabase
+        .from('page_analysis')
+        .select('*')
+        .eq('audit_id', auditId);
+      
+      if (error) throw error;
+      
+      return (data || []).map(item => ({
+        url: item.url,
+        title: item.title || '',
+        meta_description: item.meta_description || '',
+        h1_count: item.h1_count || 0,
+        image_count: item.image_count || 0,
+        word_count: item.word_count || 0,
+        load_time: item.load_time || 0,
+        status_code: item.status_code || 200
+      }));
+    } catch (error) {
+      console.error('Error fetching page analysis:', error);
+      throw error;
     }
   }
 }
