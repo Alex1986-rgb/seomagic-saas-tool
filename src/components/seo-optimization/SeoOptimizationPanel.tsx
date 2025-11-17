@@ -1,5 +1,5 @@
 
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -10,7 +10,6 @@ import { useSeoOptimization } from "@/hooks/useSeoOptimization";
 import UrlInput from "./components/UrlInput";
 import ApiKeyInput from "./components/ApiKeyInput";
 import AdvancedOptionsPanel from "./components/AdvancedOptionsPanel";
-import { openaiService } from "@/services/api/openaiService";
 
 const SeoOptimizationPanel: React.FC = () => {
   const {
@@ -18,24 +17,15 @@ const SeoOptimizationPanel: React.FC = () => {
     taskId,
     isLoading,
     isValid,
-    openaiKey,
     task,
     advancedOptions,
     handleUrlChange,
-    handleApiKeyChange,
     toggleOption,
     startOptimization,
     setAdvancedOptions,
   } = useSeoOptimization();
 
   const [activeTab, setActiveTab] = useState("crawler");
-
-  useEffect(() => {
-    const apiKey = openaiService.getApiKey();
-    if (apiKey) {
-      handleApiKeyChange({ target: { value: apiKey } } as React.ChangeEvent<HTMLInputElement>);
-    }
-  }, []);
 
   const getDomain = (url: string) => {
     try {
@@ -73,7 +63,7 @@ const SeoOptimizationPanel: React.FC = () => {
             </CardHeader>
             <CardContent className="space-y-6">
               <UrlInput url={url} isValid={isValid} onChange={handleUrlChange} />
-              <ApiKeyInput openaiKey={openaiKey} onChange={handleApiKeyChange} />
+              <ApiKeyInput />
               <AdvancedOptionsPanel 
                 options={advancedOptions}
                 onToggle={toggleOption}
@@ -81,7 +71,7 @@ const SeoOptimizationPanel: React.FC = () => {
               />
               <Button 
                 onClick={startOptimization} 
-                disabled={!isValid || (!openaiKey && !openaiService.getApiKey()) || isLoading}
+                disabled={!isValid || isLoading}
                 className="w-full"
               >
                 {isLoading ? (
