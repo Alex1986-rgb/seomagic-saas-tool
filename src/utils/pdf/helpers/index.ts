@@ -5,9 +5,43 @@ import jsPDF from 'jspdf';
  * Extends jsPDF with additional methods
  */
 export function extendJsPDF(doc: jsPDF): void {
-  // This function is a placeholder for any extensions
-  // In a real implementation, this would extend jsPDF with custom methods
-  // But for now we're just using it as a hook for consistency
+  // Добавляем метод textWithLink для кликабельных ссылок
+  if (!(doc as any).textWithLink) {
+    (doc as any).textWithLink = function(
+      text: string,
+      x: number,
+      y: number,
+      options?: {
+        pageNumber?: number;
+        url?: string;
+        align?: 'left' | 'center' | 'right';
+      }
+    ) {
+      const opts = options || {};
+      
+      // Отрисовываем текст
+      this.text(text, x, y, { align: opts.align });
+      
+      // Получаем ширину текста для создания области клика
+      const textWidth = this.getTextWidth(text);
+      let linkX = x;
+      
+      if (opts.align === 'center') {
+        linkX = x - textWidth / 2;
+      } else if (opts.align === 'right') {
+        linkX = x - textWidth;
+      }
+      
+      // Добавляем ссылку
+      if (opts.pageNumber) {
+        this.link(linkX, y - 4, textWidth, 5, { pageNumber: opts.pageNumber });
+      } else if (opts.url) {
+        this.link(linkX, y - 4, textWidth, 5, { url: opts.url });
+      }
+      
+      return this;
+    };
+  }
 }
 
 /**
