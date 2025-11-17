@@ -12,5 +12,26 @@ verify_jwt = true
 [functions.optimization-calculate]
 verify_jwt = true
 
+[functions.optimization-start]
+verify_jwt = true
+
+[functions.optimization-content]
+verify_jwt = true
+
+[functions.optimization-status]
+verify_jwt = true
+
+[functions.report-generate]
+verify_jwt = true
+
+[functions.report-download]
+verify_jwt = true
+
+[functions.sitemap-export]
+verify_jwt = true
+
 [functions.send-email]
 verify_jwt = true
+
+[functions.health-check]
+verify_jwt = false
