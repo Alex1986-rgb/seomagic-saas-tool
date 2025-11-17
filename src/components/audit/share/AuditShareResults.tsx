@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Copy, Mail, Share } from 'lucide-react';
 import { AuditData, AuditHistoryItem } from '@/types/audit';
+import { OptimizationItem } from '@/features/audit/types/optimization-types';
 import SocialShareButtons from './SocialShareButtons';
 import CopyLinkButton from './CopyLinkButton';
 import EmailShareButton from './EmailShareButton';
@@ -19,6 +20,9 @@ interface AuditShareResultsProps {
   historyItems?: AuditHistoryItem[];
   urls?: string[];
   taskId?: string | null;
+  optimizationItems?: OptimizationItem[];
+  optimizationCost?: number;
+  pageStats?: any;
 }
 
 const AuditShareResults: React.FC<AuditShareResultsProps> = ({ 
@@ -27,7 +31,10 @@ const AuditShareResults: React.FC<AuditShareResultsProps> = ({
   url, 
   historyItems,
   urls,
-  taskId
+  taskId,
+  optimizationItems,
+  optimizationCost,
+  pageStats
 }) => {
   const [shareUrl, setShareUrl] = useState<string>('');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -142,6 +149,9 @@ const AuditShareResults: React.FC<AuditShareResultsProps> = ({
           historyItems={historyItems}
           urls={urls}
           taskId={taskId}
+          optimizationItems={optimizationItems}
+          optimizationCost={optimizationCost}
+          pageStats={pageStats}
         />
       </div>
       

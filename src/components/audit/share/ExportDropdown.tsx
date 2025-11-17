@@ -10,6 +10,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { AuditData, AuditHistoryItem } from '@/types/audit';
+import { OptimizationItem } from '@/features/audit/types/optimization-types';
 import { 
   ExportPDF, 
   ExportJSON, 
@@ -26,6 +27,9 @@ interface ExportDropdownProps {
   historyItems?: AuditHistoryItem[];
   urls?: string[];
   taskId?: string | null;
+  optimizationItems?: OptimizationItem[];
+  optimizationCost?: number;
+  pageStats?: any;
 }
 
 const ExportDropdown: React.FC<ExportDropdownProps> = ({ 
@@ -33,7 +37,10 @@ const ExportDropdown: React.FC<ExportDropdownProps> = ({
   url,
   historyItems,
   urls,
-  taskId
+  taskId,
+  optimizationItems,
+  optimizationCost,
+  pageStats
 }) => {
   const [isExporting, setIsExporting] = useState<string | null>(null);
   
@@ -55,6 +62,9 @@ const ExportDropdown: React.FC<ExportDropdownProps> = ({
           isExporting={isExporting}
           setIsExporting={setIsExporting}
           taskId={taskId}
+          optimizationItems={optimizationItems}
+          optimizationCost={optimizationCost}
+          pageStats={pageStats}
         />
         
         <ExportErrorReport
