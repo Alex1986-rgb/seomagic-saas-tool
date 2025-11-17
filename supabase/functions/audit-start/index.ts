@@ -32,11 +32,6 @@ serve(async (req) => {
       }
     );
 
-    const { data: { user }, error: userError } = await supabaseClient.auth.getUser();
-    if (userError || !user) {
-      throw new Error('Unauthorized');
-    }
-
     const { url, options }: AuditStartRequest = await req.json();
 
     // Validate URL
@@ -47,17 +42,32 @@ serve(async (req) => {
     const taskType = options?.type || 'quick';
     const maxPages = options?.maxPages || (taskType === 'quick' ? 10 : 100);
 
+    // Get user if authenticated
+    const { data: { user } } = await supabaseClient.auth.getUser();
+    
+    // For deep audit, require authentication
+    if (taskType === 'deep' && !user) {
+      throw new Error('Authentication required for deep audit');
+    }
+    
+    const userId = user?.id || null;
+
     console.log(`Starting ${taskType} audit for ${url}, max pages: ${maxPages}`);
 
     // Create audit record first
+    const auditData: any = {
+      url: url,
+      status: 'pending',
+      total_pages: maxPages,
+    };
+    
+    if (userId) {
+      auditData.user_id = userId;
+    }
+    
     const { data: audit, error: auditError } = await supabaseClient
       .from('audits')
-      .insert({
-        user_id: user.id,
-        url: url,
-        status: 'pending',
-        total_pages: maxPages,
-      })
+      .insert(auditData)
       .select()
       .single();
 
@@ -67,18 +77,23 @@ serve(async (req) => {
     }
 
     // Create audit task linked to audit
+    const taskData: any = {
+      audit_id: audit.id,
+      url: url,
+      status: 'queued',
+      task_type: taskType,
+      estimated_pages: maxPages,
+      stage: 'initialization',
+      progress: 0,
+    };
+    
+    if (userId) {
+      taskData.user_id = userId;
+    }
+    
     const { data: task, error: taskError } = await supabaseClient
       .from('audit_tasks')
-      .insert({
-        audit_id: audit.id,
-        user_id: user.id,
-        url: url,
-        status: 'queued',
-        task_type: taskType,
-        estimated_pages: maxPages,
-        stage: 'initialization',
-        progress: 0,
-      })
+      .insert(taskData)
       .select()
       .single();
 
@@ -92,15 +107,17 @@ serve(async (req) => {
       body: { task_id: task.id }
     });
 
-    // Log API call
-    await supabaseClient.from('api_logs').insert({
-      user_id: user.id,
-      function_name: 'audit-start',
-      request_data: { url, options },
-      response_data: { task_id: task.id },
-      status_code: 200,
-      duration_ms: Date.now() - startTime,
-    });
+    // Log API call (only if user is authenticated)
+    if (userId) {
+      await supabaseClient.from('api_logs').insert({
+        user_id: userId,
+        function_name: 'audit-start',
+        request_data: { url, options },
+        response_data: { task_id: task.id },
+        status_code: 200,
+        duration_ms: Date.now() - startTime,
+      });
+    }
 
     return new Response(
       JSON.stringify({
