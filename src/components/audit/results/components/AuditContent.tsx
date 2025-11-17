@@ -18,6 +18,10 @@ interface AuditContentProps {
     pages_scanned: number;
     estimated_pages: number;
     current_url: string;
+    stage?: string;
+    progress?: number;
+    status?: string;
+    audit_data?: any;
   };
   auditData: any;
   recommendations: any;

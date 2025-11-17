@@ -22,6 +22,17 @@ export const AuditRealtimeVisualizer = ({ url, statusData }: AuditRealtimeVisual
   const progress = statusData?.progress || 0;
   const stage = statusData?.stage || 'initialization';
 
+  // Debug logging
+  console.log('AuditRealtimeVisualizer render:', { 
+    url,
+    statusData, 
+    progress, 
+    stage, 
+    metricsCount: metrics.pagesScanned,
+    issuesCount: issues.length,
+    flowNodesCount: flowNodes.length
+  });
+
   return (
     <div className="space-y-6 animate-fade-in">
       {/* Header */}
