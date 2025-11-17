@@ -8,9 +8,19 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { PageAnalysisData } from '@/hooks/use-page-analysis';
 import { ExternalLink, AlertCircle, CheckCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+
+interface PageAnalysisData {
+  url: string;
+  title: string | null;
+  metaDescription: string | null;
+  h1Count: number;
+  imageCount: number;
+  wordCount: number;
+  loadTime: number | null;
+  statusCode: number | null;
+}
 
 interface PageAnalysisTableProps {
   data: PageAnalysisData[];

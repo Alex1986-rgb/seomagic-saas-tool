@@ -16,30 +16,56 @@ export type Database = {
     Tables: {
       page_analysis: {
         Row: {
-          analysis_data: Json | null
+          audit_id: string | null
           created_at: string | null
+          h1_count: number | null
           id: string
-          score: number | null
+          image_count: number | null
+          load_time: number | null
+          meta_description: string | null
+          status_code: number | null
+          title: string | null
           url: string
           user_id: string | null
+          word_count: number | null
         }
         Insert: {
-          analysis_data?: Json | null
+          audit_id?: string | null
           created_at?: string | null
+          h1_count?: number | null
           id?: string
-          score?: number | null
+          image_count?: number | null
+          load_time?: number | null
+          meta_description?: string | null
+          status_code?: number | null
+          title?: string | null
           url: string
           user_id?: string | null
+          word_count?: number | null
         }
         Update: {
-          analysis_data?: Json | null
+          audit_id?: string | null
           created_at?: string | null
+          h1_count?: number | null
           id?: string
-          score?: number | null
+          image_count?: number | null
+          load_time?: number | null
+          meta_description?: string | null
+          status_code?: number | null
+          title?: string | null
           url?: string
           user_id?: string | null
+          word_count?: number | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "page_analysis_audit_id_fkey"
+            columns: ["audit_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       pdf_reports: {
         Row: {

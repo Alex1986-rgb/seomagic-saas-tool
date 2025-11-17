@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { usePageAnalysis } from '@/hooks/use-page-analysis';
+import { usePageAnalysis } from '../hooks/usePageAnalysis';
 import PageAnalysisTable from './PageAnalysisTable';
 
 interface AuditPageAnalysisSectionProps {

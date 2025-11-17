@@ -1,7 +1,7 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
-import { seoApiService } from '@/api/seoApiService';
+import { supabase } from '@/integrations/supabase/client';
 
 /**
  * Хук для получения и управления данными анализа страниц
@@ -14,7 +14,27 @@ export const usePageAnalysis = (auditId: string | undefined) => {
   // Получение данных анализа страниц с помощью React Query
   const { data, isLoading, error } = useQuery({
     queryKey: ['pageAnalysis', auditId],
-    queryFn: () => auditId ? seoApiService.getPageAnalysis(auditId) : Promise.resolve([]),
+    queryFn: async () => {
+      if (!auditId) return [];
+      
+      const { data: analysisData, error } = await supabase
+        .from('page_analysis')
+        .select('*')
+        .eq('audit_id', auditId);
+      
+      if (error) throw error;
+      
+      return (analysisData || []).map(item => ({
+        url: item.url,
+        title: item.title || '',
+        metaDescription: item.meta_description || '',
+        h1Count: item.h1_count || 0,
+        imageCount: item.image_count || 0,
+        wordCount: item.word_count || 0,
+        loadTime: item.load_time || 0,
+        statusCode: item.status_code || 200
+      }));
+    },
     enabled: !!auditId
   });
 
@@ -23,9 +43,8 @@ export const usePageAnalysis = (auditId: string | undefined) => {
     ? data
         .filter(page => {
           if (filter === 'all') return true;
-          if (filter === 'withIssues') return page.issues && page.issues.length > 0;
-          if (filter === 'noMeta') return !page.meta_description || page.meta_description.length < 10;
-          if (filter === 'slowPages') return page.load_time > 1.5;
+          if (filter === 'noMeta') return !page.metaDescription || page.metaDescription.length < 10;
+          if (filter === 'slowPages') return page.loadTime > 1.5;
           return true;
         })
         .sort((a, b) => {
