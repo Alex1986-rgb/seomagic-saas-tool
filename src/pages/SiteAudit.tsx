@@ -1,21 +1,23 @@
-
 import React, { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useToast } from "@/hooks/use-toast";
 import Layout from '@/components/Layout';
 import { AuditProvider } from '@/contexts/AuditContext';
 import SiteAuditContent from '@/components/site-audit/SiteAuditContent';
+import { AuditTypeSelector } from '@/components/site-audit/AuditTypeSelector';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { motion } from 'framer-motion';
 import { Search, ExternalLink, RefreshCw } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
+import { auditService } from '@/modules/audit';
 
 const SiteAudit: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [url, setUrl] = useState<string>('');
   const [inputUrl, setInputUrl] = useState<string>('');
   const [isLoading, setIsLoading] = useState(true);
+  const [isStartingAudit, setIsStartingAudit] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -94,6 +96,49 @@ const SiteAudit: React.FC = () => {
     }
   };
 
+  const handleStartAudit = async (type: 'quick' | 'deep') => {
+    if (!url || !isValidUrl(url)) {
+      toast({
+        title: "Ошибка",
+        description: "Пожалуйста, введите корректный URL",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setIsStartingAudit(true);
+    
+    try {
+      const formattedUrl = url.startsWith('http') ? url : `https://${url}`;
+      const maxPages = type === 'quick' ? 10 : 100;
+      
+      const result = await auditService.startAudit(formattedUrl, { maxPages, type });
+      
+      if (result.success && result.task_id) {
+        localStorage.setItem(`task_id_${url}`, result.task_id);
+        
+        toast({
+          title: type === 'quick' ? "Быстрый аудит запущен" : "Глубокий аудит запущен",
+          description: `Начинается сканирование до ${maxPages} страниц`,
+        });
+        
+        // Reload to show audit results
+        window.location.reload();
+      } else {
+        throw new Error(result.message || 'Failed to start audit');
+      }
+    } catch (error) {
+      console.error('Error starting audit:', error);
+      toast({
+        title: "Ошибка запуска аудита",
+        description: error instanceof Error ? error.message : "Не удалось запустить аудит",
+        variant: "destructive"
+      });
+    } finally {
+      setIsStartingAudit(false);
+    }
+  };
+
   return (
     <Layout>
       <div className="container mx-auto px-4 md:px-6 pt-24 md:pt-32 pb-12 md:pb-20">
@@ -146,6 +191,14 @@ const SiteAudit: React.FC = () => {
               </form>
             </CardContent>
           </Card>
+          
+          {url && isValidUrl(url) && (
+            <AuditTypeSelector 
+              onStartAudit={handleStartAudit}
+              isLoading={isStartingAudit}
+              url={url}
+            />
+          )}
           
           {isLoading ? (
             <div className="flex justify-center items-center min-h-[300px]">
