@@ -2,6 +2,7 @@
 import React, { useCallback, useMemo } from 'react';
 import { AnimatePresence } from 'framer-motion';
 import { useAuditData, useAuditInitialization, usePromptToggle } from '@/features/audit/hooks';
+import { PerformanceProfiler } from '@/components/debug/PerformanceProfiler';
 import AuditStateHandler from './components/AuditStateHandler';
 import AuditContent from './components/AuditContent';
 
@@ -70,45 +71,47 @@ const AuditResultsContainer: React.FC<AuditResultsContainerProps> = ({ url }) =>
   [historyData, url]);
 
   return (
-    <AnimatePresence mode="sync">
-      <AuditStateHandler
-        isLoading={isLoading}
-        hadError={hadError}
-        timeout={timeout}
-        onRetry={handleRetry}
-        url={url} // Pass the URL here
-      >
-        <AuditContent
-          url={url}
-          isLoading={isAuditLoading}
-          loadingProgress={loadingProgress}
-          isScanning={isScanning}
-          isRefreshing={isRefreshing}
-          auditError={auditError}
-          scanDetails={scanDetails}
-          auditData={auditData}
-          recommendations={recommendations}
-          historyData={typedHistoryData}
-          optimizationCost={optimizationCost}
-          optimizationItems={optimizationItems}
-          isOptimized={isOptimized}
-          contentPrompt={contentPrompt}
-          taskId={taskId}
-          showPrompt={showPrompt}
-          onTogglePrompt={togglePrompt}
-          onRetry={() => loadAuditData(false)}
-          onDownloadSitemap={sitemap ? downloadSitemap : undefined}
-          loadAuditData={loadAuditData}
-          handleSelectHistoricalAudit={handleSelectHistoricalAudit}
-          downloadSitemap={sitemap ? downloadSitemap : undefined}
-          exportJSONData={exportJSONData}
-          generatePdfReportFile={generatePdfReportFile}
-          downloadOptimizedSite={downloadOptimizedSite}
-          optimizeSiteContent={optimizeSiteContent}
-          setContentOptimizationPrompt={setContentOptimizationPrompt}
-        />
-      </AuditStateHandler>
-    </AnimatePresence>
+    <PerformanceProfiler id="AuditResultsContainer">
+      <AnimatePresence mode="sync">
+        <AuditStateHandler
+          isLoading={isLoading}
+          hadError={hadError}
+          timeout={timeout}
+          onRetry={handleRetry}
+          url={url} // Pass the URL here
+        >
+          <AuditContent
+            url={url}
+            isLoading={isAuditLoading}
+            loadingProgress={loadingProgress}
+            isScanning={isScanning}
+            isRefreshing={isRefreshing}
+            auditError={auditError}
+            scanDetails={scanDetails}
+            auditData={auditData}
+            recommendations={recommendations}
+            historyData={typedHistoryData}
+            optimizationCost={optimizationCost}
+            optimizationItems={optimizationItems}
+            isOptimized={isOptimized}
+            contentPrompt={contentPrompt}
+            taskId={taskId}
+            showPrompt={showPrompt}
+            onTogglePrompt={togglePrompt}
+            onRetry={() => loadAuditData(false)}
+            onDownloadSitemap={sitemap ? downloadSitemap : undefined}
+            loadAuditData={loadAuditData}
+            handleSelectHistoricalAudit={handleSelectHistoricalAudit}
+            downloadSitemap={sitemap ? downloadSitemap : undefined}
+            exportJSONData={exportJSONData}
+            generatePdfReportFile={generatePdfReportFile}
+            downloadOptimizedSite={downloadOptimizedSite}
+            optimizeSiteContent={optimizeSiteContent}
+            setContentOptimizationPrompt={setContentOptimizationPrompt}
+          />
+        </AuditStateHandler>
+      </AnimatePresence>
+    </PerformanceProfiler>
   );
 };
 

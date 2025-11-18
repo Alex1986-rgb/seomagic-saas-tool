@@ -229,7 +229,7 @@ const AuditLoaderSection: React.FC<AuditLoaderSectionProps> = ({
 
               <AnimatePresence mode="wait">
                 {/* Вкладка обзора */}
-                <TabsContent value="overview" className="py-2">
+                <TabsContent key="overview-tab" value="overview" className="py-2">
                   <motion.div
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
@@ -366,7 +366,7 @@ const AuditLoaderSection: React.FC<AuditLoaderSectionProps> = ({
                 </TabsContent>
 
                 {/* Вкладка ошибок */}
-                <TabsContent value="errors" className="py-2">
+                <TabsContent key="errors-tab" value="errors" className="py-2">
                   <motion.div
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
@@ -459,7 +459,7 @@ const AuditLoaderSection: React.FC<AuditLoaderSectionProps> = ({
                 </TabsContent>
 
                 {/* Вкладка сметы */}
-                <TabsContent value="estimate" className="py-2">
+                <TabsContent key="estimate-tab" value="estimate" className="py-2">
                   <motion.div
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
@@ -472,7 +472,7 @@ const AuditLoaderSection: React.FC<AuditLoaderSectionProps> = ({
                 </TabsContent>
 
                 {/* Вкладка отчетов */}
-                <TabsContent value="reports" className="py-2">
+                <TabsContent key="reports-tab" value="reports" className="py-2">
                   <motion.div
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
