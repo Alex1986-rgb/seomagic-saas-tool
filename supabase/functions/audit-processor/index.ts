@@ -306,62 +306,77 @@ async function processMicroBatch(supabase: any, taskId: string, domain: string) 
       .single();
     
     // Insert comprehensive page analysis with all Sprint 1 fields
-    await supabase.from('page_analysis').insert({
-      audit_id: taskData?.audit_id,
-      task_id: taskId,
-      url: page.url,
-      title: page.title || null,
-      meta_description: page.description || null,
-      h1_count: page.h1_count,
-      h1_text: page.h1_text || null,
-      h2_count: page.h2_count || 0,
-      h3_count: page.h3_count || 0,
-      image_count: page.image_count,
-      word_count: page.word_count,
-      load_time: page.load_time,
-      status_code: page.status_code,
-      depth: queueItem.depth || 0,
-      page_type: page.page_type || 'other',
-      
-      // Indexability
-      is_indexable: page.is_indexable !== undefined ? page.is_indexable : true,
-      robots_meta: page.robots_meta,
-      
-      // Canonical
-      canonical_url: page.canonical_url,
-      has_canonical: page.has_canonical || false,
-      canonical_points_to_self: page.canonical_points_to_self || null,
-      
-      // Content quality
-      text_html_ratio: page.text_html_ratio || null,
-      has_thin_content: page.has_thin_content || false,
-      
-      // Images
-      missing_alt_images_count: page.missing_alt_images_count || 0,
-      
-      // Technical
-      content_type: page.content_type || 'text/html',
-      content_length: page.content_length || null,
-      redirect_chain_length: page.redirect_chain_length || 0,
-      final_url: page.final_url || page.url,
-      
-      // Mobile & Performance
-      has_viewport: page.has_viewport || false,
-      ttfb: page.ttfb || null,
-      
-      // Internationalization
-      language_detected: page.language_detected || null,
-      hreflang_tags: page.hreflang_tags || null,
-      
-      // Links
-      internal_links_count: page.internal_links_count || 0,
-      external_links_count: page.external_links_count || 0,
-      
-      // Compression (Sprint 3)
-      is_compressed: page.is_compressed || false,
-      compression_type: page.compression_type || null,
-      transfer_size: page.transfer_size || null
-    });
+    try {
+      const { error: insertError } = await supabase.from('page_analysis').insert({
+        audit_id: taskData?.audit_id,
+        task_id: taskId,
+        url: page.url,
+        title: page.title || null,
+        meta_description: page.description || null,
+        h1_count: page.h1_count,
+        h1_text: page.h1_text || null,
+        h2_count: page.h2_count || 0,
+        h3_count: page.h3_count || 0,
+        image_count: page.image_count,
+        word_count: page.word_count,
+        load_time: page.load_time,
+        status_code: page.status_code,
+        depth: queueItem.depth || 0,
+        page_type: page.page_type || 'other',
+        
+        // Indexability
+        is_indexable: page.is_indexable !== undefined ? page.is_indexable : true,
+        robots_meta: page.robots_meta,
+        
+        // Canonical
+        canonical_url: page.canonical_url,
+        has_canonical: page.has_canonical || false,
+        canonical_points_to_self: page.canonical_points_to_self || null,
+        
+        // Content quality
+        text_html_ratio: page.text_html_ratio || null,
+        has_thin_content: page.has_thin_content || false,
+        
+        // Images
+        missing_alt_images_count: page.missing_alt_images_count || 0,
+        
+        // Technical
+        content_type: page.content_type || 'text/html',
+        content_length: page.content_length || null,
+        redirect_chain_length: page.redirect_chain_length || 0,
+        final_url: page.final_url || page.url,
+        
+        // Mobile & Performance
+        has_viewport: page.has_viewport || false,
+        ttfb: page.ttfb || null,
+        
+        // Internationalization
+        language_detected: page.language_detected || null,
+        hreflang_tags: page.hreflang_tags || null,
+        
+        // Links
+        internal_links_count: page.internal_links_count || 0,
+        external_links_count: page.external_links_count || 0,
+        
+        // Compression (Sprint 3)
+        is_compressed: page.is_compressed || false,
+        compression_type: page.compression_type || null,
+        transfer_size: page.transfer_size || null
+      });
+
+      if (insertError) {
+        console.error('Failed to insert page_analysis:', {
+          error: insertError,
+          audit_id: taskData?.audit_id,
+          task_id: taskId,
+          url: page.url
+        });
+        throw new Error(`Page analysis insert failed: ${insertError.message}`);
+      }
+    } catch (error) {
+      console.error('Error in page_analysis insertion:', error);
+      throw error;
+    }
 
     // Add discovered internal links to queue (respecting depth limit)
     const currentDepth = queueItem.depth || 0;

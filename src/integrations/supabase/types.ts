@@ -532,7 +532,7 @@ export type Database = {
             foreignKeyName: "page_analysis_audit_id_fkey"
             columns: ["audit_id"]
             isOneToOne: false
-            referencedRelation: "profiles"
+            referencedRelation: "audits"
             referencedColumns: ["id"]
           },
           {
