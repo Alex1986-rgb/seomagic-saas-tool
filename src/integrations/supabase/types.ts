@@ -139,6 +139,7 @@ export type Database = {
       audit_tasks: {
         Row: {
           audit_id: string | null
+          batch_count: number | null
           created_at: string | null
           current_url: string | null
           discovered_urls_count: number | null
@@ -152,12 +153,14 @@ export type Database = {
           stage: string | null
           status: string
           task_type: string | null
+          total_urls: number | null
           updated_at: string | null
           url: string
           user_id: string | null
         }
         Insert: {
           audit_id?: string | null
+          batch_count?: number | null
           created_at?: string | null
           current_url?: string | null
           discovered_urls_count?: number | null
@@ -171,12 +174,14 @@ export type Database = {
           stage?: string | null
           status?: string
           task_type?: string | null
+          total_urls?: number | null
           updated_at?: string | null
           url: string
           user_id?: string | null
         }
         Update: {
           audit_id?: string | null
+          batch_count?: number | null
           created_at?: string | null
           current_url?: string | null
           discovered_urls_count?: number | null
@@ -190,6 +195,7 @@ export type Database = {
           stage?: string | null
           status?: string
           task_type?: string | null
+          total_urls?: number | null
           updated_at?: string | null
           url?: string
           user_id?: string | null
@@ -452,6 +458,50 @@ export type Database = {
           updated_at?: string | null
         }
         Relationships: []
+      }
+      url_queue: {
+        Row: {
+          created_at: string | null
+          error_message: string | null
+          id: string
+          priority: number | null
+          retry_count: number | null
+          status: string | null
+          task_id: string | null
+          updated_at: string | null
+          url: string
+        }
+        Insert: {
+          created_at?: string | null
+          error_message?: string | null
+          id?: string
+          priority?: number | null
+          retry_count?: number | null
+          status?: string | null
+          task_id?: string | null
+          updated_at?: string | null
+          url: string
+        }
+        Update: {
+          created_at?: string | null
+          error_message?: string | null
+          id?: string
+          priority?: number | null
+          retry_count?: number | null
+          status?: string | null
+          task_id?: string | null
+          updated_at?: string | null
+          url?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "url_queue_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "audit_tasks"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_roles: {
         Row: {
