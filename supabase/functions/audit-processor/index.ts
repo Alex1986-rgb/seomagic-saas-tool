@@ -477,10 +477,26 @@ async function completeAudit(supabase: any, taskId: string, auditId: string) {
   
   console.log('[COMPLETE] Triggering scoring processor...');
   
-  // Invoke scoring processor with correct task_id
-  await supabase.functions.invoke('scoring-processor', {
-    body: { task_id: taskId }
-  });
+  // Invoke scoring processor with error handling
+  try {
+    const { data: scoringResult, error: scoringError } = await supabase.functions.invoke('scoring-processor', {
+      body: { task_id: taskId }
+    });
+    
+    if (scoringError) {
+      console.error('[COMPLETE] Scoring processor error:', scoringError);
+      throw new Error(`Scoring processor failed: ${scoringError.message}`);
+    }
+    
+    console.log('[COMPLETE] Scoring processor completed successfully:', scoringResult);
+  } catch (error) {
+    console.error('[COMPLETE] Failed to invoke scoring processor:', error);
+    // Update task with error but keep status as completed
+    await supabase.from('audit_tasks').update({
+      error_message: `Scoring failed: ${error.message}`,
+      updated_at: new Date().toISOString()
+    }).eq('id', taskId);
+  }
 }
 
 // Background processing function
