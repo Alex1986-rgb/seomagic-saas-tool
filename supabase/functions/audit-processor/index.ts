@@ -11,7 +11,6 @@ const corsHeaders = {
 const MICRO_BATCH_SIZE = 3; // Process only 3-5 pages per invocation
 const PAGE_TIMEOUT = 5000; // 5 seconds per page
 const MAX_BATCH_CALLS = 100; // Prevent infinite loops
-const INTER_BATCH_DELAY = 100; // Small delay between batches
 
 interface PageData {
   url: string;
@@ -271,29 +270,7 @@ async function updateProgress(supabase: any, taskId: string) {
   console.log(`Progress: ${pagesScanned}/${total} (${progress}%)`);
 }
 
-// Trigger next batch processing
-async function triggerNextBatch(taskId: string) {
-  const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-  const supabaseKey = Deno.env.get('SUPABASE_ANON_KEY')!;
-  
-  console.log('Triggering next batch...');
-  
-  // Use background task to avoid blocking
-  setTimeout(async () => {
-    try {
-      await fetch(`${supabaseUrl}/functions/v1/audit-processor`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${supabaseKey}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ task_id: taskId })
-      });
-    } catch (err) {
-      console.error('Failed to trigger next batch:', err);
-    }
-  }, INTER_BATCH_DELAY);
-}
+// Removed triggerNextBatch - using pull-based model instead
 
 // Analyze all pages and complete audit
 async function completeAudit(supabase: any, taskId: string) {
@@ -567,14 +544,12 @@ async function processAuditTask(taskId: string) {
     // Update progress
     await updateProgress(supabase, taskId);
 
-    // Check if we should continue or complete
+    // Check if we should complete
     if (!hasMore || processed === 0) {
       // No more URLs to process - complete the audit
       await completeAudit(supabase, taskId);
-    } else {
-      // More URLs to process - trigger next batch
-      triggerNextBatch(taskId);
     }
+    // If hasMore is true, audit-status will trigger next batch via pull model
 
   } catch (error) {
     console.error('❌ Error processing audit task:', error);
@@ -609,13 +584,13 @@ serve(async (req) => {
 
     console.log(`📝 Received request for task: ${task_id}`);
 
-    // Process in background
-    EdgeRuntime.waitUntil(processAuditTask(task_id));
+    // Process one micro-batch synchronously
+    await processAuditTask(task_id);
 
     return new Response(
       JSON.stringify({ 
         success: true, 
-        message: 'Audit task processing started',
+        message: 'Batch processed successfully',
         task_id 
       }),
       { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }

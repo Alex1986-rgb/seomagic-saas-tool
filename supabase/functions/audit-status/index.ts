@@ -49,6 +49,23 @@ serve(async (req) => {
       throw new Error('Task not found');
     }
 
+    // Check for pending URLs and trigger next batch if needed
+    if (task.status === 'scanning') {
+      const { data: pendingUrls } = await supabaseClient
+        .from('url_queue')
+        .select('id')
+        .eq('task_id', task_id)
+        .eq('status', 'pending')
+        .limit(1);
+      
+      if (pendingUrls && pendingUrls.length > 0) {
+        // Trigger next batch asynchronously (non-blocking)
+        supabaseClient.functions.invoke('audit-processor', {
+          body: { task_id }
+        }).catch(err => console.error('Failed to trigger batch:', err));
+      }
+    }
+
     // Get audit results if completed
     let auditData = null;
     if (task.status === 'completed' && task.audit_id) {
