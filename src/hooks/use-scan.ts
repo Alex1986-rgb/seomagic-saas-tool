@@ -82,18 +82,25 @@ export const useScan = (url: string, onPageCountUpdate?: (count: number) => void
       console.log('📝 Formatted URL:', formattedUrl);
       
       // Start audit via edge function
-      console.log('📡 Calling audit-start edge function...');
+      console.log('📡 Calling audit-start edge function with:', { 
+        url: formattedUrl, 
+        type: 'quick', 
+        maxPages: 100 
+      });
       const response = await auditService.startAudit(formattedUrl, {
         type: 'quick',
         maxPages: 100
       });
       
+      console.log('📥 audit-start response received:', response);
+      
       const crawlTaskId = response.task_id;
       if (!crawlTaskId) {
+        console.error('❌ No task_id in response:', response);
         throw new Error('Empty task ID returned');
       }
       
-      console.log('✅ Audit started with task ID:', crawlTaskId);
+      console.log('✅ Audit started successfully with task ID:', crawlTaskId);
       setTaskId(crawlTaskId);
       
       // Start progress polling

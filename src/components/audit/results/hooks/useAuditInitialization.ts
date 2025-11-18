@@ -1,137 +1,75 @@
 
-import { useState, useEffect, useRef, useCallback } from 'react';
-import { useToast } from "@/hooks/use-toast";
-import { useAuditContext } from '@/contexts/AuditContext';
+import { useState, useEffect, useRef } from 'react';
+import { useScanContext } from '@/contexts/ScanContext';
+import { useToast } from '@/hooks/use-toast';
 
-export function useAuditInitialization(url: string, loadAuditData: (refresh?: boolean) => Promise<void>) {
-  const [isInitialized, setIsInitialized] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
+/**
+ * Hook for audit initialization with auto-start
+ * CRITICAL: Auto-start must happen BEFORE any data loading
+ */
+export const useAuditInitialization = (url: string, loadAuditData: (refresh?: boolean) => void) => {
+  const [isLoading, setIsLoading] = useState(false);
   const [hadError, setHadError] = useState(false);
-  const [timeout, setTimeoutStatus] = useState(false);
-  const { toast } = useToast();
-  const { startScan, taskId } = useAuditContext();
-  
-  const initRef = useRef(false);
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const [timeout, setTimeout] = useState(false);
+  const { taskId, isScanning, startScan } = useScanContext();
   const autoStartRef = useRef(false);
+  const { toast } = useToast();
 
-  // Setup timeout for the audit process
-  useEffect(() => {
-    if (url && !timeout && isInitialized) {
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
-      }
-      
-      // 3-minute timeout for loading data
-      timeoutRef.current = setTimeout(() => {
-        console.log("Audit data loading timeout triggered after 3 minutes");
-        setTimeoutStatus(true);
-        setIsLoading(false);
-        setHadError(true);
-        
-        toast({
-          title: "Превышено время ожидания",
-          description: "Загрузка данных аудита заняла слишком много времени. Пожалуйста, попробуйте снова или используйте другой URL.",
-          variant: "destructive",
-        });
-      }, 180000) as unknown as NodeJS.Timeout;
-    }
-    
-    return () => {
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
-      }
-    };
-  }, [url, timeout, isInitialized, toast]);
+  console.log('🔧 useAuditInitialization:', { url, taskId, isScanning, autoStarted: autoStartRef.current });
 
-  // Auto-start audit if no taskId exists
+  // STEP 1: Auto-start audit if no taskId exists (HIGHEST PRIORITY)
   useEffect(() => {
-    if (!autoStartRef.current && url && !taskId && !isInitialized) {
-      console.log("Auto-starting audit for URL:", url);
+    if (!autoStartRef.current && url && !taskId && !isScanning) {
+      console.log('🚀 Auto-starting Quick Audit for:', url);
       autoStartRef.current = true;
       
-      // Start quick scan automatically
-      startScan(false).then((newTaskId) => {
-        if (newTaskId) {
-          console.log("Audit auto-started with task ID:", newTaskId);
+      const autoStartAudit = async () => {
+        try {
+          console.log('📡 Calling startScan(false) for quick audit...');
+          const newTaskId = await startScan(false);
+          if (newTaskId) {
+            console.log('✅ Audit auto-started with task ID:', newTaskId);
+          } else {
+            throw new Error('No task ID returned from audit start');
+          }
+        } catch (err) {
+          console.error('❌ Error auto-starting audit:', err);
+          toast({
+            title: "Ошибка запуска аудита",
+            description: err instanceof Error ? err.message : 'Не удалось запустить аудит',
+            variant: "destructive",
+          });
+          setHadError(true);
+          autoStartRef.current = false; // Allow retry
         }
-      }).catch((err) => {
-        console.error("Error auto-starting audit:", err);
-        setHadError(true);
-        toast({
-          title: "Ошибка автозапуска",
-          description: "Не удалось автоматически запустить аудит",
-          variant: "destructive"
-        });
-      });
-    }
-  }, [url, taskId, isInitialized, startScan, toast]);
-
-  // Initialize audit function
-  const initializeAudit = useCallback(() => {
-    if (initRef.current) return;
-    
-    console.log("Initializing audit for URL:", url);
-    try {
-      initRef.current = true;
-      setIsLoading(true);
+      };
       
-      loadAuditData(false).then(() => {
-        setIsLoading(false);
-        
-        if (timeoutRef.current) {
-          clearTimeout(timeoutRef.current);
-        }
-      }).catch(err => {
-        console.error("Error loading audit data:", err);
-        setHadError(true);
-        setIsLoading(false);
-        toast({
-          title: "Ошибка загрузки аудита",
-          description: "Произошла ошибка при загрузке данных аудита",
-          variant: "destructive"
-        });
-      });
-    } catch (err) {
-      console.error("Exception during audit initialization:", err);
-      setHadError(true);
-      setIsLoading(false);
+      autoStartAudit();
     }
-    setIsInitialized(true);
-  }, [url, loadAuditData, toast]);
+  }, [url, taskId, isScanning, startScan, toast]);
 
-  // Trigger initialization when component mounts
+  // STEP 2: Load audit data when url changes and taskId exists
   useEffect(() => {
-    if (!isInitialized && url) {
-      initializeAudit();
+    if (url && taskId) {
+      console.log('📊 Loading audit data for taskId:', taskId);
+      loadAuditData(false);
     }
-    
-    return () => {
-      console.log("Audit initialization cleanup");
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
-      }
-    };
-  }, [url, isInitialized, initializeAudit]);
+  }, [url, taskId, loadAuditData]);
 
-  // Retry handler
-  const handleRetry = useCallback(() => {
-    console.log("Retrying audit...");
-    initRef.current = false;
-    setIsInitialized(false);
+  const handleRetry = () => {
+    console.log('🔄 Retrying audit...');
     setHadError(false);
-    setTimeoutStatus(false);
-    setTimeout(() => {
-      initializeAudit();
-    }, 100);
-  }, [initializeAudit]);
+    setTimeout(false);
+    autoStartRef.current = false;
+    loadAuditData(true);
+  };
 
   return {
-    isInitialized,
     isLoading,
     hadError,
     timeout,
     handleRetry,
     setIsLoading
   };
-}
+};
+

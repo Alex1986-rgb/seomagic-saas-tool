@@ -12,7 +12,10 @@ class AuditService {
     task_id?: string;
     message?: string;
   }> {
+    console.log('🔧 auditService.startAudit called with:', { url, options });
+    
     try {
+      console.log('📡 Invoking audit-start edge function...');
       const { data, error } = await supabase.functions.invoke('audit-start', {
         body: { 
           url,
@@ -20,13 +23,25 @@ class AuditService {
         }
       });
 
+      console.log('📥 Edge function response:', { data, error });
+
       if (error) {
-        console.error('Error starting audit:', error);
+        console.error('❌ Error from edge function:', error);
         return {
           success: false,
           message: error.message || 'Failed to start audit'
         };
       }
+
+      if (!data || !data.task_id) {
+        console.error('❌ No task_id in response data:', data);
+        return {
+          success: false,
+          message: 'No task ID returned from server'
+        };
+      }
+
+      console.log('✅ Audit started successfully, task_id:', data.task_id);
 
       return {
         success: true,
@@ -34,7 +49,7 @@ class AuditService {
         message: data.message
       };
     } catch (error: any) {
-      console.error('Error starting audit:', error);
+      console.error('❌ Exception in startAudit:', error);
       return {
         success: false,
         message: error.message || 'Unknown error occurred'
