@@ -618,6 +618,8 @@ serve(async (req) => {
         message: 'Audit task processing started',
         task_id 
       }),
+      { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
   } catch (error) {
     console.error('Error:', error);
     return new Response(
