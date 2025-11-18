@@ -2,7 +2,8 @@
 import React, { createContext, useContext, useState, useCallback, ReactNode } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { AuditData, AuditHistoryData, RecommendationData } from '@/types/audit';
-import { auditDataService } from '@/api/services/auditDataService';
+import { supabase } from '@/integrations/supabase/client';
+import { useScanContext } from './ScanContext';
 
 interface AuditDataContextType {
   auditData: AuditData | null;
@@ -36,44 +37,79 @@ export const AuditDataProvider: React.FC<{ children: ReactNode; url: string }> =
 }) => {
   const [loadingProgress, setLoadingProgress] = useState<number>(0);
   const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
+  const { taskId } = useScanContext();
   
-  // Use React Query for data fetching
+  // Fetch audit results from Supabase by taskId
   const { 
     data: auditData, 
     error,
     isLoading,
     refetch 
   } = useQuery({
-    queryKey: ['auditData', url],
+    queryKey: ['auditResults', taskId],
     queryFn: async () => {
-      if (!url) return null;
+      if (!taskId) return null;
       
+      console.log('📊 Loading audit results for task:', taskId);
       setLoadingProgress(10);
-      const data = await auditDataService.fetchAuditData(url);
-      setLoadingProgress(100);
       
-      return data;
+      const { data, error } = await supabase
+        .from('audit_results')
+        .select('audit_data')
+        .eq('task_id', taskId)
+        .maybeSingle();
+      
+      if (error) {
+        console.error('Error fetching audit results:', error);
+        throw error;
+      }
+      
+      setLoadingProgress(100);
+      // Safely cast the Json type to AuditData
+      return (data?.audit_data || null) as unknown as AuditData | null;
+    },
+    enabled: !!taskId,
+    staleTime: 30000 // Cache for 30 seconds
+  });
+  
+  // Fetch audit history for this URL
+  const { 
+    data: historyData = { url, items: [] } 
+  } = useQuery({
+    queryKey: ['auditHistory', url],
+    queryFn: async () => {
+      if (!url) return { url, items: [] };
+      
+      const { data, error } = await supabase
+        .from('audits')
+        .select('id, created_at, seo_score, pages_scanned, status, url')
+        .eq('url', url)
+        .order('created_at', { ascending: false })
+        .limit(10);
+      
+      if (error) {
+        console.error('Error fetching audit history:', error);
+        return { url, items: [] };
+      }
+      
+      // Map database fields to AuditHistoryItem format
+      const items = (data || []).map(item => ({
+        id: item.id,
+        url: item.url,
+        date: item.created_at,
+        score: item.seo_score || 0
+      }));
+      
+      return { 
+        url, 
+        items 
+      };
     },
     enabled: !!url
   });
   
-  // Use React Query for recommendations
-  const { 
-    data: recommendations 
-  } = useQuery({
-    queryKey: ['recommendations', url],
-    queryFn: () => auditDataService.fetchRecommendations(url),
-    enabled: !!url
-  });
-  
-  // Use React Query for history data
-  const { 
-    data: historyData = { url, items: [] } 
-  } = useQuery({
-    queryKey: ['historyData', url],
-    queryFn: () => auditDataService.fetchAuditHistory(url),
-    enabled: !!url
-  });
+  // Placeholder for recommendations (can be implemented later)
+  const recommendations: RecommendationData | null = null;
   
   const loadAuditData = useCallback(async (refresh: boolean = false) => {
     setIsRefreshing(refresh);
@@ -82,18 +118,28 @@ export const AuditDataProvider: React.FC<{ children: ReactNode; url: string }> =
   }, [refetch]);
   
   const generatePdfReportFile = useCallback(async () => {
-    if (!auditData) return;
+    if (!auditData || !taskId) return;
     
-    // Implementation would go here
-    console.log("Generating PDF report for", url);
-  }, [auditData, url]);
+    console.log("Generating PDF report for task:", taskId);
+    // Implementation would call edge function or service
+  }, [auditData, taskId]);
   
   const exportJSONData = useCallback(async () => {
     if (!auditData) return;
     
-    // Implementation would go here
-    console.log("Exporting JSON data for", url);
-  }, [auditData, url]);
+    const dataStr = JSON.stringify(auditData, null, 2);
+    const dataBlob = new Blob([dataStr], { type: 'application/json' });
+    const url = URL.createObjectURL(dataBlob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `audit-data-${new Date().toISOString()}.json`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    
+    console.log("Exported JSON data");
+  }, [auditData]);
   
   return (
     <AuditDataContext.Provider value={{

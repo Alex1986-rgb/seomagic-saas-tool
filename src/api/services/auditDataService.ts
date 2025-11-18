@@ -10,7 +10,12 @@ import {
 } from '@/services/audit/siteAnalysis';
 
 /**
- * Audit data service for handling audit-specific operations
+ * @deprecated This service is deprecated. Use Supabase edge functions and direct database queries instead.
+ * - For audit data: Query audit_results table by task_id
+ * - For starting audits: Use auditService.startAudit()
+ * - For status: Use auditService.getAuditStatus()
+ * 
+ * Audit data service for handling audit-specific operations (LEGACY)
  */
 class AuditDataService {
   /**
