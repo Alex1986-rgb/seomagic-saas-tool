@@ -710,6 +710,8 @@ async function processAuditTask(taskId: string) {
       const isTestDomain = domain.includes('example.com') || 
                            domain.includes('localhost') || 
                            domain.includes('127.0.0.1');
+      
+      console.log(`🔍 Test domain check: isTestDomain=${isTestDomain}, domain=${domain}, estimated_pages=${task.estimated_pages}`);
 
       if (isTestDomain && task.estimated_pages > 1) {
         const testUrls = generateTestUrls(task.url, task.estimated_pages - 1);
@@ -821,8 +823,27 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  // Handle GET requests (health checks, etc.)
+  if (req.method === 'GET') {
+    return new Response(
+      JSON.stringify({ status: 'ok', message: 'Audit processor is running' }),
+      { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
+  }
+
   try {
-    const { task_id } = await req.json();
+    // Check if request has a body
+    const contentType = req.headers.get('content-type');
+    if (!contentType || !contentType.includes('application/json')) {
+      console.error('❌ Invalid content-type:', contentType);
+      return new Response(
+        JSON.stringify({ error: 'Content-Type must be application/json' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const body = await req.json();
+    const { task_id } = body || {};
     console.log('📝 Received request for task:', task_id);
 
     if (!task_id) {
