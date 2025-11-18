@@ -4,6 +4,7 @@ import { Toaster } from './components/ui/sonner';
 import { ThemeProvider } from './contexts/ThemeContext';
 import DefaultSEO from './components/seo/DefaultSEO';
 import SkipLink from './components/accessibility/SkipLink';
+import { PerformanceDebugger } from './components/debug';
 
 // Pages
 import Index from './pages/Index';
@@ -185,6 +186,7 @@ function App() {
             </Routes>
           </main>
           <Toaster />
+          <PerformanceDebugger />
         </div>
       </Router>
     </ThemeProvider>

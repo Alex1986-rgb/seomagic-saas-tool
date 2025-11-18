@@ -4,6 +4,7 @@ import { AuditDataProvider, useAuditDataContext } from './AuditDataContext';
 import { ScanProvider, useScanContext } from './ScanContext';
 import { OptimizationProvider, useOptimizationContext } from './OptimizationContext';
 import { AuditModuleProvider, useAuditModuleContext } from './AuditModuleContext';
+import { PerformanceProfiler } from '@/components/debug/PerformanceProfiler';
 
 // Define the context type (now much smaller, mostly just combining the other contexts)
 interface AuditContextType {
@@ -68,15 +69,17 @@ export const AuditProvider: React.FC<{ children: ReactNode; initialUrl?: string 
   
   return (
     <AuditContext.Provider value={contextValue}>
-      <ScanProvider url={url}>
-        <AuditDataBridge url={url}>
-          <OptimizationBridge>
-            <AuditModuleProvider>
-              {children}
-            </AuditModuleProvider>
-          </OptimizationBridge>
-        </AuditDataBridge>
-      </ScanProvider>
+      <PerformanceProfiler id="AuditProvider">
+        <ScanProvider url={url}>
+          <AuditDataBridge url={url}>
+            <OptimizationBridge>
+              <AuditModuleProvider>
+                {children}
+              </AuditModuleProvider>
+            </OptimizationBridge>
+          </AuditDataBridge>
+        </ScanProvider>
+      </PerformanceProfiler>
     </AuditContext.Provider>
   );
 };
