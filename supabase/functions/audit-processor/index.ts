@@ -400,6 +400,23 @@ serve(async (req) => {
     // Mark as completed
     await completeAudit(supabase, task_id);
     
+    // Trigger scoring processor
+    console.log('Triggering scoring processor...');
+    try {
+      const scoringResponse = await supabase.functions.invoke('scoring-processor', {
+        body: { task_id }
+      });
+      
+      if (scoringResponse.error) {
+        console.error('Scoring error:', scoringResponse.error);
+      } else {
+        console.log('Scoring complete:', scoringResponse.data);
+      }
+    } catch (scoringError) {
+      console.error('Failed to trigger scoring:', scoringError);
+      // Don't fail the whole audit if scoring fails
+    }
+    
     return new Response(
       JSON.stringify({
         success: true,
