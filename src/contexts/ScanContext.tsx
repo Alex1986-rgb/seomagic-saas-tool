@@ -1,5 +1,5 @@
 
-import React, { createContext, useContext, useState, useCallback, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useCallback, useMemo, ReactNode } from 'react';
 import { useScan } from '@/hooks/use-scan';
 
 // Define the ScanDetails interface
@@ -67,14 +67,15 @@ export const ScanProvider: React.FC<{ children: ReactNode; url: string }> = ({
   } = useScan(url);
   
   // Ensure scanDetails has all required properties with default values
-  const scanDetailsWithDefaults: ScanDetails = {
+  // Memoize to prevent creating new object on every render
+  const scanDetailsWithDefaults: ScanDetails = useMemo(() => ({
     current_url: scanDetails?.current_url || '',
     pages_scanned: scanDetails?.pages_scanned || 0,
     estimated_pages: scanDetails?.estimated_pages || 0,
     stage: scanDetails?.stage || 'idle',
     progress: scanDetails?.progress || 0,
     task_id: taskId
-  } as any;
+  } as any), [scanDetails, taskId]);
   
   // Wrap the downloadSitemap function to ensure it returns a Promise
   const downloadSitemap = useCallback(async (): Promise<void> => {
@@ -83,18 +84,21 @@ export const ScanProvider: React.FC<{ children: ReactNode; url: string }> = ({
     }
   }, [downloadSitemapFn]);
   
+  // Memoize context value to prevent unnecessary re-renders
+  const contextValue = useMemo(() => ({
+    url,
+    isScanning,
+    scanDetails: scanDetailsWithDefaults,
+    taskId,
+    sitemap,
+    pageStats,
+    startScan,
+    cancelScan,
+    downloadSitemap
+  }), [url, isScanning, scanDetailsWithDefaults, taskId, sitemap, pageStats, startScan, cancelScan, downloadSitemap]);
+  
   return (
-    <ScanContext.Provider value={{
-      url,
-      isScanning,
-      scanDetails: scanDetailsWithDefaults,
-      taskId,
-      sitemap,
-      pageStats,
-      startScan,
-      cancelScan,
-      downloadSitemap
-    }}>
+    <ScanContext.Provider value={contextValue}>
       {children}
     </ScanContext.Provider>
   );

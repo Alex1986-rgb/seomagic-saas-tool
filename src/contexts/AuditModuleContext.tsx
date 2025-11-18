@@ -1,4 +1,4 @@
-import React, { createContext, useContext, ReactNode } from 'react';
+import React, { createContext, useContext, useMemo, ReactNode } from 'react';
 import { useAudit, useAuditStatus, useAuditList } from '@/modules/audit';
 import { useOptimization } from '@/modules/optimization';
 import { useReports } from '@/modules/reports';
@@ -93,37 +93,46 @@ export const AuditModuleProvider: React.FC<AuditModuleProviderProps> = ({
     refetch: refetchReports 
   } = useReports();
   
+  // Memoize context value to prevent unnecessary re-renders
+  const contextValue = useMemo(() => ({
+    // Audit
+    isStartingAudit,
+    startAudit,
+    cancelAudit,
+    currentTaskId,
+    
+    // Status
+    auditStatus,
+    isPollingStatus,
+    startPolling,
+    stopPolling,
+    
+    // List
+    audits,
+    isLoadingAudits,
+    auditsError,
+    refetchAudits,
+    
+    // Optimization
+    isOptimizing,
+    optimizationId,
+    startOptimization,
+    
+    // Reports
+    reports,
+    isLoadingReports,
+    reportsError,
+    refetchReports
+  }), [
+    isStartingAudit, startAudit, cancelAudit, currentTaskId,
+    auditStatus, isPollingStatus, startPolling, stopPolling,
+    audits, isLoadingAudits, auditsError, refetchAudits,
+    isOptimizing, optimizationId, startOptimization,
+    reports, isLoadingReports, reportsError, refetchReports
+  ]);
+  
   return (
-    <AuditModuleContext.Provider value={{
-      // Audit
-      isStartingAudit,
-      startAudit,
-      cancelAudit,
-      currentTaskId,
-      
-      // Status
-      auditStatus,
-      isPollingStatus,
-      startPolling,
-      stopPolling,
-      
-      // List
-      audits,
-      isLoadingAudits,
-      auditsError,
-      refetchAudits,
-      
-      // Optimization
-      isOptimizing,
-      optimizationId,
-      startOptimization,
-      
-      // Reports
-      reports,
-      isLoadingReports,
-      reportsError,
-      refetchReports
-    }}>
+    <AuditModuleContext.Provider value={contextValue}>
       {children}
     </AuditModuleContext.Provider>
   );
