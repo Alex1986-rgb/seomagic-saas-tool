@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge';
 const NavbarDesktopAuth: React.FC = () => {
   const { user, logout } = useAuth();
   
+  // ⚠️ TESTING MODE - Hide auth UI, show only admin and theme switcher
   return (
     <div className="hidden md:flex items-center gap-4">
       {/* Admin Button - Always Visible */}
@@ -26,60 +27,6 @@ const NavbarDesktopAuth: React.FC = () => {
         </Button>
       </Link>
       
-      {user?.isLoggedIn ? (
-        <>
-          <Link to="/profile">
-            <Button
-              variant="glassmorphic"
-              size="sm"
-              className="flex items-center gap-2"
-            >
-              <User className="h-4 w-4" />
-              Профиль
-            </Button>
-          </Link>
-          <Button
-            variant="outline"
-            size="sm"
-            className="hover:bg-destructive/10 hover:text-destructive hover:border-destructive/30 transition-colors"
-            onClick={logout}
-          >
-            Выйти
-          </Button>
-        </>
-      ) : (
-        <>
-          <Link to="/profile">
-            <Button
-              variant="glassmorphic"
-              size="sm"
-              className="flex items-center gap-2"
-            >
-              <User className="h-4 w-4" />
-              Профиль
-            </Button>
-          </Link>
-          <Link to="/auth">
-            <Button
-              variant="outline"
-              size="sm"
-              className="flex items-center gap-2"
-            >
-              <LogIn className="h-4 w-4" />
-              Войти
-            </Button>
-          </Link>
-          <Link to="/auth?tab=register">
-            <Button 
-              variant="glassmorphic" 
-              size="sm"
-              className="shadow-primary/20"
-            >
-              Регистрация
-            </Button>
-          </Link>
-        </>
-      )}
       <ThemeSwitcher />
     </div>
   );

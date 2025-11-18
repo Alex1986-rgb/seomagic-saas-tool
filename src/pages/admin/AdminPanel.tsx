@@ -4,14 +4,7 @@ import { Navigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 
 const AdminPanel: React.FC = () => {
-  const { user } = useAuth();
-  
-  // Redirect to auth page if not logged in
-  if (!user?.isLoggedIn) {
-    return <Navigate to="/auth" replace />;
-  }
-  
-  // Redirect directly to the admin dashboard
+  // ⚠️ TESTING MODE - Allow access without authentication
   return <Navigate to="/admin/" replace />;
 };
 
