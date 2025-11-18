@@ -122,6 +122,7 @@ const AuditContent: React.FC<AuditContentProps> = ({
                 auditResults={auditResults}
                 taskMetrics={taskMetrics}
                 pageAnalysis={pageAnalysis}
+                taskId={taskId || undefined}
                 onExportPDF={generatePdfReportFile}
                 onExportJSON={exportJSONData}
                 onShare={() => {}}

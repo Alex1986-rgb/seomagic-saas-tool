@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { AuditData } from '@/types/audit';
 import { DashboardMetrics, IssueItem, PageAnalysisRow } from './types';
 import AuditDashboardHeader from './AuditDashboardHeader';
@@ -9,12 +9,16 @@ import IssuesBreakdownChart from './IssuesBreakdownChart';
 import TopIssuesPanel from './TopIssuesPanel';
 import PageAnalysisInteractiveTable from './PageAnalysisInteractiveTable';
 import PageDetailView from './PageDetailView';
+import HistoricalTrendsChart from './HistoricalTrendsChart';
+import ComparisonCard from './ComparisonCard';
+import { getHistoricalTrends, compareWithPrevious, HistoricalTrend, ComparisonData } from '@/services/audit/historyService';
 
 interface AuditResultsDashboardProps {
   auditData: AuditData;
   auditResults?: any;
   taskMetrics?: any;
   pageAnalysis?: any[];
+  taskId?: string;
   onExportPDF: () => void;
   onExportJSON: () => void;
   onShare: () => void;
@@ -46,12 +50,39 @@ const AuditResultsDashboard: React.FC<AuditResultsDashboardProps> = ({
   auditResults,
   taskMetrics,
   pageAnalysis: pageAnalysisData = [],
+  taskId,
   onExportPDF,
   onExportJSON,
   onShare
 }) => {
   const [selectedPage, setSelectedPage] = useState<PageAnalysisRow | null>(null);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
+  const [historicalTrends, setHistoricalTrends] = useState<HistoricalTrend[]>([]);
+  const [comparison, setComparison] = useState<ComparisonData | null>(null);
+  const [loadingHistory, setLoadingHistory] = useState(true);
+
+  // Load historical data and comparison
+  useEffect(() => {
+    const loadHistoricalData = async () => {
+      if (!auditData.url) return;
+      
+      setLoadingHistory(true);
+      
+      // Load historical trends
+      const trends = await getHistoricalTrends(auditData.url, 10);
+      setHistoricalTrends(trends);
+      
+      // Load comparison if we have taskId
+      if (taskId) {
+        const comparisonData = await compareWithPrevious(taskId);
+        setComparison(comparisonData);
+      }
+      
+      setLoadingHistory(false);
+    };
+
+    loadHistoricalData();
+  }, [auditData.url, taskId]);
 
   const metrics: DashboardMetrics = useMemo(() => {
     const { score, details, issues, pageCount, scanTime } = auditData;
@@ -196,6 +227,16 @@ const AuditResultsDashboard: React.FC<AuditResultsDashboardProps> = ({
           errorPagesCount={taskMetrics.error_pages_count}
           totalPages={metrics.totalPages}
         />
+      )}
+
+      {/* Historical Trends */}
+      {!loadingHistory && historicalTrends.length > 0 && (
+        <HistoricalTrendsChart data={historicalTrends} />
+      )}
+
+      {/* Comparison with Previous Audit */}
+      {!loadingHistory && comparison && (
+        <ComparisonCard comparison={comparison} />
       )}
 
       {/* Charts */}

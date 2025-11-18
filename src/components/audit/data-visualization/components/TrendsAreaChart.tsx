@@ -1,10 +1,11 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { 
   AreaChart, Area, CartesianGrid, 
   Tooltip, XAxis, YAxis, Legend, 
   ResponsiveContainer 
 } from 'recharts';
 import { CategoryData } from '@/types/audit';
+import { getHistoricalTrends, HistoricalTrend } from '@/services/audit/historyService';
 
 interface TrendsAreaChartProps {
   auditData: {
@@ -13,25 +14,74 @@ interface TrendsAreaChartProps {
     content: CategoryData;
     technical: CategoryData;
   };
+  url: string;
 }
 
-const TrendsAreaChart: React.FC<TrendsAreaChartProps> = ({ auditData }) => {
-  // Sample historical data with current data point
-  const trendData = [
-    { date: '01.01', seo: 50, performance: 40, content: 60, technical: 30 },
-    { date: '01.15', seo: 55, performance: 45, content: 62, technical: 35 },
-    { date: '02.01', seo: 60, performance: 55, content: 65, technical: 40 },
-    { date: '02.15', seo: 70, performance: 65, content: 70, technical: 50 },
-    { date: '03.01', seo: 75, performance: 75, content: 75, technical: 65 },
-    { date: 'Текущий', seo: auditData.seo.score, performance: auditData.performance.score, content: auditData.content.score, technical: auditData.technical.score },
-  ];
+const TrendsAreaChart: React.FC<TrendsAreaChartProps> = ({ auditData, url }) => {
+  const [historicalData, setHistoricalData] = useState<HistoricalTrend[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const loadHistoricalData = async () => {
+      setLoading(true);
+      const trends = await getHistoricalTrends(url, 6);
+      
+      // Add current data as the last point if we have historical data
+      if (trends.length > 0) {
+        const currentPoint: HistoricalTrend = {
+          date: 'Текущий',
+          globalScore: 0,
+          seoScore: auditData.seo.score,
+          technicalScore: auditData.technical.score,
+          contentScore: auditData.content.score,
+          performanceScore: auditData.performance.score,
+          pageCount: 0,
+          auditId: 'current'
+        };
+        setHistoricalData([...trends, currentPoint]);
+      } else {
+        setHistoricalData([]);
+      }
+      
+      setLoading(false);
+    };
+
+    loadHistoricalData();
+  }, [url, auditData]);
+
+  const trendData = historicalData.map(item => ({
+    date: item.date,
+    seo: item.seoScore,
+    performance: item.performanceScore,
+    content: item.contentScore,
+    technical: item.technicalScore,
+  }));
+
+  if (loading) {
+    return (
+      <div className="p-4 border rounded-md">
+        <h3 className="text-md font-medium mb-4 text-center">Динамика по категориям</h3>
+        <p className="text-center text-muted-foreground text-sm py-8">
+          Загрузка исторических данных...
+        </p>
+      </div>
+    );
+  }
+
+  if (trendData.length === 0) {
+    return (
+      <div className="p-4 border rounded-md">
+        <h3 className="text-md font-medium mb-4 text-center">Динамика по категориям</h3>
+        <p className="text-center text-muted-foreground text-sm py-8">
+          Недостаточно исторических данных. Проведите больше аудитов для отслеживания динамики.
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="p-4 border rounded-md">
       <h3 className="text-md font-medium mb-4 text-center">Динамика по категориям</h3>
-      <p className="text-center text-muted-foreground text-sm mb-4">
-        Этот график будет показывать изменения оценок со временем при наличии исторических данных.
-      </p>
       <ResponsiveContainer width="100%" height={300}>
         <AreaChart
           data={trendData}

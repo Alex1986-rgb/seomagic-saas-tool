@@ -14,6 +14,7 @@ interface AuditResultsViewSwitcherProps {
   auditResults?: any;
   taskMetrics?: any;
   pageAnalysis?: any[];
+  taskId?: string;
 }
 
 const AuditResultsViewSwitcher: React.FC<AuditResultsViewSwitcherProps> = ({
@@ -24,7 +25,8 @@ const AuditResultsViewSwitcher: React.FC<AuditResultsViewSwitcherProps> = ({
   onShare,
   auditResults,
   taskMetrics,
-  pageAnalysis
+  pageAnalysis,
+  taskId
 }) => {
   const [viewMode, setViewMode] = useState<ViewMode>(defaultMode);
 
@@ -51,6 +53,7 @@ const AuditResultsViewSwitcher: React.FC<AuditResultsViewSwitcherProps> = ({
           auditResults={auditResults}
           taskMetrics={taskMetrics}
           pageAnalysis={pageAnalysis}
+          taskId={taskId}
           onExportPDF={onExportPDF}
           onExportJSON={onExportJSON}
           onShare={onShare}

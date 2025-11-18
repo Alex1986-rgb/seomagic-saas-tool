@@ -25,6 +25,8 @@ export * from './audit/optimizedSite';
 // Экспорт функций рекомендаций и истории
 export { fetchRecommendations } from './audit/recommendations';
 export { fetchAuditHistory } from './audit/history';
+export { getHistoricalTrends, compareWithPrevious } from './audit/historyService';
+export type { HistoricalTrend, ComparisonData } from './audit/historyService';
 
 // Экспорт функций анализа сайта
 export {
