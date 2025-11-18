@@ -142,23 +142,7 @@ const Audit: React.FC = () => {
 
   return (
     <Layout>
-      {url ? (
-        <AuditProvider initialUrl={url}>
-          <AuditLoaderSection
-            url={url}
-            error={error}
-            isLoading={isLoading}
-            showAdvancedTools={showAdvancedTools}
-            scannedUrls={scannedUrls}
-            handleClearError={handleClearError}
-            handleUrlsScanned={handleUrlsScanned}
-            setShowAdvancedTools={setShowAdvancedTools}
-            extractedUrl={extractedUrl}
-            setTimeoutOccurred={setTimeoutOccurred}
-            extractUrlParam={extractUrlParam}
-          />
-        </AuditProvider>
-      ) : (
+      <AuditProvider initialUrl={url || ''}>
         <AuditLoaderSection
           url={url}
           error={error}
@@ -172,7 +156,7 @@ const Audit: React.FC = () => {
           setTimeoutOccurred={setTimeoutOccurred}
           extractUrlParam={extractUrlParam}
         />
-      )}
+      </AuditProvider>
     </Layout>
   );
 };
