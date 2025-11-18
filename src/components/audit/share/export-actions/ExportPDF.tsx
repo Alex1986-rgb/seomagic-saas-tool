@@ -9,6 +9,7 @@ import { seoApiService } from '@/api/seoApiService';
 import { PdfPreviewDialog } from '../pdf-preview';
 import { usePdfLocalStorage } from '@/hooks/usePdfLocalStorage';
 import { supabase } from '@/integrations/supabase/client';
+import { getHistoricalTrends, compareWithPrevious } from '@/services/audit/historyService';
 
 interface ExportPDFProps {
   auditData?: AuditData;
@@ -69,13 +70,27 @@ const ExportPDF: React.FC<ExportPDFProps> = ({
         await new Promise(resolve => setTimeout(resolve, 100));
         
         setProgress('Формирование разделов отчета...');
+        
+        // Fetch historical and comparison data
+        let historicalData, comparisonData;
+        try {
+          historicalData = await getHistoricalTrends(url, 10);
+          if (auditData.id) {
+            comparisonData = await compareWithPrevious(auditData.id);
+          }
+        } catch (error) {
+          console.log('Could not fetch historical data:', error);
+        }
+        
         const pdfBlob = await generateAuditPdf({ 
           auditData, 
           url,
           optimizationCost,
           optimizationItems,
           pageStats,
-          date: new Date().toISOString()
+          date: new Date().toISOString(),
+          historicalData,
+          comparisonData
         });
         
         setProgress('Сохранение файла...');
