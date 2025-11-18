@@ -1,5 +1,5 @@
 
-import React, { createContext, useContext, useState, useCallback, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useCallback, useMemo, ReactNode } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { AuditData, AuditHistoryData, RecommendationData } from '@/types/audit';
 import { supabase } from '@/integrations/supabase/client';
@@ -148,19 +148,34 @@ export const AuditDataProvider: React.FC<AuditDataProviderProps> = ({
     console.log("Exported JSON data");
   }, [auditData]);
   
+  // Memoize context value to prevent unnecessary re-renders
+  const contextValue = useMemo(() => ({
+    auditData: auditData || null,
+    recommendations: recommendations || null,
+    historyData: historyData || { url, items: [] },
+    error: error ? String(error) : null,
+    isLoading,
+    loadingProgress,
+    isRefreshing,
+    loadAuditData,
+    generatePdfReportFile,
+    exportJSONData
+  }), [
+    auditData,
+    recommendations,
+    historyData,
+    url,
+    error,
+    isLoading,
+    loadingProgress,
+    isRefreshing,
+    loadAuditData,
+    generatePdfReportFile,
+    exportJSONData
+  ]);
+  
   return (
-    <AuditDataContext.Provider value={{
-      auditData: auditData || null,
-      recommendations: recommendations || null,
-      historyData: historyData || { url, items: [] },
-      error: error ? String(error) : null,
-      isLoading,
-      loadingProgress,
-      isRefreshing,
-      loadAuditData,
-      generatePdfReportFile,
-      exportJSONData
-    }}>
+    <AuditDataContext.Provider value={contextValue}>
       {children}
     </AuditDataContext.Provider>
   );

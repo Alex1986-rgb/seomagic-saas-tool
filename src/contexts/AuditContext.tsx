@@ -1,5 +1,5 @@
 
-import React, { createContext, useContext, useState, useCallback, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useCallback, useEffect, useMemo, ReactNode } from 'react';
 import { AuditDataProvider, useAuditDataContext } from './AuditDataContext';
 import { ScanProvider, useScanContext } from './ScanContext';
 import { OptimizationProvider, useOptimizationContext } from './OptimizationContext';
@@ -18,7 +18,7 @@ const AuditContext = createContext<AuditContextType>({
 });
 
 // Bridge component to pass taskId from ScanContext to OptimizationProvider
-const OptimizationBridge: React.FC<{ children: ReactNode }> = ({ children }) => {
+const OptimizationBridge = React.memo<{ children: ReactNode }>(({ children }) => {
   const { taskId } = useScanContext();
   console.log('🔧 OptimizationBridge initialized with taskId:', taskId);
   return (
@@ -26,10 +26,11 @@ const OptimizationBridge: React.FC<{ children: ReactNode }> = ({ children }) => 
       {children}
     </OptimizationProvider>
   );
-};
+});
+OptimizationBridge.displayName = 'OptimizationBridge';
 
 // Bridge component to pass taskId from ScanContext to AuditDataProvider
-const AuditDataBridge: React.FC<{ url: string; children: ReactNode }> = ({ url, children }) => {
+const AuditDataBridge = React.memo<{ url: string; children: ReactNode }>(({ url, children }) => {
   const { taskId } = useScanContext();
   console.log('🔧 AuditDataBridge initialized with url:', url, 'taskId:', taskId);
   return (
@@ -37,7 +38,8 @@ const AuditDataBridge: React.FC<{ url: string; children: ReactNode }> = ({ url, 
       {children}
     </AuditDataProvider>
   );
-};
+});
+AuditDataBridge.displayName = 'AuditDataBridge';
 
 // Provider component
 export const AuditProvider: React.FC<{ children: ReactNode; initialUrl?: string }> = ({ 
@@ -59,10 +61,13 @@ export const AuditProvider: React.FC<{ children: ReactNode; initialUrl?: string 
     setUrl(newUrl);
   }, []);
   
+  // Memoize context value to prevent unnecessary re-renders
+  const contextValue = useMemo(() => ({ url, updateUrl }), [url, updateUrl]);
+  
   console.log('🔧 AuditProvider initialized with initialUrl:', initialUrl, 'current url:', url);
   
   return (
-    <AuditContext.Provider value={{ url, updateUrl }}>
+    <AuditContext.Provider value={contextValue}>
       <ScanProvider url={url}>
         <AuditDataBridge url={url}>
           <OptimizationBridge>
@@ -89,7 +94,8 @@ export const useAuditContext = () => {
   }
   
   // Combine all contexts into one for backward compatibility
-  return {
+  // Memoize to prevent creating new object on every render
+  return useMemo(() => ({
     // From main AuditContext
     url: auditContext.url,
     updateUrl: auditContext.updateUrl,
@@ -122,30 +128,29 @@ export const useAuditContext = () => {
     isOptimized: optimizationContext.isOptimized,
     contentPrompt: optimizationContext.contentPrompt,
     setContentOptimizationPrompt: optimizationContext.setContentOptimizationPrompt,
-    optimizeSiteContent: (prompt: string) => optimizationContext.optimizeSiteContent(scanContext.taskId || '', prompt),
-    downloadOptimizedSite: () => optimizationContext.downloadOptimizedSite(scanContext.taskId || ''),
+    loadOptimizationCost: optimizationContext.loadOptimizationCost,
+    optimizeSiteContent: optimizationContext.optimizeSiteContent,
+    downloadOptimizedSite: optimizationContext.downloadOptimizedSite,
     
-    // From AuditModuleContext (new modular architecture)
-    moduleContext: {
-      isStartingAudit: moduleContext.isStartingAudit,
-      startAuditNew: moduleContext.startAudit,
-      cancelAuditNew: moduleContext.cancelAudit,
-      currentTaskId: moduleContext.currentTaskId,
-      auditStatus: moduleContext.auditStatus,
-      isPollingStatus: moduleContext.isPollingStatus,
-      startPolling: moduleContext.startPolling,
-      stopPolling: moduleContext.stopPolling,
-      audits: moduleContext.audits,
-      isLoadingAudits: moduleContext.isLoadingAudits,
-      auditsError: moduleContext.auditsError,
-      refetchAudits: moduleContext.refetchAudits,
-      isOptimizing: moduleContext.isOptimizing,
-      optimizationId: moduleContext.optimizationId,
-      startOptimizationNew: moduleContext.startOptimization,
-      reports: moduleContext.reports,
-      isLoadingReports: moduleContext.isLoadingReports,
-      reportsError: moduleContext.reportsError,
-      refetchReports: moduleContext.refetchReports
-    }
-  };
+    // From AuditModuleContext
+    isStartingAudit: moduleContext.isStartingAudit,
+    startAudit: moduleContext.startAudit,
+    cancelAudit: moduleContext.cancelAudit,
+    currentTaskId: moduleContext.currentTaskId,
+    auditStatus: moduleContext.auditStatus,
+    isPollingStatus: moduleContext.isPollingStatus,
+    startPolling: moduleContext.startPolling,
+    stopPolling: moduleContext.stopPolling,
+    audits: moduleContext.audits,
+    isLoadingAudits: moduleContext.isLoadingAudits,
+    auditsError: moduleContext.auditsError,
+    refetchAudits: moduleContext.refetchAudits,
+    isOptimizing: moduleContext.isOptimizing,
+    optimizationId: moduleContext.optimizationId,
+    startOptimization: moduleContext.startOptimization,
+    reports: moduleContext.reports,
+    isLoadingReports: moduleContext.isLoadingReports,
+    reportsError: moduleContext.reportsError,
+    refetchReports: moduleContext.refetchReports,
+  }), [auditContext, auditDataContext, scanContext, optimizationContext, moduleContext]);
 };

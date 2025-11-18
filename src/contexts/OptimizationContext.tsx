@@ -1,5 +1,5 @@
 
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useCallback, useMemo, ReactNode } from 'react';
 import { useOptimizationAPI } from '@/hooks/use-optimization-api';
 import { OptimizationItem } from '@/features/audit/types/optimization-types';
 
@@ -44,7 +44,7 @@ export const OptimizationProvider: React.FC<{
   } = useOptimizationAPI(taskId || '');
   
   // Add implementation for downloadOptimizedSite
-  const downloadOptimizedSite = async (taskId: string): Promise<void> => {
+  const downloadOptimizedSite = useCallback(async (taskId: string): Promise<void> => {
     if (!taskId) return;
     
     try {
@@ -55,9 +55,9 @@ export const OptimizationProvider: React.FC<{
     } catch (error) {
       console.error("Error downloading optimized site:", error);
     }
-  };
+  }, []);
   
-  const loadOptimizationCost = async (taskId: string): Promise<void> => {
+  const loadOptimizationCost = useCallback(async (taskId: string): Promise<void> => {
     if (!taskId) return;
     
     await apiLoadOptimizationCost(
@@ -65,9 +65,9 @@ export const OptimizationProvider: React.FC<{
       (cost: number) => setOptimizationCost(cost),
       (items: OptimizationItem[]) => setOptimizationItems(items)
     );
-  };
+  }, [apiLoadOptimizationCost]);
   
-  const optimizeSiteContent = async (taskId: string, prompt: string) => {
+  const optimizeSiteContent = useCallback(async (taskId: string, prompt: string) => {
     if (!taskId) return null;
     
     const result = await apiOptimizeSiteContent(prompt);
@@ -75,20 +75,37 @@ export const OptimizationProvider: React.FC<{
       setIsOptimized(true);
     }
     return result;
-  };
+  }, [apiOptimizeSiteContent]);
+  
+  const setContentOptimizationPrompt = useCallback((prompt: string) => {
+    setContentPrompt(prompt);
+  }, []);
+  
+  // Memoize context value to prevent unnecessary re-renders
+  const contextValue = useMemo(() => ({
+    optimizationCost,
+    optimizationItems,
+    isOptimized,
+    contentPrompt,
+    isLoadingCost,
+    setContentOptimizationPrompt,
+    loadOptimizationCost,
+    optimizeSiteContent,
+    downloadOptimizedSite
+  }), [
+    optimizationCost,
+    optimizationItems,
+    isOptimized,
+    contentPrompt,
+    isLoadingCost,
+    setContentOptimizationPrompt,
+    loadOptimizationCost,
+    optimizeSiteContent,
+    downloadOptimizedSite
+  ]);
   
   return (
-    <OptimizationContext.Provider value={{
-      optimizationCost,
-      optimizationItems,
-      isOptimized,
-      contentPrompt,
-      isLoadingCost,
-      setContentOptimizationPrompt: setContentPrompt,
-      loadOptimizationCost,
-      optimizeSiteContent,
-      downloadOptimizedSite
-    }}>
+    <OptimizationContext.Provider value={contextValue}>
       {children}
     </OptimizationContext.Provider>
   );
