@@ -7,11 +7,11 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-// Constants for batch processing
-const BATCH_SIZE = 50; // Pages to process in one batch
-const MAX_EXECUTION_TIME = 50000; // 50 seconds
-const CRAWL_DELAY = 100; // ms between requests
-const MAX_CONCURRENT_REQUESTS = 5; // Parallel crawling
+// Micro-batch constants for reliable processing
+const MICRO_BATCH_SIZE = 3; // Process only 3-5 pages per invocation
+const PAGE_TIMEOUT = 5000; // 5 seconds per page
+const MAX_BATCH_CALLS = 100; // Prevent infinite loops
+const INTER_BATCH_DELAY = 100; // Small delay between batches
 
 interface PageData {
   url: string;
@@ -38,7 +38,7 @@ async function crawlPage(url: string, domain: string): Promise<PageData> {
   
   try {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 10000);
+    const timeoutId = setTimeout(() => controller.abort(), PAGE_TIMEOUT);
     
     const response = await fetch(url, {
       headers: {
@@ -135,26 +135,292 @@ async function crawlPage(url: string, domain: string): Promise<PageData> {
   }
 }
 
-// Crawl multiple pages in batch
-async function crawlBatch(urls: string[], domain: string): Promise<PageData[]> {
-  const results: PageData[] = [];
-  
-  for (let i = 0; i < urls.length; i += MAX_CONCURRENT_REQUESTS) {
-    const chunk = urls.slice(i, i + MAX_CONCURRENT_REQUESTS);
-    const chunkResults = await Promise.all(
-      chunk.map(url => crawlPage(url, domain))
-    );
-    results.push(...chunkResults);
-    
-    if (i + MAX_CONCURRENT_REQUESTS < urls.length) {
-      await new Promise(resolve => setTimeout(resolve, CRAWL_DELAY));
-    }
+// Get next batch of URLs from queue
+async function getNextBatch(supabase: any, taskId: string, batchSize: number) {
+  const { data, error } = await supabase
+    .from('url_queue')
+    .select('*')
+    .eq('task_id', taskId)
+    .eq('status', 'pending')
+    .order('priority', { ascending: false })
+    .order('created_at', { ascending: true })
+    .limit(batchSize);
+
+  if (error) {
+    console.error('Error fetching batch:', error);
+    return [];
   }
-  
-  return results;
+
+  return data || [];
 }
 
-// Analyze pages for SEO
+// Process a micro-batch of URLs
+async function processMicroBatch(supabase: any, taskId: string, domain: string) {
+  const batch = await getNextBatch(supabase, taskId, MICRO_BATCH_SIZE);
+  
+  if (batch.length === 0) {
+    console.log('No more URLs to process');
+    return { hasMore: false, processed: 0 };
+  }
+
+  console.log(`Processing micro-batch: ${batch.length} URLs`);
+
+  // Mark URLs as processing
+  await supabase
+    .from('url_queue')
+    .update({ status: 'processing' })
+    .in('id', batch.map((b: any) => b.id));
+
+  // Process URLs in parallel
+  const results = await Promise.all(
+    batch.map((item: any) => crawlPage(item.url, domain))
+  );
+
+  // Get task info for saving results
+  const { data: task } = await supabase
+    .from('audit_tasks')
+    .select('audit_id, user_id')
+    .eq('id', taskId)
+    .single();
+
+  if (!task) throw new Error('Task not found');
+
+  // Save page analysis results
+  const pageAnalysisData = results.map(page => ({
+    audit_id: task.audit_id,
+    user_id: task.user_id,
+    url: page.url,
+    title: page.title || null,
+    meta_description: page.description || null,
+    h1_count: page.h1_count,
+    image_count: page.image_count,
+    word_count: page.word_count,
+    load_time: page.load_time,
+    status_code: page.status_code
+  }));
+
+  await supabase.from('page_analysis').insert(pageAnalysisData);
+
+  // Mark URLs as completed and discover new URLs
+  for (let i = 0; i < results.length; i++) {
+    const page = results[i];
+    const queueItem = batch[i];
+
+    await supabase
+      .from('url_queue')
+      .update({ 
+        status: page.status_code >= 200 && page.status_code < 400 ? 'completed' : 'failed',
+        error_message: page.status_code >= 400 ? `HTTP ${page.status_code}` : null
+      })
+      .eq('id', queueItem.id);
+
+    // Add newly discovered internal links to queue
+    if (page.internalLinks && page.internalLinks.length > 0) {
+      const newUrls = page.internalLinks.slice(0, 20); // Limit to prevent explosion
+      
+      // Check which URLs are already in queue
+      const { data: existing } = await supabase
+        .from('url_queue')
+        .select('url')
+        .eq('task_id', taskId)
+        .in('url', newUrls);
+
+      const existingUrls = new Set(existing?.map((e: any) => e.url) || []);
+      const toInsert = newUrls
+        .filter(url => !existingUrls.has(url))
+        .map(url => ({
+          task_id: taskId,
+          url,
+          status: 'pending',
+          priority: 0
+        }));
+
+      if (toInsert.length > 0) {
+        await supabase.from('url_queue').insert(toInsert);
+      }
+    }
+  }
+
+  return { hasMore: true, processed: batch.length };
+}
+
+// Update task progress
+async function updateProgress(supabase: any, taskId: string) {
+  const { data: counts } = await supabase
+    .from('url_queue')
+    .select('status')
+    .eq('task_id', taskId);
+
+  if (!counts) return;
+
+  const total = counts.length;
+  const completed = counts.filter((c: any) => c.status === 'completed').length;
+  const failed = counts.filter((c: any) => c.status === 'failed').length;
+  const pagesScanned = completed + failed;
+  const progress = total > 0 ? Math.round((pagesScanned / total) * 100) : 0;
+
+  await supabase
+    .from('audit_tasks')
+    .update({
+      pages_scanned: pagesScanned,
+      total_urls: total,
+      progress: Math.min(progress, 90), // Cap at 90% until analysis
+    })
+    .eq('id', taskId);
+
+  console.log(`Progress: ${pagesScanned}/${total} (${progress}%)`);
+}
+
+// Trigger next batch processing
+async function triggerNextBatch(taskId: string) {
+  const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+  const supabaseKey = Deno.env.get('SUPABASE_ANON_KEY')!;
+  
+  console.log('Triggering next batch...');
+  
+  // Use background task to avoid blocking
+  setTimeout(async () => {
+    try {
+      await fetch(`${supabaseUrl}/functions/v1/audit-processor`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${supabaseKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ task_id: taskId })
+      });
+    } catch (err) {
+      console.error('Failed to trigger next batch:', err);
+    }
+  }, INTER_BATCH_DELAY);
+}
+
+// Analyze all pages and complete audit
+async function completeAudit(supabase: any, taskId: string) {
+  console.log('=== COMPLETING AUDIT ===');
+  
+  const { data: task } = await supabase
+    .from('audit_tasks')
+    .select('*, audit_id, user_id, url')
+    .eq('id', taskId)
+    .single();
+
+  if (!task) throw new Error('Task not found');
+
+  // Update to analysis phase
+  await supabase
+    .from('audit_tasks')
+    .update({ 
+      status: 'analyzing', 
+      stage: 'analysis', 
+      progress: 90 
+    })
+    .eq('id', taskId);
+
+  // Get all page analysis results
+  const { data: pages } = await supabase
+    .from('page_analysis')
+    .select('*')
+    .eq('audit_id', task.audit_id);
+
+  // Simple SEO analysis
+  const missingTitles = pages?.filter((p: any) => !p.title || p.title.trim() === '') || [];
+  const missingH1 = pages?.filter((p: any) => p.h1_count === 0) || [];
+  const missingDesc = pages?.filter((p: any) => !p.meta_description) || [];
+
+  const items = [];
+  let score = 100;
+
+  if (missingTitles.length > 0) {
+    score -= 20;
+    items.push({
+      id: 'missing-title',
+      title: 'Отсутствуют meta title',
+      description: `${missingTitles.length} страниц без meta title`,
+      status: 'error',
+      impact: 'high'
+    });
+  }
+
+  if (missingH1.length > 0) {
+    score -= 20;
+    items.push({
+      id: 'missing-h1',
+      title: 'Отсутствует H1 заголовок',
+      description: `${missingH1.length} страниц без H1`,
+      status: 'error',
+      impact: 'high'
+    });
+  }
+
+  if (missingDesc.length > 0) {
+    score -= 15;
+    items.push({
+      id: 'missing-desc',
+      title: 'Отсутствуют meta description',
+      description: `${missingDesc.length} страниц без описания`,
+      status: 'warning',
+      impact: 'medium'
+    });
+  }
+
+  const seoAnalysis = {
+    score: Math.max(score, 0),
+    items,
+    passed: items.filter(i => i.status === 'good').length,
+    warning: items.filter(i => i.status === 'warning').length,
+    failed: items.filter(i => i.status === 'error').length
+  };
+
+  const auditData = {
+    url: task.url,
+    pages_scanned: pages?.length || 0,
+    seo: seoAnalysis,
+    details: {
+      seo: seoAnalysis,
+      performance: { score: 75, items: [] },
+      content: { score: 80, items: [] },
+      technical: { score: 85, items: [] }
+    }
+  };
+
+  // Save audit results
+  await supabase
+    .from('audit_results')
+    .insert({
+      task_id: taskId,
+      audit_id: task.audit_id,
+      user_id: task.user_id,
+      audit_data: auditData,
+      score: seoAnalysis.score,
+      page_count: pages?.length || 0,
+      issues_count: seoAnalysis.failed + seoAnalysis.warning
+    });
+
+  // Update audit and task to completed
+  await supabase
+    .from('audits')
+    .update({
+      status: 'completed',
+      pages_scanned: pages?.length || 0,
+      seo_score: seoAnalysis.score,
+      completed_at: new Date().toISOString()
+    })
+    .eq('id', task.audit_id);
+
+  await supabase
+    .from('audit_tasks')
+    .update({
+      status: 'completed',
+      stage: 'completed',
+      progress: 100
+    })
+    .eq('id', taskId);
+
+  console.log(`✅ Audit completed: ${pages?.length} pages, score: ${seoAnalysis.score}`);
+}
+
+// Simplified analyze function for compatibility
 async function analyzeSEO(pages: PageData[]) {
   const items = [];
   let totalScore = 0;
@@ -205,7 +471,7 @@ async function analyzeSEO(pages: PageData[]) {
   };
 }
 
-// Process audit task
+// Main task processor with micro-batch architecture
 async function processAuditTask(taskId: string) {
   const supabase = createClient(
     Deno.env.get('SUPABASE_URL') ?? '',
@@ -224,268 +490,100 @@ async function processAuditTask(taskId: string) {
       throw new Error('Task not found');
     }
 
-    console.log(`Processing task ${taskId} for URL: ${task.url}`);
+    console.log(`Processing task ${taskId}, batch #${task.batch_count + 1}`);
 
-    // Initial status update
-    await supabase
-      .from('audit_tasks')
-      .update({ status: 'scanning', stage: 'queued', progress: 0 })
-      .eq('id', taskId);
-
-    // Create audit record if not exists
-    let auditId = task.audit_id;
-    if (!auditId) {
-      const { data: audit, error: auditError } = await supabase
-        .from('audits')
-        .insert({
-          user_id: task.user_id,
-          url: task.url,
-          status: 'scanning',
-          total_pages: task.estimated_pages || 10
-        })
-        .select()
-        .single();
-
-      if (auditError) throw auditError;
-      auditId = audit.id;
-
-      // Link task to audit
-      await supabase
-        .from('audit_tasks')
-        .update({ audit_id: auditId })
-        .eq('id', taskId);
+    // Check if batch limit exceeded
+    if (task.batch_count >= MAX_BATCH_CALLS) {
+      throw new Error(`Max batch calls (${MAX_BATCH_CALLS}) exceeded`);
     }
 
-    // Update audit status
+    // Increment batch counter
     await supabase
-      .from('audits')
-      .update({ status: 'scanning' })
-      .eq('id', auditId);
+      .from('audit_tasks')
+      .update({ batch_count: (task.batch_count || 0) + 1 })
+      .eq('id', taskId);
 
-    // Parse domain
+    // Extract domain
     const urlObj = new URL(task.url);
     const domain = urlObj.hostname;
 
-    // PHASE 1: DISCOVERY - Find all URLs
-    console.log('=== PHASE 1: DISCOVERY ===');
-    await supabase
-      .from('audit_tasks')
-      .update({ 
-        status: 'scanning', 
-        stage: 'discovery', 
-        progress: 5,
-        discovery_source: 'Initialization'
-      })
-      .eq('id', taskId);
-
-    // Start crawling
-    const urlsQueue = [task.url];
-    const visitedUrls = new Set<string>();
-    const allPages: PageData[] = [];
-    const maxPages = task.estimated_pages || 10;
-
-    let pagesScanned = 0;
-    let discoveredUrlsCount = 0;
-    const startTime = Date.now();
-    
-    // Notify about initial URL
-    discoveredUrlsCount++;
-    await supabase
-      .from('audit_tasks')
-      .update({
-        discovered_urls_count: discoveredUrlsCount,
-        last_discovered_url: task.url,
-        discovery_source: 'Starting page'
-      })
-      .eq('id', taskId);
-
-    while (urlsQueue.length > 0 && pagesScanned < maxPages) {
-      // Check execution time
-      if (Date.now() - startTime > MAX_EXECUTION_TIME) {
-        console.log('Execution time limit reached, saving progress...');
-        break;
-      }
-
-      const batchUrls = urlsQueue.splice(0, Math.min(BATCH_SIZE, maxPages - pagesScanned));
-      const newUrls = batchUrls.filter(url => !visitedUrls.has(url));
-
-      if (newUrls.length === 0) continue;
-
-      // Crawl batch
-      const batchPages = await crawlBatch(newUrls, domain);
-      allPages.push(...batchPages);
-      pagesScanned += batchPages.length;
-
-      // Mark as visited
-      newUrls.forEach(url => visitedUrls.add(url));
-
-      // Add new internal links to queue and notify in real-time
-      for (const page of batchPages) {
-        if (page.internalLinks) {
-          for (const link of page.internalLinks) {
-            if (!visitedUrls.has(link) && !urlsQueue.includes(link) && link !== task.url) {
-              urlsQueue.push(link);
-              discoveredUrlsCount++;
-              
-              // Real-time update for each discovered URL
-              await supabase
-                .from('audit_tasks')
-                .update({
-                  discovered_urls_count: discoveredUrlsCount,
-                  last_discovered_url: link,
-                  discovery_source: `Page: ${page.url.substring(0, 50)}...`
-                })
-                .eq('id', taskId);
-            }
-          }
-        }
-      }
-
-      // PHASE 2: FETCHING - Download HTML
-      // Update to fetching phase after discovery
-      if (pagesScanned === batchPages.length) {
-        console.log('=== PHASE 2: FETCHING ===');
-        await supabase
-          .from('audit_tasks')
-          .update({ stage: 'fetching', progress: 25 })
-          .eq('id', taskId);
-      }
+    // If this is the first batch, initialize the queue
+    if (task.batch_count === 0 || task.stage === 'queued') {
+      console.log('=== INITIALIZING QUEUE ===');
       
-      // Update progress
-      const progress = Math.min(50, Math.round((pagesScanned / maxPages) * 25) + 25);
       await supabase
         .from('audit_tasks')
-        .update({
-          pages_scanned: pagesScanned,
-          progress,
-          current_url: newUrls[0],
-          stage: 'fetching'
+        .update({ 
+          status: 'scanning', 
+          stage: 'discovery', 
+          progress: 5 
         })
         .eq('id', taskId);
 
-      // Save page analysis to database (batch insert)
-      const pageAnalysisData = batchPages.map(page => ({
-        audit_id: auditId,
-        user_id: task.user_id,
-        url: page.url,
-        title: page.title || null,
-        meta_description: page.description || null,
-        h1_count: page.h1_count,
-        image_count: page.image_count,
-        word_count: page.word_count,
-        load_time: page.load_time,
-        status_code: page.status_code
-      }));
+      // Create audit record if not exists
+      let auditId = task.audit_id;
+      if (!auditId) {
+        const { data: audit } = await supabase
+          .from('audits')
+          .insert({
+            user_id: task.user_id,
+            url: task.url,
+            status: 'scanning'
+          })
+          .select()
+          .single();
 
-      await supabase.from('page_analysis').insert(pageAnalysisData);
+        auditId = audit.id;
+        await supabase
+          .from('audit_tasks')
+          .update({ audit_id: auditId })
+          .eq('id', taskId);
+      }
 
-      console.log(`Processed ${pagesScanned}/${maxPages} pages...`);
+      // Add initial URL to queue
+      await supabase
+        .from('url_queue')
+        .insert({
+          task_id: taskId,
+          url: task.url,
+          status: 'pending',
+          priority: 100 // Highest priority for start page
+        });
+
+      console.log('Queue initialized with start URL');
     }
 
-    // Analyze results
-    console.log('Analyzing pages...');
-    await supabase
-      .from('audit_tasks')
-      .update({ status: 'analyzing', stage: 'analysis', progress: 90 })
-      .eq('id', taskId);
-
-    const seoAnalysis = await analyzeSEO(allPages);
-
-    // Create final audit data
-    const auditData = {
-      url: task.url,
-      pages_scanned: pagesScanned,
-      seo: seoAnalysis,
-      details: {
-        seo: seoAnalysis,
-        performance: { score: 75, items: [] },
-        content: { score: 80, items: [] },
-        technical: { score: 85, items: [] }
-      }
-    };
-
-    // Save audit results
-    console.log('Saving audit results to database...');
-    const { data: insertedResult, error: insertError } = await supabase
-      .from('audit_results')
-      .insert({
-        task_id: taskId,
-        audit_id: auditId,
-        user_id: task.user_id,
-        audit_data: auditData,
-        score: seoAnalysis.score,
-        page_count: pagesScanned,
-        issues_count: seoAnalysis.failed + seoAnalysis.warning
-      })
-      .select()
-      .single();
-
-    if (insertError) {
-      console.error('❌ Error saving audit results:', insertError);
-      throw new Error(`Failed to save audit results: ${insertError.message}`);
+    // Update to fetching phase
+    if (task.stage === 'discovery') {
+      await supabase
+        .from('audit_tasks')
+        .update({ stage: 'fetching' })
+        .eq('id', taskId);
     }
 
-    console.log('✅ Audit results saved:', insertedResult.id);
+    // Process micro-batch
+    const { hasMore, processed } = await processMicroBatch(supabase, taskId, domain);
 
-    // Phase 4: Generating reports
-    console.log('Generating reports...');
-    await supabase
-      .from('audit_tasks')
-      .update({ status: 'generating', stage: 'generating', progress: 95 })
-      .eq('id', taskId);
+    // Update progress
+    await updateProgress(supabase, taskId);
 
-    // Log generated files to audit_files table
-    const timestamp = Date.now();
-    const filesToLog = [
-      {
-        audit_id: auditId,
-        user_id: task.user_id,
-        file_type: 'audit_json',
-        file_url: `audits/${auditId}/audit-${timestamp}.json`,
-        file_size: JSON.stringify(auditData).length
-      },
-      {
-        audit_id: auditId,
-        user_id: task.user_id,
-        file_type: 'sitemap_xml',
-        file_url: `audits/${auditId}/sitemap-${timestamp}.xml`,
-        file_size: 0 // Will be calculated when actually generated
-      }
-    ];
-
-    await supabase.from('audit_files').insert(filesToLog);
-
-    // Update audit record
-    await supabase
-      .from('audits')
-      .update({
-        status: 'completed',
-        pages_scanned: pagesScanned,
-        seo_score: seoAnalysis.score,
-        completed_at: new Date().toISOString()
-      })
-      .eq('id', auditId);
-
-    // Mark task as completed
-    await supabase
-      .from('audit_tasks')
-      .update({
-        status: 'completed',
-        stage: 'completed',
-        progress: 100,
-        pages_scanned: pagesScanned
-      })
-      .eq('id', taskId);
-
-    console.log(`Audit completed: ${pagesScanned} pages scanned, score: ${seoAnalysis.score}`);
+    // Check if we should continue or complete
+    if (!hasMore || processed === 0) {
+      // No more URLs to process - complete the audit
+      await completeAudit(supabase, taskId);
+    } else {
+      // More URLs to process - trigger next batch
+      triggerNextBatch(taskId);
+    }
 
   } catch (error) {
-    console.error('Error processing audit task:', error);
+    console.error('❌ Error processing audit task:', error);
     
     await supabase
       .from('audit_tasks')
       .update({
         status: 'failed',
+        stage: 'failed',
         error_message: error.message
       })
       .eq('id', taskId);
@@ -503,37 +601,29 @@ serve(async (req) => {
     const { task_id } = await req.json();
 
     if (!task_id) {
-      throw new Error('task_id is required');
+      return new Response(
+        JSON.stringify({ error: 'Missing task_id' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
 
-    console.log(`Starting audit processor for task: ${task_id}`);
+    console.log(`📝 Received request for task: ${task_id}`);
 
-    // Process task in background
+    // Process in background
     EdgeRuntime.waitUntil(processAuditTask(task_id));
 
     return new Response(
-      JSON.stringify({
-        success: true,
-        message: 'Audit processing started'
+      JSON.stringify({ 
+        success: true, 
+        message: 'Audit task processing started',
+        task_id 
       }),
-      {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 200
-      }
-    );
-
   } catch (error) {
-    console.error('Error in audit-processor:', error);
-    
+    console.error('Error:', error);
     return new Response(
-      JSON.stringify({
-        success: false,
-        error: error.message
-      }),
-      {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 500
-      }
+      JSON.stringify({ error: error.message }),
+      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }
 });
+
