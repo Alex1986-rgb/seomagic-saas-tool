@@ -51,7 +51,7 @@ export const AuditProvider: React.FC<{ children: ReactNode; initialUrl?: string 
     setUrl(newUrl);
   }, []);
   
-  console.log('🔧 AuditProvider initialized with url:', url);
+  console.log('🔧 AuditProvider initialized with initialUrl:', initialUrl, 'current url:', url);
   
   return (
     <AuditContext.Provider value={{ url, updateUrl }}>
