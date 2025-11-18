@@ -24,6 +24,9 @@ const AuditResultsContainer: React.FC<AuditResultsContainerProps> = ({ url }) =>
     scanDetails,
     pageStats,
     sitemap,
+    auditResults,
+    taskMetrics,
+    pageAnalysis,
     optimizationCost,
     optimizationItems,
     isOptimized,
@@ -91,6 +94,9 @@ const AuditResultsContainer: React.FC<AuditResultsContainerProps> = ({ url }) =>
             auditData={auditData}
             recommendations={recommendations}
             historyData={typedHistoryData}
+            auditResults={auditResults}
+            taskMetrics={taskMetrics}
+            pageAnalysis={pageAnalysis}
             optimizationCost={optimizationCost}
             optimizationItems={optimizationItems}
             isOptimized={isOptimized}
