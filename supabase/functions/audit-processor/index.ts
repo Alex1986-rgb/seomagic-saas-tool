@@ -150,14 +150,74 @@ async function extractSitemapUrls(baseUrl: string): Promise<string[]> {
   return [];
 }
 
-async function initializeCrawl(supabase: any, taskId: string, url: string, estimatedPages: number) {
-  const initialPriority = calculatePriority(url, 0, true);
-  await supabase.from('url_queue').insert({ task_id: taskId, url, status: 'pending', priority: initialPriority });
+async function initializeCrawl(supabase: any, taskId: string, url: string, estimatedPages: number, sitemapUrls: string[]) {
+  console.log(`Initializing crawl: ${url}, estimated pages: ${estimatedPages}, sitemap URLs: ${sitemapUrls.length}`);
+  
+  // Add homepage first
+  const normalizedUrl = normalizeUrl(filterQueryParams(url));
+  const initialPriority = calculatePriority(normalizedUrl, 0, true);
+  const pageType = detectPageType(normalizedUrl);
+  
+  await supabase.from('url_queue').insert({
+    task_id: taskId,
+    url: normalizedUrl,
+    status: 'pending',
+    priority: initialPriority,
+    depth: 0,
+    parent_url: null,
+    page_type: pageType
+  });
+  
+  // Add sitemap URLs if available
+  if (sitemapUrls.length > 0) {
+    const sitemapEntries = sitemapUrls
+      .map(sUrl => normalizeUrl(filterQueryParams(sUrl)))
+      .filter(sUrl => sUrl !== normalizedUrl) // Don't duplicate homepage
+      .slice(0, estimatedPages) // Respect estimated pages limit
+      .map(sUrl => ({
+        task_id: taskId,
+        url: sUrl,
+        status: 'pending',
+        priority: calculatePriority(sUrl, 1, true),
+        depth: 1,
+        parent_url: normalizedUrl,
+        page_type: detectPageType(sUrl)
+      }));
+    
+    if (sitemapEntries.length > 0) {
+      // Insert in batches to avoid conflicts
+      for (const entry of sitemapEntries) {
+        try {
+          await supabase.from('url_queue').insert(entry);
+        } catch (e) {
+          // Ignore duplicate key errors
+        }
+      }
+    }
+  }
+  
+  // Update audit_tasks with sitemap info
+  await supabase.from('audit_tasks').update({
+    sitemap_urls_count: sitemapUrls.length,
+    estimated_pages: estimatedPages,
+    discovery_source: sitemapUrls.length > 0 ? 'sitemap' : 'crawl'
+  }).eq('id', taskId);
 }
 
-async function processMicroBatch(supabase: any, taskId: string, domain: string, depth: number = 0) {
-  const { data: batch } = await supabase.from('url_queue').select('*').eq('task_id', taskId).eq('status', 'pending').limit(MICRO_BATCH_SIZE);
+async function processMicroBatch(supabase: any, taskId: string, domain: string) {
+  // Select by priority, then depth (prioritize important pages first)
+  const { data: batch } = await supabase
+    .from('url_queue')
+    .select('*')
+    .eq('task_id', taskId)
+    .eq('status', 'pending')
+    .order('priority', { ascending: false })
+    .order('depth', { ascending: true })
+    .limit(MICRO_BATCH_SIZE);
+    
   if (!batch || batch.length === 0) return { hasMore: false, processed: 0 };
+  
+  console.log(`Processing batch of ${batch.length} URLs, depths: ${batch.map(b => b.depth).join(', ')}`);
 
   await supabase.from('url_queue').update({ status: 'processing' }).in('id', batch.map((b: any) => b.id));
   const results = await Promise.all(batch.map((item: any) => crawlPage(item.url, domain)));
@@ -167,26 +227,93 @@ async function processMicroBatch(supabase: any, taskId: string, domain: string, 
     const queueItem = batch[i];
 
     await supabase.from('url_queue').update({ status: 'completed' }).eq('id', queueItem.id);
+    
+    // Insert comprehensive page analysis with all Sprint 1 fields
     await supabase.from('page_analysis').insert({
       audit_id: taskId,
       url: page.url,
       title: page.title || null,
       meta_description: page.description || null,
       h1_count: page.h1_count,
+      h1_text: page.h1_text || null,
+      h2_count: page.h2_count || 0,
+      h3_count: page.h3_count || 0,
       image_count: page.image_count,
       word_count: page.word_count,
       load_time: page.load_time,
-      status_code: page.status_code
+      status_code: page.status_code,
+      depth: queueItem.depth || 0,
+      page_type: page.page_type || 'other',
+      
+      // Indexability
+      is_indexable: page.is_indexable !== undefined ? page.is_indexable : true,
+      robots_meta: page.robots_meta,
+      
+      // Canonical
+      canonical_url: page.canonical_url,
+      has_canonical: page.has_canonical || false,
+      canonical_points_to_self: page.canonical_points_to_self || null,
+      
+      // Content quality
+      text_html_ratio: page.text_html_ratio || null,
+      has_thin_content: page.has_thin_content || false,
+      
+      // Images
+      missing_alt_images_count: page.missing_alt_images_count || 0,
+      
+      // Technical
+      content_type: page.content_type || 'text/html',
+      content_length: page.content_length || null,
+      redirect_chain_length: page.redirect_chain_length || 0,
+      final_url: page.final_url || page.url,
+      
+      // Mobile & Performance
+      has_viewport: page.has_viewport || false,
+      ttfb: page.ttfb || null,
+      
+      // Internationalization
+      language_detected: page.language_detected || null,
+      hreflang_tags: page.hreflang_tags || null,
+      
+      // Links
+      internal_links_count: page.internal_links_count || 0,
+      external_links_count: page.external_links_count || 0
     });
 
-    if (depth < MAX_DEPTH && page.internalLinks && page.internalLinks.length > 0) {
-      const newUrls = page.internalLinks.map(link => normalizeUrl(link));
+    // Add discovered internal links to queue (respecting depth limit)
+    const currentDepth = queueItem.depth || 0;
+    if (currentDepth < MAX_DEPTH && page.internalLinks && page.internalLinks.length > 0) {
+      const newDepth = currentDepth + 1;
+      const newUrls = page.internalLinks
+        .map(link => {
+          try {
+            // Resolve relative URLs
+            const absoluteUrl = new URL(link, page.url).toString();
+            return filterQueryParams(normalizeUrl(absoluteUrl));
+          } catch {
+            return null;
+          }
+        })
+        .filter(url => url !== null) as string[];
+      
+      console.log(`Discovered ${newUrls.length} internal links from ${page.url} at depth ${currentDepth}`);
+      
       for (const newUrl of newUrls) {
-        const priority = calculatePriority(newUrl, depth + 1);
+        const priority = calculatePriority(newUrl, newDepth);
+        const pageType = detectPageType(newUrl);
+        
         try {
-          await supabase.from('url_queue').insert({ task_id: taskId, url: newUrl, status: 'pending', priority });
+          await supabase.from('url_queue').insert({
+            task_id: taskId,
+            url: newUrl,
+            status: 'pending',
+            priority,
+            depth: newDepth,
+            parent_url: page.url,
+            page_type: pageType
+          });
         } catch (e) {
-          // Ignore duplicate key errors
+          // Ignore duplicate key errors (URL already in queue)
         }
       }
     }
@@ -203,27 +330,95 @@ async function completeAudit(supabase: any, taskId: string) {
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response(null, { headers: corsHeaders });
+  
   try {
     const supabase = createClient(Deno.env.get('SUPABASE_URL') ?? '', Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '');
     const { task_id } = await req.json();
-    const { data: task } = await supabase.from('audit_tasks').select('*').eq('id', task_id).single();
-    if (!task) return new Response(JSON.stringify({ error: 'Task not found' }), { status: 404, headers: corsHeaders });
     
-    // Process with depth-aware logic
+    console.log(`Starting audit processor for task: ${task_id}`);
+    
+    const { data: task } = await supabase.from('audit_tasks').select('*').eq('id', task_id).single();
+    if (!task) {
+      return new Response(JSON.stringify({ error: 'Task not found' }), { status: 404, headers: corsHeaders });
+    }
+    
+    const baseUrl = task.url;
+    const domain = new URL(baseUrl).hostname;
+    
+    // Update task to processing
+    await supabase.from('audit_tasks').update({
+      status: 'processing',
+      stage: 'initialization'
+    }).eq('id', task_id);
+    
+    // Extract sitemap URLs
+    console.log(`Extracting sitemap from: ${baseUrl}`);
+    const sitemapUrls = await extractSitemapUrls(baseUrl);
+    console.log(`Found ${sitemapUrls.length} URLs in sitemap`);
+    
+    // Calculate dynamic estimated_pages based on sitemap size
+    const estimatedPages = calculateEstimatedPages(sitemapUrls.length, 100);
+    console.log(`Estimated pages to scan: ${estimatedPages}`);
+    
+    // Initialize crawl with homepage and sitemap URLs
+    await initializeCrawl(supabase, task_id, baseUrl, estimatedPages, sitemapUrls);
+    
+    // Update stage to crawling
+    await supabase.from('audit_tasks').update({
+      stage: 'crawling'
+    }).eq('id', task_id);
+    
+    // Process URLs in micro-batches with depth-aware priority
     let hasMore = true;
     let totalProcessed = 0;
-    let currentDepth = 0;
+    let batchCount = 0;
 
-    while (hasMore && currentDepth <= MAX_DEPTH) {
-      const result = await processMicroBatch(supabase, task_id, new URL(task.url).hostname, currentDepth);
+    while (hasMore && totalProcessed < estimatedPages) {
+      batchCount++;
+      console.log(`Processing batch #${batchCount}, total processed: ${totalProcessed}/${estimatedPages}`);
+      
+      const result = await processMicroBatch(supabase, task_id, domain);
       hasMore = result.hasMore;
       totalProcessed += result.processed;
-      currentDepth++;
+      
+      // Update progress
+      await supabase.from('audit_tasks').update({
+        pages_scanned: totalProcessed,
+        batch_count: batchCount,
+        progress: Math.min(100, Math.round((totalProcessed / estimatedPages) * 100))
+      }).eq('id', task_id);
+      
+      // Safety check: don't process forever
+      if (batchCount > 200) {
+        console.log(`Reached batch limit (${batchCount}), stopping`);
+        break;
+      }
     }
 
+    console.log(`Crawl complete: ${totalProcessed} pages processed in ${batchCount} batches`);
+    
+    // Mark as completed
     await completeAudit(supabase, task_id);
-    return new Response(JSON.stringify({ success: true, task_id }), { headers: corsHeaders });
+    
+    return new Response(
+      JSON.stringify({
+        success: true,
+        task_id,
+        pages_processed: totalProcessed,
+        batches: batchCount
+      }),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
+    
   } catch (error) {
-    return new Response(JSON.stringify({ error: error.message }), { status: 500, headers: corsHeaders });
+    console.error('Audit processor error:', error);
+    
+    return new Response(
+      JSON.stringify({
+        error: error instanceof Error ? error.message : 'Unknown error',
+        details: error instanceof Error ? error.stack : undefined
+      }),
+      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
   }
 });
