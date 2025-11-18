@@ -462,14 +462,78 @@ async function completeAudit(supabase: any, taskId: string, auditId: string) {
   
   console.log('[COMPLETE] Triggering scoring processor...');
   
-  // Invoke scoring processor
+  // Invoke scoring processor with correct task_id
   await supabase.functions.invoke('scoring-processor', {
-    body: { task_id: auditId }
+    body: { task_id: taskId }
   });
 }
 
+// Background processing function
+async function processAuditInBackground(task_id: string) {
+  const supabase = createClient(Deno.env.get('SUPABASE_URL') ?? '', Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '');
+  
+  try {
+    const { data: task } = await supabase.from('audit_tasks').select('*').eq('id', task_id).single();
+    if (!task) {
+      console.error(`Task not found: ${task_id}`);
+      return;
+    }
+    
+    const domain = new URL(task.url).hostname;
+    const estimatedPages = task.estimated_pages || 100;
+    
+    // Process URLs in micro-batches
+    let hasMore = true;
+    let totalProcessed = task.pages_scanned || 0;
+    let batchCount = task.batch_count || 0;
+    const MAX_BATCHES_PER_RUN = 10; // Process max 10 batches per invocation
+
+    let batchesThisRun = 0;
+    while (hasMore && totalProcessed < estimatedPages && batchesThisRun < MAX_BATCHES_PER_RUN) {
+      batchCount++;
+      batchesThisRun++;
+      console.log(`Processing batch #${batchCount}, total processed: ${totalProcessed}/${estimatedPages}`);
+      
+      const result = await processMicroBatch(supabase, task_id, domain);
+      hasMore = result.hasMore;
+      totalProcessed += result.processed;
+      
+      // Update progress
+      await supabase.from('audit_tasks').update({
+        pages_scanned: totalProcessed,
+        batch_count: batchCount,
+        progress: Math.min(100, Math.round((totalProcessed / estimatedPages) * 100))
+      }).eq('id', task_id);
+      
+      // Safety check
+      if (batchCount > 200) {
+        console.log(`Reached batch limit (${batchCount}), stopping`);
+        hasMore = false;
+        break;
+      }
+    }
+
+    // If there's more work, re-invoke ourselves
+    if (hasMore && totalProcessed < estimatedPages) {
+      console.log(`More work remaining, re-invoking processor...`);
+      await supabase.functions.invoke('audit-processor', {
+        body: { task_id }
+      });
+    } else {
+      // All done, complete the audit
+      console.log(`Crawl complete: ${totalProcessed} pages processed in ${batchCount} batches`);
+      await completeAudit(supabase, task_id, task.audit_id || task_id);
+    }
+  } catch (error) {
+    console.error('Background processing error:', error);
+    await supabase.from('audit_tasks').update({
+      status: 'failed',
+      error_message: error instanceof Error ? error.message : 'Unknown error'
+    }).eq('id', task_id);
+  }
+}
+
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
@@ -485,8 +549,16 @@ serve(async (req) => {
       return new Response(JSON.stringify({ error: 'Task not found' }), { status: 404, headers: corsHeaders });
     }
     
+    // If task is already processing, continue from where it left off
+    if (task.status === 'processing') {
+      console.log(`Continuing existing task processing...`);
+      EdgeRuntime.waitUntil(processAuditInBackground(task_id));
+      return new Response(JSON.stringify({ success: true, task_id, status: 'continuing' }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
+    
     const baseUrl = task.url;
-    const domain = new URL(baseUrl).hostname;
     
     // Update task to processing
     await supabase.from('audit_tasks').update({
@@ -499,11 +571,12 @@ serve(async (req) => {
     const sitemapUrls = await extractSitemapUrls(baseUrl);
     console.log(`Found ${sitemapUrls.length} URLs in sitemap`);
     
-    // Calculate dynamic estimated_pages based on sitemap size
-    const estimatedPages = calculateEstimatedPages(sitemapUrls.length, 100);
+    // Calculate dynamic estimated_pages
+    const estimatedPages = calculateEstimatedPages(sitemapUrls.length, task.estimated_pages || 100);
     console.log(`Estimated pages to scan: ${estimatedPages}`);
     
-    // Initialize crawl with homepage and sitemap URLs
+    // Initialize crawl
+    console.log(`Initializing crawl: ${baseUrl}, estimated pages: ${estimatedPages}, sitemap URLs: ${sitemapUrls.length}`);
     await initializeCrawl(supabase, task_id, baseUrl, estimatedPages, sitemapUrls);
     
     // Update stage to crawling
@@ -511,39 +584,11 @@ serve(async (req) => {
       stage: 'crawling'
     }).eq('id', task_id);
     
-    // Process URLs in micro-batches with depth-aware priority
-    let hasMore = true;
-    let totalProcessed = 0;
-    let batchCount = 0;
-
-    while (hasMore && totalProcessed < estimatedPages) {
-      batchCount++;
-      console.log(`Processing batch #${batchCount}, total processed: ${totalProcessed}/${estimatedPages}`);
-      
-      const result = await processMicroBatch(supabase, task_id, domain);
-      hasMore = result.hasMore;
-      totalProcessed += result.processed;
-      
-      // Update progress
-      await supabase.from('audit_tasks').update({
-        pages_scanned: totalProcessed,
-        batch_count: batchCount,
-        progress: Math.min(100, Math.round((totalProcessed / estimatedPages) * 100))
-      }).eq('id', task_id);
-      
-      // Safety check: don't process forever
-      if (batchCount > 200) {
-        console.log(`Reached batch limit (${batchCount}), stopping`);
-        break;
-      }
-    }
-
-    console.log(`Crawl complete: ${totalProcessed} pages processed in ${batchCount} batches`);
+    // Start background processing
+    EdgeRuntime.waitUntil(processAuditInBackground(task_id));
     
-    // Mark as completed and calculate metrics
-    await completeAudit(supabase, task_id, task.audit_id || task_id);
-    
-    return new Response(JSON.stringify({ success: true, task_id }), {
+    // Return immediately
+    return new Response(JSON.stringify({ success: true, task_id, status: 'started' }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' }
     });
     
