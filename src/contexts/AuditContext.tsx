@@ -1,5 +1,5 @@
 
-import React, { createContext, useContext, useState, useCallback, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useCallback, useEffect, ReactNode } from 'react';
 import { AuditDataProvider, useAuditDataContext } from './AuditDataContext';
 import { ScanProvider, useScanContext } from './ScanContext';
 import { OptimizationProvider, useOptimizationContext } from './OptimizationContext';
@@ -45,6 +45,14 @@ export const AuditProvider: React.FC<{ children: ReactNode; initialUrl?: string 
   initialUrl = '' 
 }) => {
   const [url, setUrl] = useState(initialUrl);
+  
+  // React to initialUrl changes (fixes race condition when URL is set after mount)
+  useEffect(() => {
+    if (initialUrl !== url) {
+      console.log('🔄 AuditProvider: initialUrl changed from', url, 'to', initialUrl);
+      setUrl(initialUrl);
+    }
+  }, [initialUrl, url]);
   
   // Update URL
   const updateUrl = useCallback((newUrl: string) => {

@@ -90,13 +90,11 @@ const Audit: React.FC = () => {
 
   useEffect(() => {
     console.log("Audit component mounted");
-    const timer = setTimeout(() => {
-      extractUrlParam();
-    }, 300);
+    // Extract URL immediately to avoid race condition
+    extractUrlParam();
     
     return () => {
       console.log("Audit component unmounted");
-      clearTimeout(timer);
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current);
       }

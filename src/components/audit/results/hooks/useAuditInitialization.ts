@@ -19,6 +19,14 @@ export const useAuditInitialization = (url: string, loadAuditData: (refresh?: bo
 
   // STEP 1: Auto-start audit if no taskId exists (HIGHEST PRIORITY)
   useEffect(() => {
+    console.log('🔍 useAuditInitialization check:', { 
+      url, 
+      hasUrl: !!url,
+      taskId, 
+      isScanning, 
+      autoStarted: autoStartRef.current 
+    });
+    
     if (!autoStartRef.current && url && !taskId && !isScanning) {
       console.log('🚀 Auto-starting Quick Audit for:', url);
       autoStartRef.current = true;
