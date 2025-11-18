@@ -486,7 +486,7 @@ async function processAuditInBackground(task_id: string) {
     let hasMore = true;
     let totalProcessed = task.pages_scanned || 0;
     let batchCount = task.batch_count || 0;
-    const MAX_BATCHES_PER_RUN = 10; // Process max 10 batches per invocation
+    const MAX_BATCHES_PER_RUN = 3; // Process max 3 batches per invocation (~25s) to stay under CPU limit
 
     let batchesThisRun = 0;
     while (hasMore && totalProcessed < estimatedPages && batchesThisRun < MAX_BATCHES_PER_RUN) {
