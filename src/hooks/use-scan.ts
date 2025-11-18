@@ -103,6 +103,12 @@ export const useScan = (url: string, onPageCountUpdate?: (count: number) => void
       console.log('✅ Audit started successfully with task ID:', crawlTaskId);
       setTaskId(crawlTaskId);
       
+      // Track polling start time for timeout detection
+      const pollingStartTime = Date.now();
+      const POLLING_TIMEOUT = 2 * 60 * 1000; // 2 minutes timeout
+      let lastUpdateTime = Date.now();
+      let lastPagesScanned = 0;
+      
       // Start progress polling
       const pollInterval = setInterval(async () => {
         try {
@@ -114,6 +120,31 @@ export const useScan = (url: string, onPageCountUpdate?: (count: number) => void
           const status = statusResponse.status;
           
           const progressValue = statusResponse.progress;
+          
+          // Check for timeout - if no progress for 2 minutes
+          const currentTime = Date.now();
+          const timeSinceStart = currentTime - pollingStartTime;
+          
+          if (pagesScanned !== lastPagesScanned) {
+            lastUpdateTime = currentTime;
+            lastPagesScanned = pagesScanned;
+          }
+          
+          const timeSinceLastUpdate = currentTime - lastUpdateTime;
+          
+          // If stuck for more than 2 minutes OR total time exceeds timeout
+          if (timeSinceLastUpdate > POLLING_TIMEOUT || timeSinceStart > POLLING_TIMEOUT * 3) {
+            console.error('⏱️ Scan timeout: No progress detected');
+            clearInterval(pollInterval);
+            setIsScanning(false);
+            
+            toast({
+              title: "Ошибка сканирования",
+              description: "Сканирование застряло. Попробуйте запустить заново.",
+              variant: "destructive",
+            });
+            return;
+          }
           
           setScanDetails({
             current_url: statusCurrent,

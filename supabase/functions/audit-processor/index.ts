@@ -610,14 +610,24 @@ async function processAuditTask(taskId: string) {
 }
 
 serve(async (req) => {
+  console.log('=== 🚀 AUDIT PROCESSOR STARTED ===');
+  console.log('📋 Request method:', req.method);
+  console.log('🌐 Environment check:', {
+    hasSupabaseUrl: !!Deno.env.get('SUPABASE_URL'),
+    hasAnonKey: !!Deno.env.get('SUPABASE_ANON_KEY'),
+    hasLovableKey: !!Deno.env.get('LOVABLE_API_KEY')
+  });
+  
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
     const { task_id } = await req.json();
+    console.log('📝 Received request for task:', task_id);
 
     if (!task_id) {
+      console.error('❌ No task_id provided in request');
       return new Response(
         JSON.stringify({ error: 'Missing task_id' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
