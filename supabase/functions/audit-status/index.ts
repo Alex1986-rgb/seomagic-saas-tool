@@ -51,18 +51,28 @@ serve(async (req) => {
 
     // Check for pending URLs and trigger next batch if needed
     if (task.status === 'scanning') {
-      const { data: pendingUrls } = await supabaseClient
-        .from('url_queue')
-        .select('id')
-        .eq('task_id', task_id)
-        .eq('status', 'pending')
-        .limit(1);
-      
-      if (pendingUrls && pendingUrls.length > 0) {
-        // Trigger next batch asynchronously (non-blocking)
+      // Check if queue needs initialization (batch_count === 0)
+      if (task.batch_count === 0) {
+        console.log(`Initializing queue for task ${task_id}`);
+        // Trigger processor to initialize queue
         supabaseClient.functions.invoke('audit-processor', {
           body: { task_id }
-        }).catch(err => console.error('Failed to trigger batch:', err));
+        }).catch(err => console.error('Failed to initialize queue:', err));
+      } else {
+        // Check for pending URLs in existing queue
+        const { data: pendingUrls } = await supabaseClient
+          .from('url_queue')
+          .select('id')
+          .eq('task_id', task_id)
+          .eq('status', 'pending')
+          .limit(1);
+        
+        if (pendingUrls && pendingUrls.length > 0) {
+          // Trigger next batch asynchronously (non-blocking)
+          supabaseClient.functions.invoke('audit-processor', {
+            body: { task_id }
+          }).catch(err => console.error('Failed to trigger batch:', err));
+        }
       }
     }
 
