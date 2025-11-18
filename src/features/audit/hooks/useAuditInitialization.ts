@@ -14,14 +14,25 @@ export const useAuditInitialization = (url: string, loadAuditData: (refresh?: bo
   const autoStartRef = useRef(false);
   const { toast } = useToast();
 
+  console.log('🔧 useAuditInitialization:', { url, taskId, isScanning, autoStarted: autoStartRef.current });
+
   // Auto-start audit if no taskId exists
   useEffect(() => {
+    console.log('🔍 useAuditInitialization check:', { 
+      url, 
+      hasUrl: !!url,
+      taskId, 
+      isScanning, 
+      autoStarted: autoStartRef.current 
+    });
+    
     if (!autoStartRef.current && url && !taskId && !isScanning) {
       console.log('🚀 Auto-starting Quick Audit for:', url);
       autoStartRef.current = true;
       
       const autoStartAudit = async () => {
         try {
+          console.log('📡 Calling startScan(false) for quick audit...');
           const newTaskId = await startScan(false);
           if (newTaskId) {
             console.log('✅ Audit auto-started with task ID:', newTaskId);
