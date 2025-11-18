@@ -433,6 +433,7 @@ export type Database = {
           redirect_chain_length: number | null
           robots_meta: string | null
           status_code: number | null
+          task_id: string | null
           text_html_ratio: number | null
           title: string | null
           transfer_size: number | null
@@ -474,6 +475,7 @@ export type Database = {
           redirect_chain_length?: number | null
           robots_meta?: string | null
           status_code?: number | null
+          task_id?: string | null
           text_html_ratio?: number | null
           title?: string | null
           transfer_size?: number | null
@@ -515,6 +517,7 @@ export type Database = {
           redirect_chain_length?: number | null
           robots_meta?: string | null
           status_code?: number | null
+          task_id?: string | null
           text_html_ratio?: number | null
           title?: string | null
           transfer_size?: number | null
@@ -530,6 +533,13 @@ export type Database = {
             columns: ["audit_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "page_analysis_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "audit_tasks"
             referencedColumns: ["id"]
           },
         ]

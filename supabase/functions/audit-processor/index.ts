@@ -298,9 +298,17 @@ async function processMicroBatch(supabase: any, taskId: string, domain: string) 
 
     await supabase.from('url_queue').update({ status: 'completed' }).eq('id', queueItem.id);
     
+    // Get audit_id from task
+    const { data: taskData } = await supabase
+      .from('audit_tasks')
+      .select('audit_id')
+      .eq('id', taskId)
+      .single();
+    
     // Insert comprehensive page analysis with all Sprint 1 fields
     await supabase.from('page_analysis').insert({
-      audit_id: taskId,
+      audit_id: taskData?.audit_id,
+      task_id: taskId,
       url: page.url,
       title: page.title || null,
       meta_description: page.description || null,
