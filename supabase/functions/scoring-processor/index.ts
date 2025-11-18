@@ -84,6 +84,7 @@ interface PageAnalysis {
   internal_links_count: number;
   has_viewport: boolean;
   ttfb: number | null;
+  redirect_chain_length: number;
 }
 
 interface PageWeight {
@@ -104,6 +105,8 @@ interface ScoreBreakdown {
   pct_slow_pages: number;
   pct_not_indexable: number;
   pct_missing_canonical: number;
+  pct_pages_with_redirects: number;
+  pct_long_redirect_chains: number;
   pages_by_depth: Record<string, number>;
   pages_by_type: Record<string, number>;
   issues_by_severity: {
@@ -237,6 +240,18 @@ function calculateWeightedScores(pages: PageAnalysis[]): ScoreBreakdown {
   );
   technicalScore -= calculateWeightedPenalty(wrongCanonical, totalWeight, 15);
   
+  // Redirects penalties (Sprint 3)
+  const redirectPages = pageWeights.filter(pw => (pw.page.redirect_chain_length || 0) > 0);
+  if (redirectPages.length > 0) {
+    technicalScore -= calculateWeightedPenalty(redirectPages, totalWeight, 30); // Moderate penalty
+  }
+  
+  // Severe penalty for long redirect chains (3+)
+  const longChains = pageWeights.filter(pw => (pw.page.redirect_chain_length || 0) >= 3);
+  if (longChains.length > 0) {
+    technicalScore -= calculateWeightedPenalty(longChains, totalWeight, 80); // Serious penalty
+  }
+  
   technicalScore = Math.max(0, Math.min(100, technicalScore));
   
   // ===== CONTENT SCORE (0-100) =====
@@ -316,6 +331,8 @@ function calculateWeightedScores(pages: PageAnalysis[]): ScoreBreakdown {
     pct_slow_pages: pct(slowPages.length),
     pct_not_indexable: pct(notIndexable.length),
     pct_missing_canonical: pct(missingCanonical.length),
+    pct_pages_with_redirects: pct(pages.filter(p => (p.redirect_chain_length || 0) > 0).length),
+    pct_long_redirect_chains: pct(pages.filter(p => (p.redirect_chain_length || 0) >= 3).length),
     pages_by_depth: pagesByDepth,
     pages_by_type: pagesByType,
     issues_by_severity: {
@@ -376,6 +393,8 @@ serve(async (req) => {
         pct_slow_pages: scores.pct_slow_pages,
         pct_not_indexable: scores.pct_not_indexable,
         pct_missing_canonical: scores.pct_missing_canonical,
+        pct_pages_with_redirects: scores.pct_pages_with_redirects,
+        pct_long_redirect_chains: scores.pct_long_redirect_chains,
         pages_by_depth: scores.pages_by_depth,
         pages_by_type: scores.pages_by_type,
         issues_by_severity: scores.issues_by_severity

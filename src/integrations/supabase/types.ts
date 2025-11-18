@@ -98,11 +98,13 @@ export type Database = {
           page_count: number | null
           pages_by_depth: Json | null
           pages_by_type: Json | null
+          pct_long_redirect_chains: number | null
           pct_missing_canonical: number | null
           pct_missing_description: number | null
           pct_missing_h1: number | null
           pct_missing_title: number | null
           pct_not_indexable: number | null
+          pct_pages_with_redirects: number | null
           pct_slow_pages: number | null
           pct_thin_content: number | null
           performance_score: number | null
@@ -124,11 +126,13 @@ export type Database = {
           page_count?: number | null
           pages_by_depth?: Json | null
           pages_by_type?: Json | null
+          pct_long_redirect_chains?: number | null
           pct_missing_canonical?: number | null
           pct_missing_description?: number | null
           pct_missing_h1?: number | null
           pct_missing_title?: number | null
           pct_not_indexable?: number | null
+          pct_pages_with_redirects?: number | null
           pct_slow_pages?: number | null
           pct_thin_content?: number | null
           performance_score?: number | null
@@ -150,11 +154,13 @@ export type Database = {
           page_count?: number | null
           pages_by_depth?: Json | null
           pages_by_type?: Json | null
+          pct_long_redirect_chains?: number | null
           pct_missing_canonical?: number | null
           pct_missing_description?: number | null
           pct_missing_h1?: number | null
           pct_missing_title?: number | null
           pct_not_indexable?: number | null
+          pct_pages_with_redirects?: number | null
           pct_slow_pages?: number | null
           pct_thin_content?: number | null
           performance_score?: number | null
@@ -184,20 +190,24 @@ export type Database = {
       audit_tasks: {
         Row: {
           audit_id: string | null
+          avg_load_time_ms: number | null
           batch_count: number | null
           created_at: string | null
           current_url: string | null
           discovered_urls_count: number | null
           discovery_source: string | null
           error_message: string | null
+          error_pages_count: number | null
           estimated_pages: number | null
           id: string
           last_discovered_url: string | null
           pages_scanned: number | null
           progress: number | null
+          redirect_pages_count: number | null
           sitemap_urls_count: number | null
           stage: string | null
           status: string
+          success_rate: number | null
           task_type: string | null
           total_urls: number | null
           updated_at: string | null
@@ -206,20 +216,24 @@ export type Database = {
         }
         Insert: {
           audit_id?: string | null
+          avg_load_time_ms?: number | null
           batch_count?: number | null
           created_at?: string | null
           current_url?: string | null
           discovered_urls_count?: number | null
           discovery_source?: string | null
           error_message?: string | null
+          error_pages_count?: number | null
           estimated_pages?: number | null
           id?: string
           last_discovered_url?: string | null
           pages_scanned?: number | null
           progress?: number | null
+          redirect_pages_count?: number | null
           sitemap_urls_count?: number | null
           stage?: string | null
           status?: string
+          success_rate?: number | null
           task_type?: string | null
           total_urls?: number | null
           updated_at?: string | null
@@ -228,20 +242,24 @@ export type Database = {
         }
         Update: {
           audit_id?: string | null
+          avg_load_time_ms?: number | null
           batch_count?: number | null
           created_at?: string | null
           current_url?: string | null
           discovered_urls_count?: number | null
           discovery_source?: string | null
           error_message?: string | null
+          error_pages_count?: number | null
           estimated_pages?: number | null
           id?: string
           last_discovered_url?: string | null
           pages_scanned?: number | null
           progress?: number | null
+          redirect_pages_count?: number | null
           sitemap_urls_count?: number | null
           stage?: string | null
           status?: string
+          success_rate?: number | null
           task_type?: string | null
           total_urls?: number | null
           updated_at?: string | null
@@ -387,6 +405,7 @@ export type Database = {
           audit_id: string | null
           canonical_points_to_self: boolean | null
           canonical_url: string | null
+          compression_type: string | null
           content_length: number | null
           content_type: string | null
           created_at: string | null
@@ -404,6 +423,7 @@ export type Database = {
           id: string
           image_count: number | null
           internal_links_count: number | null
+          is_compressed: boolean | null
           is_indexable: boolean | null
           language_detected: string | null
           load_time: number | null
@@ -415,6 +435,7 @@ export type Database = {
           status_code: number | null
           text_html_ratio: number | null
           title: string | null
+          transfer_size: number | null
           ttfb: number | null
           url: string
           user_id: string | null
@@ -425,6 +446,7 @@ export type Database = {
           audit_id?: string | null
           canonical_points_to_self?: boolean | null
           canonical_url?: string | null
+          compression_type?: string | null
           content_length?: number | null
           content_type?: string | null
           created_at?: string | null
@@ -442,6 +464,7 @@ export type Database = {
           id?: string
           image_count?: number | null
           internal_links_count?: number | null
+          is_compressed?: boolean | null
           is_indexable?: boolean | null
           language_detected?: string | null
           load_time?: number | null
@@ -453,6 +476,7 @@ export type Database = {
           status_code?: number | null
           text_html_ratio?: number | null
           title?: string | null
+          transfer_size?: number | null
           ttfb?: number | null
           url: string
           user_id?: string | null
@@ -463,6 +487,7 @@ export type Database = {
           audit_id?: string | null
           canonical_points_to_self?: boolean | null
           canonical_url?: string | null
+          compression_type?: string | null
           content_length?: number | null
           content_type?: string | null
           created_at?: string | null
@@ -480,6 +505,7 @@ export type Database = {
           id?: string
           image_count?: number | null
           internal_links_count?: number | null
+          is_compressed?: boolean | null
           is_indexable?: boolean | null
           language_detected?: string | null
           load_time?: number | null
@@ -491,6 +517,7 @@ export type Database = {
           status_code?: number | null
           text_html_ratio?: number | null
           title?: string | null
+          transfer_size?: number | null
           ttfb?: number | null
           url?: string
           user_id?: string | null

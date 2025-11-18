@@ -64,14 +64,78 @@ function calculateEstimatedPages(sitemapCount: number, maxPages: number = 100): 
   return 300;
 }
 
+// Follow redirects manually to track chain
+interface RedirectChain {
+  chain: Array<{ url: string; statusCode: number; location: string }>;
+  finalUrl: string;
+  chainLength: number;
+}
+
+async function followRedirects(startUrl: string, maxRedirects = 10): Promise<RedirectChain> {
+  const chain: Array<{ url: string; statusCode: number; location: string }> = [];
+  let currentUrl = startUrl;
+  let redirectCount = 0;
+  
+  while (redirectCount < maxRedirects) {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), PAGE_TIMEOUT);
+    
+    try {
+      const response = await fetch(currentUrl, {
+        redirect: 'manual',
+        headers: { 'User-Agent': 'Mozilla/5.0 (compatible; SEO-Auditor/1.0)' },
+        signal: controller.signal
+      });
+      clearTimeout(timeoutId);
+      
+      const statusCode = response.status;
+      
+      // Check if this is a redirect (3xx)
+      if (statusCode >= 300 && statusCode < 400) {
+        const location = response.headers.get('location');
+        if (!location) break;
+        
+        const absoluteLocation = new URL(location, currentUrl).toString();
+        chain.push({ url: currentUrl, statusCode, location: absoluteLocation });
+        
+        currentUrl = absoluteLocation;
+        redirectCount++;
+      } else {
+        // Reached final URL
+        return {
+          chain,
+          finalUrl: currentUrl,
+          chainLength: redirectCount
+        };
+      }
+    } catch (error) {
+      clearTimeout(timeoutId);
+      throw error;
+    }
+  }
+  
+  // Max redirects exceeded
+  return {
+    chain,
+    finalUrl: currentUrl,
+    chainLength: redirectCount
+  };
+}
+
 async function crawlPage(url: string, domain: string): Promise<any> {
   const startTime = Date.now();
   try {
+    // First, follow redirects to get the chain
+    const redirectInfo = await followRedirects(url);
+    const finalUrl = redirectInfo.finalUrl;
+    const redirectChainLength = redirectInfo.chainLength;
+    
+    // Now fetch the final URL for content analysis
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), PAGE_TIMEOUT);
-    const response = await fetch(url, {
+    const response = await fetch(finalUrl, {
       headers: { 'User-Agent': 'Mozilla/5.0 (compatible; SEO-Auditor/1.0)' },
-      redirect: 'follow',
+      redirect: 'manual',
       signal: controller.signal
     });
     clearTimeout(timeoutId);
@@ -127,7 +191,13 @@ async function crawlPage(url: string, domain: string): Promise<any> {
       hreflang_tags: hreflangTags.length > 0 ? hreflangTags : null,
       language_detected: languageDetected, internal_links_count: internalLinks.length,
       external_links_count: 0, page_type: detectPageType(url),
-      ttfb: Number((ttfb / 1000).toFixed(3)), redirect_chain_length: 0, final_url: url
+      ttfb: Number((ttfb / 1000).toFixed(3)), 
+      redirect_chain_length: redirectChainLength, 
+      final_url: finalUrl,
+      // Compression detection (Sprint 3)
+      is_compressed: !!response.headers.get('content-encoding'),
+      compression_type: response.headers.get('content-encoding')?.split(',')[0].trim() || null,
+      transfer_size: response.headers.get('content-length') ? parseInt(response.headers.get('content-length')!) : null
     };
   } catch (error) {
     if (url.includes('example.com') || url.includes('localhost')) {
@@ -277,7 +347,12 @@ async function processMicroBatch(supabase: any, taskId: string, domain: string) 
       
       // Links
       internal_links_count: page.internal_links_count || 0,
-      external_links_count: page.external_links_count || 0
+      external_links_count: page.external_links_count || 0,
+      
+      // Compression (Sprint 3)
+      is_compressed: page.is_compressed || false,
+      compression_type: page.compression_type || null,
+      transfer_size: page.transfer_size || null
     });
 
     // Add discovered internal links to queue (respecting depth limit)
@@ -321,11 +396,68 @@ async function processMicroBatch(supabase: any, taskId: string, domain: string) 
 
   const { data: pendingCheck } = await supabase.from('url_queue').select('id').eq('task_id', taskId).eq('status', 'pending').limit(1);
   const hasMore = (pendingCheck?.length || 0) > 0;
+  
+  // Log detailed batch metrics (Sprint 3)
+  const batchMetrics = {
+    batch_id: crypto.randomUUID().slice(0, 8),
+    urls_processed: results.length,
+    success_count: results.filter((r: any) => r.status_code === 200).length,
+    error_count: results.filter((r: any) => r.status_code >= 400).length,
+    redirect_count: results.filter((r: any) => (r.redirect_chain_length || 0) > 0).length,
+    avg_load_time: (results.reduce((sum: number, r: any) => sum + (r.load_time || 0), 0) / results.length).toFixed(3),
+    avg_ttfb: (results.reduce((sum: number, r: any) => sum + (r.ttfb || 0), 0) / results.length).toFixed(3),
+    max_depth: Math.max(...batch.map((b: any) => b.depth)),
+    timestamp: new Date().toISOString()
+  };
+  
+  console.log('BATCH_METRICS:', JSON.stringify(batchMetrics));
+  
   return { hasMore, processed: batch.length };
 }
 
-async function completeAudit(supabase: any, taskId: string) {
-  await supabase.from('audit_tasks').update({ status: 'completed', stage: 'complete' }).eq('id', taskId);
+async function completeAudit(supabase: any, taskId: string, auditId: string) {
+  console.log(`[COMPLETE] Starting completion for audit: ${auditId}`);
+  
+  // Calculate batch performance metrics (Sprint 3)
+  const { data: pageStats } = await supabase
+    .from('page_analysis')
+    .select('load_time, status_code, redirect_chain_length')
+    .eq('audit_id', auditId);
+  
+  let avgLoadTime = 0;
+  let successRate = 0;
+  let redirectPagesCount = 0;
+  let errorPagesCount = 0;
+  
+  if (pageStats && pageStats.length > 0) {
+    avgLoadTime = Math.round(
+      pageStats.reduce((sum: number, p: any) => sum + ((p.load_time || 0) * 1000), 0) / pageStats.length
+    );
+    successRate = parseFloat(
+      ((pageStats.filter((p: any) => p.status_code === 200).length / pageStats.length) * 100).toFixed(2)
+    );
+    redirectPagesCount = pageStats.filter((p: any) => (p.redirect_chain_length || 0) > 0).length;
+    errorPagesCount = pageStats.filter((p: any) => p.status_code >= 400).length;
+    
+    console.log(`[COMPLETE] Batch metrics - Avg Load: ${avgLoadTime}ms, Success Rate: ${successRate}%, Redirects: ${redirectPagesCount}, Errors: ${errorPagesCount}`);
+  }
+  
+  await supabase.from('audit_tasks').update({
+    status: 'completed',
+    stage: 'complete',
+    avg_load_time_ms: avgLoadTime,
+    success_rate: successRate,
+    redirect_pages_count: redirectPagesCount,
+    error_pages_count: errorPagesCount,
+    updated_at: new Date().toISOString()
+  }).eq('id', taskId);
+  
+  console.log('[COMPLETE] Triggering scoring processor...');
+  
+  // Invoke scoring processor
+  await supabase.functions.invoke('scoring-processor', {
+    body: { task_id: auditId }
+  });
 }
 
 serve(async (req) => {
@@ -397,15 +529,12 @@ serve(async (req) => {
 
     console.log(`Crawl complete: ${totalProcessed} pages processed in ${batchCount} batches`);
     
-    // Mark as completed
-    await completeAudit(supabase, task_id);
+    // Mark as completed and calculate metrics
+    await completeAudit(supabase, task_id, task.audit_id || task_id);
     
-    // Trigger scoring processor
-    console.log('Triggering scoring processor...');
-    try {
-      const scoringResponse = await supabase.functions.invoke('scoring-processor', {
-        body: { task_id }
-      });
+    return new Response(JSON.stringify({ success: true, task_id }), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+    });
       
       if (scoringResponse.error) {
         console.error('Scoring error:', scoringResponse.error);
