@@ -3,7 +3,13 @@ import React, { createContext, useContext, useState, useCallback, ReactNode } fr
 import { useQuery } from '@tanstack/react-query';
 import { AuditData, AuditHistoryData, RecommendationData } from '@/types/audit';
 import { supabase } from '@/integrations/supabase/client';
-import { useScanContext } from './ScanContext';
+
+// Define the provider props
+interface AuditDataProviderProps {
+  children: ReactNode;
+  url: string;
+  taskId: string | null;
+}
 
 interface AuditDataContextType {
   auditData: AuditData | null;
@@ -31,13 +37,14 @@ const AuditDataContext = createContext<AuditDataContextType>({
   exportJSONData: async () => {}
 });
 
-export const AuditDataProvider: React.FC<{ children: ReactNode; url: string }> = ({ 
+export const AuditDataProvider: React.FC<AuditDataProviderProps> = ({ 
   children, 
-  url 
+  url,
+  taskId 
 }) => {
   const [loadingProgress, setLoadingProgress] = useState<number>(0);
   const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
-  const { taskId } = useScanContext();
+  console.log('🔧 AuditDataProvider rendering with url:', url, 'taskId:', taskId);
   
   // Fetch audit results from Supabase by taskId
   const { 

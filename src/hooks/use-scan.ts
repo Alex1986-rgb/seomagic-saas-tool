@@ -44,7 +44,10 @@ export const useScan = (url: string, onPageCountUpdate?: (count: number) => void
 
   // Start scanning process
   const startScan = useCallback(async (useSitemap: boolean = true) => {
+    console.log('🔧 useScan.startScan called for URL:', url, 'with sitemap:', useSitemap);
+    
     if (!url) {
+      console.error('❌ Cannot start scan: URL is empty');
       toast({
         title: "Ошибка",
         description: "URL не указан",
@@ -54,6 +57,7 @@ export const useScan = (url: string, onPageCountUpdate?: (count: number) => void
     }
 
     if (!validationService.validateUrl(url)) {
+      console.error('❌ URL validation failed:', url);
       toast({
         title: "Ошибка",
         description: "Неверный формат URL",
@@ -63,6 +67,7 @@ export const useScan = (url: string, onPageCountUpdate?: (count: number) => void
     }
 
     try {
+      console.log('🚀 Starting scan process...');
       setIsScanning(true);
       setScanDetails({
         current_url: url,
@@ -74,8 +79,10 @@ export const useScan = (url: string, onPageCountUpdate?: (count: number) => void
 
       // Format URL
       const formattedUrl = validationService.formatUrl(url);
+      console.log('📝 Formatted URL:', formattedUrl);
       
       // Start audit via edge function
+      console.log('📡 Calling audit-start edge function...');
       const response = await auditService.startAudit(formattedUrl, {
         type: 'quick',
         maxPages: 100
@@ -86,6 +93,7 @@ export const useScan = (url: string, onPageCountUpdate?: (count: number) => void
         throw new Error('Empty task ID returned');
       }
       
+      console.log('✅ Audit started with task ID:', crawlTaskId);
       setTaskId(crawlTaskId);
       
       // Start progress polling

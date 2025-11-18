@@ -17,6 +17,28 @@ const AuditContext = createContext<AuditContextType>({
   updateUrl: () => {},
 });
 
+// Bridge component to pass taskId from ScanContext to OptimizationProvider
+const OptimizationBridge: React.FC<{ children: ReactNode }> = ({ children }) => {
+  const { taskId } = useScanContext();
+  console.log('🔧 OptimizationBridge initialized with taskId:', taskId);
+  return (
+    <OptimizationProvider taskId={taskId}>
+      {children}
+    </OptimizationProvider>
+  );
+};
+
+// Bridge component to pass taskId from ScanContext to AuditDataProvider
+const AuditDataBridge: React.FC<{ url: string; children: ReactNode }> = ({ url, children }) => {
+  const { taskId } = useScanContext();
+  console.log('🔧 AuditDataBridge initialized with url:', url, 'taskId:', taskId);
+  return (
+    <AuditDataProvider url={url} taskId={taskId}>
+      {children}
+    </AuditDataProvider>
+  );
+};
+
 // Provider component
 export const AuditProvider: React.FC<{ children: ReactNode; initialUrl?: string }> = ({ 
   children, 
@@ -29,17 +51,19 @@ export const AuditProvider: React.FC<{ children: ReactNode; initialUrl?: string 
     setUrl(newUrl);
   }, []);
   
+  console.log('🔧 AuditProvider initialized with url:', url);
+  
   return (
     <AuditContext.Provider value={{ url, updateUrl }}>
-      <AuditDataProvider url={url}>
-        <ScanProvider url={url}>
-          <OptimizationProvider taskId={useScanContext().taskId}>
+      <ScanProvider url={url}>
+        <AuditDataBridge url={url}>
+          <OptimizationBridge>
             <AuditModuleProvider>
               {children}
             </AuditModuleProvider>
-          </OptimizationProvider>
-        </ScanProvider>
-      </AuditDataProvider>
+          </OptimizationBridge>
+        </AuditDataBridge>
+      </ScanProvider>
     </AuditContext.Provider>
   );
 };
