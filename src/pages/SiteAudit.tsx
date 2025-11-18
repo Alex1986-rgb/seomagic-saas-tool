@@ -3,7 +3,7 @@ import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useToast } from "@/hooks/use-toast";
 import Layout from '@/components/Layout';
 import { AuditProvider } from '@/contexts/AuditContext';
-import SiteAuditContent from '@/components/site-audit/SiteAuditContent';
+import AuditResultsContainer from '@/components/audit/results/AuditResultsContainer';
 import { AuditTypeSelector } from '@/components/site-audit/AuditTypeSelector';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -214,7 +214,7 @@ const SiteAudit: React.FC = () => {
             </div>
           ) : (
             <AuditProvider initialUrl={url}>
-              <SiteAuditContent url={url} />
+              <AuditResultsContainer url={url} />
             </AuditProvider>
           )}
         </motion.div>
