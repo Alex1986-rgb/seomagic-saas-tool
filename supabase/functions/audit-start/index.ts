@@ -111,11 +111,42 @@ serve(async (req) => {
 
     console.log('✅ Task created with ID:', task.id);
 
-    // Trigger audit processor
-    console.log('Triggering audit processor...');
-    await supabaseClient.functions.invoke('audit-processor', {
-      body: { task_id: task.id }
-    });
+    // Trigger audit processor with error handling
+    try {
+      console.log('🚀 Triggering audit processor...');
+      const processorResponse = await supabaseClient.functions.invoke('audit-processor', {
+        body: { task_id: task.id }
+      });
+      
+      if (processorResponse.error) {
+        console.error('❌ Failed to trigger processor:', processorResponse.error);
+        throw new Error(`Processor invocation failed: ${processorResponse.error.message}`);
+      }
+      
+      console.log('✅ Processor triggered successfully');
+    } catch (procError) {
+      console.error('❌ Exception triggering processor:', procError);
+      
+      // Update task to failed state
+      await supabaseClient
+        .from('audit_tasks')
+        .update({ 
+          status: 'failed', 
+          error_message: `Failed to start processor: ${procError.message}` 
+        })
+        .eq('id', task.id);
+      
+      // Update audit to failed as well
+      await supabaseClient
+        .from('audits')
+        .update({ 
+          status: 'failed', 
+          error_message: `Failed to start processor: ${procError.message}` 
+        })
+        .eq('id', audit.id);
+      
+      throw new Error(`Failed to start audit processor: ${procError.message}`);
+    }
 
     // Log API call (only if user is authenticated)
     if (userId) {
