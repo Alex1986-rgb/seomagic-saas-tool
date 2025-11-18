@@ -89,34 +89,79 @@ export type Database = {
         Row: {
           audit_data: Json | null
           audit_id: string | null
+          content_score: number | null
           created_at: string | null
+          global_score: number | null
           id: string
+          issues_by_severity: Json | null
           issues_count: number | null
           page_count: number | null
+          pages_by_depth: Json | null
+          pages_by_type: Json | null
+          pct_missing_canonical: number | null
+          pct_missing_description: number | null
+          pct_missing_h1: number | null
+          pct_missing_title: number | null
+          pct_not_indexable: number | null
+          pct_slow_pages: number | null
+          pct_thin_content: number | null
+          performance_score: number | null
           score: number | null
+          seo_score: number | null
           task_id: string | null
+          technical_score: number | null
           user_id: string | null
         }
         Insert: {
           audit_data?: Json | null
           audit_id?: string | null
+          content_score?: number | null
           created_at?: string | null
+          global_score?: number | null
           id?: string
+          issues_by_severity?: Json | null
           issues_count?: number | null
           page_count?: number | null
+          pages_by_depth?: Json | null
+          pages_by_type?: Json | null
+          pct_missing_canonical?: number | null
+          pct_missing_description?: number | null
+          pct_missing_h1?: number | null
+          pct_missing_title?: number | null
+          pct_not_indexable?: number | null
+          pct_slow_pages?: number | null
+          pct_thin_content?: number | null
+          performance_score?: number | null
           score?: number | null
+          seo_score?: number | null
           task_id?: string | null
+          technical_score?: number | null
           user_id?: string | null
         }
         Update: {
           audit_data?: Json | null
           audit_id?: string | null
+          content_score?: number | null
           created_at?: string | null
+          global_score?: number | null
           id?: string
+          issues_by_severity?: Json | null
           issues_count?: number | null
           page_count?: number | null
+          pages_by_depth?: Json | null
+          pages_by_type?: Json | null
+          pct_missing_canonical?: number | null
+          pct_missing_description?: number | null
+          pct_missing_h1?: number | null
+          pct_missing_title?: number | null
+          pct_not_indexable?: number | null
+          pct_slow_pages?: number | null
+          pct_thin_content?: number | null
+          performance_score?: number | null
           score?: number | null
+          seo_score?: number | null
           task_id?: string | null
+          technical_score?: number | null
           user_id?: string | null
         }
         Relationships: [
