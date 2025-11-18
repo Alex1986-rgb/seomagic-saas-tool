@@ -22,10 +22,8 @@ serve(async (req) => {
       }
     );
 
-    const { data: { user }, error: userError } = await supabaseClient.auth.getUser();
-    if (userError || !user) {
-      throw new Error('Unauthorized');
-    }
+    // Try to get user, but don't fail if not authenticated (for public quick audits)
+    const { data: { user } } = await supabaseClient.auth.getUser();
 
     const { task_id } = await req.json();
 
@@ -33,13 +31,19 @@ serve(async (req) => {
       throw new Error('task_id parameter is required');
     }
 
-    // Get task status
-    const { data: task, error: taskError } = await supabaseClient
+    // Get task status - filter by user_id if authenticated, or allow public tasks (user_id IS NULL)
+    let query = supabaseClient
       .from('audit_tasks')
       .select('*')
-      .eq('id', task_id)
-      .eq('user_id', user.id)
-      .single();
+      .eq('id', task_id);
+    
+    if (user) {
+      query = query.eq('user_id', user.id);
+    } else {
+      query = query.is('user_id', null);
+    }
+    
+    const { data: task, error: taskError } = await query.single();
 
     if (taskError || !task) {
       throw new Error('Task not found');
@@ -73,6 +77,10 @@ serve(async (req) => {
         error: task.error_message || null,
         error_message: task.error_message,
         created_at: task.created_at,
+        // Real-time discovery fields
+        discovered_urls_count: task.discovered_urls_count || 0,
+        last_discovered_url: task.last_discovered_url || null,
+        discovery_source: task.discovery_source || null,
         audit_data: auditData,
       }),
       {
