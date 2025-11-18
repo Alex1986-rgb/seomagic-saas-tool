@@ -158,11 +158,11 @@ async function processMicroBatch(supabase: any, taskId: string, domain: string) 
   const batch = await getNextBatch(supabase, taskId, MICRO_BATCH_SIZE);
   
   if (batch.length === 0) {
-    console.log('No more URLs to process');
+    console.log('⚠️ No more URLs to process in queue');
     return { hasMore: false, processed: 0 };
   }
 
-  console.log(`Processing micro-batch: ${batch.length} URLs`);
+  console.log(`🔄 Processing micro-batch: ${batch.length} URLs`);
 
   // Mark URLs as processing
   await supabase
@@ -236,6 +236,7 @@ async function processMicroBatch(supabase: any, taskId: string, domain: string) 
 
       if (toInsert.length > 0) {
         await supabase.from('url_queue').insert(toInsert);
+        console.log(`➕ Added ${toInsert.length} new URLs to queue`);
       }
     }
   }
@@ -267,7 +268,7 @@ async function updateProgress(supabase: any, taskId: string) {
     })
     .eq('id', taskId);
 
-  console.log(`Progress: ${pagesScanned}/${total} (${progress}%)`);
+  console.log(`📈 Progress: ${pagesScanned}/${total} pages (${progress}%)`);
 }
 
 // Removed triggerNextBatch - using pull-based model instead
@@ -467,7 +468,7 @@ async function processAuditTask(taskId: string) {
       throw new Error('Task not found');
     }
 
-    console.log(`Processing task ${taskId}, batch #${task.batch_count + 1}`);
+    console.log(`🔄 Processing task ${taskId}, batch #${task.batch_count + 1}`);
 
     // Check if batch limit exceeded
     if (task.batch_count >= MAX_BATCH_CALLS) {
@@ -527,7 +528,7 @@ async function processAuditTask(taskId: string) {
           priority: 100 // Highest priority for start page
         });
 
-      console.log('Queue initialized with start URL');
+      console.log('🎬 Queue initialized with start URL');
     }
 
     // Update to fetching phase
@@ -541,15 +542,45 @@ async function processAuditTask(taskId: string) {
     // Process micro-batch
     const { hasMore, processed } = await processMicroBatch(supabase, taskId, domain);
 
+    console.log(`✅ Batch #${task.batch_count + 1} completed: ${processed} URLs processed`);
+
     // Update progress
     await updateProgress(supabase, taskId);
 
-    // Check if we should complete
+    // Check queue status
+    const { data: queueStatus } = await supabase
+      .from('url_queue')
+      .select('status')
+      .eq('task_id', taskId);
+    
+    const pending = queueStatus?.filter((q: any) => q.status === 'pending').length || 0;
+    const completed = queueStatus?.filter((q: any) => q.status === 'completed').length || 0;
+    
+    console.log(`📊 Queue status: ${pending} pending, ${completed} completed, ${queueStatus?.length || 0} total`);
+
+    // Check if we should complete or continue
     if (!hasMore || processed === 0) {
       // No more URLs to process - complete the audit
+      console.log('🏁 No more URLs to process - completing audit');
       await completeAudit(supabase, taskId);
+    } else {
+      // More URLs to process - trigger next batch (self-triggering)
+      console.log('🔄 More URLs pending - triggering next batch...');
+      
+      // Use EdgeRuntime.waitUntil for non-blocking background trigger
+      const nextBatchPromise = supabase.functions.invoke('audit-processor', {
+        body: { task_id: taskId }
+      }).then(() => {
+        console.log('✅ Next batch triggered successfully');
+      }).catch((err: Error) => {
+        console.error('❌ Failed to trigger next batch:', err.message);
+      });
+      
+      // Don't await - let it run in background
+      if (typeof EdgeRuntime !== 'undefined' && EdgeRuntime.waitUntil) {
+        EdgeRuntime.waitUntil(nextBatchPromise);
+      }
     }
-    // If hasMore is true, audit-status will trigger next batch via pull model
 
   } catch (error) {
     console.error('❌ Error processing audit task:', error);
