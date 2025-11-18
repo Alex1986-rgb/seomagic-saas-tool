@@ -65,8 +65,9 @@ export const ScanProvider: React.FC<{ children: ReactNode; url: string }> = ({
     pages_scanned: scanDetails?.pages_scanned || 0,
     estimated_pages: scanDetails?.estimated_pages || 0,
     stage: scanDetails?.stage || 'idle',
-    progress: scanDetails?.progress || 0
-  };
+    progress: scanDetails?.progress || 0,
+    task_id: taskId
+  } as any;
   
   // Wrap the downloadSitemap function to ensure it returns a Promise
   const downloadSitemap = useCallback(async (): Promise<void> => {

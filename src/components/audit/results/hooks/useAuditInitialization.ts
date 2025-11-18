@@ -1,6 +1,7 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useToast } from "@/hooks/use-toast";
+import { useAuditContext } from '@/contexts/AuditContext';
 
 export function useAuditInitialization(url: string, loadAuditData: (refresh?: boolean) => Promise<void>) {
   const [isInitialized, setIsInitialized] = useState(false);
@@ -8,9 +9,11 @@ export function useAuditInitialization(url: string, loadAuditData: (refresh?: bo
   const [hadError, setHadError] = useState(false);
   const [timeout, setTimeoutStatus] = useState(false);
   const { toast } = useToast();
+  const { startScan, taskId } = useAuditContext();
   
   const initRef = useRef(false);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const autoStartRef = useRef(false);
 
   // Setup timeout for the audit process
   useEffect(() => {
@@ -40,6 +43,29 @@ export function useAuditInitialization(url: string, loadAuditData: (refresh?: bo
       }
     };
   }, [url, timeout, isInitialized, toast]);
+
+  // Auto-start audit if no taskId exists
+  useEffect(() => {
+    if (!autoStartRef.current && url && !taskId && !isInitialized) {
+      console.log("Auto-starting audit for URL:", url);
+      autoStartRef.current = true;
+      
+      // Start quick scan automatically
+      startScan(false).then((newTaskId) => {
+        if (newTaskId) {
+          console.log("Audit auto-started with task ID:", newTaskId);
+        }
+      }).catch((err) => {
+        console.error("Error auto-starting audit:", err);
+        setHadError(true);
+        toast({
+          title: "Ошибка автозапуска",
+          description: "Не удалось автоматически запустить аудит",
+          variant: "destructive"
+        });
+      });
+    }
+  }, [url, taskId, isInitialized, startScan, toast]);
 
   // Initialize audit function
   const initializeAudit = useCallback(() => {

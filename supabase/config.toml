@@ -4,7 +4,7 @@ project_id = "dllusofuxonaemrttmwl"
 verify_jwt = false
 
 [functions.audit-status]
-verify_jwt = true
+verify_jwt = false
 
 [functions.audit-cancel]
 verify_jwt = true

@@ -1,11 +1,9 @@
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import { useToast } from './use-toast';
-import { scanningService } from '@/services/scanning/scanningService';
-import { seoApiService } from '@/services/api/seoApiService';
 import { validationService } from '@/services/validation/validationService';
 import { reportingService } from '@/services/reporting/reportingService';
-import { ScanStatusResponse } from '@/types/api';
+import { auditService } from '@/modules/audit/services/auditService';
 
 // Define ScanDetails type
 export interface ScanDetails {
@@ -40,8 +38,9 @@ export const useScan = (url: string, onPageCountUpdate?: (count: number) => void
     other: 0
   });
   const [sitemap, setSitemap] = useState<string | null>(null);
-  const [taskId, setTaskId] = useState<string | null>(seoApiService.getTaskIdForUrl(url));
+  const [taskId, setTaskId] = useState<string | null>(null);
   const { toast } = useToast();
+  const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   // Start scanning process
   const startScan = useCallback(async (useSitemap: boolean = true) => {
@@ -76,8 +75,11 @@ export const useScan = (url: string, onPageCountUpdate?: (count: number) => void
       // Format URL
       const formattedUrl = validationService.formatUrl(url);
       
-      // Start crawl and get task ID
-      const response = await seoApiService.startCrawl(formattedUrl);
+      // Start audit via edge function
+      const response = await auditService.startAudit(formattedUrl, {
+        type: 'quick',
+        maxPages: 100
+      });
       
       const crawlTaskId = response.task_id;
       if (!crawlTaskId) {
@@ -89,7 +91,7 @@ export const useScan = (url: string, onPageCountUpdate?: (count: number) => void
       // Start progress polling
       const pollInterval = setInterval(async () => {
         try {
-          const statusResponse = await seoApiService.getStatus(crawlTaskId);
+          const statusResponse = await auditService.getAuditStatus(crawlTaskId);
           
           const statusCurrent = statusResponse.url;
           const pagesScanned = statusResponse.pages_scanned;
@@ -207,7 +209,7 @@ export const useScan = (url: string, onPageCountUpdate?: (count: number) => void
     }
 
     try {
-      await seoApiService.cancelScan(taskId);
+      await auditService.cancelAudit(taskId);
       setIsScanning(false);
       
       toast({

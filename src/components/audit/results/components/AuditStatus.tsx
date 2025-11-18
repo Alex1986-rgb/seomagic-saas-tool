@@ -49,7 +49,10 @@ const AuditStatus: React.FC<AuditStatusProps> = ({
     return (
       <AuditRealtimeVisualizer
         url={url}
-        statusData={scanDetails}
+        statusData={{
+          ...scanDetails,
+          task_id: scanDetails.audit_data?.task_id
+        }}
       />
     );
   }
