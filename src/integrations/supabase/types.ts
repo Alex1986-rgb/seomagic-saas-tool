@@ -141,9 +141,12 @@ export type Database = {
           audit_id: string | null
           created_at: string | null
           current_url: string | null
+          discovered_urls_count: number | null
+          discovery_source: string | null
           error_message: string | null
           estimated_pages: number | null
           id: string
+          last_discovered_url: string | null
           pages_scanned: number | null
           progress: number | null
           stage: string | null
@@ -157,9 +160,12 @@ export type Database = {
           audit_id?: string | null
           created_at?: string | null
           current_url?: string | null
+          discovered_urls_count?: number | null
+          discovery_source?: string | null
           error_message?: string | null
           estimated_pages?: number | null
           id?: string
+          last_discovered_url?: string | null
           pages_scanned?: number | null
           progress?: number | null
           stage?: string | null
@@ -173,9 +179,12 @@ export type Database = {
           audit_id?: string | null
           created_at?: string | null
           current_url?: string | null
+          discovered_urls_count?: number | null
+          discovery_source?: string | null
           error_message?: string | null
           estimated_pages?: number | null
           id?: string
+          last_discovered_url?: string | null
           pages_scanned?: number | null
           progress?: number | null
           stage?: string | null

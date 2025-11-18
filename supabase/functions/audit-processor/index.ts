@@ -226,10 +226,10 @@ async function processAuditTask(taskId: string) {
 
     console.log(`Processing task ${taskId} for URL: ${task.url}`);
 
-    // Update status to scanning
+    // Initial status update
     await supabase
       .from('audit_tasks')
-      .update({ status: 'scanning', stage: 'crawling', progress: 10 })
+      .update({ status: 'scanning', stage: 'queued', progress: 0 })
       .eq('id', taskId);
 
     // Create audit record if not exists
@@ -266,6 +266,18 @@ async function processAuditTask(taskId: string) {
     const urlObj = new URL(task.url);
     const domain = urlObj.hostname;
 
+    // PHASE 1: DISCOVERY - Find all URLs
+    console.log('=== PHASE 1: DISCOVERY ===');
+    await supabase
+      .from('audit_tasks')
+      .update({ 
+        status: 'scanning', 
+        stage: 'discovery', 
+        progress: 5,
+        discovery_source: 'Initialization'
+      })
+      .eq('id', taskId);
+
     // Start crawling
     const urlsQueue = [task.url];
     const visitedUrls = new Set<string>();
@@ -273,7 +285,19 @@ async function processAuditTask(taskId: string) {
     const maxPages = task.estimated_pages || 10;
 
     let pagesScanned = 0;
+    let discoveredUrlsCount = 0;
     const startTime = Date.now();
+    
+    // Notify about initial URL
+    discoveredUrlsCount++;
+    await supabase
+      .from('audit_tasks')
+      .update({
+        discovered_urls_count: discoveredUrlsCount,
+        last_discovered_url: task.url,
+        discovery_source: 'Starting page'
+      })
+      .eq('id', taskId);
 
     while (urlsQueue.length > 0 && pagesScanned < maxPages) {
       // Check execution time
@@ -295,25 +319,47 @@ async function processAuditTask(taskId: string) {
       // Mark as visited
       newUrls.forEach(url => visitedUrls.add(url));
 
-      // Add new internal links to queue
+      // Add new internal links to queue and notify in real-time
       for (const page of batchPages) {
         if (page.internalLinks) {
           for (const link of page.internalLinks) {
             if (!visitedUrls.has(link) && !urlsQueue.includes(link) && link !== task.url) {
               urlsQueue.push(link);
+              discoveredUrlsCount++;
+              
+              // Real-time update for each discovered URL
+              await supabase
+                .from('audit_tasks')
+                .update({
+                  discovered_urls_count: discoveredUrlsCount,
+                  last_discovered_url: link,
+                  discovery_source: `Page: ${page.url.substring(0, 50)}...`
+                })
+                .eq('id', taskId);
             }
           }
         }
       }
 
+      // PHASE 2: FETCHING - Download HTML
+      // Update to fetching phase after discovery
+      if (pagesScanned === batchPages.length) {
+        console.log('=== PHASE 2: FETCHING ===');
+        await supabase
+          .from('audit_tasks')
+          .update({ stage: 'fetching', progress: 25 })
+          .eq('id', taskId);
+      }
+      
       // Update progress
-      const progress = Math.min(90, Math.round((pagesScanned / maxPages) * 80) + 10);
+      const progress = Math.min(50, Math.round((pagesScanned / maxPages) * 25) + 25);
       await supabase
         .from('audit_tasks')
         .update({
           pages_scanned: pagesScanned,
           progress,
-          current_url: newUrls[0]
+          current_url: newUrls[0],
+          stage: 'fetching'
         })
         .eq('id', taskId);
 

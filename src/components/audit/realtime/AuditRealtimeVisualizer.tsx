@@ -7,6 +7,7 @@ import { AuditFlowDiagram } from './AuditFlowDiagram';
 import { AuditMetricsPanel } from './AuditMetricsPanel';
 import { AuditStageIndicator } from './AuditStageIndicator';
 import { IssuesStreamView } from './IssuesStreamView';
+import { UrlDiscoveryStream } from './UrlDiscoveryStream';
 import { useAuditRealtimeData } from '@/hooks/useAuditRealtimeData';
 import { useState } from 'react';
 
@@ -121,6 +122,17 @@ export const AuditRealtimeVisualizer = ({ url, statusData }: AuditRealtimeVisual
           nodes={flowNodes}
         />
       </motion.div>
+
+      {/* URL Discovery Stream - Show during discovery phase */}
+      {stage === 'discovery' && statusData?.task_id && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+        >
+          <UrlDiscoveryStream taskId={statusData.task_id} />
+        </motion.div>
+      )}
 
       {/* Layout: Stages + Metrics */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
