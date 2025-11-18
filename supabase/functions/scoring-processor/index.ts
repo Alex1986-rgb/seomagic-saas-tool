@@ -376,10 +376,11 @@ serve(async (req) => {
     // Calculate weighted scores
     const scores = calculateWeightedScores(pages as PageAnalysis[]);
 
-    // Update audit_results with scores
+    // Upsert audit_results with scores (insert if not exists, update if exists)
     const { error: updateError } = await supabase
       .from('audit_results')
-      .update({
+      .upsert({
+        task_id: task_id,
         score: scores.global_score,
         seo_score: scores.seo_score,
         technical_score: scores.technical_score,
@@ -397,9 +398,11 @@ serve(async (req) => {
         pct_long_redirect_chains: scores.pct_long_redirect_chains,
         pages_by_depth: scores.pages_by_depth,
         pages_by_type: scores.pages_by_type,
-        issues_by_severity: scores.issues_by_severity
-      })
-      .eq('task_id', task_id);
+        issues_by_severity: scores.issues_by_severity,
+        page_count: pages.length
+      }, {
+        onConflict: 'task_id'
+      });
 
     if (updateError) {
       throw new Error(`Failed to update scores: ${updateError.message}`);
