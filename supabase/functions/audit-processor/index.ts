@@ -535,26 +535,6 @@ serve(async (req) => {
     return new Response(JSON.stringify({ success: true, task_id }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' }
     });
-      
-      if (scoringResponse.error) {
-        console.error('Scoring error:', scoringResponse.error);
-      } else {
-        console.log('Scoring complete:', scoringResponse.data);
-      }
-    } catch (scoringError) {
-      console.error('Failed to trigger scoring:', scoringError);
-      // Don't fail the whole audit if scoring fails
-    }
-    
-    return new Response(
-      JSON.stringify({
-        success: true,
-        task_id,
-        pages_processed: totalProcessed,
-        batches: batchCount
-      }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
     
   } catch (error) {
     console.error('Audit processor error:', error);
