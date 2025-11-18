@@ -361,7 +361,7 @@ serve(async (req) => {
     const { data: pages, error: pagesError } = await supabase
       .from('page_analysis')
       .select('*')
-      .eq('audit_id', task_id);
+      .eq('task_id', task_id);
 
     if (pagesError) {
       throw new Error(`Failed to fetch page analysis: ${pagesError.message}`);
