@@ -1,13 +1,12 @@
-
 import React, { useState } from 'react';
-import { FileText, Loader2 } from 'lucide-react';
+import { FileText } from 'lucide-react';
 import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { useToast } from "@/hooks/use-toast";
 import { generateAuditPdf } from '@/utils/pdf/auditPdf';
 import { AuditData } from '@/types/audit';
 import { OptimizationItem } from '@/features/audit/types/optimization-types';
 import { seoApiService } from '@/api/seoApiService';
-import { PdfCustomizationDialog, PdfCustomizationOptions } from '../pdf-customization';
+import { PdfPreviewDialog } from '../pdf-preview';
 import { usePdfLocalStorage } from '@/hooks/usePdfLocalStorage';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -34,10 +33,10 @@ const ExportPDF: React.FC<ExportPDFProps> = ({
 }) => {
   const { toast } = useToast();
   const [progress, setProgress] = useState<string>('');
-  const [showCustomization, setShowCustomization] = useState(false);
+  const [showPreview, setShowPreview] = useState(false);
   const { savePdfMetadata } = usePdfLocalStorage();
   
-  const handleExportPDF = async (customOptions?: PdfCustomizationOptions) => {
+  const handleGeneratePDF = async (selectedSections: string[]) => {
     setIsExporting('pdf');
     setProgress('Инициализация...');
     
@@ -64,7 +63,7 @@ const ExportPDF: React.FC<ExportPDFProps> = ({
         }
         
         setProgress('Генерация обложки и оглавления...');
-        await new Promise(resolve => setTimeout(resolve, 100)); // Small delay for UI update
+        await new Promise(resolve => setTimeout(resolve, 100));
         
         setProgress('Создание графиков и диаграмм...');
         await new Promise(resolve => setTimeout(resolve, 100));
@@ -76,8 +75,7 @@ const ExportPDF: React.FC<ExportPDFProps> = ({
           optimizationCost,
           optimizationItems,
           pageStats,
-          date: new Date().toISOString(),
-          customization: customOptions
+          date: new Date().toISOString()
         });
         
         setProgress('Сохранение файла...');
@@ -102,61 +100,46 @@ const ExportPDF: React.FC<ExportPDFProps> = ({
                 user_id: user.id,
                 url,
                 task_id: taskId || null,
-                report_title: customOptions?.reportTitle || 'SEO Аудит сайта',
-                company_name: customOptions?.companyName,
-                sections_included: customOptions || {},
+                report_title: 'SEO Аудит сайта',
+                company_name: hostname,
+                file_path: fileName,
                 file_size: pdfBlob.size,
-                file_path: fileName
+                sections_included: selectedSections
+              });
+              
+              savePdfMetadata({
+                url,
+                taskId: taskId || '',
+                reportTitle: 'SEO Аудит сайта',
+                companyName: hostname,
+                sectionsIncluded: selectedSections,
+                fileSize: pdfBlob.size
               });
             }
-          } catch (dbError) {
-            console.error('Error saving to database:', dbError);
-            // Continue with download even if database save fails
+          } catch (error) {
+            console.error('Error saving PDF to database:', error);
           }
         }
         
-        // Create download link
-        const downloadUrl = URL.createObjectURL(pdfBlob);
+        // Trigger download
         const link = document.createElement('a');
-        link.href = downloadUrl;
-        link.download = `seo_audit_${hostname}_${new Date().toISOString().split('T')[0]}.pdf`;
-        document.body.appendChild(link);
+        link.href = URL.createObjectURL(pdfBlob);
+        link.download = `${hostname}_audit_${new Date().toISOString().split('T')[0]}.pdf`;
         link.click();
-        document.body.removeChild(link);
-        URL.revokeObjectURL(downloadUrl);
+        URL.revokeObjectURL(link.href);
         
-        // Save metadata to local history
-        await savePdfMetadata({
-          url,
-          taskId: taskId || undefined,
-          reportTitle: customOptions?.reportTitle || 'SEO Аудит сайта',
-          companyName: customOptions?.companyName,
-          sectionsIncluded: customOptions || {},
-          fileSize: pdfBlob.size
-        });
+        setProgress('Готово!');
         
         toast({
-          title: "PDF отчет готов!",
-          description: `Отчет сохранен как seo_audit_${hostname}_${new Date().toISOString().split('T')[0]}.pdf`,
-        });
-      } else {
-        toast({
-          title: "Недостаточно данных",
-          description: "Для экспорта в PDF необходимы полные данные аудита",
-          variant: "destructive"
+          title: "PDF сохранен",
+          description: `PDF-отчет успешно сохранен (${selectedSections.length} секций)`,
         });
       }
     } catch (error) {
-      console.error('Error generating PDF:', error);
-      
-      // More detailed error message
-      const errorMessage = error instanceof Error 
-        ? error.message 
-        : 'Неизвестная ошибка при создании PDF';
-      
+      console.error('PDF Export Error:', error);
       toast({
         title: "Ошибка экспорта",
-        description: `${errorMessage}. Пожалуйста, попробуйте еще раз.`,
+        description: error instanceof Error ? error.message : "Не удалось экспортировать в PDF",
         variant: "destructive"
       });
     } finally {
@@ -168,13 +151,13 @@ const ExportPDF: React.FC<ExportPDFProps> = ({
   return (
     <>
       <DropdownMenuItem 
-        onClick={() => setShowCustomization(true)}
-        disabled={isExporting !== null}
+        onClick={() => setShowPreview(true)}
+        disabled={isExporting === 'pdf' || !auditData}
       >
         {isExporting === 'pdf' ? (
           <>
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            <span className="text-sm">{progress || 'Создание PDF...'}</span>
+            <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+            <span>{progress}</span>
           </>
         ) : (
           <>
@@ -184,10 +167,11 @@ const ExportPDF: React.FC<ExportPDFProps> = ({
         )}
       </DropdownMenuItem>
 
-      <PdfCustomizationDialog
-        open={showCustomization}
-        onOpenChange={setShowCustomization}
-        onConfirm={handleExportPDF}
+      <PdfPreviewDialog
+        open={showPreview}
+        onOpenChange={setShowPreview}
+        auditData={auditData || null}
+        onGenerate={handleGeneratePDF}
       />
     </>
   );
