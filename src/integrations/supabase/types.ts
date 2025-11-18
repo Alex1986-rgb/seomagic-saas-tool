@@ -154,7 +154,7 @@ export type Database = {
           task_type: string | null
           updated_at: string | null
           url: string
-          user_id: string
+          user_id: string | null
         }
         Insert: {
           audit_id?: string | null
@@ -173,7 +173,7 @@ export type Database = {
           task_type?: string | null
           updated_at?: string | null
           url: string
-          user_id: string
+          user_id?: string | null
         }
         Update: {
           audit_id?: string | null
@@ -192,7 +192,7 @@ export type Database = {
           task_type?: string | null
           updated_at?: string | null
           url?: string
-          user_id?: string
+          user_id?: string | null
         }
         Relationships: [
           {
@@ -215,7 +215,7 @@ export type Database = {
           status: string
           total_pages: number | null
           url: string
-          user_id: string
+          user_id: string | null
         }
         Insert: {
           completed_at?: string | null
@@ -227,7 +227,7 @@ export type Database = {
           status?: string
           total_pages?: number | null
           url: string
-          user_id: string
+          user_id?: string | null
         }
         Update: {
           completed_at?: string | null
@@ -239,7 +239,7 @@ export type Database = {
           status?: string
           total_pages?: number | null
           url?: string
-          user_id?: string
+          user_id?: string | null
         }
         Relationships: []
       }
