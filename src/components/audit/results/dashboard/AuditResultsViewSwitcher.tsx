@@ -11,6 +11,9 @@ interface AuditResultsViewSwitcherProps {
   onExportPDF: () => void;
   onExportJSON: () => void;
   onShare: () => void;
+  auditResults?: any;
+  taskMetrics?: any;
+  pageAnalysis?: any[];
 }
 
 const AuditResultsViewSwitcher: React.FC<AuditResultsViewSwitcherProps> = ({
@@ -18,7 +21,10 @@ const AuditResultsViewSwitcher: React.FC<AuditResultsViewSwitcherProps> = ({
   defaultMode = 'dashboard',
   onExportPDF,
   onExportJSON,
-  onShare
+  onShare,
+  auditResults,
+  taskMetrics,
+  pageAnalysis
 }) => {
   const [viewMode, setViewMode] = useState<ViewMode>(defaultMode);
 
@@ -42,6 +48,9 @@ const AuditResultsViewSwitcher: React.FC<AuditResultsViewSwitcherProps> = ({
       <TabsContent value="dashboard">
         <AuditResultsDashboard
           auditData={auditData}
+          auditResults={auditResults}
+          taskMetrics={taskMetrics}
+          pageAnalysis={pageAnalysis}
           onExportPDF={onExportPDF}
           onExportJSON={onExportJSON}
           onShare={onShare}

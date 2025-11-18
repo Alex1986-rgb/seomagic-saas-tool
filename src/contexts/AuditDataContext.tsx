@@ -22,6 +22,9 @@ interface AuditDataContextType {
   loadAuditData: (refresh?: boolean) => Promise<void>;
   generatePdfReportFile: () => Promise<void>;
   exportJSONData: () => Promise<void>;
+  auditResults: any | null;
+  taskMetrics: any | null;
+  pageAnalysis: any[];
 }
 
 const AuditDataContext = createContext<AuditDataContextType>({
@@ -34,7 +37,10 @@ const AuditDataContext = createContext<AuditDataContextType>({
   isRefreshing: false,
   loadAuditData: async () => {},
   generatePdfReportFile: async () => {},
-  exportJSONData: async () => {}
+  exportJSONData: async () => {},
+  auditResults: null,
+  taskMetrics: null,
+  pageAnalysis: []
 });
 
 export const AuditDataProvider: React.FC<AuditDataProviderProps> = ({ 
@@ -115,6 +121,73 @@ export const AuditDataProvider: React.FC<AuditDataProviderProps> = ({
     enabled: !!url
   });
   
+  // Fetch audit results with weighted metrics
+  const { data: auditResults = null } = useQuery({
+    queryKey: ['auditResults', taskId],
+    queryFn: async () => {
+      if (!taskId) return null;
+      
+      const { data, error } = await supabase
+        .from('audit_results')
+        .select('*')
+        .eq('task_id', taskId)
+        .maybeSingle();
+      
+      if (error) {
+        console.error('Error fetching audit results:', error);
+        return null;
+      }
+      
+      return data;
+    },
+    enabled: !!taskId
+  });
+  
+  // Fetch task metrics
+  const { data: taskMetrics = null } = useQuery({
+    queryKey: ['taskMetrics', taskId],
+    queryFn: async () => {
+      if (!taskId) return null;
+      
+      const { data, error } = await supabase
+        .from('audit_tasks')
+        .select('avg_load_time_ms, success_rate, redirect_pages_count, error_pages_count, pages_scanned, total_urls')
+        .eq('id', taskId)
+        .single();
+      
+      if (error) {
+        console.error('Error fetching task metrics:', error);
+        return null;
+      }
+      
+      return data;
+    },
+    enabled: !!taskId
+  });
+  
+  // Fetch page analysis
+  const { data: pageAnalysis = [] } = useQuery({
+    queryKey: ['pageAnalysis', auditResults?.audit_id],
+    queryFn: async () => {
+      if (!auditResults?.audit_id) return [];
+      
+      const { data, error } = await supabase
+        .from('page_analysis')
+        .select('*')
+        .eq('audit_id', auditResults.audit_id)
+        .order('depth', { ascending: true })
+        .limit(50);
+      
+      if (error) {
+        console.error('Error fetching page analysis:', error);
+        return [];
+      }
+      
+      return data || [];
+    },
+    enabled: !!auditResults?.audit_id
+  });
+  
   // Placeholder for recommendations (can be implemented later)
   const recommendations: RecommendationData | null = null;
   
@@ -159,7 +232,10 @@ export const AuditDataProvider: React.FC<AuditDataProviderProps> = ({
     isRefreshing,
     loadAuditData,
     generatePdfReportFile,
-    exportJSONData
+    exportJSONData,
+    auditResults: auditResults || null,
+    taskMetrics: taskMetrics || null,
+    pageAnalysis: pageAnalysis || []
   }), [
     auditData,
     recommendations,
@@ -171,7 +247,10 @@ export const AuditDataProvider: React.FC<AuditDataProviderProps> = ({
     isRefreshing,
     loadAuditData,
     generatePdfReportFile,
-    exportJSONData
+    exportJSONData,
+    auditResults,
+    taskMetrics,
+    pageAnalysis
   ]);
   
   return (
