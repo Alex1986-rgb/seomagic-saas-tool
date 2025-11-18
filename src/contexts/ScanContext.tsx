@@ -48,6 +48,13 @@ export const ScanProvider: React.FC<{ children: ReactNode; url: string }> = ({
   children, 
   url 
 }) => {
+  console.log('🔧 ScanProvider initialized with url:', url);
+  
+  // Track URL changes
+  React.useEffect(() => {
+    console.log('🔧 ScanProvider: url changed to:', url);
+  }, [url]);
+  
   const {
     isScanning,
     scanDetails,
