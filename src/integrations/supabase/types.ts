@@ -150,6 +150,7 @@ export type Database = {
           last_discovered_url: string | null
           pages_scanned: number | null
           progress: number | null
+          sitemap_urls_count: number | null
           stage: string | null
           status: string
           task_type: string | null
@@ -171,6 +172,7 @@ export type Database = {
           last_discovered_url?: string | null
           pages_scanned?: number | null
           progress?: number | null
+          sitemap_urls_count?: number | null
           stage?: string | null
           status?: string
           task_type?: string | null
@@ -192,6 +194,7 @@ export type Database = {
           last_discovered_url?: string | null
           pages_scanned?: number | null
           progress?: number | null
+          sitemap_urls_count?: number | null
           stage?: string | null
           status?: string
           task_type?: string | null
@@ -337,45 +340,117 @@ export type Database = {
       page_analysis: {
         Row: {
           audit_id: string | null
+          canonical_points_to_self: boolean | null
+          canonical_url: string | null
+          content_length: number | null
+          content_type: string | null
           created_at: string | null
+          depth: number | null
+          external_links_count: number | null
+          final_url: string | null
           h1_count: number | null
+          h1_text: string | null
+          h2_count: number | null
+          h3_count: number | null
+          has_canonical: boolean | null
+          has_thin_content: boolean | null
+          has_viewport: boolean | null
+          hreflang_tags: Json | null
           id: string
           image_count: number | null
+          internal_links_count: number | null
+          is_indexable: boolean | null
+          language_detected: string | null
           load_time: number | null
           meta_description: string | null
+          missing_alt_images_count: number | null
+          page_type: string | null
+          redirect_chain_length: number | null
+          robots_meta: string | null
           status_code: number | null
+          text_html_ratio: number | null
           title: string | null
+          ttfb: number | null
           url: string
           user_id: string | null
           word_count: number | null
+          x_robots_tag: string | null
         }
         Insert: {
           audit_id?: string | null
+          canonical_points_to_self?: boolean | null
+          canonical_url?: string | null
+          content_length?: number | null
+          content_type?: string | null
           created_at?: string | null
+          depth?: number | null
+          external_links_count?: number | null
+          final_url?: string | null
           h1_count?: number | null
+          h1_text?: string | null
+          h2_count?: number | null
+          h3_count?: number | null
+          has_canonical?: boolean | null
+          has_thin_content?: boolean | null
+          has_viewport?: boolean | null
+          hreflang_tags?: Json | null
           id?: string
           image_count?: number | null
+          internal_links_count?: number | null
+          is_indexable?: boolean | null
+          language_detected?: string | null
           load_time?: number | null
           meta_description?: string | null
+          missing_alt_images_count?: number | null
+          page_type?: string | null
+          redirect_chain_length?: number | null
+          robots_meta?: string | null
           status_code?: number | null
+          text_html_ratio?: number | null
           title?: string | null
+          ttfb?: number | null
           url: string
           user_id?: string | null
           word_count?: number | null
+          x_robots_tag?: string | null
         }
         Update: {
           audit_id?: string | null
+          canonical_points_to_self?: boolean | null
+          canonical_url?: string | null
+          content_length?: number | null
+          content_type?: string | null
           created_at?: string | null
+          depth?: number | null
+          external_links_count?: number | null
+          final_url?: string | null
           h1_count?: number | null
+          h1_text?: string | null
+          h2_count?: number | null
+          h3_count?: number | null
+          has_canonical?: boolean | null
+          has_thin_content?: boolean | null
+          has_viewport?: boolean | null
+          hreflang_tags?: Json | null
           id?: string
           image_count?: number | null
+          internal_links_count?: number | null
+          is_indexable?: boolean | null
+          language_detected?: string | null
           load_time?: number | null
           meta_description?: string | null
+          missing_alt_images_count?: number | null
+          page_type?: string | null
+          redirect_chain_length?: number | null
+          robots_meta?: string | null
           status_code?: number | null
+          text_html_ratio?: number | null
           title?: string | null
+          ttfb?: number | null
           url?: string
           user_id?: string | null
           word_count?: number | null
+          x_robots_tag?: string | null
         }
         Relationships: [
           {
@@ -462,8 +537,11 @@ export type Database = {
       url_queue: {
         Row: {
           created_at: string | null
+          depth: number | null
           error_message: string | null
           id: string
+          page_type: string | null
+          parent_url: string | null
           priority: number | null
           retry_count: number | null
           status: string | null
@@ -473,8 +551,11 @@ export type Database = {
         }
         Insert: {
           created_at?: string | null
+          depth?: number | null
           error_message?: string | null
           id?: string
+          page_type?: string | null
+          parent_url?: string | null
           priority?: number | null
           retry_count?: number | null
           status?: string | null
@@ -484,8 +565,11 @@ export type Database = {
         }
         Update: {
           created_at?: string | null
+          depth?: number | null
           error_message?: string | null
           id?: string
+          page_type?: string | null
+          parent_url?: string | null
           priority?: number | null
           retry_count?: number | null
           status?: string | null
