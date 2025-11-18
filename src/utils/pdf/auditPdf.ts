@@ -12,6 +12,10 @@ import { addTechnicalAnalysisSection } from './sections/technicalAnalysisSection
 import { addRecommendationsSection, Recommendation } from './sections/recommendationsSection';
 import { addPricingSection } from './sections/pricingSection';
 import { addPageAnalysisSection, PageAnalysisItem } from './sections/pageAnalysisSection';
+import { addIssuePercentagesSection } from './sections/issuePercentagesSection';
+import { addPerformanceMetricsSection } from './sections/performanceMetricsSection';
+import { addHistoricalTrendsSection } from './sections/historicalTrendsSection';
+import { addComparisonSection } from './sections/comparisonSection';
 
 export interface GenerateAuditPdfOptions {
   auditData: AuditData;
@@ -22,6 +26,9 @@ export interface GenerateAuditPdfOptions {
   optimizationItems?: OptimizationItem[];
   date?: string;
   customization?: PdfCustomizationOptions;
+  historicalData?: any[];
+  comparisonData?: any;
+  performanceMetrics?: any;
 }
 
 interface AuditIssue {
@@ -43,7 +50,10 @@ export const generateAuditPdf = async (options: GenerateAuditPdfOptions): Promis
     optimizationCost, 
     optimizationItems, 
     date = auditData.date,
-    customization
+    customization,
+    historicalData,
+    comparisonData,
+    performanceMetrics
   } = options;
   
   // Default customization options
