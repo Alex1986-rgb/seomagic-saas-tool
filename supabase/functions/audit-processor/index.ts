@@ -241,7 +241,18 @@ async function processMicroBatch(supabase: any, taskId: string, domain: string) 
     }
   }
 
-  return { hasMore: true, processed: batch.length };
+  // Check if there are more pending URLs
+  const { data: pendingCheck } = await supabase
+    .from('url_queue')
+    .select('id')
+    .eq('task_id', taskId)
+    .eq('status', 'pending')
+    .limit(1);
+  
+  const hasMore = (pendingCheck?.length || 0) > 0;
+  console.log(`📋 URLs discovered: ${hasMore ? 'Yes' : 'No'}, processed: ${batch.length}`);
+  
+  return { hasMore, processed: batch.length };
 }
 
 // Update task progress
