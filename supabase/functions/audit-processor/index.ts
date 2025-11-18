@@ -155,10 +155,10 @@ async function getNextBatch(supabase: any, taskId: string, batchSize: number) {
 
 // Process a micro-batch of URLs
 async function processMicroBatch(supabase: any, taskId: string, domain: string) {
-  // Get current task to check remaining pages
+  // Get current task with all needed fields
   const { data: task } = await supabase
     .from('audit_tasks')
-    .select('pages_scanned, estimated_pages')
+    .select('pages_scanned, estimated_pages, audit_id, user_id')
     .eq('id', taskId)
     .single();
 
@@ -168,7 +168,7 @@ async function processMicroBatch(supabase: any, taskId: string, domain: string) 
   }
 
   // Calculate remaining pages needed
-  const remainingPages = task.estimated_pages - (task.pages_scanned || 0);
+  const remainingPages = (task.estimated_pages || 100) - (task.pages_scanned || 0);
   
   if (remainingPages <= 0) {
     console.log('✅ Target pages already reached');
@@ -196,15 +196,6 @@ async function processMicroBatch(supabase: any, taskId: string, domain: string) 
   const results = await Promise.all(
     batch.map((item: any) => crawlPage(item.url, domain))
   );
-
-  // Get task info for saving results
-  const { data: task } = await supabase
-    .from('audit_tasks')
-    .select('audit_id, user_id')
-    .eq('id', taskId)
-    .single();
-
-  if (!task) throw new Error('Task not found');
 
   // Save page analysis results
   const pageAnalysisData = results.map(page => ({
@@ -515,9 +506,10 @@ async function processAuditTask(taskId: string) {
 
     console.log(`🔄 Processing task ${taskId}, batch #${task.batch_count + 1}`);
 
-    // Check if target page limit reached
-    if (task.pages_scanned >= task.estimated_pages) {
-      console.log(`✅ Reached target page limit: ${task.estimated_pages}`);
+    // Check if target page limit reached (with default fallback)
+    const targetPages = task.estimated_pages || 100;
+    if ((task.pages_scanned || 0) >= targetPages) {
+      console.log(`✅ Reached target page limit: ${targetPages}`);
       await completeAudit(supabase, taskId);
       return;
     }
@@ -619,9 +611,10 @@ async function processAuditTask(taskId: string) {
       .eq('id', taskId)
       .single();
 
-    // Check if target pages reached
-    if (updatedTask && updatedTask.pages_scanned >= updatedTask.estimated_pages) {
-      console.log(`✅ Target pages reached: ${updatedTask.pages_scanned}/${updatedTask.estimated_pages}`);
+    // Check if target pages reached (with default fallback)
+    const targetPages = updatedTask?.estimated_pages || 100;
+    if (updatedTask && (updatedTask.pages_scanned || 0) >= targetPages) {
+      console.log(`✅ Target pages reached: ${updatedTask.pages_scanned}/${targetPages}`);
       await completeAudit(supabase, taskId);
       return;
     }
