@@ -3,6 +3,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import AuditLoading from '../../AuditLoading';
 import AuditTimeoutMessage from '../../AuditTimeoutMessage';
+import { ManualAuditStarter } from '../../ManualAuditStarter';
 import { Card } from "@/components/ui/card";
 
 interface AuditStateHandlerProps {
@@ -35,7 +36,12 @@ const AuditStateHandler: React.FC<AuditStateHandlerProps> = ({
   if (timeout) {
     return (
       <Card className="p-6 bg-card/90 backdrop-blur-sm border-border">
-        <AuditTimeoutMessage url={url} onRetry={onRetry} />
+        <div className="space-y-6">
+          <AuditTimeoutMessage url={url} onRetry={onRetry} />
+          <div className="pt-4 border-t border-border">
+            <ManualAuditStarter url={url} onStarted={onRetry} />
+          </div>
+        </div>
       </Card>
     );
   }

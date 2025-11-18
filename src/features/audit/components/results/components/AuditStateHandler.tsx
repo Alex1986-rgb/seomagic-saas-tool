@@ -2,6 +2,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Card } from "@/components/ui/card";
+import { ManualAuditStarter } from '@/components/audit/ManualAuditStarter';
 
 interface AuditStateHandlerProps {
   isLoading: boolean;
@@ -37,19 +38,18 @@ const AuditStateHandler: React.FC<AuditStateHandlerProps> = ({
   if (timeout) {
     return (
       <Card className="p-6 bg-card/90 backdrop-blur-sm border-border">
-        <div className="text-center space-y-4">
-          <div className="text-xl font-semibold text-destructive">
-            Превышено время ожидания
+        <div className="space-y-6">
+          <div className="text-center space-y-4">
+            <div className="text-xl font-semibold text-warning">
+              Превышено время ожидания
+            </div>
+            <p className="text-muted-foreground">
+              Автоматический запуск аудита не сработал. Вы можете запустить аудит вручную ниже.
+            </p>
           </div>
-          <p className="text-muted-foreground">
-            Время ожидания истекло. Возможно, сайт слишком большой или возникли проблемы с соединением.
-          </p>
-          <button 
-            onClick={onRetry} 
-            className="bg-primary/10 hover:bg-primary/20 transition-colors text-primary px-4 py-2 rounded-md"
-          >
-            Попробовать снова
-          </button>
+          <div className="pt-4 border-t border-border">
+            <ManualAuditStarter url={url} onStarted={onRetry} />
+          </div>
         </div>
       </Card>
     );
