@@ -10,9 +10,10 @@ import { prepareScoreData, prepareIssuesData } from './utils/dataPreparation';
 
 interface AuditDataVisualizerProps {
   auditData: AuditDetailsData;
+  url: string;
 }
 
-const AuditDataVisualizer: React.FC<AuditDataVisualizerProps> = ({ auditData }) => {
+const AuditDataVisualizer: React.FC<AuditDataVisualizerProps> = ({ auditData, url }) => {
   const scoreData = prepareScoreData(auditData);
   const issuesData = prepareIssuesData(auditData);
 
@@ -36,7 +37,7 @@ const AuditDataVisualizer: React.FC<AuditDataVisualizerProps> = ({ auditData }) 
         transition={{ duration: 0.5, delay: 0.2 }}
       >
         <ChartContainer title="Тренды изменений">
-          <TrendsAreaChart auditData={auditData} />
+          <TrendsAreaChart auditData={auditData} url={url} />
         </ChartContainer>
       </motion.div>
 

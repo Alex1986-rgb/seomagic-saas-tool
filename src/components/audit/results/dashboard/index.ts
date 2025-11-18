@@ -9,5 +9,7 @@ export { default as PageDetailView } from './PageDetailView';
 export { default as CategoryScoresGrid } from './CategoryScoresGrid';
 export { default as IssueMetricsCard } from './IssueMetricsCard';
 export { default as PerformanceMetricsCard } from './PerformanceMetricsCard';
+export { default as HistoricalTrendsChart } from './HistoricalTrendsChart';
+export { default as ComparisonCard } from './ComparisonCard';
 
 export * from './types';

@@ -245,7 +245,7 @@ const AuditContent: React.FC<AuditContentProps> = ({
         }
         
         {renderWithAnimation(
-          <AuditDataVisualizer auditData={auditData.details} />, 
+          <AuditDataVisualizer auditData={auditData.details} url={url} />, 
           0.15
         )}
         
