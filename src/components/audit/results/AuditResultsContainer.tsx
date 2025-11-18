@@ -1,9 +1,7 @@
 
 import React, { useCallback, useMemo } from 'react';
 import { AnimatePresence } from 'framer-motion';
-import { useAuditData } from './hooks/useAuditData';
-import { useAuditInitialization } from './hooks/useAuditInitialization';
-import { usePromptToggle } from './hooks/usePromptToggle';
+import { useAuditData, useAuditInitialization, usePromptToggle } from '@/features/audit/hooks';
 import AuditStateHandler from './components/AuditStateHandler';
 import AuditContent from './components/AuditContent';
 
