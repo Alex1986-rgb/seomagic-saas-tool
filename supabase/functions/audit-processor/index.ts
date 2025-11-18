@@ -8,9 +8,9 @@ const corsHeaders = {
 };
 
 // Micro-batch constants for reliable processing
-const MICRO_BATCH_SIZE = 3; // Process only 3-5 pages per invocation
-const PAGE_TIMEOUT = 5000; // 5 seconds per page
-const MAX_BATCH_CALLS = 100; // Prevent infinite loops
+const MICRO_BATCH_SIZE = 5; // Process 5 pages per invocation
+const PAGE_TIMEOUT = 8000; // 8 seconds per page
+const MAX_BATCH_CALLS = 500; // Prevent infinite loops (fallback only)
 
 interface PageData {
   url: string;
@@ -155,14 +155,36 @@ async function getNextBatch(supabase: any, taskId: string, batchSize: number) {
 
 // Process a micro-batch of URLs
 async function processMicroBatch(supabase: any, taskId: string, domain: string) {
-  const batch = await getNextBatch(supabase, taskId, MICRO_BATCH_SIZE);
+  // Get current task to check remaining pages
+  const { data: task } = await supabase
+    .from('audit_tasks')
+    .select('pages_scanned, estimated_pages')
+    .eq('id', taskId)
+    .single();
+
+  if (!task) {
+    console.error('Task not found');
+    return { hasMore: false, processed: 0 };
+  }
+
+  // Calculate remaining pages needed
+  const remainingPages = task.estimated_pages - (task.pages_scanned || 0);
+  
+  if (remainingPages <= 0) {
+    console.log('✅ Target pages already reached');
+    return { hasMore: false, processed: 0 };
+  }
+
+  // Limit batch size to remaining pages
+  const batchSize = Math.min(MICRO_BATCH_SIZE, remainingPages);
+  const batch = await getNextBatch(supabase, taskId, batchSize);
   
   if (batch.length === 0) {
     console.log('⚠️ No more URLs to process in queue');
     return { hasMore: false, processed: 0 };
   }
 
-  console.log(`🔄 Processing micro-batch: ${batch.length} URLs`);
+  console.log(`🔄 Processing micro-batch: ${batch.length} URLs (${remainingPages} remaining)`);
 
   // Mark URLs as processing
   await supabase
@@ -257,18 +279,29 @@ async function processMicroBatch(supabase: any, taskId: string, domain: string) 
 
 // Update task progress
 async function updateProgress(supabase: any, taskId: string) {
+  const { data: task } = await supabase
+    .from('audit_tasks')
+    .select('estimated_pages')
+    .eq('id', taskId)
+    .single();
+
   const { data: counts } = await supabase
     .from('url_queue')
     .select('status')
     .eq('task_id', taskId);
 
-  if (!counts) return;
+  if (!counts || !task) return;
 
   const total = counts.length;
   const completed = counts.filter((c: any) => c.status === 'completed').length;
   const failed = counts.filter((c: any) => c.status === 'failed').length;
   const pagesScanned = completed + failed;
-  const progress = total > 0 ? Math.round((pagesScanned / total) * 100) : 0;
+  
+  // Calculate progress based on estimated_pages (target)
+  const targetPages = task.estimated_pages || total;
+  const progress = targetPages > 0 
+    ? Math.round((pagesScanned / targetPages) * 100) 
+    : 0;
 
   await supabase
     .from('audit_tasks')
@@ -276,10 +309,11 @@ async function updateProgress(supabase: any, taskId: string) {
       pages_scanned: pagesScanned,
       total_urls: total,
       progress: Math.min(progress, 90), // Cap at 90% until analysis
+      stage: `Сканирование (${Math.min(progress, 90)}%)`
     })
     .eq('id', taskId);
 
-  console.log(`📈 Progress: ${pagesScanned}/${total} pages (${progress}%)`);
+  console.log(`📈 Progress: ${pagesScanned}/${targetPages} pages (${progress}%)`);
 }
 
 // Removed triggerNextBatch - using pull-based model instead
@@ -481,9 +515,18 @@ async function processAuditTask(taskId: string) {
 
     console.log(`🔄 Processing task ${taskId}, batch #${task.batch_count + 1}`);
 
-    // Check if batch limit exceeded
+    // Check if target page limit reached
+    if (task.pages_scanned >= task.estimated_pages) {
+      console.log(`✅ Reached target page limit: ${task.estimated_pages}`);
+      await completeAudit(supabase, taskId);
+      return;
+    }
+
+    // Check batch limit as fallback protection
     if (task.batch_count >= MAX_BATCH_CALLS) {
-      throw new Error(`Max batch calls (${MAX_BATCH_CALLS}) exceeded`);
+      console.warn(`⚠️ Max batch calls (${MAX_BATCH_CALLS}) reached, force completing...`);
+      await completeAudit(supabase, taskId);
+      return;
     }
 
     // Increment batch counter
@@ -568,6 +611,20 @@ async function processAuditTask(taskId: string) {
     const completed = queueStatus?.filter((q: any) => q.status === 'completed').length || 0;
     
     console.log(`📊 Queue status: ${pending} pending, ${completed} completed, ${queueStatus?.length || 0} total`);
+
+    // Get updated task to check page limit
+    const { data: updatedTask } = await supabase
+      .from('audit_tasks')
+      .select('pages_scanned, estimated_pages')
+      .eq('id', taskId)
+      .single();
+
+    // Check if target pages reached
+    if (updatedTask && updatedTask.pages_scanned >= updatedTask.estimated_pages) {
+      console.log(`✅ Target pages reached: ${updatedTask.pages_scanned}/${updatedTask.estimated_pages}`);
+      await completeAudit(supabase, taskId);
+      return;
+    }
 
     // Check if we should complete or continue
     if (!hasMore || processed === 0) {
