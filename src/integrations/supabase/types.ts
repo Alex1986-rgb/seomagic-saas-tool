@@ -95,7 +95,7 @@ export type Database = {
           page_count: number | null
           score: number | null
           task_id: string | null
-          user_id: string
+          user_id: string | null
         }
         Insert: {
           audit_data?: Json | null
@@ -106,7 +106,7 @@ export type Database = {
           page_count?: number | null
           score?: number | null
           task_id?: string | null
-          user_id: string
+          user_id?: string | null
         }
         Update: {
           audit_data?: Json | null
@@ -117,7 +117,7 @@ export type Database = {
           page_count?: number | null
           score?: number | null
           task_id?: string | null
-          user_id?: string
+          user_id?: string | null
         }
         Relationships: [
           {

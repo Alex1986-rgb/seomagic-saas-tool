@@ -405,7 +405,8 @@ async function processAuditTask(taskId: string) {
     };
 
     // Save audit results
-    await supabase
+    console.log('Saving audit results to database...');
+    const { data: insertedResult, error: insertError } = await supabase
       .from('audit_results')
       .insert({
         task_id: taskId,
@@ -415,7 +416,16 @@ async function processAuditTask(taskId: string) {
         score: seoAnalysis.score,
         page_count: pagesScanned,
         issues_count: seoAnalysis.failed + seoAnalysis.warning
-      });
+      })
+      .select()
+      .single();
+
+    if (insertError) {
+      console.error('❌ Error saving audit results:', insertError);
+      throw new Error(`Failed to save audit results: ${insertError.message}`);
+    }
+
+    console.log('✅ Audit results saved:', insertedResult.id);
 
     // Phase 4: Generating reports
     console.log('Generating reports...');
