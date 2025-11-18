@@ -2,7 +2,9 @@ import React, { useState, useMemo } from 'react';
 import { AuditData } from '@/types/audit';
 import { DashboardMetrics, IssueItem, PageAnalysisRow } from './types';
 import AuditDashboardHeader from './AuditDashboardHeader';
-import ScoreGaugeCard from './ScoreGaugeCard';
+import CategoryScoresGrid from './CategoryScoresGrid';
+import IssueMetricsCard from './IssueMetricsCard';
+import PerformanceMetricsCard from './PerformanceMetricsCard';
 import IssuesBreakdownChart from './IssuesBreakdownChart';
 import TopIssuesPanel from './TopIssuesPanel';
 import PageAnalysisInteractiveTable from './PageAnalysisInteractiveTable';
@@ -10,13 +12,40 @@ import PageDetailView from './PageDetailView';
 
 interface AuditResultsDashboardProps {
   auditData: AuditData;
+  auditResults?: any;
+  taskMetrics?: any;
+  pageAnalysis?: any[];
   onExportPDF: () => void;
   onExportJSON: () => void;
   onShare: () => void;
 }
 
+// Helper function to calculate issues per page
+const calculatePageIssues = (page: any): number => {
+  let count = 0;
+  if (!page.title) count++;
+  if (page.h1_count === 0) count++;
+  if (!page.meta_description) count++;
+  if (!page.has_canonical) count++;
+  if (!page.is_indexable) count++;
+  if (page.has_thin_content) count++;
+  if ((page.load_time || 0) > 3) count++;
+  if (page.redirect_chain_length > 0) count++;
+  if (page.missing_alt_images_count > 0) count++;
+  return count;
+};
+
+// Helper function to calculate page score
+const calculatePageScore = (page: any): number => {
+  const issuesCount = calculatePageIssues(page);
+  return Math.max(0, 100 - issuesCount * 10);
+};
+
 const AuditResultsDashboard: React.FC<AuditResultsDashboardProps> = ({
   auditData,
+  auditResults,
+  taskMetrics,
+  pageAnalysis: pageAnalysisData = [],
   onExportPDF,
   onExportJSON,
   onShare
@@ -31,21 +60,21 @@ const AuditResultsDashboard: React.FC<AuditResultsDashboardProps> = ({
     const passedChecks = Array.isArray(passedValue) ? passedValue.length : (passedValue || 0);
     
     return {
-      totalScore: score,
-      seoScore: details?.seo?.score || 0,
-      technicalScore: details?.technical?.score || 0,
-      performanceScore: details?.performance?.score || 0,
-      contentScore: details?.content?.score || 0,
+      totalScore: auditResults?.global_score || score,
+      seoScore: auditResults?.seo_score || details?.seo?.score || 0,
+      technicalScore: auditResults?.technical_score || details?.technical?.score || 0,
+      performanceScore: auditResults?.performance_score || details?.performance?.score || 0,
+      contentScore: auditResults?.content_score || details?.content?.score || 0,
       mobileScore: details?.mobile?.score || 0,
       usabilityScore: details?.usability?.score || 0,
-      totalPages: pageCount || 0,
+      totalPages: auditResults?.page_count || pageCount || 0,
       totalIssues: (issues?.critical?.length || 0) + (issues?.important?.length || 0),
       criticalIssues: issues?.critical?.length || 0,
       warningIssues: issues?.important?.length || 0,
       passedChecks: passedChecks,
       scanDuration: scanTime
     };
-  }, [auditData]);
+  }, [auditData, auditResults]);
 
   const allIssues: IssueItem[] = useMemo(() => {
     const issues: IssueItem[] = [];
@@ -73,8 +102,23 @@ const AuditResultsDashboard: React.FC<AuditResultsDashboardProps> = ({
   }, [auditData]);
 
   const pageAnalysis: PageAnalysisRow[] = useMemo(() => {
-    // Generate mock page analysis data based on audit results
-    // In real implementation, this would come from the backend
+    // Use real page analysis data if available
+    if (pageAnalysisData && pageAnalysisData.length > 0) {
+      return pageAnalysisData.map(page => ({
+        url: page.url,
+        title: page.title || 'Без заголовка',
+        statusCode: page.status_code || 0,
+        loadTime: page.load_time || 0,
+        wordCount: page.word_count || 0,
+        imageCount: page.image_count || 0,
+        h1Count: page.h1_count || 0,
+        issuesCount: calculatePageIssues(page),
+        issues: [], // Would need to map specific issues from page data
+        score: calculatePageScore(page)
+      }));
+    }
+    
+    // Fallback to mock data if no real data available
     const pages: PageAnalysisRow[] = [];
     const pageCount = Math.min(auditData.pageCount || 10, 50);
     
@@ -97,7 +141,7 @@ const AuditResultsDashboard: React.FC<AuditResultsDashboardProps> = ({
     }
     
     return pages;
-  }, [auditData, allIssues]);
+  }, [auditData, allIssues, pageAnalysisData]);
 
   const handlePageClick = (page: PageAnalysisRow) => {
     setSelectedPage(page);
@@ -114,33 +158,45 @@ const AuditResultsDashboard: React.FC<AuditResultsDashboardProps> = ({
         onShare={onShare}
       />
 
-      {/* Score Gauges */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <ScoreGaugeCard
-          title="SEO"
-          score={metrics.seoScore}
-          previousScore={auditData.details?.seo?.previousScore}
-          index={0}
+      {/* Category Score Gauges */}
+      <CategoryScoresGrid
+        seoScore={metrics.seoScore}
+        technicalScore={metrics.technicalScore}
+        contentScore={metrics.contentScore}
+        performanceScore={metrics.performanceScore}
+        previousScores={{
+          seo: auditData.details?.seo?.previousScore,
+          technical: auditData.details?.technical?.previousScore,
+          content: auditData.details?.content?.previousScore,
+          performance: auditData.details?.performance?.previousScore
+        }}
+      />
+
+      {/* Issue Metrics Card */}
+      {auditResults && (
+        <IssueMetricsCard
+          pctMissingTitle={auditResults.pct_missing_title}
+          pctMissingH1={auditResults.pct_missing_h1}
+          pctMissingDescription={auditResults.pct_missing_description}
+          pctMissingCanonical={auditResults.pct_missing_canonical}
+          pctNotIndexable={auditResults.pct_not_indexable}
+          pctThinContent={auditResults.pct_thin_content}
+          pctSlowPages={auditResults.pct_slow_pages}
+          pctPagesWithRedirects={auditResults.pct_pages_with_redirects}
+          pctLongRedirectChains={auditResults.pct_long_redirect_chains}
         />
-        <ScoreGaugeCard
-          title="Технические"
-          score={metrics.technicalScore}
-          previousScore={auditData.details?.technical?.previousScore}
-          index={1}
+      )}
+
+      {/* Performance Metrics Card */}
+      {taskMetrics && (
+        <PerformanceMetricsCard
+          avgLoadTimeMs={taskMetrics.avg_load_time_ms}
+          successRate={taskMetrics.success_rate}
+          redirectPagesCount={taskMetrics.redirect_pages_count}
+          errorPagesCount={taskMetrics.error_pages_count}
+          totalPages={metrics.totalPages}
         />
-        <ScoreGaugeCard
-          title="Производительность"
-          score={metrics.performanceScore}
-          previousScore={auditData.details?.performance?.previousScore}
-          index={2}
-        />
-        <ScoreGaugeCard
-          title="Контент"
-          score={metrics.contentScore}
-          previousScore={auditData.details?.content?.previousScore}
-          index={3}
-        />
-      </div>
+      )}
 
       {/* Charts */}
       <IssuesBreakdownChart

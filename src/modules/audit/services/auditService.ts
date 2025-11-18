@@ -115,7 +115,18 @@ export class AuditService {
         .single();
 
       if (error) throw error;
-      return data;
+      
+      // Cast Json types to proper types
+      if (data) {
+        return {
+          ...data,
+          pages_by_type: data.pages_by_type as Record<string, number> | undefined,
+          pages_by_depth: data.pages_by_depth as Record<string, number> | undefined,
+          issues_by_severity: data.issues_by_severity as Record<string, number> | undefined
+        } as AuditResult;
+      }
+      
+      return null;
     } catch (error) {
       console.error('Error fetching audit results:', error);
       return null;
@@ -131,13 +142,33 @@ export class AuditService {
         .from('page_analysis')
         .select('*')
         .eq('audit_id', auditId)
-        .order('created_at', { ascending: false });
+        .order('depth', { ascending: true })
+        .order('load_time', { ascending: false });
 
       if (error) throw error;
       return data || [];
     } catch (error) {
       console.error('Error fetching page analysis:', error);
       return [];
+    }
+  }
+
+  /**
+   * Получает метрики производительности для задачи аудита
+   */
+  async getAuditTaskMetrics(taskId: string) {
+    try {
+      const { data, error } = await supabase
+        .from('audit_tasks')
+        .select('avg_load_time_ms, success_rate, redirect_pages_count, error_pages_count, pages_scanned, total_urls')
+        .eq('id', taskId)
+        .single();
+
+      if (error) throw error;
+      return data;
+    } catch (error) {
+      console.error('Error fetching task metrics:', error);
+      return null;
     }
   }
 

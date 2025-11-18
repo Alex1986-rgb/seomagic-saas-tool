@@ -42,9 +42,12 @@ interface AuditContentProps {
   downloadSitemap?: () => void;
   exportJSONData: () => void;
   generatePdfReportFile: () => void;
-  downloadOptimizedSite: () => Promise<void>; // Updated return type
-  optimizeSiteContent: () => Promise<void>; // Updated return type
+  downloadOptimizedSite: () => Promise<void>;
+  optimizeSiteContent: () => Promise<void>;
   setContentOptimizationPrompt: (prompt: string) => void;
+  auditResults?: any;
+  taskMetrics?: any;
+  pageAnalysis?: any[];
 }
 
 const AuditContent: React.FC<AuditContentProps> = ({
@@ -74,7 +77,10 @@ const AuditContent: React.FC<AuditContentProps> = ({
   generatePdfReportFile,
   downloadOptimizedSite,
   optimizeSiteContent,
-  setContentOptimizationPrompt
+  setContentOptimizationPrompt,
+  auditResults,
+  taskMetrics,
+  pageAnalysis
 }) => {
   const [viewMode, setViewMode] = useState<'dashboard' | 'classic'>('dashboard');
 
@@ -113,6 +119,9 @@ const AuditContent: React.FC<AuditContentProps> = ({
               <AuditResultsViewSwitcher
                 auditData={auditData}
                 defaultMode="dashboard"
+                auditResults={auditResults}
+                taskMetrics={taskMetrics}
+                pageAnalysis={pageAnalysis}
                 onExportPDF={generatePdfReportFile}
                 onExportJSON={exportJSONData}
                 onShare={() => {}}

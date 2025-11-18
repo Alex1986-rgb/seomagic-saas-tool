@@ -6,5 +6,8 @@ export { default as IssuesBreakdownChart } from './IssuesBreakdownChart';
 export { default as TopIssuesPanel } from './TopIssuesPanel';
 export { default as PageAnalysisInteractiveTable } from './PageAnalysisInteractiveTable';
 export { default as PageDetailView } from './PageDetailView';
+export { default as CategoryScoresGrid } from './CategoryScoresGrid';
+export { default as IssueMetricsCard } from './IssueMetricsCard';
+export { default as PerformanceMetricsCard } from './PerformanceMetricsCard';
 
 export * from './types';
