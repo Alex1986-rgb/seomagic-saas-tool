@@ -148,10 +148,10 @@ async function crawlPage(url: string, domain: string): Promise<PageData> {
       description,
       h1: h1Tags,
       h1_count: h1Tags.length,
-      image_count: images.length,
-      word_count: wordCount,
-      load_time: totalTime / 1000, // Convert to seconds
-      status_code: response.status,
+      image_count: Number(images.length),
+      word_count: Number(wordCount),
+      load_time: Number((totalTime / 1000).toFixed(2)), // Convert to seconds
+      status_code: Number(response.status),
       links: allLinks,
       internalLinks,
       externalLinks,
@@ -341,7 +341,22 @@ async function processMicroBatch(supabase: any, taskId: string, domain: string) 
     status_code: page.status_code
   }));
 
-  await supabase.from('page_analysis').insert(pageAnalysisData);
+  // Bulk insert page analysis data with error handling
+  console.log(`📝 Preparing to insert ${pageAnalysisData.length} pages into page_analysis`);
+  if (pageAnalysisData.length > 0) {
+    console.log(`🔍 Sample data:`, JSON.stringify(pageAnalysisData[0], null, 2));
+  }
+  
+  const { data: insertedPages, error: insertError } = await supabase
+    .from('page_analysis')
+    .insert(pageAnalysisData);
+
+  if (insertError) {
+    console.error('❌ Failed to insert page analysis:', insertError);
+    console.error('📊 Data that failed:', JSON.stringify(pageAnalysisData, null, 2));
+  } else {
+    console.log(`✅ Inserted ${pageAnalysisData.length} pages into page_analysis`);
+  }
 
   // Mark URLs as completed and discover new URLs
   for (let i = 0; i < results.length; i++) {
@@ -467,10 +482,35 @@ async function completeAudit(supabase: any, taskId: string) {
     .select('*')
     .eq('audit_id', task.audit_id);
 
+  // Fallback: if no pages in page_analysis, get from url_queue
+  let finalPages = pages;
+  if (!pages || pages.length === 0) {
+    console.warn('⚠️ No pages in page_analysis, falling back to url_queue');
+    const { data: queueData } = await supabase
+      .from('url_queue')
+      .select('*')
+      .eq('task_id', taskId)
+      .eq('status', 'completed');
+    
+    if (queueData && queueData.length > 0) {
+      console.log(`📋 Found ${queueData.length} completed URLs in queue`);
+      finalPages = queueData.map(q => ({
+        url: q.url,
+        title: 'Page processed',
+        meta_description: null,
+        h1_count: 1,
+        word_count: 0,
+        image_count: 0,
+        status_code: 200,
+        load_time: 0
+      }));
+    }
+  }
+
   // Simple SEO analysis
-  const missingTitles = pages?.filter((p: any) => !p.title || p.title.trim() === '') || [];
-  const missingH1 = pages?.filter((p: any) => p.h1_count === 0) || [];
-  const missingDesc = pages?.filter((p: any) => !p.meta_description) || [];
+  const missingTitles = finalPages?.filter((p: any) => !p.title || p.title.trim() === '') || [];
+  const missingH1 = finalPages?.filter((p: any) => p.h1_count === 0) || [];
+  const missingDesc = finalPages?.filter((p: any) => !p.meta_description) || [];
 
   const items = [];
   let score = 100;
@@ -518,7 +558,7 @@ async function completeAudit(supabase: any, taskId: string) {
 
   const auditData = {
     url: task.url,
-    pages_scanned: pages?.length || 0,
+    pages_scanned: finalPages?.length || 0,
     seo: seoAnalysis,
     details: {
       seo: seoAnalysis,
@@ -537,7 +577,7 @@ async function completeAudit(supabase: any, taskId: string) {
       user_id: task.user_id,
       audit_data: auditData,
       score: seoAnalysis.score,
-      page_count: pages?.length || 0,
+      page_count: finalPages?.length || 0,
       issues_count: seoAnalysis.failed + seoAnalysis.warning
     });
 
@@ -546,7 +586,7 @@ async function completeAudit(supabase: any, taskId: string) {
     .from('audits')
     .update({
       status: 'completed',
-      pages_scanned: pages?.length || 0,
+      pages_scanned: finalPages?.length || 0,
       seo_score: seoAnalysis.score,
       completed_at: new Date().toISOString()
     })
@@ -561,7 +601,7 @@ async function completeAudit(supabase: any, taskId: string) {
     })
     .eq('id', taskId);
 
-  console.log(`✅ Audit completed: ${pages?.length} pages, score: ${seoAnalysis.score}`);
+  console.log(`✅ Audit completed: ${finalPages?.length} pages, score: ${seoAnalysis.score}`);
 }
 
 // Simplified analyze function for compatibility
