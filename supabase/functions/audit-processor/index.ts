@@ -34,11 +34,13 @@ interface PageData {
 // Crawl a single page
 async function crawlPage(url: string, domain: string): Promise<PageData> {
   const startTime = Date.now();
+  const timings: { [key: string]: number } = {};
   
   try {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), PAGE_TIMEOUT);
     
+    const fetchStart = Date.now();
     const response = await fetch(url, {
       headers: {
         'User-Agent': 'Mozilla/5.0 (compatible; SEO-Auditor/1.0)'
@@ -48,10 +50,16 @@ async function crawlPage(url: string, domain: string): Promise<PageData> {
     });
     
     clearTimeout(timeoutId);
-    const loadTime = Date.now() - startTime;
-    const html = await response.text();
-    const $ = cheerio.load(html);
+    timings.fetch = Date.now() - fetchStart;
     
+    const htmlStart = Date.now();
+    const html = await response.text();
+    timings.html = Date.now() - htmlStart;
+    const parseStart = Date.now();
+    const $ = cheerio.load(html);
+    timings.parse = Date.now() - parseStart;
+    
+    const extractStart = Date.now();
     const title = $('title').text().trim();
     const description = $('meta[name="description"]').attr('content') || '';
     
@@ -96,6 +104,15 @@ async function crawlPage(url: string, domain: string): Promise<PageData> {
     
     const robotsMeta = $('meta[name="robots"]').attr('content') || '';
     const isIndexable = !robotsMeta.includes('noindex');
+    timings.extract = Date.now() - extractStart;
+    
+    const totalTime = Date.now() - startTime;
+    
+    // Log slow pages (> 3 seconds)
+    if (totalTime > 3000) {
+      console.warn(`⚠️ SLOW PAGE: ${url} took ${(totalTime / 1000).toFixed(2)}s`);
+      console.warn(`   Breakdown: fetch=${timings.fetch}ms, html=${timings.html}ms, parse=${timings.parse}ms, extract=${timings.extract}ms`);
+    }
     
     return {
       url,
@@ -105,7 +122,7 @@ async function crawlPage(url: string, domain: string): Promise<PageData> {
       h1_count: h1Tags.length,
       image_count: images.length,
       word_count: wordCount,
-      load_time: loadTime / 1000, // Convert to seconds
+      load_time: totalTime / 1000, // Convert to seconds
       status_code: response.status,
       links: allLinks,
       internalLinks,
@@ -192,10 +209,33 @@ async function processMicroBatch(supabase: any, taskId: string, domain: string) 
     .update({ status: 'processing' })
     .in('id', batch.map((b: any) => b.id));
 
-  // Process URLs in parallel
+  // Process URLs in parallel with timing
+  const batchStart = Date.now();
   const results = await Promise.all(
     batch.map((item: any) => crawlPage(item.url, domain))
   );
+  const batchTime = Date.now() - batchStart;
+  
+  // Calculate timing statistics
+  const loadTimes = results.map(r => r.load_time * 1000); // Convert back to ms
+  const avgTime = loadTimes.reduce((a, b) => a + b, 0) / loadTimes.length;
+  const maxTime = Math.max(...loadTimes);
+  const minTime = Math.min(...loadTimes);
+  
+  // Find slowest pages
+  const slowestPages = results
+    .map(r => ({ url: r.url, time: r.load_time * 1000 }))
+    .sort((a, b) => b.time - a.time)
+    .slice(0, 3);
+  
+  console.log(`⏱️ Batch timing: total=${(batchTime / 1000).toFixed(2)}s, avg=${(avgTime / 1000).toFixed(2)}s, min=${(minTime / 1000).toFixed(2)}s, max=${(maxTime / 1000).toFixed(2)}s`);
+  
+  if (slowestPages.length > 0) {
+    console.log(`🐌 Slowest pages in batch:`);
+    slowestPages.forEach((p, i) => {
+      console.log(`   ${i + 1}. ${p.url} (${(p.time / 1000).toFixed(2)}s)`);
+    });
+  }
 
   // Save page analysis results
   const pageAnalysisData = results.map(page => ({
