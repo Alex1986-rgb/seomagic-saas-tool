@@ -612,9 +612,9 @@ async function processAuditTask(taskId: string) {
       .single();
 
     // Check if target pages reached (with default fallback)
-    const targetPages = updatedTask?.estimated_pages || 100;
-    if (updatedTask && (updatedTask.pages_scanned || 0) >= targetPages) {
-      console.log(`✅ Target pages reached: ${updatedTask.pages_scanned}/${targetPages}`);
+    const updatedTargetPages = updatedTask?.estimated_pages || 100;
+    if (updatedTask && (updatedTask.pages_scanned || 0) >= updatedTargetPages) {
+      console.log(`✅ Target pages reached: ${updatedTask.pages_scanned}/${updatedTargetPages}`);
       await completeAudit(supabase, taskId);
       return;
     }
