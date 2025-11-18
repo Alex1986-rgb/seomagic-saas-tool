@@ -17,7 +17,7 @@ export function normalizePath(path: string): string {
 }
 
 /**
- * Normalizes a full URL by handling trailing slashes and query parameters consistently
+ * Normalizes a full URL by handling trailing slashes, fragments, and query parameters
  */
 export function normalizeUrl(url: string): string {
   try {
@@ -28,16 +28,115 @@ export function normalizeUrl(url: string): string {
     
     const urlObj = new URL(url);
     
+    // Remove www. for consistency
+    urlObj.hostname = urlObj.hostname.replace(/^www\./, '');
+    
     // Remove trailing slash from pathname
     if (urlObj.pathname.endsWith('/') && urlObj.pathname.length > 1) {
       urlObj.pathname = urlObj.pathname.slice(0, -1);
     }
+    
+    // Remove fragment
+    urlObj.hash = '';
+    
+    // Sort query parameters for consistency
+    const params = Array.from(urlObj.searchParams.entries())
+      .sort(([a], [b]) => a.localeCompare(b));
+    urlObj.search = '';
+    params.forEach(([key, value]) => urlObj.searchParams.append(key, value));
     
     return urlObj.toString();
   } catch (error) {
     // Return the original URL if it can't be parsed
     return url;
   }
+}
+
+/**
+ * Blocked query parameters that should be filtered out
+ */
+const BLOCKED_PARAMS = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term', 
+  'fbclid', 'gclid', 'replytocom', 'share', '_ga', '_gid'];
+
+/**
+ * Filters out blocked query parameters from URL
+ */
+export function filterQueryParams(url: string): string {
+  try {
+    const urlObj = new URL(url);
+    BLOCKED_PARAMS.forEach(param => {
+      urlObj.searchParams.delete(param);
+    });
+    return urlObj.toString();
+  } catch (error) {
+    return url;
+  }
+}
+
+/**
+ * Detects page type based on URL path
+ */
+export function detectPageType(url: string): string {
+  try {
+    const urlObj = new URL(url);
+    const path = urlObj.pathname.toLowerCase();
+    
+    // Home page
+    if (path === '/' || path === '') return 'home';
+    
+    // Category/collection pages
+    if (path.includes('/category') || path.includes('/collection') || 
+        path.includes('/catalog') || path.includes('/products')) {
+      return 'category';
+    }
+    
+    // Product pages
+    if (path.includes('/product') || path.includes('/item') || 
+        path.includes('/shop/')) {
+      return 'product';
+    }
+    
+    // Blog/article pages
+    if (path.includes('/blog') || path.includes('/article') || 
+        path.includes('/post') || path.includes('/news')) {
+      return 'article';
+    }
+    
+    return 'other';
+  } catch (error) {
+    return 'other';
+  }
+}
+
+/**
+ * Calculates priority for URL based on depth, page type, and characteristics
+ */
+export function calculateUrlPriority(url: string, depth: number, isFromSitemap: boolean = false): number {
+  let priority = 100;
+  
+  // Depth penalty (each level reduces priority)
+  priority -= depth * 10;
+  
+  // Sitemap bonus
+  if (isFromSitemap) priority += 20;
+  
+  // Page type bonus
+  const pageType = detectPageType(url);
+  if (pageType === 'home') priority += 50;
+  if (pageType === 'category') priority += 15;
+  if (pageType === 'product') priority += 5;
+  if (pageType === 'article') priority += 5;
+  
+  // URL without query params gets bonus
+  try {
+    const urlObj = new URL(url);
+    if (!urlObj.search) priority += 2;
+  } catch (error) {
+    // Invalid URL gets low priority
+    priority -= 50;
+  }
+  
+  return Math.max(0, priority); // Ensure non-negative
 }
 
 /**
@@ -96,28 +195,20 @@ export function isValidHttpUrl(url: string): boolean {
 }
 
 /**
- * Prioritizes a URL based on various factors
- * Higher score means higher priority
+ * Calculates dynamic estimated_pages based on sitemap size
  */
-export function getUrlPriority(url: string): number {
-  try {
-    const urlObj = new URL(url);
-    let priority = 0;
-    
-    // URLs with fewer path segments have higher priority
-    const pathSegments = urlObj.pathname.split('/').filter(Boolean).length;
-    priority -= pathSegments;
-    
-    // URLs without query parameters have higher priority
-    if (!urlObj.search) priority += 2;
-    
-    // Product and category pages have higher priority
-    if (urlObj.pathname.includes('product') || urlObj.pathname.includes('item')) priority += 3;
-    if (urlObj.pathname.includes('category') || urlObj.pathname.includes('catalog')) priority += 2;
-    
-    return priority;
-  } catch (error) {
-    return -999; // Very low priority for invalid URLs
+export function calculateEstimatedPages(sitemapUrlsCount: number, maxPages: number = 100): number {
+  if (sitemapUrlsCount === 0) return maxPages;
+  
+  if (sitemapUrlsCount < 200) {
+    // Small sites: scan 100%
+    return Math.min(sitemapUrlsCount, maxPages);
+  } else if (sitemapUrlsCount < 1000) {
+    // Medium sites: scan 30%
+    return Math.min(Math.ceil(sitemapUrlsCount * 0.3), 300);
+  } else {
+    // Large sites: cap at 300
+    return 300;
   }
 }
 
