@@ -11,6 +11,8 @@ export interface PricingData {
   items: OptimizationItem[];
   discount?: number;
   recommendedPackage?: 'basic' | 'standard' | 'premium';
+  isPartial?: boolean;
+  completionPercentage?: number;
 }
 
 interface WorkPackage {
@@ -41,9 +43,28 @@ export function addPricingSection(
   doc.setTextColor(255, 255, 255);
   doc.setFontSize(16);
   doc.setFont(pdfFonts.primary, pdfFonts.bold);
-  doc.text('💰 Смета оптимизации', pageWidth / 2, currentY - 2, { align: 'center' });
+  const title = data.isPartial ? '💰 Предварительная смета оптимизации' : '💰 Смета оптимизации';
+  doc.text(title, pageWidth / 2, currentY - 2, { align: 'center' });
 
   currentY += 15;
+
+  // Add partial data notice if applicable
+  if (data.isPartial) {
+    doc.setFillColor(255, 243, 205);
+    doc.roundedRect(margin, currentY, contentWidth, 15, 3, 3, 'F');
+    
+    doc.setFontSize(9);
+    doc.setTextColor(180, 83, 9);
+    doc.setFont(pdfFonts.primary, pdfFonts.bold);
+    doc.text(
+      `⚠️ Смета составлена на основе ${data.completionPercentage || 0}% отсканированных страниц`,
+      pageWidth / 2,
+      currentY + 10,
+      { align: 'center' }
+    );
+    
+    currentY += 20;
+  }
 
   // === ОБЩАЯ ИНФОРМАЦИЯ ===
   doc.setFillColor(245, 247, 250);

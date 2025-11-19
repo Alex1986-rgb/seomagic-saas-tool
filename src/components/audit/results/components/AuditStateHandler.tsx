@@ -4,7 +4,10 @@ import { motion } from 'framer-motion';
 import AuditLoading from '../../AuditLoading';
 import AuditTimeoutMessage from '../../AuditTimeoutMessage';
 import { ManualAuditStarter } from '../../ManualAuditStarter';
+import { InteractiveAuditMonitor } from '../../monitoring/InteractiveAuditMonitor';
+import { PartialResultsView } from '../PartialResultsView';
 import { Card } from "@/components/ui/card";
+import { OptimizationItem } from '@/types/audit/optimization-types';
 
 interface AuditStateHandlerProps {
   isLoading: boolean;
@@ -12,7 +15,18 @@ interface AuditStateHandlerProps {
   timeout: boolean;
   onRetry: () => void;
   children: React.ReactNode;
-  url?: string; // Add URL prop to pass down to AuditTimeoutMessage
+  url?: string;
+  taskId?: string | null;
+  scanDetails?: {
+    status: string;
+    progress: number;
+    pages_scanned: number;
+    estimated_pages: number;
+  };
+  partialData?: any;
+  completionPercentage?: number;
+  optimizationItems?: OptimizationItem[];
+  onDownloadPartialReport?: () => void;
 }
 
 // Animation variants for content transitions
@@ -27,8 +41,43 @@ const AuditStateHandler: React.FC<AuditStateHandlerProps> = ({
   timeout,
   onRetry,
   children,
-  url = '' // Default to empty string if not provided
+  url = '',
+  taskId,
+  scanDetails,
+  partialData,
+  completionPercentage,
+  optimizationItems = [],
+  onDownloadPartialReport,
 }) => {
+  // Show interactive monitor if task is in progress or failed with partial data
+  const showMonitor = taskId && scanDetails && (
+    (isLoading && scanDetails.status === 'processing') ||
+    (hadError && scanDetails.pages_scanned > 0)
+  );
+
+  if (showMonitor) {
+    return (
+      <div className="space-y-6">
+        <InteractiveAuditMonitor
+          taskId={taskId}
+          progress={scanDetails.progress}
+          pagesScanned={scanDetails.pages_scanned}
+          totalPages={scanDetails.estimated_pages}
+          status={scanDetails.status}
+          optimizationItems={optimizationItems}
+          onDownloadPartialReport={onDownloadPartialReport || (() => {})}
+          onRetry={onRetry}
+        />
+        {partialData && (
+          <PartialResultsView
+            results={partialData}
+            completionPercentage={completionPercentage || 0}
+          />
+        )}
+      </div>
+    );
+  }
+
   if (isLoading) {
     return <AuditLoading />;
   }

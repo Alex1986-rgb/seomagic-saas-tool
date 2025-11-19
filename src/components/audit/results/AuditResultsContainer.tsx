@@ -2,6 +2,7 @@
 import React, { useCallback, useMemo } from 'react';
 import { AnimatePresence } from 'framer-motion';
 import { useAuditData, useAuditInitialization, usePromptToggle } from '@/features/audit/hooks';
+import { usePartialResults } from '@/hooks/audit/usePartialResults';
 import { PerformanceProfiler } from '@/components/debug/PerformanceProfiler';
 import AuditStateHandler from './components/AuditStateHandler';
 import AuditContent from './components/AuditContent';
@@ -44,6 +45,9 @@ const AuditResultsContainer: React.FC<AuditResultsContainerProps> = ({ url }) =>
   // Content prompt state management
   const { showPrompt, togglePrompt } = usePromptToggle();
   
+  // Partial results hook
+  const { partialData, isPartial, completionPercentage } = usePartialResults(taskId);
+  
   // Initialization and timeout handling
   const {
     isLoading,
@@ -82,6 +86,17 @@ const AuditResultsContainer: React.FC<AuditResultsContainerProps> = ({ url }) =>
           timeout={timeout}
           onRetry={handleRetry}
           url={url}
+          taskId={taskId}
+          scanDetails={{
+            status: scanDetails?.status || 'pending',
+            progress: scanDetails?.progress || 0,
+            pages_scanned: scanDetails?.pages_scanned || 0,
+            estimated_pages: scanDetails?.estimated_pages || 0,
+          }}
+          partialData={isPartial ? partialData : undefined}
+          completionPercentage={completionPercentage}
+          optimizationItems={optimizationItems}
+          onDownloadPartialReport={() => generatePdfReportFile()}
         >
           <AuditContent
             url={url}
