@@ -383,6 +383,12 @@ serve(async (req) => {
       .eq('id', task_id)
       .single();
 
+    console.log('[SCORING] Task status:', {
+      status: taskData?.status,
+      totalUrls: taskData?.total_urls,
+      pagesScanned: taskData?.pages_scanned
+    });
+
     const taskStatus = taskData?.status || 'processing';
     const totalPages = taskData?.total_urls || pages.length;
     const pagesScanned = taskData?.pages_scanned || pages.length;
@@ -393,23 +399,7 @@ serve(async (req) => {
       ? `Частичный аудит: просканировано ${pagesScanned} из ${totalPages} страниц (${completionPercentage}%)`
       : null;
 
-    // Fetch task status to determine if this is partial data
-    const { data: taskData } = await supabase
-      .from('audit_tasks')
-      .select('status, total_urls, pages_scanned')
-      .eq('id', task_id)
-      .single();
-
-    const taskStatus = taskData?.status || 'processing';
-    const totalPages = taskData?.total_urls || pages.length;
-    const pagesScanned = taskData?.pages_scanned || pages.length;
-    
-    // Determine if this is partial data
-    const isPartial = taskStatus !== 'completed' || pagesScanned < totalPages * 0.9;
-    const completionPercentage = Math.round((pagesScanned / totalPages) * 100);
-    const partialNote = isPartial 
-      ? `Частичный аудит: просканировано ${pagesScanned} из ${totalPages} страниц (${completionPercentage}%)`
-      : null;
+    console.log(`[SCORING] Completion status: ${isPartial ? 'PARTIAL' : 'COMPLETE'} (${completionPercentage}%)`);
 
     console.log(`📊 Saving results as ${isPartial ? 'PARTIAL' : 'COMPLETE'} (${completionPercentage}%)`);
 

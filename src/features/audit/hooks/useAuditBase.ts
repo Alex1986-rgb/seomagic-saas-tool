@@ -1,6 +1,9 @@
 
+import { useEffect } from 'react';
 import { useAuditContext } from '@/contexts/AuditContext';
 import { useScanContext } from '@/contexts/ScanContext';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from '@/hooks/use-toast';
 
 /**
  * Base hook that provides shared audit data for other hooks
