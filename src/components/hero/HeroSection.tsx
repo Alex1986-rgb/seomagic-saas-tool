@@ -27,7 +27,7 @@ const HeroSection: React.FC = () => {
   console.log("HeroSection rendering");
 
   return (
-    <section className="pt-20 pb-16 md:pt-32 md:pb-20 overflow-hidden relative">
+    <section className="pt-20 pb-16 md:pt-32 md:pb-20 overflow-hidden relative" style={{ minHeight: '80vh' }}>
       <HeroBackground />
       
       <div className="container mx-auto px-4 md:px-6">
