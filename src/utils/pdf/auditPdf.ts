@@ -29,6 +29,9 @@ export interface GenerateAuditPdfOptions {
   historicalData?: any[];
   comparisonData?: any;
   performanceMetrics?: any;
+  isPartial?: boolean;
+  completionPercentage?: number;
+  partialDataNote?: string;
 }
 
 interface AuditIssue {
@@ -53,7 +56,10 @@ export const generateAuditPdf = async (options: GenerateAuditPdfOptions): Promis
     customization,
     historicalData,
     comparisonData,
-    performanceMetrics
+    performanceMetrics,
+    isPartial = false,
+    completionPercentage = 100,
+    partialDataNote
   } = options;
   
   // Default customization options

@@ -89,15 +89,18 @@ export type Database = {
         Row: {
           audit_data: Json | null
           audit_id: string | null
+          completion_percentage: number | null
           content_score: number | null
           created_at: string | null
           global_score: number | null
           id: string
+          is_partial: boolean | null
           issues_by_severity: Json | null
           issues_count: number | null
           page_count: number | null
           pages_by_depth: Json | null
           pages_by_type: Json | null
+          partial_data_note: string | null
           pct_long_redirect_chains: number | null
           pct_missing_canonical: number | null
           pct_missing_description: number | null
@@ -117,15 +120,18 @@ export type Database = {
         Insert: {
           audit_data?: Json | null
           audit_id?: string | null
+          completion_percentage?: number | null
           content_score?: number | null
           created_at?: string | null
           global_score?: number | null
           id?: string
+          is_partial?: boolean | null
           issues_by_severity?: Json | null
           issues_count?: number | null
           page_count?: number | null
           pages_by_depth?: Json | null
           pages_by_type?: Json | null
+          partial_data_note?: string | null
           pct_long_redirect_chains?: number | null
           pct_missing_canonical?: number | null
           pct_missing_description?: number | null
@@ -145,15 +151,18 @@ export type Database = {
         Update: {
           audit_data?: Json | null
           audit_id?: string | null
+          completion_percentage?: number | null
           content_score?: number | null
           created_at?: string | null
           global_score?: number | null
           id?: string
+          is_partial?: boolean | null
           issues_by_severity?: Json | null
           issues_count?: number | null
           page_count?: number | null
           pages_by_depth?: Json | null
           pages_by_type?: Json | null
+          partial_data_note?: string | null
           pct_long_redirect_chains?: number | null
           pct_missing_canonical?: number | null
           pct_missing_description?: number | null

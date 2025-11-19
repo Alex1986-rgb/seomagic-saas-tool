@@ -162,32 +162,41 @@ export const useScan = (url: string, onPageCountUpdate?: (count: number) => void
           }
           
           // If scan is complete, clean up and generate sitemap
-          if (status === 'completed' || status === 'failed') {
+          if (status === 'completed') {
             clearInterval(pollInterval);
+            pollingIntervalRef.current = null;
             setIsScanning(false);
             
-            if (status === 'completed') {
-              // Get URLs from the status response or use the current URL
-              const pageUrls = [statusResponse.url]; // In a real implementation, you would get all discovered URLs
-              
-              const domain = validationService.extractDomain(url);
-              
-              // Generate sitemap using the reportingService
-              const sitemapXml = reportingService.generateSitemapXml(domain, pageUrls);
-              setSitemap(sitemapXml);
-              
-              toast({
-                title: "Сканирование завершено",
-                description: `Просканировано ${pagesScanned} страниц`,
-              });
-            } else {
-              const errorMessage = statusResponse.error || "Произошла ошибка при сканировании сайта";
-              toast({
-                title: "Ошибка сканирования",
-                description: errorMessage,
-                variant: "destructive",
-              });
-            }
+            // Get URLs from the status response or use the current URL
+            const pageUrls = [statusResponse.url]; // In a real implementation, you would get all discovered URLs
+            
+            const domain = validationService.extractDomain(url);
+            
+            // Generate sitemap using the reportingService
+            const sitemapXml = reportingService.generateSitemapXml(domain, pageUrls);
+            setSitemap(sitemapXml);
+            
+            setScanDetails(prev => ({
+              ...prev,
+              stage: 'Анализ завершен',
+              progress: 100
+            }));
+            
+            toast({
+              title: "Сканирование завершено",
+              description: `Просканировано ${pagesScanned} страниц`,
+            });
+          } else if (status === 'failed') {
+            clearInterval(pollInterval);
+            pollingIntervalRef.current = null;
+            setIsScanning(false);
+            
+            const errorMessage = statusResponse.error || "Произошла ошибка при сканировании сайта";
+            toast({
+              title: "Аудит прерван - доступны частичные данные",
+              description: `Просканировано ${pagesScanned} из ${totalPages} страниц`,
+              variant: "default",
+            });
           }
         } catch (error) {
           console.error("Error polling scan status:", error);

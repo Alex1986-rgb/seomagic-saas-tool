@@ -376,6 +376,43 @@ serve(async (req) => {
     // Calculate weighted scores
     const scores = calculateWeightedScores(pages as PageAnalysis[]);
 
+    // Fetch task status to determine if this is partial data
+    const { data: taskData } = await supabase
+      .from('audit_tasks')
+      .select('status, total_urls, pages_scanned')
+      .eq('id', task_id)
+      .single();
+
+    const taskStatus = taskData?.status || 'processing';
+    const totalPages = taskData?.total_urls || pages.length;
+    const pagesScanned = taskData?.pages_scanned || pages.length;
+    
+    const isPartial = taskStatus !== 'completed' || pagesScanned < totalPages * 0.9;
+    const completionPercentage = Math.round((pagesScanned / totalPages) * 100);
+    const partialNote = isPartial 
+      ? `Частичный аудит: просканировано ${pagesScanned} из ${totalPages} страниц (${completionPercentage}%)`
+      : null;
+
+    // Fetch task status to determine if this is partial data
+    const { data: taskData } = await supabase
+      .from('audit_tasks')
+      .select('status, total_urls, pages_scanned')
+      .eq('id', task_id)
+      .single();
+
+    const taskStatus = taskData?.status || 'processing';
+    const totalPages = taskData?.total_urls || pages.length;
+    const pagesScanned = taskData?.pages_scanned || pages.length;
+    
+    // Determine if this is partial data
+    const isPartial = taskStatus !== 'completed' || pagesScanned < totalPages * 0.9;
+    const completionPercentage = Math.round((pagesScanned / totalPages) * 100);
+    const partialNote = isPartial 
+      ? `Частичный аудит: просканировано ${pagesScanned} из ${totalPages} страниц (${completionPercentage}%)`
+      : null;
+
+    console.log(`📊 Saving results as ${isPartial ? 'PARTIAL' : 'COMPLETE'} (${completionPercentage}%)`);
+
     // Upsert audit_results with scores (insert if not exists, update if exists)
     const { error: updateError } = await supabase
       .from('audit_results')
@@ -399,7 +436,10 @@ serve(async (req) => {
         pages_by_depth: scores.pages_by_depth,
         pages_by_type: scores.pages_by_type,
         issues_by_severity: scores.issues_by_severity,
-        page_count: pages.length
+        page_count: pages.length,
+        is_partial: isPartial,
+        completion_percentage: completionPercentage,
+        partial_data_note: partialNote
       }, {
         onConflict: 'task_id'
       });
