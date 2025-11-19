@@ -12,6 +12,7 @@
     position: relative;
     min-height: 100vh;
     overflow-x: hidden;
+    color: hsl(var(--foreground));
   }
 
   /* Clean typography */
@@ -62,7 +63,15 @@
   main, header, footer {
     position: relative;
     z-index: 1;
-    backdrop-filter: blur(3px);
+    backdrop-filter: blur(1px);
+  }
+
+  main {
+    min-height: 50vh;
+  }
+
+  main > * {
+    opacity: 1 !important;
   }
 
   /* Card style updates for starry background - using CSS variables */

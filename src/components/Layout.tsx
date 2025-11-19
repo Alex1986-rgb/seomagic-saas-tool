@@ -36,7 +36,7 @@ const Layout: React.FC<LayoutProps> = ({
   return (
     <div className={cn("flex flex-col min-h-screen relative", className)}>
       {/* Background */}
-      <div className="fixed inset-0 z-[-1]">
+      <div className="fixed inset-0 z-[-1]" style={{ zIndex: -1 }}>
         <StarryBackground />
       </div>
       
