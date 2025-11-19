@@ -210,14 +210,34 @@ async function crawlPage(url: string, domain: string): Promise<any> {
 }
 
 async function extractSitemapUrls(baseUrl: string): Promise<string[]> {
+  console.log('[SITEMAP] Starting sitemap extraction for:', baseUrl);
+  const sitemapUrls: string[] = [];
+  
   try {
-    const response = await fetch(new URL('/sitemap.xml', baseUrl).toString());
+    const sitemapUrl = new URL('/sitemap.xml', baseUrl).toString();
+    console.log('[SITEMAP] Fetching:', sitemapUrl);
+    
+    const response = await fetch(sitemapUrl);
+    console.log('[SITEMAP] Response status:', response.status);
+    
     if (response.ok) {
       const xml = await response.text();
-      return Array.from(xml.matchAll(/<loc>(.*?)<\/loc>/g), m => m[1].trim());
+      console.log('[SITEMAP] XML length:', xml?.length || 0);
+      
+      const urls = Array.from(xml.matchAll(/<loc>(.*?)<\/loc>/g), m => m[1].trim());
+      console.log('[SITEMAP] Extraction complete:', {
+        totalUrls: urls.length,
+        sampleUrls: urls.slice(0, 3)
+      });
+      return urls;
     }
-  } catch {}
-  return [];
+    
+    console.log('[SITEMAP] Sitemap not found or inaccessible');
+  } catch (error) {
+    console.error('[SITEMAP] Extraction failed:', error.message);
+  }
+  
+  return sitemapUrls;
 }
 
 async function initializeCrawl(supabase: any, taskId: string, url: string, estimatedPages: number, sitemapUrls: string[]) {
@@ -275,6 +295,14 @@ async function initializeCrawl(supabase: any, taskId: string, url: string, estim
 }
 
 async function processMicroBatch(supabase: any, taskId: string, domain: string) {
+  console.log('[BATCH] Starting micro-batch processing:', {
+    taskId,
+    domain,
+    batchSize: MICRO_BATCH_SIZE
+  });
+  
+  const batchStartTime = Date.now();
+  
   // Select by priority, then depth (prioritize important pages first)
   const { data: batch } = await supabase
     .from('url_queue')
@@ -285,7 +313,10 @@ async function processMicroBatch(supabase: any, taskId: string, domain: string) 
     .order('depth', { ascending: true })
     .limit(MICRO_BATCH_SIZE);
     
-  if (!batch || batch.length === 0) return { hasMore: false, processed: 0 };
+  if (!batch || batch.length === 0) {
+    console.log('[BATCH] No pending URLs found');
+    return { hasMore: false, processed: 0 };
+  }
   
   console.log(`Processing batch of ${batch.length} URLs, depths: ${batch.map(b => b.depth).join(', ')}`);
 
@@ -435,17 +466,29 @@ async function processMicroBatch(supabase: any, taskId: string, domain: string) 
   
   console.log('BATCH_METRICS:', JSON.stringify(batchMetrics));
   
+  const batchDuration = Date.now() - batchStartTime;
+  console.log('[BATCH] Batch completed:', {
+    processed: results.length,
+    discovered: new Set(results.flatMap((r: any) => r.internalLinks || [])).size,
+    duration: `${batchDuration}ms`,
+    hasMore: hasMore
+  });
+  
   return { hasMore, processed: batch.length };
 }
 
 async function completeAudit(supabase: any, taskId: string, auditId: string) {
+  console.log(`[COMPLETE] ============================================`);
   console.log(`[COMPLETE] Starting completion for audit: ${auditId}`);
+  console.log(`[COMPLETE] Task ID: ${taskId}`);
   
   // Calculate batch performance metrics (Sprint 3)
   const { data: pageStats } = await supabase
     .from('page_analysis')
     .select('load_time, status_code, redirect_chain_length')
     .eq('audit_id', auditId);
+  
+  console.log(`[COMPLETE] Retrieved ${pageStats?.length || 0} pages for stats calculation`);
   
   let avgLoadTime = 0;
   let successRate = 0;
@@ -465,6 +508,7 @@ async function completeAudit(supabase: any, taskId: string, auditId: string) {
     console.log(`[COMPLETE] Batch metrics - Avg Load: ${avgLoadTime}ms, Success Rate: ${successRate}%, Redirects: ${redirectPagesCount}, Errors: ${errorPagesCount}`);
   }
   
+  console.log(`[COMPLETE] Updating task status to completed`);
   await supabase.from('audit_tasks').update({
     status: 'completed',
     stage: 'complete',
@@ -475,22 +519,37 @@ async function completeAudit(supabase: any, taskId: string, auditId: string) {
     updated_at: new Date().toISOString()
   }).eq('id', taskId);
   
-  console.log('[COMPLETE] Triggering scoring processor...');
+  console.log('[COMPLETE] Task status updated, triggering scoring processor...');
+  console.log('[COMPLETE] Scoring processor will analyze:', {
+    taskId,
+    totalPages: pageStats?.length || 0
+  });
   
   // Invoke scoring processor with error handling
   try {
+    const scoringStartTime = Date.now();
+    
     const { data: scoringResult, error: scoringError } = await supabase.functions.invoke('scoring-processor', {
       body: { task_id: taskId }
     });
+    
+    const scoringDuration = Date.now() - scoringStartTime;
+    console.log(`[COMPLETE] Scoring processor completed in ${scoringDuration}ms`);
     
     if (scoringError) {
       console.error('[COMPLETE] Scoring processor error:', scoringError);
       throw new Error(`Scoring processor failed: ${scoringError.message}`);
     }
     
-    console.log('[COMPLETE] Scoring processor completed successfully:', scoringResult);
+    console.log('[COMPLETE] Scoring result:', scoringResult);
+    console.log('[COMPLETE] ============================================');
   } catch (error) {
-    console.error('[COMPLETE] Failed to invoke scoring processor:', error);
+    console.error('[COMPLETE] ❌ Failed to invoke scoring processor:', error);
+    console.error('[COMPLETE] Error details:', {
+      message: error.message,
+      stack: error.stack
+    });
+    
     // Update task with error but keep status as completed
     await supabase.from('audit_tasks').update({
       error_message: `Scoring failed: ${error.message}`,
@@ -513,11 +572,26 @@ async function processAuditInBackground(task_id: string) {
     const domain = new URL(task.url).hostname;
     const estimatedPages = task.estimated_pages || 100;
     
+    console.log('[PROCESSOR] Starting background processing:', {
+      taskId: task_id,
+      url: task.url,
+      domain: domain,
+      estimatedPages: estimatedPages,
+      currentProgress: task.pages_scanned || 0
+    });
+    
     // Process URLs in micro-batches
     let hasMore = true;
     let totalProcessed = task.pages_scanned || 0;
     let batchCount = task.batch_count || 0;
     const MAX_BATCHES_PER_RUN = 3; // Process max 3 batches per invocation (~25s) to stay under CPU limit
+
+    console.log('[PROCESSOR] Initial state:', {
+      hasMore,
+      totalProcessed,
+      batchCount,
+      maxBatchesPerRun: MAX_BATCHES_PER_RUN
+    });
 
     let batchesThisRun = 0;
     while (hasMore && totalProcessed < estimatedPages && batchesThisRun < MAX_BATCHES_PER_RUN) {

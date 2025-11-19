@@ -110,13 +110,26 @@ serve(async (req) => {
     }
 
     console.log('✅ Task created with ID:', task.id);
+    console.log('📝 Task details:', {
+      taskId: task.id,
+      auditId: audit.id,
+      url: task.url,
+      type: taskType,
+      maxPages: maxPages,
+      status: task.status
+    });
 
     // Trigger audit processor with error handling
     try {
-      console.log('🚀 Triggering audit processor...');
+      console.log('🚀 Triggering audit processor for task:', task.id);
+      const processorStartTime = Date.now();
+      
       const processorResponse = await supabaseClient.functions.invoke('audit-processor', {
         body: { task_id: task.id }
       });
+      
+      const processorDuration = Date.now() - processorStartTime;
+      console.log(`⏱️ Processor invocation took ${processorDuration}ms`);
       
       if (processorResponse.error) {
         console.error('❌ Failed to trigger processor:', processorResponse.error);
