@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import { OptimizationItem } from '@/features/audit/types/optimization-types';
-import { AlertCircle, ExternalLink } from 'lucide-react';
+import { AlertCircle, ExternalLink, RefreshCw } from 'lucide-react';
 import EstimateSelectors from './EstimateSelectors';
 import CostSummary from './CostSummary';
 import CostDetailsTable from './CostDetailsTable';
@@ -60,13 +60,17 @@ const InteractiveOptimizationPanel: React.FC<InteractiveOptimizationPanelProps> 
         <div className="text-center space-y-4">
           <AlertCircle className="mx-auto h-12 w-12 text-warning" />
           <h3 className="text-xl font-semibold">
-            Данные оптимизации недоступны
+            Расчет сметы оптимизации
           </h3>
           <p className="text-muted-foreground max-w-md mx-auto">
-            Произошла ошибка при расчете сметы оптимизации. 
-            Вы можете посмотреть демо-версию для понимания процесса.
+            Идет расчет стоимости оптимизации на основе результатов аудита.
+            Если это сообщение долго не исчезает, попробуйте обновить страницу.
           </p>
           <div className="flex gap-4 justify-center pt-4">
+            <Button onClick={() => window.location.reload()}>
+              <RefreshCw className="mr-2 h-4 w-4" />
+              Обновить страницу
+            </Button>
             <Button 
               variant="outline"
               onClick={() => window.location.href = '/optimization-demo'}
