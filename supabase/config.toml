@@ -15,6 +15,9 @@ verify_jwt = false
 [functions.scoring-processor]
 verify_jwt = false
 
+[functions.optimization-calculate]
+verify_jwt = false
+
 [functions.optimization-content]
 verify_jwt = true
 
