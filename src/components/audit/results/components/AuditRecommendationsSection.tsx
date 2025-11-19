@@ -28,8 +28,8 @@ const AuditRecommendationsSection: React.FC<AuditRecommendationsSectionProps> = 
       {auditData && (
         <AuditIssuesAndEstimate 
           auditData={auditData} 
-          optimizationCost={optimizationCost} 
-          optimizationItems={optimizationItems} 
+          optimizationCost={optimizationCost || 0} 
+          optimizationItems={optimizationItems || []} 
         />
       )}
 

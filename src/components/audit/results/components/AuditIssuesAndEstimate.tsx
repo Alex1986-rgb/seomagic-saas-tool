@@ -75,6 +75,24 @@ export const AuditIssuesAndEstimate: React.FC<AuditIssuesAndEstimateProps> = ({
 
   const totalIssues = criticalIssues.length + importantIssues.length + opportunities.length;
   
+  // Show loading state if no data
+  if (totalIssues === 0 && !optimizationCost) {
+    return (
+      <Card className="mb-6">
+        <CardHeader>
+          <CardTitle>Детализация проблем и смета</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="text-center p-8 bg-muted/50 rounded-lg">
+            <p className="text-sm text-muted-foreground">
+              Расчёт стоимости оптимизации...
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+  
   // Calculate individual prices based on severity
   const getPricePerIssue = (type: 'critical' | 'important' | 'opportunity') => {
     switch(type) {
