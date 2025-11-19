@@ -6,7 +6,7 @@ import AuditReportActions from '@/components/audit/results/components/AuditRepor
 import FloatingReportButton from '@/components/audit/results/components/FloatingReportButton';
 import AuditRecommendationsSection from '@/components/audit/results/components/AuditRecommendationsSection';
 import AuditPageAnalysisSection from '@/components/audit/results/components/AuditPageAnalysisSection';
-import AuditOptimizationSection from '@/components/audit/results/components/AuditOptimizationSection';
+import InteractiveOptimizationPanel from '@/components/audit/results/components/optimization/InteractiveOptimizationPanel';
 import AuditTabs from '@/components/audit/AuditTabs';
 import AuditRecommendations from '@/components/audit/AuditRecommendations';
 import AuditShareResults from '@/components/audit/share/AuditShareResults';
@@ -185,19 +185,14 @@ const AuditContent: React.FC<AuditContentProps> = ({
           
           {/* Optimization section */}
           <div id="optimization-section">
-            <AuditOptimizationSection 
+            <InteractiveOptimizationPanel
+              url={url}
               optimizationCost={optimizationCost}
               optimizationItems={optimizationItems}
-              isOptimized={isOptimized}
-              contentPrompt={contentPrompt}
-              url={url}
               pageCount={auditData.pageCount || 0}
-              showPrompt={showPrompt}
-              onTogglePrompt={onTogglePrompt}
-              onOptimize={safeOptimizeSiteContent}
+              isOptimized={isOptimized}
               onDownloadOptimizedSite={safeDownloadOptimizedSite}
               onGeneratePdfReport={generatePdfReportFile}
-              setContentOptimizationPrompt={setContentOptimizationPrompt}
             />
           </div>
 
