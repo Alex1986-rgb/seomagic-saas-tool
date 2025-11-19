@@ -88,7 +88,7 @@ const AuditResultsContainer: React.FC<AuditResultsContainerProps> = ({ url }) =>
           url={url}
           taskId={taskId}
           scanDetails={{
-            status: (scanDetails as any)?.status || 'pending',
+            status: scanDetails?.status || 'pending',
             progress: scanDetails?.progress || 0,
             pages_scanned: scanDetails?.pages_scanned || 0,
             estimated_pages: scanDetails?.estimated_pages || 0,

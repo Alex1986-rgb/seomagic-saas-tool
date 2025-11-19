@@ -9,6 +9,8 @@ export interface ScanDetails {
   estimated_pages: number;
   stage: string;
   progress: number;
+  status?: string;
+  audit_data?: any;
 }
 
 // Define the scan context type
