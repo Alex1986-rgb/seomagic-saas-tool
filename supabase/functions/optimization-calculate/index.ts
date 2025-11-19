@@ -21,29 +21,47 @@ serve(async (req) => {
   }
 
   try {
+    const supabaseUrl = Deno.env.get('SUPABASE_URL');
+    const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+    
+    console.log('[OPTIMIZATION-CALCULATE] Supabase URL available:', !!supabaseUrl);
+    console.log('[OPTIMIZATION-CALCULATE] Service role key available:', !!serviceRoleKey);
+    
     const supabaseClient = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+      supabaseUrl ?? '',
+      serviceRoleKey ?? ''
     );
 
     const { task_id } = await req.json();
 
+    console.log('[OPTIMIZATION-CALCULATE] Received task_id:', task_id, 'type:', typeof task_id);
+
     if (!task_id) {
+      console.error('[OPTIMIZATION-CALCULATE] No task_id provided in request');
       throw new Error('task_id is required');
     }
 
     console.log('[OPTIMIZATION-CALCULATE] Processing task:', task_id);
 
     // Get audit results
+    console.log('[OPTIMIZATION-CALCULATE] Fetching audit results...');
     const { data: result, error: resultError } = await supabaseClient
       .from('audit_results')
       .select('audit_data, page_count')
       .eq('task_id', task_id)
       .single();
 
-    if (resultError || !result) {
+    if (resultError) {
+      console.error('[OPTIMIZATION-CALCULATE] Error fetching audit results:', resultError);
+      throw new Error(`Failed to fetch audit results: ${resultError.message}`);
+    }
+
+    if (!result) {
+      console.error('[OPTIMIZATION-CALCULATE] No audit results found for task:', task_id);
       throw new Error('Audit results not found');
     }
+
+    console.log('[OPTIMIZATION-CALCULATE] Found audit results, page_count:', result.page_count);
 
     const pageCount = result.page_count || 1;
     const auditData = result.audit_data;
@@ -142,7 +160,9 @@ serve(async (req) => {
       }
     );
   } catch (error) {
-    console.error('Error in optimization-calculate:', error);
+    console.error('[OPTIMIZATION-CALCULATE] Error occurred:', error);
+    console.error('[OPTIMIZATION-CALCULATE] Error message:', error.message);
+    console.error('[OPTIMIZATION-CALCULATE] Error stack:', error.stack);
     
     return new Response(
       JSON.stringify({
