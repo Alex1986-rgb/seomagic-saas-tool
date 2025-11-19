@@ -81,6 +81,14 @@ export const OptimizationProvider: React.FC<{
     setContentPrompt(prompt);
   }, []);
   
+  // Auto-load optimization cost when taskId changes
+  React.useEffect(() => {
+    if (taskId) {
+      console.log('[OptimizationContext] Auto-loading optimization cost for task:', taskId);
+      loadOptimizationCost(taskId);
+    }
+  }, [taskId, loadOptimizationCost]);
+  
   // Memoize context value to prevent unnecessary re-renders
   const contextValue = useMemo(() => ({
     optimizationCost,
