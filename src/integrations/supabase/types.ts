@@ -687,6 +687,65 @@ export type Database = {
         }
         Relationships: []
       }
+      shared_estimates: {
+        Row: {
+          audit_id: string | null
+          created_at: string | null
+          estimate_data: Json
+          expires_at: string | null
+          id: string
+          is_active: boolean | null
+          max_views: number | null
+          password_hash: string | null
+          share_token: string
+          totals: Json
+          updated_at: string | null
+          url: string
+          user_id: string | null
+          views_count: number | null
+        }
+        Insert: {
+          audit_id?: string | null
+          created_at?: string | null
+          estimate_data: Json
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          max_views?: number | null
+          password_hash?: string | null
+          share_token?: string
+          totals: Json
+          updated_at?: string | null
+          url: string
+          user_id?: string | null
+          views_count?: number | null
+        }
+        Update: {
+          audit_id?: string | null
+          created_at?: string | null
+          estimate_data?: Json
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          max_views?: number | null
+          password_hash?: string | null
+          share_token?: string
+          totals?: Json
+          updated_at?: string | null
+          url?: string
+          user_id?: string | null
+          views_count?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "shared_estimates_audit_id_fkey"
+            columns: ["audit_id"]
+            isOneToOne: false
+            referencedRelation: "audits"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       url_queue: {
         Row: {
           created_at: string | null

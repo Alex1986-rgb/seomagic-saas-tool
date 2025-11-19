@@ -68,6 +68,7 @@ import SeoOptimizationPage from './pages/SeoOptimizationPage';
 import OptimizationTest from './pages/OptimizationTest';
 import AuditsHistory from './pages/AuditsHistory';
 import OptimizationsHistory from './pages/OptimizationsHistory';
+import SharedEstimate from './pages/SharedEstimate';
 
 // Admin Routes
 import AdminRoutes from './routes/AdminRoutes';
@@ -153,6 +154,9 @@ function App() {
                     {/* Speed and Mobile optimization routes */}
                     <Route path="/features/speed-analysis" element={<SpeedAnalysis />} />
                     <Route path="/features/mobile-optimization" element={<MobileOptimization />} />
+                    
+                    {/* Shared estimate page */}
+                    <Route path="/shared-estimate/:token" element={<SharedEstimate />} />
                     
                     {/* Additional pages */}
                     <Route path="/optimization-demo" element={<OptimizationDemo />} />
