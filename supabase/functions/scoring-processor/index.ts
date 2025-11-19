@@ -409,6 +409,39 @@ serve(async (req) => {
     }
 
     console.log(`Scoring complete for task ${task_id}`);
+    
+    // Create notification in background (don't block response)
+    const { data: task } = await supabase
+      .from('audit_tasks')
+      .select('user_id, url')
+      .eq('id', task_id)
+      .single();
+    
+    if (task?.user_id) {
+      console.log(`Creating notification for user ${task.user_id}`);
+      
+      // Fire and forget - don't await
+      supabase.functions.invoke('create-notification', {
+        body: {
+          user_id: task.user_id,
+          task_id: task_id,
+          type: 'audit_completed',
+          audit_data: {
+            url: task.url,
+            score: finalMetrics.globalScore,
+            seo_score: finalMetrics.seoScore,
+            pages_scanned: scoringResult.pageCount,
+            issues_count: scoringResult.issuesCount,
+          }
+        }
+      }).then(({ error }) => {
+        if (error) {
+          console.error('Failed to create notification:', error);
+        } else {
+          console.log('Notification created successfully');
+        }
+      });
+    }
 
     return new Response(
       JSON.stringify({

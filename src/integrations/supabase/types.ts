@@ -356,6 +356,56 @@ export type Database = {
           },
         ]
       }
+      notifications: {
+        Row: {
+          created_at: string | null
+          data: Json | null
+          email_sent: boolean | null
+          id: string
+          message: string
+          read: boolean | null
+          read_at: string | null
+          task_id: string | null
+          title: string
+          type: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          data?: Json | null
+          email_sent?: boolean | null
+          id?: string
+          message: string
+          read?: boolean | null
+          read_at?: string | null
+          task_id?: string | null
+          title: string
+          type: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          data?: Json | null
+          email_sent?: boolean | null
+          id?: string
+          message?: string
+          read?: boolean | null
+          read_at?: string | null
+          task_id?: string | null
+          title?: string
+          type?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notifications_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "audit_tasks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       optimization_jobs: {
         Row: {
           cost: number | null
@@ -594,24 +644,36 @@ export type Database = {
           avatar_url: string | null
           created_at: string | null
           email: string | null
+          email_notifications: boolean | null
           full_name: string | null
           id: string
+          notify_audit_completed: boolean | null
+          notify_marketing: boolean | null
+          notify_optimization: boolean | null
           updated_at: string | null
         }
         Insert: {
           avatar_url?: string | null
           created_at?: string | null
           email?: string | null
+          email_notifications?: boolean | null
           full_name?: string | null
           id: string
+          notify_audit_completed?: boolean | null
+          notify_marketing?: boolean | null
+          notify_optimization?: boolean | null
           updated_at?: string | null
         }
         Update: {
           avatar_url?: string | null
           created_at?: string | null
           email?: string | null
+          email_notifications?: boolean | null
           full_name?: string | null
           id?: string
+          notify_audit_completed?: boolean | null
+          notify_marketing?: boolean | null
+          notify_optimization?: boolean | null
           updated_at?: string | null
         }
         Relationships: []
