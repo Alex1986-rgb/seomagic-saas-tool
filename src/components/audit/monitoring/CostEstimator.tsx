@@ -6,25 +6,37 @@ import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
-import { DollarSign, Package, Calculator, Clock, TrendingUp } from 'lucide-react';
+import { DollarSign, Package, Calculator, Clock, TrendingUp, Download, Share2, Mail } from 'lucide-react';
 import { OptimizationItem } from '@/types/audit/optimization-types';
 import { WorkPackagesCard } from './WorkPackagesCard';
+import EstimateExportDialog from './EstimateExportDialog';
+import ShareEstimateDialog from './ShareEstimateDialog';
+import EmailEstimateDialog from './EmailEstimateDialog';
 
 interface CostEstimatorProps {
   items: OptimizationItem[];
   discount?: number;
   onPackageSelect?: (pkg: 'basic' | 'standard' | 'premium') => void;
+  url?: string;
+  auditId?: string;
 }
 
 export const CostEstimator: React.FC<CostEstimatorProps> = ({
   items,
   discount = 0,
   onPackageSelect,
+  url = '',
+  auditId
 }) => {
   const [selectedItems, setSelectedItems] = useState<Set<string>>(
     new Set(items.map((item) => item.id || ''))
   );
   const [selectedPackage, setSelectedPackage] = useState<'basic' | 'standard' | 'premium'>('standard');
+  
+  // Dialog states
+  const [isExportDialogOpen, setIsExportDialogOpen] = useState(false);
+  const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
+  const [isEmailDialogOpen, setIsEmailDialogOpen] = useState(false);
 
   const categorizedItems = useMemo(() => {
     const categories: Record<string, OptimizationItem[]> = {};
@@ -92,6 +104,12 @@ export const CostEstimator: React.FC<CostEstimatorProps> = ({
     onPackageSelect?.(pkg);
   };
 
+  const totalsData = {
+    subtotal: selectedTotal,
+    discount: discountAmount,
+    final: finalTotal
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -112,6 +130,22 @@ export const CostEstimator: React.FC<CostEstimatorProps> = ({
             </Badge>
           )}
         </div>
+      </div>
+
+      {/* Export and Share Actions */}
+      <div className="flex gap-2 flex-wrap">
+        <Button variant="outline" onClick={() => setIsExportDialogOpen(true)}>
+          <Download className="h-4 w-4 mr-2" />
+          Экспорт
+        </Button>
+        <Button variant="outline" onClick={() => setIsShareDialogOpen(true)}>
+          <Share2 className="h-4 w-4 mr-2" />
+          Поделиться
+        </Button>
+        <Button variant="outline" onClick={() => setIsEmailDialogOpen(true)}>
+          <Mail className="h-4 w-4 mr-2" />
+          Отправить по email
+        </Button>
       </div>
 
       <Tabs defaultValue="packages" className="w-full">
@@ -302,6 +336,32 @@ export const CostEstimator: React.FC<CostEstimatorProps> = ({
           </Card>
         </TabsContent>
       </Tabs>
+
+      {/* Export Dialogs */}
+      <EstimateExportDialog
+        isOpen={isExportDialogOpen}
+        onOpenChange={setIsExportDialogOpen}
+        items={items.filter((item) => selectedItems.has(item.id || ''))}
+        totals={totalsData}
+        url={url}
+      />
+      
+      <ShareEstimateDialog
+        isOpen={isShareDialogOpen}
+        onOpenChange={setIsShareDialogOpen}
+        items={items.filter((item) => selectedItems.has(item.id || ''))}
+        totals={totalsData}
+        url={url}
+        auditId={auditId}
+      />
+      
+      <EmailEstimateDialog
+        isOpen={isEmailDialogOpen}
+        onOpenChange={setIsEmailDialogOpen}
+        items={items.filter((item) => selectedItems.has(item.id || ''))}
+        totals={totalsData}
+        url={url}
+      />
     </div>
   );
 };

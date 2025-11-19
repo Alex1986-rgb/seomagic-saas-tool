@@ -17,6 +17,7 @@ interface InteractiveAuditMonitorProps {
   pagesScanned: number;
   totalPages: number;
   status: string;
+  url?: string;
   optimizationItems?: OptimizationItem[];
   onDownloadPartialReport: () => void;
   onRetry: () => void;
@@ -28,6 +29,7 @@ export const InteractiveAuditMonitor: React.FC<InteractiveAuditMonitorProps> = (
   progress,
   pagesScanned,
   totalPages,
+  url = '',
   status,
   optimizationItems = [],
   onDownloadPartialReport,
@@ -179,7 +181,12 @@ export const InteractiveAuditMonitor: React.FC<InteractiveAuditMonitorProps> = (
           <DialogHeader>
             <DialogTitle>Смета оптимизации</DialogTitle>
           </DialogHeader>
-          <CostEstimator items={optimizationItems} discount={10} />
+          <CostEstimator 
+            items={optimizationItems} 
+            discount={10}
+            url={url}
+            auditId={taskId}
+          />
         </DialogContent>
       </Dialog>
     </Card>
