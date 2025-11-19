@@ -4,6 +4,7 @@ import { AnimatePresence } from 'framer-motion';
 import { useAuditData, useAuditInitialization, usePromptToggle } from '@/features/audit/hooks';
 import { usePartialResults } from '@/hooks/audit/usePartialResults';
 import { PerformanceProfiler } from '@/components/debug/PerformanceProfiler';
+import { AuditContentErrorBoundary } from './components/AuditContentErrorBoundary';
 import AuditStateHandler from './components/AuditStateHandler';
 import AuditContent from './components/AuditContent';
 
@@ -98,7 +99,8 @@ const AuditResultsContainer: React.FC<AuditResultsContainerProps> = ({ url }) =>
           optimizationItems={optimizationItems}
           onDownloadPartialReport={() => generatePdfReportFile()}
         >
-          <AuditContent
+          <AuditContentErrorBoundary onReset={() => loadAuditData(true)}>
+            <AuditContent
             url={url}
             isLoading={isAuditLoading}
             loadingProgress={loadingProgress}
@@ -130,6 +132,7 @@ const AuditResultsContainer: React.FC<AuditResultsContainerProps> = ({ url }) =>
             optimizeSiteContent={optimizeSiteContent}
             setContentOptimizationPrompt={setContentOptimizationPrompt}
           />
+          </AuditContentErrorBoundary>
         </AuditStateHandler>
       </AnimatePresence>
     </PerformanceProfiler>

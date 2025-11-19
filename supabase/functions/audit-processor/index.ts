@@ -477,25 +477,45 @@ async function completeAudit(supabase: any, taskId: string, auditId: string) {
   
   console.log('[COMPLETE] Triggering scoring processor...');
   
-  // Invoke scoring processor with error handling
-  try {
-    const { data: scoringResult, error: scoringError } = await supabase.functions.invoke('scoring-processor', {
-      body: { task_id: taskId }
-    });
-    
-    if (scoringError) {
-      console.error('[COMPLETE] Scoring processor error:', scoringError);
-      throw new Error(`Scoring processor failed: ${scoringError.message}`);
+  // Invoke scoring processor with retry mechanism
+  let scoringSuccess = false;
+  let retryCount = 0;
+  const MAX_RETRIES = 3;
+
+  while (!scoringSuccess && retryCount < MAX_RETRIES) {
+    try {
+      console.log(`[COMPLETE] Scoring attempt ${retryCount + 1}/${MAX_RETRIES}`);
+      const scoringStartTime = Date.now();
+      
+      const { data: scoringResult, error: scoringError } = await supabase.functions.invoke('scoring-processor', {
+        body: { task_id: taskId }
+      });
+      
+      if (scoringError) {
+        throw scoringError;
+      }
+      
+      const scoringDuration = Date.now() - scoringStartTime;
+      console.log(`[COMPLETE] ✅ Scoring completed in ${scoringDuration}ms`);
+      console.log('[COMPLETE] Scoring result:', scoringResult);
+      scoringSuccess = true;
+      
+    } catch (error) {
+      retryCount++;
+      console.error(`[COMPLETE] ❌ Scoring attempt ${retryCount} failed:`, error.message);
+      
+      if (retryCount >= MAX_RETRIES) {
+        console.error('[COMPLETE] All retry attempts exhausted');
+        await supabase.from('audit_tasks').update({
+          error_message: `Scoring failed after ${MAX_RETRIES} attempts: ${error.message}`,
+          updated_at: new Date().toISOString()
+        }).eq('id', taskId);
+      } else {
+        const waitTime = Math.pow(2, retryCount) * 1000;
+        console.log(`[COMPLETE] Waiting ${waitTime}ms before retry...`);
+        await new Promise(resolve => setTimeout(resolve, waitTime));
+      }
     }
-    
-    console.log('[COMPLETE] Scoring processor completed successfully:', scoringResult);
-  } catch (error) {
-    console.error('[COMPLETE] Failed to invoke scoring processor:', error);
-    // Update task with error but keep status as completed
-    await supabase.from('audit_tasks').update({
-      error_message: `Scoring failed: ${error.message}`,
-      updated_at: new Date().toISOString()
-    }).eq('id', taskId);
   }
 }
 

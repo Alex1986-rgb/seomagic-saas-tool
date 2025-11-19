@@ -29,9 +29,17 @@ const AuditStateHandler: React.FC<AuditStateHandlerProps> = ({
 }) => {
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center p-12">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
-      </div>
+      <Card className="p-8 bg-card/90 backdrop-blur-sm">
+        <div className="flex flex-col items-center justify-center space-y-4">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+          <div className="text-center space-y-2">
+            <p className="text-lg font-medium">Загрузка результатов аудита...</p>
+            <p className="text-sm text-muted-foreground">
+              Это может занять до 1 минуты
+            </p>
+          </div>
+        </div>
+      </Card>
     );
   }
 
