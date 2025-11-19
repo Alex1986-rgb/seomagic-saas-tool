@@ -10,6 +10,8 @@ export { default as OptimizationResults } from './OptimizationResults';
 export { default as OptimizationSummary } from './OptimizationSummary';
 export { default as OptimizationPlans } from './OptimizationPlans';
 export { default as PaymentDialog } from './PaymentDialog';
+export { default as InteractiveOptimizationPanel } from './InteractiveOptimizationPanel';
+export { default as EstimateComparison } from './EstimateComparison';
 
 // Export types
 export type { CostDetailsTableProps } from './types';
@@ -19,3 +21,4 @@ export type { OptimizationItem } from '@/features/audit/types/optimization-types
 
 // Export utilities
 export { generateMockOptimizationItems, calculateTotalCost, generateRandomPageCount } from './mockOptimizationData';
+export * from './auditToInteractiveMapper';
