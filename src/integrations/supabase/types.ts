@@ -687,6 +687,33 @@ export type Database = {
         }
         Relationships: []
       }
+      push_subscriptions: {
+        Row: {
+          created_at: string | null
+          device_info: string | null
+          id: string
+          is_active: boolean | null
+          subscription_data: Json
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          device_info?: string | null
+          id?: string
+          is_active?: boolean | null
+          subscription_data: Json
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          device_info?: string | null
+          id?: string
+          is_active?: boolean | null
+          subscription_data?: Json
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       shared_estimates: {
         Row: {
           audit_id: string | null
@@ -745,6 +772,81 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      slack_integrations: {
+        Row: {
+          channel_name: string | null
+          created_at: string | null
+          id: string
+          is_active: boolean | null
+          notify_audit_completed: boolean | null
+          notify_critical_issues: boolean | null
+          notify_optimization_completed: boolean | null
+          user_id: string | null
+          webhook_url: string
+        }
+        Insert: {
+          channel_name?: string | null
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          notify_audit_completed?: boolean | null
+          notify_critical_issues?: boolean | null
+          notify_optimization_completed?: boolean | null
+          user_id?: string | null
+          webhook_url: string
+        }
+        Update: {
+          channel_name?: string | null
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          notify_audit_completed?: boolean | null
+          notify_critical_issues?: boolean | null
+          notify_optimization_completed?: boolean | null
+          user_id?: string | null
+          webhook_url?: string
+        }
+        Relationships: []
+      }
+      telegram_integrations: {
+        Row: {
+          connection_token: string
+          created_at: string | null
+          id: string
+          is_active: boolean | null
+          notify_audit_completed: boolean | null
+          notify_issues_found: boolean | null
+          notify_optimization_completed: boolean | null
+          telegram_chat_id: string
+          telegram_username: string | null
+          user_id: string | null
+        }
+        Insert: {
+          connection_token: string
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          notify_audit_completed?: boolean | null
+          notify_issues_found?: boolean | null
+          notify_optimization_completed?: boolean | null
+          telegram_chat_id: string
+          telegram_username?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          connection_token?: string
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          notify_audit_completed?: boolean | null
+          notify_issues_found?: boolean | null
+          notify_optimization_completed?: boolean | null
+          telegram_chat_id?: string
+          telegram_username?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
       }
       url_queue: {
         Row: {
