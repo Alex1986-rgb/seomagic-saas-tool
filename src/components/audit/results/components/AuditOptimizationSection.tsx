@@ -108,9 +108,16 @@ const AuditOptimizationSection: React.FC<AuditOptimizationSectionProps> = ({
           <p className="text-muted-foreground mb-4">
             Заказать оптимизацию сайта для улучшения его показателей в поисковых системах
           </p>
-          <Link to="/optimization-demo">
-            <Button>Посмотреть демо-версию</Button>
-          </Link>
+          <div className="flex gap-3 justify-center">
+            <Link to="/optimization-demo">
+              <Button>Посмотреть демо-версию</Button>
+            </Link>
+            {onGeneratePdfReport && (
+              <Button onClick={onGeneratePdfReport} variant="outline">
+                Скачать PDF отчёт
+              </Button>
+            )}
+          </div>
         </CardContent>
       </Card>
     );

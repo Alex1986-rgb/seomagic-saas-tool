@@ -2,6 +2,8 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import AuditStatus from '@/components/audit/results/components/AuditStatus';
 import AuditResultHeader from '@/components/audit/results/components/AuditResultHeader';
+import AuditReportActions from '@/components/audit/results/components/AuditReportActions';
+import FloatingReportButton from '@/components/audit/results/components/FloatingReportButton';
 import AuditRecommendationsSection from '@/components/audit/results/components/AuditRecommendationsSection';
 import AuditPageAnalysisSection from '@/components/audit/results/components/AuditPageAnalysisSection';
 import AuditOptimizationSection from '@/components/audit/results/components/AuditOptimizationSection';
@@ -158,6 +160,17 @@ const AuditContent: React.FC<AuditContentProps> = ({
             onSelectAudit={handleSelectHistoricalAudit}
             showPrompt={showPrompt}
           />
+
+          {/* Report actions panel */}
+          <AuditReportActions
+            url={url}
+            onGeneratePdf={generatePdfReportFile}
+            onExportJSON={exportJSONData}
+            onViewEstimate={() => {
+              const element = document.getElementById('optimization-section');
+              element?.scrollIntoView({ behavior: 'smooth' });
+            }}
+          />
           
           {/* Recommendations section */}
           <AuditRecommendationsSection 
@@ -171,20 +184,25 @@ const AuditContent: React.FC<AuditContentProps> = ({
           <AuditPageAnalysisSection auditId={auditData.id} />
           
           {/* Optimization section */}
-          <AuditOptimizationSection 
-            optimizationCost={optimizationCost}
-            optimizationItems={optimizationItems}
-            isOptimized={isOptimized}
-            contentPrompt={contentPrompt}
-            url={url}
-            pageCount={auditData.pageCount || 0}
-            showPrompt={showPrompt}
-            onTogglePrompt={onTogglePrompt}
-            onOptimize={safeOptimizeSiteContent}
-            onDownloadOptimizedSite={safeDownloadOptimizedSite}
-            onGeneratePdfReport={generatePdfReportFile}
-            setContentOptimizationPrompt={setContentOptimizationPrompt}
-          />
+          <div id="optimization-section">
+            <AuditOptimizationSection 
+              optimizationCost={optimizationCost}
+              optimizationItems={optimizationItems}
+              isOptimized={isOptimized}
+              contentPrompt={contentPrompt}
+              url={url}
+              pageCount={auditData.pageCount || 0}
+              showPrompt={showPrompt}
+              onTogglePrompt={onTogglePrompt}
+              onOptimize={safeOptimizeSiteContent}
+              onDownloadOptimizedSite={safeDownloadOptimizedSite}
+              onGeneratePdfReport={generatePdfReportFile}
+              setContentOptimizationPrompt={setContentOptimizationPrompt}
+            />
+          </div>
+
+          {/* Floating PDF button */}
+          <FloatingReportButton onGeneratePdf={generatePdfReportFile} />
         </>
       )}
     </>
