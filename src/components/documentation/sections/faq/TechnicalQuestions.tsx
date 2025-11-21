@@ -1,10 +1,20 @@
-
 import React from 'react';
 import {
   AccordionItem,
   AccordionTrigger,
   AccordionContent,
 } from "@/components/ui/accordion";
+
+export const technicalQuestionsData = [
+  {
+    question: "Какие проблемы выявляет глубокий анализ?",
+    answer: "Глубокий анализ выявляет: Технические ошибки (битые ссылки, дубли страниц), Проблемы с контентом (неуникальный текст, thin content), SEO-ошибки (отсутствие мета-тегов, Alt текстов), Проблемы структуры (глубина вложенности, orphaned pages), Ошибки в robots.txt и sitemap.xml."
+  },
+  {
+    question: "Как формируется смета на исправление?",
+    answer: "Смета формируется автоматически на основе: Количества и типов найденных ошибок, Объема работ по их исправлению, Сложности необходимых изменений, Приоритетности исправлений. После формирования сметы вы можете выбрать, какие ошибки исправить в первую очередь."
+  }
+];
 
 const TechnicalQuestions: React.FC = () => {
   return (
