@@ -1,5 +1,5 @@
 import { AuditData } from '@/types/audit';
-import { fetchAuditData, fetchRecommendations, fetchAuditHistory } from '@/services/auditService';
+import { fetchRecommendations, fetchAuditHistory } from '@/services/auditService';
 import { PageContent } from '@/services/audit/optimization/types';
 import { 
   detectBrokenLinks, 
@@ -13,14 +13,10 @@ type ProgressCallback = (current: number, total: number) => void;
 class AuditApiService {
   /**
    * Получает данные аудита сайта
+   * @deprecated Use auditService.startAudit() and auditService.getAuditStatus() instead
    */
   async getAuditData(url: string): Promise<AuditData> {
-    try {
-      return await fetchAuditData(url);
-    } catch (error) {
-      console.error('Error fetching audit data:', error);
-      throw error;
-    }
+    throw new Error('getAuditData is deprecated. Use auditService.startAudit() and auditService.getAuditStatus() instead');
   }
 
   /**

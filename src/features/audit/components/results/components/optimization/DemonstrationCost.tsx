@@ -11,8 +11,45 @@ import OptimizationSummary from './OptimizationSummary';
 import CostSummary from './CostSummary';
 import CostDetailsTable from './CostDetailsTable';
 import { calculateDiscount } from '@/services/audit/optimization/discountCalculator';
-import { createDemonstrationOptimizationItems, calculateTotalCost } from './mockOptimizationData';
 import { OptimizationItem } from '@/features/audit/types/optimization-types';
+
+// Helper functions
+const calculateTotalCost = (items: OptimizationItem[]): number => {
+  return items.reduce((sum, item) => sum + (item.totalPrice || 0), 0);
+};
+
+const createDemonstrationOptimizationItems = (): OptimizationItem[] => {
+  return [
+    {
+      id: "meta_tags",
+      name: "Оптимизация мета-тегов",
+      description: "Улучшение заголовков и описаний",
+      count: 20,
+      price: 300,
+      totalPrice: 6000,
+      category: "meta",
+      priority: "high",
+      page: "Все страницы",
+      tasks: ["Оптимизация заголовков"],
+      cost: 6000,
+      errorCount: 12
+    },
+    {
+      id: "image_optimization",
+      name: "Оптимизация изображений",
+      description: "Сжатие и добавление ALT-тегов",
+      count: 50,
+      price: 50,
+      totalPrice: 2500,
+      category: "media",
+      priority: "medium",
+      page: "Изображения",
+      tasks: ["Оптимизация изображений"],
+      cost: 2500,
+      errorCount: 35
+    }
+  ];
+};
 import {
   Tooltip,
   TooltipContent,

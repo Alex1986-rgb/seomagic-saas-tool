@@ -46,21 +46,3 @@ export {
   downloadErrorReport
 };
 
-import { AuditData } from "@/types/audit";
-import { generateAuditData } from './generators';
-
-/**
- * Fetches audit data for a URL
- */
-export const fetchAuditData = async (url?: string): Promise<AuditData> => {
-  // Simulate an API call
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      // Generate the mock audit data
-      const mockData = generateAuditData(url || "example.com");
-      
-      // Convert to the expected type
-      resolve(mockData as unknown as AuditData);
-    }, 1000);
-  });
-};

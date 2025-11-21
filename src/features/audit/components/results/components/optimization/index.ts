@@ -8,14 +8,6 @@ export { default as OptimizationCost } from './OptimizationCost';
 export { default as OptimizationPlans } from './OptimizationPlans';
 export { default as DemonstrationCost } from './DemonstrationCost';
 
-// Export data generators and utilities
-export {
-  generateRandomPageCount,
-  generateMockOptimizationItems,
-  calculateTotalCost,
-  calculatePricingTiers,
-  generateOptimizationCosts
-} from './mockOptimizationData';
 
 // Export process components
 export { OptimizationProcessContainer } from './process';

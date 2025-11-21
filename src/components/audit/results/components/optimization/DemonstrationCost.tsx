@@ -3,13 +3,58 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import { generateMockOptimizationItems, calculateTotalCost, generateRandomPageCount } from './mockOptimizationData';
 import CostSummary from './CostSummary';
 import CostDetailsTable from './CostDetailsTable';
 import PaymentDialog from './PaymentDialog';
 import EstimateSelectors from './EstimateSelectors';
 import { OptimizationItem } from '@/features/audit/types/optimization-types';
 import { v4 as uuidv4 } from 'uuid';
+
+// Helper functions
+const generateRandomPageCount = (): number => {
+  return Math.floor(Math.random() * 100) + 10; // 10-110 pages
+};
+
+const calculateTotalCost = (items: OptimizationItem[]): number => {
+  return items.reduce((sum, item) => sum + (item.totalPrice || 0), 0);
+};
+
+const generateDemoOptimizationItems = (pageCount: number): OptimizationItem[] => {
+  const items: OptimizationItem[] = [];
+  
+  items.push({
+    id: "base-cost",
+    page: "Весь сайт",
+    tasks: ["Базовая настройка оптимизации"],
+    cost: 5000,
+    priority: "high",
+    category: "base",
+    name: "Базовая стоимость",
+    description: "Базовые работы по настройке",
+    count: 1,
+    price: 5000,
+    totalPrice: 5000,
+    errorCount: 3
+  });
+  
+  const pageCost = 300;
+  items.push({
+    id: "meta-tags",
+    page: "Все страницы",
+    tasks: ["Оптимизация мета-тегов"],
+    cost: pageCost * pageCount,
+    priority: "high",
+    category: "meta",
+    name: "Оптимизация мета-тегов",
+    description: `Оптимизация для ${pageCount} страниц`,
+    count: pageCount,
+    price: pageCost,
+    totalPrice: pageCost * pageCount,
+    errorCount: Math.ceil(pageCount * 0.6)
+  });
+  
+  return items;
+};
 
 const KEY_TO_ITEM_NAME: Record<string, string> = {
   'fix-code-errors': 'Исправление ошибок в коде',
@@ -224,7 +269,7 @@ const DemonstrationCost: React.FC = () => {
     const randomPageCount = generateRandomPageCount();
     setPageCount(randomPageCount);
     
-    const items = generateMockOptimizationItems(randomPageCount);
+    const items = generateDemoOptimizationItems(randomPageCount);
     setOptimizationItems(items);
     
     const cost = calculateTotalCost(items);
