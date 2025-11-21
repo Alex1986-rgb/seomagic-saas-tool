@@ -103,11 +103,13 @@ export const useScan = (url: string, onPageCountUpdate?: (count: number) => void
       console.log('✅ Audit started successfully with task ID:', crawlTaskId);
       setTaskId(crawlTaskId);
       
-      // Track polling start time for timeout detection
+      // Track polling start time and stage changes
       const pollingStartTime = Date.now();
-      const POLLING_TIMEOUT = 2 * 60 * 1000; // 2 minutes timeout
+      const CRAWLING_TIMEOUT = 2 * 60 * 1000; // 2 minutes for crawling
+      const ANALYSIS_TIMEOUT = 5 * 60 * 1000; // 5 minutes for analysis/generating
       let lastUpdateTime = Date.now();
       let lastPagesScanned = 0;
+      let lastStage = '';
       
       // Start progress polling
       const pollInterval = setInterval(async () => {
@@ -118,23 +120,38 @@ export const useScan = (url: string, onPageCountUpdate?: (count: number) => void
           const pagesScanned = statusResponse.pages_scanned;
           const totalPages = statusResponse.total_pages;
           const status = statusResponse.status;
+          const currentStage = statusResponse.stage || '';
           
           const progressValue = statusResponse.progress;
           
-          // Check for timeout - if no progress for 2 minutes
+          // Check for timeout - if no progress for configured time
           const currentTime = Date.now();
-          const timeSinceStart = currentTime - pollingStartTime;
           
-          if (pagesScanned !== lastPagesScanned) {
+          // Update lastUpdateTime if pages changed OR stage changed
+          if (pagesScanned !== lastPagesScanned || currentStage !== lastStage) {
             lastUpdateTime = currentTime;
             lastPagesScanned = pagesScanned;
+            lastStage = currentStage;
           }
           
           const timeSinceLastUpdate = currentTime - lastUpdateTime;
           
-          // If stuck for more than 2 minutes OR total time exceeds timeout
-          if (timeSinceLastUpdate > POLLING_TIMEOUT || timeSinceStart > POLLING_TIMEOUT * 3) {
-            console.error('⏱️ Scan timeout: No progress detected');
+          // Don't apply timeout during analysis/generating/completed stages
+          const isAnalysisStage = ['analysis', 'generating', 'completed'].includes(currentStage);
+          const timeoutThreshold = isAnalysisStage ? ANALYSIS_TIMEOUT : CRAWLING_TIMEOUT;
+          
+          // Log polling status for debugging
+          console.log('🔄 Polling status:', {
+            stage: currentStage,
+            progress: progressValue,
+            pagesScanned,
+            timeSinceLastUpdate: Math.floor(timeSinceLastUpdate / 1000) + 's',
+            timeoutThreshold: Math.floor(timeoutThreshold / 1000) + 's'
+          });
+          
+          // If stuck for more than threshold
+          if (timeSinceLastUpdate > timeoutThreshold) {
+            console.error('⏱️ Scan timeout:', { stage: currentStage, timeSinceLastUpdate });
             clearInterval(pollInterval);
             setIsScanning(false);
             
