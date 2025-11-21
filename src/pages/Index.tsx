@@ -7,6 +7,7 @@ import PositionTrackerSection from '../components/position-tracker/PositionTrack
 import DetailedFeaturesSection from '../components/home/DetailedFeaturesSection';
 import CTASection from '../components/sections/CTASection';
 import { LocalBusinessSchema } from '@/components/seo/LocalBusinessSchema';
+import { OrganizationSchema } from '@/components/seo/OrganizationSchema';
 
 const Index: React.FC = () => {
   useEffect(() => {
@@ -23,6 +24,7 @@ const Index: React.FC = () => {
   return (
     <Layout>
       <LocalBusinessSchema />
+      <OrganizationSchema />
       <HeroSection />
       <VideoSection />
       <CoreFeaturesSection />
