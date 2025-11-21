@@ -49,7 +49,7 @@ serve(async (req) => {
       .from('audit_results')
       .select('audit_data, page_count')
       .eq('task_id', task_id)
-      .single();
+      .maybeSingle();
 
     if (resultError) {
       console.error('[OPTIMIZATION-CALCULATE] Error fetching audit results:', resultError);
