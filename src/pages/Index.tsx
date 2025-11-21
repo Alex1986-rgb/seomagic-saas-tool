@@ -8,6 +8,7 @@ import DetailedFeaturesSection from '../components/home/DetailedFeaturesSection'
 import CTASection from '../components/sections/CTASection';
 import { LocalBusinessSchema } from '@/components/seo/LocalBusinessSchema';
 import { OrganizationSchema } from '@/components/seo/OrganizationSchema';
+import { WebSiteSchema } from '@/components/seo/WebSiteSchema';
 
 const Index: React.FC = () => {
   useEffect(() => {
@@ -25,6 +26,7 @@ const Index: React.FC = () => {
     <Layout>
       <LocalBusinessSchema />
       <OrganizationSchema />
+      <WebSiteSchema />
       <HeroSection />
       <VideoSection />
       <CoreFeaturesSection />
