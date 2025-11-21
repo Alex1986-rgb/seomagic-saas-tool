@@ -488,27 +488,27 @@ serve(async (req) => {
     }
     
     // Create notification in background (don't block response)
-    const { data: task } = await supabase
+    const { data: notificationTask } = await supabase
       .from('audit_tasks')
       .select('user_id, url')
       .eq('id', task_id)
       .single();
     
-    if (task?.user_id) {
-      console.log(`Creating notification for user ${task.user_id}`);
+    if (notificationTask?.user_id) {
+      console.log(`Creating notification for user ${notificationTask.user_id}`);
       
       // Fire and forget - don't await
       supabase.functions.invoke('create-notification', {
         body: {
-          user_id: task.user_id,
+          user_id: notificationTask.user_id,
           task_id: task_id,
           type: 'audit_completed',
           audit_data: {
-            url: task.url,
-            score: finalMetrics.globalScore,
-            seo_score: finalMetrics.seoScore,
-            pages_scanned: scoringResult.pageCount,
-            issues_count: scoringResult.issuesCount,
+            url: notificationTask.url,
+            score: scores.global_score,
+            seo_score: scores.seo_score,
+            pages_scanned: pages.length,
+            issues_count: scores.issues_by_severity.critical + scores.issues_by_severity.important + scores.issues_by_severity.minor,
           }
         }
       }).then(({ error }) => {
