@@ -4,7 +4,7 @@ import { useToast } from "@/hooks/use-toast";
 import Layout from '@/components/Layout';
 import { AuditProvider } from '@/contexts/AuditContext';
 import AuditResultsContainer from '@/components/audit/results/AuditResultsContainer';
-import { AuditTypeSelector } from '@/components/site-audit/AuditTypeSelector';
+import { AuditWorkspace } from '@/components/audit/AuditWorkspace';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { motion } from 'framer-motion';
@@ -125,12 +125,13 @@ const SiteAudit: React.FC = () => {
       
       localStorage.setItem(`task_id_${url}`, result.task_id);
       
+      // Update URL with task_id without reload
+      navigate(`/site-audit?url=${encodeURIComponent(url)}&task_id=${result.task_id}`, { replace: true });
+      
       toast({
         title: "Аудит запущен",
-        description: `Сканирование ${type === 'quick' ? 'быстрого' : 'глубокого'} аудита начато. Task ID: ${result.task_id}`,
+        description: `Сканирование ${type === 'quick' ? 'быстрого' : 'глубокого'} аудита начато`,
       });
-      
-      window.location.reload();
     } catch (error) {
       console.error('Error starting audit:', error);
       toast({
@@ -196,14 +197,6 @@ const SiteAudit: React.FC = () => {
             </CardContent>
           </Card>
           
-          {url && isValidUrl(url) && (
-            <AuditTypeSelector 
-              onStartAudit={handleStartAudit}
-              isLoading={isStartingAudit}
-              url={url}
-            />
-          )}
-          
           {isLoading ? (
             <div className="flex justify-center items-center min-h-[300px]">
               <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
@@ -212,9 +205,15 @@ const SiteAudit: React.FC = () => {
             <div className="p-4 bg-destructive/10 text-destructive rounded-md">
               {error}
             </div>
-          ) : (
+          ) : url && isValidUrl(url) && (
             <AuditProvider initialUrl={url}>
-              <AuditResultsContainer url={url} />
+              <AuditWorkspace 
+                url={url}
+                onStartAudit={handleStartAudit}
+                isStartingAudit={isStartingAudit}
+              >
+                <AuditResultsContainer url={url} />
+              </AuditWorkspace>
             </AuditProvider>
           )}
         </motion.div>

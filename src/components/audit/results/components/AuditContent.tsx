@@ -103,8 +103,8 @@ const AuditContent: React.FC<AuditContentProps> = ({
         onDownloadSitemap={onDownloadSitemap}
       />
       
-      {/* Display results after audit completion */}
-      {!isLoading && !isScanning && !auditError && auditData && recommendations && (
+      {/* Display results - show structure even during loading */}
+      {(!isLoading && !isScanning && !auditError && auditData && recommendations) && (
         <>
           {/* Tabs for switching between views */}
           <Tabs value={viewMode} onValueChange={(value) => setViewMode(value as 'dashboard' | 'classic')} className="mb-6">
