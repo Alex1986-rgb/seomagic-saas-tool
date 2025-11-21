@@ -103,10 +103,15 @@ export const OptimizationProvider: React.FC<{
   }, []);
   
   // Auto-load optimization cost when taskId changes
+  // Only load if we haven't tried this taskId yet
   React.useEffect(() => {
     if (taskId && !loadedTaskIdsRef.current.has(taskId)) {
       console.log('[OptimizationContext] Auto-loading optimization cost for task:', taskId);
-      loadOptimizationCost(taskId);
+      // Add a small delay to ensure audit results are available
+      const timer = setTimeout(() => {
+        loadOptimizationCost(taskId);
+      }, 1000);
+      return () => clearTimeout(timer);
     }
   }, [taskId, loadOptimizationCost]);
   

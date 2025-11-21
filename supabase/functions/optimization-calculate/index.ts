@@ -58,7 +58,20 @@ serve(async (req) => {
 
     if (!result) {
       console.error('[OPTIMIZATION-CALCULATE] No audit results found for task:', task_id);
-      throw new Error('Audit results not found');
+      console.error('[OPTIMIZATION-CALCULATE] This usually means the audit is not completed yet or the task_id is invalid');
+      
+      // Return a more helpful error response
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: 'Audit results not found. Please ensure the audit has completed before calculating optimization costs.',
+          task_id: task_id
+        }),
+        {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 404,
+        }
+      );
     }
 
     console.log('[OPTIMIZATION-CALCULATE] Found audit results, page_count:', result.page_count);
