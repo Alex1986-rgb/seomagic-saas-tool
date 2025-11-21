@@ -107,10 +107,11 @@ export const OptimizationProvider: React.FC<{
   React.useEffect(() => {
     if (taskId && !loadedTaskIdsRef.current.has(taskId)) {
       console.log('[OptimizationContext] Auto-loading optimization cost for task:', taskId);
-      // Add a small delay to ensure audit results are available
+      // Add a 5-second delay to ensure audit results are saved to database
+      // The backend process needs time to save results after task status changes to "completed"
       const timer = setTimeout(() => {
         loadOptimizationCost(taskId);
-      }, 1000);
+      }, 5000);
       return () => clearTimeout(timer);
     }
   }, [taskId, loadOptimizationCost]);
