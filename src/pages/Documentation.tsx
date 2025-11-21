@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useParams, Navigate } from 'react-router-dom';
 import Layout from '@/components/Layout';
@@ -11,6 +10,7 @@ import DeveloperGuide from '@/components/documentation/DeveloperGuide';
 import SecurityDocs from '@/components/documentation/SecurityDocs';
 import FAQ from '@/components/documentation/FAQ';
 import { motion } from 'framer-motion';
+import { BreadcrumbSchema } from '@/components/seo/BreadcrumbSchema';
 import { 
   BookOpen, 
   Code, 
@@ -84,6 +84,10 @@ const Documentation: React.FC = () => {
 
   return (
     <Layout>
+      <BreadcrumbSchema items={[
+        { name: 'Главная', url: '/' },
+        { name: 'Документация', url: '/documentation' }
+      ]} />
       <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
         <div className="container mx-auto px-4 py-32">
           <motion.div 

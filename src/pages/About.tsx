@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { motion } from 'framer-motion';
 import Layout from '@/components/Layout';
@@ -9,10 +8,15 @@ import TeamSection from '@/components/about/TeamSection';
 import TestimonialsSection from '@/components/about/TestimonialsSection';
 import CtaSection from '@/components/about/CtaSection';
 import { Separator } from '@/components/ui/separator';
+import { BreadcrumbSchema } from '@/components/seo/BreadcrumbSchema';
 
 const About = () => {
   return (
     <Layout>
+      <BreadcrumbSchema items={[
+        { name: 'Главная', url: '/' },
+        { name: 'О нас', url: '/about' }
+      ]} />
       <motion.div 
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
