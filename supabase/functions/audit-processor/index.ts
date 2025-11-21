@@ -577,10 +577,28 @@ async function processAuditInBackground(task_id: string) {
     }
   } catch (error) {
     console.error('Background processing error:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    
+    // Update audit_tasks to failed
     await supabase.from('audit_tasks').update({
       status: 'failed',
-      error_message: error instanceof Error ? error.message : 'Unknown error'
+      error_message: errorMessage
     }).eq('id', task_id);
+    
+    // Also update audits table if audit_id exists
+    const { data: taskData } = await supabase
+      .from('audit_tasks')
+      .select('audit_id')
+      .eq('id', task_id)
+      .single();
+    
+    if (taskData?.audit_id) {
+      console.log('[ERROR] Updating audits table to failed status');
+      await supabase.from('audits').update({
+        status: 'failed',
+        error_message: errorMessage
+      }).eq('id', taskData.audit_id);
+    }
   }
 }
 
