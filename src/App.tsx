@@ -69,6 +69,7 @@ import OptimizationTest from './pages/OptimizationTest';
 import AuditsHistory from './pages/AuditsHistory';
 import OptimizationsHistory from './pages/OptimizationsHistory';
 import SharedEstimate from './pages/SharedEstimate';
+import Sitemap from './pages/Sitemap';
 
 // Admin Routes
 import AdminRoutes from './routes/AdminRoutes';
@@ -169,6 +170,7 @@ function App() {
                     <Route path="/faq" element={<Faq />} />
                     <Route path="/partners" element={<Partners />} />
                     <Route path="/ip-info" element={<IPInfo />} />
+                    <Route path="/sitemap" element={<Sitemap />} />
                     <Route path="/demo" element={<Demo />} />
                     <Route path="/partnership" element={<Partnership />} />
                     <Route path="/optimization-pricing" element={<OptimizationPricing />} />

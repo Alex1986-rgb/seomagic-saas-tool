@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
 import { useToast } from "@/hooks/use-toast";
 import Layout from '@/components/Layout';
 import { AuditProvider } from '@/contexts/AuditContext';
@@ -144,8 +145,18 @@ const SiteAudit: React.FC = () => {
     }
   };
 
+  // Check if this is a dynamic page with task_id
+  const taskId = searchParams.get('task_id');
+  const robotsContent = taskId ? 'noindex, nofollow' : 'index, follow, max-image-preview:large';
+
   return (
     <Layout>
+      <Helmet>
+        <title>SEO Аудит Сайта | SeoMarket</title>
+        <meta name="description" content="Проведите полный SEO аудит вашего сайта. Анализ технических параметров, контента, производительности и получите рекомендации по оптимизации." />
+        <meta name="robots" content={robotsContent} />
+        <link rel="canonical" href="https://seomarket.app/site-audit" />
+      </Helmet>
       <div className="container mx-auto px-4 md:px-6 pt-24 md:pt-32 pb-12 md:pb-20">
         <motion.div 
           className="max-w-6xl mx-auto"
