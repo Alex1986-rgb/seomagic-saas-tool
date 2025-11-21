@@ -33,14 +33,40 @@ export const AuditWorkspace: React.FC<AuditWorkspaceProps> = ({
 
   // Auto-switch tabs based on audit state
   useEffect(() => {
+    console.log('[AUDIT WORKSPACE] Tab switching logic:', {
+      isScanning,
+      taskId,
+      status: scanDetails?.status,
+      hasAuditData: !!scanDetails?.audit_data,
+      activeTab,
+      shouldSwitchToResults: !isScanning && taskId && (scanDetails?.status === 'completed' || scanDetails?.audit_data)
+    });
+
     if (isScanning && activeTab !== 'progress') {
       setActiveTab('progress');
       localStorage.setItem(`audit_tab_${url}`, 'progress');
-    } else if (!isScanning && taskId && scanDetails?.status === 'completed' && activeTab === 'progress') {
+    } else if (
+      !isScanning && 
+      taskId && 
+      (scanDetails?.status === 'completed' || scanDetails?.audit_data) && 
+      activeTab !== 'results'
+    ) {
+      console.log('[AUDIT WORKSPACE] ✅ Switching to results tab');
       setActiveTab('results');
       localStorage.setItem(`audit_tab_${url}`, 'results');
+      
+      // Show toast notification
+      if (scanDetails?.audit_data) {
+        setTimeout(() => {
+          const toast = document.createElement('div');
+          toast.textContent = '✅ Результаты аудита готовы!';
+          toast.className = 'fixed top-4 right-4 bg-green-500 text-white px-4 py-2 rounded-md shadow-lg z-50';
+          document.body.appendChild(toast);
+          setTimeout(() => toast.remove(), 3000);
+        }, 100);
+      }
     }
-  }, [isScanning, taskId, scanDetails?.status, url, activeTab]);
+  }, [isScanning, taskId, scanDetails?.status, scanDetails?.audit_data, url, activeTab]);
 
   const handleTabChange = (value: string) => {
     setActiveTab(value as TabValue);
@@ -59,8 +85,8 @@ export const AuditWorkspace: React.FC<AuditWorkspaceProps> = ({
       return <Activity className="h-4 w-4" />;
     }
     if (tab === 'results') {
-      if (scanDetails?.status === 'completed') {
-        return <CheckCircle className="h-4 w-4" />;
+      if (scanDetails?.audit_data || scanDetails?.status === 'completed') {
+        return <CheckCircle className="h-4 w-4 text-green-500" />;
       }
       return <FileText className="h-4 w-4" />;
     }
@@ -82,8 +108,10 @@ export const AuditWorkspace: React.FC<AuditWorkspaceProps> = ({
     if (tab === 'start') return false;
     // Progress available when scanning or has taskId
     if (tab === 'progress') return !taskId;
-    // Results available when completed
-    if (tab === 'results') return !taskId || isScanning;
+    // Results available when has data OR completed (even during scanning for partial results)
+    if (tab === 'results') {
+      return !taskId || (!scanDetails?.audit_data && scanDetails?.status !== 'completed');
+    }
     return false;
   };
 
