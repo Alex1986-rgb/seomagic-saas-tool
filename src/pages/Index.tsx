@@ -14,6 +14,7 @@ import { ReviewSchema } from '@/components/seo/ReviewSchema';
 import { VideoObjectSchema } from '@/components/seo/VideoObjectSchema';
 import { EventSchema } from '@/components/seo/EventSchema';
 import { SoftwareApplicationSchema } from '@/components/seo/SoftwareApplicationSchema';
+import { CourseSchema } from '@/components/seo/CourseSchema';
 
 const Index: React.FC = () => {
   useEffect(() => {
@@ -37,6 +38,7 @@ const Index: React.FC = () => {
       <VideoObjectSchema />
       <EventSchema />
       <SoftwareApplicationSchema />
+      <CourseSchema />
       <HeroSection />
       <VideoSection />
       <CoreFeaturesSection />
