@@ -165,7 +165,6 @@ export const useScan = (url: string, onPageCountUpdate?: (count: number) => void
           if (status === 'completed') {
             clearInterval(pollInterval);
             pollingIntervalRef.current = null;
-            setIsScanning(false);
             
             // Get URLs from the status response or use the current URL
             const pageUrls = [statusResponse.url]; // In a real implementation, you would get all discovered URLs
@@ -176,6 +175,7 @@ export const useScan = (url: string, onPageCountUpdate?: (count: number) => void
             const sitemapXml = reportingService.generateSitemapXml(domain, pageUrls);
             setSitemap(sitemapXml);
             
+            // Show completion state with 100% progress
             setScanDetails(prev => ({
               ...prev,
               stage: 'Анализ завершен',
@@ -186,6 +186,11 @@ export const useScan = (url: string, onPageCountUpdate?: (count: number) => void
               title: "Сканирование завершено",
               description: `Просканировано ${pagesScanned} страниц`,
             });
+            
+            // Wait 3 seconds before hiding the panel to show completion state
+            setTimeout(() => {
+              setIsScanning(false);
+            }, 3000);
           } else if (status === 'failed') {
             clearInterval(pollInterval);
             pollingIntervalRef.current = null;

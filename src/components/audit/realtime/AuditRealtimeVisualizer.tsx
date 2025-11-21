@@ -61,19 +61,29 @@ export const AuditRealtimeVisualizer = ({ url, statusData }: AuditRealtimeVisual
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <CardTitle className="text-2xl">
+                  <CardTitle className="text-2xl flex items-center gap-3">
                     Аудит в реальном времени
+                    {progress === 100 && (
+                      <motion.span
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        transition={{ type: "spring", stiffness: 200, damping: 10 }}
+                        className="text-primary"
+                      >
+                        ✓
+                      </motion.span>
+                    )}
                   </CardTitle>
                   <p className="text-sm text-muted-foreground mt-1">
                     {getStageLabel(stage)}
                   </p>
                 </div>
                 <div className="text-right">
-                  <p className="text-3xl font-bold text-primary">
+                  <p className={`text-3xl font-bold transition-colors ${progress === 100 ? 'text-primary' : 'text-foreground'}`}>
                     {progress}%
                   </p>
                   <p className="text-sm text-muted-foreground">
-                    Завершено
+                    {progress === 100 ? 'Готово' : 'Завершено'}
                   </p>
                 </div>
               </div>
