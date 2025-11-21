@@ -1,5 +1,5 @@
 
-import React, { createContext, useContext, useState, useCallback, useMemo, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useCallback, useMemo, ReactNode, useRef } from 'react';
 import { useOptimizationAPI } from '@/hooks/use-optimization-api';
 import { OptimizationItem } from '@/features/audit/types/optimization-types';
 
@@ -35,6 +35,8 @@ export const OptimizationProvider: React.FC<{
   const [optimizationItems, setOptimizationItems] = useState<OptimizationItem[]>([]);
   const [isOptimized, setIsOptimized] = useState<boolean>(false);
   const [contentPrompt, setContentPrompt] = useState<string>('');
+  const loadedTaskIdsRef = useRef<Set<string>>(new Set());
+  const isLoadingRef = useRef<boolean>(false);
   
   const {
     isLoadingCost,
@@ -60,11 +62,30 @@ export const OptimizationProvider: React.FC<{
   const loadOptimizationCost = useCallback(async (taskId: string): Promise<void> => {
     if (!taskId) return;
     
-    await apiLoadOptimizationCost(
-      taskId,
-      (cost: number) => setOptimizationCost(cost),
-      (items: OptimizationItem[]) => setOptimizationItems(items)
-    );
+    // Prevent duplicate requests for the same task
+    if (loadedTaskIdsRef.current.has(taskId)) {
+      console.log('[OptimizationContext] Already loaded cost for task:', taskId);
+      return;
+    }
+    
+    // Prevent concurrent requests
+    if (isLoadingRef.current) {
+      console.log('[OptimizationContext] Already loading, skipping...');
+      return;
+    }
+    
+    isLoadingRef.current = true;
+    loadedTaskIdsRef.current.add(taskId);
+    
+    try {
+      await apiLoadOptimizationCost(
+        taskId,
+        (cost: number) => setOptimizationCost(cost),
+        (items: OptimizationItem[]) => setOptimizationItems(items)
+      );
+    } finally {
+      isLoadingRef.current = false;
+    }
   }, [apiLoadOptimizationCost]);
   
   const optimizeSiteContent = useCallback(async (taskId: string, prompt: string) => {
@@ -83,7 +104,7 @@ export const OptimizationProvider: React.FC<{
   
   // Auto-load optimization cost when taskId changes
   React.useEffect(() => {
-    if (taskId) {
+    if (taskId && !loadedTaskIdsRef.current.has(taskId)) {
       console.log('[OptimizationContext] Auto-loading optimization cost for task:', taskId);
       loadOptimizationCost(taskId);
     }
