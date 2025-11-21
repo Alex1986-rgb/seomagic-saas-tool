@@ -414,6 +414,43 @@ serve(async (req) => {
       throw new Error(`Failed to fetch task data: ${taskError?.message}`);
     }
 
+    // Prepare audit_data for frontend consumption
+    const auditData = {
+      scores: {
+        global_score: scores.global_score,
+        seo_score: scores.seo_score,
+        technical_score: scores.technical_score,
+        content_score: scores.content_score,
+        performance_score: scores.performance_score
+      },
+      metrics: {
+        pct_missing_title: scores.pct_missing_title,
+        pct_missing_h1: scores.pct_missing_h1,
+        pct_missing_description: scores.pct_missing_description,
+        pct_thin_content: scores.pct_thin_content,
+        pct_slow_pages: scores.pct_slow_pages,
+        pct_not_indexable: scores.pct_not_indexable,
+        pct_missing_canonical: scores.pct_missing_canonical,
+        pct_pages_with_redirects: scores.pct_pages_with_redirects,
+        pct_long_redirect_chains: scores.pct_long_redirect_chains
+      },
+      distribution: {
+        pages_by_depth: scores.pages_by_depth,
+        pages_by_type: scores.pages_by_type,
+        issues_by_severity: scores.issues_by_severity
+      },
+      summary: {
+        page_count: pages.length,
+        is_partial: isPartial,
+        completion_percentage: completionPercentage,
+        partial_data_note: partialNote,
+        url: task.url,
+        timestamp: new Date().toISOString()
+      }
+    };
+
+    console.log('[SCORING] 💾 Saving audit_data to database');
+
     // Upsert audit_results with scores (insert if not exists, update if exists)
     const { error: updateError } = await supabase
       .from('audit_results')
@@ -441,7 +478,8 @@ serve(async (req) => {
         page_count: pages.length,
         is_partial: isPartial,
         completion_percentage: completionPercentage,
-        partial_data_note: partialNote
+        partial_data_note: partialNote,
+        audit_data: auditData
       }, {
         onConflict: 'task_id'
       });
@@ -449,6 +487,8 @@ serve(async (req) => {
     if (updateError) {
       throw new Error(`Failed to update scores: ${updateError.message}`);
     }
+
+    console.log('[SCORING] ✅ Audit data saved successfully');
 
     console.log(`Scoring complete for task ${task_id}`);
 
