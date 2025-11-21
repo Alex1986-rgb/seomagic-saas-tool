@@ -102,19 +102,8 @@ export const OptimizationProvider: React.FC<{
     setContentPrompt(prompt);
   }, []);
   
-  // Auto-load optimization cost when taskId changes
-  // Only load if we haven't tried this taskId yet
-  React.useEffect(() => {
-    if (taskId && !loadedTaskIdsRef.current.has(taskId)) {
-      console.log('[OptimizationContext] Auto-loading optimization cost for task:', taskId);
-      // Add a 5-second delay to ensure audit results are saved to database
-      // The backend process needs time to save results after task status changes to "completed"
-      const timer = setTimeout(() => {
-        loadOptimizationCost(taskId);
-      }, 5000);
-      return () => clearTimeout(timer);
-    }
-  }, [taskId, loadOptimizationCost]);
+  // Note: Auto-loading is handled by useAuditBase polling when audit completes
+  // We don't auto-load here based on taskId because the audit may not be complete yet
   
   // Memoize context value to prevent unnecessary re-renders
   const contextValue = useMemo(() => ({
