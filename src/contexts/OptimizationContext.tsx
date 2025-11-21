@@ -9,6 +9,8 @@ interface OptimizationContextType {
   isOptimized: boolean;
   contentPrompt: string;
   isLoadingCost: boolean;
+  loadingStatus: string;
+  retryAttempt: number;
   setContentOptimizationPrompt: (prompt: string) => void;
   loadOptimizationCost: (taskId: string) => Promise<void>;
   optimizeSiteContent: (taskId: string, prompt: string) => Promise<any>;
@@ -21,6 +23,8 @@ const OptimizationContext = createContext<OptimizationContextType>({
   isOptimized: false,
   contentPrompt: '',
   isLoadingCost: false,
+  loadingStatus: '',
+  retryAttempt: 0,
   setContentOptimizationPrompt: () => {},
   loadOptimizationCost: async () => {},
   optimizeSiteContent: async () => null,
@@ -35,6 +39,8 @@ export const OptimizationProvider: React.FC<{
   const [optimizationItems, setOptimizationItems] = useState<OptimizationItem[]>([]);
   const [isOptimized, setIsOptimized] = useState<boolean>(false);
   const [contentPrompt, setContentPrompt] = useState<string>('');
+  const [loadingStatus, setLoadingStatus] = useState<string>('');
+  const [retryAttempt, setRetryAttempt] = useState<number>(0);
   const loadedTaskIdsRef = useRef<Set<string>>(new Set());
   const isLoadingRef = useRef<boolean>(false);
   
@@ -76,15 +82,23 @@ export const OptimizationProvider: React.FC<{
     
     isLoadingRef.current = true;
     loadedTaskIdsRef.current.add(taskId);
+    setLoadingStatus('Подготовка к расчету стоимости...');
+    setRetryAttempt(0);
     
     try {
       await apiLoadOptimizationCost(
         taskId,
         (cost: number) => setOptimizationCost(cost),
-        (items: OptimizationItem[]) => setOptimizationItems(items)
+        (items: OptimizationItem[]) => setOptimizationItems(items),
+        (status: string, attempt?: number) => {
+          setLoadingStatus(status);
+          if (attempt) setRetryAttempt(attempt);
+        }
       );
     } finally {
       isLoadingRef.current = false;
+      setLoadingStatus('');
+      setRetryAttempt(0);
     }
   }, [apiLoadOptimizationCost]);
   
@@ -112,6 +126,8 @@ export const OptimizationProvider: React.FC<{
     isOptimized,
     contentPrompt,
     isLoadingCost,
+    loadingStatus,
+    retryAttempt,
     setContentOptimizationPrompt,
     loadOptimizationCost,
     optimizeSiteContent,
@@ -122,6 +138,8 @@ export const OptimizationProvider: React.FC<{
     isOptimized,
     contentPrompt,
     isLoadingCost,
+    loadingStatus,
+    retryAttempt,
     setContentOptimizationPrompt,
     loadOptimizationCost,
     optimizeSiteContent,

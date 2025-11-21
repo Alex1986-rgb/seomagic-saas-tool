@@ -40,7 +40,9 @@ export const useAuditBase = (url: string) => {
   } = useScanContext();
 
   const {
-    loadOptimizationCost
+    loadOptimizationCost,
+    loadingStatus,
+    retryAttempt
   } = useOptimizationContext();
 
   // Poll for task status and optimization items
@@ -124,6 +126,8 @@ export const useAuditBase = (url: string) => {
     isOptimized,
     contentPrompt,
     taskId,
+    loadingStatus,
+    retryAttempt,
     
     // Actions
     loadAuditData,

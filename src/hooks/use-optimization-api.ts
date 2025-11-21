@@ -12,12 +12,13 @@ export const useOptimizationAPI = (taskId: string | null) => {
   const [isLoadingCost, setIsLoadingCost] = useState<boolean>(false);
 
   /**
-   * Load optimization cost calculation
+   * Load optimization cost calculation with retry logic
    */
   const loadOptimizationCost = async (
     taskId: string,
     setOptimizationCost: (cost: number) => void,
-    setOptimizationItems: (items: OptimizationItem[]) => void
+    setOptimizationItems: (items: OptimizationItem[]) => void,
+    onStatusUpdate?: (status: string, attempt?: number) => void
   ) => {
     if (!taskId) {
       toast({
@@ -28,30 +29,69 @@ export const useOptimizationAPI = (taskId: string | null) => {
       return;
     }
     
+    const maxRetries = 5;
+    const baseDelay = 2000; // 2 seconds
+    
     setIsLoadingCost(true);
     
-    try {
-      // Get optimization cost calculation
-      const costData = await optimizationService.getOptimizationCost(taskId);
-      
-      setOptimizationCost(costData.totalCost);
-      setOptimizationItems(costData.items);
-      
-      toast({
-        title: "Данные оптимизации загружены",
-        description: `Расчетная стоимость оптимизации: ${new Intl.NumberFormat('ru-RU').format(costData.totalCost)} ₽`,
-      });
-    } catch (error) {
-      console.error('Error loading optimization cost:', error);
-      
-      toast({
-        title: "Внимание",
-        description: "Используем примерную стоимость оптимизации из-за ошибки расчета",
-        variant: "default"
-      });
-    } finally {
-      setIsLoadingCost(false);
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        onStatusUpdate?.(`Расчет стоимости оптимизации... (попытка ${attempt}/${maxRetries})`, attempt);
+        
+        // Get optimization cost calculation
+        const costData = await optimizationService.getOptimizationCost(taskId);
+        
+        setOptimizationCost(costData.totalCost);
+        setOptimizationItems(costData.items);
+        
+        onStatusUpdate?.('Расчет завершен успешно');
+        
+        toast({
+          title: "Данные оптимизации загружены",
+          description: `Расчетная стоимость оптимизации: ${new Intl.NumberFormat('ru-RU').format(costData.totalCost)} ₽`,
+        });
+        
+        setIsLoadingCost(false);
+        return; // Success - exit retry loop
+        
+      } catch (error: any) {
+        console.error(`Error loading optimization cost (attempt ${attempt}/${maxRetries}):`, error);
+        
+        // Check if it's a "not found" error that we should retry
+        const isNotFoundError = error?.message?.includes('not found') || 
+                               error?.message?.includes('404') ||
+                               error?.error?.includes('not found');
+        
+        if (isNotFoundError && attempt < maxRetries) {
+          // Calculate exponential backoff delay
+          const delay = baseDelay * Math.pow(1.5, attempt - 1);
+          
+          onStatusUpdate?.(
+            `Результаты аудита еще готовятся... Повтор через ${Math.round(delay / 1000)} сек.`,
+            attempt
+          );
+          
+          // Wait before next retry
+          await new Promise(resolve => setTimeout(resolve, delay));
+          continue;
+        }
+        
+        // If it's the last attempt or a different error, show fallback
+        onStatusUpdate?.('Используем примерную оценку');
+        
+        toast({
+          title: "Внимание",
+          description: attempt === maxRetries 
+            ? "Результаты аудита еще готовятся. Используем примерную стоимость оптимизации."
+            : "Используем примерную стоимость оптимизации из-за ошибки расчета",
+          variant: "default"
+        });
+        
+        break;
+      }
     }
+    
+    setIsLoadingCost(false);
   };
 
   /**

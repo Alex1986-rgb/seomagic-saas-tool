@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
@@ -10,6 +10,7 @@ import CostDetailsTable from './optimization/CostDetailsTable';
 import OptimizationProcessContainer from './optimization/process/OptimizationProcessContainer';
 import OptimizationResults from './optimization/OptimizationResults';
 import OptimizationActions from './optimization/OptimizationActions';
+import OptimizationLoadingStatus from './OptimizationLoadingStatus';
 
 interface AuditOptimizationSectionProps {
   url: string;
@@ -24,6 +25,8 @@ interface AuditOptimizationSectionProps {
   onGeneratePdfReport?: () => void;
   contentPrompt?: string;
   setContentOptimizationPrompt?: (prompt: string) => void;
+  loadingStatus?: string;
+  retryAttempt?: number;
 }
 
 const AuditOptimizationSection: React.FC<AuditOptimizationSectionProps> = ({
@@ -38,7 +41,9 @@ const AuditOptimizationSection: React.FC<AuditOptimizationSectionProps> = ({
   onDownloadOptimizedSite,
   onGeneratePdfReport,
   contentPrompt = "",
-  setContentOptimizationPrompt
+  setContentOptimizationPrompt,
+  loadingStatus = "",
+  retryAttempt = 0
 }) => {
   const { toast } = useToast();
   const [isOptimizing, setIsOptimizing] = useState(false);
@@ -129,6 +134,16 @@ const AuditOptimizationSection: React.FC<AuditOptimizationSectionProps> = ({
         <CardTitle>Оптимизация сайта</CardTitle>
       </CardHeader>
       <CardContent>
+        <AnimatePresence>
+          {loadingStatus && (
+            <OptimizationLoadingStatus 
+              status={loadingStatus}
+              attempt={retryAttempt}
+              className="mb-4"
+            />
+          )}
+        </AnimatePresence>
+
         {showPrompt && setContentOptimizationPrompt && (
           <motion.div
             className="mb-4"

@@ -34,6 +34,8 @@ interface AuditContentProps {
   contentPrompt: string;
   taskId: string | null;
   showPrompt: boolean;
+  loadingStatus?: string;
+  retryAttempt?: number;
   onTogglePrompt: () => void;
   onRetry: () => void;
   onDownloadSitemap?: () => void;
@@ -67,6 +69,8 @@ const AuditContent: React.FC<AuditContentProps> = ({
   contentPrompt,
   taskId,
   showPrompt,
+  loadingStatus,
+  retryAttempt,
   onTogglePrompt,
   onRetry,
   onDownloadSitemap,
@@ -167,6 +171,8 @@ const AuditContent: React.FC<AuditContentProps> = ({
                 url={url}
                 pageCount={auditData.pageCount || 0}
                 showPrompt={showPrompt}
+                loadingStatus={loadingStatus}
+                retryAttempt={retryAttempt}
                 onTogglePrompt={onTogglePrompt}
                 onOptimize={optimizeSiteContent}
                 onDownloadOptimizedSite={downloadOptimizedSite}
