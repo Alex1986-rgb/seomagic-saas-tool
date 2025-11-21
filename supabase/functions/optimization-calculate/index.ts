@@ -160,6 +160,34 @@ serve(async (req) => {
       type: 'sitemap',
     });
 
+    // Get user_id from auth header if available
+    const authHeader = req.headers.get('Authorization');
+    let userId = null;
+    
+    if (authHeader) {
+      const { data: { user } } = await supabaseClient.auth.getUser(authHeader.replace('Bearer ', ''));
+      userId = user?.id;
+    }
+
+    // Save calculation results to optimization_jobs table
+    const { error: saveError } = await supabaseClient
+      .from('optimization_jobs')
+      .insert({
+        task_id: task_id,
+        user_id: userId || '00000000-0000-0000-0000-000000000000',
+        status: 'pending',
+        cost: parseFloat(totalCost.toFixed(2)),
+        result_data: { items, pageCount },
+        options: null
+      });
+
+    if (saveError) {
+      console.error('[OPTIMIZATION-CALCULATE] Failed to save results:', saveError);
+      // Don't throw - still return data to user
+    } else {
+      console.log('[OPTIMIZATION-CALCULATE] Results saved to optimization_jobs');
+    }
+
     return new Response(
       JSON.stringify({
         success: true,

@@ -102,13 +102,22 @@ serve(async (req) => {
       throw new Error('Failed to save report');
     }
 
-    // Create report record
+    // Get task info for URL
+    const { data: taskData } = await supabaseClient
+      .from('audit_tasks')
+      .select('url, user_id')
+      .eq('id', task_id)
+      .single();
+
+    // Create PDF report record
     const { data: report, error: reportError } = await supabaseClient
-      .from('reports')
+      .from('pdf_reports')
       .insert({
         task_id,
-        format,
-        storage_path: uploadData.path,
+        url: taskData?.url || task.url,
+        file_path: uploadData.path,
+        file_size: reportContent.length,
+        user_id: taskData?.user_id,
       })
       .select()
       .single();
