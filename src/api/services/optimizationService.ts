@@ -13,14 +13,21 @@ class OptimizationService {
     items: OptimizationItem[];
   }> {
     try {
-      const { data, error } = await supabase.functions.invoke('optimization-calculate', {
-        body: { task_id: taskId }
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+      const response = await fetch(`${supabaseUrl}/functions/v1/optimization-calculate`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ task_id: taskId })
       });
 
-      if (error) {
-        console.error('Error getting optimization cost:', error);
-        throw error;
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || `HTTP error ${response.status}`);
       }
+
+      const data = await response.json();
 
       return {
         totalCost: data.totalCost || 0,
