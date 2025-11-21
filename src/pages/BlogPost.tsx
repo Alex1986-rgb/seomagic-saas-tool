@@ -8,6 +8,8 @@ import { BlogPostHeader } from '@/components/blog/BlogPostHeader';
 import BlogPostContent from '@/components/blog/BlogPostContent';
 import { RelatedPosts } from '@/components/blog/RelatedPosts';
 import { BlogPost as BlogPostType } from '@/types/blog';
+import { SEO } from '@/components/SEO';
+import { ArticleSEO } from '@/components/seo/ArticleSEO';
 
 const BlogPost: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -95,6 +97,14 @@ const BlogPost: React.FC = () => {
 
   return (
     <Layout>
+      <SEO
+        title={`${post.title} | Блог SeoMarket`}
+        description={post.excerpt}
+        canonicalUrl={`/blog/${post.id}`}
+        ogImage={post.image}
+        keywords={post.tags.join(', ')}
+      />
+      <ArticleSEO post={post} />
       <div className="container mx-auto px-4 py-32">
         <div className="max-w-4xl mx-auto">
           <motion.div

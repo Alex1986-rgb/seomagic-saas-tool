@@ -1,14 +1,40 @@
+# Главные поисковые боты
 User-agent: Googlebot
 Allow: /
+Crawl-delay: 1
 
 User-agent: Bingbot
 Allow: /
+Crawl-delay: 1
 
+User-agent: Yandex
+Allow: /
+Crawl-delay: 2
+
+# Социальные сети
 User-agent: Twitterbot
 Allow: /
 
 User-agent: facebookexternalhit
 Allow: /
 
+User-agent: LinkedInBot
+Allow: /
+
+# Запретить сканирование служебных страниц
 User-agent: *
 Allow: /
+Disallow: /admin/
+Disallow: /api/
+Disallow: /*.json$
+Disallow: /*?*task_id=*
+Disallow: /*?*audit_id=*
+Disallow: /site-audit?*
+Crawl-delay: 2
+
+# Sitemap
+Sitemap: https://seomarket.app/sitemap.xml
+Sitemap: https://seomarket.app/blog-sitemap.xml
+
+# Хосты
+Host: seomarket.app
