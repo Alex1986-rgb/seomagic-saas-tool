@@ -85,6 +85,11 @@ export const AuditRealtimeVisualizer = ({ url, statusData }: AuditRealtimeVisual
                   <p className="text-sm text-muted-foreground">
                     {progress === 100 ? 'Готово' : 'Завершено'}
                   </p>
+                  {stage === 'analysis' && progress > 90 && progress < 100 && (
+                    <p className="text-xs text-muted-foreground animate-pulse mt-1">
+                      (Финальная обработка данных...)
+                    </p>
+                  )}
                 </div>
               </div>
               <Progress value={progress} className="h-2" />
