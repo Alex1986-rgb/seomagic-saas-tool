@@ -189,8 +189,7 @@ export const useScan = (url: string, onPageCountUpdate?: (count: number) => void
           
           // If scan is complete, clean up and generate sitemap
           if (status === 'completed') {
-            clearInterval(pollInterval);
-            pollingIntervalRef.current = null;
+            console.log('✅ Scan completed, finalizing state...');
             
             // Get URLs from the status response or use the current URL
             const pageUrls = [statusResponse.url]; // In a real implementation, you would get all discovered URLs
@@ -201,12 +200,25 @@ export const useScan = (url: string, onPageCountUpdate?: (count: number) => void
             const sitemapXml = reportingService.generateSitemapXml(domain, pageUrls);
             setSitemap(sitemapXml);
             
-            // Show completion state with 100% progress
-            setScanDetails(prev => ({
-              ...prev,
+            // Set final state BEFORE stopping polling
+            setScanDetails({
+              current_url: statusCurrent,
+              pages_scanned: pagesScanned,
+              estimated_pages: totalPages,
               stage: 'Анализ завершен',
-              progress: 100
-            }));
+              progress: 100,
+              audit_data: (statusResponse as any).audit_data
+            });
+            
+            console.log('📊 Final state set:', {
+              hasAuditData: !!(statusResponse as any).audit_data,
+              pagesScanned,
+              status: 'completed'
+            });
+            
+            // THEN stop polling
+            clearInterval(pollInterval);
+            pollingIntervalRef.current = null;
             
             toast({
               title: "Сканирование завершено",

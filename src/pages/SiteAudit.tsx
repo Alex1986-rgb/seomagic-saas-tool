@@ -43,6 +43,15 @@ const SiteAudit: React.FC = () => {
         // If task_id is present, store it in localStorage for this url
         if (taskIdParam) {
           localStorage.setItem(`task_id_${urlParam}`, taskIdParam);
+          console.log('[SITE AUDIT] Task ID saved to localStorage:', taskIdParam);
+        } else {
+          // If no task_id in URL, check localStorage for recovery
+          const savedTaskId = localStorage.getItem(`task_id_${urlParam}`);
+          if (savedTaskId) {
+            console.log('[SITE AUDIT] 🔄 Recovering task_id from localStorage:', savedTaskId);
+            navigate(`/site-audit?url=${encodeURIComponent(urlParam)}&task_id=${savedTaskId}`, { replace: true });
+            return; // Exit early, will re-run with task_id
+          }
         }
       } catch (err) {
         console.error("Invalid URL provided:", urlParam, err);
@@ -64,7 +73,7 @@ const SiteAudit: React.FC = () => {
     
     // Finish loading in any case
     setIsLoading(false);
-  }, [searchParams, toast]);
+  }, [searchParams, toast, navigate]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
