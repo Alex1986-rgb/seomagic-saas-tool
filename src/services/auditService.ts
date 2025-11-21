@@ -3,7 +3,6 @@
 
 // Экспорт основных функций аудита
 export { 
-  fetchAuditData,
   scanWebsite,
   generateSitemap,
   calculateScannerOptimizationMetrics,

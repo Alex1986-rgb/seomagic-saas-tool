@@ -13,8 +13,6 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from '@/components/ui/button';
 import { AuditData, OptimizationItem } from '@/types/audit.d';
 
-// Import the generator functions directly
-import { generateMockOptimizationItems, calculateTotalCost } from '@/services/audit/generators';
 
 interface SiteAuditContentProps {
   url: string;
@@ -136,19 +134,10 @@ const SiteAuditContent: React.FC<SiteAuditContentProps> = ({ url }) => {
     }
   }
   
-  // Make sure we have optimization data for demo purposes
+  // Ensure optimization data exists
   if (data && !data.optimizationItems) {
-    try {
-      const pageCount = data.pageCount || 20;
-      const optimizationItems = generateMockOptimizationItems(pageCount);
-      data.optimizationItems = optimizationItems;
-      data.optimizationCost = calculateTotalCost(optimizationItems);
-    } catch (err) {
-      console.error("Failed to generate mock optimization data:", err);
-      // Provide fallback empty arrays to avoid further errors
-      data.optimizationItems = [];
-      data.optimizationCost = 0;
-    }
+    data.optimizationItems = [];
+    data.optimizationCost = 0;
   }
 
   if (isLoading) {

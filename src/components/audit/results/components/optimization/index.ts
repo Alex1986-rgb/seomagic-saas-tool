@@ -20,5 +20,4 @@ export type { CostDetailsTableProps } from './types';
 export type { OptimizationItem } from '@/features/audit/types/optimization-types';
 
 // Export utilities
-export { generateMockOptimizationItems, calculateTotalCost, generateRandomPageCount } from './mockOptimizationData';
 export * from './auditToInteractiveMapper';
