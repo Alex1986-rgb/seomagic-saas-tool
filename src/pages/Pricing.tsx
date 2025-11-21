@@ -7,6 +7,7 @@ import PricingFAQ from '@/components/pricing/PricingFAQ';
 import PricingCTA from '@/components/pricing/PricingCTA';
 import { SEO } from '@/components/SEO';
 import { BreadcrumbSchema } from '@/components/seo/BreadcrumbSchema';
+import { ProductSchema } from '@/components/seo/ProductSchema';
 
 const Pricing: React.FC = () => {
   return (
@@ -21,6 +22,7 @@ const Pricing: React.FC = () => {
         { name: 'Главная', url: '/' },
         { name: 'Цены', url: '/pricing' }
       ]} />
+      <ProductSchema />
       <div className="container mx-auto px-4 pt-32 pb-24">
         <PricingHero />
         <PricingPlans />
