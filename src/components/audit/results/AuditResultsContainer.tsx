@@ -34,6 +34,8 @@ const AuditResultsContainer: React.FC<AuditResultsContainerProps> = ({ url }) =>
     isOptimized,
     contentPrompt,
     taskId,
+    loadingStatus,
+    retryAttempt,
     loadAuditData,
     downloadSitemap,
     downloadOptimizedSite,
@@ -120,6 +122,8 @@ const AuditResultsContainer: React.FC<AuditResultsContainerProps> = ({ url }) =>
             contentPrompt={contentPrompt}
             taskId={taskId}
             showPrompt={showPrompt}
+            loadingStatus={loadingStatus}
+            retryAttempt={retryAttempt}
             onTogglePrompt={togglePrompt}
             onRetry={() => loadAuditData(false)}
             onDownloadSitemap={sitemap ? downloadSitemap : undefined}
