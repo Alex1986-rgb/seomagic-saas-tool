@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { AuditTypeSelector } from '@/components/site-audit/AuditTypeSelector';
 import { Card } from '@/components/ui/card';
@@ -7,8 +7,6 @@ import { useScanContext } from '@/contexts/ScanContext';
 
 interface AuditWorkspaceProps {
   url: string;
-  onStartAudit: (type: 'quick' | 'deep') => void;
-  isStartingAudit: boolean;
   children: React.ReactNode; // AuditResultsContainer
 }
 
@@ -16,11 +14,35 @@ type TabValue = 'start' | 'progress' | 'results';
 
 export const AuditWorkspace: React.FC<AuditWorkspaceProps> = ({
   url,
-  onStartAudit,
-  isStartingAudit,
   children
 }) => {
-  const { taskId, isScanning, scanDetails } = useScanContext();
+  const { taskId, isScanning, scanDetails, startScan } = useScanContext();
+  const [isStartingAudit, setIsStartingAudit] = useState(false);
+
+  // Handle starting audit using startScan from context
+  const handleStartAudit = useCallback(async (type: 'quick' | 'deep') => {
+    setIsStartingAudit(true);
+    try {
+      console.log(`🚀 Starting ${type} audit for:`, url);
+      
+      // Use startScan from context - this will:
+      // 1. Call auditService.startAudit
+      // 2. Start polling for progress
+      // 3. Set isScanning = true
+      // 4. Update scanDetails automatically
+      const newTaskId = await startScan(type === 'deep');
+      
+      if (newTaskId) {
+        // Save task_id to localStorage for recovery
+        localStorage.setItem(`task_id_${url}`, newTaskId);
+        console.log('[AUDIT WORKSPACE] Task ID saved to localStorage:', newTaskId);
+      }
+    } catch (error) {
+      console.error('Error starting audit:', error);
+    } finally {
+      setIsStartingAudit(false);
+    }
+  }, [url, startScan]);
   const [activeTab, setActiveTab] = useState<TabValue>('start');
 
   // Load saved tab from localStorage
@@ -148,7 +170,7 @@ export const AuditWorkspace: React.FC<AuditWorkspaceProps> = ({
         <TabsContent value="start" className="mt-0">
           <div className="p-6">
             <AuditTypeSelector 
-              onStartAudit={onStartAudit}
+              onStartAudit={handleStartAudit}
               isLoading={isStartingAudit}
               url={url}
             />
