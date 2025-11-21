@@ -403,11 +403,23 @@ serve(async (req) => {
 
     console.log(`📊 Saving results as ${isPartial ? 'PARTIAL' : 'COMPLETE'} (${completionPercentage}%)`);
 
+    // Fetch task data to get audit_id
+    const { data: task, error: taskError } = await supabase
+      .from('audit_tasks')
+      .select('audit_id, user_id, url')
+      .eq('id', task_id)
+      .single();
+
+    if (taskError || !task) {
+      throw new Error(`Failed to fetch task data: ${taskError?.message}`);
+    }
+
     // Upsert audit_results with scores (insert if not exists, update if exists)
     const { error: updateError } = await supabase
       .from('audit_results')
       .upsert({
         task_id: task_id,
+        audit_id: task.audit_id,
         score: scores.global_score,
         seo_score: scores.seo_score,
         technical_score: scores.technical_score,
@@ -439,6 +451,24 @@ serve(async (req) => {
     }
 
     console.log(`Scoring complete for task ${task_id}`);
+
+    // Update audit status to completed
+    const { error: auditUpdateError } = await supabase
+      .from('audits')
+      .update({ 
+        status: isPartial ? 'partial' : 'completed',
+        pages_scanned: pages.length,
+        seo_score: scores.global_score,
+        completed_at: new Date().toISOString()
+      })
+      .eq('id', task.audit_id);
+
+    if (auditUpdateError) {
+      console.error('[SCORING] ⚠️ Failed to update audits table:', auditUpdateError);
+      // Don't throw - this is not critical
+    } else {
+      console.log(`[SCORING] ✅ Updated audits table status to ${isPartial ? 'partial' : 'completed'}`);
+    }
     
     // Автоматически рассчитываем смету после сохранения оценок
     console.log('[SCORING] ✅ Scores saved, triggering optimization calculation...');

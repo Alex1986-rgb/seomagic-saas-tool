@@ -175,7 +175,7 @@ serve(async (req) => {
       .insert({
         task_id: task_id,
         user_id: userId, // Now supports NULL for anonymous audits
-        status: 'pending',
+        status: 'completed',
         cost: parseFloat(totalCost.toFixed(2)),
         result_data: { items, pageCount },
         options: null
