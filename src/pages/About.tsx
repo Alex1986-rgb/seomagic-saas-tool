@@ -11,6 +11,7 @@ import { Separator } from '@/components/ui/separator';
 import { BreadcrumbSchema } from '@/components/seo/BreadcrumbSchema';
 import { LocalBusinessSchema } from '@/components/seo/LocalBusinessSchema';
 import { OrganizationSchema } from '@/components/seo/OrganizationSchema';
+import { ReviewSchema } from '@/components/seo/ReviewSchema';
 
 const About = () => {
   return (
@@ -21,6 +22,7 @@ const About = () => {
       ]} />
       <LocalBusinessSchema />
       <OrganizationSchema />
+      <ReviewSchema />
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
