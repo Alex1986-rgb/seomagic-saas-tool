@@ -1,9 +1,7 @@
 
-/**
- * Website scanner implementation
- */
-
 import { SimpleSitemapCreator } from './simpleSitemapCreator';
+import { reportService } from '@/api/services/reportService';
+import { supabase } from '@/integrations/supabase/client';
 
 // Export functions for website scanning
 export async function scanWebsite(url: string, options: any = {}) {
@@ -56,8 +54,43 @@ export async function generateSitemap(url: string, options: any = {}): Promise<s
 // Download audit report in PDF format
 export async function downloadAuditPdfReport(domain: string, urls: string[], data: any): Promise<boolean> {
   try {
-    // Simplified implementation for downloading PDF
-    console.log(`Generating PDF report for ${domain} with ${urls.length} URLs`);
+    // Extract task_id from data if available
+    const taskId = data?.task_id || data?.id;
+    
+    if (!taskId) {
+      console.error('No task_id available for PDF generation');
+      return false;
+    }
+
+    // Generate PDF report via edge function
+    const reportResponse = await reportService.generateReport(taskId, 'pdf');
+    
+    if (!reportResponse.success || !reportResponse.storage_path) {
+      console.error('Failed to generate report:', reportResponse.message);
+      return false;
+    }
+
+    // Download the report from storage
+    const { data: fileData, error: downloadError } = await supabase.storage
+      .from('pdf-reports')
+      .download(reportResponse.storage_path);
+
+    if (downloadError || !fileData) {
+      console.error('Failed to download PDF:', downloadError);
+      return false;
+    }
+
+    // Create download link
+    const blob = new Blob([fileData], { type: 'application/pdf' });
+    const downloadUrl = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = downloadUrl;
+    link.download = `audit-report-${domain}-${new Date().toISOString().split('T')[0]}.pdf`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(downloadUrl);
+
     return true;
   } catch (error) {
     console.error('Error generating PDF report:', error);
@@ -68,8 +101,43 @@ export async function downloadAuditPdfReport(domain: string, urls: string[], dat
 // Download error report for the website
 export async function downloadErrorReport(domain: string, urls: string[], data: any): Promise<boolean> {
   try {
-    // Simplified implementation for downloading error report
-    console.log(`Generating error report for ${domain} with ${urls.length} URLs`);
+    // Extract task_id from data if available
+    const taskId = data?.task_id || data?.id;
+    
+    if (!taskId) {
+      console.error('No task_id available for error report generation');
+      return false;
+    }
+
+    // Generate JSON report via edge function
+    const reportResponse = await reportService.generateReport(taskId, 'json');
+    
+    if (!reportResponse.success || !reportResponse.storage_path) {
+      console.error('Failed to generate error report:', reportResponse.message);
+      return false;
+    }
+
+    // Download the report from storage
+    const { data: fileData, error: downloadError } = await supabase.storage
+      .from('pdf-reports')
+      .download(reportResponse.storage_path);
+
+    if (downloadError || !fileData) {
+      console.error('Failed to download error report:', downloadError);
+      return false;
+    }
+
+    // Create download link
+    const blob = new Blob([fileData], { type: 'application/json' });
+    const downloadUrl = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = downloadUrl;
+    link.download = `error-report-${domain}-${new Date().toISOString().split('T')[0]}.json`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(downloadUrl);
+
     return true;
   } catch (error) {
     console.error('Error generating error report:', error);
