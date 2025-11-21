@@ -2,10 +2,15 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Button } from "@/components/ui/button";
 import Layout from '@/components/Layout';
+import { BreadcrumbSchema } from '@/components/seo/BreadcrumbSchema';
 
 const Privacy: React.FC = () => {
   return (
     <Layout>
+      <BreadcrumbSchema items={[
+        { name: 'Главная', url: '/' },
+        { name: 'Конфиденциальность', url: '/privacy' }
+      ]} />
       <div className="container mx-auto px-4 py-32">
         <div className="max-w-4xl mx-auto">
           <motion.div 

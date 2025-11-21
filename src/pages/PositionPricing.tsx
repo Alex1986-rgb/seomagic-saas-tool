@@ -6,6 +6,7 @@ import PositionPricingFeatures from '@/components/position-pricing/PositionPrici
 import PositionPricingFAQ from '@/components/position-pricing/PositionPricingFAQ';
 import PositionPricingCTA from '@/components/position-pricing/PositionPricingCTA';
 import { SEO } from '@/components/SEO';
+import { BreadcrumbSchema } from '@/components/seo/BreadcrumbSchema';
 
 const PositionPricing: React.FC = () => {
   return (
@@ -16,6 +17,10 @@ const PositionPricing: React.FC = () => {
         canonicalUrl="/position-pricing"
         keywords="цены на мониторинг позиций, отслеживание позиций сайта, проверка позиций"
       />
+      <BreadcrumbSchema items={[
+        { name: 'Главная', url: '/' },
+        { name: 'Мониторинг позиций', url: '/position-pricing' }
+      ]} />
       <div className="container mx-auto px-4 pt-32 pb-24">
         <PositionPricingHero />
         <PositionPricingPlans />

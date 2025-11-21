@@ -9,6 +9,7 @@ import { Search, Book } from 'lucide-react';
 import { mockBlogPosts } from '@/data/mockData';
 import { LazyImage } from '@/components/LazyImage';
 import { SEO } from '@/components/SEO';
+import { BreadcrumbSchema } from '@/components/seo/BreadcrumbSchema';
 
 const Blog: React.FC = () => {
   return (
@@ -19,6 +20,10 @@ const Blog: React.FC = () => {
         canonicalUrl="/blog"
         keywords="SEO блог, статьи про SEO, продвижение сайтов, SEO оптимизация, SEO гайды"
       />
+      <BreadcrumbSchema items={[
+        { name: 'Главная', url: '/' },
+        { name: 'Блог', url: '/blog' }
+      ]} />
       <div className="container mx-auto px-4 md:px-6 pt-32 pb-20">
         <div className="max-w-6xl mx-auto">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">

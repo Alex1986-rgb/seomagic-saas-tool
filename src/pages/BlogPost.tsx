@@ -10,6 +10,7 @@ import { RelatedPosts } from '@/components/blog/RelatedPosts';
 import { BlogPost as BlogPostType } from '@/types/blog';
 import { SEO } from '@/components/SEO';
 import { ArticleSEO } from '@/components/seo/ArticleSEO';
+import { BreadcrumbSchema } from '@/components/seo/BreadcrumbSchema';
 
 const BlogPost: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -105,6 +106,11 @@ const BlogPost: React.FC = () => {
         keywords={post.tags.join(', ')}
       />
       <ArticleSEO post={post} />
+      <BreadcrumbSchema items={[
+        { name: 'Главная', url: '/' },
+        { name: 'Блог', url: '/blog' },
+        { name: post.title, url: `/blog/${post.id}` }
+      ]} />
       <div className="container mx-auto px-4 py-32">
         <div className="max-w-4xl mx-auto">
           <motion.div

@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { motion } from 'framer-motion';
 import Layout from '@/components/Layout';
@@ -9,6 +8,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { MapPin, Clock, Phone, Mail, MessageCircle, Headphones, Calendar } from 'lucide-react';
+import { BreadcrumbSchema } from '@/components/seo/BreadcrumbSchema';
 
 const Contact: React.FC = () => {
   const containerVariants = {
@@ -61,6 +61,10 @@ const Contact: React.FC = () => {
 
   return (
     <Layout>
+      <BreadcrumbSchema items={[
+        { name: 'Главная', url: '/' },
+        { name: 'Контакты', url: '/contact' }
+      ]} />
       <div className="min-h-screen bg-gradient-to-br from-background via-secondary/5 to-background">
         <div className="container mx-auto px-4 py-32">
           <div className="max-w-7xl mx-auto">

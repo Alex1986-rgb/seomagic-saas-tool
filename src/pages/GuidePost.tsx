@@ -1,4 +1,3 @@
-
 import React from 'react';
 import Layout from '@/components/Layout';
 import { useParams, Link } from 'react-router-dom';
@@ -9,6 +8,7 @@ import GuideVideo from '@/components/guides/GuideVideo';
 import GuideCarousel from '@/components/guides/GuideCarousel';
 import GuideContent from '@/components/guides/GuideContent';
 import GuideCallToAction from '@/components/guides/GuideCallToAction';
+import { BreadcrumbSchema } from '@/components/seo/BreadcrumbSchema';
 
 const GuidePost: React.FC = () => {
   const { id } = useParams();
@@ -18,6 +18,10 @@ const GuidePost: React.FC = () => {
   if (!guide) {
     return (
       <Layout>
+        <BreadcrumbSchema items={[
+          { name: 'Главная', url: '/' },
+          { name: 'Руководства', url: '/guides' }
+        ]} />
         <div className="container mx-auto px-4 py-32">
           <div className="max-w-4xl mx-auto text-center">
             <h1 className="text-2xl font-bold mb-4">Руководство не найдено</h1>
@@ -33,6 +37,11 @@ const GuidePost: React.FC = () => {
 
   return (
     <Layout>
+      <BreadcrumbSchema items={[
+        { name: 'Главная', url: '/' },
+        { name: 'Руководства', url: '/guides' },
+        { name: guide.title, url: `/guides/${guide.id}` }
+      ]} />
       <div className="container mx-auto px-4 py-32">
         <div className="max-w-4xl mx-auto">
           <GuideHeader

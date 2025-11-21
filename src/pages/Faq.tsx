@@ -8,6 +8,7 @@ import {
 } from "@/components/ui/accordion";
 import { FAQSchema } from '@/components/seo/FAQSchema';
 import { SEO } from '@/components/SEO';
+import { BreadcrumbSchema } from '@/components/seo/BreadcrumbSchema';
 
 const Faq: React.FC = () => {
   const faqData = [
@@ -49,6 +50,10 @@ const Faq: React.FC = () => {
         canonicalUrl="/faq"
         keywords="FAQ SEO, вопросы о SEO, SEO аудит FAQ, вопросы о продвижении"
       />
+      <BreadcrumbSchema items={[
+        { name: 'Главная', url: '/' },
+        { name: 'FAQ', url: '/faq' }
+      ]} />
       <FAQSchema faqs={faqData} />
       <div className="container mx-auto py-32 px-4">
         <div className="text-center mb-12">

@@ -6,6 +6,7 @@ import FeatureComparison from '@/components/pricing/FeatureComparison';
 import PricingFAQ from '@/components/pricing/PricingFAQ';
 import PricingCTA from '@/components/pricing/PricingCTA';
 import { SEO } from '@/components/SEO';
+import { BreadcrumbSchema } from '@/components/seo/BreadcrumbSchema';
 
 const Pricing: React.FC = () => {
   return (
@@ -16,6 +17,10 @@ const Pricing: React.FC = () => {
         canonicalUrl="/pricing"
         keywords="цены на SEO аудит, тарифы SEO, стоимость SEO анализа"
       />
+      <BreadcrumbSchema items={[
+        { name: 'Главная', url: '/' },
+        { name: 'Цены', url: '/pricing' }
+      ]} />
       <div className="container mx-auto px-4 pt-32 pb-24">
         <PricingHero />
         <PricingPlans />

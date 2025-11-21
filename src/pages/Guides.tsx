@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { FileText, Filter, Search } from 'lucide-react';
@@ -8,6 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Layout from '@/components/Layout';
 import GuideCard from '@/components/guides/GuideCard';
 import { guides } from '@/data/guidesData';
+import { BreadcrumbSchema } from '@/components/seo/BreadcrumbSchema';
 
 const Guides: React.FC = () => {
   const [activeTab, setActiveTab] = useState('all');
@@ -41,6 +41,10 @@ const Guides: React.FC = () => {
 
   return (
     <Layout>
+      <BreadcrumbSchema items={[
+        { name: 'Главная', url: '/' },
+        { name: 'Руководства', url: '/guides' }
+      ]} />
       <div className="container mx-auto px-4 py-32">
         <div className="max-w-6xl mx-auto">
           <motion.div 
