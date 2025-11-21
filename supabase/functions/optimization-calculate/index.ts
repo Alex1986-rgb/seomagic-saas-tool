@@ -188,6 +188,23 @@ serve(async (req) => {
       console.log('[OPTIMIZATION-CALCULATE] Results saved to optimization_jobs');
     }
 
+    // Автоматически генерируем PDF отчёт
+    console.log('[OPTIMIZATION-CALCULATE] ✅ Results saved, triggering PDF generation...');
+    
+    try {
+      const { data: pdfData, error: pdfError } = await supabaseClient.functions.invoke('pdf-report-generate', {
+        body: { task_id: task_id }
+      });
+      
+      if (pdfError) {
+        console.error('[OPTIMIZATION-CALCULATE] ❌ Failed to generate PDF:', pdfError);
+      } else {
+        console.log('[OPTIMIZATION-CALCULATE] ✅ PDF generated:', pdfData);
+      }
+    } catch (error) {
+      console.error('[OPTIMIZATION-CALCULATE] ❌ Exception in PDF generation:', error);
+    }
+
     return new Response(
       JSON.stringify({
         success: true,

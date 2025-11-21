@@ -440,6 +440,23 @@ serve(async (req) => {
 
     console.log(`Scoring complete for task ${task_id}`);
     
+    // Автоматически рассчитываем смету после сохранения оценок
+    console.log('[SCORING] ✅ Scores saved, triggering optimization calculation...');
+    
+    try {
+      const { data: optData, error: optError } = await supabase.functions.invoke('optimization-calculate', {
+        body: { task_id: task_id }
+      });
+      
+      if (optError) {
+        console.error('[SCORING] ❌ Failed to calculate optimization:', optError);
+      } else {
+        console.log('[SCORING] ✅ Optimization calculated:', optData);
+      }
+    } catch (error) {
+      console.error('[SCORING] ❌ Exception in optimization calculation:', error);
+    }
+    
     // Create notification in background (don't block response)
     const { data: task } = await supabase
       .from('audit_tasks')

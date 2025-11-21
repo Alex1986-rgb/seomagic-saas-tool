@@ -36,5 +36,8 @@ verify_jwt = false
 [functions.cleanup-old-data]
 verify_jwt = false
 
+[functions.pdf-report-generate]
+verify_jwt = false
+
 [functions.create-notification]
 verify_jwt = false
