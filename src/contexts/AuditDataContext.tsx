@@ -236,22 +236,27 @@ export const AuditDataProvider: React.FC<AuditDataProviderProps> = ({
         return;
       }
       
-      // Скачиваем PDF из Storage
+      // Скачиваем файл из Storage
       const { data: fileData, error: downloadError } = await supabase.storage
         .from('pdf-reports')
         .download(pdfReport.file_path);
       
       if (downloadError || !fileData) {
-        console.error('Error downloading PDF:', downloadError);
-        throw new Error('Не удалось скачать PDF отчет');
+        console.error('Error downloading report:', downloadError);
+        throw new Error('Не удалось скачать отчет');
       }
       
+      // Определяем тип файла по расширению
+      const isHtml = pdfReport.file_path.endsWith('.html');
+      const mimeType = isHtml ? 'text/html' : 'application/pdf';
+      const extension = isHtml ? 'html' : 'pdf';
+      
       // Создаем blob и скачиваем файл
-      const blob = new Blob([fileData], { type: 'application/pdf' });
+      const blob = new Blob([fileData], { type: mimeType });
       const downloadUrl = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = downloadUrl;
-      link.download = `seo-audit-${validationService.extractDomain(url)}-${new Date().getTime()}.pdf`;
+      link.download = `seo-audit-${validationService.extractDomain(url)}-${new Date().getTime()}.${extension}`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
