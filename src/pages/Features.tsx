@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { BreadcrumbSchema } from '@/components/seo/BreadcrumbSchema';
 import { ServiceSchema } from '@/components/seo/ServiceSchema';
+import { HowToSchema } from '@/components/seo/HowToSchema';
 import { 
   Search, 
   BarChart3, 
@@ -169,6 +170,7 @@ const FeaturesPage: React.FC = () => {
         { name: 'Возможности', url: '/features' }
       ]} />
       <ServiceSchema />
+      <HowToSchema />
       <div className="min-h-screen bg-gradient-to-br from-background via-secondary/5 to-background">
         <div className="container mx-auto px-4 py-32">
           <div className="max-w-7xl mx-auto">
