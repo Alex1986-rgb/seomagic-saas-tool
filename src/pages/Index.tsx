@@ -1,4 +1,3 @@
-
 import React, { useEffect } from 'react';
 import Layout from '../components/Layout';
 import HeroSection from '../components/hero/HeroSection';
@@ -7,6 +6,7 @@ import CoreFeaturesSection from '../components/home/CoreFeaturesSection';
 import PositionTrackerSection from '../components/position-tracker/PositionTrackerSection';
 import DetailedFeaturesSection from '../components/home/DetailedFeaturesSection';
 import CTASection from '../components/sections/CTASection';
+import { LocalBusinessSchema } from '@/components/seo/LocalBusinessSchema';
 
 const Index: React.FC = () => {
   useEffect(() => {
@@ -22,6 +22,7 @@ const Index: React.FC = () => {
   
   return (
     <Layout>
+      <LocalBusinessSchema />
       <HeroSection />
       <VideoSection />
       <CoreFeaturesSection />

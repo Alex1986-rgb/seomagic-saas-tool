@@ -9,6 +9,7 @@ import TestimonialsSection from '@/components/about/TestimonialsSection';
 import CtaSection from '@/components/about/CtaSection';
 import { Separator } from '@/components/ui/separator';
 import { BreadcrumbSchema } from '@/components/seo/BreadcrumbSchema';
+import { LocalBusinessSchema } from '@/components/seo/LocalBusinessSchema';
 
 const About = () => {
   return (
@@ -17,6 +18,7 @@ const About = () => {
         { name: 'Главная', url: '/' },
         { name: 'О нас', url: '/about' }
       ]} />
+      <LocalBusinessSchema />
       <motion.div 
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
