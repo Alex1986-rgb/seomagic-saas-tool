@@ -928,6 +928,10 @@ export type Database = {
     }
     Functions: {
       clean_old_pdf_reports: { Args: never; Returns: undefined }
+      increment_pdf_download_count: {
+        Args: { report_task_id: string }
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never

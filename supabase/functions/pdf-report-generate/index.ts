@@ -1,6 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
-import PDFDocument from "https://cdn.skypack.dev/pdfkit@0.13.0";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -47,7 +46,7 @@ serve(async (req) => {
       .from('optimization_jobs')
       .select('*')
       .eq('task_id', task_id)
-      .single();
+      .maybeSingle();
 
     if (optError) {
       console.warn('[PDF-GENERATE] No optimization data found:', optError.message);
@@ -63,110 +62,143 @@ serve(async (req) => {
     const url = task?.url || 'Неизвестный URL';
     const userId = task?.user_id || null;
 
-    console.log('[PDF-GENERATE] Creating PDF document...');
+    console.log('[PDF-GENERATE] Creating PDF report data...');
 
-    // Создаём PDF
-    const doc = new PDFDocument({ size: 'A4', margin: 50 });
-    const chunks: Uint8Array[] = [];
+    // Создаем простой HTML отчет который можно конвертировать в PDF на клиенте
+    const reportHtml = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>SEO Audit Report</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 40px; max-width: 800px; margin: 0 auto; }
+    h1 { color: #333; border-bottom: 3px solid #4CAF50; padding-bottom: 10px; }
+    h2 { color: #555; margin-top: 30px; border-bottom: 1px solid #ddd; padding-bottom: 5px; }
+    .score-card { background: #f5f5f5; padding: 20px; border-radius: 8px; margin: 20px 0; }
+    .score-item { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #ddd; }
+    .score-value { font-weight: bold; font-size: 18px; color: #4CAF50; }
+    .issues { margin: 20px 0; }
+    .issue-item { padding: 10px; margin: 5px 0; background: #fff3cd; border-left: 4px solid #ffc107; }
+    .critical { background: #f8d7da; border-left-color: #dc3545; }
+    .important { background: #fff3cd; border-left-color: #ffc107; }
+    .minor { background: #d1ecf1; border-left-color: #17a2b8; }
+    .opt-item { padding: 10px; margin: 5px 0; background: #d4edda; border-left: 4px solid #28a745; }
+    .date { color: #666; font-size: 14px; }
+  </style>
+</head>
+<body>
+  <h1>SEO Audit Report</h1>
+  <p class="date">Website: ${url}</p>
+  <p class="date">Date: ${new Date().toLocaleDateString('ru-RU')}</p>
+  
+  <div class="score-card">
+    <h2>Overall Score</h2>
+    <div class="score-item">
+      <span>Global Score</span>
+      <span class="score-value">${auditResult.global_score || 0}/100</span>
+    </div>
+    <div class="score-item">
+      <span>SEO Score</span>
+      <span class="score-value">${auditResult.seo_score || 0}/100</span>
+    </div>
+    <div class="score-item">
+      <span>Technical Score</span>
+      <span class="score-value">${auditResult.technical_score || 0}/100</span>
+    </div>
+    <div class="score-item">
+      <span>Content Score</span>
+      <span class="score-value">${auditResult.content_score || 0}/100</span>
+    </div>
+    <div class="score-item">
+      <span>Performance Score</span>
+      <span class="score-value">${auditResult.performance_score || 0}/100</span>
+    </div>
+  </div>
 
-    doc.on('data', (chunk: Uint8Array) => chunks.push(chunk));
-    
-    const pdfBuffer = await new Promise<Uint8Array>((resolve, reject) => {
-      doc.on('end', () => {
-        const result = new Uint8Array(chunks.reduce((acc, chunk) => acc + chunk.length, 0));
-        let offset = 0;
-        for (const chunk of chunks) {
-          result.set(chunk, offset);
-          offset += chunk.length;
-        }
-        resolve(result);
-      });
-      doc.on('error', reject);
+  ${auditResult.issues_by_severity ? `
+  <h2>Issues Found</h2>
+  <div class="issues">
+    <div class="issue-item critical">
+      <strong>Critical Issues:</strong> ${(auditResult.issues_by_severity as any).critical || 0}
+    </div>
+    <div class="issue-item important">
+      <strong>Important Issues:</strong> ${(auditResult.issues_by_severity as any).important || 0}
+    </div>
+    <div class="issue-item minor">
+      <strong>Minor Issues:</strong> ${(auditResult.issues_by_severity as any).minor || 0}
+    </div>
+  </div>
+  ` : ''}
 
-      // Генерируем содержимое PDF
-      doc.fontSize(24).text('SEO Audit Report', { align: 'center' });
-      doc.moveDown();
-      
-      doc.fontSize(12).text(`Website: ${url}`, { align: 'center' });
-      doc.text(`Date: ${new Date().toLocaleDateString('ru-RU')}`, { align: 'center' });
-      doc.moveDown(2);
+  ${optimizationJob ? `
+  <h2>Optimization Estimate</h2>
+  <div class="score-card">
+    <div class="score-item">
+      <span><strong>Total Cost</strong></span>
+      <span class="score-value">$${(optimizationJob.cost || 0).toFixed(2)}</span>
+    </div>
+    <div class="score-item">
+      <span>Pages to optimize</span>
+      <span>${(optimizationJob.result_data as any)?.pageCount || 0}</span>
+    </div>
+  </div>
+  
+  ${(optimizationJob.result_data as any)?.items ? `
+  <h3>Optimization Items:</h3>
+  ${((optimizationJob.result_data as any).items as any[]).map((item: any) => `
+    <div class="opt-item">
+      <strong>${item.name}</strong><br/>
+      ${item.description}<br/>
+      ${item.count} items × $${item.pricePerUnit} = <strong>$${item.totalPrice.toFixed(2)}</strong>
+    </div>
+  `).join('')}
+  ` : ''}
+  ` : ''}
 
-      // Общая оценка
-      doc.fontSize(18).text('Overall Score', { underline: true });
-      doc.moveDown();
-      doc.fontSize(14).text(`Global Score: ${auditResult.global_score || 0}/100`);
-      doc.text(`SEO Score: ${auditResult.seo_score || 0}/100`);
-      doc.text(`Technical Score: ${auditResult.technical_score || 0}/100`);
-      doc.text(`Content Score: ${auditResult.content_score || 0}/100`);
-      doc.text(`Performance Score: ${auditResult.performance_score || 0}/100`);
-      doc.moveDown(2);
+  <h2>Page Statistics</h2>
+  <div class="score-card">
+    <p><strong>Total Pages Scanned:</strong> ${auditResult.page_count || 0}</p>
+    ${auditResult.pages_by_type ? `
+    <h3>Pages by Type:</h3>
+    <ul>
+      ${Object.entries(auditResult.pages_by_type as any).map(([type, count]) => `
+        <li>${type}: ${count}</li>
+      `).join('')}
+    </ul>
+    ` : ''}
+  </div>
 
-      // Проблемы
-      if (auditResult.issues_by_severity) {
-        const issues = auditResult.issues_by_severity as any;
-        doc.fontSize(18).text('Issues Found', { underline: true });
-        doc.moveDown();
-        doc.fontSize(14).text(`Critical: ${issues.critical || 0}`);
-        doc.text(`Important: ${issues.important || 0}`);
-        doc.text(`Minor: ${issues.minor || 0}`);
-        doc.moveDown(2);
-      }
+  <div style="margin-top: 40px; padding-top: 20px; border-top: 2px solid #ddd; text-align: center; color: #666;">
+    <p>Generated by SEO Audit Tool</p>
+  </div>
+</body>
+</html>
+    `;
 
-      // Смета оптимизации
-      if (optimizationJob?.result_data) {
-        const resultData = optimizationJob.result_data as any;
-        doc.fontSize(18).text('Optimization Estimate', { underline: true });
-        doc.moveDown();
-        doc.fontSize(14).text(`Total Cost: $${optimizationJob.cost?.toFixed(2) || '0.00'}`);
-        doc.text(`Pages to optimize: ${resultData.pageCount || 0}`);
-        doc.moveDown();
+    // Конвертируем HTML в base64 для хранения
+    const encoder = new TextEncoder();
+    const htmlBytes = encoder.encode(reportHtml);
 
-        if (resultData.items && Array.isArray(resultData.items)) {
-          doc.fontSize(12).text('Optimization Items:');
-          doc.moveDown(0.5);
-          resultData.items.forEach((item: any) => {
-            doc.fontSize(10).text(`• ${item.name}: ${item.count} items × $${item.pricePerUnit} = $${item.totalPrice.toFixed(2)}`);
-          });
-          doc.moveDown(2);
-        }
-      }
+    console.log('[PDF-GENERATE] HTML report created, size:', htmlBytes.length);
 
-      // Статистика страниц
-      doc.fontSize(18).text('Page Statistics', { underline: true });
-      doc.moveDown();
-      doc.fontSize(14).text(`Total Pages Scanned: ${auditResult.page_count || 0}`);
-      
-      if (auditResult.pages_by_type) {
-        const pageTypes = auditResult.pages_by_type as any;
-        doc.fontSize(12).text('Pages by Type:');
-        doc.moveDown(0.5);
-        Object.entries(pageTypes).forEach(([type, count]) => {
-          doc.fontSize(10).text(`• ${type}: ${count}`);
-        });
-      }
-
-      doc.end();
-    });
-
-    console.log('[PDF-GENERATE] PDF created, size:', pdfBuffer.length);
-
-    // Сохраняем PDF в Storage
-    const fileName = `audit-${task_id}-${Date.now()}.pdf`;
+    // Сохраняем HTML как файл (клиент может конвертировать в PDF)
+    const fileName = `audit-${task_id}-${Date.now()}.html`;
     const filePath = `reports/${fileName}`;
 
     const { error: uploadError } = await supabaseClient
       .storage
       .from('pdf-reports')
-      .upload(filePath, pdfBuffer, {
-        contentType: 'application/pdf',
+      .upload(filePath, htmlBytes, {
+        contentType: 'text/html',
         upsert: false
       });
 
     if (uploadError) {
-      throw new Error(`Failed to upload PDF: ${uploadError.message}`);
+      throw new Error(`Failed to upload report: ${uploadError.message}`);
     }
 
-    console.log('[PDF-GENERATE] PDF uploaded to storage:', filePath);
+    console.log('[PDF-GENERATE] Report uploaded to storage:', filePath);
 
     // Записываем в таблицу pdf_reports
     const { error: insertError } = await supabaseClient
@@ -176,22 +208,23 @@ serve(async (req) => {
         user_id: userId,
         url: url,
         file_path: filePath,
-        file_size: pdfBuffer.length,
+        file_size: htmlBytes.length,
         report_title: `SEO Audit - ${url}`,
       });
 
     if (insertError) {
       console.error('[PDF-GENERATE] Failed to insert to pdf_reports:', insertError);
-      // Don't throw - PDF is already created
+      // Don't throw - report is already created
     }
 
-    console.log('[PDF-GENERATE] ✅ PDF generation complete');
+    console.log('[PDF-GENERATE] ✅ Report generation complete');
 
     return new Response(
       JSON.stringify({
         success: true,
         file_path: filePath,
-        file_size: pdfBuffer.length,
+        file_size: htmlBytes.length,
+        format: 'html'
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
