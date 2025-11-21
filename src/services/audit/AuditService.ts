@@ -1,6 +1,7 @@
 import { PageData } from '@/types/audit/crawler';
 import { SEOAnalyzer, TechnicalAnalyzer } from './analyzers';
 import { AuditData } from '@/types/audit';
+import { IssueClassifier, PricingService } from './issues';
 
 export class AuditService {
   /**
@@ -120,6 +121,50 @@ export class AuditService {
         }
       }
     };
+  }
+
+  /**
+   * Process and classify issues for audit
+   */
+  static async processAuditIssues(
+    auditId: string,
+    taskId: string,
+    userId: string,
+    pages: any[]
+  ): Promise<void> {
+    const allIssues = [];
+
+    // Classify issues for each page
+    for (const page of pages) {
+      const pageIssues = IssueClassifier.classifyPageIssues(page);
+      allIssues.push(...pageIssues);
+    }
+
+    // Save issues to database
+    if (allIssues.length > 0) {
+      await IssueClassifier.saveIssuesToDatabase(
+        allIssues,
+        auditId,
+        taskId,
+        userId
+      );
+
+      // Update issue costs
+      await PricingService.updateIssueCosts(taskId);
+
+      // Calculate and create estimate
+      const { breakdown, total } = await PricingService.calculateIssueCosts(allIssues);
+      const { discount, finalTotal } = await PricingService.applyBundleDiscounts(breakdown);
+
+      await PricingService.createEstimate(
+        auditId,
+        taskId,
+        userId,
+        breakdown,
+        total,
+        discount
+      );
+    }
   }
 
   /**
