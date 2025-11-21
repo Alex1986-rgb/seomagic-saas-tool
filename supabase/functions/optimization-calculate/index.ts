@@ -162,11 +162,11 @@ serve(async (req) => {
 
     // Get user_id from auth header if available
     const authHeader = req.headers.get('Authorization');
-    let userId = null;
+    let userId: string | null = null;
     
     if (authHeader) {
       const { data: { user } } = await supabaseClient.auth.getUser(authHeader.replace('Bearer ', ''));
-      userId = user?.id;
+      userId = user?.id || null;
     }
 
     // Save calculation results to optimization_jobs table
@@ -174,7 +174,7 @@ serve(async (req) => {
       .from('optimization_jobs')
       .insert({
         task_id: task_id,
-        user_id: userId || '00000000-0000-0000-0000-000000000000',
+        user_id: userId, // Now supports NULL for anonymous audits
         status: 'pending',
         cost: parseFloat(totalCost.toFixed(2)),
         result_data: { items, pageCount },
