@@ -101,7 +101,7 @@ export const useAuditBase = (url: string) => {
     }, 5000);
 
     return () => clearInterval(pollInterval);
-  }, [taskId, optimizationItems.length, loadOptimizationCost]);
+  }, [taskId, optimizationItems.length]);
 
   return {
     // State
