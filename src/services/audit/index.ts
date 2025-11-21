@@ -5,6 +5,10 @@ export * from './history';
 export * from './seoDetails';
 export * from './sitemap';
 
+// Export issues and pricing services
+export { IssueClassifier, PricingService } from './issues';
+export type { ClassifiedIssue } from './issues';
+
 // Selectively export from content and optimization
 export { collectPagesContent, type PageContent, optimizePageContent, improveSeoDescription, generateSeoDescription, generateKeywords } from './content';
 export { calculateOptimizationMetrics } from './optimization';
