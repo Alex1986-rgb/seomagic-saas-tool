@@ -60,12 +60,12 @@ Deno.serve(async (req) => {
       console.log(`Deleted ${crawledCount} old crawled pages`);
     }
 
-    // Delete URL queue entries older than 7 days
+    // Delete URL queue entries older than 90 days
     console.log('Cleaning url_queue...');
     const { error: queueError, count: queueCount } = await supabaseClient
       .from('url_queue')
       .delete({ count: 'exact' })
-      .lt('created_at', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString());
+      .lt('created_at', new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString());
 
     if (queueError) {
       console.error('Error cleaning url_queue:', queueError);
