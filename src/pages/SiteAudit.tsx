@@ -11,14 +11,12 @@ import { Input } from '@/components/ui/input';
 import { motion } from 'framer-motion';
 import { Search, ExternalLink, RefreshCw } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
-import { auditService } from '@/modules/audit';
 
 const SiteAudit: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [url, setUrl] = useState<string>('');
   const [inputUrl, setInputUrl] = useState<string>('');
   const [isLoading, setIsLoading] = useState(true);
-  const [isStartingAudit, setIsStartingAudit] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -106,54 +104,6 @@ const SiteAudit: React.FC = () => {
     }
   };
 
-  const handleStartAudit = async (type: 'quick' | 'deep') => {
-    if (!url || !isValidUrl(url)) {
-      toast({
-        title: "Ошибка",
-        description: "Пожалуйста, введите корректный URL",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    setIsStartingAudit(true);
-    
-    try {
-      const formattedUrl = url.startsWith('http') ? url : `https://${url}`;
-      console.log(`🚀 Starting ${type} audit for:`, formattedUrl);
-      
-      const result = await auditService.startAudit(formattedUrl, {
-        maxPages: type === 'quick' ? 10 : 100,
-        type: type
-      });
-      
-      console.log('✅ Audit started successfully:', result);
-      
-      if (!result?.task_id) {
-        throw new Error('No task_id returned from audit service');
-      }
-      
-      localStorage.setItem(`task_id_${url}`, result.task_id);
-      
-      // Update URL with task_id without reload
-      navigate(`/site-audit?url=${encodeURIComponent(url)}&task_id=${result.task_id}`, { replace: true });
-      
-      toast({
-        title: "Аудит запущен",
-        description: `Сканирование ${type === 'quick' ? 'быстрого' : 'глубокого'} аудита начато`,
-      });
-    } catch (error) {
-      console.error('Error starting audit:', error);
-      toast({
-        title: "Ошибка запуска аудита",
-        description: error instanceof Error ? error.message : "Не удалось запустить аудит",
-        variant: "destructive"
-      });
-    } finally {
-      setIsStartingAudit(false);
-    }
-  };
-
   // Check if this is a dynamic page with task_id
   const taskId = searchParams.get('task_id');
   const robotsContent = taskId ? 'noindex, nofollow' : 'index, follow, max-image-preview:large';
@@ -227,11 +177,7 @@ const SiteAudit: React.FC = () => {
             </div>
           ) : url && isValidUrl(url) && (
             <AuditProvider initialUrl={url}>
-              <AuditWorkspace 
-                url={url}
-                onStartAudit={handleStartAudit}
-                isStartingAudit={isStartingAudit}
-              >
+              <AuditWorkspace url={url}>
                 <AuditResultsContainer url={url} />
               </AuditWorkspace>
             </AuditProvider>
