@@ -28,13 +28,18 @@ export const AuditRealtimeVisualizer = ({ url, statusData }: AuditRealtimeVisual
   const getStageLabel = (stage: string) => {
     const labels: Record<string, string> = {
       queued: 'Инициализация',
+      initialization: 'Инициализация',
       discovery: 'Поиск страниц',
       fetching: 'Загрузка HTML',
+      scanning: 'Сканирование',
+      crawling: 'Сканирование',
       analysis: 'SEO анализ',
+      analyzing: 'SEO анализ',
       generating: 'Генерация отчетов',
-      completed: 'Завершено'
+      completed: 'Завершено',
+      processing: 'Обработка',
     };
-    return labels[stage] || stage;
+    return labels[stage.toLowerCase()] || stage;
   };
 
   // Debug logging

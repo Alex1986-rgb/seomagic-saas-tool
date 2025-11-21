@@ -12,6 +12,7 @@ export interface ScanDetails {
   estimated_pages: number;
   stage: string;
   progress: number;
+  audit_data?: any;
 }
 
 /**
@@ -124,6 +125,15 @@ export const useScan = (url: string, onPageCountUpdate?: (count: number) => void
           
           const progressValue = statusResponse.progress;
           
+          // Log status response for debugging
+          console.log('📊 Status response:', {
+            stage: currentStage,
+            status: status,
+            progress: progressValue,
+            pages: pagesScanned,
+            has_audit_data: !!(statusResponse as any).audit_data
+          });
+          
           // Check for timeout - if no progress for configured time
           const currentTime = Date.now();
           
@@ -167,10 +177,9 @@ export const useScan = (url: string, onPageCountUpdate?: (count: number) => void
             current_url: statusCurrent,
             pages_scanned: pagesScanned,
             estimated_pages: totalPages,
-            stage: status === 'completed' 
-              ? 'Сканирование завершено' 
-              : `Сканирование (${progressValue}%)`,
-            progress: progressValue
+            stage: currentStage || status,
+            progress: progressValue,
+            audit_data: (statusResponse as any).audit_data
           });
           
           // Update parent component with page count if callback provided
