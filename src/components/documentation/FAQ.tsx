@@ -1,13 +1,16 @@
-
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Accordion } from "@/components/ui/accordion";
-import GeneralQuestions from './sections/faq/GeneralQuestions';
-import TechnicalQuestions from './sections/faq/TechnicalQuestions';
+import GeneralQuestions, { generalQuestionsData } from './sections/faq/GeneralQuestions';
+import TechnicalQuestions, { technicalQuestionsData } from './sections/faq/TechnicalQuestions';
+import { FAQSchema } from '@/components/seo/FAQSchema';
 
 const FAQ: React.FC = () => {
+  const allFAQs = [...generalQuestionsData, ...technicalQuestionsData];
+
   return (
     <div className="prose prose-lg max-w-none dark:prose-invert">
+      <FAQSchema faqs={allFAQs} />
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}

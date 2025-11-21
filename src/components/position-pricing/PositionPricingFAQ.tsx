@@ -1,4 +1,3 @@
-
 import React from 'react';
 import {
   Accordion,
@@ -6,6 +5,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { FAQSchema } from '@/components/seo/FAQSchema';
 
 const PositionPricingFAQ: React.FC = () => {
   const faqs = [
@@ -44,7 +44,9 @@ const PositionPricingFAQ: React.FC = () => {
   ];
 
   return (
-    <div className="mb-20">
+    <>
+      <FAQSchema faqs={faqs} />
+      <div className="mb-20">
       <h2 className="text-3xl font-bold text-center mb-2">Часто задаваемые вопросы</h2>
       <p className="text-muted-foreground max-w-3xl mx-auto text-center mb-12">
         Ответы на самые популярные вопросы о сервисе мониторинга позиций
@@ -61,6 +63,7 @@ const PositionPricingFAQ: React.FC = () => {
         </Accordion>
       </div>
     </div>
+    </>
   );
 };
 
