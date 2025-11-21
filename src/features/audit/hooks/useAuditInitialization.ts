@@ -45,6 +45,10 @@ export const useAuditInitialization = (url: string, loadAuditData: (refresh?: bo
           const newTaskId = await startScan(false);
           if (newTaskId) {
             console.log('✅ Audit auto-started with task ID:', newTaskId);
+            toast({
+              title: "Аудит запущен",
+              description: "Начинаем сканирование сайта...",
+            });
           } else {
             throw new Error('No task ID returned from audit start');
           }
