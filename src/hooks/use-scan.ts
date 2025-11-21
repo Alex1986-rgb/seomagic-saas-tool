@@ -12,6 +12,7 @@ export interface ScanDetails {
   estimated_pages: number;
   stage: string;
   progress: number;
+  status?: string;
   audit_data?: any;
 }
 
@@ -179,6 +180,7 @@ export const useScan = (url: string, onPageCountUpdate?: (count: number) => void
             estimated_pages: totalPages,
             stage: currentStage || status,
             progress: progressValue,
+            status: status,
             audit_data: (statusResponse as any).audit_data
           });
           
@@ -207,6 +209,7 @@ export const useScan = (url: string, onPageCountUpdate?: (count: number) => void
               estimated_pages: totalPages,
               stage: 'Анализ завершен',
               progress: 100,
+              status: 'completed',
               audit_data: (statusResponse as any).audit_data
             });
             
@@ -225,10 +228,8 @@ export const useScan = (url: string, onPageCountUpdate?: (count: number) => void
               description: `Просканировано ${pagesScanned} страниц`,
             });
             
-            // Wait 3 seconds before hiding the panel to show completion state
-            setTimeout(() => {
-              setIsScanning(false);
-            }, 3000);
+            // Set isScanning to false immediately so tab can switch
+            setIsScanning(false);
           } else if (status === 'failed') {
             clearInterval(pollInterval);
             pollingIntervalRef.current = null;
