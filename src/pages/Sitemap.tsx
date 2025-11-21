@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { sitemapPages } from '@/utils/sitemap-generator';
+import { BreadcrumbsWrapper } from '@/components/navigation/BreadcrumbsWrapper';
 
 const Sitemap = () => {
   return (
@@ -15,6 +16,10 @@ const Sitemap = () => {
 
       <div className="container mx-auto px-4 py-16">
         <div className="max-w-4xl mx-auto">
+          <BreadcrumbsWrapper 
+            items={[{ name: 'Карта сайта', url: '/sitemap' }]} 
+            className="mb-6"
+          />
           <h1 className="text-4xl font-bold mb-8 text-foreground">Карта сайта</h1>
           
           <div className="bg-card rounded-lg border border-border p-8">

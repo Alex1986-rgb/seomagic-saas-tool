@@ -9,6 +9,7 @@ import { SEO } from '@/components/SEO';
 import { BreadcrumbSchema } from '@/components/seo/BreadcrumbSchema';
 import { ProductSchema } from '@/components/seo/ProductSchema';
 import { FAQPageSchema } from '@/components/seo/FAQPageSchema';
+import { BreadcrumbsWrapper } from '@/components/navigation/BreadcrumbsWrapper';
 
 const Pricing: React.FC = () => {
   return (
@@ -26,6 +27,10 @@ const Pricing: React.FC = () => {
       <ProductSchema />
       <FAQPageSchema />
       <div className="container mx-auto px-4 pt-32 pb-24">
+        <BreadcrumbsWrapper 
+          items={[{ name: 'Цены', url: '/pricing' }]} 
+          className="mb-8"
+        />
         <PricingHero />
         <PricingPlans />
         <FeatureComparison />
