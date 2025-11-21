@@ -31,7 +31,7 @@ const DefaultSEO: React.FC = () => {
       <meta name="twitter:description" content={description} />
       <meta name="twitter:image" content={image} />
 
-      {/* Structured Data */}
+      {/* Structured Data - WebSite */}
       <script type="application/ld+json">
         {JSON.stringify({
           '@context': 'https://schema.org',
@@ -44,6 +44,39 @@ const DefaultSEO: React.FC = () => {
             target: `${url}?q={search_term_string}`,
             'query-input': 'required name=search_term_string',
           },
+        })}
+      </script>
+
+      {/* Structured Data - Organization */}
+      <script type="application/ld+json">
+        {JSON.stringify({
+          '@context': 'https://schema.org',
+          '@type': 'Organization',
+          name: siteName,
+          url: typeof window !== 'undefined' ? window.location.origin : '',
+          logo: `${typeof window !== 'undefined' ? window.location.origin : ''}/apple-touch-icon.png`,
+          description: description,
+          contactPoint: {
+            '@type': 'ContactPoint',
+            contactType: 'Customer Service',
+            availableLanguage: ['Russian', 'English']
+          }
+        })}
+      </script>
+
+      {/* Structured Data - BreadcrumbList */}
+      <script type="application/ld+json">
+        {JSON.stringify({
+          '@context': 'https://schema.org',
+          '@type': 'BreadcrumbList',
+          itemListElement: [
+            {
+              '@type': 'ListItem',
+              position: 1,
+              name: 'Главная',
+              item: typeof window !== 'undefined' ? window.location.origin : ''
+            }
+          ]
         })}
       </script>
     </Helmet>

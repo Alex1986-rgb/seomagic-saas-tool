@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Settings, Save, Brain, Layers, FileCode, Bot, RotateCw, Sparkles } from 'lucide-react';
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { openaiService } from '@/services/api/openaiService';
+import { OptimizedImage } from '@/components/ui/OptimizedImage';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -330,7 +331,7 @@ const AISettings = () => {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <div className="bg-blue-100 dark:bg-blue-900 p-2 rounded-md">
-                      <img src="https://cdn.oaistatic.com/_next/static/media/favicon-32x32.be48395e.png" className="w-5 h-5" alt="OpenAI" />
+                      <OptimizedImage src="https://cdn.oaistatic.com/_next/static/media/favicon-32x32.be48395e.png" className="w-5 h-5" alt="OpenAI" priority />
                     </div>
                     <h4 className="font-medium">OpenAI DALL-E</h4>
                   </div>
@@ -348,7 +349,7 @@ const AISettings = () => {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <div className="bg-yellow-100 dark:bg-yellow-900 p-2 rounded-md">
-                      <img src="https://huggingface.co/front/assets/huggingface_logo.svg" className="w-5 h-5" alt="Hugging Face" />
+                      <OptimizedImage src="https://huggingface.co/front/assets/huggingface_logo.svg" className="w-5 h-5" alt="Hugging Face" priority />
                     </div>
                     <h4 className="font-medium">Hugging Face</h4>
                   </div>
@@ -364,7 +365,7 @@ const AISettings = () => {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <div className="bg-purple-100 dark:bg-purple-900 p-2 rounded-md">
-                      <img src="https://i.ibb.co/JCvTdQy/anthropic-favicon.png" className="w-5 h-5" alt="Anthropic" />
+                      <OptimizedImage src="https://i.ibb.co/JCvTdQy/anthropic-favicon.png" className="w-5 h-5" alt="Anthropic" priority />
                     </div>
                     <h4 className="font-medium">Anthropic Claude</h4>
                   </div>
@@ -380,7 +381,7 @@ const AISettings = () => {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <div className="bg-green-100 dark:bg-green-900 p-2 rounded-md">
-                      <img src="https://i.ibb.co/G0fbWHB/google-favicon.png" className="w-5 h-5" alt="Google" />
+                      <OptimizedImage src="https://i.ibb.co/G0fbWHB/google-favicon.png" className="w-5 h-5" alt="Google" priority />
                     </div>
                     <h4 className="font-medium">Google Gemini</h4>
                   </div>

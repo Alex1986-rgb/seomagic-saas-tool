@@ -1,4 +1,7 @@
 
+# Dynamic sitemap generation
+/sitemap.xml /.netlify/functions/generate-sitemap 200
+
 # Netlify/Vercel redirects for SPA routing
 /*    /index.html   200
 
