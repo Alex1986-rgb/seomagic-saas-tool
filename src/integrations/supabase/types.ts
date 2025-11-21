@@ -365,6 +365,251 @@ export type Database = {
           },
         ]
       }
+      fixed_pages: {
+        Row: {
+          audit_id: string | null
+          created_at: string | null
+          error_message: string | null
+          fixed_html: string | null
+          fixes_applied: Json | null
+          id: string
+          llm_provider_used: string | null
+          original_html: string | null
+          page_id: string | null
+          processing_time_ms: number | null
+          status: Database["public"]["Enums"]["fixed_page_status"] | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          audit_id?: string | null
+          created_at?: string | null
+          error_message?: string | null
+          fixed_html?: string | null
+          fixes_applied?: Json | null
+          id?: string
+          llm_provider_used?: string | null
+          original_html?: string | null
+          page_id?: string | null
+          processing_time_ms?: number | null
+          status?: Database["public"]["Enums"]["fixed_page_status"] | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          audit_id?: string | null
+          created_at?: string | null
+          error_message?: string | null
+          fixed_html?: string | null
+          fixes_applied?: Json | null
+          id?: string
+          llm_provider_used?: string | null
+          original_html?: string | null
+          page_id?: string | null
+          processing_time_ms?: number | null
+          status?: Database["public"]["Enums"]["fixed_page_status"] | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fixed_pages_audit_id_fkey"
+            columns: ["audit_id"]
+            isOneToOne: false
+            referencedRelation: "audits"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fixed_pages_llm_provider_used_fkey"
+            columns: ["llm_provider_used"]
+            isOneToOne: false
+            referencedRelation: "llm_providers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fixed_pages_page_id_fkey"
+            columns: ["page_id"]
+            isOneToOne: false
+            referencedRelation: "page_analysis"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      issues: {
+        Row: {
+          audit_id: string | null
+          can_auto_fix: boolean | null
+          category: Database["public"]["Enums"]["issue_category"]
+          created_at: string | null
+          description: string
+          fix_cost: number | null
+          id: string
+          issue_type: string
+          metadata: Json | null
+          page_id: string | null
+          recommendation: string | null
+          severity: Database["public"]["Enums"]["issue_severity"]
+          task_id: string | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          audit_id?: string | null
+          can_auto_fix?: boolean | null
+          category: Database["public"]["Enums"]["issue_category"]
+          created_at?: string | null
+          description: string
+          fix_cost?: number | null
+          id?: string
+          issue_type: string
+          metadata?: Json | null
+          page_id?: string | null
+          recommendation?: string | null
+          severity?: Database["public"]["Enums"]["issue_severity"]
+          task_id?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          audit_id?: string | null
+          can_auto_fix?: boolean | null
+          category?: Database["public"]["Enums"]["issue_category"]
+          created_at?: string | null
+          description?: string
+          fix_cost?: number | null
+          id?: string
+          issue_type?: string
+          metadata?: Json | null
+          page_id?: string | null
+          recommendation?: string | null
+          severity?: Database["public"]["Enums"]["issue_severity"]
+          task_id?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "issues_audit_id_fkey"
+            columns: ["audit_id"]
+            isOneToOne: false
+            referencedRelation: "audits"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "issues_page_id_fkey"
+            columns: ["page_id"]
+            isOneToOne: false
+            referencedRelation: "page_analysis"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "issues_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "audit_tasks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      job_estimates: {
+        Row: {
+          audit_id: string | null
+          cost_breakdown: Json | null
+          created_at: string | null
+          discount_applied: number | null
+          final_cost: number | null
+          id: string
+          notes: string | null
+          status: Database["public"]["Enums"]["estimate_status"] | null
+          task_id: string | null
+          total_cost: number | null
+          total_issues: number | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          audit_id?: string | null
+          cost_breakdown?: Json | null
+          created_at?: string | null
+          discount_applied?: number | null
+          final_cost?: number | null
+          id?: string
+          notes?: string | null
+          status?: Database["public"]["Enums"]["estimate_status"] | null
+          task_id?: string | null
+          total_cost?: number | null
+          total_issues?: number | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          audit_id?: string | null
+          cost_breakdown?: Json | null
+          created_at?: string | null
+          discount_applied?: number | null
+          final_cost?: number | null
+          id?: string
+          notes?: string | null
+          status?: Database["public"]["Enums"]["estimate_status"] | null
+          task_id?: string | null
+          total_cost?: number | null
+          total_issues?: number | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "job_estimates_audit_id_fkey"
+            columns: ["audit_id"]
+            isOneToOne: false
+            referencedRelation: "audits"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "job_estimates_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "audit_tasks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      llm_providers: {
+        Row: {
+          api_config: Json | null
+          created_at: string | null
+          id: string
+          is_active: boolean | null
+          is_default: boolean | null
+          model_name: string
+          provider_name: string
+          role: string
+          updated_at: string | null
+        }
+        Insert: {
+          api_config?: Json | null
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_default?: boolean | null
+          model_name: string
+          provider_name: string
+          role: string
+          updated_at?: string | null
+        }
+        Update: {
+          api_config?: Json | null
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_default?: boolean | null
+          model_name?: string
+          provider_name?: string
+          role?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       notifications: {
         Row: {
           created_at: string | null
@@ -645,6 +890,48 @@ export type Database = {
           task_id?: string | null
           url?: string
           user_id?: string | null
+        }
+        Relationships: []
+      }
+      pricing_rules: {
+        Row: {
+          bundle_includes: Json | null
+          category: Database["public"]["Enums"]["issue_category"]
+          created_at: string | null
+          id: string
+          is_active: boolean | null
+          is_bundle: boolean | null
+          issue_type: string
+          price_per_item: number
+          rule_name: string
+          sort_order: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          bundle_includes?: Json | null
+          category: Database["public"]["Enums"]["issue_category"]
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_bundle?: boolean | null
+          issue_type: string
+          price_per_item: number
+          rule_name: string
+          sort_order?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          bundle_includes?: Json | null
+          category?: Database["public"]["Enums"]["issue_category"]
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_bundle?: boolean | null
+          issue_type?: string
+          price_per_item?: number
+          rule_name?: string
+          sort_order?: number | null
+          updated_at?: string | null
         }
         Relationships: []
       }
@@ -934,7 +1221,22 @@ export type Database = {
       }
     }
     Enums: {
-      [_ in never]: never
+      estimate_status:
+        | "draft"
+        | "sent"
+        | "accepted"
+        | "rejected"
+        | "paid"
+        | "cancelled"
+      fixed_page_status: "pending" | "processing" | "completed" | "failed"
+      issue_category:
+        | "seo"
+        | "content"
+        | "technical"
+        | "performance"
+        | "accessibility"
+        | "security"
+      issue_severity: "critical" | "high" | "medium" | "low"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1061,6 +1363,25 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      estimate_status: [
+        "draft",
+        "sent",
+        "accepted",
+        "rejected",
+        "paid",
+        "cancelled",
+      ],
+      fixed_page_status: ["pending", "processing", "completed", "failed"],
+      issue_category: [
+        "seo",
+        "content",
+        "technical",
+        "performance",
+        "accessibility",
+        "security",
+      ],
+      issue_severity: ["critical", "high", "medium", "low"],
+    },
   },
 } as const
