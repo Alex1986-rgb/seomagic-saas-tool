@@ -2,7 +2,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
-import { LazyImage } from '@/components/LazyImage';
+import { OptimizedImage } from '@/components/ui/OptimizedImage';
 import { Clock, User } from 'lucide-react';
 import { BlogPost } from '@/types/blog';
 
@@ -19,10 +19,11 @@ export const BlogPostHeader: React.FC<BlogPostHeaderProps> = ({ post }) => {
       </Link>
       
       <div className="relative w-full h-[400px] mb-8 rounded-lg overflow-hidden">
-        <LazyImage 
+        <OptimizedImage 
           src={post.image}
           alt={post.title}
           className="w-full h-full object-cover"
+          priority={true}
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
         <div className="absolute bottom-0 left-0 p-6 text-white">

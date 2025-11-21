@@ -8,10 +8,17 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Search, Book } from 'lucide-react';
 import { mockBlogPosts } from '@/data/mockData';
 import { LazyImage } from '@/components/LazyImage';
+import { SEO } from '@/components/SEO';
 
 const Blog: React.FC = () => {
   return (
     <Layout>
+      <SEO
+        title="Блог о SEO оптимизации | SeoMarket"
+        description="Экспертные статьи о SEO, продвижении сайтов, аналитике и оптимизации. Актуальные новости и практические советы по SEO."
+        canonicalUrl="/blog"
+        keywords="SEO блог, статьи про SEO, продвижение сайтов, SEO оптимизация, SEO гайды"
+      />
       <div className="container mx-auto px-4 md:px-6 pt-32 pb-20">
         <div className="max-w-6xl mx-auto">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
