@@ -69,6 +69,8 @@ serve(async (req) => {
     }
 
     console.log('[OPTIMIZATION-CALCULATE] Found audit results, reading job estimate...');
+    
+    const pageCount = result.page_count || 0;
 
     // Fetch estimate from job_estimates
     const { data: estimate, error: estimateError } = await supabaseClient
