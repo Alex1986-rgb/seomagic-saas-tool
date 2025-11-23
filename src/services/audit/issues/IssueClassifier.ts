@@ -35,10 +35,10 @@ export class IssueClassifier {
       });
     }
 
-    // Missing meta description
+    // Missing meta description (fixed name)
     if (!pageData.meta_description || pageData.meta_description.trim().length === 0) {
       issues.push({
-        issue_type: 'missing_meta_description',
+        issue_type: 'missing_description',
         category: 'seo',
         severity: 'high',
         description: `Missing meta description on ${pageData.url}`,
@@ -113,10 +113,10 @@ export class IssueClassifier {
   static classifyTechnicalIssues(pageData: any): ClassifiedIssue[] {
     const issues: ClassifiedIssue[] = [];
 
-    // Slow page load
+    // Slow page load (fixed name)
     if (pageData.load_time && pageData.load_time > 3000) {
       issues.push({
-        issue_type: 'slow_load_time',
+        issue_type: 'slow_page',
         category: 'performance',
         severity: pageData.load_time > 5000 ? 'critical' : 'high',
         description: `Slow page load time (${(pageData.load_time / 1000).toFixed(2)}s) on ${pageData.url}`,

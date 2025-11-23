@@ -6,14 +6,8 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-// Pricing per item
-const PRICING = {
-  metaTags: 0.50,
-  headings: 0.30,
-  images: 0.20,
-  contentOptimization: 2.00,
-  sitemapGeneration: 1.00,
-};
+// Pricing is now managed in pricing_rules table
+// and calculated by issue-classifier function
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -74,91 +68,35 @@ serve(async (req) => {
       );
     }
 
-    console.log('[OPTIMIZATION-CALCULATE] Found audit results, page_count:', result.page_count);
+    console.log('[OPTIMIZATION-CALCULATE] Found audit results, reading job estimate...');
 
-    const pageCount = result.page_count || 1;
-    const auditData = result.audit_data;
+    // Fetch estimate from job_estimates
+    const { data: estimate, error: estimateError } = await supabaseClient
+      .from('job_estimates')
+      .select('*')
+      .eq('task_id', task_id)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
 
-    // Calculate optimization items and costs
-    const items = [];
+    let items = [];
     let totalCost = 0;
 
-    // Meta tags optimization
-    const metaIssues = auditData?.details?.seo?.items?.filter(
-      (item: any) => item.id.includes('meta') && item.status !== 'good'
-    ).length || 0;
-    
-    if (metaIssues > 0) {
-      const metaCost = metaIssues * PRICING.metaTags;
-      totalCost += metaCost;
-      items.push({
-        name: 'Meta Tags Optimization',
-        description: 'Fix missing or incorrect meta tags (title, description)',
-        count: metaIssues,
-        pricePerUnit: PRICING.metaTags,
-        totalPrice: metaCost,
-        type: 'meta',
-      });
+    if (estimate) {
+      console.log('[OPTIMIZATION-CALCULATE] Using estimate from job_estimates');
+      items = estimate.cost_breakdown || [];
+      totalCost = estimate.final_cost || 0;
+    } else {
+      console.log('[OPTIMIZATION-CALCULATE] No estimate found, using fallback');
+      totalCost = 1000;
+      items = [{
+        name: 'SEO Optimization Package',
+        description: 'Complete SEO optimization',
+        count: 1,
+        pricePerUnit: totalCost,
+        totalPrice: totalCost
+      }];
     }
-
-    // Headings optimization
-    const headingIssues = auditData?.details?.seo?.items?.filter(
-      (item: any) => item.id.includes('heading') && item.status !== 'good'
-    ).length || 0;
-    
-    if (headingIssues > 0) {
-      const headingCost = headingIssues * PRICING.headings;
-      totalCost += headingCost;
-      items.push({
-        name: 'Headings Structure',
-        description: 'Optimize H1-H6 hierarchy and structure',
-        count: headingIssues,
-        pricePerUnit: PRICING.headings,
-        totalPrice: headingCost,
-        type: 'headings',
-      });
-    }
-
-    // Images optimization
-    const imageIssues = auditData?.details?.performance?.items?.filter(
-      (item: any) => item.id.includes('image') && item.status !== 'good'
-    ).length || 0;
-    
-    if (imageIssues > 0) {
-      const imageCost = imageIssues * PRICING.images;
-      totalCost += imageCost;
-      items.push({
-        name: 'Image Alt Tags',
-        description: 'Add missing alt attributes to images',
-        count: imageIssues,
-        pricePerUnit: PRICING.images,
-        totalPrice: imageCost,
-        type: 'images',
-      });
-    }
-
-    // Content optimization
-    const contentCost = pageCount * PRICING.contentOptimization;
-    totalCost += contentCost;
-    items.push({
-      name: 'AI Content Optimization',
-      description: 'AI-powered SEO content improvements',
-      count: pageCount,
-      pricePerUnit: PRICING.contentOptimization,
-      totalPrice: contentCost,
-      type: 'content',
-    });
-
-    // Sitemap generation
-    totalCost += PRICING.sitemapGeneration;
-    items.push({
-      name: 'Sitemap Generation',
-      description: 'Generate XML sitemap for search engines',
-      count: 1,
-      pricePerUnit: PRICING.sitemapGeneration,
-      totalPrice: PRICING.sitemapGeneration,
-      type: 'sitemap',
-    });
 
     // Get user_id from auth header if available
     const authHeader = req.headers.get('Authorization');
@@ -172,13 +110,19 @@ serve(async (req) => {
     // Save calculation results to optimization_jobs table
     const { error: saveError } = await supabaseClient
       .from('optimization_jobs')
-      .insert({
+      .upsert({
         task_id: task_id,
-        user_id: userId, // Now supports NULL for anonymous audits
+        user_id: userId,
         status: 'completed',
-        cost: parseFloat(totalCost.toFixed(2)),
-        result_data: { items, pageCount },
+        cost: totalCost,
+        result_data: { 
+          estimate_id: estimate?.id || null,
+          items,
+          total: totalCost
+        },
         options: null
+      }, {
+        onConflict: 'task_id'
       });
 
     if (saveError) {
