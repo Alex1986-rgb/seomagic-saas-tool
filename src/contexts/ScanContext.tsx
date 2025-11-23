@@ -76,6 +76,8 @@ export const ScanProvider: React.FC<{ children: ReactNode; url: string }> = ({
     estimated_pages: scanDetails?.estimated_pages || 0,
     stage: scanDetails?.stage || 'idle',
     progress: scanDetails?.progress || 0,
+    status: scanDetails?.status,
+    audit_data: scanDetails?.audit_data,
     task_id: taskId
   } as any), [scanDetails, taskId]);
   
