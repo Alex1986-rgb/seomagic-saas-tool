@@ -148,9 +148,10 @@ serve(async (req) => {
   <h3>Optimization Items:</h3>
   ${((optimizationJob.result_data as any).items as any[]).map((item: any) => `
     <div class="opt-item">
-      <strong>${item.name}</strong><br/>
-      ${item.description}<br/>
-      ${item.count} items × $${item.pricePerUnit} = <strong>$${item.totalPrice.toFixed(2)}</strong>
+      <strong>${item.issue_type || 'Unknown'}</strong> 
+      <span style="color: #666;">(${item.category || 'general'})</span><br/>
+      ${item.count || 0} items × $${(item.unit_price || 0).toFixed(2)} = 
+      <strong>$${(item.total_price || 0).toFixed(2)}</strong>
     </div>
   `).join('')}
   ` : ''}
