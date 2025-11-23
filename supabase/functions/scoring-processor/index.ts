@@ -490,6 +490,22 @@ serve(async (req) => {
 
     console.log('[SCORING] ✅ Audit data saved successfully');
 
+    // Classify and save issues
+    console.log('[SCORING] 🔍 Classifying issues...');
+    try {
+      const { data: classifyResult, error: classifyError } = await supabase.functions.invoke('issue-classifier', {
+        body: { task_id }
+      });
+
+      if (classifyError) {
+        console.error('[SCORING] Failed to classify issues:', classifyError);
+      } else {
+        console.log(`[SCORING] ✅ Classified ${classifyResult?.issues_count || 0} issues`);
+      }
+    } catch (classifyErr) {
+      console.error('[SCORING] Error calling issue-classifier:', classifyErr);
+    }
+
     console.log(`Scoring complete for task ${task_id}`);
 
     // Update audit status to completed
