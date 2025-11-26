@@ -4,6 +4,8 @@ import { useToast } from './use-toast';
 import { validationService } from '@/services/validation/validationService';
 import { reportingService } from '@/services/reporting/reportingService';
 import { auditService } from '@/modules/audit/services/auditService';
+import { ScanLogEntry } from '@/types/scan-logs';
+import { v4 as uuidv4 } from 'uuid';
 
 // Define ScanDetails type
 export interface ScanDetails {
@@ -41,17 +43,52 @@ export const useScan = (url: string, onPageCountUpdate?: (count: number) => void
   });
   const [sitemap, setSitemap] = useState<string | null>(null);
   const [taskId, setTaskId] = useState<string | null>(null);
+  const [scanLogs, setScanLogs] = useState<ScanLogEntry[]>([]);
   const { toast } = useToast();
   const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const errorCountRef = useRef<number>(0);
   const MAX_POLLING_ERRORS = 3;
 
+  // Add log entry
+  const addLog = useCallback((
+    level: ScanLogEntry['level'],
+    stage: string,
+    message: string,
+    details?: string,
+    logUrl?: string
+  ) => {
+    const entry: ScanLogEntry = {
+      id: uuidv4(),
+      timestamp: new Date(),
+      level,
+      stage,
+      message,
+      details,
+      url: logUrl
+    };
+    setScanLogs(prev => [...prev, entry]);
+    
+    // Also log to console for debugging
+    const logFn = level === 'error' ? console.error : level === 'warning' ? console.warn : console.log;
+    logFn(`[${level.toUpperCase()}] [${stage}] ${message}`, details || '');
+  }, []);
+
+  // Clear logs
+  const clearLogs = useCallback(() => {
+    setScanLogs([]);
+  }, []);
+
   // Start scanning process
   const startScan = useCallback(async (useSitemap: boolean = true) => {
+    // Clear previous logs
+    clearLogs();
+    addLog('info', 'starting', `Запуск сканирования для ${url}`, `Режим: ${useSitemap ? 'с sitemap' : 'без sitemap'}`);
+    
     console.log('🔧 useScan.startScan called for URL:', url, 'with sitemap:', useSitemap);
     
     if (!url) {
       console.error('❌ Cannot start scan: URL is empty');
+      addLog('error', 'validation', 'URL не указан', 'Необходимо указать URL для сканирования');
       toast({
         title: "Ошибка",
         description: "URL не указан",
@@ -62,6 +99,7 @@ export const useScan = (url: string, onPageCountUpdate?: (count: number) => void
 
     if (!validationService.validateUrl(url)) {
       console.error('❌ URL validation failed:', url);
+      addLog('error', 'validation', 'Неверный формат URL', `Проверьте корректность URL: ${url}`);
       toast({
         title: "Ошибка",
         description: "Неверный формат URL",
@@ -71,6 +109,7 @@ export const useScan = (url: string, onPageCountUpdate?: (count: number) => void
     }
 
     try {
+      addLog('info', 'initialization', 'Инициализация сканирования...', 'Подготовка к отправке запроса на сервер');
       console.log('🚀 Starting scan process...');
       setIsScanning(true);
       setScanDetails({
@@ -84,6 +123,7 @@ export const useScan = (url: string, onPageCountUpdate?: (count: number) => void
       // Format URL
       const formattedUrl = validationService.formatUrl(url);
       console.log('📝 Formatted URL:', formattedUrl);
+      addLog('info', 'initialization', 'URL отформатирован', formattedUrl);
       
       // Start audit via edge function
       console.log('📡 Calling audit-start edge function with:', { 
@@ -91,6 +131,8 @@ export const useScan = (url: string, onPageCountUpdate?: (count: number) => void
         type: 'quick', 
         maxPages: 100 
       });
+      addLog('info', 'api', 'Отправка запроса на сервер...', 'Вызов edge function audit-start');
+      
       const response = await auditService.startAudit(formattedUrl, {
         type: 'quick',
         maxPages: 100
@@ -101,10 +143,12 @@ export const useScan = (url: string, onPageCountUpdate?: (count: number) => void
       const crawlTaskId = response.task_id;
       if (!crawlTaskId) {
         console.error('❌ No task_id in response:', response);
+        addLog('error', 'api', 'Пустой task_id в ответе сервера', JSON.stringify(response));
         throw new Error('Empty task ID returned');
       }
       
       console.log('✅ Audit started successfully with task ID:', crawlTaskId);
+      addLog('info', 'api', 'Аудит запущен успешно', `Task ID: ${crawlTaskId}`);
       setTaskId(crawlTaskId);
       
       // Track polling start time and stage changes
@@ -168,7 +212,9 @@ export const useScan = (url: string, onPageCountUpdate?: (count: number) => void
           // If stuck for more than threshold
           if (timeSinceLastUpdate > timeoutThreshold) {
             console.error('⏱️ Scan timeout:', { stage: currentStage, timeSinceLastUpdate });
+            addLog('error', 'timeout', `Сканирование застряло на этапе "${currentStage}"`, `Нет прогресса более ${Math.floor(timeoutThreshold / 1000)} секунд`);
             clearInterval(pollInterval);
+            pollingIntervalRef.current = null;
             setIsScanning(false);
             
             toast({
@@ -197,7 +243,7 @@ export const useScan = (url: string, onPageCountUpdate?: (count: number) => void
           // If scan is complete, clean up and generate sitemap
           if (status === 'completed') {
             console.log('✅ Scan completed, finalizing state...');
-            
+            addLog('info', 'completed', 'Сканирование завершено успешно', `Просканировано ${pagesScanned} страниц`);
             // Get URLs from the status response or use the current URL
             const pageUrls = [statusResponse.url]; // In a real implementation, you would get all discovered URLs
             
@@ -241,6 +287,7 @@ export const useScan = (url: string, onPageCountUpdate?: (count: number) => void
             setIsScanning(false);
             
             const errorMessage = statusResponse.error || "Произошла ошибка при сканировании сайта";
+            addLog('error', 'failed', 'Аудит прерван', `${errorMessage}. Просканировано ${pagesScanned} из ${totalPages} страниц`);
             toast({
               title: "Аудит прерван - доступны частичные данные",
               description: `Просканировано ${pagesScanned} из ${totalPages} страниц`,
@@ -251,9 +298,12 @@ export const useScan = (url: string, onPageCountUpdate?: (count: number) => void
           console.error("Error polling scan status:", error);
           errorCountRef.current += 1;
           
+          const errorMessage = error instanceof Error ? error.message : 'Неизвестная ошибка';
+          
           // Only stop after multiple consecutive errors
           if (errorCountRef.current >= MAX_POLLING_ERRORS) {
             console.error('❌ Max polling errors reached, stopping scan');
+            addLog('error', 'polling', `Достигнут лимит ошибок (${MAX_POLLING_ERRORS})`, `Сканирование остановлено. Последняя ошибка: ${errorMessage}`);
             clearInterval(pollInterval);
             pollingIntervalRef.current = null;
             setIsScanning(false);
@@ -265,6 +315,7 @@ export const useScan = (url: string, onPageCountUpdate?: (count: number) => void
               variant: "destructive",
             });
           } else {
+            addLog('warning', 'polling', `Ошибка сети (попытка ${errorCountRef.current}/${MAX_POLLING_ERRORS})`, `${errorMessage}. Повторная попытка...`);
             console.log(`⚠️ Polling error ${errorCountRef.current}/${MAX_POLLING_ERRORS}, retrying...`);
           }
         }
@@ -276,6 +327,8 @@ export const useScan = (url: string, onPageCountUpdate?: (count: number) => void
       return crawlTaskId;
     } catch (error) {
       console.error("Error starting scan:", error);
+      const errorMessage = error instanceof Error ? error.message : 'Неизвестная ошибка';
+      addLog('error', 'starting', 'Не удалось запустить сканирование', errorMessage);
       setIsScanning(false);
       
       toast({
@@ -286,7 +339,7 @@ export const useScan = (url: string, onPageCountUpdate?: (count: number) => void
       
       return null;
     }
-  }, [url, toast, onPageCountUpdate]);
+  }, [url, toast, onPageCountUpdate, addLog, clearLogs]);
 
   // Handle download sitemap
   const downloadSitemap = useCallback(() => {
@@ -350,8 +403,10 @@ export const useScan = (url: string, onPageCountUpdate?: (count: number) => void
     pageStats,
     sitemap,
     taskId,
+    scanLogs,
     startScan,
     cancelScan,
-    downloadSitemap
+    downloadSitemap,
+    clearLogs
   };
 };
