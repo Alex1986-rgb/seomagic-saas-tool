@@ -43,6 +43,8 @@ export const useScan = (url: string, onPageCountUpdate?: (count: number) => void
   const [taskId, setTaskId] = useState<string | null>(null);
   const { toast } = useToast();
   const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const errorCountRef = useRef<number>(0);
+  const MAX_POLLING_ERRORS = 3;
 
   // Start scanning process
   const startScan = useCallback(async (useSitemap: boolean = true) => {
@@ -118,6 +120,9 @@ export const useScan = (url: string, onPageCountUpdate?: (count: number) => void
         try {
           const statusResponse = await auditService.getAuditStatus(crawlTaskId);
           
+          // Reset error counter on successful response
+          errorCountRef.current = 0;
+          
           const statusCurrent = statusResponse.url;
           const pagesScanned = statusResponse.pages_scanned;
           const totalPages = statusResponse.total_pages;
@@ -148,7 +153,7 @@ export const useScan = (url: string, onPageCountUpdate?: (count: number) => void
           const timeSinceLastUpdate = currentTime - lastUpdateTime;
           
           // Don't apply timeout during analysis/generating/completed stages
-          const isAnalysisStage = ['analysis', 'generating', 'completed'].includes(currentStage);
+          const isAnalysisStage = ['analysis', 'generating', 'completed', 'complete'].includes(currentStage);
           const timeoutThreshold = isAnalysisStage ? ANALYSIS_TIMEOUT : CRAWLING_TIMEOUT;
           
           // Log polling status for debugging
@@ -244,16 +249,29 @@ export const useScan = (url: string, onPageCountUpdate?: (count: number) => void
           }
         } catch (error) {
           console.error("Error polling scan status:", error);
-          clearInterval(pollInterval);
-          setIsScanning(false);
+          errorCountRef.current += 1;
           
-          toast({
-            title: "Ошибка",
-            description: "Не удалось получить статус сканирования",
-            variant: "destructive",
-          });
+          // Only stop after multiple consecutive errors
+          if (errorCountRef.current >= MAX_POLLING_ERRORS) {
+            console.error('❌ Max polling errors reached, stopping scan');
+            clearInterval(pollInterval);
+            pollingIntervalRef.current = null;
+            setIsScanning(false);
+            errorCountRef.current = 0;
+            
+            toast({
+              title: "Ошибка",
+              description: "Не удалось получить статус сканирования",
+              variant: "destructive",
+            });
+          } else {
+            console.log(`⚠️ Polling error ${errorCountRef.current}/${MAX_POLLING_ERRORS}, retrying...`);
+          }
         }
       }, 2000);
+      
+      // Store interval reference for cleanup
+      pollingIntervalRef.current = pollInterval;
       
       return crawlTaskId;
     } catch (error) {
