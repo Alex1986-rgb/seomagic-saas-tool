@@ -1,6 +1,7 @@
 
 import React, { createContext, useContext, useState, useCallback, useMemo, ReactNode } from 'react';
 import { useScan } from '@/hooks/use-scan';
+import { ScanLogEntry } from '@/types/scan-logs';
 
 // Define the ScanDetails interface
 export interface ScanDetails {
@@ -21,9 +22,11 @@ interface ScanContextType {
   taskId: string | null;
   sitemap: any;
   pageStats: any;
+  scanLogs: ScanLogEntry[];
   startScan: (deepScan?: boolean) => Promise<string | null>;
   cancelScan: () => Promise<void>;
   downloadSitemap: () => Promise<void>;
+  clearLogs: () => void;
 }
 
 // Create the context with default values
@@ -40,9 +43,11 @@ const ScanContext = createContext<ScanContextType>({
   taskId: null,
   sitemap: null,
   pageStats: null,
+  scanLogs: [],
   startScan: async () => null,
   cancelScan: async () => {},
-  downloadSitemap: async () => {}
+  downloadSitemap: async () => {},
+  clearLogs: () => {}
 });
 
 // Provider component
@@ -63,9 +68,11 @@ export const ScanProvider: React.FC<{ children: ReactNode; url: string }> = ({
     sitemap,
     taskId,
     pageStats,
+    scanLogs,
     startScan,
     cancelScan,
-    downloadSitemap: downloadSitemapFn
+    downloadSitemap: downloadSitemapFn,
+    clearLogs
   } = useScan(url);
   
   // Ensure scanDetails has all required properties with default values
@@ -96,10 +103,12 @@ export const ScanProvider: React.FC<{ children: ReactNode; url: string }> = ({
     taskId,
     sitemap,
     pageStats,
+    scanLogs,
     startScan,
     cancelScan,
-    downloadSitemap
-  }), [url, isScanning, scanDetailsWithDefaults, taskId, sitemap, pageStats, startScan, cancelScan, downloadSitemap]);
+    downloadSitemap,
+    clearLogs
+  }), [url, isScanning, scanDetailsWithDefaults, taskId, sitemap, pageStats, scanLogs, startScan, cancelScan, downloadSitemap, clearLogs]);
   
   return (
     <ScanContext.Provider value={contextValue}>

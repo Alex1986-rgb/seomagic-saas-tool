@@ -8,7 +8,9 @@ import { AuditMetricsPanel } from './AuditMetricsPanel';
 import { AuditStageIndicator } from './AuditStageIndicator';
 import { IssuesStreamView } from './IssuesStreamView';
 import { UrlDiscoveryStream } from './UrlDiscoveryStream';
+import ScanErrorLog from './ScanErrorLog';
 import { useAuditRealtimeData } from '@/hooks/useAuditRealtimeData';
+import { useScanContext } from '@/contexts/ScanContext';
 import { useState } from 'react';
 
 interface AuditRealtimeVisualizerProps {
@@ -19,6 +21,7 @@ interface AuditRealtimeVisualizerProps {
 export const AuditRealtimeVisualizer = ({ url, statusData }: AuditRealtimeVisualizerProps) => {
   const [issuesOpen, setIssuesOpen] = useState(false);
   const { flowNodes, auditStages, metrics, issues } = useAuditRealtimeData(statusData);
+  const { scanLogs, clearLogs } = useScanContext();
 
   const progress = statusData?.progress || 0;
   const stage = statusData?.stage || 'queued';
@@ -183,6 +186,15 @@ export const AuditRealtimeVisualizer = ({ url, statusData }: AuditRealtimeVisual
           <AuditMetricsPanel metrics={metrics} />
         </motion.div>
       </div>
+
+      {/* Scan Error Log */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.35 }}
+      >
+        <ScanErrorLog logs={scanLogs} onClearLogs={clearLogs} />
+      </motion.div>
 
       {/* Issues Stream (Collapsible) */}
       {issues.length > 0 && (
