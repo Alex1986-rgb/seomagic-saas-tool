@@ -189,6 +189,47 @@ export class AuditService {
       throw error;
     }
   }
+
+  /**
+   * Возобновляет прерванный аудит
+   */
+  async resumeAudit(taskId: string): Promise<{ success: boolean; task_id?: string; message?: string }> {
+    try {
+      console.log('🔄 Resuming audit:', taskId);
+      
+      const { data, error } = await supabase.functions.invoke('audit-resume', {
+        body: { task_id: taskId }
+      });
+
+      if (error) {
+        console.error('❌ Resume error:', error);
+        return {
+          success: false,
+          message: error.message || 'Failed to resume audit'
+        };
+      }
+
+      if (!data?.success) {
+        return {
+          success: false,
+          message: data?.message || 'Resume failed'
+        };
+      }
+
+      console.log('✅ Audit resumed successfully:', data);
+      return {
+        success: true,
+        task_id: taskId,
+        message: data.message
+      };
+    } catch (error: any) {
+      console.error('❌ Error resuming audit:', error);
+      return {
+        success: false,
+        message: error.message || 'Unknown error'
+      };
+    }
+  }
 }
 
 export const auditService = new AuditService();

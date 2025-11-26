@@ -4,6 +4,8 @@ import { AuditTypeSelector } from '@/components/site-audit/AuditTypeSelector';
 import { Card } from '@/components/ui/card';
 import { Zap, Activity, FileText, CheckCircle, Loader2 } from 'lucide-react';
 import { useScanContext } from '@/contexts/ScanContext';
+import { useInterruptedAudit } from '@/hooks/useInterruptedAudit';
+import { InterruptedAuditBanner } from './InterruptedAuditBanner';
 
 interface AuditWorkspaceProps {
   url: string;
@@ -18,6 +20,14 @@ export const AuditWorkspace: React.FC<AuditWorkspaceProps> = ({
 }) => {
   const { taskId, isScanning, scanDetails, startScan } = useScanContext();
   const [isStartingAudit, setIsStartingAudit] = useState(false);
+  
+  // Check for interrupted audits
+  const { 
+    interruptedAudit, 
+    isResuming, 
+    resumeAudit, 
+    dismissInterruptedAudit 
+  } = useInterruptedAudit(url);
 
   // Handle starting audit using startScan from context
   const handleStartAudit = useCallback(async (type: 'quick' | 'deep') => {
@@ -169,6 +179,27 @@ export const AuditWorkspace: React.FC<AuditWorkspaceProps> = ({
 
         <TabsContent value="start" className="mt-0">
           <div className="p-6">
+            {/* Show interrupted audit banner if exists */}
+            {interruptedAudit && !isScanning && (
+              <InterruptedAuditBanner
+                audit={interruptedAudit}
+                isResuming={isResuming}
+                onResume={async () => {
+                  const resumedTaskId = await resumeAudit();
+                  if (resumedTaskId) {
+                    // Save task_id and switch to progress tab
+                    localStorage.setItem(`task_id_${url}`, resumedTaskId);
+                    setActiveTab('progress');
+                    localStorage.setItem(`audit_tab_${url}`, 'progress');
+                  }
+                }}
+                onStartFresh={() => {
+                  dismissInterruptedAudit();
+                }}
+                onDismiss={dismissInterruptedAudit}
+              />
+            )}
+            
             <AuditTypeSelector 
               onStartAudit={handleStartAudit}
               isLoading={isStartingAudit}
