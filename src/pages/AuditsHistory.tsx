@@ -22,7 +22,8 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { useToast } from '@/hooks/use-toast';
 import { useAuditList } from '@/modules/audit/hooks/useAuditList';
-import { Loader2, Search, MoreVertical, Eye, Trash2, Download, RefreshCw } from 'lucide-react';
+import { auditService } from '@/modules/audit/services/auditService';
+import { Loader2, Search, MoreVertical, Eye, Trash2, Download, RefreshCw, PlayCircle } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { ru } from 'date-fns/locale';
 
@@ -31,6 +32,7 @@ export default function AuditsHistory() {
   const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [resumingTaskId, setResumingTaskId] = useState<string | null>(null);
 
   const { audits, isLoading, error, refetch } = useAuditList();
 
@@ -81,6 +83,57 @@ export default function AuditsHistory() {
       title: 'В разработке',
       description: 'Функция экспорта будет добавлена позже',
     });
+  };
+
+  const handleResumeAudit = async (auditId: string, url: string) => {
+    // Find the task_id for this audit
+    try {
+      setResumingTaskId(auditId);
+      
+      // Get the task for this audit
+      const { data: tasks } = await import('@/integrations/supabase/client').then(m => 
+        m.supabase
+          .from('audit_tasks')
+          .select('id')
+          .eq('audit_id', auditId)
+          .order('created_at', { ascending: false })
+          .limit(1)
+      );
+
+      if (!tasks || tasks.length === 0) {
+        toast({
+          title: 'Ошибка',
+          description: 'Задача аудита не найдена',
+          variant: 'destructive',
+        });
+        return;
+      }
+
+      const result = await auditService.resumeAudit(tasks[0].id);
+      
+      if (result.success) {
+        toast({
+          title: 'Аудит возобновлен',
+          description: 'Сканирование продолжается с места остановки',
+        });
+        // Navigate to the audit page
+        navigate(`/audit?url=${encodeURIComponent(url)}`);
+      } else {
+        toast({
+          title: 'Ошибка возобновления',
+          description: result.message || 'Не удалось возобновить аудит',
+          variant: 'destructive',
+        });
+      }
+    } catch (err: any) {
+      toast({
+        title: 'Ошибка',
+        description: err.message || 'Не удалось возобновить аудит',
+        variant: 'destructive',
+      });
+    } finally {
+      setResumingTaskId(null);
+    }
   };
 
   return (
@@ -185,7 +238,26 @@ export default function AuditsHistory() {
                           {audit.url}
                         </a>
                       </TableCell>
-                      <TableCell>{getStatusBadge(audit.status)}</TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          {getStatusBadge(audit.status)}
+                          {audit.status === 'failed' && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-6 px-2 text-xs"
+                              onClick={() => handleResumeAudit(audit.id, audit.url)}
+                              disabled={resumingTaskId === audit.id}
+                            >
+                              {resumingTaskId === audit.id ? (
+                                <Loader2 className="h-3 w-3 animate-spin" />
+                              ) : (
+                                <PlayCircle className="h-3 w-3" />
+                              )}
+                            </Button>
+                          )}
+                        </div>
+                      </TableCell>
                       <TableCell>
                         {audit.seo_score !== null ? (
                           <div className="flex items-center gap-2">

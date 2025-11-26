@@ -9,6 +9,9 @@ verify_jwt = false
 [functions.audit-cancel]
 verify_jwt = true
 
+[functions.audit-resume]
+verify_jwt = false
+
 [functions.audit-processor]
 verify_jwt = false
 
