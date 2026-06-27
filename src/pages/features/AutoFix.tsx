@@ -168,7 +168,7 @@ const AutoFix: React.FC = () => {
           transition={{ duration: 0.5, delay: 0.3 }}
         >
           <Tabs defaultValue="capabilities" className="w-full">
-            <TabsList className="grid w-full grid-cols-4">
+            <TabsList className="grid w-full grid-cols-2 md:grid-cols-4">
               <TabsTrigger value="capabilities">Возможности ИИ</TabsTrigger>
               <TabsTrigger value="examples">Примеры</TabsTrigger>
               <TabsTrigger value="settings">Настройки</TabsTrigger>

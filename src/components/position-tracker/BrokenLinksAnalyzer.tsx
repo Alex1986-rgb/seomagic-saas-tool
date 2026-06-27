@@ -107,7 +107,7 @@ export function BrokenLinksAnalyzer({ domain }: BrokenLinksAnalyzerProps) {
     if (statusCode >= 200 && statusCode < 300) return "bg-green-100 text-green-800";
     if (statusCode >= 300 && statusCode < 400) return "bg-yellow-100 text-yellow-800";
     if (statusCode >= 400 && statusCode < 500) return "bg-red-100 text-red-800";
-    return "bg-gray-100 text-gray-800";
+    return "bg-muted text-muted-foreground";
   };
 
   return (

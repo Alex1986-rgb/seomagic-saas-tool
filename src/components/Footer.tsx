@@ -34,11 +34,11 @@ const Footer: React.FC = () => {
             </div>
 
             <div className="mt-4 flex space-x-3">
-              <SocialIcon href="https://facebook.com" icon={<Facebook size={16} />} />
-              <SocialIcon href="https://twitter.com" icon={<Twitter size={16} />} />
-              <SocialIcon href="https://instagram.com" icon={<Instagram size={16} />} />
-              <SocialIcon href="https://linkedin.com" icon={<Linkedin size={16} />} />
-              <SocialIcon href="https://github.com" icon={<Github size={16} />} />
+              <SocialIcon href="https://facebook.com" icon={<Facebook size={16} />} label="Мы в Facebook" />
+              <SocialIcon href="https://twitter.com" icon={<Twitter size={16} />} label="Мы в Twitter" />
+              <SocialIcon href="https://instagram.com" icon={<Instagram size={16} />} label="Мы в Instagram" />
+              <SocialIcon href="https://linkedin.com" icon={<Linkedin size={16} />} label="Мы в LinkedIn" />
+              <SocialIcon href="https://github.com" icon={<Github size={16} />} label="Мы на GitHub" />
             </div>
           </div>
           
@@ -135,14 +135,15 @@ const FooterLegalLink = ({ to, children }) => (
 
 const SocialIcon = ({
   href,
-  icon
-}) => (
+  icon,
+  label
+}: { href: string; icon: React.ReactNode; label: string }) => (
   <a
     href={href}
     className="text-muted-foreground hover:text-foreground transition-colors p-1.5 hover:bg-background rounded-full"
     target="_blank"
     rel="noopener noreferrer"
-    aria-label="Social media"
+    aria-label={label}
   >
     {icon}
   </a>

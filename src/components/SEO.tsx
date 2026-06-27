@@ -19,7 +19,7 @@ export const SEO: React.FC<SEOProps> = ({
   description = 'Профессиональный SEO аудит и оптимизация сайтов. Повысьте позиции вашего сайта в поисковых системах и увеличьте органический трафик.',
   keywords = 'SEO, аудит сайта, оптимизация сайта, поисковая оптимизация, продвижение сайта, анализ сайта, улучшение SEO',
   canonicalUrl,
-  ogImage = '/images/og-image.jpg',
+  ogImage = '/og-image.jpg',
   ogImageAlt = 'SeoMarket - SEO Аудит и оптимизация сайтов',
   ogType = 'website',
   locale = 'ru_RU',

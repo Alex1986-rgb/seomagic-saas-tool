@@ -6,6 +6,7 @@ import { PingManager } from './pingManager';
 import type { Proxy, ProxySources as ProxySourcesType } from './types';
 import { UrlTestResult } from './url-testing/urlTester';
 import { ProxyCollector } from './proxyCollector';
+import { loadCustomProxySources } from './proxySourceManager';
 
 export class ProxyManager {
   private proxyStorage: ProxyStorage;
@@ -65,15 +66,18 @@ export class ProxyManager {
     this.pingManager = new PingManager(this.proxyStorage);
     this.proxyCollector = new ProxyCollector(this.defaultProxySources);
     
-    // Load proxy sources from localStorage
-    const storedSources = localStorage.getItem('proxySources');
-    if (storedSources) {
-      try {
-        this.defaultProxySources = JSON.parse(storedSources);
-        this.proxySources.proxySources = this.defaultProxySources;
-      } catch (error) {
-        console.error('Ошибка при загрузке источников прокси из localStorage:', error);
+    // Загружаем пользовательские источники прокси из localStorage.
+    // Ключ — 'customProxySources' (его пишет ProxySourcesManager через
+    // proxySourceManager.saveCustomProxySources). loadCustomProxySources()
+    // восстанавливает parseFunction, поэтому МЕРЖИМ поверх дефолтов, а не
+    // заменяем целиком (иначе у дефолтных источников потерялись бы parseFunction).
+    try {
+      const customSources = loadCustomProxySources();
+      if (customSources && Object.keys(customSources).length > 0) {
+        this.proxySources.proxySources = { ...this.defaultProxySources, ...customSources };
       }
+    } catch (error) {
+      console.error('Ошибка при загрузке источников прокси из localStorage:', error);
     }
   }
   

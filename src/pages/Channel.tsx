@@ -68,9 +68,10 @@ const Channel: React.FC = () => {
                 </div>
               </div>
               
-              <Button 
+              <Button
                 size="lg"
                 className="flex items-center gap-2 bg-red-600 hover:bg-red-700"
+                onClick={() => window.open(channelInfo.link, '_blank', 'noopener,noreferrer')}
               >
                 <YoutubeIcon size={20} />
                 Подписаться
@@ -96,7 +97,7 @@ const Channel: React.FC = () => {
         <div className="mb-16">
           <div className="flex items-center justify-between mb-8">
             <h2 className="text-2xl font-bold">Последние видео</h2>
-            <Button variant="outline" size="sm" className="flex items-center gap-2">
+            <Button variant="outline" size="sm" className="flex items-center gap-2" onClick={() => window.open(channelInfo.link, '_blank', 'noopener,noreferrer')}>
               <Video size={16} />
               Все видео
             </Button>
@@ -116,7 +117,11 @@ const Channel: React.FC = () => {
                     className="w-full h-48 object-cover"
                   />
                   <div className="absolute inset-0 flex items-center justify-center bg-black/60 opacity-0 hover:opacity-100 transition-opacity">
-                    <button className="w-12 h-12 rounded-full bg-primary text-white flex items-center justify-center">
+                    <button
+                      className="w-12 h-12 rounded-full bg-primary text-white flex items-center justify-center"
+                      aria-label="Воспроизвести видео"
+                      onClick={() => window.open(video.link && video.link !== '#' ? video.link : channelInfo.link, '_blank', 'noopener,noreferrer')}
+                    >
                       <Play size={24} />
                     </button>
                   </div>

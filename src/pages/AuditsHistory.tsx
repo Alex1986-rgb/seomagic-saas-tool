@@ -26,6 +26,7 @@ import { auditService } from '@/modules/audit/services/auditService';
 import { Loader2, Search, MoreVertical, Eye, Trash2, Download, RefreshCw, PlayCircle } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { ru } from 'date-fns/locale';
+import { saveAs } from 'file-saver';
 
 export default function AuditsHistory() {
   const navigate = useNavigate();
@@ -33,6 +34,8 @@ export default function AuditsHistory() {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [resumingTaskId, setResumingTaskId] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [downloadingId, setDownloadingId] = useState<string | null>(null);
 
   const { audits, isLoading, error, refetch } = useAuditList();
 
@@ -70,19 +73,72 @@ export default function AuditsHistory() {
   };
 
   const handleDeleteAudit = async (auditId: string) => {
-    // TODO: Implement delete functionality
-    toast({
-      title: 'В разработке',
-      description: 'Функция удаления будет добавлена позже',
-    });
+    if (!window.confirm('Удалить этот аудит? Действие необратимо.')) {
+      return;
+    }
+    try {
+      setDeletingId(auditId);
+      await auditService.deleteAudit(auditId);
+      toast({
+        title: 'Аудит удалён',
+        description: 'Запись успешно удалена из истории',
+      });
+      refetch();
+    } catch (err: any) {
+      toast({
+        title: 'Ошибка удаления',
+        description: err?.message || 'Не удалось удалить аудит',
+        variant: 'destructive',
+      });
+    } finally {
+      setDeletingId(null);
+    }
   };
 
   const handleDownloadReport = async (auditId: string) => {
-    // TODO: Implement download functionality
-    toast({
-      title: 'В разработке',
-      description: 'Функция экспорта будет добавлена позже',
-    });
+    try {
+      setDownloadingId(auditId);
+      const [audit, results, pages] = await Promise.all([
+        auditService.getAudit(auditId),
+        auditService.getAuditResults(auditId),
+        auditService.getPageAnalysis(auditId),
+      ]);
+
+      if (!audit) {
+        toast({
+          title: 'Нет данных',
+          description: 'Не удалось найти данные аудита для экспорта',
+          variant: 'destructive',
+        });
+        return;
+      }
+
+      const report = {
+        exportedAt: new Date().toISOString(),
+        audit,
+        results,
+        pages,
+      };
+
+      const blob = new Blob([JSON.stringify(report, null, 2)], {
+        type: 'application/json',
+      });
+      const safeUrl = (audit.url || 'audit').replace(/[^a-zA-Z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+      saveAs(blob, `audit-report-${safeUrl || auditId}.json`);
+
+      toast({
+        title: 'Отчёт сформирован',
+        description: 'Файл отчёта загружается',
+      });
+    } catch (err: any) {
+      toast({
+        title: 'Ошибка экспорта',
+        description: err?.message || 'Не удалось сформировать отчёт',
+        variant: 'destructive',
+      });
+    } finally {
+      setDownloadingId(null);
+    }
   };
 
   const handleResumeAudit = async (auditId: string, url: string) => {
@@ -296,16 +352,26 @@ export default function AuditsHistory() {
                             </DropdownMenuItem>
                             <DropdownMenuItem
                               onClick={() => handleDownloadReport(audit.id)}
+                              disabled={downloadingId === audit.id}
                             >
-                              <Download className="mr-2 h-4 w-4" />
+                              {downloadingId === audit.id ? (
+                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                              ) : (
+                                <Download className="mr-2 h-4 w-4" />
+                              )}
                               Скачать отчет
                             </DropdownMenuItem>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem
                               onClick={() => handleDeleteAudit(audit.id)}
+                              disabled={deletingId === audit.id}
                               className="text-destructive"
                             >
-                              <Trash2 className="mr-2 h-4 w-4" />
+                              {deletingId === audit.id ? (
+                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                              ) : (
+                                <Trash2 className="mr-2 h-4 w-4" />
+                              )}
                               Удалить
                             </DropdownMenuItem>
                           </DropdownMenuContent>

@@ -54,7 +54,7 @@ const Demo: React.FC = () => {
           </motion.div>
           
           <Tabs defaultValue="process" className="mt-16">
-            <TabsList className="grid grid-cols-4 max-w-3xl mx-auto mb-8">
+            <TabsList className="grid grid-cols-2 md:grid-cols-4 max-w-3xl mx-auto mb-8">
               <TabsTrigger value="process" className="data-[state=active]:text-primary">
                 <BarChart2 className="w-4 h-4 mr-2" /> Процесс работы
               </TabsTrigger>

@@ -2,7 +2,8 @@
 import React, { createContext, useContext, useState, useCallback, useMemo, ReactNode } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { AuditData, AuditHistoryData, RecommendationData } from '@/types/audit';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase, isDemoMode } from '@/integrations/supabase/client';
+import { buildAuditData, buildRecommendations } from '@/integrations/supabase/demoData';
 import { useToast } from '@/hooks/use-toast';
 import { validationService } from '@/services/validation/validationService';
 
@@ -89,10 +90,10 @@ export const AuditDataProvider: React.FC<AuditDataProviderProps> = ({
   });
   
   // Fetch audit history for this URL
-  const { 
-    data: historyData = { url, items: [] } 
+  const {
+    data: historyData = { url, items: [] }
   } = useQuery({
-    queryKey: ['auditHistory', url],
+    queryKey: ['auditHistory', 'ctx', url],
     queryFn: async () => {
       if (!url) return { url, items: [] };
       
@@ -125,11 +126,12 @@ export const AuditDataProvider: React.FC<AuditDataProviderProps> = ({
   });
   
   // Fetch audit results with weighted metrics
+  // (отдельный ключ, чтобы не конфликтовать с запросом audit_data выше)
   const { data: auditResults = null } = useQuery({
-    queryKey: ['auditResults', taskId],
+    queryKey: ['auditResultsFull', taskId],
     queryFn: async () => {
       if (!taskId) return null;
-      
+
       const { data, error } = await supabase
         .from('audit_results')
         .select('*')
@@ -170,7 +172,7 @@ export const AuditDataProvider: React.FC<AuditDataProviderProps> = ({
   
   // Fetch page analysis
   const { data: pageAnalysis = [] } = useQuery({
-    queryKey: ['pageAnalysis', auditResults?.audit_id],
+    queryKey: ['pageAnalysis', 'ctx', auditResults?.audit_id],
     queryFn: async () => {
       if (!auditResults?.audit_id) return [];
       
@@ -191,8 +193,10 @@ export const AuditDataProvider: React.FC<AuditDataProviderProps> = ({
     enabled: !!auditResults?.audit_id
   });
   
-  // Placeholder for recommendations (can be implemented later)
-  const recommendations: RecommendationData | null = null;
+  // В демо-режиме отдаём демонстрационные рекомендации (иначе блок результатов
+  // в AuditContent гейтится по `recommendations` и не отображается).
+  const recommendations: RecommendationData | null =
+    isDemoMode && url ? (buildRecommendations(url) as unknown as RecommendationData) : null;
   
   const loadAuditData = useCallback(async (refresh: boolean = false) => {
     setIsRefreshing(refresh);
@@ -299,13 +303,24 @@ export const AuditDataProvider: React.FC<AuditDataProviderProps> = ({
     console.log("Exported JSON data");
   }, [auditData]);
   
+  // В демо-режиме, если реальные данные ещё не подгружены, показываем
+  // демонстрационный результат аудита для введённого URL, чтобы интерфейс
+  // результатов был полностью рабочим без бэкенда.
+  const effectiveAuditData = useMemo(() => {
+    if (auditData) return auditData;
+    if (isDemoMode && url) return buildAuditData(url) as unknown as AuditData;
+    return null;
+  }, [auditData, url]);
+
+  const effectiveLoading = isDemoMode && !auditData ? false : isLoading;
+
   // Memoize context value to prevent unnecessary re-renders
   const contextValue = useMemo(() => ({
-    auditData: auditData || null,
+    auditData: effectiveAuditData,
     recommendations: recommendations || null,
     historyData: historyData || { url, items: [] },
     error: error ? String(error) : null,
-    isLoading,
+    isLoading: effectiveLoading,
     loadingProgress,
     isRefreshing,
     loadAuditData,
@@ -315,12 +330,12 @@ export const AuditDataProvider: React.FC<AuditDataProviderProps> = ({
     taskMetrics: taskMetrics || null,
     pageAnalysis: pageAnalysis || []
   }), [
-    auditData,
+    effectiveAuditData,
     recommendations,
     historyData,
     url,
     error,
-    isLoading,
+    effectiveLoading,
     loadingProgress,
     isRefreshing,
     loadAuditData,

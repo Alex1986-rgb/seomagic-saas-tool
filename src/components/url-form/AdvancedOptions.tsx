@@ -27,10 +27,11 @@ const AdvancedOptions: React.FC<AdvancedOptionsProps> = ({ options, onOptionsCha
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <Button 
-          type="button" 
-          variant="ghost" 
+        <Button
+          type="button"
+          variant="ghost"
           size="icon"
+          aria-label="Настройки сканирования"
           className="text-muted-foreground hover:text-foreground"
         >
           <Settings className="h-5 w-5" />

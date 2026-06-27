@@ -61,8 +61,18 @@ const AuditTabs: React.FC<AuditTabsProps> = ({ details }) => {
           />
         </TabsContent>
         
+        <TabsContent value="mobile">
+          <AuditCategorySection
+            title="Мобильная версия"
+            score={details.mobile.score}
+            previousScore={details.mobile.previousScore}
+            items={details.mobile.items}
+            description="Анализ адаптивности и удобства сайта на мобильных устройствах."
+          />
+        </TabsContent>
+
         <TabsContent value="usability">
-          <AuditCategorySection 
+          <AuditCategorySection
             title="Удобство использования"
             score={details.usability.score}
             previousScore={details.usability.previousScore}

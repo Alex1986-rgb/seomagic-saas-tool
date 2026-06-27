@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { LayoutDashboard, FileText, List } from 'lucide-react';
 import { AuditData } from '@/types/audit';
 import AuditResultsDashboard from './AuditResultsDashboard';
-import { ViewMode } from './types';
+import TopIssuesPanel from './TopIssuesPanel';
+import { ViewMode, IssueItem } from './types';
 
 interface AuditResultsViewSwitcherProps {
   auditData: AuditData;
@@ -29,6 +30,28 @@ const AuditResultsViewSwitcher: React.FC<AuditResultsViewSwitcherProps> = ({
   taskId
 }) => {
   const [viewMode, setViewMode] = useState<ViewMode>(defaultMode);
+
+  const allIssues: IssueItem[] = useMemo(() => {
+    const issues: IssueItem[] = [];
+    if (auditData?.details) {
+      Object.entries(auditData.details).forEach(([category, categoryData]) => {
+        if (categoryData?.items) {
+          categoryData.items.forEach((item) => {
+            issues.push({
+              id: `${category}-${item.id}`,
+              title: item.title,
+              description: item.description,
+              severity: item.status,
+              category,
+              affectedPages: item.affectedUrls || [],
+              solution: item.solution,
+            });
+          });
+        }
+      });
+    }
+    return issues;
+  }, [auditData]);
 
   return (
     <Tabs value={viewMode} onValueChange={(value) => setViewMode(value as ViewMode)}>
@@ -67,9 +90,13 @@ const AuditResultsViewSwitcher: React.FC<AuditResultsViewSwitcherProps> = ({
       </TabsContent>
 
       <TabsContent value="list">
-        <div className="text-center py-12 text-muted-foreground">
-          Список проблем - в разработке
-        </div>
+        {allIssues.length > 0 ? (
+          <TopIssuesPanel issues={allIssues} />
+        ) : (
+          <div className="text-center py-12 text-muted-foreground">
+            Проблемы не обнаружены или данные ещё не готовы
+          </div>
+        )}
       </TabsContent>
     </Tabs>
   );

@@ -106,9 +106,9 @@ const TechnicalArchitecture: React.FC = () => {
       case 'beta':
         return 'bg-blue-100 text-blue-800 border-blue-200';
       case 'planned':
-        return 'bg-gray-100 text-gray-800 border-gray-200';
+        return 'bg-muted text-muted-foreground border-border';
       default:
-        return 'bg-gray-100 text-gray-800 border-gray-200';
+        return 'bg-muted text-muted-foreground border-border';
     }
   };
 
@@ -121,7 +121,7 @@ const TechnicalArchitecture: React.FC = () => {
       case 'low':
         return 'text-green-600';
       default:
-        return 'text-gray-600';
+        return 'text-muted-foreground';
     }
   };
 

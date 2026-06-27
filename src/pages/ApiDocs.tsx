@@ -16,7 +16,7 @@ const ApiDocs: React.FC = () => {
         
         <div className="max-w-4xl mx-auto">
           <Tabs defaultValue="overview">
-            <TabsList className="grid grid-cols-4 w-full mb-8">
+            <TabsList className="grid grid-cols-2 md:grid-cols-4 w-full mb-8">
               <TabsTrigger value="overview">Обзор</TabsTrigger>
               <TabsTrigger value="authentication">Аутентификация</TabsTrigger>
               <TabsTrigger value="endpoints">Endpoints</TabsTrigger>

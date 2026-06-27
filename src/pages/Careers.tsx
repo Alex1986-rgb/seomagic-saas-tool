@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 
 const Careers: React.FC = () => {
+  const applyByEmail = () => { window.location.href = 'mailto:hr@seomarket.ru?subject=Отклик на вакансию'; };
   return (
     <Layout>
       <div className="container mx-auto py-32 px-4">
@@ -77,7 +78,7 @@ const Careers: React.FC = () => {
                 </div>
               </CardContent>
               <CardFooter>
-                <Button>Откликнуться</Button>
+                <Button onClick={applyByEmail}>Откликнуться</Button>
               </CardFooter>
             </Card>
             
@@ -102,7 +103,7 @@ const Careers: React.FC = () => {
                 </div>
               </CardContent>
               <CardFooter>
-                <Button>Откликнуться</Button>
+                <Button onClick={applyByEmail}>Откликнуться</Button>
               </CardFooter>
             </Card>
             
@@ -127,7 +128,7 @@ const Careers: React.FC = () => {
                 </div>
               </CardContent>
               <CardFooter>
-                <Button>Откликнуться</Button>
+                <Button onClick={applyByEmail}>Откликнуться</Button>
               </CardFooter>
             </Card>
           </div>
@@ -138,7 +139,7 @@ const Careers: React.FC = () => {
           <p className="text-lg text-muted-foreground mb-6">
             Отправьте нам свое резюме, и мы рассмотрим возможность сотрудничества
           </p>
-          <Button size="lg">Отправить резюме</Button>
+          <Button size="lg" onClick={applyByEmail}>Отправить резюме</Button>
         </div>
       </div>
     </Layout>

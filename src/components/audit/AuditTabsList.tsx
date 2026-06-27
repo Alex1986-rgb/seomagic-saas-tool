@@ -8,7 +8,7 @@ interface AuditTabsListProps {
 
 export const AuditTabsList: React.FC<AuditTabsListProps> = ({ activeTab }) => {
   return (
-    <TabsList className="mb-4 sm:mb-6 grid grid-cols-2 md:grid-cols-4 gap-1">
+    <TabsList className="mb-4 sm:mb-6 grid grid-cols-2 md:grid-cols-6 gap-1">
       <TabsTrigger 
         value="seo" 
         className={`text-xs sm:text-sm ${activeTab === 'seo' ? 'font-medium' : ''}`}
@@ -27,11 +27,23 @@ export const AuditTabsList: React.FC<AuditTabsListProps> = ({ activeTab }) => {
       >
         Контент
       </TabsTrigger>
-      <TabsTrigger 
-        value="technical" 
+      <TabsTrigger
+        value="technical"
         className={`text-xs sm:text-sm ${activeTab === 'technical' ? 'font-medium' : ''}`}
       >
         Технические аспекты
+      </TabsTrigger>
+      <TabsTrigger
+        value="mobile"
+        className={`text-xs sm:text-sm ${activeTab === 'mobile' ? 'font-medium' : ''}`}
+      >
+        Мобильный
+      </TabsTrigger>
+      <TabsTrigger
+        value="usability"
+        className={`text-xs sm:text-sm ${activeTab === 'usability' ? 'font-medium' : ''}`}
+      >
+        Удобство
       </TabsTrigger>
     </TabsList>
   );

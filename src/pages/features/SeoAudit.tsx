@@ -204,7 +204,7 @@ const SeoAudit: React.FC = () => {
           transition={{ duration: 0.5, delay: 0.4 }}
         >
           <Tabs defaultValue="results" className="w-full">
-            <TabsList className="grid w-full grid-cols-4">
+            <TabsList className="grid w-full grid-cols-2 md:grid-cols-4">
               <TabsTrigger value="results">Результаты</TabsTrigger>
               <TabsTrigger value="recommendations">Рекомендации</TabsTrigger>
               <TabsTrigger value="reports">Отчеты</TabsTrigger>

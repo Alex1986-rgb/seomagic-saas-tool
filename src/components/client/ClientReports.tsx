@@ -3,8 +3,10 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { FileText, Download } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
 const ClientReports: React.FC = () => {
+  const { toast } = useToast();
   const reports = [
     {
       name: 'SEO Отчет - example.com',
@@ -36,7 +38,7 @@ const ClientReports: React.FC = () => {
                     <p className="text-xs text-muted-foreground">{report.date} • {report.type} • {report.size}</p>
                   </div>
                 </div>
-                <Button size="sm" variant="outline">
+                <Button size="sm" variant="outline" onClick={() => toast({ title: 'Загрузка отчёта', description: `${report.name} (${report.size})` })}>
                   <Download className="h-4 w-4 mr-2" />
                   Скачать
                 </Button>

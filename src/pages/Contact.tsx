@@ -11,8 +11,12 @@ import { MapPin, Clock, Phone, Mail, MessageCircle, Headphones, Calendar } from 
 import { BreadcrumbSchema } from '@/components/seo/BreadcrumbSchema';
 import { LocalBusinessSchema } from '@/components/seo/LocalBusinessSchema';
 import { OrganizationSchema } from '@/components/seo/OrganizationSchema';
+import { SEO } from '@/components/SEO';
+import { useToast } from '@/hooks/use-toast';
 
 const Contact: React.FC = () => {
+  const { toast } = useToast();
+  const scrollToForm = () => document.getElementById('contact-form-section')?.scrollIntoView({ behavior: 'smooth' });
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
@@ -63,6 +67,11 @@ const Contact: React.FC = () => {
 
   return (
     <Layout>
+      <SEO
+        title="Контакты — связаться с командой SeoMarket"
+        description="Свяжитесь с SeoMarket: онлайн-чат, email, телефон. Поможем с SEO-аудитом, оптимизацией и подбором тарифа."
+        canonicalUrl="/contact"
+      />
       <BreadcrumbSchema items={[
         { name: 'Главная', url: '/' },
         { name: 'Контакты', url: '/contact' }
@@ -124,7 +133,7 @@ const Contact: React.FC = () => {
                       </div>
                       <h3 className="text-xl font-semibold mb-3">{option.title}</h3>
                       <p className="text-muted-foreground mb-6">{option.description}</p>
-                      <Button className="w-full">{option.action}</Button>
+                      <Button className="w-full" onClick={scrollToForm}>{option.action}</Button>
                     </CardContent>
                   </Card>
                 </motion.div>
@@ -134,7 +143,8 @@ const Contact: React.FC = () => {
             {/* Main Content Grid */}
             <div className="grid grid-cols-1 xl:grid-cols-5 gap-12">
               {/* Contact Form - Takes more space */}
-              <motion.div 
+              <motion.div
+                id="contact-form-section"
                 className="xl:col-span-3"
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
@@ -182,15 +192,15 @@ const Contact: React.FC = () => {
                     <CardContent className="p-6">
                       <h3 className="font-semibold mb-4">Быстрая связь</h3>
                       <div className="space-y-4">
-                        <Button variant="outline" className="w-full justify-start">
+                        <Button variant="outline" className="w-full justify-start" onClick={() => { window.location.href = 'tel:+78001234567'; }}>
                           <Phone className="w-4 h-4 mr-2" />
                           Позвонить сейчас
                         </Button>
-                        <Button variant="outline" className="w-full justify-start">
+                        <Button variant="outline" className="w-full justify-start" onClick={() => { window.location.href = 'mailto:info@seomarket.ru'; }}>
                           <Mail className="w-4 h-4 mr-2" />
                           Написать email
                         </Button>
-                        <Button variant="outline" className="w-full justify-start">
+                        <Button variant="outline" className="w-full justify-start" onClick={() => toast({ title: 'Онлайн-чат', description: 'Чат поддержки скоро откроется' })}>
                           <MessageCircle className="w-4 h-4 mr-2" />
                           Открыть чат
                         </Button>
@@ -267,7 +277,7 @@ const Contact: React.FC = () => {
                     </CardContent>
                   </Card>
                   
-                  <Button size="lg" className="w-full">
+                  <Button size="lg" className="w-full" onClick={scrollToForm}>
                     <Calendar className="w-4 h-4 mr-2" />
                     Записаться на встречу
                   </Button>

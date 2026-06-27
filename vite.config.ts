@@ -20,7 +20,10 @@ export default defineConfig(({ mode }) => ({
       "@": path.resolve(__dirname, "./src"),
     },
   },
-  base: "/",
+  // Для деплоя на GitHub Pages (проектный сайт) приложение живёт по под-пути
+  // /seomagic-saas-tool/. Включается переменной GITHUB_PAGES=true при сборке.
+  // Обычные сборки (и продакшен на корне домена) остаются на "/".
+  base: process.env.GITHUB_PAGES === "true" ? "/seomagic-saas-tool/" : "/",
   build: {
     outDir: "dist",
     assetsDir: "assets",
@@ -28,34 +31,14 @@ export default defineConfig(({ mode }) => ({
     minify: mode === 'production',
     rollupOptions: {
       output: {
+        // Все зависимости из node_modules — в один vendor-чанк.
+        // Раздельные vendor-чанки (react / ui / other) ломали порядок
+        // инициализации: код из vendor-other обращался к React.createContext
+        // раньше, чем загружался react-чанк → рантайм-ошибка в проде.
+        // Единый vendor-чанк гарантирует, что React доступен своим потребителям.
         manualChunks: (id) => {
           if (id.includes('node_modules')) {
-            if (id.includes('react') || id.includes('react-dom')) {
-              return 'vendor-react';
-            }
-            if (id.includes('lucide') || id.includes('@radix-ui')) {
-              return 'vendor-ui';
-            }
-            if (id.includes('date-fns') || id.includes('recharts')) {
-              return 'vendor-data';
-            }
-            return 'vendor-other';
-          }
-          
-          if (id.includes('/components/ui/')) {
-            return 'ui-components';
-          }
-          
-          if (id.includes('/components/admin/')) {
-            return 'admin-components';
-          }
-          
-          if (id.includes('/pages/admin/')) {
-            return 'admin-pages';
-          }
-          
-          if (id.includes('/components/audit/')) {
-            return 'audit-components';
+            return 'vendor';
           }
         }
       }

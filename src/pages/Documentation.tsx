@@ -33,7 +33,8 @@ const Documentation: React.FC = () => {
   // Validate tab parameter
   const validTabs: DocumentationTab[] = ['user-guide', 'developer-guide', 'security', 'faq'];
   if (tab && !validTabs.includes(tab as DocumentationTab)) {
-    return <Navigate to="/documentation/user-guide" replace />;
+    // Маршрута /documentation/:tab нет — редиректим на базовый /documentation
+    return <Navigate to="/documentation" replace />;
   }
 
   const tabsData = [

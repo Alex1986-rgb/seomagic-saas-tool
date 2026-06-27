@@ -25,7 +25,7 @@ const ScanResults: React.FC<ScanResultsProps> = ({ urls, onExport }) => {
         </div>
         <input
           className="flex h-10 w-full rounded-md bg-background py-3 text-sm outline-none"
-          placeholder="Search URLs..."
+          placeholder="Поиск по URL..."
           value={searchTerm}
           onChange={handleSearch}
         />
@@ -42,7 +42,7 @@ const ScanResults: React.FC<ScanResultsProps> = ({ urls, onExport }) => {
           ))}
         </ul>
       ) : (
-        <p>No URLs found.</p>
+        <p>URL не найдены.</p>
       )}
     </div>
   );

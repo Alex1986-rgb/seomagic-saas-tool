@@ -26,12 +26,12 @@ const SystemStatusGrid: React.FC<Props> = ({ systemStatus }) => (
   <div>
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
       {systemStatus.map((item) => (
-        <div 
+        <div
           key={item.name}
-          className="border border-gray-300 rounded-2xl p-6 bg-gradient-to-br from-[#F2FCE2] via-[#E5DEFF] to-[#D3E4FD] shadow-lg transition-all duration-200 hover:shadow-xl flex flex-col justify-between min-h-[170px] text-gray-900"
+          className="border border-border rounded-2xl p-6 bg-muted shadow-lg transition-all duration-200 hover:shadow-xl flex flex-col justify-between min-h-[170px] text-foreground"
         >
           <div className="flex items-center gap-4 mb-4">
-            <div className="bg-white p-2.5 rounded-xl shadow-inner border border-gray-200">
+            <div className="bg-background p-2.5 rounded-xl shadow-inner border border-border">
               {iconMap[item.icon] ?? <Server className="h-6 w-6 text-gray-400" />}
             </div>
             <div className="text-lg font-bold">{item.name}</div>
@@ -59,7 +59,7 @@ const SystemStatusGrid: React.FC<Props> = ({ systemStatus }) => (
                 <span className="text-blue-700">{item.uptime}</span>
               </div>
               
-              <div className="flex items-center gap-2 text-xs text-gray-600">
+              <div className="flex items-center gap-2 text-xs text-muted-foreground">
                 <span>Последний перезапуск:</span>
                 <span>{item.lastRestart}</span>
               </div>

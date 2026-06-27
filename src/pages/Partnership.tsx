@@ -4,8 +4,10 @@ import Layout from '@/components/Layout';
 import { motion } from 'framer-motion';
 import { Button } from "@/components/ui/button";
 import { Briefcase, Handshake, Users } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 const Partnership: React.FC = () => {
+  const navigate = useNavigate();
   const partnershipBenefits = [
     {
       icon: <Handshake className="h-10 w-10 text-primary mb-4" />,
@@ -58,7 +60,7 @@ const Partnership: React.FC = () => {
               Мы открыты к сотрудничеству и готовы рассмотреть ваши предложения. 
               Заполните форму связи, и наш менеджер свяжется с вами в ближайшее время.
             </p>
-            <Button size="lg">Стать партнером</Button>
+            <Button size="lg" onClick={() => navigate('/contact')}>Стать партнером</Button>
           </div>
         </motion.div>
       </div>

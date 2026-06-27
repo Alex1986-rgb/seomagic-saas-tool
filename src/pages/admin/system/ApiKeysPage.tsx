@@ -6,16 +6,40 @@ import { Key, Plus, Copy, Trash } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Label } from "@/components/ui/label";
+import { useToast } from "@/hooks/use-toast";
 
 const ApiKeysPage = () => {
+  const { toast } = useToast();
   const [showNewKeyForm, setShowNewKeyForm] = React.useState(false);
   const [keyName, setKeyName] = React.useState("");
   const [showCopiedAlert, setShowCopiedAlert] = React.useState(false);
+  const [apiKeys, setApiKeys] = React.useState([
+    { name: "Основной ключ", key: "sk_live_123...abc", created: "2025-04-20" },
+    { name: "Тестовый ключ", key: "sk_test_456...xyz", created: "2025-04-19" },
+  ]);
 
   const handleCopyKey = (key: string) => {
     navigator.clipboard.writeText(key);
     setShowCopiedAlert(true);
     setTimeout(() => setShowCopiedAlert(false), 3000);
+  };
+
+  const handleCreateKey = () => {
+    if (!keyName.trim()) {
+      toast({ title: "Введите название ключа", variant: "destructive" });
+      return;
+    }
+    const rand = Math.random().toString(36).slice(2, 8);
+    const today = new Date().toISOString().slice(0, 10);
+    setApiKeys((prev) => [...prev, { name: keyName.trim(), key: `sk_live_${rand}...key`, created: today }]);
+    setKeyName("");
+    setShowNewKeyForm(false);
+    toast({ title: "Ключ создан", description: "Новый API-ключ добавлен" });
+  };
+
+  const handleDeleteKey = (index: number) => {
+    setApiKeys((prev) => prev.filter((_, i) => i !== index));
+    toast({ title: "Ключ удалён" });
   };
 
   return (
@@ -57,7 +81,7 @@ const ApiKeysPage = () => {
                   value={keyName}
                   onChange={(e) => setKeyName(e.target.value)}
                 />
-                <Button onClick={() => setShowNewKeyForm(false)}>
+                <Button onClick={handleCreateKey}>
                   Создать
                 </Button>
               </div>
@@ -65,10 +89,7 @@ const ApiKeysPage = () => {
           )}
 
           <div className="space-y-4">
-            {[
-              { name: "Основной ключ", key: "sk_live_123...abc", created: "2025-04-20" },
-              { name: "Тестовый ключ", key: "sk_test_456...xyz", created: "2025-04-19" },
-            ].map((apiKey, index) => (
+            {apiKeys.map((apiKey, index) => (
               <div key={index} className="flex items-center justify-between p-4 border rounded-lg">
                 <div className="flex items-center gap-3">
                   <Key className="h-5 w-5 text-primary" />
@@ -87,10 +108,11 @@ const ApiKeysPage = () => {
                     <Copy className="h-4 w-4" />
                     Копировать
                   </Button>
-                  <Button 
-                    variant="destructive" 
+                  <Button
+                    variant="destructive"
                     size="sm"
                     className="flex gap-2"
+                    onClick={() => handleDeleteKey(index)}
                   >
                     <Trash className="h-4 w-4" />
                     Удалить

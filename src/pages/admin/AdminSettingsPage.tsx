@@ -212,7 +212,7 @@ const AdminSettingsPage: React.FC = () => {
                     </div>
                   ))}
                 </div>
-                <Link to="/admin/history">
+                <Link to="/admin/audits">
                   <Button variant="outline" className="w-full mt-4 border-white/10 text-white hover:bg-white/5" size="sm">
                     Просмотреть историю изменений
                   </Button>

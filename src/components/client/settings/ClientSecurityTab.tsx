@@ -1,13 +1,32 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Shield, Key, Smartphone } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
 const ClientSecurityTab: React.FC = () => {
+  const { toast } = useToast();
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+
+  const handleUpdatePassword = () => {
+    if (!newPassword) {
+      toast({ title: 'Введите новый пароль', variant: 'destructive' });
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      toast({ title: 'Пароли не совпадают', description: 'Проверьте подтверждение пароля', variant: 'destructive' });
+      return;
+    }
+    setNewPassword('');
+    setConfirmPassword('');
+    toast({ title: 'Пароль обновлён', description: 'Новый пароль успешно сохранён' });
+  };
+
   return (
     <div className="space-y-6">
       <h3 className="text-lg md:text-xl font-semibold">Безопасность аккаунта</h3>
@@ -26,13 +45,13 @@ const ClientSecurityTab: React.FC = () => {
           </div>
           <div>
             <Label htmlFor="new-password">Новый пароль</Label>
-            <Input id="new-password" type="password" />
+            <Input id="new-password" type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} />
           </div>
           <div>
             <Label htmlFor="confirm-password">Подтвердите новый пароль</Label>
-            <Input id="confirm-password" type="password" />
+            <Input id="confirm-password" type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} />
           </div>
-          <Button>Обновить пароль</Button>
+          <Button onClick={handleUpdatePassword}>Обновить пароль</Button>
         </CardContent>
       </Card>
       

@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { BreadcrumbSchema } from '@/components/seo/BreadcrumbSchema';
 import { ServiceSchema } from '@/components/seo/ServiceSchema';
 import { HowToSchema } from '@/components/seo/HowToSchema';
+import { SEO } from '@/components/SEO';
 import { 
   Search, 
   BarChart3, 
@@ -165,6 +166,11 @@ const FeaturesPage: React.FC = () => {
 
   return (
     <Layout>
+      <SEO
+        title="Возможности SeoMarket — функции SEO-аудита и оптимизации"
+        description="Полный SEO-аудит, AI-оптимизация, мониторинг позиций, анализ конкурентов и отчёты. Все возможности платформы SeoMarket."
+        canonicalUrl="/features"
+      />
       <BreadcrumbSchema items={[
         { name: 'Главная', url: '/' },
         { name: 'Возможности', url: '/features' }

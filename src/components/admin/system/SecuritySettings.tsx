@@ -6,8 +6,10 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Shield, Save, RefreshCw } from 'lucide-react';
+import { useToast } from "@/hooks/use-toast";
 
 const SecuritySettings: React.FC = () => {
+  const { toast } = useToast();
   const [isTwoFactor, setIsTwoFactor] = useState(false);
   const [isIPRestriction, setIsIPRestriction] = useState(false);
   const [isBruteForceProtection, setIsBruteForceProtection] = useState(true);
@@ -17,7 +19,7 @@ const SecuritySettings: React.FC = () => {
     console.log('Saving security settings:', {
       isTwoFactor, isIPRestriction, isBruteForceProtection, allowedIPs
     });
-    // Here would be an API call to save settings
+    toast({ title: 'Настройки сохранены', description: 'Параметры безопасности успешно обновлены' });
   };
   
   return (

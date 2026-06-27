@@ -4,8 +4,12 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Crown, CreditCard } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { useToast } from '@/hooks/use-toast';
 
 const ClientSubscription: React.FC = () => {
+  const navigate = useNavigate();
+  const { toast } = useToast();
   return (
     <div className="space-y-6">
       <h3 className="text-lg md:text-xl font-semibold">Управление подпиской</h3>
@@ -37,11 +41,11 @@ const ClientSubscription: React.FC = () => {
           </div>
           
           <div className="flex gap-3">
-            <Button>
+            <Button onClick={() => navigate('/pricing')}>
               <CreditCard className="h-4 w-4 mr-2" />
               Изменить план
             </Button>
-            <Button variant="outline">Управление платежами</Button>
+            <Button variant="outline" onClick={() => toast({ title: 'Управление платежами', description: 'История и способы оплаты (демо-режим)' })}>Управление платежами</Button>
           </div>
         </CardContent>
       </Card>

@@ -5,6 +5,7 @@ import { ThemeProvider } from './contexts/ThemeContext';
 import DefaultSEO from './components/seo/DefaultSEO';
 import SkipLink from './components/accessibility/SkipLink';
 import { PerformanceDebugger } from './components/debug';
+import DemoModeBanner from './components/shared/DemoModeBanner';
 
 // Pages
 import Index from './pages/Index';
@@ -96,7 +97,7 @@ function App() {
   
   return (
     <ThemeProvider defaultTheme="dark" storageKey="seo-market-theme">
-      <Router>
+      <Router basename={import.meta.env.BASE_URL.replace(/\/$/, '')}>
         <SkipLink />
         <div className="App min-h-screen bg-background text-foreground" data-app="true">
           <DefaultSEO />
@@ -192,6 +193,7 @@ function App() {
             </Routes>
           </main>
           <Toaster />
+          <DemoModeBanner />
           <PerformanceDebugger />
         </div>
       </Router>

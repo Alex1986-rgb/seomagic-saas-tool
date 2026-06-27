@@ -34,7 +34,7 @@ const FeatureCard: React.FC<FeatureCardProps> = ({
             <Input 
               value={feature.name}
               onChange={(e) => onUpdate(feature.id, 'name', e.target.value)}
-              className="bg-black/20 border-white/10 w-[400px]"
+              className="bg-black/20 border-white/10 w-full max-w-[400px]"
               placeholder="Название возможности"
             />
           </div>

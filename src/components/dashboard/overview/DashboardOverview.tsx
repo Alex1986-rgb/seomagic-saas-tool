@@ -8,6 +8,7 @@ import { InfoCard } from './InfoCard';
 import SparkAreaChart from '@/components/charts/SparkAreaChart';
 import { Activity, ArrowUpRight, Users, LineChart } from 'lucide-react';
 import { mockAudits } from '@/components/dashboard/mock-data';
+import { useToast } from '@/hooks/use-toast';
 
 interface DashboardOverviewProps {
   onStartNewAudit?: () => void;
@@ -21,7 +22,8 @@ const DashboardOverview: React.FC<DashboardOverviewProps> = ({
   onCreateReport
 }) => {
   const navigate = useNavigate();
-  
+  const { toast } = useToast();
+
   const navigateToAudit = () => {
     navigate('/audit');
   };
@@ -68,7 +70,7 @@ const DashboardOverview: React.FC<DashboardOverviewProps> = ({
         >
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4">
             <h3 className="font-medium">Последние аудиты</h3>
-            <Button variant="outline" size="sm" className="flex items-center gap-2 w-full sm:w-auto">
+            <Button variant="outline" size="sm" className="flex items-center gap-2 w-full sm:w-auto" onClick={() => toast({ title: 'Обновлено', description: 'Список аудитов актуален' })}>
               <RefreshCw className="h-4 w-4" />
               <span>Обновить</span>
             </Button>

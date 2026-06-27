@@ -30,7 +30,7 @@ const ProjectDetails: React.FC = () => {
           
           <Card className="p-6">
             <Tabs defaultValue="overview" className="w-full">
-              <TabsList className="grid w-full grid-cols-6">
+              <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 md:grid-cols-6">
                 <TabsTrigger value="overview">Обзор</TabsTrigger>
                 <TabsTrigger value="architecture">Архитектура</TabsTrigger>
                 <TabsTrigger value="features">Статус функций</TabsTrigger>

@@ -271,7 +271,7 @@ const AIOptimization: React.FC = () => {
           transition={{ duration: 0.5, delay: 0.4 }}
         >
           <Tabs defaultValue="process" className="w-full">
-            <TabsList className="grid w-full grid-cols-4">
+            <TabsList className="grid w-full grid-cols-2 md:grid-cols-4">
               <TabsTrigger value="process">Процесс</TabsTrigger>
               <TabsTrigger value="before-after">До и После</TabsTrigger>
               <TabsTrigger value="safety">Безопасность</TabsTrigger>

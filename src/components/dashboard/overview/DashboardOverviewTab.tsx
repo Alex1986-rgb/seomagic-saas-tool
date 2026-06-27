@@ -122,7 +122,7 @@ const DashboardOverviewTab: React.FC = () => {
           <CardHeader>
             <div className="flex items-center justify-between">
               <CardTitle>Последние сканирования</CardTitle>
-              <Button variant="outline" size="sm" onClick={() => navigate('/history')}>
+              <Button variant="outline" size="sm" onClick={() => navigate('/audit-history')}>
                 Все
               </Button>
             </div>

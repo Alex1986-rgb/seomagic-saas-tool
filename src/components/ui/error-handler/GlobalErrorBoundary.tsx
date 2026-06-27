@@ -3,7 +3,6 @@ import React, { ErrorInfo, useState, useEffect } from 'react';
 import { AlertTriangle, Home, RefreshCw, XOctagon } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { useNavigate } from 'react-router-dom';
 import { Card } from '@/components/ui/card';
 
 interface GlobalErrorBoundaryProps {
@@ -86,7 +85,10 @@ interface ErrorFallbackProps {
 }
 
 export const ErrorFallback: React.FC<ErrorFallbackProps> = ({ error, resetError }) => {
-  const navigate = useNavigate();
+  // ВАЖНО: этот фоллбэк может рендериться вне <Router> (GlobalErrorBoundary
+  // смонтирован в AppProviders, снаружи роутера). Поэтому НЕЛЬЗЯ использовать
+  // useNavigate() — он бросит исключение и фоллбэк упадёт сам. Используем
+  // window.location с учётом base-пути (для GitHub Pages /seomagic-saas-tool/).
   const { toast } = useToast();
   const [isAttemptingRecovery, setIsAttemptingRecovery] = useState(false);
 
@@ -117,12 +119,8 @@ export const ErrorFallback: React.FC<ErrorFallbackProps> = ({ error, resetError 
   const handleNavigateHome = () => {
     console.log("Navigating home from ErrorFallback");
     resetError();
-    navigate('/');
-    toast({
-      title: "Навигация на главную",
-      description: "Возврат на главную страницу",
-      duration: 3000
-    });
+    // window.location вместо navigate() — работает и вне Router-контекста
+    window.location.href = import.meta.env.BASE_URL || '/';
   };
 
   return (
@@ -158,7 +156,6 @@ export const ErrorFallback: React.FC<ErrorFallbackProps> = ({ error, resetError 
 
 // More serious fallback for repeated errors
 const PermanentErrorFallback: React.FC<{error: Error | null}> = ({ error }) => {
-  const navigate = useNavigate();
   const { toast } = useToast();
   
   const handleReset = () => {

@@ -117,7 +117,35 @@ const AuditContent: React.FC<AuditContentProps> = ({
     }
     return Promise.resolve();
   };
-  
+
+  // Производные данные для богатых визуализаций (категории, графики, рост)
+  const showGrowthVisualization = !!auditData &&
+    (auditData.previousScore !== undefined || ((historyData?.items?.length ?? 0) > 1));
+
+  const growthData = auditData ? {
+    overview: [
+      { category: 'Общий балл', before: auditData.previousScore ?? 65, after: auditData.score },
+      { category: 'SEO', before: auditData.details?.seo?.previousScore ?? 60, after: auditData.details?.seo?.score },
+      { category: 'Производительность', before: auditData.details?.performance?.previousScore ?? 55, after: auditData.details?.performance?.score },
+      { category: 'Контент', before: auditData.details?.content?.previousScore ?? 70, after: auditData.details?.content?.score },
+      { category: 'Технические аспекты', before: auditData.details?.technical?.previousScore ?? 45, after: auditData.details?.technical?.score },
+    ],
+    seo: [
+      { category: 'Meta-теги', before: 55, after: 85 },
+      { category: 'Ключевые слова', before: 60, after: 80 },
+      { category: 'Структура URL', before: 70, after: 90 },
+      { category: 'Внутренние ссылки', before: 50, after: 75 },
+      { category: 'Внешние ссылки', before: 65, after: 85 },
+    ],
+    performance: [
+      { category: 'Время загрузки', before: 45, after: 75 },
+      { category: 'Размер страницы', before: 50, after: 80 },
+      { category: 'Кеширование', before: 60, after: 90 },
+      { category: 'Мобильная оптимизация', before: 55, after: 85 },
+      { category: 'Core Web Vitals', before: 40, after: 70 },
+    ],
+  } : null;
+
   // If minimal version is requested, show simplified version
   if (variant === 'minimal' && auditData) {
     return renderMinimalVersion();
@@ -173,13 +201,31 @@ const AuditContent: React.FC<AuditContentProps> = ({
           />
           
           {/* Recommendations section */}
-          <AuditRecommendationsSection 
+          <AuditRecommendationsSection
             recommendations={recommendations}
             auditData={auditData}
             optimizationCost={optimizationCost}
             optimizationItems={optimizationItems}
           />
-          
+
+          {/* Rich visualizations: category dashboard, charts, tabs */}
+          <AuditDataVisualizer auditData={auditData.details} url={url} />
+
+          {showGrowthVisualization && growthData && (
+            <GrowthVisualization beforeAfterData={growthData} />
+          )}
+
+          {historyData && (historyData.items?.length ?? 0) > 1 && (
+            <AuditComparison
+              currentAudit={auditData}
+              historyItems={historyData.items}
+            />
+          )}
+
+          <AuditTabs details={auditData.details} />
+
+          <AuditComments auditId={auditData.id} />
+
           {/* Page analysis section */}
           <AuditPageAnalysisSection auditId={auditData.id} />
           

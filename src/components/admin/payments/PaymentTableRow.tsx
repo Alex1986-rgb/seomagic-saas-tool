@@ -3,6 +3,7 @@ import React, { memo } from 'react';
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Download, ExternalLink, CreditCard, CheckCircle, AlertCircle, CircleEllipsis } from 'lucide-react';
+import { useToast } from "@/hooks/use-toast";
 
 interface PaymentTableRowProps {
   payment: {
@@ -34,6 +35,7 @@ const formatCurrency = (amount: number) => {
 };
 
 const PaymentTableRow = memo(({ payment }: PaymentTableRowProps) => {
+  const { toast } = useToast();
   return (
     <tr className="border-b">
       <td className="py-4 px-4 font-mono">{payment.id}</td>
@@ -83,10 +85,10 @@ const PaymentTableRow = memo(({ payment }: PaymentTableRowProps) => {
       </td>
       <td className="py-4 px-4">
         <div className="flex gap-2">
-          <Button variant="ghost" size="sm">
+          <Button variant="ghost" size="sm" aria-label="Детали платежа" onClick={() => toast({ title: 'Платёж ' + payment.id, description: `${payment.user.email} · ${payment.plan}` })}>
             <ExternalLink className="h-4 w-4" />
           </Button>
-          <Button variant="ghost" size="sm">
+          <Button variant="ghost" size="sm" aria-label="Скачать чек" onClick={() => toast({ title: 'Чек', description: 'Квитанция формируется' })}>
             <Download className="h-4 w-4" />
           </Button>
         </div>

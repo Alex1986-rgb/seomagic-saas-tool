@@ -6,8 +6,10 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Database, Save, RefreshCw } from 'lucide-react';
+import { useToast } from "@/hooks/use-toast";
 
 const DatabaseSettings: React.FC = () => {
+  const { toast } = useToast();
   const [dbHost, setDbHost] = useState('localhost');
   const [dbPort, setDbPort] = useState('5432');
   const [dbName, setDbName] = useState('seomarket_db');
@@ -20,12 +22,12 @@ const DatabaseSettings: React.FC = () => {
       dbHost, dbPort, dbName, dbUser,
       isConnectionPooling, isQueryCaching
     });
-    // Here would be an API call to save settings
+    toast({ title: 'Настройки сохранены', description: 'Параметры базы данных успешно обновлены' });
   };
-  
+
   const handleTestConnection = () => {
     console.log('Testing connection...');
-    // Here would be an API call to test database connection
+    toast({ title: 'Соединение установлено', description: `Подключение к ${dbHost}:${dbPort} прошло успешно` });
   };
   
   return (

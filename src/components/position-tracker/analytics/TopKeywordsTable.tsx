@@ -96,7 +96,7 @@ export const TopKeywordsTable: React.FC<TopKeywordsTableProps> = ({
     } else if (change < 0) {
       return <Badge variant="outline" className="text-red-600 border-red-200 bg-red-50">{change}</Badge>;
     } else {
-      return <Badge variant="outline" className="text-gray-600 border-gray-200 bg-gray-50">0</Badge>;
+      return <Badge variant="outline" className="text-muted-foreground border-border bg-muted/40">0</Badge>;
     }
   };
 

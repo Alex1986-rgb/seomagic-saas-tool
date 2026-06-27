@@ -4,8 +4,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Clock, ExternalLink, TrendingUp } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 const ClientAudits: React.FC = () => {
+  const navigate = useNavigate();
   const audits = [
     {
       id: 1,
@@ -62,7 +64,7 @@ const ClientAudits: React.FC = () => {
                   <p className="font-medium text-sm md:text-base">{audit.issues}</p>
                 </div>
                 <div className="flex items-end">
-                  <Button size="sm" variant="outline" className="w-full text-xs md:text-sm">
+                  <Button size="sm" variant="outline" className="w-full text-xs md:text-sm" onClick={() => navigate(`/audit?url=${encodeURIComponent('https://' + audit.url)}`)}>
                     <ExternalLink className="h-3 w-3 md:h-4 md:w-4 mr-1" />
                     Открыть
                   </Button>

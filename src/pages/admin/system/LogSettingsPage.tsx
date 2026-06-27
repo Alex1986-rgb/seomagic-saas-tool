@@ -5,8 +5,10 @@ import { Button } from "@/components/ui/button";
 import { FileText, Download, Filter, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useToast } from "@/hooks/use-toast";
 
 const LogSettingsPage = () => {
+  const { toast } = useToast();
   const [logLevel, setLogLevel] = React.useState('info');
   const [searchQuery, setSearchQuery] = React.useState('');
 
@@ -44,7 +46,7 @@ const LogSettingsPage = () => {
                 />
               </div>
             </div>
-            <Button variant="outline" className="flex gap-2">
+            <Button variant="outline" className="flex gap-2" onClick={() => toast({ title: 'Экспорт логов', description: 'Файл логов формируется' })}>
               <Download className="h-4 w-4" />
               Экспорт логов
             </Button>

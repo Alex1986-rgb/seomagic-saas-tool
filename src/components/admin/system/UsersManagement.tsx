@@ -9,6 +9,7 @@ import { Users, UserPlus, Save, Search, Filter, CheckCircle, XCircle } from 'luc
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useToast } from "@/hooks/use-toast";
 
 // Моковые данные администраторов
 const MOCK_ADMINS = [
@@ -19,12 +20,27 @@ const MOCK_ADMINS = [
 ];
 
 const UsersManagement: React.FC = () => {
+  const { toast } = useToast();
   const [activeTab, setActiveTab] = useState('list');
   const [searchQuery, setSearchQuery] = useState('');
   const [roleFilter, setRoleFilter] = useState('all');
-  
+  const [admins, setAdmins] = useState(MOCK_ADMINS);
+
+  const handleCycleFilter = () => {
+    const order = ['all', 'admin', 'support', 'editor'];
+    const next = order[(order.indexOf(roleFilter) + 1) % order.length];
+    setRoleFilter(next);
+    const labels: Record<string, string> = { all: 'Все роли', admin: 'Администраторы', support: 'Поддержка', editor: 'Редакторы' };
+    toast({ title: 'Фильтр', description: labels[next] });
+  };
+
+  const handleDeleteAdmin = (id: string, name: string) => {
+    setAdmins((prev) => prev.filter((a) => a.id !== id));
+    toast({ title: 'Пользователь удалён', description: name });
+  };
+
   // Фильтрация администраторов
-  const filteredAdmins = MOCK_ADMINS.filter(admin => {
+  const filteredAdmins = admins.filter(admin => {
     const matchesSearch = admin.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
                          admin.email.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesRole = roleFilter === 'all' || admin.role === roleFilter;
@@ -35,7 +51,7 @@ const UsersManagement: React.FC = () => {
   return (
     <div className="p-6 space-y-6">
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid grid-cols-2 w-[400px] mb-6">
+        <TabsList className="grid grid-cols-2 w-full max-w-[400px] mb-6">
           <TabsTrigger value="list">Список пользователей</TabsTrigger>
           <TabsTrigger value="new">Добавить пользователя</TabsTrigger>
         </TabsList>
@@ -52,7 +68,7 @@ const UsersManagement: React.FC = () => {
               />
             </div>
             <div className="flex gap-2">
-              <Button variant="outline" className="gap-2">
+              <Button variant="outline" className="gap-2" onClick={handleCycleFilter}>
                 <Filter className="h-4 w-4" />
                 <span>Фильтр</span>
               </Button>
@@ -125,8 +141,8 @@ const UsersManagement: React.FC = () => {
                         </td>
                         <td className="py-4 px-4">
                           <div className="flex gap-2">
-                            <Button size="sm" variant="ghost">Редактировать</Button>
-                            <Button size="sm" variant="ghost" className="text-red-500 hover:text-red-600">Удалить</Button>
+                            <Button size="sm" variant="ghost" onClick={() => toast({ title: 'Редактирование', description: admin.name })}>Редактировать</Button>
+                            <Button size="sm" variant="ghost" className="text-red-500 hover:text-red-600" onClick={() => handleDeleteAdmin(admin.id, admin.name)}>Удалить</Button>
                           </div>
                         </td>
                       </tr>
@@ -206,7 +222,7 @@ const UsersManagement: React.FC = () => {
               
               <div className="pt-4 flex justify-end gap-2">
                 <Button variant="outline" onClick={() => setActiveTab('list')}>Отмена</Button>
-                <Button className="gap-2">
+                <Button className="gap-2" onClick={() => { toast({ title: 'Пользователь добавлен', description: 'Новый пользователь сохранён' }); setActiveTab('list'); }}>
                   <Save className="h-4 w-4" />
                   Сохранить
                 </Button>

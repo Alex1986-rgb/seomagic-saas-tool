@@ -203,7 +203,7 @@ const CompetitorAnalysis: React.FC = () => {
           transition={{ duration: 0.5, delay: 0.3 }}
         >
           <Tabs defaultValue="keywords" className="w-full">
-            <TabsList className="grid w-full grid-cols-4">
+            <TabsList className="grid w-full grid-cols-2 md:grid-cols-4">
               <TabsTrigger value="keywords">Ключевые слова</TabsTrigger>
               <TabsTrigger value="backlinks">Обратные ссылки</TabsTrigger>
               <TabsTrigger value="content">Контент-анализ</TabsTrigger>

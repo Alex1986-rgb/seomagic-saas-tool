@@ -173,9 +173,9 @@ const FeaturesStatus: React.FC = () => {
       case 'planned':
         return 'bg-orange-100 text-orange-800 border-orange-200';
       case 'not-started':
-        return 'bg-gray-100 text-gray-800 border-gray-200';
+        return 'bg-muted text-muted-foreground border-border';
       default:
-        return 'bg-gray-100 text-gray-800 border-gray-200';
+        return 'bg-muted text-muted-foreground border-border';
     }
   };
 
@@ -190,7 +190,7 @@ const FeaturesStatus: React.FC = () => {
       case 'low':
         return 'bg-green-100 text-green-800 border-green-200';
       default:
-        return 'bg-gray-100 text-gray-800 border-gray-200';
+        return 'bg-muted text-muted-foreground border-border';
     }
   };
 
@@ -230,7 +230,7 @@ const FeaturesStatus: React.FC = () => {
               <div className="text-sm text-muted-foreground">Запланировано</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-gray-600">{notStartedFeatures}</div>
+              <div className="text-2xl font-bold text-muted-foreground">{notStartedFeatures}</div>
               <div className="text-sm text-muted-foreground">Не начато</div>
             </div>
             <div className="text-center">
@@ -349,9 +349,9 @@ const FeaturesStatus: React.FC = () => {
               </div>
             </div>
             
-            <div className="p-4 bg-gray-50 border border-gray-200 rounded-lg">
-              <h4 className="font-semibold text-gray-900 mb-2">Фаза 4: Интеграции (Будущее развитие)</h4>
-              <p className="text-sm text-gray-800 mb-2">
+            <div className="p-4 bg-muted/40 border border-border rounded-lg">
+              <h4 className="font-semibold text-foreground mb-2">Фаза 4: Интеграции (Будущее развитие)</h4>
+              <p className="text-sm text-foreground mb-2">
                 Интеграция с популярными CMS-системами и внешними сервисами.
               </p>
               <div className="flex flex-wrap gap-2">

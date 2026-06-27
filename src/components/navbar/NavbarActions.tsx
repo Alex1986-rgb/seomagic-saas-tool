@@ -15,7 +15,7 @@ const NavbarActions: React.FC<NavbarActionsProps> = ({ isLoggedIn }) => {
   return (
     <div className="flex items-center gap-2">
       <div className="hidden md:flex items-center gap-2">
-        <Button variant="ghost" size="icon">
+        <Button variant="ghost" size="icon" aria-label="Поиск">
           <Search className="h-5 w-5" />
         </Button>
         <ThemeSwitcher />
