@@ -6,6 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Download, FileCheck, FileCog, FileText, BarChart, Search, Maximize2, RefreshCw } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Calendar as CalendarIcon } from "lucide-react";
+import { useToast } from '@/hooks/use-toast';
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
@@ -17,6 +18,7 @@ interface ReportsTabProps {
 }
 
 const ReportsTab: React.FC<ReportsTabProps> = ({ handleOrder }) => {
+  const { toast } = useToast();
   const [date, setDate] = useState<Date | undefined>(new Date());
   
   return (
@@ -40,7 +42,7 @@ const ReportsTab: React.FC<ReportsTabProps> = ({ handleOrder }) => {
               />
             </PopoverContent>
           </Popover>
-          <Button variant="outline" className="flex items-center gap-2">
+          <Button variant="outline" className="flex items-center gap-2" onClick={() => toast({ title: 'Обновлено', description: 'Данные отчётов актуальны' })}>
             <RefreshCw className="h-4 w-4" />
             <span>Обновить</span>
           </Button>

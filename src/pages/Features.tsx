@@ -1,5 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
+import { Link } from 'react-router-dom';
 import Layout from '@/components/Layout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -210,13 +211,17 @@ const FeaturesPage: React.FC = () => {
               </motion.p>
 
               <motion.div variants={itemVariants} className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Button size="lg" className="text-lg px-8">
-                  <Rocket className="w-5 h-5 mr-2" />
-                  Начать бесплатно
+                <Button asChild size="lg" className="text-lg px-8">
+                  <Link to="/audit">
+                    <Rocket className="w-5 h-5 mr-2" />
+                    Начать бесплатно
+                  </Link>
                 </Button>
-                <Button variant="outline" size="lg" className="text-lg px-8">
-                  Посмотреть демо
-                  <ArrowRight className="w-5 h-5 ml-2" />
+                <Button asChild variant="outline" size="lg" className="text-lg px-8">
+                  <Link to="/demo">
+                    Посмотреть демо
+                    <ArrowRight className="w-5 h-5 ml-2" />
+                  </Link>
                 </Button>
               </motion.div>
             </motion.div>
@@ -373,11 +378,11 @@ const FeaturesPage: React.FC = () => {
                   </p>
                   
                   <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
-                    <Button size="lg" className="text-lg px-8">
-                      Начать бесплатный период
+                    <Button asChild size="lg" className="text-lg px-8">
+                      <Link to="/audit">Начать бесплатный период</Link>
                     </Button>
-                    <Button variant="outline" size="lg" className="text-lg px-8">
-                      Связаться с нами
+                    <Button asChild variant="outline" size="lg" className="text-lg px-8">
+                      <Link to="/contact">Связаться с нами</Link>
                     </Button>
                   </div>
 

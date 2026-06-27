@@ -136,12 +136,12 @@ const DashboardOverviewTab: React.FC = () => {
                 <div key={i} className="flex items-center gap-4 p-2 rounded-lg hover:bg-muted/40 transition-colors">
                   <div className={`w-2 h-10 rounded-full ${i === 0 ? 'bg-green-500' : i === 1 ? 'bg-amber-500' : 'bg-blue-500'}`} />
                   <div className="flex-1 space-y-1">
-                    <p className="text-sm font-medium leading-none flex items-center gap-2">
+                    <div className="text-sm font-medium leading-none flex items-center gap-2">
                       example{i+1}.com
                       <Badge variant="outline" className="text-[10px] font-normal">
                         {i === 0 ? 'Полный' : i === 1 ? 'Базовый' : 'Техн.'}
                       </Badge>
-                    </p>
+                    </div>
                     <p className="text-xs text-muted-foreground">
                       {1+i} дн. назад • Балл {78 - i * 5}/100
                     </p>

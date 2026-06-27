@@ -296,7 +296,7 @@ const AIOptimization: React.FC = () => {
                         <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold ${
                           step.status === 'completed' ? 'bg-green-100 text-green-700' :
                           step.status === 'in-progress' ? 'bg-blue-100 text-blue-700' :
-                          'bg-gray-100 text-gray-400'
+                          'bg-muted text-muted-foreground'
                         }`}>
                           {step.status === 'completed' ? '✓' : step.step}
                         </div>

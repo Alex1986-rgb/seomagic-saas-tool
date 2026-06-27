@@ -67,9 +67,10 @@ const AboutHero = () => {
         transition={{ delay: 1, duration: 1 }}
         className="absolute bottom-8 left-0 right-0 flex justify-center"
       >
-        <Button 
-          variant="ghost" 
-          size="icon" 
+        <Button
+          variant="ghost"
+          size="icon"
+          aria-label="Прокрутить вниз"
           className="rounded-full animate-bounce"
           onClick={() => {
             window.scrollTo({

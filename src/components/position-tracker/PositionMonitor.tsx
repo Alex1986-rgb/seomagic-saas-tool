@@ -293,7 +293,7 @@ export const PositionMonitor: React.FC<PositionMonitorProps> = ({
                                     ? "bg-green-50 text-green-700"
                                     : kw.position <= 30
                                       ? "bg-yellow-50 text-yellow-700"
-                                      : "bg-muted/40 text-gray-700"
+                                      : "bg-muted/40 text-foreground"
                               }
                             >
                               {kw.position}

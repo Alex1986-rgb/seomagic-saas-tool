@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Link2Off, Loader2, Download, RefreshCw } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
+import { saveAs } from 'file-saver';
 
 interface BrokenLinksAnalyzerProps {
   domain: string;
@@ -24,7 +25,19 @@ export function BrokenLinksAnalyzer({ domain }: BrokenLinksAnalyzerProps) {
   }> | null>(null);
   
   const { toast } = useToast();
-  
+
+  const handleExport = () => {
+    if (!results || results.length === 0) return;
+    const header = 'URL;Код;Статус;Тип;Источник';
+    const rows = results.map((r) =>
+      [r.url, r.statusCode, r.statusText, r.type === 'internal' ? 'Внутренняя' : 'Внешняя', r.sourceUrl]
+        .map((v) => `"${String(v ?? '').replace(/"/g, '""')}"`).join(';')
+    );
+    const blob = new Blob(['﻿' + [header, ...rows].join('\n')], { type: 'text/csv;charset=utf-8' });
+    saveAs(blob, `broken-links-${inputDomain || 'site'}.csv`);
+    toast({ title: 'Экспорт готов', description: `Выгружено ссылок: ${results.length}` });
+  };
+
   const checkBrokenLinks = async () => {
     if (!inputDomain) {
       toast({
@@ -203,7 +216,7 @@ export function BrokenLinksAnalyzer({ domain }: BrokenLinksAnalyzerProps) {
                     <span className="text-sm text-muted-foreground">Найдено битых ссылок: {results.length}</span>
                   </div>
                   <div className="flex gap-2">
-                    <Button variant="outline" size="sm" className="gap-1">
+                    <Button variant="outline" size="sm" className="gap-1" onClick={handleExport}>
                       <Download className="h-3 w-3" />
                       Экспорт
                     </Button>
