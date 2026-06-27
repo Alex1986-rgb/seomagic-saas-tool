@@ -285,16 +285,18 @@ const SitesPage: React.FC = () => {
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                          <DropdownMenuItem 
+                          <DropdownMenuItem
                             className="flex items-center"
                             disabled={site.status !== 'completed'}
+                            onClick={() => toast({ title: 'Скачивание архива', description: `${site.url} — архив формируется` })}
                           >
                             <Download className="mr-2 h-4 w-4" />
                             Скачать архив
                           </DropdownMenuItem>
-                          <DropdownMenuItem 
+                          <DropdownMenuItem
                             className="flex items-center"
                             disabled={site.status !== 'completed'}
+                            onClick={() => toast({ title: 'Публикация на хостинг', description: `${site.url} — публикуется (демо-режим)` })}
                           >
                             <CloudUpload className="mr-2 h-4 w-4" />
                             Опубликовать на хостинг

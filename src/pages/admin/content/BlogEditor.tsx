@@ -320,7 +320,7 @@ const BlogEditor: React.FC = () => {
                         <p className="text-sm text-gray-400 mt-1">{post.excerpt}</p>
                       </div>
                       <div className="flex gap-2">
-                        <Button variant="outline" size="sm" className="border-white/10 hover:bg-white/5">
+                        <Button variant="outline" size="sm" className="border-white/10 hover:bg-white/5" onClick={() => toast({ title: 'Редактирование статьи', description: post.title })}>
                           <Edit className="h-3 w-3 mr-1" /> Редактировать
                         </Button>
                         <Button 

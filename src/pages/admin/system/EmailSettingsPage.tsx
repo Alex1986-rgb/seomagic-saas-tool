@@ -109,7 +109,7 @@ const EmailSettingsPage = () => {
                     <p className="text-sm text-muted-foreground">Статус: {template.status}</p>
                   </div>
                 </div>
-                <Button variant="outline" size="sm">
+                <Button variant="outline" size="sm" onClick={() => toast({ title: 'Редактирование шаблона', description: template.name })}>
                   Редактировать
                 </Button>
               </div>

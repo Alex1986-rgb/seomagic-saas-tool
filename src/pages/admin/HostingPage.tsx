@@ -342,7 +342,7 @@ const HostingPage: React.FC = () => {
             </CardContent>
             
             <CardFooter>
-              <Button className="w-full">
+              <Button className="w-full" onClick={() => toast({ title: 'Публикация запущена', description: 'Сайт публикуется на хостинг (демо-режим)' })}>
                 <CloudUpload className="mr-2 h-4 w-4" />
                 Опубликовать сайт на хостинг
               </Button>
