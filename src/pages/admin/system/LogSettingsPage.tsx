@@ -54,19 +54,19 @@ const LogSettingsPage = () => {
 
           <div className="space-y-4">
             {[
-              { level: "error", message: "Failed to connect to database", timestamp: "2025-04-24 10:15:23" },
-              { level: "warning", message: "High CPU usage detected", timestamp: "2025-04-24 10:14:55" },
-              { level: "info", message: "User authentication successful", timestamp: "2025-04-24 10:14:30" },
-              { level: "info", message: "Backup completed successfully", timestamp: "2025-04-24 10:14:00" },
-              { level: "debug", message: "Cache cleared", timestamp: "2025-04-24 10:13:45" },
+              { level: "error", message: "Не удалось подключиться к базе данных", timestamp: "2025-04-24 10:15:23" },
+              { level: "warning", message: "Обнаружена высокая загрузка CPU", timestamp: "2025-04-24 10:14:55" },
+              { level: "info", message: "Успешная аутентификация пользователя", timestamp: "2025-04-24 10:14:30" },
+              { level: "info", message: "Резервное копирование завершено успешно", timestamp: "2025-04-24 10:14:00" },
+              { level: "debug", message: "Кэш очищен", timestamp: "2025-04-24 10:13:45" },
             ].map((log, index) => (
               <div
                 key={index}
                 className={`p-3 rounded-lg border ${
-                  log.level === 'error' ? 'bg-red-50 border-red-200' :
-                  log.level === 'warning' ? 'bg-yellow-50 border-yellow-200' :
-                  log.level === 'info' ? 'bg-blue-50 border-blue-200' :
-                  'bg-gray-50 border-gray-200'
+                  log.level === 'error' ? 'bg-red-500/10 border-red-500/20' :
+                  log.level === 'warning' ? 'bg-yellow-500/10 border-yellow-500/20' :
+                  log.level === 'info' ? 'bg-blue-500/10 border-blue-500/20' :
+                  'bg-muted/40 border-border'
                 }`}
               >
                 <div className="flex items-center justify-between">
@@ -75,7 +75,7 @@ const LogSettingsPage = () => {
                       log.level === 'error' ? 'text-red-500' :
                       log.level === 'warning' ? 'text-yellow-500' :
                       log.level === 'info' ? 'text-blue-500' :
-                      'text-gray-500'
+                      'text-muted-foreground'
                     }`} />
                     <div>
                       <p className="font-medium">{log.message}</p>
@@ -83,10 +83,10 @@ const LogSettingsPage = () => {
                     </div>
                   </div>
                   <span className={`text-xs font-medium px-2 py-1 rounded ${
-                    log.level === 'error' ? 'bg-red-100 text-red-700' :
-                    log.level === 'warning' ? 'bg-yellow-100 text-yellow-700' :
+                    log.level === 'error' ? 'bg-red-500/15 text-red-600 dark:text-red-400' :
+                    log.level === 'warning' ? 'bg-yellow-500/15 text-yellow-600 dark:text-yellow-400' :
                     log.level === 'info' ? 'bg-blue-100 text-blue-700' :
-                    'bg-gray-100 text-gray-700'
+                    'bg-muted text-muted-foreground'
                   }`}>
                     {log.level.toUpperCase()}
                   </span>

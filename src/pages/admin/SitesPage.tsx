@@ -230,7 +230,7 @@ const SitesPage: React.FC = () => {
                     <TableCell>{site.optimizedDate}</TableCell>
                     <TableCell>
                       {site.status === 'completed' ? (
-                        <Badge className="bg-green-100 text-green-800 hover:bg-green-200">
+                        <Badge className="bg-green-500/15 text-green-600 dark:text-green-400 hover:bg-green-200">
                           <CheckCircle className="mr-1 h-3 w-3" />
                           Завершено
                         </Badge>
@@ -244,9 +244,9 @@ const SitesPage: React.FC = () => {
                     <TableCell>
                       {site.status === 'completed' ? (
                         <Badge 
-                          className={site.score >= 90 ? 'bg-green-100 text-green-800' : 
-                                    site.score >= 80 ? 'bg-yellow-100 text-yellow-800' :
-                                    'bg-red-100 text-red-800'}
+                          className={site.score >= 90 ? 'bg-green-500/15 text-green-600 dark:text-green-400' : 
+                                    site.score >= 80 ? 'bg-yellow-500/15 text-yellow-600 dark:text-yellow-400' :
+                                    'bg-red-500/15 text-red-600 dark:text-red-400'}
                         >
                           {site.score}/100
                         </Badge>

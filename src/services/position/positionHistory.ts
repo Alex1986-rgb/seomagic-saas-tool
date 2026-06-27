@@ -53,8 +53,13 @@ export const clearHistory = (domain?: string): void => {
       const history: PositionData[] = historyJson ? JSON.parse(historyJson) : [];
       const filteredHistory = history.filter(item => item.domain !== domain);
       localStorage.setItem('position_history', JSON.stringify(filteredHistory));
+      localStorage.removeItem(`position_history_${domain}`);
     } else {
       localStorage.removeItem('position_history');
+      // Чистим и все per-domain ключи 'position_history_<domain>'
+      Object.keys(localStorage)
+        .filter((k) => k.startsWith('position_history_'))
+        .forEach((k) => localStorage.removeItem(k));
     }
     
     // Dispatch an event to notify other components

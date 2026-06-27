@@ -105,8 +105,8 @@ const SeoAudit: React.FC = () => {
             <Button asChild size="lg" className="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700">
               <Link to="/audit">Запустить аудит</Link>
             </Button>
-            <Button variant="outline" size="lg">
-              Посмотреть демо
+            <Button variant="outline" size="lg" asChild>
+              <Link to="/demo">Посмотреть демо</Link>
             </Button>
           </div>
         </motion.div>

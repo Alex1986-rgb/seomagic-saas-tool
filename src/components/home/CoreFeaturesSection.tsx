@@ -10,7 +10,7 @@ const CoreFeaturesSection: React.FC = () => {
       title: 'SEO Аудит',
       description: 'Комплексное сканирование сайта для выявления всех SEO-проблем и возможностей для улучшения.',
       color: 'from-blue-500 to-cyan-500',
-      bgColor: 'bg-blue-50',
+      bgColor: 'bg-blue-500/10',
       iconColor: 'text-blue-600',
       link: '/features/seo-audit',
       stats: '200+ проверок'
@@ -20,7 +20,7 @@ const CoreFeaturesSection: React.FC = () => {
       title: 'ИИ оптимизация',
       description: 'Автоматическое применение оптимизаций с использованием продвинутых алгоритмов искусственного интеллекта.',
       color: 'from-purple-500 to-pink-500',
-      bgColor: 'bg-purple-50',
+      bgColor: 'bg-purple-500/10',
       iconColor: 'text-purple-600',
       link: '/features/ai-optimization',
       stats: 'До 90% автоматизации'
@@ -30,7 +30,7 @@ const CoreFeaturesSection: React.FC = () => {
       title: 'Отслеживание позиций',
       description: 'Мониторинг позиций вашего сайта в поисковых системах по важным ключевым словам.',
       color: 'from-green-500 to-emerald-500',
-      bgColor: 'bg-green-50',
+      bgColor: 'bg-green-500/10',
       iconColor: 'text-green-600',
       link: '/features/position-tracking',
       stats: 'Ежедневный мониторинг'

@@ -12,10 +12,12 @@ import DemoServiceProcess from '@/components/demo/DemoServiceProcess';
 import DemoUserGuide from '@/components/demo/DemoUserGuide';
 import DemoFeatures from '@/components/demo/DemoFeatures';
 import DemoInteractiveExample from '@/components/demo/DemoInteractiveExample';
+import { useToast } from '@/hooks/use-toast';
 
 const Demo: React.FC = () => {
-  console.log("Demo page rendering");
-  
+  const { toast } = useToast();
+  const scrollToDemo = () => document.getElementById('demo-tabs')?.scrollIntoView({ behavior: 'smooth' });
+
   return (
     <Layout>
       <section className="py-20 relative overflow-hidden">
@@ -44,16 +46,16 @@ const Demo: React.FC = () => {
               Ознакомьтесь с работой платформы, интерактивными примерами и пошаговым руководством пользователя
             </p>
             <div className="flex flex-wrap justify-center gap-4">
-              <Button size="lg" className="gap-2">
+              <Button size="lg" className="gap-2" onClick={scrollToDemo}>
                 <Play className="w-4 h-4" /> Посмотреть видеодемонстрацию
               </Button>
-              <Button variant="outline" size="lg" className="gap-2">
+              <Button variant="outline" size="lg" className="gap-2" onClick={() => toast({ title: 'Руководство пользователя', description: 'Документ скоро будет доступен для скачивания' })}>
                 <Download className="w-4 h-4" /> Скачать руководство пользователя
               </Button>
             </div>
           </motion.div>
           
-          <Tabs defaultValue="process" className="mt-16">
+          <Tabs defaultValue="process" className="mt-16" id="demo-tabs">
             <TabsList className="grid grid-cols-2 md:grid-cols-4 max-w-3xl mx-auto mb-8">
               <TabsTrigger value="process" className="data-[state=active]:text-primary">
                 <BarChart2 className="w-4 h-4 mr-2" /> Процесс работы

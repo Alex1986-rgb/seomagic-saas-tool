@@ -146,7 +146,7 @@ const DashboardOverviewTab: React.FC = () => {
                       {1+i} дн. назад • Балл {78 - i * 5}/100
                     </p>
                   </div>
-                  <Button variant="ghost" size="sm" className="rounded-full h-8 w-8 p-0">
+                  <Button variant="ghost" size="sm" className="rounded-full h-8 w-8 p-0" aria-label="Открыть аудит">
                     <ExternalLink className="h-4 w-4" />
                   </Button>
                 </div>

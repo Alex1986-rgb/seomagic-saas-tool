@@ -42,7 +42,7 @@ export function PositionTrackerHistory() {
     if (searchTerm) {
       setFilteredHistory(
         history.filter(item => 
-          item.domain.includes(searchTerm.toLowerCase()) || 
+          item.domain.toLowerCase().includes(searchTerm.toLowerCase()) ||
           item.keywords.some(k => k.keyword.toLowerCase().includes(searchTerm.toLowerCase()))
         )
       );

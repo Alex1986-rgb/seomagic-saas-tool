@@ -63,8 +63,8 @@ const SiteManagementSettings: React.FC = () => {
   return (
     <div className="space-y-6">
       {lastSaved && (
-        <Alert className="bg-green-50 border-green-200">
-          <AlertDescription className="text-green-700">
+        <Alert className="bg-green-500/10 border-green-500/20">
+          <AlertDescription className="text-green-600 dark:text-green-400">
             Настройки сохранены: {lastSaved.toLocaleTimeString()}
           </AlertDescription>
         </Alert>

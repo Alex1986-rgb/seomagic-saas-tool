@@ -88,13 +88,13 @@ const AuditResultHeader: React.FC<AuditResultHeaderProps> = ({
           Общий рейтинг: <span className="font-semibold">{auditData.score}/100</span>
         </div>
         <div className="bg-secondary/20 px-3 py-1 rounded-lg text-sm">
-          Кол-во критических ошибок: <span className="font-semibold text-destructive">{auditData.issues.critical.length}</span>
+          Кол-во критических ошибок: <span className="font-semibold text-destructive">{auditData.issues?.critical?.length ?? 0}</span>
         </div>
         <div className="bg-secondary/20 px-3 py-1 rounded-lg text-sm">
-          Кол-во важных ошибок: <span className="font-semibold text-amber-500">{auditData.issues.important.length}</span>
+          Кол-во важных ошибок: <span className="font-semibold text-amber-500">{auditData.issues?.important?.length ?? 0}</span>
         </div>
         <div className="bg-secondary/20 px-3 py-1 rounded-lg text-sm">
-          Возможности улучшения: <span className="font-semibold text-primary">{auditData.issues.opportunities.length}</span>
+          Возможности улучшения: <span className="font-semibold text-primary">{auditData.issues?.opportunities?.length ?? 0}</span>
         </div>
       </div>
       

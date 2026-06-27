@@ -56,7 +56,6 @@ export class GlobalErrorBoundary extends React.Component<GlobalErrorBoundaryProp
   }
 
   resetError = () => {
-    console.log("Attempting to reset error in GlobalErrorBoundary");
     this.setState({
       hasError: false,
       error: null,
@@ -66,7 +65,6 @@ export class GlobalErrorBoundary extends React.Component<GlobalErrorBoundaryProp
 
   render() {
     if (this.state.hasError) {
-      console.log("GlobalErrorBoundary rendering error state");
       // If the component has errored too many times in succession, show a more permanent error
       if (this.state.errorCount >= 3) {
         return this.props.fallback || <PermanentErrorFallback error={this.state.error} />;
@@ -74,7 +72,6 @@ export class GlobalErrorBoundary extends React.Component<GlobalErrorBoundaryProp
       return this.props.fallback || <ErrorFallback error={this.state.error} resetError={this.resetError} />;
     }
     
-    console.log("GlobalErrorBoundary rendering children");
     return this.props.children;
   }
 }
@@ -100,7 +97,6 @@ export const ErrorFallback: React.FC<ErrorFallbackProps> = ({ error, resetError 
   }, []);
 
   const handleRetry = async () => {
-    console.log("Attempting recovery in ErrorFallback");
     setIsAttemptingRecovery(true);
     
     // Artificial delay to allow React to clean up any problematic state
@@ -117,7 +113,6 @@ export const ErrorFallback: React.FC<ErrorFallbackProps> = ({ error, resetError 
   };
 
   const handleNavigateHome = () => {
-    console.log("Navigating home from ErrorFallback");
     resetError();
     // window.location вместо navigate() — работает и вне Router-контекста
     window.location.href = import.meta.env.BASE_URL || '/';
@@ -159,9 +154,8 @@ const PermanentErrorFallback: React.FC<{error: Error | null}> = ({ error }) => {
   const { toast } = useToast();
   
   const handleReset = () => {
-    // Perform a full page refresh to reset all state
-    console.log("Performing full page refresh in PermanentErrorFallback");
-    window.location.href = '/';
+    // Perform a full page refresh to reset all state (учитываем base-путь Pages)
+    window.location.href = import.meta.env.BASE_URL || '/';
     
     toast({
       title: "Полный сброс",

@@ -56,7 +56,7 @@ const PageAnalysisTable: React.FC<PageAnalysisTableProps> = ({ data, isLoading }
                 <div className="flex items-center gap-2">
                   <span className="truncate max-w-[200px]">{page.url}</span>
                   <Button variant="ghost" size="icon" asChild>
-                    <a href={page.url} target="_blank" rel="noopener noreferrer">
+                    <a href={page.url} target="_blank" rel="noopener noreferrer" aria-label={`Открыть ${page.url} в новой вкладке`}>
                       <ExternalLink className="h-4 w-4" />
                     </a>
                   </Button>

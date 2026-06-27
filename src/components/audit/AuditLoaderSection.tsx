@@ -638,7 +638,7 @@ const AuditLoaderSection: React.FC<AuditLoaderSectionProps> = ({
             <Button variant="outline" onClick={handleGenerateReport}>
               Скачать смету <Download className="ml-2 h-4 w-4" />
             </Button>
-            <Button>
+            <Button onClick={() => document.getElementById('optimization-section')?.scrollIntoView({ behavior: 'smooth' })}>
               Заказать оптимизацию <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
           </div>
@@ -707,7 +707,7 @@ const AuditLoaderSection: React.FC<AuditLoaderSectionProps> = ({
                   {report.description}
                 </p>
                 <Badge className="mb-4">{report.format}</Badge>
-                <Button variant="outline" className="flex gap-2 items-center mt-auto w-full">
+                <Button variant="outline" className="flex gap-2 items-center mt-auto w-full" onClick={handleGenerateReport}>
                   <Download className="h-4 w-4" /> Скачать
                 </Button>
               </CardContent>
@@ -726,7 +726,7 @@ const AuditLoaderSection: React.FC<AuditLoaderSectionProps> = ({
                 <p className="text-sm text-blue-700 dark:text-blue-400 mb-3">
                   Наши специалисты помогут вам разобраться в результатах аудита и составить план действий по оптимизации вашего сайта.
                 </p>
-                <Button className="bg-blue-600 hover:bg-blue-700">
+                <Button className="bg-blue-600 hover:bg-blue-700" onClick={() => { window.location.href = 'mailto:support@seomarket.ru?subject=Консультация по SEO-аудиту'; }}>
                   Получить консультацию
                 </Button>
               </div>

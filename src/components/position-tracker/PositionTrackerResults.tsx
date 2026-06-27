@@ -80,7 +80,7 @@ export function PositionTrackerResults({ results }: PositionTrackerResultsProps)
     } else if (position > prevPosition) {
       return <TrendingDown className="h-4 w-4 text-red-500" />;
     } else {
-      return <Minus className="h-4 w-4 text-gray-400" />;
+      return <Minus className="h-4 w-4 text-muted-foreground" />;
     }
   };
   
@@ -90,9 +90,9 @@ export function PositionTrackerResults({ results }: PositionTrackerResultsProps)
     
     const change = prevPosition - position;
     if (change > 0) {
-      return <Badge variant="outline" className="text-green-600 border-green-200 bg-green-50">+{change}</Badge>;
+      return <Badge variant="outline" className="text-green-600 border-green-500/20 bg-green-500/10">+{change}</Badge>;
     } else if (change < 0) {
-      return <Badge variant="outline" className="text-red-600 border-red-200 bg-red-50">{change}</Badge>;
+      return <Badge variant="outline" className="text-red-600 border-red-500/20 bg-red-500/10">{change}</Badge>;
     } else {
       return <Badge variant="outline" className="text-muted-foreground border-border bg-muted/40">0</Badge>;
     }
@@ -193,7 +193,7 @@ export function PositionTrackerResults({ results }: PositionTrackerResultsProps)
                         <td className="p-3">{keyword.keyword}</td>
                         <td className="p-3 text-center">
                           {keyword.position === 0 ? (
-                            <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-200">
+                            <Badge variant="outline" className="bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-200">
                               Не найдено
                             </Badge>
                           ) : (

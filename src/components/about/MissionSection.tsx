@@ -52,7 +52,7 @@ const MissionSection = () => {
             alt="Команда SEO Market за работой" 
             className="rounded-3xl shadow-2xl transform -rotate-3 transition-transform hover:rotate-0 duration-500 object-cover h-full max-h-96 w-full"
           />
-          <div className="absolute -bottom-4 -right-4 bg-white rounded-xl shadow-lg p-3 transform rotate-3 hover:rotate-0 transition-transform duration-300">
+          <div className="absolute -bottom-4 -right-4 bg-card rounded-xl shadow-lg p-3 transform rotate-3 hover:rotate-0 transition-transform duration-300">
             <p className="text-sm font-medium">Рост позиций в поиске</p>
             <p className="text-2xl font-bold text-primary">+320%</p>
           </div>

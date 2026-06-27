@@ -186,18 +186,20 @@ const AuditComments: React.FC<AuditCommentsProps> = ({ auditId }) => {
                         
                         {comment.isCurrentUser && (
                           <div className="flex gap-2">
-                            <Button 
-                              variant="ghost" 
-                              size="icon" 
+                            <Button
+                              variant="ghost"
+                              size="icon"
                               className="h-8 w-8"
+                              aria-label="Редактировать комментарий"
                               onClick={() => handleEditComment(comment)}
                             >
                               <Edit className="h-4 w-4" />
                             </Button>
-                            <Button 
-                              variant="ghost" 
-                              size="icon" 
+                            <Button
+                              variant="ghost"
+                              size="icon"
                               className="h-8 w-8 text-destructive hover:text-destructive/90"
+                              aria-label="Удалить комментарий"
                               onClick={() => handleDeleteComment(comment.id)}
                             >
                               <Trash2 className="h-4 w-4" />

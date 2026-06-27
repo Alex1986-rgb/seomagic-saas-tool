@@ -118,8 +118,8 @@ const PositionTracking: React.FC = () => {
             <Button asChild size="lg" className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700">
               <Link to="/position-tracker">Запустить отслеживание</Link>
             </Button>
-            <Button variant="outline" size="lg">
-              Посмотреть демо
+            <Button variant="outline" size="lg" asChild>
+              <Link to="/demo">Посмотреть демо</Link>
             </Button>
           </div>
         </motion.div>

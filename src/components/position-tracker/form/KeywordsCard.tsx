@@ -48,8 +48,7 @@ export const KeywordsCard: React.FC<KeywordsCardProps> = ({
 
         {keywords.length > 0 && (
           <div className="mt-6">
-            <h3 className="text-sm font-medium mb-2">Добавленные ключевые слова ({keywords.length})</h3>
-            <KeywordsList 
+            <KeywordsList
               keywords={keywords} 
               removeKeyword={(index) => removeKeyword(keywords[index])}
             />

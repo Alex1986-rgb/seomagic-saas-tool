@@ -51,7 +51,7 @@ const HeroBackground: React.FC = () => {
       />
       
       <motion.div 
-        className="absolute bottom-1/3 right-1/3 w-3 h-3 bg-[#8884d8] rounded-full -z-10"
+        className="absolute bottom-1/3 right-1/3 w-3 h-3 bg-primary rounded-full -z-10"
         animate={{ 
           opacity: [0.2, 0.8, 0.2],
           scale: [0.8, 1.3, 0.8]

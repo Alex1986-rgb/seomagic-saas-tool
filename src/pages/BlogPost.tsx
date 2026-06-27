@@ -67,12 +67,12 @@ const BlogPost: React.FC = () => {
       <Layout>
         <div className="container mx-auto px-4 py-20">
           <div className="max-w-4xl mx-auto">
-            <div className="h-[400px] bg-gray-200 animate-pulse rounded-lg mb-8"></div>
+            <div className="h-[400px] bg-muted animate-pulse rounded-lg mb-8"></div>
             <div className="space-y-4">
-              <div className="h-8 bg-gray-200 animate-pulse rounded w-3/4"></div>
-              <div className="h-4 bg-gray-200 animate-pulse rounded"></div>
-              <div className="h-4 bg-gray-200 animate-pulse rounded"></div>
-              <div className="h-4 bg-gray-200 animate-pulse rounded w-4/5"></div>
+              <div className="h-8 bg-muted animate-pulse rounded w-3/4"></div>
+              <div className="h-4 bg-muted animate-pulse rounded"></div>
+              <div className="h-4 bg-muted animate-pulse rounded"></div>
+              <div className="h-4 bg-muted animate-pulse rounded w-4/5"></div>
             </div>
           </div>
         </div>

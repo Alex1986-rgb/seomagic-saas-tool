@@ -46,7 +46,7 @@ const DetailedFeaturesSection: React.FC = () => {
       icon: BarChart3,
       title: 'Отслеживание позиций',
       description: 'Ежедневный мониторинг позиций вашего сайта в поисковых системах по ключевым словам.',
-      link: '/features/position-tracking-feature'
+      link: '/features/position-tracking'
     },
     {
       icon: Users,
@@ -64,7 +64,7 @@ const DetailedFeaturesSection: React.FC = () => {
       icon: Lock,
       title: 'Безопасность данных',
       description: 'Полная конфиденциальность и безопасность ваших данных с соблюдением GDPR.',
-      link: '/features/security'
+      link: '/features/data-security'
     },
     {
       icon: Layers,
