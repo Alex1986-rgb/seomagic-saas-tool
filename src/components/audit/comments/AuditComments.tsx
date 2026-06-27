@@ -125,9 +125,13 @@ const AuditComments: React.FC<AuditCommentsProps> = ({ auditId }) => {
 
   return (
     <div className="neo-card p-6 mb-8">
-      <div 
+      <div
         className="flex justify-between items-center mb-4 cursor-pointer"
+        role="button"
+        tabIndex={0}
+        aria-expanded={expanded}
         onClick={() => setExpanded(!expanded)}
+        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setExpanded(!expanded); } }}
       >
         <h2 className="text-xl font-semibold flex items-center gap-2">
           <MessageSquare className="h-5 w-5" />

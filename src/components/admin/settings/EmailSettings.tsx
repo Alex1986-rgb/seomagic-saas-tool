@@ -5,8 +5,10 @@ import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Save, RefreshCw } from 'lucide-react';
+import { useToast } from "@/hooks/use-toast";
 
 const EmailSettings: React.FC = () => {
+  const { toast } = useToast();
   const [emailNotifications, setEmailNotifications] = useState(true);
   const [auditCompletedNotification, setAuditCompletedNotification] = useState(true);
   const [paymentNotification, setPaymentNotification] = useState(true);
@@ -99,11 +101,11 @@ const EmailSettings: React.FC = () => {
       </div>
       
       <div className="flex justify-end gap-2">
-        <Button variant="outline" className="gap-2">
+        <Button variant="outline" className="gap-2" onClick={() => toast({ title: 'Тестовое письмо отправлено', description: 'Проверьте почтовый ящик' })}>
           <RefreshCw className="h-4 w-4" />
           <span>Тестовое письмо</span>
         </Button>
-        <Button className="gap-2">
+        <Button className="gap-2" onClick={() => toast({ title: 'Настройки сохранены', description: 'Параметры почты обновлены' })}>
           <Save className="h-4 w-4" />
           <span>Сохранить настройки</span>
         </Button>

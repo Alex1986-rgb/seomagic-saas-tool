@@ -8,8 +8,10 @@ import Layout from '@/components/Layout';
 import GuideCard from '@/components/guides/GuideCard';
 import { guides } from '@/data/guidesData';
 import { BreadcrumbSchema } from '@/components/seo/BreadcrumbSchema';
+import { useToast } from '@/hooks/use-toast';
 
 const Guides: React.FC = () => {
+  const { toast } = useToast();
   const [activeTab, setActiveTab] = useState('all');
   const [filteredGuides, setFilteredGuides] = useState(guides);
   const [searchQuery, setSearchQuery] = useState('');
@@ -83,7 +85,7 @@ const Guides: React.FC = () => {
               </div>
             </div>
             
-            <Button variant="outline" size="sm" className="gap-2 order-3">
+            <Button variant="outline" size="sm" className="gap-2 order-3" onClick={() => toast({ title: 'Фильтры', description: 'Используйте вкладки категорий и поиск выше' })}>
               <Filter className="h-4 w-4" />
               <span>Фильтры</span>
             </Button>
@@ -130,7 +132,7 @@ const Guides: React.FC = () => {
           
           {activeTab === 'all' && searchQuery === '' && filteredGuides.length === guides.length && (
             <div className="mt-16 text-center">
-              <Button variant="outline" size="lg">
+              <Button variant="outline" size="lg" onClick={() => toast({ title: 'Это все руководства', description: 'Новые материалы появятся скоро' })}>
                 Загрузить больше руководств
               </Button>
             </div>

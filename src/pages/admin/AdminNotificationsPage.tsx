@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { Helmet } from 'react-helmet-async';
+import { Link } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Bell, Mail, MessageSquare, ArrowRight, MailCheck, Calendar, Info } from 'lucide-react';
 import { Badge } from "@/components/ui/badge";
@@ -62,9 +63,11 @@ const AdminNotificationsPage: React.FC = () => (
         </div>
         
         <div>
-          <Button className="flex items-center gap-2">
-            <Bell className="h-4 w-4" />
-            Настройки уведомлений
+          <Button className="flex items-center gap-2" asChild>
+            <Link to="/admin/system/notifications">
+              <Bell className="h-4 w-4" />
+              Настройки уведомлений
+            </Link>
           </Button>
         </div>
       </div>
@@ -119,8 +122,8 @@ const AdminNotificationsPage: React.FC = () => (
                 ))}
                 
                 <div className="flex justify-center mt-4">
-                  <Button variant="outline" className="w-full" size="sm">
-                    Показать все уведомления
+                  <Button variant="outline" className="w-full" size="sm" asChild>
+                    <Link to="/admin/system/notifications">Показать все уведомления</Link>
                   </Button>
                 </div>
               </div>
@@ -179,8 +182,8 @@ const AdminNotificationsPage: React.FC = () => (
                   </div>
                 ))}
                 
-                <Button className="w-full mt-2">
-                  Настроить каналы
+                <Button className="w-full mt-2" asChild>
+                  <Link to="/admin/system/notifications">Настроить каналы</Link>
                 </Button>
               </div>
             </CardContent>

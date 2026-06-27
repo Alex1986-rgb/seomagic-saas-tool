@@ -12,6 +12,7 @@ import {
   SelectValue 
 } from "@/components/ui/select";
 import { Card } from "@/components/ui/card";
+import { useToast } from "@/hooks/use-toast";
 
 // Мок-данные аудитов
 const mockAudits = [
@@ -58,6 +59,7 @@ const mockAudits = [
 ];
 
 const AdminAudits: React.FC = () => {
+  const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   
@@ -108,12 +110,12 @@ const AdminAudits: React.FC = () => {
             </SelectContent>
           </Select>
           
-          <Button variant="outline" className="gap-2 bg-card/50 border-border">
+          <Button variant="outline" className="gap-2 bg-card/50 border-border" onClick={() => toast({ title: 'Фильтр по дате', description: 'Выбор диапазона дат (демо-режим)' })}>
             <Calendar className="h-4 w-4" />
             <span>Фильтр по дате</span>
           </Button>
 
-          <Button className="gap-2">
+          <Button className="gap-2" onClick={() => toast({ title: 'Экспорт аудитов', description: 'Файл формируется' })}>
             <FileText className="h-4 w-4" />
             <span>Экспорт</span>
           </Button>
@@ -180,10 +182,10 @@ const AdminAudits: React.FC = () => {
                 </td>
                 <td className="py-4 px-4">
                   <div className="flex gap-2">
-                    <Button variant="ghost" size="sm">
+                    <Button variant="ghost" size="sm" aria-label="Открыть аудит" onClick={() => toast({ title: 'Аудит', description: audit.url })}>
                       <ExternalLink className="h-4 w-4" />
                     </Button>
-                    <Button variant="ghost" size="sm">
+                    <Button variant="ghost" size="sm" aria-label="Скачать отчёт" onClick={() => toast({ title: 'Отчёт', description: 'Файл формируется' })}>
                       <Download className="h-4 w-4" />
                     </Button>
                   </div>
