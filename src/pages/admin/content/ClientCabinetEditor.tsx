@@ -31,7 +31,7 @@ const ClientCabinetEditor: React.FC = () => {
         onSave={handleSave}
       >
         <div className="space-y-6">
-          <Card className="bg-black/20 border-white/10">
+          <Card className="bg-muted/40 border-border">
             <CardContent className="p-6">
               <h3 className="text-lg font-semibold mb-4">Основные настройки</h3>
               <div className="space-y-4">
@@ -39,21 +39,21 @@ const ClientCabinetEditor: React.FC = () => {
                   <label className="block text-sm font-medium mb-2">Заголовок панели</label>
                   <Input 
                     defaultValue="Личный кабинет" 
-                    className="bg-black/20 border-white/10"
+                    className="bg-muted/40 border-border"
                   />
                 </div>
                 <div>
                   <label className="block text-sm font-medium mb-2">Приветственное сообщение</label>
                   <Textarea 
                     defaultValue="Добро пожаловать в ваш личный кабинет! Здесь вы можете управлять вашими проектами и настройками." 
-                    className="bg-black/20 border-white/10"
+                    className="bg-muted/40 border-border"
                   />
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="bg-black/20 border-white/10">
+          <Card className="bg-muted/40 border-border">
             <CardContent className="p-6">
               <h3 className="text-lg font-semibold mb-4">Видимость разделов</h3>
               <div className="space-y-4">
@@ -65,10 +65,10 @@ const ClientCabinetEditor: React.FC = () => {
                   { id: 'billing', label: 'Оплата', desc: 'История платежей и подписки' },
                   { id: 'support', label: 'Поддержка', desc: 'Связь с технической поддержкой' }
                 ].map(section => (
-                  <div key={section.id} className="flex items-start justify-between py-3 border-b last:border-0 border-white/10">
+                  <div key={section.id} className="flex items-start justify-between py-3 border-b last:border-0 border-border">
                     <div>
                       <h4 className="font-medium">{section.label}</h4>
-                      <p className="text-sm text-gray-400">{section.desc}</p>
+                      <p className="text-sm text-muted-foreground">{section.desc}</p>
                     </div>
                     <Switch defaultChecked={true} />
                   </div>
@@ -77,7 +77,7 @@ const ClientCabinetEditor: React.FC = () => {
             </CardContent>
           </Card>
 
-          <Card className="bg-black/20 border-white/10">
+          <Card className="bg-muted/40 border-border">
             <CardContent className="p-6">
               <h3 className="text-lg font-semibold mb-4">Дополнительные функции</h3>
               <div className="space-y-4">

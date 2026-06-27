@@ -139,7 +139,7 @@ const BlogEditor: React.FC = () => {
         onSave={handleSave}
       >
         <div className="space-y-6">
-          <Card className="bg-black/20 border-white/10">
+          <Card className="bg-muted/40 border-border">
             <CardContent className="p-6">
               <h3 className="text-lg font-semibold mb-4">Настройки страницы блога</h3>
               <div className="space-y-4">
@@ -148,7 +148,7 @@ const BlogEditor: React.FC = () => {
                   <Input 
                     value={blogSettings.title}
                     onChange={(e) => setBlogSettings({...blogSettings, title: e.target.value})}
-                    className="bg-black/20 border-white/10"
+                    className="bg-muted/40 border-border"
                   />
                 </div>
                 <div>
@@ -156,7 +156,7 @@ const BlogEditor: React.FC = () => {
                   <Textarea 
                     value={blogSettings.description}
                     onChange={(e) => setBlogSettings({...blogSettings, description: e.target.value})}
-                    className="bg-black/20 border-white/10"
+                    className="bg-muted/40 border-border"
                   />
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -166,13 +166,13 @@ const BlogEditor: React.FC = () => {
                       type="number"
                       value={blogSettings.postsPerPage}
                       onChange={(e) => setBlogSettings({...blogSettings, postsPerPage: parseInt(e.target.value)})}
-                      className="bg-black/20 border-white/10"
+                      className="bg-muted/40 border-border"
                     />
                   </div>
                   <div>
                     <label className="block text-sm font-medium mb-2">Категория по умолчанию</label>
                     <Select defaultValue="SEO">
-                      <SelectTrigger className="bg-black/20 border-white/10">
+                      <SelectTrigger className="bg-muted/40 border-border">
                         <SelectValue placeholder="Выберите категорию" />
                       </SelectTrigger>
                       <SelectContent>
@@ -188,7 +188,7 @@ const BlogEditor: React.FC = () => {
             </CardContent>
           </Card>
 
-          <Card className="bg-black/20 border-white/10">
+          <Card className="bg-muted/40 border-border">
             <CardContent className="p-6">
               <div className="flex justify-between items-center mb-4">
                 <h3 className="text-lg font-semibold">Статьи блога</h3>
@@ -199,7 +199,7 @@ const BlogEditor: React.FC = () => {
                       Добавить статью
                     </Button>
                   </DialogTrigger>
-                  <DialogContent className="bg-black/80 border-white/10 text-white">
+                  <DialogContent className="bg-black/80 border-border text-white">
                     <DialogHeader>
                       <DialogTitle>Новая статья</DialogTitle>
                       <DialogDescription>Создайте новую статью для блога</DialogDescription>
@@ -211,7 +211,7 @@ const BlogEditor: React.FC = () => {
                           placeholder="Введите заголовок статьи..."
                           value={newPost.title}
                           onChange={(e) => setNewPost({...newPost, title: e.target.value})}
-                          className="bg-black/20 border-white/10"
+                          className="bg-muted/40 border-border"
                         />
                       </div>
                       <div>
@@ -220,7 +220,7 @@ const BlogEditor: React.FC = () => {
                           placeholder="Введите краткое описание статьи..."
                           value={newPost.excerpt}
                           onChange={(e) => setNewPost({...newPost, excerpt: e.target.value})}
-                          className="bg-black/20 border-white/10"
+                          className="bg-muted/40 border-border"
                           rows={2}
                         />
                       </div>
@@ -230,7 +230,7 @@ const BlogEditor: React.FC = () => {
                           placeholder="Введите содержание статьи..."
                           value={newPost.content}
                           onChange={(e) => setNewPost({...newPost, content: e.target.value})}
-                          className="bg-black/20 border-white/10"
+                          className="bg-muted/40 border-border"
                           rows={5}
                         />
                       </div>
@@ -241,7 +241,7 @@ const BlogEditor: React.FC = () => {
                             placeholder="Имя автора"
                             value={newPost.author}
                             onChange={(e) => setNewPost({...newPost, author: e.target.value})}
-                            className="bg-black/20 border-white/10"
+                            className="bg-muted/40 border-border"
                           />
                         </div>
                         <div>
@@ -250,7 +250,7 @@ const BlogEditor: React.FC = () => {
                             value={newPost.category} 
                             onValueChange={(value) => setNewPost({...newPost, category: value})}
                           >
-                            <SelectTrigger className="bg-black/20 border-white/10">
+                            <SelectTrigger className="bg-muted/40 border-border">
                               <SelectValue placeholder="Выберите категорию" />
                             </SelectTrigger>
                             <SelectContent>
@@ -269,7 +269,7 @@ const BlogEditor: React.FC = () => {
                             type="date"
                             value={newPost.publishDate}
                             onChange={(e) => setNewPost({...newPost, publishDate: e.target.value})}
-                            className="bg-black/20 border-white/10"
+                            className="bg-muted/40 border-border"
                           />
                         </div>
                         <div>
@@ -278,7 +278,7 @@ const BlogEditor: React.FC = () => {
                             value={newPost.status} 
                             onValueChange={(value: 'draft' | 'published') => setNewPost({...newPost, status: value})}
                           >
-                            <SelectTrigger className="bg-black/20 border-white/10">
+                            <SelectTrigger className="bg-muted/40 border-border">
                               <SelectValue placeholder="Выберите статус" />
                             </SelectTrigger>
                             <SelectContent>
@@ -290,7 +290,7 @@ const BlogEditor: React.FC = () => {
                       </div>
                     </div>
                     <DialogFooter>
-                      <Button variant="outline" onClick={() => setOpenNewPostDialog(false)} className="border-white/10">
+                      <Button variant="outline" onClick={() => setOpenNewPostDialog(false)} className="border-border">
                         Отмена
                       </Button>
                       <Button onClick={handleCreatePost} className="bg-primary hover:bg-primary/90">
@@ -303,11 +303,11 @@ const BlogEditor: React.FC = () => {
               
               <div className="space-y-4 mt-6">
                 {blogPosts.map((post) => (
-                  <div key={post.id} className="p-4 border border-white/10 rounded-md bg-black/20">
+                  <div key={post.id} className="p-4 border border-border rounded-md bg-muted/40">
                     <div className="flex justify-between items-start">
                       <div>
                         <h4 className="font-medium">{post.title}</h4>
-                        <div className="flex items-center gap-4 text-sm text-gray-400 mt-1">
+                        <div className="flex items-center gap-4 text-sm text-muted-foreground mt-1">
                           <span className="flex items-center gap-1"><Calendar className="h-3 w-3" />{post.publishDate}</span>
                           <span className="flex items-center gap-1"><User className="h-3 w-3" />{post.author}</span>
                           <span className="flex items-center gap-1"><Tag className="h-3 w-3" />{post.category}</span>
@@ -317,10 +317,10 @@ const BlogEditor: React.FC = () => {
                             {post.status === 'published' ? 'Опубликовано' : 'Черновик'}
                           </span>
                         </div>
-                        <p className="text-sm text-gray-400 mt-1">{post.excerpt}</p>
+                        <p className="text-sm text-muted-foreground mt-1">{post.excerpt}</p>
                       </div>
                       <div className="flex gap-2">
-                        <Button variant="outline" size="sm" className="border-white/10 hover:bg-white/5" onClick={() => toast({ title: 'Редактирование статьи', description: post.title })}>
+                        <Button variant="outline" size="sm" className="border-border hover:bg-muted/40" onClick={() => toast({ title: 'Редактирование статьи', description: post.title })}>
                           <Edit className="h-3 w-3 mr-1" /> Редактировать
                         </Button>
                         <Button 
@@ -336,8 +336,8 @@ const BlogEditor: React.FC = () => {
                 ))}
                 
                 {blogPosts.length === 0 && (
-                  <div className="p-8 text-center border border-dashed border-white/10 rounded-md bg-black/10">
-                    <p className="text-gray-400">Статьи не найдены. Создайте новую статью.</p>
+                  <div className="p-8 text-center border border-dashed border-border rounded-md bg-black/10">
+                    <p className="text-muted-foreground">Статьи не найдены. Создайте новую статью.</p>
                   </div>
                 )}
               </div>

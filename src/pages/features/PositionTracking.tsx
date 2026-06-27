@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { ArrowLeft, BarChart, Target, CheckCircle, TrendingUp, Calendar, Eye, AlertCircle, Clock, Zap } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useToast } from '@/hooks/use-toast';
 import Layout from '@/components/Layout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -11,6 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
 
 const PositionTracking: React.FC = () => {
+  const { toast } = useToast();
   const [trackingProgress, setTrackingProgress] = useState(75);
 
   const trackingFeatures = [
@@ -322,7 +324,7 @@ const PositionTracking: React.FC = () => {
                       <TrendingUp className="h-8 w-8 mx-auto mb-2 text-primary" />
                       <h4 className="font-semibold mb-2">Отчет по динамике</h4>
                       <p className="text-sm text-muted-foreground mb-3">Изменения позиций за период</p>
-                      <Button variant="outline" size="sm" className="w-full">Скачать</Button>
+                      <Button variant="outline" size="sm" className="w-full" onClick={() => toast({ title: "Скачать", description: "Доступно после регистрации" })}>Скачать</Button>
                     </div>
                     
                     <div className="p-4 border rounded-lg text-center">

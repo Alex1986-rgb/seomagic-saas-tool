@@ -66,7 +66,7 @@ const FeaturesList: React.FC<FeaturesListProps> = ({
   };
 
   return (
-    <Card className="bg-black/20 border-white/10">
+    <Card className="bg-muted/40 border-border">
       <CardContent className="p-6">
         <div className="flex justify-between items-center mb-4">
           <h3 className="text-lg font-semibold">Список возможностей</h3>
@@ -83,14 +83,14 @@ const FeaturesList: React.FC<FeaturesListProps> = ({
               placeholder="Поиск возможностей..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9 bg-black/20 border-white/10"
+              className="pl-9 bg-muted/40 border-border"
             />
           </div>
           <Button
             variant="outline"
             size="icon"
             onClick={toggleSortOrder}
-            className="border-white/10"
+            className="border-border"
           >
             <ArrowUpDown className="h-4 w-4" />
           </Button>
@@ -112,14 +112,14 @@ const FeaturesList: React.FC<FeaturesListProps> = ({
           </DndContext>
           
           {features.length === 0 && (
-            <div className="p-8 text-center border border-dashed border-white/10 rounded-md bg-black/10">
-              <p className="text-gray-400">Возможности не найдены. Добавьте новую возможность.</p>
+            <div className="p-8 text-center border border-dashed border-border rounded-md bg-black/10">
+              <p className="text-muted-foreground">Возможности не найдены. Добавьте новую возможность.</p>
             </div>
           )}
 
           {features.length > 0 && filteredFeatures.length === 0 && (
-            <div className="p-8 text-center border border-dashed border-white/10 rounded-md bg-black/10">
-              <p className="text-gray-400">Ничего не найдено по вашему запросу.</p>
+            <div className="p-8 text-center border border-dashed border-border rounded-md bg-black/10">
+              <p className="text-muted-foreground">Ничего не найдено по вашему запросу.</p>
             </div>
           )}
         </div>

@@ -52,7 +52,7 @@ const AboutPageEditor: React.FC = () => {
         onSave={handleSave}
       >
         <div className="space-y-6">
-          <Card className="bg-black/20 border-white/10">
+          <Card className="bg-muted/40 border-border">
             <CardContent className="p-6">
               <h3 className="text-lg font-semibold mb-4">Секция Заголовок</h3>
               <div className="space-y-4">
@@ -60,21 +60,21 @@ const AboutPageEditor: React.FC = () => {
                   <label className="block text-sm font-medium mb-2">Заголовок</label>
                   <Input 
                     defaultValue="О нашей компании" 
-                    className="bg-black/20 border-white/10"
+                    className="bg-muted/40 border-border"
                   />
                 </div>
                 <div>
                   <label className="block text-sm font-medium mb-2">Подзаголовок</label>
                   <Textarea 
                     defaultValue="Мы создаем инструменты для оптимизации и анализа сайтов" 
-                    className="bg-black/20 border-white/10"
+                    className="bg-muted/40 border-border"
                   />
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="bg-black/20 border-white/10">
+          <Card className="bg-muted/40 border-border">
             <CardContent className="p-6">
               <h3 className="text-lg font-semibold mb-4">Секция Миссия</h3>
               <div className="space-y-4">
@@ -82,14 +82,14 @@ const AboutPageEditor: React.FC = () => {
                   <label className="block text-sm font-medium mb-2">Заголовок миссии</label>
                   <Input 
                     defaultValue="Наша миссия" 
-                    className="bg-black/20 border-white/10"
+                    className="bg-muted/40 border-border"
                   />
                 </div>
                 <div>
                   <label className="block text-sm font-medium mb-2">Текст миссии</label>
                   <Textarea 
                     defaultValue="Помогать бизнесу расти в цифровом пространстве с помощью современных технологий оптимизации." 
-                    className="bg-black/20 border-white/10"
+                    className="bg-muted/40 border-border"
                     rows={4}
                   />
                 </div>
@@ -97,7 +97,7 @@ const AboutPageEditor: React.FC = () => {
             </CardContent>
           </Card>
 
-          <Card className="bg-black/20 border-white/10">
+          <Card className="bg-muted/40 border-border">
             <CardContent className="p-6">
               <div className="flex justify-between items-center mb-4">
                 <h3 className="text-lg font-semibold">Команда</h3>
@@ -115,20 +115,20 @@ const AboutPageEditor: React.FC = () => {
                 <label className="block text-sm font-medium mb-2">Заголовок секции</label>
                 <Input 
                   defaultValue="Наша команда" 
-                  className="bg-black/20 border-white/10 mb-4"
+                  className="bg-muted/40 border-border mb-4"
                 />
               </div>
               <div>
                 <label className="block text-sm font-medium mb-2">Описание команды</label>
                 <Textarea 
                   defaultValue="Профессионалы, объединенные общей целью." 
-                  className="bg-black/20 border-white/10 mb-6"
+                  className="bg-muted/40 border-border mb-6"
                 />
               </div>
 
               <div className="space-y-4 mt-6">
                 {teamMembers.map((member, index) => (
-                  <Card key={index} className="border-white/10 bg-black/30">
+                  <Card key={index} className="border-border bg-muted/50">
                     <CardContent className="p-4">
                       <div className="flex justify-between mb-3">
                         <h4 className="font-medium">Сотрудник #{index + 1}</h4>
@@ -147,14 +147,14 @@ const AboutPageEditor: React.FC = () => {
                           <label className="block text-sm font-medium mb-2">Имя</label>
                           <Input 
                             defaultValue={member.name} 
-                            className="bg-black/20 border-white/10"
+                            className="bg-muted/40 border-border"
                           />
                         </div>
                         <div>
                           <label className="block text-sm font-medium mb-2">Должность</label>
                           <Input 
                             defaultValue={member.position} 
-                            className="bg-black/20 border-white/10"
+                            className="bg-muted/40 border-border"
                           />
                         </div>
                       </div>
@@ -163,7 +163,7 @@ const AboutPageEditor: React.FC = () => {
                         <label className="block text-sm font-medium mb-2">Фото</label>
                         <Input 
                           defaultValue={member.photo} 
-                          className="bg-black/20 border-white/10"
+                          className="bg-muted/40 border-border"
                         />
                       </div>
                       
@@ -171,7 +171,7 @@ const AboutPageEditor: React.FC = () => {
                         <label className="block text-sm font-medium mb-2">Био</label>
                         <Textarea 
                           defaultValue={member.bio} 
-                          className="bg-black/20 border-white/10"
+                          className="bg-muted/40 border-border"
                           rows={2}
                         />
                       </div>

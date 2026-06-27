@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { ArrowLeft, Search, Target, CheckCircle, TrendingUp, Globe, FileText, AlertCircle, Shield, Zap, BarChart } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useToast } from '@/hooks/use-toast';
 import Layout from '@/components/Layout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -11,6 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
 
 const SeoAudit: React.FC = () => {
+  const { toast } = useToast();
   const [checkProgress, setCheckProgress] = useState(85);
 
   const auditChecks = [
@@ -297,21 +299,21 @@ const SeoAudit: React.FC = () => {
                       <FileText className="h-8 w-8 mx-auto mb-2 text-primary" />
                       <h4 className="font-semibold mb-2">PDF отчет</h4>
                       <p className="text-sm text-muted-foreground mb-3">Подробный анализ для печати</p>
-                      <Button variant="outline" size="sm" className="w-full">Скачать</Button>
+                      <Button variant="outline" size="sm" className="w-full" onClick={() => toast({ title: "Скачать", description: "Доступно после регистрации" })}>Скачать</Button>
                     </div>
                     
                     <div className="p-4 border rounded-lg text-center">
                       <Globe className="h-8 w-8 mx-auto mb-2 text-primary" />
                       <h4 className="font-semibold mb-2">Онлайн отчет</h4>
                       <p className="text-sm text-muted-foreground mb-3">Интерактивный веб-отчет</p>
-                      <Button variant="outline" size="sm" className="w-full">Открыть</Button>
+                      <Button variant="outline" size="sm" className="w-full" onClick={() => toast({ title: "Открыть", description: "Доступно после регистрации" })}>Открыть</Button>
                     </div>
                     
                     <div className="p-4 border rounded-lg text-center">
                       <BarChart className="h-8 w-8 mx-auto mb-2 text-primary" />
                       <h4 className="font-semibold mb-2">CSV данные</h4>
                       <p className="text-sm text-muted-foreground mb-3">Для анализа в Excel</p>
-                      <Button variant="outline" size="sm" className="w-full">Экспорт</Button>
+                      <Button variant="outline" size="sm" className="w-full" onClick={() => toast({ title: "Экспорт", description: "Доступно после регистрации" })}>Экспорт</Button>
                     </div>
                   </div>
                 </CardContent>

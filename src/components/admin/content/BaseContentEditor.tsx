@@ -40,14 +40,14 @@ const BaseContentEditor: React.FC<BaseContentEditorProps> = ({
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-6xl">
-      <Card className="bg-gradient-to-br from-[#222222] to-[#1a1a1a] border border-white/10 shadow-lg text-white">
+      <Card className="bg-gradient-to-br from-[#222222] to-[#1a1a1a] border border-border shadow-lg text-white">
         <CardHeader>
           <CardTitle className="text-2xl font-bold">{title}</CardTitle>
-          <p className="text-gray-400">{description}</p>
+          <p className="text-muted-foreground">{description}</p>
         </CardHeader>
         <CardContent>
           <Tabs defaultValue="content">
-            <TabsList className="mb-6 bg-black/20">
+            <TabsList className="mb-6 bg-muted/40">
               <TabsTrigger value="content" className="data-[state=active]:bg-primary/20">
                 <FileText className="h-4 w-4 mr-2" />
                 Контент
@@ -72,21 +72,21 @@ const BaseContentEditor: React.FC<BaseContentEditorProps> = ({
                   <label className="block text-sm font-medium mb-2">Meta Title</label>
                   <Input 
                     placeholder="Введите meta title..." 
-                    className="bg-black/20 border-white/10"
+                    className="bg-muted/40 border-border"
                   />
                 </div>
                 <div>
                   <label className="block text-sm font-medium mb-2">Meta Description</label>
                   <Textarea 
                     placeholder="Введите meta description..." 
-                    className="bg-black/20 border-white/10"
+                    className="bg-muted/40 border-border"
                   />
                 </div>
                 <div>
                   <label className="block text-sm font-medium mb-2">Keywords</label>
                   <Input 
                     placeholder="Введите ключевые слова через запятую..." 
-                    className="bg-black/20 border-white/10"
+                    className="bg-muted/40 border-border"
                   />
                 </div>
               </div>
@@ -98,7 +98,7 @@ const BaseContentEditor: React.FC<BaseContentEditorProps> = ({
                   <label className="block text-sm font-medium mb-2">CSS Классы</label>
                   <Input 
                     placeholder="Введите CSS классы..." 
-                    className="bg-black/20 border-white/10"
+                    className="bg-muted/40 border-border"
                   />
                 </div>
                 <div>
@@ -106,7 +106,7 @@ const BaseContentEditor: React.FC<BaseContentEditorProps> = ({
                   <Input 
                     type="number" 
                     placeholder="Введите порядок..." 
-                    className="bg-black/20 border-white/10"
+                    className="bg-muted/40 border-border"
                   />
                 </div>
               </div>
