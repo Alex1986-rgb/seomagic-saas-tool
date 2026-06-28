@@ -25,9 +25,15 @@ const log = (m) => process.stderr.write(m + '\n');
 const esc = (s) => String(s || '').replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 const rebind = (u) => { try { const x = new URL(u); return new URL(x.pathname.replace(/^\//, '') + x.search, base).toString(); } catch { return null; } };
 
-async function fetchRaw(url) {
-  try { const r = await fetch(url, { headers: { 'User-Agent': UA, 'Accept-Language': 'ru,en;q=0.8' } }); return { status: r.status, buf: Buffer.from(await r.arrayBuffer()), ct: r.headers.get('content-type') || '' }; }
-  catch (e) { return { status: 0, buf: Buffer.alloc(0), ct: '' }; }
+async function fetchRaw(url, retries = 2) {
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    try {
+      const r = await fetch(url, { headers: { 'User-Agent': UA, 'Accept-Language': 'ru,en;q=0.8' } });
+      if ((r.status === 429 || r.status >= 500) && attempt < retries) { await new Promise((res) => setTimeout(res, 500 * (attempt + 1))); continue; }
+      return { status: r.status, buf: Buffer.from(await r.arrayBuffer()), ct: r.headers.get('content-type') || '' };
+    } catch (e) { if (attempt < retries) { await new Promise((res) => setTimeout(res, 500 * (attempt + 1))); continue; } return { status: 0, buf: Buffer.alloc(0), ct: '' }; }
+  }
+  return { status: 0, buf: Buffer.alloc(0), ct: '' };
 }
 
 const EXT_CT = { 'image/jpeg': '.jpg', 'image/png': '.png', 'image/webp': '.webp', 'image/gif': '.gif', 'image/svg+xml': '.svg', 'text/css': '.css', 'application/javascript': '.js', 'font/woff2': '.woff2', 'font/woff': '.woff' };
@@ -62,7 +68,10 @@ function seoFix(pageUrl, html) {
   if (!/<link[^>]+rel=["']canonical["']/i.test(html)) html = html.replace(/<\/head>/i, `<link rel="canonical" href="${esc(pageUrl)}">\n</head>`);
   if (!/<meta[^>]+property=["']og:/i.test(html)) html = html.replace(/<\/head>/i, `<meta property="og:type" content="website"><meta property="og:title" content="${esc(title)}"><meta property="og:url" content="${esc(pageUrl)}">\n</head>`);
   if (!/application\/ld\+json/i.test(html)) html = html.replace(/<\/head>/i, `<script type="application/ld+json">${JSON.stringify({ '@context': 'https://schema.org', '@type': 'BreadcrumbList', itemListElement: [{ '@type': 'ListItem', position: 1, name: 'Главная', item: ORIGIN + '/' }, { '@type': 'ListItem', position: 2, name: topic, item: pageUrl }] })}</script>\n</head>`);
-  if ((html.match(/<h1[\s>]/gi) || []).length === 0) html = html.replace(/<body([^>]*)>/i, `<body$1><h1 style="position:absolute;left:-9999px">${esc(topic)}</h1>`);
+  // H1 (sr-only, accessibility-стандарт, НЕ клоакинг -9999px) только при отсутствии, идемпотентно
+  if ((html.match(/<h1[\s>]/gi) || []).length === 0 && !/data-seomarket="h1"/.test(html)) {
+    html = html.replace(/<body([^>]*)>/i, `<body$1><h1 data-seomarket="h1" style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0">${esc(topic)}</h1>`);
+  }
   return html;
 }
 
@@ -80,6 +89,10 @@ function rewriteRef(ref, pageUrl) {
 }
 
 function processHtmlRefs(html, pageUrl) {
+  // lazy-load: поднимаем data-src/data-original/data-lazy-src → src, data-srcset → srcset
+  // (реальный src ставит JS оригинала, которого офлайн нет → без этого картинки не появятся)
+  html = html.replace(/\bdata-(?:src|original|lazy-src)=(["'])([^"']+)\1/gi, (m, q, u) => `src=${q}${u}${q} data-was-lazy="1"`);
+  html = html.replace(/\bdata-srcset=(["'])([^"']+)\1/gi, (m, q, u) => `srcset=${q}${u}${q}`);
   // src / href (кроме якорей навигации оставляем для ассетов; страничные ссылки тоже резолвим, но не качаем как ассет — пусть ведут на демо/оригинал)
   html = html.replace(/(<(?:img|script|source|link)\b[^>]*?\b(?:src|href)=)(["'])([^"']+)\2/gi, (m, pre, q, url) => {
     const nu = rewriteRef(url, pageUrl); return nu ? `${pre}${q}${nu}${q}` : m;
@@ -103,15 +116,15 @@ async function pool(items, n, fn) { let i = 0, done = 0; await Promise.all(Array
   if (!urls.length) urls = [START];
   log(`Страниц: ${urls.length}`);
 
-  // 1) страницы: fetch → SEO-фикс → переписать ассеты → сохранить
-  for (const u of urls) {
+  // 1) страницы: fetch → SEO-фикс → переписать ассеты → сохранить (конкурентно)
+  await pool(urls, 6, async (u) => {
     const r = await fetchRaw(u);
-    if (r.status < 200 || r.status >= 400) { log(`  ✗ ${u} (${r.status})`); continue; }
+    if (r.status < 200 || r.status >= 400) { log(`  ✗ ${u} (${r.status})`); return; }
     let html = seoFix(u, r.buf.toString('utf8'));
     html = processHtmlRefs(html, u);
     const pu = new URL(u); let p = pu.pathname.replace(/^\/+/, ''); if (p === '' || p.endsWith('/')) p += 'index.html'; else if (!/\.html?$/i.test(p)) p += '/index.html';
     const out = path.join(OUT, p); fs.mkdirSync(path.dirname(out), { recursive: true }); fs.writeFileSync(out, html);
-  }
+  });
   log(`Ассетов к скачиванию: ${assetMap.size}`);
 
   // 2) скачиваем ассеты
