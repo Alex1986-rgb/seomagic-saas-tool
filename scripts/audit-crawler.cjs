@@ -22,14 +22,36 @@ const getOpt = (name, def) => {
 };
 if (!startUrl) { console.error('Укажите URL. Пример: node scripts/audit-crawler.cjs https://example.com --max 2000'); process.exit(1); }
 const MAX = Number(getOpt('--max', 2000));
-const CONCURRENCY = Number(getOpt('--concurrency', 8));
+// Браузерный режим (--browser): грузим через системный Chrome — обходит WAF/403,
+// но тяжёлый, поэтому низкая конкурентность и небольшой потолок страниц.
+const BROWSER = args.includes('--browser');
+const CONCURRENCY = BROWSER ? Math.min(Number(getOpt('--concurrency', 2)), 2) : Number(getOpt('--concurrency', 8));
 const OUT = getOpt('--out', null);
+const CHROME = process.env.CHROME_BIN || '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
 
 const base = startUrl.endsWith('/') ? startUrl : startUrl + '/';
 const ORIGIN = new URL(startUrl).origin;
 const log = (m) => process.stderr.write(m + '\n');
 
+let _prof = 0;
+// Загрузка страницы реальным браузером (headless Chrome) — для сайтов с защитой.
+function chromeFetch(url, timeout = 35000) {
+  const { execFileSync } = require('child_process');
+  const prof = `/tmp/crawl-prof-${process.pid}-${_prof++}`;
+  try {
+    const html = execFileSync(CHROME, ['--headless=new', '--disable-gpu', '--no-sandbox',
+      '--disable-dev-shm-usage', `--user-data-dir=${prof}`, '--virtual-time-budget=4000',
+      '--dump-dom', url], { encoding: 'utf8', timeout, maxBuffer: 64 * 1024 * 1024, stdio: ['ignore', 'pipe', 'ignore'] });
+    return { status: html && html.length > 800 ? 200 : 0, html: html || '' };
+  } catch (e) {
+    return { status: 0, html: '', error: e.code || e.message };
+  } finally {
+    try { fs.rmSync(prof, { recursive: true, force: true }); } catch (_) {}
+  }
+}
+
 async function fetchText(url, timeout = 20000) {
+  if (BROWSER) return chromeFetch(url);
   const ac = new AbortController();
   const t = setTimeout(() => ac.abort(), timeout);
   try {
@@ -45,30 +67,42 @@ async function fetchText(url, timeout = 20000) {
 }
 
 const tag = (html, re) => { const m = html.match(re); return m ? m[1].trim() : null; };
-const rebind = (loc) => { try { const u = new URL(loc); return new URL(u.pathname.replace(/^\//, '') + u.search, base).toString(); } catch { return null; } };
+const rebind = (loc) => {
+  try {
+    const u = new URL(loc);
+    // Тот же хост — URL уже корректный, берём как есть (иначе удвоится подпуть).
+    if (u.origin === ORIGIN) return u.toString();
+    // Другой хост (напр. sitemap preview указывает на боевой домен) — переносим путь на целевой base.
+    return new URL(u.pathname.replace(/^\//, '') + u.search, base).toString();
+  } catch { return null; }
+};
 
 // ---- обнаружение URL: sitemap → robots → BFS ----
 async function discover() {
-  // 1) sitemap (относительно подпути и в корне)
-  for (const sm of [new URL('sitemap.xml', base).toString(), new URL('/sitemap.xml', startUrl).toString()]) {
-    const r = await fetchText(sm);
-    if (r.status === 200 && r.html.includes('<loc>')) {
+  // В браузерном режиме каждый запрос дорогой (Chrome) — пропускаем попытки sitemap/robots
+  // и сразу идём в BFS от стартовой страницы (1 загрузка даёт и контент, и ссылки).
+  if (!BROWSER) {
+    // 1) sitemap (относительно подпути и в корне)
+    for (const sm of [new URL('sitemap.xml', base).toString(), new URL('/sitemap.xml', startUrl).toString()]) {
+      const r = await fetchText(sm);
+      if (r.status === 200 && r.html.includes('<loc>')) {
+        let urls = Array.from(r.html.matchAll(/<loc>(.*?)<\/loc>/g), (m) => rebind(m[1].trim())).filter(Boolean);
+        urls = Array.from(new Set(urls));
+        if (urls.length) { log(`Найден sitemap: ${urls.length} URL (${sm})`); return urls.slice(0, MAX); }
+      }
+    }
+    // 2) robots.txt → Sitemap:
+    const robots = await fetchText(new URL('/robots.txt', startUrl).toString());
+    const smRef = robots.html.match(/Sitemap:\s*(\S+)/i);
+    if (smRef) {
+      const r = await fetchText(smRef[1]);
       let urls = Array.from(r.html.matchAll(/<loc>(.*?)<\/loc>/g), (m) => rebind(m[1].trim())).filter(Boolean);
       urls = Array.from(new Set(urls));
-      if (urls.length) { log(`Найден sitemap: ${urls.length} URL (${sm})`); return urls.slice(0, MAX); }
+      if (urls.length) { log(`Sitemap из robots.txt: ${urls.length} URL`); return urls.slice(0, MAX); }
     }
   }
-  // 2) robots.txt → Sitemap:
-  const robots = await fetchText(new URL('/robots.txt', startUrl).toString());
-  const smRef = robots.html.match(/Sitemap:\s*(\S+)/i);
-  if (smRef) {
-    const r = await fetchText(smRef[1]);
-    let urls = Array.from(r.html.matchAll(/<loc>(.*?)<\/loc>/g), (m) => rebind(m[1].trim())).filter(Boolean);
-    urls = Array.from(new Set(urls));
-    if (urls.length) { log(`Sitemap из robots.txt: ${urls.length} URL`); return urls.slice(0, MAX); }
-  }
   // 3) BFS по внутренним ссылкам
-  log('Sitemap не найден — обход по ссылкам (BFS)…');
+  log('Обход по ссылкам (BFS)…');
   const seen = new Set([startUrl]); const queue = [startUrl]; const out = [];
   while (queue.length && out.length < MAX) {
     const batch = queue.splice(0, CONCURRENCY);
