@@ -667,8 +667,10 @@ async function pool(items, n, fn) { let i = 0, done = 0; await Promise.all(Array
   try {
     const walkS = (d, acc = []) => { for (const e of fs.readdirSync(d, { withFileTypes: true })) { const p = path.join(d, e.name); if (e.isDirectory()) walkS(p, acc); else if (/\.html?$/i.test(e.name)) acc.push(p); } return acc; };
     const entries = [];
+    const allLocs = [];
     for (const f of walkS(OUT)) {
       const rel = path.relative(OUT, f).replace(/index\.html?$/i, '');
+      allLocs.push(DEMO + rel);
       const c = fs.readFileSync(f, 'utf8'); const imgs = []; const seen = new Set();
       for (const m of c.matchAll(/<img\b[^>]*>/gi)) {
         const src = (m[0].match(/\bsrc=["']([^"']+)["']/i) || [, ''])[1];
@@ -677,12 +679,14 @@ async function pool(items, n, fn) { let i = 0, done = 0; await Promise.all(Array
       }
       if (imgs.length) entries.push({ loc: DEMO + rel, imgs: imgs.slice(0, 25) });
     }
+    // Обычный sitemap.xml (все страницы, live-URL) — для отправки в Я.Вебмастер/Google Search Console.
+    fs.writeFileSync(path.join(OUT, 'sitemap.xml'), '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' + allLocs.sort().map((l) => `<url><loc>${esc(l)}</loc></url>`).join('\n') + '\n</urlset>');
     const xml = '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">\n'
       + entries.map((e) => `<url><loc>${esc(e.loc)}</loc>` + e.imgs.map((i) => `<image:image><image:loc>${esc(i.src)}</image:loc>${i.alt ? `<image:title>${esc(i.alt)}</image:title>` : ''}</image:image>`).join('') + '</url>').join('\n')
       + '\n</urlset>';
     fs.writeFileSync(path.join(OUT, 'sitemap-images.xml'), xml);
-    log(`image-sitemap: ${entries.length} страниц с картинками`);
-  } catch (e) { log('image-sitemap пропущен: ' + e.message); }
+    log(`sitemap: ${allLocs.length} URL · image-sitemap: ${entries.length} страниц`);
+  } catch (e) { log('sitemap пропущен: ' + e.message); }
 
   const saved = fs.existsSync(OUT) ? require('child_process').execSync(`find ${OUT} -type f | wc -l`).toString().trim() : '0';
   const kb = (n) => Math.round(n / 1024);
