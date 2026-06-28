@@ -176,8 +176,10 @@ for (const [route, m] of Object.entries(M)) {
   html = html.replace(/<\/head>/i, `  <link rel="canonical" href="${canonical}" />\n  ${ld}\n  </head>`);
   // SEO H1 + контент в #root (React заменит при загрузке). Развёрнутый текст устраняет «тонкий контент».
   const body = BODIES[route] || `<p>${esc(m.desc)}</p>`;
-  // SEO-блок с таблицами в конце каждой страницы (абзац + стрелка → полный текст).
-  html = html.replace(/<div id="root">\s*<\/div>/i, `<div id="root"><main><h1>${esc(m.h1)}</h1>${body}${seoBlock(m)}</main></div>`);
+  // Контент для краулеров/первого экрана — внутри #root (React заменит при загрузке).
+  // SEO-блок выносим ЗА #root, чтобы он оставался ВИДИМ пользователю после рендера React.
+  const seoOutside = `<aside class="seo-text-section" style="max-width:1100px;margin:0 auto;padding:8px 24px 56px;color:#aeb8c9;background:hsl(225 71% 8%);font-family:-apple-system,Arial,sans-serif">${seoBlock(m)}</aside>`;
+  html = html.replace(/<div id="root">\s*<\/div>/i, `<div id="root"><main><h1>${esc(m.h1)}</h1>${body}</main></div>\n${seoOutside}`);
 
   const outDir = route === '/' ? DIST : path.join(DIST, route);
   fs.mkdirSync(outDir, { recursive: true });

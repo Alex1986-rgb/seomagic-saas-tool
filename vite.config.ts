@@ -38,9 +38,14 @@ export default defineConfig(({ mode }) => ({
         // раньше, чем загружался react-чанк → рантайм-ошибка в проде.
         // Единый vendor-чанк гарантирует, что React доступен своим потребителям.
         manualChunks: (id) => {
-          if (id.includes('node_modules')) {
-            return 'vendor';
-          }
+          if (!id.includes('node_modules')) return;
+          // Тяжёлые библиотеки, нужные лишь на части страниц, — отдельными чанками,
+          // чтобы НЕ грузились на главной (подтянутся только на своих lazy-роутах).
+          if (id.includes('recharts') || id.includes('/d3-') || id.includes('victory') || id.includes('/d3/')) return 'charts';
+          if (id.includes('jspdf') || id.includes('html2canvas') || id.includes('canvg')) return 'pdf';
+          if (id.includes('xlsx') || id.includes('exceljs') || id.includes('file-saver')) return 'export';
+          // React и остальное — в общий vendor (единый чанк сохраняет порядок инициализации React).
+          return 'vendor';
         }
       }
     }
