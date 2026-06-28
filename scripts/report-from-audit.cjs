@@ -45,6 +45,9 @@ const SEOTEXT_PRICE = Number(getOpt('--seotext-price', 500));
 const seoTextPages = d.scanned || 0;
 const seoTextTotal = SEOTEXT_PRICE * seoTextPages;
 const SEOTEXT_URL = getOpt('--seotext', `https://alex1986-rgb.github.io/seomagic-saas-tool/seo-text?url=${encodeURIComponent(d.site)}&pages=${seoTextPages}&price=${SEOTEXT_PRICE}`);
+// Единая стоимость «под ключ»: исправление ошибок + SEO-тексты.
+const combinedTotal = total + seoTextTotal;
+const CHECKOUT_FULL = `https://alex1986-rgb.github.io/seomagic-saas-tool/checkout?url=${encodeURIComponent(d.site)}&pages=${seoTextPages}&total=${combinedTotal}&service=full&score=${S.global}`;
 
 const smetaRows = items.map(([k, v], i) => `<tr><td class="num">${i + 1}</td><td><b>${ISSUES[k].n}</b><div class="rec">${ISSUES[k].rec}</div></td><td class="r"><span class="pill">${d.issues_pct[k]}%</span></td><td class="r">${fmt(ISSUES[k].price)} ₽</td><td class="r">${v}</td><td class="r"><b>${fmt(ISSUES[k].price * v)} ₽</b></td></tr>`).join('');
 
@@ -105,11 +108,15 @@ ${items.length ? `
 <table><thead><tr><th>#</th><th>Проблема / рекомендация</th><th class="r">% стр.</th><th class="r">Цена/ед.</th><th class="r">Кол-во</th><th class="r">Сумма</th></tr></thead>
 <tbody>${smetaRows}<tr class="total"><td colspan="5">ИТОГО К ИСПРАВЛЕНИЮ</td><td class="r">${fmt(total)} ₽</td></tr></tbody></table>
 
-<div class="pay"><div><div class="pay-h">Исправить автоматически «под ключ»</div><div class="pay-d">После оплаты система создаст копию сайта, исправит код, развернёт демо, проведёт повторный аудит и пришлёт готовый сайт.</div></div>
-<div class="pay-r"><div class="payamt">${fmt(total)} ₽</div><a class="paybtn" href="${esc(CHECKOUT)}">💳 Оплатить и исправить →</a></div></div>
-
-<div class="pay" style="margin-top:12px"><div><div class="pay-h">Добавить SEO-текст на страницы</div><div class="pay-d">Развёрнутый SEO-блок с таблицами внизу каждой страницы: создать, переписать или дополнить тексты (включая карточки товаров) с контролем тошноты и водности.</div><div class="pay-d" style="color:#ffb066;margin-top:6px">Цена: ${fmt(SEOTEXT_PRICE)} ₽/страница × ${seoTextPages} страниц</div></div>
-<div class="pay-r"><div class="payamt">${fmt(seoTextTotal)} ₽</div><a class="paybtn" href="${esc(SEOTEXT_URL)}">✍️ Выбрать функцию SEO-текста →</a></div></div>
+<div class="pay"><div class="pay-l">
+  <div class="pay-h">Полная оптимизация «под ключ» — в топ поисковиков</div>
+  <div class="pay-d">Оптимизируем ваш сайт <b style="color:#e8edf5">по всем параметрам</b> — технические ошибки, мета-теги, структура, скорость <b style="color:#e8edf5">и SEO-тексты с таблицами</b> на каждой странице, — чтобы сайт вышел в <b style="color:#ffb066">топ Яндекса и Google</b>. Создадим копию, исправим код, наполним тексты, развернём демо на поддомене и проведём повторный аудит.</div>
+  <div style="margin-top:10px;font-size:11.5px;color:#aeb8c9">
+    <div style="display:flex;justify-content:space-between;max-width:340px"><span>Исправление ошибок (${items.length} ${items.length === 1 ? 'пункт' : 'пунктов'})</span><b style="color:#e8edf5">${fmt(total)} ₽</b></div>
+    <div style="display:flex;justify-content:space-between;max-width:340px;margin-top:3px"><span>SEO-тексты: ${fmt(SEOTEXT_PRICE)} ₽/стр × ${seoTextPages} стр</span><b style="color:#e8edf5">${fmt(seoTextTotal)} ₽</b></div>
+  </div>
+</div>
+<div class="pay-r"><div class="paysum" style="font-size:11px;color:#8b97ad">Всё включено</div><div class="payamt">${fmt(combinedTotal)} ₽</div><a class="paybtn" href="${esc(CHECKOUT_FULL)}">🚀 Оптимизировать в топ →</a><div style="font-size:9.5px;color:#6b788f;margin-top:7px;max-width:200px">Демо до оплаты · возврат, если позиции не вырастут</div></div></div>
 
 ${sections}` : '<div class="ok"><b>Проблем не найдено 🎉</b> Все проверенные параметры в норме.</div>'}
 <h2>Возможности SeoMarket</h2>

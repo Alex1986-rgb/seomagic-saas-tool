@@ -8,7 +8,7 @@ import { Progress } from '@/components/ui/progress';
 import { useToast } from '@/hooks/use-toast';
 import {
   CreditCard, Check, Loader2, Copy, Wrench, FileArchive,
-  Globe, RefreshCw, Send, Download, ShieldCheck,
+  Globe, RefreshCw, Send, Download, ShieldCheck, Sparkles,
 } from 'lucide-react';
 
 /**
@@ -20,7 +20,8 @@ import {
 
 const STEPS = [
   { icon: Copy, title: 'Создание копии сайта', desc: 'Клонируем все страницы и ассеты' },
-  { icon: Wrench, title: 'Авто-исправление кода', desc: 'Сокращаем длинные title, чиним мета-теги' },
+  { icon: Wrench, title: 'Оптимизация по всем параметрам', desc: 'Мета-теги, структура, скорость, ссылки' },
+  { icon: Sparkles, title: 'Наполнение SEO-текстами', desc: 'SEO-блоки с таблицами на каждой странице' },
   { icon: FileArchive, title: 'Сборка ZIP-архива', desc: 'Упаковываем готовый сайт' },
   { icon: Globe, title: 'Деплой демо на поддомен', desc: 'Поднимаем превью для проверки' },
   { icon: RefreshCw, title: 'Повторный аудит', desc: 'Проверяем рост оценки' },
@@ -34,7 +35,9 @@ const Checkout: React.FC = () => {
   const site = params.get('url') || 'zavod-red.ru';
   const pages = Number(params.get('pages') || 75);
   const pricePerPage = Number(params.get('price') || 150);
-  const total = pages * pricePerPage;
+  const totalParam = Number(params.get('total') || 0);
+  const total = totalParam > 0 ? totalParam : pages * pricePerPage;
+  const isFull = params.get('service') === 'full'; // полная оптимизация: исправление + SEO-тексты
   const scoreBefore = Number(params.get('score') || 98);
   const scoreAfter = 100;
 
@@ -69,9 +72,13 @@ const Checkout: React.FC = () => {
         keywords="исправление SEO ошибок, оптимизация сайта под ключ, заказать SEO"
       />
       <div className="container mx-auto px-4 pt-32 pb-24 max-w-3xl">
-        <h1 className="text-3xl md:text-4xl font-bold mb-2">Исправление сайта «под ключ»</h1>
+        <h1 className="text-3xl md:text-4xl font-bold mb-2">
+          {isFull ? 'Полная оптимизация сайта «под ключ»' : 'Исправление сайта «под ключ»'}
+        </h1>
         <p className="text-muted-foreground mb-8">
-          Оплатите — и система сама исправит найденные ошибки, развернёт демо, перепроверит и пришлёт готовый сайт.
+          {isFull
+            ? 'Оптимизируем сайт по всем параметрам — технические ошибки, мета-теги, структура, скорость и SEO-тексты с таблицами на каждой странице, — чтобы ваш сайт вышел в топ Яндекса и Google.'
+            : 'Оплатите — и система сама исправит найденные ошибки, развернёт демо, перепроверит и пришлёт готовый сайт.'}
         </p>
 
         {/* СВОДКА ЗАКАЗА */}
@@ -83,15 +90,11 @@ const Checkout: React.FC = () => {
               <span className="font-medium">{site}</span>
             </div>
             <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">Работа</span>
-              <span className="font-medium">Сокращение длинных title</span>
+              <span className="text-muted-foreground">Услуга</span>
+              <span className="font-medium">{isFull ? 'Оптимизация по всем параметрам + SEO-тексты' : 'Исправление SEO-ошибок'}</span>
             </div>
             <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">Цена за страницу</span>
-              <span className="font-medium">{fmt(pricePerPage)} ₽</span>
-            </div>
-            <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">Страниц к исправлению</span>
+              <span className="text-muted-foreground">Страниц в работе</span>
               <span className="font-medium">{pages}</span>
             </div>
             <div className="border-t border-border pt-3 flex justify-between items-center">
@@ -99,7 +102,7 @@ const Checkout: React.FC = () => {
               <span className="text-2xl font-bold text-primary">{fmt(total)} ₽</span>
             </div>
             <p className="text-xs text-muted-foreground flex items-center gap-1.5 pt-1">
-              <ShieldCheck className="h-3.5 w-3.5" /> Демо до оплаты · возврат, если оценка не вырастет
+              <ShieldCheck className="h-3.5 w-3.5" /> Демо до оплаты · возврат, если позиции не вырастут
             </p>
           </CardContent>
         </Card>
