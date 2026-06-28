@@ -494,7 +494,9 @@ async function pool(items, n, fn) { let i = 0, done = 0; await Promise.all(Array
     const k = pathKey(r); if (seen.has(k)) return; seen.add(k); queue.push(r);
   };
   for (const u of urls) enqueue(u, base);
-  log(`Seed-страниц: ${queue.length} (sitemap), BFS=${BFS ? 'вкл' : 'выкл'}`);
+  // Доп-seed: страницы, на которые ссылаются наши SEO-тексты (могут не быть в sitemap/ссылках сайта).
+  for (const p of ['contacts', 'about', 'projects', 'dostavka-raschet', 'catalog/spalni', 'catalog/gostinye', 'catalog/myagkaya-mebel']) enqueue(p, base);
+  log(`Seed-страниц: ${queue.length} (sitemap+доп), BFS=${BFS ? 'вкл' : 'выкл'}`);
 
   let brokenSrc = 0; const brokenList = []; let processed = 0;
   while (queue.length && processed < MAX) {
