@@ -1,0 +1,1065 @@
+<!DOCTYPE html><html>
+    <head><meta http-equiv="Content-Type" content="text/html; charset=utf-8" ><title></title><link href="/s/public/css/import.css" media="screen" rel="stylesheet" type="text/css" >
+<link href="/s/public/css/edit.css" media="screen" rel="stylesheet" type="text/css" ><!--[if lt IE 9]>
+            <script type="text/javascript" src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+        <![endif]-->
+        <link href='http://fonts.googleapis.com/css?family=Tenor+Sans&subset=latin,cyrillic' rel='stylesheet' type='text/css'>
+        <link href='http://fonts.googleapis.com/css?family=PT+Serif&subset=latin,cyrillic' rel='stylesheet' type='text/css'>
+
+        <script>
+            (function(i, s, o, g, r, a, m) {
+                i['GoogleAnalyticsObject'] = r;
+                i[r] = i[r] || function() {
+                    (i[r].q = i[r].q || []).push(arguments)
+                }, i[r].l = 1 * new Date();
+                a = s.createElement(o),
+                        m = s.getElementsByTagName(o)[0];
+                a.async = 1;
+                a.src = g;
+                m.parentNode.insertBefore(a, m)
+            })(window, document, 'script', '//www.google-analytics.com/analytics.js', 'ga');
+
+            ga('create', 'UA-52836112-1', 'auto');
+            ga('send', 'pageview');
+
+        </script>
+
+    </head>
+    <body>
+        <div class="wrapper">
+            <div class="wrapper-content">
+                <div class="fix">
+                    <div class="g-l">
+                        <div class="g-l-container">
+                            <div class="search-box">
+    <form id="itemSearchForm" action="/catalog/spalni" method="post">
+        <div class="input-container">
+            <input id="searchQuery" name="searchQuery" type="text" placeholder="Поиск" value=""/>
+        </div>
+        <button id="searchSubmitButton" class="search-box-btn">
+        <i class="ico ico-search-btn"></i></button>
+    </form>
+</div>                            <ul class="main-menu"><li class="main-menu-item">
+            <a class="main-menu-item-link" href="/">
+                <span>Главная</span>
+            </a>
+        </li><li class="main-menu-item">
+            <a class="main-menu-item-link" href="/factory">
+                <span>Фабрики</span>
+            </a>
+        </li><li class="main-menu-item">
+            <a class="main-menu-item-link" href="/about">
+                <span>О компании</span>
+            </a>
+        </li><li class="main-menu-item">
+            <a class="main-menu-item-link" href="/partnership">
+                <span>Сотрудничество</span>
+            </a>
+        </li><li class="main-menu-item">
+            <a class="main-menu-item-link" href="/projects">
+                <span>Наши проекты</span>
+            </a>
+        </li><li class="main-menu-item">
+            <a class="main-menu-item-link" href="/news/1">
+                <span>Новости</span>
+            </a>
+        </li><li class="main-menu-item">
+            <a class="main-menu-item-link" href="/poryadok-oformleniya-zakaza-na-italianskuyu-mebel">
+                <span>Порядок оформления</span>
+            </a>
+        </li><li class="main-menu-item">
+            <a class="main-menu-item-link" href="/specialists">
+                <span>Выезд специалиста</span>
+            </a>
+        </li><li class="main-menu-item">
+            <a class="main-menu-item-link" href="/contacts">
+                <span>Контакты</span>
+            </a>
+        </li></ul>                            <div class="g-l-title">Каталог</div>
+<ul class="menu-item"><li class="menu-item-box">
+    <a class="menu-item-link" href="/catalog/kuhni">
+        <span>Кухни</span>
+    </a>
+</li><li class="menu-item-box">
+    <a class="menu-item-link" href="/catalog/spalni">
+        <span>Спальни</span>
+    </a>
+</li><li class="menu-item-box">
+    <a class="menu-item-link" href="/catalog/prihozie">
+        <span>Прихожие</span>
+    </a>
+</li><li class="menu-item-box">
+    <a class="menu-item-link" href="/catalog/gostinye">
+        <span>Гостиные</span>
+    </a>
+</li><li class="menu-item-box">
+    <a class="menu-item-link" href="/catalog/stulya">
+        <span>Стулья</span>
+    </a>
+</li><li class="menu-item-box">
+    <a class="menu-item-link" href="/catalog/myagkaya-mebel">
+        <span>Мягкая мебель</span>
+    </a>
+</li><li class="menu-item-box">
+    <a class="menu-item-link" href="/catalog/stolovye-komnaty">
+        <span>Столовые комнаты</span>
+    </a>
+</li><li class="menu-item-box">
+    <a class="menu-item-link" href="/catalog/kabinety">
+        <span>Кабинеты</span>
+    </a>
+</li><li class="menu-item-box">
+    <a class="menu-item-link" href="/catalog/detskaya-mebel-italii">
+        <span>Детская мебель Италии</span>
+    </a>
+</li><li class="menu-item-box">
+    <a class="menu-item-link" href="/catalog/mebel-dlya-kafe-i-restoranov">
+        <span>Мебель для кафе и ресторанов</span>
+    </a>
+</li><li class="menu-item-box">
+    <a class="menu-item-link" href="/catalog/dveri">
+        <span>Двери</span>
+    </a>
+</li><li class="menu-item-box">
+    <a class="menu-item-link" href="/catalog/vannye-komnaty">
+        <span>Ванные комнаты</span>
+    </a>
+</li><li class="menu-item-box">
+    <a class="menu-item-link" href="/catalog/mebel-dlya-tv">
+        <span>Мебель для TV</span>
+    </a>
+</li><li class="menu-item-box">
+    <a class="menu-item-link" href="/catalog/aksessuary">
+        <span>Аксессуары</span>
+    </a>
+</li><li class="menu-item-box">
+    <a class="menu-item-link" href="/catalog/garderobnye">
+        <span>Гардеробные</span>
+    </a>
+</li><li class="menu-item-box">
+    <a class="menu-item-link" href="/catalog/svetilniki">
+        <span>Светильники</span>
+    </a>
+</li><li class="menu-item-box">
+    <a class="menu-item-link" href="/catalog/tovary-v-nalichii">
+        <span>Товары в наличии</span>
+    </a>
+</li><li class="menu-item-box">
+    <a class="menu-item-link" href="/catalog/buazeri">
+        <span>Буазери</span>
+    </a>
+</li></ul>                        </div>
+                        <div class="menu-item-container">
+    <div class="g-l-title">Популярные фабрики</div>
+    <ul class="menu-item fabric"><li class="menu-item-box">
+    <a class="menu-item-link" href="/factory/caspani-tino-102">
+        <span>CASPANI TINO</span>
+    </a>
+</li><li class="menu-item-box">
+    <a class="menu-item-link" href="/factory/ezio-bellotti-191">
+        <span>EZIO BELLOTTI</span>
+    </a>
+</li><li class="menu-item-box">
+    <a class="menu-item-link" href="/factory/formitalia-79">
+        <span>FORMITALIA</span>
+    </a>
+</li><li class="menu-item-box">
+    <a class="menu-item-link" href="/factory/mirandola-181">
+        <span>MIRANDOLA</span>
+    </a>
+</li><li class="menu-item-box">
+    <a class="menu-item-link" href="/factory/mm-lampadari-85">
+        <span>MM LAMPADARI</span>
+    </a>
+</li><li class="menu-item-box">
+    <a class="menu-item-link" href="/factory/modenese-149">
+        <span>MODENESE</span>
+    </a>
+</li><li class="menu-item-box">
+    <a class="menu-item-link" href="/factory/morello-gianpaolo-239">
+        <span>MORELLO GIANPAOLO</span>
+    </a>
+</li><li class="menu-item-box">
+    <a class="menu-item-link" href="/factory/tonin-114">
+        <span>TONIN</span>
+    </a>
+</li><li class="menu-item-box">
+    <a class="menu-item-link" href="/factory/vaccari-international-241">
+        <span>VACCARI INTERNATIONAL</span>
+    </a>
+</li><li class="menu-item-box">
+    <a class="menu-item-link" href="/factory/vittorio-grifoni-203">
+        <span>VITTORIO GRIFONI</span>
+    </a>
+</li></ul>
+</div>                    </div>
+                    <div class="header">
+    <div class="header-left-box">
+        <div class="header-logo">
+            <a class="header-logo-link" href="/">
+                <img src="/s/public/images/site/header-logo.png" alt="" width="294" height="131"/>
+            </a>
+        </div>
+        <div class="header-sign">Мы не продаем итальянскую мебель,<br/> мы помогаем ее купить</div></div>
+    <div class="header-right-box">
+        <a class="sell-img" href="/sale">
+            <img src="/s/public/images/site/sell-img.png" alt="" width="188" height="65"/>
+        </a>
+        <div class="header-main-box negative-bot-indent"><div id="headerCities" class="header-cities"><div class="header-cities-item clicked clicked">
+            <span class="header-cities-item-text">Севастополь</span>
+            <div class="header-cities-item-box">
+                <span class="header-cities-item-info">ул. Дмитрия Ульянова, 2</span>
+                <span class="header-cities-item-info"></span>
+                <span class="header-cities-item-info">+7 9782 074 144</span>
+            </div>
+        </div></div></div>
+    </div>
+    <div class="clear"></div>
+</div>                    <div class="content">
+                        <div class="breadcrumbs"><div class="breadcrumbs-item" itemscope="" itemtype="http://data-vocabulary.org/Breadcrumb"><a href="/" itemprop="url"><span itemprop="title">Главная</span></a></div><div class="breadcrumbs-sep">/</div><div class="breadcrumbs-item" itemscope="" itemtype="http://data-vocabulary.org/Breadcrumb"><span itemprop="title">Каталог</span></div><div class="clear"></div>
+</div><div class="content-main-title">Каталог</div>
+<div class="clear"></div><div class="items-holder" style="position: relative"><div id="category-filter" class="dd-choose-item rm-dd-item"><div class="dd-choose-item-btn">
+    <span class="dd-choose-item-main-text">Спальни</span>
+    <i class="ico ico-marker"></i>
+</div><div class="dd-choose-item-box rm-dd-item-box">
+        <div class="go-to-all-link-container">
+            <a href="javascript:void(0);" class="all-items-link">Все категории</a>
+            <span class="all-items-count-text">
+                <span data-count>829</span> <span data-text>товаров</span>
+            </span>
+            <div class="clear"></div>
+        </div>
+        <ul><li class="dd-choose-item-unit-box" data-alias="stolovye-komnaty">
+                    <span class="dd-choose-item-unit">
+                        <span class="dd-choose-item-unit-name red">Столовые комнаты</span>
+                        <span class="dd-choose-item-count">(<span>308</span>)</span>
+                    </span>
+                </li><li class="dd-choose-item-unit-box" data-alias="stulya">
+                    <span class="dd-choose-item-unit">
+                        <span class="dd-choose-item-unit-name red">Стулья</span>
+                        <span class="dd-choose-item-count">(<span>81</span>)</span>
+                    </span>
+                </li><li class="clear"></li><li class="dd-choose-item-unit-box" data-alias="prihozie">
+                    <span class="dd-choose-item-unit">
+                        <span class="dd-choose-item-unit-name red">Прихожие</span>
+                        <span class="dd-choose-item-count">(<span>91</span>)</span>
+                    </span>
+                </li><li class="dd-choose-item-unit-box" data-alias="kabinety">
+                    <span class="dd-choose-item-unit">
+                        <span class="dd-choose-item-unit-name red">Кабинеты</span>
+                        <span class="dd-choose-item-count">(<span>53</span>)</span>
+                    </span>
+                </li><li class="clear"></li><li class="dd-choose-item-unit-box" data-alias="myagkaya-mebel">
+                    <span class="dd-choose-item-unit">
+                        <span class="dd-choose-item-unit-name red">Мягкая мебель</span>
+                        <span class="dd-choose-item-count">(<span>59</span>)</span>
+                    </span>
+                </li><li class="dd-choose-item-unit-box" data-alias="gostinye">
+                    <span class="dd-choose-item-unit">
+                        <span class="dd-choose-item-unit-name red">Гостиные</span>
+                        <span class="dd-choose-item-count">(<span>371</span>)</span>
+                    </span>
+                </li><li class="clear"></li><li class="dd-choose-item-unit-box" data-alias="aksessuary">
+                    <span class="dd-choose-item-unit">
+                        <span class="dd-choose-item-unit-name red">Аксессуары</span>
+                        <span class="dd-choose-item-count">(<span>103</span>)</span>
+                    </span>
+                </li><li class="dd-choose-item-unit-box current" data-alias="spalni">
+                    <span class="dd-choose-item-unit">
+                        <span class="dd-choose-item-unit-name red">Спальни</span>
+                        <span class="dd-choose-item-count">(<span>173</span>)</span>
+                    </span>
+                </li><li class="clear"></li><li class="dd-choose-item-unit-box" data-alias="mebel-dlya-tv">
+                    <span class="dd-choose-item-unit">
+                        <span class="dd-choose-item-unit-name red">Мебель для TV</span>
+                        <span class="dd-choose-item-count">(<span>31</span>)</span>
+                    </span>
+                </li><li class="dd-choose-item-unit-box" data-alias="mebel-dlya-kafe-i-restoranov">
+                    <span class="dd-choose-item-unit">
+                        <span class="dd-choose-item-unit-name red">Мебель для кафе и ресторанов</span>
+                        <span class="dd-choose-item-count">(<span>3</span>)</span>
+                    </span>
+                </li><li class="clear"></li><li class="dd-choose-item-unit-box" data-alias="detskaya-mebel-italii">
+                    <span class="dd-choose-item-unit">
+                        <span class="dd-choose-item-unit-name red">Детская мебель Италии</span>
+                        <span class="dd-choose-item-count">(<span>14</span>)</span>
+                    </span>
+                </li><li class="dd-choose-item-unit-box" data-alias="vannye-komnaty">
+                    <span class="dd-choose-item-unit">
+                        <span class="dd-choose-item-unit-name red">Ванные комнаты</span>
+                        <span class="dd-choose-item-count">(<span>11</span>)</span>
+                    </span>
+                </li><li class="clear"></li></ul>
+    </div>
+</div><div id="factory-filter" class="dd-choose-item rm-dd-item"><div class="dd-choose-item-btn">
+    <span class="dd-choose-item-main-text">Фабрики</span>
+    <i class="ico ico-marker"></i>
+</div><div class="dd-choose-item-box rm-dd-item-box"><ul class="letter-choose-list"><li class="letter-choose-item current">
+            <span>A</span>
+        </li><li class="letter-choose-item">
+            <span>B</span>
+        </li><li class="letter-choose-item">
+            <span>C</span>
+        </li><li class="letter-choose-item">
+            <span>D</span>
+        </li><li class="letter-choose-item">
+            <span>E</span>
+        </li><li class="letter-choose-item">
+            <span>F</span>
+        </li><li class="letter-choose-item">
+            <span>G</span>
+        </li><li class="letter-choose-item">
+            <span>H</span>
+        </li><li class="letter-choose-item">
+            <span>I</span>
+        </li><li class="letter-choose-item">
+            <span>J</span>
+        </li><li class="letter-choose-item">
+            <span>K</span>
+        </li><li class="letter-choose-item">
+            <span>L</span>
+        </li><li class="letter-choose-item">
+            <span>M</span>
+        </li><li class="letter-choose-item">
+            <span>N</span>
+        </li><li class="letter-choose-item">
+            <span>O</span>
+        </li><li class="letter-choose-item">
+            <span>P</span>
+        </li><li class="letter-choose-item">
+            <span>R</span>
+        </li><li class="letter-choose-item">
+            <span>S</span>
+        </li><li class="letter-choose-item">
+            <span>T</span>
+        </li><li class="letter-choose-item">
+            <span>U</span>
+        </li><li class="letter-choose-item">
+            <span>V</span>
+        </li><li class="letter-choose-item">
+            <span>Z</span>
+        </li><li class="clear"></li>
+</ul><ul><li class="dd-choose-item-unit-box" data-id="220">
+            <span class="dd-choose-item-unit">
+                <input type="checkbox" class="input-checkbox" id="manufacturer_220"/>
+                <label class="label-text" for="manufacturer_220">
+                    <span class="dd-choose-item-unit-name">A.R.ARREDAMENTI</span>
+                    <span class="dd-choose-item-count">(<span>60</span>)</span>
+                </label>
+            </span>
+        </li><li class="dd-choose-item-unit-box" data-id="303">
+            <span class="dd-choose-item-unit">
+                <input type="checkbox" class="input-checkbox" id="manufacturer_303"/>
+                <label class="label-text" for="manufacturer_303">
+                    <span class="dd-choose-item-unit-name">ALBERTA</span>
+                    <span class="dd-choose-item-count">(<span>7</span>)</span>
+                </label>
+            </span>
+        </li><li class="clear"></li><li class="dd-choose-item-unit-box" data-id="288">
+            <span class="dd-choose-item-unit">
+                <input type="checkbox" class="input-checkbox" id="manufacturer_288"/>
+                <label class="label-text" for="manufacturer_288">
+                    <span class="dd-choose-item-unit-name">ALCHYMIA</span>
+                    <span class="dd-choose-item-count">(<span>20</span>)</span>
+                </label>
+            </span>
+        </li><li class="dd-choose-item-unit-box" data-id="254">
+            <span class="dd-choose-item-unit">
+                <input type="checkbox" class="input-checkbox" id="manufacturer_254"/>
+                <label class="label-text" for="manufacturer_254">
+                    <span class="dd-choose-item-unit-name">ALF</span>
+                    <span class="dd-choose-item-count">(<span>134</span>)</span>
+                </label>
+            </span>
+        </li><li class="clear"></li><li class="dd-choose-item-unit-box" data-id="81">
+            <span class="dd-choose-item-unit">
+                <input type="checkbox" class="input-checkbox" id="manufacturer_81"/>
+                <label class="label-text" for="manufacturer_81">
+                    <span class="dd-choose-item-unit-name">ALTA MODA</span>
+                    <span class="dd-choose-item-count">(<span>16</span>)</span>
+                </label>
+            </span>
+        </li><li class="dd-choose-item-unit-box" data-id="209">
+            <span class="dd-choose-item-unit">
+                <input type="checkbox" class="input-checkbox" id="manufacturer_209"/>
+                <label class="label-text" for="manufacturer_209">
+                    <span class="dd-choose-item-unit-name">AMELIHOME</span>
+                    <span class="dd-choose-item-count">(<span>30</span>)</span>
+                </label>
+            </span>
+        </li><li class="clear"></li><li class="dd-choose-item-unit-box" data-id="112">
+            <span class="dd-choose-item-unit">
+                <input type="checkbox" class="input-checkbox" id="manufacturer_112"/>
+                <label class="label-text" for="manufacturer_112">
+                    <span class="dd-choose-item-unit-name">ANDREA FANFANI</span>
+                    <span class="dd-choose-item-count">(<span>132</span>)</span>
+                </label>
+            </span>
+        </li><li class="dd-choose-item-unit-box" data-id="104">
+            <span class="dd-choose-item-unit">
+                <input type="checkbox" class="input-checkbox" id="manufacturer_104"/>
+                <label class="label-text" for="manufacturer_104">
+                    <span class="dd-choose-item-unit-name">ANTICO BORGO</span>
+                    <span class="dd-choose-item-count">(<span>91</span>)</span>
+                </label>
+            </span>
+        </li><li class="clear"></li><li class="dd-choose-item-unit-box" data-id="51">
+            <span class="dd-choose-item-unit">
+                <input type="checkbox" class="input-checkbox" id="manufacturer_51"/>
+                <label class="label-text" for="manufacturer_51">
+                    <span class="dd-choose-item-unit-name">ANTONELLI MORAVIO</span>
+                    <span class="dd-choose-item-count">(<span>108</span>)</span>
+                </label>
+            </span>
+        </li><li class="dd-choose-item-unit-box" data-id="4">
+            <span class="dd-choose-item-unit">
+                <input type="checkbox" class="input-checkbox" id="manufacturer_4"/>
+                <label class="label-text" for="manufacturer_4">
+                    <span class="dd-choose-item-unit-name">ARCA</span>
+                    <span class="dd-choose-item-count">(<span>81</span>)</span>
+                </label>
+            </span>
+        </li><li class="clear"></li><li class="dd-choose-item-unit-box" data-id="215">
+            <span class="dd-choose-item-unit">
+                <input type="checkbox" class="input-checkbox" id="manufacturer_215"/>
+                <label class="label-text" for="manufacturer_215">
+                    <span class="dd-choose-item-unit-name">ARKETIPO</span>
+                    <span class="dd-choose-item-count">(<span>1</span>)</span>
+                </label>
+            </span>
+        </li><li class="dd-choose-item-unit-box" data-id="280">
+            <span class="dd-choose-item-unit">
+                <input type="checkbox" class="input-checkbox" id="manufacturer_280"/>
+                <label class="label-text" for="manufacturer_280">
+                    <span class="dd-choose-item-unit-name">ARTE ANTIQUA</span>
+                    <span class="dd-choose-item-count">(<span>48</span>)</span>
+                </label>
+            </span>
+        </li><li class="clear"></li><li class="dd-choose-item-unit-box" data-id="262">
+            <span class="dd-choose-item-unit">
+                <input type="checkbox" class="input-checkbox" id="manufacturer_262"/>
+                <label class="label-text" for="manufacturer_262">
+                    <span class="dd-choose-item-unit-name">ARTE BROTTO</span>
+                    <span class="dd-choose-item-count">(<span>64</span>)</span>
+                </label>
+            </span>
+        </li><li class="dd-choose-item-unit-box" data-id="119">
+            <span class="dd-choose-item-unit">
+                <input type="checkbox" class="input-checkbox" id="manufacturer_119"/>
+                <label class="label-text" for="manufacturer_119">
+                    <span class="dd-choose-item-unit-name">ARTEARREDO</span>
+                    <span class="dd-choose-item-count">(<span>33</span>)</span>
+                </label>
+            </span>
+        </li><li class="clear"></li><li class="dd-choose-item-unit-box" data-id="52">
+            <span class="dd-choose-item-unit">
+                <input type="checkbox" class="input-checkbox" id="manufacturer_52"/>
+                <label class="label-text" for="manufacturer_52">
+                    <span class="dd-choose-item-unit-name">ASNAGHI INTERIORS</span>
+                    <span class="dd-choose-item-count">(<span>50</span>)</span>
+                </label>
+            </span>
+        </li><li class="dd-choose-item-unit-box" data-id="235">
+            <span class="dd-choose-item-unit">
+                <input type="checkbox" class="input-checkbox" id="manufacturer_235"/>
+                <label class="label-text" for="manufacturer_235">
+                    <span class="dd-choose-item-unit-name">ATMOSPHERA</span>
+                    <span class="dd-choose-item-count">(<span>29</span>)</span>
+                </label>
+            </span>
+        </li><li class="clear"></li><li class="dd-choose-item-unit-box" data-id="242">
+            <span class="dd-choose-item-unit">
+                <input type="checkbox" class="input-checkbox" id="manufacturer_242"/>
+                <label class="label-text" for="manufacturer_242">
+                    <span class="dd-choose-item-unit-name">AVENANTI</span>
+                    <span class="dd-choose-item-count">(<span>62</span>)</span>
+                </label>
+            </span>
+        </li></ul>
+<div class="clear"></div>
+<div class="dd-choose-item-btn-container">
+    <button class="main-btn small no-shadow">Применить</button>
+    <span class="cancel-link">Очистить все</span>
+</div></div>
+</div><div id="type-filter" class="dd-choose-item rm-dd-item"><div class="dd-choose-item-btn">
+    <span class="dd-choose-item-main-text">Тип предмета</span>
+    <i class="ico ico-marker"></i>
+</div><div class="dd-choose-item-box rm-dd-item-box"><ul><li class="dd-choose-item-unit-box" data-id="29">
+            <span class="dd-choose-item-unit">
+                <input type="checkbox" class="input-checkbox" id="type_29"/>
+                <label class="label-text" for="type_29">
+                    <span class="dd-choose-item-unit-name">Банкетка</span>
+                    <span class="dd-choose-item-count">(<span>6</span>)</span>
+                </label>
+            </span>
+        </li><li class="dd-choose-item-unit-box" data-id="13">
+            <span class="dd-choose-item-unit">
+                <input type="checkbox" class="input-checkbox" id="type_13"/>
+                <label class="label-text" for="type_13">
+                    <span class="dd-choose-item-unit-name">Зеркало</span>
+                    <span class="dd-choose-item-count">(<span>46</span>)</span>
+                </label>
+            </span>
+        </li><li class="clear"></li><li class="dd-choose-item-unit-box" data-id="7">
+            <span class="dd-choose-item-unit">
+                <input type="checkbox" class="input-checkbox" id="type_7"/>
+                <label class="label-text" for="type_7">
+                    <span class="dd-choose-item-unit-name">Комод</span>
+                    <span class="dd-choose-item-count">(<span>32</span>)</span>
+                </label>
+            </span>
+        </li><li class="dd-choose-item-unit-box" data-id="49">
+            <span class="dd-choose-item-unit">
+                <input type="checkbox" class="input-checkbox" id="type_49"/>
+                <label class="label-text" for="type_49">
+                    <span class="dd-choose-item-unit-name">Кровать</span>
+                    <span class="dd-choose-item-count">(<span>27</span>)</span>
+                </label>
+            </span>
+        </li><li class="clear"></li><li class="dd-choose-item-unit-box" data-id="55">
+            <span class="dd-choose-item-unit">
+                <input type="checkbox" class="input-checkbox" id="type_55"/>
+                <label class="label-text" for="type_55">
+                    <span class="dd-choose-item-unit-name">Рама под TV</span>
+                    <span class="dd-choose-item-count">(<span>16</span>)</span>
+                </label>
+            </span>
+        </li><li class="dd-choose-item-unit-box" data-id="50">
+            <span class="dd-choose-item-unit">
+                <input type="checkbox" class="input-checkbox" id="type_50"/>
+                <label class="label-text" for="type_50">
+                    <span class="dd-choose-item-unit-name">Туалетный столик</span>
+                    <span class="dd-choose-item-count">(<span>2</span>)</span>
+                </label>
+            </span>
+        </li><li class="clear"></li><li class="dd-choose-item-unit-box" data-id="48">
+            <span class="dd-choose-item-unit">
+                <input type="checkbox" class="input-checkbox" id="type_48"/>
+                <label class="label-text" for="type_48">
+                    <span class="dd-choose-item-unit-name">Тумбочка</span>
+                    <span class="dd-choose-item-count">(<span>22</span>)</span>
+                </label>
+            </span>
+        </li><li class="dd-choose-item-unit-box" data-id="60">
+            <span class="dd-choose-item-unit">
+                <input type="checkbox" class="input-checkbox" id="type_60"/>
+                <label class="label-text" for="type_60">
+                    <span class="dd-choose-item-unit-name">Ширма</span>
+                    <span class="dd-choose-item-count">(<span>1</span>)</span>
+                </label>
+            </span>
+        </li><li class="clear"></li><li class="dd-choose-item-unit-box" data-id="15">
+            <span class="dd-choose-item-unit">
+                <input type="checkbox" class="input-checkbox" id="type_15"/>
+                <label class="label-text" for="type_15">
+                    <span class="dd-choose-item-unit-name">Шкаф</span>
+                    <span class="dd-choose-item-count">(<span>21</span>)</span>
+                </label>
+            </span>
+        </li></ul>
+<div class="clear"></div>
+<div class="dd-choose-item-btn-container">
+    <button class="main-btn small no-shadow">Применить</button>
+    <span class="cancel-link">Очистить все</span>
+</div></div>
+</div><div id="style-filter" class="dd-choose-item rm-dd-item last"><div class="dd-choose-item-btn">
+    <span class="dd-choose-item-main-text">Стиль</span>
+    <i class="ico ico-marker"></i>
+</div><div class="dd-choose-item-box rm-dd-item-box"><ul><li class="dd-choose-item-unit-box" data-id="1">
+            <span class="dd-choose-item-unit">
+                <input type="checkbox" class="input-checkbox" id="style_1"/>
+                <label class="label-text" for="style_1">
+                    <span class="dd-choose-item-unit-name">современный</span>
+                    <span class="dd-choose-item-count">(<span>46</span>)</span>
+                </label>
+            </span>
+        </li><li class="dd-choose-item-unit-box" data-id="3">
+            <span class="dd-choose-item-unit">
+                <input type="checkbox" class="input-checkbox" id="style_3"/>
+                <label class="label-text" for="style_3">
+                    <span class="dd-choose-item-unit-name">арт деко, гламур</span>
+                    <span class="dd-choose-item-count">(<span>26</span>)</span>
+                </label>
+            </span>
+        </li><li class="clear"></li><li class="dd-choose-item-unit-box" data-id="4">
+            <span class="dd-choose-item-unit">
+                <input type="checkbox" class="input-checkbox" id="style_4"/>
+                <label class="label-text" for="style_4">
+                    <span class="dd-choose-item-unit-name">классика</span>
+                    <span class="dd-choose-item-count">(<span>39</span>)</span>
+                </label>
+            </span>
+        </li><li class="dd-choose-item-unit-box" data-id="9">
+            <span class="dd-choose-item-unit">
+                <input type="checkbox" class="input-checkbox" id="style_9"/>
+                <label class="label-text" for="style_9">
+                    <span class="dd-choose-item-unit-name">прованс</span>
+                    <span class="dd-choose-item-count">(<span>62</span>)</span>
+                </label>
+            </span>
+        </li><li class="clear"></li></ul>
+<div class="clear"></div>
+<div class="dd-choose-item-btn-container">
+    <button class="main-btn small no-shadow">Применить</button>
+    <span class="cancel-link">Очистить все</span>
+</div></div>
+</div><div class="clear"></div><div id="series-filter" class="dd-choose-item rm-dd-item"><div class="dd-choose-item-btn">
+    <span class="dd-choose-item-main-text">Коллекции</span>
+    <i class="ico ico-marker"></i>
+</div><div class="dd-choose-item-box rm-dd-item-box"><ul class="letter-choose-list"><li class="letter-choose-item current">
+            <span>A</span>
+        </li><li class="letter-choose-item">
+            <span>C</span>
+        </li><li class="letter-choose-item">
+            <span>D</span>
+        </li><li class="letter-choose-item">
+            <span>G</span>
+        </li><li class="letter-choose-item">
+            <span>I</span>
+        </li><li class="letter-choose-item">
+            <span>L</span>
+        </li><li class="clear"></li>
+</ul><ul><li class="dd-choose-item-unit-box" data-id="971">
+            <span class="dd-choose-item-unit">
+                <input type="checkbox" class="input-checkbox" id="series_971"/>
+                <label class="label-text" for="series_971">
+                    <span class="dd-choose-item-unit-name">ALL AROUND THE WORLD</span>
+                    <span class="dd-choose-item-count">(<span>3</span>)</span>
+                </label>
+            </span>
+        </li><li class="dd-choose-item-unit-box" data-id="987">
+            <span class="dd-choose-item-unit">
+                <input type="checkbox" class="input-checkbox" id="series_987"/>
+                <label class="label-text" for="series_987">
+                    <span class="dd-choose-item-unit-name">ARC EN CIEL</span>
+                    <span class="dd-choose-item-count">(<span>20</span>)</span>
+                </label>
+            </span>
+        </li><li class="clear"></li></ul>
+<div class="clear"></div>
+<div class="dd-choose-item-btn-container">
+    <button class="main-btn small no-shadow">Применить</button>
+    <span class="cancel-link">Очистить все</span>
+</div></div>
+</div><div id="material-filter" class="dd-choose-item rm-dd-item small"><div class="dd-choose-item-btn">
+    <span class="dd-choose-item-main-text">Материал</span>
+    <i class="ico ico-marker"></i>
+</div><div class="dd-choose-item-box rm-dd-item-box"><ul></ul>
+<div class="clear"></div>
+<div class="dd-choose-item-btn-container">
+    <button class="main-btn small no-shadow">Применить</button>
+    <span class="cancel-link">Очистить все</span>
+</div></div>
+</div><div id="form-type-filter" class="dd-choose-item rm-dd-item small"><div class="dd-choose-item-btn">
+    <span class="dd-choose-item-main-text">Тип формы</span>
+    <i class="ico ico-marker"></i>
+</div><div class="dd-choose-item-box rm-dd-item-box">
+        <ul></ul>
+    </div>
+</div><div id="price-filter" class="dd-choose-item rm-dd-item small last">
+    <div class="dd-choose-item-btn">
+        <span class="dd-choose-item-main-text">Диапазон цен</span>
+        <i class="ico ico-marker"></i>
+    </div>
+    <div class="dd-choose-item-box price-dd-box rm-dd-item-box">
+        <div id="price-range-filter" class="catalog-price-filter-container">
+            <input class="price-input numeric" type="text" placeholder="Цена, от" value=""/>
+            <input class="price-input numeric" type="text" placeholder="Цена, до" value=""/>
+            <input type="submit" value="Применить" class="main-btn no-shadow small"/>
+            <div class="clear"></div>
+        </div>
+    </div>
+</div><div class="clear"></div><div id="size-filter" class="dd-choose-item rm-dd-item small">
+    <div class="dd-choose-item-btn">
+        <span class="dd-choose-item-main-text">Размеры</span>
+        <i class="ico ico-marker"></i>
+    </div>
+    <div class="dd-choose-item-box rm-dd-item-box">
+        <p class="dd-choose-item-box-title">Укажите параметры в сантиметрах</p><div class="dd-size-item" data-desc="length">
+                <span class="dd-size-item-text">Длина</span>
+                <div class="dd-size-item-inputs">
+                    <input class="dd-size-item-input numeric" type="text" placeholder="от" value=""/>
+                    <input class="dd-size-item-input numeric" type="text" placeholder="до" value=""/>
+                </div>
+                <i class="ico ico-filter-del" title="Удалить"></i>
+            </div><div class="dd-size-item" data-desc="depth">
+                <span class="dd-size-item-text">Глубина</span>
+                <div class="dd-size-item-inputs">
+                    <input class="dd-size-item-input numeric" type="text" placeholder="от" value=""/>
+                    <input class="dd-size-item-input numeric" type="text" placeholder="до" value=""/>
+                </div>
+                <i class="ico ico-filter-del" title="Удалить"></i>
+            </div><div class="dd-size-item" data-desc="height">
+                <span class="dd-size-item-text">Высота</span>
+                <div class="dd-size-item-inputs">
+                    <input class="dd-size-item-input numeric" type="text" placeholder="от" value=""/>
+                    <input class="dd-size-item-input numeric" type="text" placeholder="до" value=""/>
+                </div>
+                <i class="ico ico-filter-del" title="Удалить"></i>
+            </div><div class="dd-size-item" data-desc="external_length">
+                <span class="dd-size-item-text">Внешняя длина</span>
+                <div class="dd-size-item-inputs">
+                    <input class="dd-size-item-input numeric" type="text" placeholder="от" value=""/>
+                    <input class="dd-size-item-input numeric" type="text" placeholder="до" value=""/>
+                </div>
+                <i class="ico ico-filter-del" title="Удалить"></i>
+            </div><div class="dd-size-item" data-desc="internal_length">
+                <span class="dd-size-item-text">Внутренняя длина</span>
+                <div class="dd-size-item-inputs">
+                    <input class="dd-size-item-input numeric" type="text" placeholder="от" value=""/>
+                    <input class="dd-size-item-input numeric" type="text" placeholder="до" value=""/>
+                </div>
+                <i class="ico ico-filter-del" title="Удалить"></i>
+            </div><div class="dd-size-item" data-desc="internal_depth">
+                <span class="dd-size-item-text">Внутренняя глубина</span>
+                <div class="dd-size-item-inputs">
+                    <input class="dd-size-item-input numeric" type="text" placeholder="от" value=""/>
+                    <input class="dd-size-item-input numeric" type="text" placeholder="до" value=""/>
+                </div>
+                <i class="ico ico-filter-del" title="Удалить"></i>
+            </div><div class="clear"></div>
+        <div class="dd-choose-item-btn-container small-indent">
+            <button class="main-btn small no-shadow">Применить</button>
+            <span class="cancel-link">Очистить все</span>
+        </div>
+    </div>
+</div><div class="category-filter-amount">
+    <div class="category-filter-amount-text">Количество</div>
+    <div id="on-page-filter" class="category-filter-amount-box"><button class="category-filter-amount-item first clicked" data-page="15">15</button><button class="category-filter-amount-item" data-page="30">30</button><button class="category-filter-amount-item last" data-page="90">90</button></div>
+    <div class="clear"></div>
+</div><div id="filter-chosen-items-block" class="checked-filter-items-container hide">
+    <div id="filter-chosen-items" class="checked-filter-item-list">
+        <div class="clear"></div>
+    </div>
+    <a id="filterResetButton" class="reset-filter-link" href="javascript:void(0);"><span>Сбросить все фильтры</span></a>
+    <div class="clear"></div>
+</div><hr class="filter-sep"/>
+<div class="clear"></div></div><div class="goods-list">
+    <div id="itemsContainer"><div class="goods-preview"><a class="goods-preview-box" href="/catalog/spalni/krovat-tonin-all-around-the-world-7860">
+        <span class="goods-preview-img">
+            <img src="/s/public/upload/main_images/7e4c/c447/571b/95ee/258b/e6ba/4304/9ec3.jpeg" alt=""/>
+        </span>
+        <span class="goods-preview-name">
+            <span>TONIN</span>
+        </span>
+    </a>
+    <span class="goods-preview-article">Артикул: 7860</span>
+</div><div class="goods-preview"><a class="goods-preview-box" href="/catalog/aksessuary/zerkalo-tonin-glamour_0-1393">
+        <span class="goods-preview-img">
+            <img src="/s/public/upload/main_images/6c08/827c/8245/a383/e157/11f2/126d/4758.jpeg" alt=""/>
+        </span>
+        <span class="goods-preview-name">
+            <span>TONIN</span>
+        </span>
+    </a>
+    <span class="goods-preview-article">Артикул: 1393</span>
+</div><div class="goods-preview last"><a class="goods-preview-box" href="/catalog/spalni/composition-tonin-glamour_0-19516">
+        <span class="goods-preview-img">
+            <img src="/s/public/upload/main_images/6ab6/37d3/8847/a327/18cb/21eb/7abc/5b72.jpeg" alt=""/>
+        </span>
+        <span class="goods-preview-name">
+            <span>TONIN</span>
+        </span>
+    </a>
+    <span class="goods-preview-article">Артикул: </span>
+</div><div class="clear"></div><div class="goods-preview"><a class="goods-preview-box" href="/catalog/spalni/tumbochka-tonin-life-style-7337">
+        <span class="goods-preview-img">
+            <img src="/s/public/upload/main_images/5b9d/b7dc/60b8/3c23/bb04/7016/34a1/b9e3.jpeg" alt=""/>
+        </span>
+        <span class="goods-preview-name">
+            <span>TONIN</span>
+        </span>
+    </a>
+    <span class="goods-preview-article">Артикул: 7337</span>
+</div><div class="goods-preview"><a class="goods-preview-box" href="/catalog/spalni/skaf-tonin-glamour_0-1377-3">
+        <span class="goods-preview-img">
+            <img src="/s/public/upload/main_images/b2db/b908/5cdf/47cd/2280/472c/4bda/ed46.jpeg" alt=""/>
+        </span>
+        <span class="goods-preview-name">
+            <span>TONIN</span>
+        </span>
+    </a>
+    <span class="goods-preview-article">Артикул: 1377/3</span>
+</div><div class="goods-preview last"><a class="goods-preview-box" href="/catalog/stolovye-komnaty/zerkalo-tonin-linea-bianca-7511">
+        <span class="goods-preview-img">
+            <img src="/s/public/upload/main_images/c3d2/0e97/a621/6b96/86fa/811e/4df7/2861.jpeg" alt=""/>
+        </span>
+        <span class="goods-preview-name">
+            <span>TONIN</span>
+        </span>
+    </a>
+    <span class="goods-preview-article">Артикул: 7511</span>
+</div><div class="clear"></div><div class="goods-preview"><a class="goods-preview-box" href="/catalog/spalni/krovat-tonin-glamour_0-1540">
+        <span class="goods-preview-img">
+            <img src="/s/public/upload/main_images/afc5/2201/416b/b901/73fc/747b/fcd6/6b07.jpeg" alt=""/>
+        </span>
+        <span class="goods-preview-name">
+            <span>TONIN</span>
+        </span>
+    </a>
+    <span class="goods-preview-article">Артикул: 1540</span>
+</div><div class="goods-preview"><a class="goods-preview-box" href="/catalog/spalni/krovat-tonin-glamour_0-1383">
+        <span class="goods-preview-img">
+            <img src="/s/public/upload/main_images/82a2/aedb/312b/29c5/35c1/0351/37e4/6d2e.jpeg" alt=""/>
+        </span>
+        <span class="goods-preview-name">
+            <span>TONIN</span>
+        </span>
+    </a>
+    <span class="goods-preview-article">Артикул: 1383</span>
+</div><div class="goods-preview last"><a class="goods-preview-box" href="/catalog/spalni/tumbochka-tonin-inspired-by-nature-aprile-2011-7337__1">
+        <span class="goods-preview-img">
+            <img src="/s/public/upload/main_images/634b/38c3/b43a/9c6b/291b/3fa2/f163/252a.jpeg" alt=""/>
+        </span>
+        <span class="goods-preview-name">
+            <span>TONIN</span>
+        </span>
+    </a>
+    <span class="goods-preview-article">Артикул: 7337__1</span>
+</div><div class="clear"></div><div class="goods-preview"><a class="goods-preview-box" href="/catalog/spalni/skaf-tonin-glamour_0-3939-3">
+        <span class="goods-preview-img">
+            <img src="/s/public/upload/main_images/c8f5/ef59/83f7/dec3/b273/588f/f869/21fb.jpeg" alt=""/>
+        </span>
+        <span class="goods-preview-name">
+            <span>TONIN</span>
+        </span>
+    </a>
+    <span class="goods-preview-article">Артикул: 3939/3</span>
+</div><div class="goods-preview"><a class="goods-preview-box" href="/catalog/spalni/tumbochka-tonin-life-style-8256">
+        <span class="goods-preview-img">
+            <img src="/s/public/upload/main_images/6216/8d5a/ca69/5d21/0ea5/2720/aa2b/cc46.jpeg" alt=""/>
+        </span>
+        <span class="goods-preview-name">
+            <span>TONIN</span>
+        </span>
+    </a>
+    <span class="goods-preview-article">Артикул: 8256</span>
+</div><div class="goods-preview last"><a class="goods-preview-box" href="/catalog/stolovye-komnaty/zerkalo-tonin-glamour_0-1511">
+        <span class="goods-preview-img">
+            <img src="/s/public/upload/main_images/4bfc/de7f/d6c5/0989/11a7/3664/a2ae/c8c2.jpeg" alt=""/>
+        </span>
+        <span class="goods-preview-name">
+            <span>TONIN</span>
+        </span>
+    </a>
+    <span class="goods-preview-article">Артикул: 1511</span>
+</div><div class="clear"></div><div class="goods-preview"><a class="goods-preview-box" href="/catalog/stolovye-komnaty/zerkalo-tonin-glamour_0-1506">
+        <span class="goods-preview-img">
+            <img src="/s/public/upload/main_images/19ab/3447/e060/a2cd/b86e/9ae8/7dc9/27e4.jpeg" alt=""/>
+        </span>
+        <span class="goods-preview-name">
+            <span>TONIN</span>
+        </span>
+    </a>
+    <span class="goods-preview-article">Артикул: 1506</span>
+</div><div class="goods-preview"><a class="goods-preview-box" href="/catalog/myagkaya-mebel/banketka-tonin-decor-1198__1">
+        <span class="goods-preview-img">
+            <img src="/s/public/upload/main_images/2db8/d374/ce6c/ddec/5bbd/3ade/3f31/9494.jpeg" alt=""/>
+        </span>
+        <span class="goods-preview-name">
+            <span>TONIN</span>
+        </span>
+    </a>
+    <span class="goods-preview-article">Артикул: 1198__1</span>
+</div><div class="goods-preview last"><a class="goods-preview-box" href="/catalog/spalni/komod-tonin-arc-en-ciel-1497__1">
+        <span class="goods-preview-img">
+            <img src="/s/public/upload/main_images/909d/bade/1019/b155/3f49/10d0/9fe8/356c.jpeg" alt=""/>
+        </span>
+        <span class="goods-preview-name">
+            <span>TONIN</span>
+        </span>
+    </a>
+    <span class="goods-preview-article">Артикул: 1497__1</span>
+</div><div class="clear"></div></div>
+    <div class="clear"></div><div id="paginator" class="pagination"><a data-page="1" class="pagination-item  current" href="/catalog/spalni?q=catalog/spalni&factories=114" onclick='return false;'>
+            <span>1</span>
+        </a><a data-page="2" class="pagination-item " href="/catalog/spalni?q=catalog/spalni&factories=114&page=2" onclick='return false;'>
+            <span>2</span>
+        </a><a data-page="3" class="pagination-item " href="/catalog/spalni?q=catalog/spalni&factories=114&page=3" onclick='return false;'>
+            <span>3</span>
+        </a><a data-page="4" class="pagination-item " href="/catalog/spalni?q=catalog/spalni&factories=114&page=4" onclick='return false;'>
+            <span>4</span>
+        </a><a data-page="5" class="pagination-item " href="/catalog/spalni?q=catalog/spalni&factories=114&page=5" onclick='return false;'>
+            <span>5</span>
+        </a><span class="pagination-item unstyled"><span>...</span></span><a data-page="12" class="pagination-item" href="/catalog/spalni?q=catalog/spalni&factories=114&page=12" onclick='return false;'>
+            <span>12</span>
+        </a><div class="clear"></div>
+</div></div>
+<script type="text/template" id="item-preview-template">
+    <a class="goods-preview-box" href="<%=itemUrl%>">
+        <span class="goods-preview-img">
+            <img src="<%=resizedPhotoPath%>" alt=""/>
+        </span>
+        <span class="goods-preview-name">
+            <span><%=itemName%></span>
+        </span>
+    </a>
+    <span class="goods-preview-article">Артикул: <%=article%></span>
+</script><script type="text/template" id="checkbox-item-template">
+    <span class="dd-choose-item-unit">
+        <input type="checkbox" class="input-checkbox" id="<%=id%>"<%
+            if (chosen ^ marked) {
+                %> checked="checked"<%
+            }
+        %>/>
+        <label class="label-text" for="<%=id%>">
+            <span class="dd-choose-item-unit-name"><%=name%></span>
+            <span class="dd-choose-item-count"> (<%=count%>)</span>
+        </label>
+    </span>
+</script><script type="text/template" id="list-item-template">
+    <span class="dd-choose-item-unit">
+        <span class="dd-choose-item-unit-name red"><%=name%></span>
+        <span class="dd-choose-item-count"> (<span><%=count%></span>) </span>
+    </span>
+</script>                    </div>
+                    <div class="clear"></div>
+                    <div class="seo-text-box">
+                        <div class="simple-text">
+                                                    </div>
+                    </div>
+                    <br />
+                    <div class="clear"></div>
+                    <div class="footer">
+    <div class="content-item-title">Адреса и контактные телефоны салонов</div><div class="footer-contacts"><div class="footer-contacts-item">
+                <div class="footer-contacts-title">Севастополь, Россия</div>
+                <div class="footer-contacts-text">ул. Дмитрия Ульянова, 2</div>
+                <div class="footer-contacts-text"></div>
+                <div class="footer-contacts-text">+7 9782 074 144</div>
+            </div><div class="clear"></div>
+</div><div class="footer-copyright">2026 © Старый Рим. Любое копирование материалов и изображений запрещено.</div>
+    <div class="footer-developer">
+        <div class="footer-developer-text">
+            Партнер сети: <a href="http://www.myarredo.ru/" target="_blank">www.myarredo.ru</a>
+        </div>
+    </div>
+    <div class="footer-img"></div>
+</div>                </div>
+            </div>
+        </div>
+        <div class="clear"></div><script type="text/javascript" src="/s/public/js/rimmebel.js"></script>
+<script type="text/javascript" src="/s/public/js/lib/jquery-1.11.0.min.js"></script>
+<script type="text/javascript" src="/s/public/js/lib/ext.js"></script>
+<script type="text/javascript" src="/s/public/js/lib/rm-select.js"></script>
+<script type="text/javascript" src="/s/public/js/lib/rm-popup.js"></script>
+<script type="text/javascript" src="/s/public/js/lib/underscore.js"></script>
+<script type="text/javascript" src="/s/public/js/lib/backbone.js"></script>
+<script type="text/javascript" src="/s/public/js/lib/colorbox/jquery.colorbox-min.js"></script>
+<script type="text/javascript" src="/s/public/js/lib/ui/jquery.ui.core.js"></script>
+<script type="text/javascript" src="/s/public/js/lib/ui/jquery.ui.widget.js"></script>
+<script type="text/javascript" src="/s/public/js/lib/ui/jquery.ui.menu.js"></script>
+<script type="text/javascript" src="/s/public/js/lib/ui/jquery.ui.position.js"></script>
+<script type="text/javascript" src="/s/public/js/lib/jquery.inputmask.js"></script>
+<script type="text/javascript" src="/s/public/js/lib/ui/jquery.ui.autocomplete.js"></script>
+<script type="text/javascript" src="/s/public/js/lib/jquery.form.js"></script>
+<script type="text/javascript" src="/s/public/js/lib/jquery.formrestrict.js"></script>
+<script type="text/javascript" src="/s/public/js/lib/jquery.serialize-object.js"></script>
+<script type="text/javascript" src="/s/public/js/lib/sisyphus.min.js"></script>
+<script type="text/javascript" src="/s/public/js/lib/jquery.validate.js"></script>
+<script type="text/javascript" src="/s/public/js/validation/rules.js"></script>
+<script type="text/javascript" src="/s/public/js/validation/phone.js"></script>
+<script type="text/javascript" src="/s/public/js/helpers/pluralize.js"></script>
+<script type="text/javascript" src="/s/public/js/item/model.js"></script>
+<script type="text/javascript" src="/s/public/js/item/view.js"></script>
+<script type="text/javascript" src="/s/public/js/item/search.js"></script>
+<script type="text/javascript" src="/s/public/js/item/filter-search.js"></script>
+<script type="text/javascript" src="/s/public/js/item/gallery.js"></script>
+<script type="text/javascript" src="/s/public/js/filter/item/model/abstract.js"></script>
+<script type="text/javascript" src="/s/public/js/filter/item/model/paginator.js"></script>
+<script type="text/javascript" src="/s/public/js/filter/item/model/option.js"></script>
+<script type="text/javascript" src="/s/public/js/filter/item/model/on-page.js"></script>
+<script type="text/javascript" src="/s/public/js/filter/item/model/list.js"></script>
+<script type="text/javascript" src="/s/public/js/filter/item/model/group/abstract.js"></script>
+<script type="text/javascript" src="/s/public/js/filter/item/model/group/option.js"></script>
+<script type="text/javascript" src="/s/public/js/filter/item/model/group/list.js"></script>
+<script type="text/javascript" src="/s/public/js/filter/item/model/group/list/category.js"></script>
+<script type="text/javascript" src="/s/public/js/filter/item/model/group/letter.js"></script>
+<script type="text/javascript" src="/s/public/js/filter/item/model/range.js"></script>
+<script type="text/javascript" src="/s/public/js/filter/item/collection/main.js"></script>
+<script type="text/javascript" src="/s/public/js/filter/item/collection/search.js"></script>
+<script type="text/javascript" src="/s/public/js/filter/item/collection/sub/chosen.js"></script>
+<script type="text/javascript" src="/s/public/js/filter/item/collection/sub/option.js"></script>
+<script type="text/javascript" src="/s/public/js/filter/item/collection/sub/list.js"></script>
+<script type="text/javascript" src="/s/public/js/filter/item/view/abstract/item.js"></script>
+<script type="text/javascript" src="/s/public/js/filter/item/view/abstract/openable.js"></script>
+<script type="text/javascript" src="/s/public/js/filter/item/view/abstract/group.js"></script>
+<script type="text/javascript" src="/s/public/js/filter/item/view/checkbox/item.js"></script>
+<script type="text/javascript" src="/s/public/js/filter/item/view/checkbox/group.js"></script>
+<script type="text/javascript" src="/s/public/js/filter/item/view/checkbox/group-letter.js"></script>
+<script type="text/javascript" src="/s/public/js/filter/item/view/list/item.js"></script>
+<script type="text/javascript" src="/s/public/js/filter/item/view/list/group.js"></script>
+<script type="text/javascript" src="/s/public/js/filter/item/view/list/category.js"></script>
+<script type="text/javascript" src="/s/public/js/filter/item/view/input-range/item.js"></script>
+<script type="text/javascript" src="/s/public/js/filter/item/view/input-range/price.js"></script>
+<script type="text/javascript" src="/s/public/js/filter/item/view/paginator.js"></script>
+<script type="text/javascript" src="/s/public/js/filter/item/view/on-page.js"></script>
+<script type="text/javascript" src="/s/public/js/filter/item/view/chosen.js"></script>
+<script type="text/javascript" src="/s/public/js/filter/item/collection-view/filter-items.js"></script>
+<script type="text/javascript" src="/s/public/js/filter/item/collection-view/chosen.js"></script>
+<script type="text/javascript" src="/s/public/js/filter/item/collection-view/input-range.js"></script>
+<script type="text/javascript" src="/s/public/js/filter/container.js"></script>
+<script type="text/javascript" src="/s/public/js/filter/filter.js"></script>
+<script type="text/javascript" src="/s/public/js/manufacturer/loader.js"></script>
+<script type="text/javascript" src="/s/public/js/city/autocomplete.js"></script>
+<script type="text/javascript" src="/s/public/js/city/switcher.js"></script>
+<script type="text/javascript" src="/s/public/js/request/popup.js"></script>
+<script type="text/javascript" src="/s/public/js/common.js"></script>
+<script type="text/javascript">
+    //<!--
+    $(function() {
+        R.Filter.initFilters(
+            '/catalog',
+            '/item-ajax/filter',
+            '/api/manufacturers',
+            {"category":{"alias":"spalni","name":"\u0421\u043f\u0430\u043b\u044c\u043d\u0438"},"factories":[{"id":114,"name":"TONIN"}],"types":[],"styles":[],"series":[],"materials":[]},
+            ''
+        );
+    })    //-->
+</script>
+<script type="text/javascript">
+    //<!--
+    $(function() {
+        R.ItemSearch.init($('#itemSearchForm'), $('#searchSubmitButton'), '/search');
+    });    //-->
+</script>
+<script type="text/javascript">
+    //<!--
+    $(function() {
+        R.CitySwitcher.init($('#headerCities'));
+    });    //-->
+</script><div id="overlay"></div>
+        <!-- Yandex.Metrika counter -->
+        <script type="text/javascript">
+            (function(d, w, c) {
+                (w[c] = w[c] || []).push(function() {
+                    try {
+                        w.yaCounter25573541 = new Ya.Metrika({id: 25573541,
+                            webvisor: true,
+                            clickmap: true,
+                            trackLinks: true,
+                            accurateTrackBounce: true});
+                    } catch (e) {
+                    }
+                });
+
+                var n = d.getElementsByTagName("script")[0],
+                        s = d.createElement("script"),
+                        f = function() {
+                            n.parentNode.insertBefore(s, n);
+                        };
+                s.type = "text/javascript";
+                s.async = true;
+                s.src = (d.location.protocol == "https:" ? "https:" : "http:") + "//mc.yandex.ru/metrika/watch.js";
+
+                if (w.opera == "[object Opera]") {
+                    d.addEventListener("DOMContentLoaded", f, false);
+                } else {
+                    f();
+                }
+            })(document, window, "yandex_metrika_callbacks");
+        </script>
+        <noscript><div><img src="//mc.yandex.ru/watch/25573541" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
+        <!-- /Yandex.Metrika counter -->
+
+    </body>
+</html>
