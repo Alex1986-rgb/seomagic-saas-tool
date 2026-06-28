@@ -97,6 +97,12 @@ const rebind = (loc) => {
 
 // ---- обнаружение URL: sitemap → robots → BFS ----
 async function discover() {
+  // Явный список URL (--urls "u1,u2") — для сравнения одного и того же набора до/после оптимизации.
+  const urlsOpt = getOpt('--urls', '');
+  if (urlsOpt) {
+    const list = Array.from(new Set(urlsOpt.split(',').map((u) => rebind(u.trim())).filter(Boolean)));
+    SITEMAP_TOTAL = list.length; log(`Явный список: ${list.length} URL`); return list.slice(0, MAX);
+  }
   // В браузерном режиме каждый запрос дорогой (Chrome) — пропускаем попытки sitemap/robots
   // и сразу идём в BFS от стартовой страницы (1 загрузка даёт и контент, и ссылки).
   if (!BROWSER) {

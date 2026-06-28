@@ -519,6 +519,8 @@ async function pool(items, n, fn) { let i = 0, done = 0; await Promise.all(Array
           const ld = { '@context': 'https://schema.org', '@type': 'Product', name, image: [DEMO + bestImg.main], ...(brand ? { brand: { '@type': 'Brand', name: brand } } : {}) };
           c = c.replace(/<\/body>/i, `<script type="application/ld+json">${JSON.stringify(ld)}</script>\n</body>`);
         }
+        // og:image (абсолютный webp) — для соцсетей и SEO; если ещё нет
+        if (bestImg && !/property=["']og:image["']/i.test(c)) c = c.replace(/<\/head>/i, `<meta property="og:image" content="${DEMO}${bestImg.main}">\n</head>`);
         fs.writeFileSync(tf, c);
       }
       // CSS: фоновые url() → webp
