@@ -20,6 +20,8 @@ const CONC = Number(getOpt('--concurrency', 10)); // конкурентност�
 if (!START || !OUT || !process.argv[4]) { console.error('node scripts/site-clone.cjs <startUrl> <outDir> <demoBaseUrl> [--max N]'); process.exit(1); }
 
 const ORIGIN = new URL(START).origin;
+const HOST = new URL(START).hostname.replace(/^www\./i, ''); // нормализованный хост (www == без www)
+const sameHost = (u) => { try { return new URL(u).hostname.replace(/^www\./i, '') === HOST; } catch { return false; } };
 const base = START.endsWith('/') ? START : START + '/';
 const UA = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 Chrome/120.0 Safari/537.36';
 const log = (m) => process.stderr.write(m + '\n');
@@ -419,7 +421,7 @@ function rewriteRef(ref, pageUrl) {
   const scheme = (t.match(/^([a-z][a-z0-9+.-]*):/i) || [, ''])[1].toLowerCase();
   if (SKIP_SCHEMES.has(scheme)) return null;
   let abs; try { abs = new URL(t, pageUrl).toString(); } catch { return null; }
-  if (new URL(abs).origin !== ORIGIN) {
+  if (!sameHost(abs)) {
     // внешние ассеты: апгрейд http→https, оставляем как есть
     return abs.replace(/^http:\/\//i, 'https://');
   }
@@ -427,14 +429,30 @@ function rewriteRef(ref, pageUrl) {
   return DEMO + rel;
 }
 
+// Переписываем НАВИГАЦИОННУЮ <a>-ссылку: наш хост (вкл. www) → на DEMO-страницу; внешние оставляем.
+function rewritePageLink(href, pageUrl) {
+  const t = href.trim();
+  if (!t || t.startsWith('#')) return null;
+  const scheme = (t.match(/^([a-z][a-z0-9+.-]*):/i) || [, ''])[1].toLowerCase();
+  if (SKIP_SCHEMES.has(scheme)) return null;
+  let abs; try { abs = new URL(t, pageUrl).toString(); } catch { return null; }
+  if (!sameHost(abs)) return abs.replace(/^http:\/\//i, 'https://'); // внешняя ссылка — не трогаем (только https)
+  const u = new URL(abs);
+  return DEMO + u.pathname.replace(/^\/+/, '') + (u.hash || ''); // без query, локально на демо
+}
+
 function processHtmlRefs(html, pageUrl) {
   // lazy-load: поднимаем data-src/data-original/data-lazy-src → src, data-srcset → srcset
   // (реальный src ставит JS оригинала, которого офлайн нет → без этого картинки не появятся)
   html = html.replace(/\bdata-(?:src|original|lazy-src)=(["'])([^"']+)\1/gi, (m, q, u) => `src=${q}${u}${q} data-was-lazy="1"`);
   html = html.replace(/\bdata-srcset=(["'])([^"']+)\1/gi, (m, q, u) => `srcset=${q}${u}${q}`);
-  // src / href (кроме якорей навигации оставляем для ассетов; страничные ссылки тоже резолвим, но не качаем как ассет — пусть ведут на демо/оригинал)
+  // ассеты (img/script/source/link) src/href → локальные демо-пути
   html = html.replace(/(<(?:img|script|source|link)\b[^>]*?\b(?:src|href)=)(["'])([^"']+)\2/gi, (m, pre, q, url) => {
     const nu = rewriteRef(url, pageUrl); return nu ? `${pre}${q}${nu}${q}` : m;
+  });
+  // навигационные <a href> → на DEMO-страницы (чтобы не уводило на исходный сайт)
+  html = html.replace(/(<a\b[^>]*?\bhref=)(["'])([^"']+)\2/gi, (m, pre, q, url) => {
+    const nu = rewritePageLink(url, pageUrl); return nu ? `${pre}${q}${nu}${q}` : m;
   });
   // srcset
   html = html.replace(/\bsrcset=(["'])([^"']+)\1/gi, (m, q, val) => {
@@ -460,26 +478,45 @@ async function pool(items, n, fn) { let i = 0, done = 0; await Promise.all(Array
     urls = Array.from(sm.buf.toString().matchAll(/<loc>(.*?)<\/loc>/g), (m) => rebind(m[1].trim())).filter(Boolean);
     urls = Array.from(new Set(urls)).slice(0, MAX);
   }
-  // Не считаем страницами URL-ассеты (картинки/шрифты/медиа в sitemap) — иначе они сохранятся как пустые «страницы».
-  urls = urls.filter((u) => !/\.(jpe?g|png|gif|webp|svg|css|js|mjs|woff2?|ttf|eot|ico|pdf|zip|rar|7z|mp4|webm|avi|mov|xml|json|txt)(\?|$)/i.test(u));
+  const ASSET_RE = /\.(jpe?g|png|gif|webp|svg|css|js|mjs|woff2?|ttf|eot|ico|pdf|zip|rar|7z|mp4|webm|avi|mov|xml|json|txt)(\?|$)/i;
+  urls = urls.filter((u) => !ASSET_RE.test(u));
   if (!urls.length) urls = [START];
-  log(`Страниц: ${urls.length}`);
 
-  // 1) страницы: fetch → SEO-фикс → переписать ассеты → сохранить (конкурентно)
-  let brokenSrc = 0; const brokenList = [];
-  await pool(urls, CONC, async (u) => {
-    const r = await fetchRaw(u);
-    if (r.status < 200 || r.status >= 400) { log(`  ✗ ${u} (${r.status})`); return; }
-    const raw = r.buf.toString('utf8');
-    // Пропускаем битые страницы самого сайта (PHP Fatal/исключения, soft-404 с кодом 200) — не клонируем мусор.
-    if (/Fatal error|Uncaught exception|such alias does not exist/i.test(raw) || (!/<\/head>/i.test(raw) && raw.length < 2500)) {
-      brokenSrc++; if (brokenList.length < 500) brokenList.push(u); log(`  ⚠ битая страница источника: ${u}`); return;
-    }
-    let html = seoFix(u, raw);
-    html = processHtmlRefs(html, u);
-    const pu = new URL(u); let p = pu.pathname.replace(/^\/+/, ''); if (p === '' || p.endsWith('/')) p += 'index.html'; else if (!/\.html?$/i.test(p)) p += '/index.html';
-    const out = path.join(OUT, p); fs.mkdirSync(path.dirname(out), { recursive: true }); fs.writeFileSync(out, html);
-  });
+  // 1) BFS-обход: seed из sitemap + переход по внутренним <a>-ссылкам → клонируем ВСЕ достижимые страницы.
+  //    Дедуп по path (без query — фильтры/варианты схлопываются в каноническую страницу). Отключается --no-bfs.
+  const BFS = process.argv.indexOf('--no-bfs') < 0;
+  const seen = new Set(); const queue = [];
+  const pathKey = (u) => { try { return new URL(u).pathname.replace(/\/+$/, '') || '/'; } catch { return u; } };
+  const enqueue = (href, from) => {
+    let abs; try { abs = new URL(href, from || base).toString(); } catch { return; }
+    if (!sameHost(abs) || /[?#]/.test(abs) || ASSET_RE.test(abs)) return;
+    const r = rebind(abs); if (!r) return;
+    const k = pathKey(r); if (seen.has(k)) return; seen.add(k); queue.push(r);
+  };
+  for (const u of urls) enqueue(u, base);
+  log(`Seed-страниц: ${queue.length} (sitemap), BFS=${BFS ? 'вкл' : 'выкл'}`);
+
+  let brokenSrc = 0; const brokenList = []; let processed = 0;
+  while (queue.length && processed < MAX) {
+    const batch = queue.splice(0, CONC);
+    await Promise.all(batch.map(async (u) => {
+      const r = await fetchRaw(u);
+      if (r.status < 200 || r.status >= 400) { log(`  ✗ ${u} (${r.status})`); return; }
+      const raw = r.buf.toString('utf8');
+      if (/Fatal error|Uncaught exception|such alias does not exist/i.test(raw) || (!/<\/head>/i.test(raw) && raw.length < 2500)) {
+        brokenSrc++; if (brokenList.length < 1000) brokenList.push(u); return; // битая страница источника — не клонируем
+      }
+      // BFS: ставим в очередь внутренние ссылки ДО переписывания (из сырого html)
+      if (BFS && processed < MAX) for (const m of raw.matchAll(/<a\b[^>]*?\bhref=["']([^"'#]+)["']/gi)) enqueue(m[1], u);
+      let html = seoFix(u, raw);
+      html = processHtmlRefs(html, u);
+      const pu = new URL(u); let p = pu.pathname.replace(/^\/+/, ''); if (p === '' || p.endsWith('/')) p += 'index.html'; else if (!/\.html?$/i.test(p)) p += '/index.html';
+      const out = path.join(OUT, p); fs.mkdirSync(path.dirname(out), { recursive: true }); fs.writeFileSync(out, html);
+      processed++;
+    }));
+    if (processed % 100 < CONC) log(`  обход: сохранено ${processed}, в очереди ${queue.length}`);
+  }
+  log(`Всего сохранено страниц: ${processed}`);
   if (brokenSrc) { try { fs.writeFileSync(path.join(OUT, '_broken-source-pages.json'), JSON.stringify({ count: brokenSrc, urls: brokenList }, null, 2)); } catch {} log(`Битых страниц источника пропущено: ${brokenSrc}`); }
 
   // 1b) Дедуп title: товары-варианты с ОДИНАКОВЫМ названием → вставляем артикул из URL (+счётчик-гарант).
@@ -690,5 +727,5 @@ async function pool(items, n, fn) { let i = 0, done = 0; await Promise.all(Array
 
   const saved = fs.existsSync(OUT) ? require('child_process').execSync(`find ${OUT} -type f | wc -l`).toString().trim() : '0';
   const kb = (n) => Math.round(n / 1024);
-  console.log(JSON.stringify({ pages: urls.length, broken_source: brokenSrc, assets: assetMap.size, files: saved, img_opt: { files: imgOpt.files, converted: imgOpt.converted, variants: imgOpt.variants, kb_before: kb(imgOpt.before), kb_after: kb(imgOpt.after), saved_pct: imgOpt.before ? Math.round((1 - imgOpt.after / imgOpt.before) * 100) : 0 } }));
+  console.log(JSON.stringify({ pages: processed, broken_source: brokenSrc, assets: assetMap.size, files: saved, img_opt: { files: imgOpt.files, converted: imgOpt.converted, variants: imgOpt.variants, kb_before: kb(imgOpt.before), kb_after: kb(imgOpt.after), saved_pct: imgOpt.before ? Math.round((1 - imgOpt.after / imgOpt.before) * 100) : 0 } }));
 })();
