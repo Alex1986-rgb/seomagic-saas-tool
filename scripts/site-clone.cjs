@@ -108,7 +108,7 @@ function contentBlock(topic, html, pageUrl) {
   const col1 = faqs.slice(0, 4).map(faqItem).join('');
   const col2 = faqs.slice(4, 8).map(faqItem).join('');
 
-  const intro = `<p style="font-size:16px"><strong>${esc(topic)}</strong> — это сочетание продуманной эргономики, качественных материалов и выразительного дизайна. Мы помогаем оформить интерьер целостно: подбираем «${esc(tl)}» под площадь помещения, стиль и бюджет, с доставкой по всей России, профессиональной сборкой и гарантией.</p>`;
+  const intro = `<p class="smk-lead"><strong>${esc(topic)}</strong> — это сочетание продуманной эргономики, качественных материалов и выразительного дизайна. Мы помогаем оформить интерьер целостно: подбираем «${esc(tl)}» под площадь помещения, стиль и бюджет, с доставкой по всей России, профессиональной сборкой и гарантией.</p>`;
 
   const full = `
   ${itemsLine}
@@ -164,10 +164,34 @@ function contentBlock(topic, html, pageUrl) {
   <h3 style="font-size:19px;margin:24px 0 12px;color:#1a1a1a">Часто задаваемые вопросы</h3>
   <div style="display:flex;flex-wrap:wrap;gap:0 40px"><div style="flex:1;min-width:280px">${col1}</div><div style="flex:1;min-width:280px">${col2}</div></div>`;
 
-  return `<section data-seomarket="content" style="max-width:1100px;margin:40px auto;padding:28px 16px;border-top:2px solid #eee;font-family:Arial,Helvetica,sans-serif;line-height:1.7;color:#333">
-  <h2 style="font-size:25px;margin:0 0 16px;color:#1a1a1a">${esc(topic)}: материалы, механизмы, как выбрать</h2>
+  const style = `<style>
+  .smk-seo{max-width:1080px;margin:44px auto;padding:34px 30px;background:#fff;border:1px solid #ececec;border-radius:14px;font-family:'Helvetica Neue',Arial,sans-serif;color:#2b2b2b;line-height:1.78!important;box-shadow:0 8px 30px rgba(0,0,0,.06)}
+  .smk-seo h2{font-size:28px!important;font-weight:800!important;color:#1a1a1a!important;margin:0 0 6px!important;letter-spacing:-.4px!important}
+  .smk-seo .smk-kicker{color:#9c7a3c!important;font-weight:700!important;font-size:13px!important;text-transform:uppercase;letter-spacing:1.4px;margin:0 0 16px!important}
+  .smk-seo h3{font-size:19px!important;font-weight:700!important;color:#1a1a1a!important;margin:28px 0 10px!important;padding-left:13px!important;border-left:3px solid #9c7a3c!important}
+  .smk-seo p{margin:0 0 13px!important;color:#3a3a3a!important;font-size:15.5px!important}
+  .smk-seo .smk-lead{font-size:17.5px!important;color:#222!important;font-weight:500!important}
+  .smk-seo strong{color:#1a1a1a!important;font-weight:700!important}
+  .smk-seo a{color:#9c7a3c!important;text-decoration:none!important;border-bottom:1px solid rgba(156,122,60,.45)!important}
+  .smk-seo table{width:100%!important;border-collapse:separate!important;border-spacing:0!important;margin:18px 0!important;border:1px solid #e6e6e6!important;border-radius:10px!important;overflow:hidden!important}
+  .smk-seo th{background:#1a1a1a!important;color:#fff!important;padding:12px 14px!important;text-align:left!important;font-size:12.5px!important;text-transform:uppercase!important;letter-spacing:.5px!important}
+  .smk-seo td{padding:11px 14px!important;border:0!important;border-top:1px solid #eee!important;font-size:14.5px!important;color:#3a3a3a!important}
+  .smk-seo tbody tr:nth-child(even) td{background:#faf8f4!important}
+  .smk-seo details{border:1px solid #ececec!important;border-radius:10px!important;padding:12px 16px!important;margin:8px 0!important;background:#fafafa!important}
+  .smk-seo summary{cursor:pointer!important;font-weight:600!important;color:#1a1a1a!important;list-style:none!important}
+  .smk-seo summary::-webkit-details-marker{display:none}
+  .smk-seo .smk-more{border:0!important;background:transparent!important;padding:0!important;margin:8px 0 0!important}
+  .smk-seo .smk-more>summary{color:#9c7a3c!important;font-size:15px!important;font-weight:700!important}
+  .smk-seo .smk-callout{background:#faf8f4!important;border-left:4px solid #9c7a3c!important;border-radius:8px!important;padding:14px 18px!important;margin:16px 0!important}
+  .smk-seo .smk-callout p{margin:0!important;font-size:15px!important;color:#4a4030!important}
+  </style>`;
+  const callout = `<div class="smk-callout"><p><strong>Кратко:</strong> ${esc(topic)} — премиальные материалы (${esc(woods[0])}, ${esc(upholstery[0])}), наполнение (${esc(fillings[0])}, ${esc(fillings[1])}), изготовление на заказ, доставка по РФ и официальная гарантия.</p></div>`;
+  return `${style}<section data-seomarket="content" class="smk-seo">
+  <div class="smk-kicker">Каталог · Экспертный гид</div>
+  <h2>${esc(topic)}: материалы, механизмы и как выбрать</h2>
   ${intro}
-  <details data-seomarket="more" style="margin-top:6px"><summary style="cursor:pointer;color:#c0142b;font-weight:700;font-size:15px;list-style:none">Читать полностью ▾</summary>${full}</details>
+  ${callout}
+  <details data-seomarket="more" class="smk-more"><summary>Читать полностью ▾</summary>${full}</details>
   </section>`;
 }
 
@@ -280,9 +304,17 @@ function processHtmlRefs(html, pageUrl) {
 async function pool(items, n, fn) { let i = 0, done = 0; await Promise.all(Array.from({ length: n }, async () => { while (i < items.length) { await fn(items[i++]); if (++done % 30 === 0) log(`  ${done}/${items.length}`); } })); }
 
 (async () => {
-  const sm = await fetchRaw(new URL('sitemap.xml', base).toString());
-  let urls = Array.from(sm.buf.toString().matchAll(/<loc>(.*?)<\/loc>/g), (m) => rebind(m[1].trim())).filter(Boolean);
-  urls = Array.from(new Set(urls)).slice(0, MAX);
+  let urls;
+  const urlsOpt = getOpt('--urls', '');
+  if (urlsOpt) {
+    // Явный список URL (через запятую) — для демо конкретных страниц (категории + карточки товаров)
+    urls = urlsOpt.split(',').map((u) => rebind(u.trim())).filter(Boolean);
+    urls = Array.from(new Set(urls)).slice(0, MAX);
+  } else {
+    const sm = await fetchRaw(new URL('sitemap.xml', base).toString());
+    urls = Array.from(sm.buf.toString().matchAll(/<loc>(.*?)<\/loc>/g), (m) => rebind(m[1].trim())).filter(Boolean);
+    urls = Array.from(new Set(urls)).slice(0, MAX);
+  }
   if (!urls.length) urls = [START];
   log(`Страниц: ${urls.length}`);
 
