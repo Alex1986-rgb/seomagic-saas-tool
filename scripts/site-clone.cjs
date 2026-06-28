@@ -482,23 +482,29 @@ async function pool(items, n, fn) { let i = 0, done = 0; await Promise.all(Array
   });
   if (brokenSrc) { try { fs.writeFileSync(path.join(OUT, '_broken-source-pages.json'), JSON.stringify({ count: brokenSrc, urls: brokenList }, null, 2)); } catch {} log(`Битых страниц источника пропущено: ${brokenSrc}`); }
 
-  // 1b) Дедуп title: одинаковые <title> → добавляем уникальный суффикс из сегмента URL (рус. имя коллекции/модели).
+  // 1b) Дедуп title: товары-варианты с ОДИНАКОВЫМ названием → вставляем артикул из URL (+счётчик-гарант).
   {
     const walkH = (d, acc = []) => { for (const e of fs.readdirSync(d, { withFileTypes: true })) { const p = path.join(d, e.name); if (e.isDirectory()) walkH(p, acc); else if (/\.html?$/i.test(e.name)) acc.push(p); } return acc; };
     const htmls = walkH(OUT);
     const groups = {};
     for (const f of htmls) { const t = ((fs.readFileSync(f, 'utf8').match(/<title[^>]*>([\s\S]*?)<\/title>/i) || [, ''])[1] || '').replace(/\s+/g, ' ').trim(); (groups[t] = groups[t] || []).push(f); }
+    const seen = new Set();
+    for (const [t, files] of Object.entries(groups)) if (t && files.length === 1) seen.add(t); // уникальные резервируем
     let deduped = 0;
+    // Вставка различителя: перед " | " (если есть) либо в конец; артикул из последнего сегмента URL.
+    const insert = (title, suf) => title.includes(' | ') ? title.replace(' | ', ` ${suf} | `) : `${title} — ${suf}`;
     for (const [t, files] of Object.entries(groups)) {
       if (!t || files.length < 2) continue;
       for (const f of files) {
-        const seg = (path.relative(OUT, f).replace(/[\\/]index\.html?$/i, '').split(/[\\/]/).pop() || '').replace(/-[a-z0-9]{1,8}$/i, '').replace(/[-_]+/g, ' ').trim();
-        const suf = seg ? seg.charAt(0).toUpperCase() + seg.slice(1) : '';
-        if (!suf || t.toLowerCase().includes(suf.toLowerCase())) continue;
-        const nt = shortenTitle(`${t} — ${suf}`);
+        const seg = (path.relative(OUT, f).replace(/[\\/]index\.html?$/i, '').split(/[\\/]/).pop() || '');
+        const code = (seg.match(/(\d[a-z0-9_-]*)$/i) || [, ''])[1] || (seg.match(/[-_]([a-z0-9]{2,14})$/i) || [, ''])[1] || seg.replace(/[-_]+/g, ' ').trim();
+        let cand = shortenTitle(insert(t, code)); let k = 1;
+        while (seen.has(cand) && k < 60) cand = shortenTitle(insert(t, `${code} ${++k}`));
+        if (seen.has(cand)) cand = `${code}-${deduped + 1} ${t}`.slice(0, 64); // фолбэк: уникальный префикс
+        seen.add(cand);
         let h = fs.readFileSync(f, 'utf8');
-        h = h.replace(/<title[^>]*>[\s\S]*?<\/title>/i, `<title>${esc(nt)}</title>`)
-             .replace(/(<meta[^>]+property=["']og:title["'][^>]+content=["'])[^"']*(["'])/i, `$1${esc(nt)}$2`);
+        h = h.replace(/<title[^>]*>[\s\S]*?<\/title>/i, `<title>${esc(cand)}</title>`)
+             .replace(/(<meta[^>]+property=["']og:title["'][^>]+content=["'])[^"']*(["'])/i, `$1${esc(cand)}$2`);
         fs.writeFileSync(f, h); deduped++;
       }
     }
