@@ -214,7 +214,10 @@ async function crawlPage(url: string, domain: string): Promise<any> {
       transfer_size: response.headers.get('content-length') ? parseInt(response.headers.get('content-length')!) : null
     };
   } catch (error) {
-    if (url.includes('example.com') || url.includes('localhost')) {
+    let host = '';
+    try { host = new URL(url).hostname; } catch { /* невалидный URL */ }
+    const isTestHost = host === 'example.com' || host.endsWith('.example.com') || host === 'localhost' || host === '127.0.0.1';
+    if (isTestHost) {
       return { url, title: `Page: ${url}`, h1_count: 1, h1_text: 'Test', h2_count: 3, h3_count: 5,
         word_count: 500, image_count: 10, status_code: 200, is_indexable: true,
         page_type: detectPageType(url), internalLinks: [] };
@@ -702,13 +705,11 @@ serve(async (req) => {
     });
     
   } catch (error) {
-    console.error('Audit processor error:', error);
-    
+    // Детали логируем на сервере, клиенту — обобщённое сообщение (без стектрейса).
+    console.error('Audit processor error:', error instanceof Error ? error.stack : error);
+
     return new Response(
-      JSON.stringify({
-        error: error instanceof Error ? error.message : 'Unknown error',
-        details: error instanceof Error ? error.stack : undefined
-      }),
+      JSON.stringify({ error: 'Internal error while processing audit' }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }
