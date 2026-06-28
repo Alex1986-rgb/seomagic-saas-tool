@@ -5,6 +5,8 @@ import Footer from './Footer';
 import StarryBackground from './backgrounds/StarryBackground';
 import { cn } from '@/lib/utils';
 import { useLocation } from 'react-router-dom';
+import SeoTextBlock from './seo-text/SeoTextBlock';
+import { getSeoText } from './seo-text/getSeoText';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -32,6 +34,8 @@ const Layout: React.FC<LayoutProps> = ({
   const isAdminRoute = location.pathname.startsWith('/admin');
   const shouldHideNavbar = hideNavbar || isAdminRoute;
   const shouldHideFooter = hideFooter || isAdminRoute;
+  // SEO-текст показываем на публичных контентных страницах (не в админке, не на транзакционных)
+  const noSeoText = isAdminRoute || ['/auth', '/checkout', '/dashboard', '/profile', '/settings'].some((p) => location.pathname.startsWith(p));
 
   return (
     <div className={cn("flex flex-col min-h-screen relative", className)}>
@@ -45,7 +49,15 @@ const Layout: React.FC<LayoutProps> = ({
       <main className="flex-grow relative z-10 w-full">
         {children}
       </main>
-      
+
+      {!noSeoText && (
+        <div className="relative z-10 w-full border-t border-border bg-background/60">
+          <div className="container mx-auto px-4">
+            <SeoTextBlock data={getSeoText(location.pathname)} />
+          </div>
+        </div>
+      )}
+
       {!shouldHideFooter && <Footer />}
     </div>
   );

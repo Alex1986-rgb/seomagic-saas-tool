@@ -178,23 +178,9 @@ for (const [route, m] of Object.entries(M)) {
   const body = BODIES[route] || `<p>${esc(m.desc)}</p>`;
   // Контент для краулеров/первого экрана — внутри #root (React заменит при загрузке).
   // SEO-блок выносим ЗА #root, чтобы он оставался ВИДИМ пользователю после рендера React.
-  const seoStyle = `<style>
-  .seo-text-section{max-width:1100px;margin:0 auto;padding:24px;color:#aeb8c9;background:hsl(225 71% 8%);font-family:-apple-system,'Helvetica Neue',Arial,sans-serif;line-height:1.65;font-size:15px}
-  .seo-text-section h2{font-size:22px;font-weight:700;color:#fff;margin:28px 0 12px}
-  .seo-text-section h3{font-size:17px;font-weight:600;color:#e8edf5;margin:20px 0 8px}
-  .seo-text-section p{margin:0 0 12px}
-  .seo-text-section ul{margin:0 0 14px;padding-left:22px}
-  .seo-text-section li{margin:5px 0}
-  .seo-text-section summary{cursor:pointer;color:#ee7d18;font-weight:600;margin:10px 0;list-style:none}
-  .seo-text-section summary::-webkit-details-marker{display:none}
-  .seo-text-section table{width:100%;border-collapse:collapse;margin:16px 0;font-size:14px;display:table}
-  .seo-text-section thead{background:#15203a}
-  .seo-text-section th{border:1px solid #2a3550;padding:9px 12px;text-align:left;color:#fff;font-weight:600}
-  .seo-text-section td{border:1px solid #2a3550;padding:9px 12px;text-align:left;vertical-align:top}
-  .seo-text-section tr:nth-child(even) td{background:rgba(255,255,255,.02)}
-  </style>`;
-  const seoOutside = `${seoStyle}<aside class="seo-text-section">${seoBlock(m)}</aside>`;
-  html = html.replace(/<div id="root">\s*<\/div>/i, `<div id="root"><main><h1>${esc(m.h1)}</h1>${body}</main></div>\n${seoOutside}`);
+  // SEO-блок внутри #root — только для краулеров (первичный HTML). Видимый блок для
+  // пользователей рендерит React в Layout (перед футером, на всех страницах).
+  html = html.replace(/<div id="root">\s*<\/div>/i, `<div id="root"><main><h1>${esc(m.h1)}</h1>${body}${seoBlock(m)}</main></div>`);
 
   const outDir = route === '/' ? DIST : path.join(DIST, route);
   fs.mkdirSync(outDir, { recursive: true });
