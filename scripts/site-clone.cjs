@@ -311,7 +311,33 @@ function contentBlockOld(topic) {
   </section>`;
 }
 
+// Гарантируем валидную структуру head/body на ЛЮБОМ сайте — иначе SEO-теги некуда вставлять.
+function ensureStructure(html) {
+  if (!/<head[\s>]/i.test(html)) {
+    if (/<html[^>]*>/i.test(html)) html = html.replace(/(<html[^>]*>)/i, '$1\n<head></head>');
+    else if (/<body[\s>]/i.test(html)) html = html.replace(/(<body[^>]*>)/i, '<head></head>\n$1');
+    else html = '<head></head>\n' + html;
+  }
+  if (!/<\/head>/i.test(html)) {
+    if (/<body[\s>]/i.test(html)) html = html.replace(/(<body[\s>])/i, '</head>\n$1');
+    else html = html.replace(/(<head[^>]*>)/i, '$1</head>');
+  }
+  if (!/<body[\s>]/i.test(html)) html = /<\/head>/i.test(html) ? html.replace(/(<\/head>)/i, '$1\n<body>') : html + '\n<body>';
+  if (!/<\/body>/i.test(html)) html = /<\/html>/i.test(html) ? html.replace(/(<\/html>)/i, '</body>\n$1') : html + '\n</body>';
+  return html;
+}
+
+// Чистый текст первого осмысленного абзаца (для description-фолбэка).
+function firstParagraph(html) {
+  for (const m of html.matchAll(/<p[^>]*>([\s\S]*?)<\/p>/gi)) {
+    const t = m[1].replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+    if (t.length >= 60) return t.slice(0, 300);
+  }
+  return '';
+}
+
 function seoFix(pageUrl, html) {
+  html = ensureStructure(html);
   let title = tag(html, /<title[^>]*>([\s\S]*?)<\/title>/i) || '';
   if (!title) {
     // Уникальный title при отсутствии: имя из тела (рус.) → из URL-слага → запасной вариант (НЕ общий «Каталог»).
@@ -324,7 +350,12 @@ function seoFix(pageUrl, html) {
     html = html.replace(/<head([^>]*)>/i, `<head$1><title>${esc(title)}</title>`);
   } else if (title.length > 65) html = html.replace(/<title[^>]*>[\s\S]*?<\/title>/i, `<title>${esc(shortenTitle(title))}</title>`);
   const topic = (title.split(/[—|–\-,]/)[0] || 'Каталог').trim() || 'Каталог';
-  if (!/<meta[^>]+name=["']description["']/i.test(html)) html = html.replace(/<\/title>/i, `</title>\n<meta name="description" content="${esc(topic)} — каталог, цены, доставка.">`);
+  if (!/<meta[^>]+name=["']description["']/i.test(html)) {
+    const fp = firstParagraph(html);
+    const dsc = (fp ? `${topic} — ${fp}` : `${topic} — каталог, цены, доставка.`).slice(0, 200);
+    html = html.replace(/<\/title>/i, `</title>\n<meta name="description" content="${esc(dsc)}">`);
+  }
+  if (!/<meta[^>]+name=["']viewport["']/i.test(html)) html = html.replace(/<\/head>/i, `<meta name="viewport" content="width=device-width, initial-scale=1">\n</head>`);
   if (!/<link[^>]+rel=["']canonical["']/i.test(html)) html = html.replace(/<\/head>/i, `<link rel="canonical" href="${esc(pageUrl)}">\n</head>`);
   if (!/<meta[^>]+property=["']og:/i.test(html)) html = html.replace(/<\/head>/i, `<meta property="og:type" content="website"><meta property="og:title" content="${esc(title)}"><meta property="og:url" content="${esc(pageUrl)}">\n</head>`);
   if (!/application\/ld\+json/i.test(html)) html = html.replace(/<\/head>/i, `<script type="application/ld+json">${JSON.stringify({ '@context': 'https://schema.org', '@type': 'BreadcrumbList', itemListElement: [{ '@type': 'ListItem', position: 1, name: 'Главная', item: ORIGIN + '/' }, { '@type': 'ListItem', position: 2, name: topic, item: pageUrl }] })}</script>\n</head>`);
@@ -539,6 +570,8 @@ async function pool(items, n, fn) { let i = 0, done = 0; await Promise.all(Array
       const DESC = DEMO.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
       const reExt = new RegExp('(' + DESC + '[^"\'\\s)]+?)\\.(png|jpe?g)\\b', 'gi');
       const relOf = (url) => { try { return decodeURIComponent(url.slice(DEMO.length)); } catch { return url.slice(DEMO.length); } };
+      // Глобальный og:image по умолчанию (для страниц вообще без картинок) — самый «широкий» webp (обычно лого/баннер).
+      const globalOg = (Object.values(manifest).sort((a, b) => (b.w || 0) - (a.w || 0))[0] || {}).main || '';
       for (const tf of walk(OUT).filter((x) => /\.html?$/i.test(x))) {
         let c = fs.readFileSync(tf, 'utf8');
         let bestImg = null; // самая крупная картинка страницы (для Product/ImageObject)
@@ -566,8 +599,9 @@ async function pool(items, n, fn) { let i = 0, done = 0; await Promise.all(Array
           const ld = { '@context': 'https://schema.org', '@type': 'Product', name, image: [DEMO + bestImg.main], ...(brand ? { brand: { '@type': 'Brand', name: brand } } : {}) };
           c = c.replace(/<\/body>/i, `<script type="application/ld+json">${JSON.stringify(ld)}</script>\n</body>`);
         }
-        // og:image (абсолютный webp) — для соцсетей и SEO; если ещё нет
-        if (bestImg && !/property=["']og:image["']/i.test(c)) c = c.replace(/<\/head>/i, `<meta property="og:image" content="${DEMO}${bestImg.main}">\n</head>`);
+        // og:image (абсолютный webp) — для соцсетей и SEO; bestImg, иначе глобальный фолбэк; гарантируем на КАЖДОЙ странице
+        const ogMain = (bestImg && bestImg.main) || globalOg;
+        if (ogMain && !/property=["']og:image["']/i.test(c)) c = c.replace(/<\/head>/i, `<meta property="og:image" content="${DEMO}${ogMain}">\n</head>`);
         fs.writeFileSync(tf, c);
       }
       // CSS: фоновые url() → webp
