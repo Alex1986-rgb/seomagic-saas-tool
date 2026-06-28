@@ -616,6 +616,44 @@ async function pool(items, n, fn) { let i = 0, done = 0; await Promise.all(Array
         c = c.replace(reExt, (m, baseUrl) => { if (fs.existsSync(path.join(OUT, relOf(baseUrl) + '.webp'))) { changed = true; return baseUrl + '.webp'; } return m; });
         if (changed) fs.writeFileSync(tf, c);
       }
+
+      // 4b) Говорящие имена webp (image SEO): хеш-файлы → слаг из alt (транслит). Переименовываем main+варианты, чинаем ссылки.
+      if (process.argv.indexOf('--no-rename-img') < 0) {
+        const RU = { а: 'a', б: 'b', в: 'v', г: 'g', д: 'd', е: 'e', ё: 'e', ж: 'zh', з: 'z', и: 'i', й: 'i', к: 'k', л: 'l', м: 'm', н: 'n', о: 'o', п: 'p', р: 'r', с: 's', т: 't', у: 'u', ф: 'f', х: 'h', ц: 'c', ч: 'ch', ш: 'sh', щ: 'sch', ъ: '', ы: 'y', ь: '', э: 'e', ю: 'yu', я: 'ya' };
+        const slugify = (s) => (s || '').toLowerCase().split('').map((c) => (RU[c] !== undefined ? RU[c] : c)).join('').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 60);
+        // alt по каждому webp (берём самый длинный)
+        const altByRel = {};
+        for (const tf of walk(OUT).filter((x) => /\.html?$/i.test(x))) {
+          const c = fs.readFileSync(tf, 'utf8');
+          for (const im of c.matchAll(/<img\b[^>]*>/gi)) {
+            const src = (im[0].match(/\bsrc=["']([^"']+)["']/i) || [])[1];
+            if (!src || src.indexOf(DEMO) !== 0 || !/\.webp$/i.test(src)) continue;
+            const rel = relOf(src); const alt = (im[0].match(/\balt=["']([^"']*)["']/i) || [, ''])[1];
+            if (alt && (!altByRel[rel] || alt.length > altByRel[rel].length)) altByRel[rel] = alt;
+          }
+        }
+        const used = new Set(); const refMap = {}; let renamed = 0;
+        for (const rel of Object.keys(altByRel)) {
+          const base = path.basename(rel).replace(/\.webp$/i, ''); const dir = path.dirname(rel);
+          if (!/^[a-f0-9]{4,}$/i.test(base) && !rel.startsWith('cloned-assets/')) continue; // только обезличенные/хеши
+          let slug = slugify(altByRel[rel]) || 'image'; let cand = slug, n = 1;
+          while (used.has(cand)) cand = `${slug}-${++n}`; used.add(cand);
+          const oldBase = (dir === '.' ? '' : dir + '/') + base; const newBase = (dir === '.' ? '' : dir + '/') + cand;
+          for (const suf of ['', '-480w', '-768w', '-1200w']) {
+            const o = oldBase + suf + '.webp', nw = newBase + suf + '.webp';
+            if (fs.existsSync(path.join(OUT, o))) { try { fs.renameSync(path.join(OUT, o), path.join(OUT, nw)); refMap[o] = nw; renamed++; } catch {} }
+          }
+        }
+        if (Object.keys(refMap).length) {
+          const reW = new RegExp('(' + DESC + ')([^"\'\\s)]+?\\.webp)', 'gi');
+          for (const tf of walk(OUT).filter((x) => /\.(html?|css)$/i.test(x))) {
+            let c = fs.readFileSync(tf, 'utf8'); let ch = false;
+            c = c.replace(reW, (m, d, rel) => { let r; try { r = decodeURIComponent(rel); } catch { r = rel; } if (refMap[r]) { ch = true; return d + refMap[r]; } return m; });
+            if (ch) fs.writeFileSync(tf, c);
+          }
+          log(`Говорящих имён webp: ${renamed} файлов`);
+        }
+      }
     } else { log('  (cwebp не найден — оптимизация картинок пропущена)'); }
   }
 
