@@ -64,3 +64,6 @@ verify_jwt = false
 
 [functions.contact-submit]
 verify_jwt = false
+
+[functions.seo-text-generate]
+verify_jwt = false

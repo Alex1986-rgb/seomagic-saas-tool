@@ -35,6 +35,11 @@ export interface OptimizationOptions {
   contentQuality?: string | 'standard' | 'premium' | 'ultimate';
   language?: string;
   model?: string;
+  // SEO-текст внизу страницы: сгенерировать/дописать развёрнутый блок с таблицами.
+  addSeoText?: boolean;
+  seoTextLength?: number;                       // целевая длина в символах (по умолчанию 10000)
+  seoTextMode?: 'auto' | 'create' | 'rewrite' | 'extend'; // создать/переписать/дополнить
+  seoTextTables?: number;                       // число SEO-таблиц (по умолчанию 2)
   prompt?: string;
   includeImages?: boolean;
   optimizationLevel?: 'basic' | 'standard' | 'advanced';
