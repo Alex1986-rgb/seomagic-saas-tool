@@ -89,7 +89,7 @@ td{padding:8px 10px;border-bottom:1px solid #182236;vertical-align:top}.num{colo
 .foot{margin-top:18px;padding-top:12px;border-top:1px solid #1d2638;font-size:10px;color:#6b788f;display:flex;justify-content:space-between}
 </style></head><body>
 <div class="hdr"><div class="htop"><div class="logo"><div class="lm">S</div><div><div class="brand">Seo<span>Market</span></div><div class="sub">Автоматический SEO-аудит · реальный обход краулером</div></div></div>
-<div class="hmeta"><b>${esc(siteName)}</b><br>Обойдено: ${d.scanned} стр.<br>Дата: ${esc(DATE)}</div></div><div class="tag">⚙ Реальные данные · ${d.scanned} страниц за ${d.duration_sec || '—'} с</div></div>
+<div class="hmeta"><b>${esc(siteName)}</b><br>Страниц на сайте: ${(d.sitemap_total || d.scanned).toLocaleString('ru-RU')}<br>Проаудитировано: ${d.scanned}<br>Дата: ${esc(DATE)}</div></div><div class="tag">⚙ Реальные данные · ${d.scanned} из ${(d.sitemap_total || d.scanned).toLocaleString('ru-RU')} страниц</div></div>
 <div class="wrap">
 <div class="hero"><div class="score"><b>${S.global}</b><small>из 100</small></div>
 <div class="bars">${bar('SEO', S.seo)}${bar('Контент', S.content)}${bar('Технический', S.technical)}${bar('Соцсети (OG)', S.social)}</div></div>

@@ -34,6 +34,7 @@ const ORIGIN = new URL(startUrl).origin;
 const log = (m) => process.stderr.write(m + '\n');
 
 let _prof = 0;
+let SITEMAP_TOTAL = 0; // всего URL в sitemap (до ограничения --max)
 // Загрузка страницы реальным браузером (headless Chrome) — для сайтов с защитой.
 function chromeFetch(url, timeout = 35000) {
   const { execFileSync } = require('child_process');
@@ -105,7 +106,7 @@ async function discover() {
       if (r.status === 200 && r.html.includes('<loc>')) {
         let urls = Array.from(r.html.matchAll(/<loc>(.*?)<\/loc>/g), (m) => rebind(m[1].trim())).filter(Boolean);
         urls = Array.from(new Set(urls));
-        if (urls.length) { log(`Найден sitemap: ${urls.length} URL (${sm})`); return urls.slice(0, MAX); }
+        if (urls.length) { SITEMAP_TOTAL = urls.length; log(`Найден sitemap: ${urls.length} URL (${sm})`); return urls.slice(0, MAX); }
       }
     }
     // 2) robots.txt → Sitemap:
@@ -220,6 +221,7 @@ async function pool(items, n, fn) {
   const avg = (f) => N ? Math.round((ok.reduce((s, p) => s + (p[f] || 0), 0) / N) * 10) / 10 : 0;
   const data = {
     site: startUrl, scanned: ok.length, attempted: totalDiscovered, broken: broken.length,
+    sitemap_total: SITEMAP_TOTAL || totalDiscovered,
     duration_sec: Math.round((Date.now() - t0) / 1000),
     scores: { global, seo, content, technical, social },
     quality: { classicNausea: avg('classicNausea'), academicNausea: avg('academicNausea'), water: avg('water'), spam: avg('spam'), avgWords: avg('words') },

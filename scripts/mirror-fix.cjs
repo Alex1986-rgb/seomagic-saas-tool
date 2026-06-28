@@ -91,6 +91,11 @@ function fixHtml(url, html) {
   // 8) Абсолютизируем ассеты/ссылки на исходный домен (чтобы стили/картинки грузились)
   html = html.replace(/(src|href)=["']\/(?!\/)([^"']*)["']/gi, (m, a, p) => `${a}="${ORIGIN}/${p}"`);
   html = html.replace(/(<head[^>]*>)/i, `$1\n<base href="${ORIGIN}/">`);
+  // 9) Апгрейд http→https в ассетах/ссылках/CSS-url (иначе mixed content блокируется на https).
+  //    НЕ трогаем xmlns/namespace (не загружаются), только src/href/url().
+  html = html.replace(/(\b(?:src|href)=["'])http:\/\//gi, '$1https://');
+  html = html.replace(/url\(\s*['"]?http:\/\//gi, (m) => m.replace('http://', 'https://'));
+  html = html.replace(/(<base[^>]+href=["'])http:\/\//i, '$1https://');
   return html;
 }
 
