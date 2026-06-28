@@ -16,6 +16,7 @@ const OUT = process.argv[3];
 const DEMO = (process.argv[4] || '').replace(/\/+$/, '') + '/';
 const getOpt = (n, d) => { const i = process.argv.indexOf(n); return i >= 0 && process.argv[i + 1] ? process.argv[i + 1] : d; };
 const MAX = Number(getOpt('--max', 10));
+const CONC = Number(getOpt('--concurrency', 10)); // конкурентность загрузки страниц/ассетов (сеть = узкое место)
 if (!START || !OUT || !process.argv[4]) { console.error('node scripts/site-clone.cjs <startUrl> <outDir> <demoBaseUrl> [--max N]'); process.exit(1); }
 
 const ORIGIN = new URL(START).origin;
@@ -414,7 +415,7 @@ async function pool(items, n, fn) { let i = 0, done = 0; await Promise.all(Array
   log(`Страниц: ${urls.length}`);
 
   // 1) страницы: fetch → SEO-фикс → переписать ассеты → сохранить (конкурентно)
-  await pool(urls, 6, async (u) => {
+  await pool(urls, CONC, async (u) => {
     const r = await fetchRaw(u);
     if (r.status < 200 || r.status >= 400) { log(`  ✗ ${u} (${r.status})`); return; }
     let html = seoFix(u, r.buf.toString('utf8'));
@@ -425,7 +426,7 @@ async function pool(items, n, fn) { let i = 0, done = 0; await Promise.all(Array
   log(`Ассетов к скачиванию: ${assetMap.size}`);
 
   // 2) скачиваем ассеты
-  await pool([...assetMap.keys()], 8, async (absUrl) => {
+  await pool([...assetMap.keys()], CONC, async (absUrl) => {
     const rel = assetMap.get(absUrl); const out = path.join(OUT, rel);
     if (fs.existsSync(out)) return;
     const r = await fetchRaw(absUrl); if (r.status < 200 || r.status >= 400 || !r.buf.length) return;
@@ -454,40 +455,42 @@ async function pool(items, n, fn) { let i = 0, done = 0; await Promise.all(Array
     const hasCwebp = (() => { try { cp.execFileSync('cwebp', ['-version'], { stdio: 'ignore' }); return true; } catch { return false; } })();
     const hasIdentify = (() => { try { cp.execFileSync('magick', ['-version'], { stdio: 'ignore' }); return true; } catch { return false; } })();
     if (hasCwebp) {
+      const pexec = require('util').promisify(cp.execFile);
       const walk = (d, acc = []) => { for (const e of fs.readdirSync(d, { withFileTypes: true })) { const p = path.join(d, e.name); if (e.isDirectory()) walk(p, acc); else acc.push(p); } return acc; };
-      const dims = (f) => { if (!hasIdentify) return [0, 0]; try { return cp.execFileSync('magick', ['identify', '-format', '%w %h', f + '[0]'], { stdio: ['ignore', 'pipe', 'ignore'] }).toString().trim().split(/\s+/).map(Number); } catch { return [0, 0]; } };
+      const dims = async (f) => { if (!hasIdentify) return [0, 0]; try { const { stdout } = await pexec('magick', ['identify', '-format', '%w %h', f + '[0]']); return stdout.trim().split(/\s+/).map(Number); } catch { return [0, 0]; } };
       const imgs = walk(OUT).filter((f) => /\.(jpe?g|png)$/i.test(f));
       imgOpt.files = imgs.length;
       const Q = Number(getOpt('--img-quality', 80));
       const SIZES = [480, 768, 1200];
       const MAX_DIM = Number(getOpt('--img-max', 1600));
+      const IMG_CONC = Number(getOpt('--img-concurrency', Math.min(6, Math.max(2, require('os').cpus().length - 2))));
       const manifest = {}; // relNoExt -> {w,h, main, srcset:[[w,rel],...]}
-      for (let i = 0; i < imgs.length; i++) {
-        const f = imgs[i]; const relNoExt = path.relative(OUT, f).replace(/\.(jpe?g|png)$/i, '');
+      let imgDone = 0;
+      // Параллельная конвертация (пул воркеров cwebp) — главный ускоритель полного прогона.
+      await pool(imgs, IMG_CONC, async (f) => {
+        const relNoExt = path.relative(OUT, f).replace(/\.(jpe?g|png)$/i, '');
         const wf = path.join(OUT, relNoExt + '.webp');
         let ob = 0; try { ob = fs.statSync(f).size; } catch {}
         imgOpt.before += ob;
-        const [W, H] = dims(f);
-        // главный webp (с ограничением по большей стороне)
+        const [W, H] = await dims(f);
         const mainArgs = ['-quiet', '-q', String(Q)];
         if (W > MAX_DIM) mainArgs.push('-resize', String(MAX_DIM), '0');
-        try { cp.execFileSync('cwebp', [...mainArgs, f, '-o', wf], { stdio: 'ignore' }); } catch {}
+        try { await pexec('cwebp', [...mainArgs, f, '-o', wf]); } catch {}
         let nb = 0; try { nb = fs.existsSync(wf) ? fs.statSync(wf).size : 0; } catch {}
-        if (!(nb > 0 && nb < ob)) { if (nb > 0) { try { fs.unlinkSync(wf); } catch {} } imgOpt.after += ob; continue; }
+        if (++imgDone % 50 === 0) log(`  webp ${imgDone}/${imgs.length}`);
+        if (!(nb > 0 && nb < ob)) { if (nb > 0) { try { fs.unlinkSync(wf); } catch {} } imgOpt.after += ob; return; }
         imgOpt.after += nb; imgOpt.converted++;
         const mainW = W > MAX_DIM ? MAX_DIM : (W || 0);
         const srcset = [];
-        // варианты меньших размеров (без апскейла)
         for (const s of SIZES) {
           if (W && s < W && s < mainW) {
             const vrel = `${relNoExt}-${s}w.webp`; const vout = path.join(OUT, vrel);
-            try { cp.execFileSync('cwebp', ['-quiet', '-q', String(Q), '-resize', String(s), '0', f, '-o', vout], { stdio: 'ignore' }); imgOpt.variants++; srcset.push([s, vrel]); } catch {}
+            try { await pexec('cwebp', ['-quiet', '-q', String(Q), '-resize', String(s), '0', f, '-o', vout]); imgOpt.variants++; srcset.push([s, vrel]); } catch {}
           }
         }
         srcset.push([mainW || (SIZES[SIZES.length - 1]), relNoExt + '.webp']);
         manifest[relNoExt] = { w: W, h: H, main: relNoExt + '.webp', srcset };
-        if ((i + 1) % 25 === 0) log(`  webp ${i + 1}/${imgs.length}`);
-      }
+      });
       // переписываем HTML: <img> → webp src + srcset/sizes/width/height; затем общий своп .png/.jpg→.webp
       const DESC = DEMO.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
       const reExt = new RegExp('(' + DESC + '[^"\'\\s)]+?)\\.(png|jpe?g)\\b', 'gi');
