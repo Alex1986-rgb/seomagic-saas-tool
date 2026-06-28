@@ -323,15 +323,22 @@ function seoFix(pageUrl, html) {
   if ((html.match(/<h1[\s>]/gi) || []).length === 0 && !/data-seomarket="h1"/.test(html)) {
     html = html.replace(/<body([^>]*)>/i, `<body$1><h1 data-seomarket="h1" style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0">${esc(topic)}</h1>`);
   }
-  // Оптимизация картинок (image SEO): добавляем alt тем <img>, где его нет/пустой
+  // Оптимизация картинок: alt (image SEO) + lazy-loading + async-декодирование (скорость, без CLS-вреда).
+  let imgIdx = 0;
   html = html.replace(/<img\b([^>]*)>/gi, (m, attrs) => {
-    if (/\balt\s*=\s*["'][^"']*\S[^"']*["']/i.test(attrs)) return m; // уже есть непустой alt
-    const src = (attrs.match(/\bsrc=["']([^"']+)["']/i) || [, ''])[1];
-    let name = src.split('/').pop().split('?')[0].replace(/\.[a-z0-9]+$/i, '').replace(/[-_]+/g, ' ').trim();
-    if (/^[a-f0-9]{8,}$/i.test(name) || name.length < 3) name = '';
-    const alt = esc(topic + (name ? ' — ' + name : ''));
-    const cleaned = attrs.replace(/\s*\balt\s*=\s*["'][^"']*["']/i, '');
-    return `<img${cleaned} alt="${alt}">`;
+    imgIdx++;
+    let out = attrs;
+    // alt при отсутствии/пустом
+    if (!/\balt\s*=\s*["'][^"']*\S[^"']*["']/i.test(out)) {
+      const src = (out.match(/\bsrc=["']([^"']+)["']/i) || [, ''])[1];
+      let name = src.split('/').pop().split('?')[0].replace(/\.[a-z0-9]+$/i, '').replace(/[-_]+/g, ' ').trim();
+      if (/^[a-f0-9]{8,}$/i.test(name) || name.length < 3) name = '';
+      out = out.replace(/\s*\balt\s*=\s*["'][^"']*["']/i, '') + ` alt="${esc(topic + (name ? ' — ' + name : ''))}"`;
+    }
+    // lazy/async (первая картинка — eager, она обычно LCP); не дублируем, если уже задано
+    if (!/\bloading\s*=/i.test(out)) out += imgIdx <= 1 ? ' loading="eager" fetchpriority="high"' : ' loading="lazy"';
+    if (!/\bdecoding\s*=/i.test(out)) out += ' decoding="async"';
+    return `<img${out}>`;
   });
   // Вставка контента, идемпотентно.
   //  • Товар: продолжаем РОДНОЕ описание под картинкой (с реальными данными) + SEO-текст внизу (в seo-text-box).
@@ -439,6 +446,38 @@ async function pool(items, n, fn) { let i = 0, done = 0; await Promise.all(Array
     const out = path.join(OUT, assetMap.get(absUrl)); const r = await fetchRaw(absUrl); if (r.status >= 200 && r.status < 400 && r.buf.length) { fs.mkdirSync(path.dirname(out), { recursive: true }); fs.writeFileSync(out, r.buf); }
   });
 
+  // 4) Оптимизация изображений → WebP (универсальная поддержка, реальная экономия). Ссылки .png/.jpg → .webp.
+  //    WebP берём только если он меньше оригинала; иначе оставляем исходник. Отключается --no-img-opt.
+  let imgOpt = { files: 0, converted: 0, before: 0, after: 0 };
+  if (process.argv.indexOf('--no-img-opt') < 0) {
+    const cp = require('child_process');
+    const hasCwebp = (() => { try { cp.execFileSync('cwebp', ['-version'], { stdio: 'ignore' }); return true; } catch { return false; } })();
+    if (hasCwebp) {
+      const walk = (d, acc = []) => { for (const e of fs.readdirSync(d, { withFileTypes: true })) { const p = path.join(d, e.name); if (e.isDirectory()) walk(p, acc); else acc.push(p); } return acc; };
+      const imgs = walk(OUT).filter((f) => /\.(jpe?g|png)$/i.test(f));
+      imgOpt.files = imgs.length;
+      const Q = Number(getOpt('--img-quality', 80));
+      for (let i = 0; i < imgs.length; i++) {
+        const f = imgs[i]; const wf = f.replace(/\.(jpe?g|png)$/i, '.webp');
+        let ob = 0; try { ob = fs.statSync(f).size; } catch {}
+        imgOpt.before += ob;
+        try { cp.execFileSync('cwebp', ['-quiet', '-q', String(Q), f, '-o', wf], { stdio: 'ignore' }); } catch {}
+        let nb = 0; try { nb = fs.existsSync(wf) ? fs.statSync(wf).size : 0; } catch {}
+        if (nb > 0 && nb < ob) { imgOpt.after += nb; imgOpt.converted++; }
+        else { if (nb > 0) { try { fs.unlinkSync(wf); } catch {} } imgOpt.after += ob; }
+        if ((i + 1) % 30 === 0) log(`  webp ${i + 1}/${imgs.length}`);
+      }
+      // переписываем ссылки в HTML/CSS: локальный .png/.jpg → .webp, если webp создан
+      const reExt = new RegExp('(' + DEMO.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '[^"\'\\s)]+?)\\.(png|jpe?g)\\b', 'gi');
+      for (const tf of walk(OUT).filter((x) => /\.(html?|css)$/i.test(x))) {
+        let c = fs.readFileSync(tf, 'utf8'); let changed = false;
+        c = c.replace(reExt, (m, baseUrl) => { let rel; try { rel = decodeURIComponent(baseUrl.slice(DEMO.length)); } catch { rel = baseUrl.slice(DEMO.length); } if (fs.existsSync(path.join(OUT, rel + '.webp'))) { changed = true; return baseUrl + '.webp'; } return m; });
+        if (changed) fs.writeFileSync(tf, c);
+      }
+    } else { log('  (cwebp не найден — оптимизация картинок пропущена)'); }
+  }
+
   const saved = fs.existsSync(OUT) ? require('child_process').execSync(`find ${OUT} -type f | wc -l`).toString().trim() : '0';
-  console.log(JSON.stringify({ pages: urls.length, assets: assetMap.size, files: saved }));
+  const kb = (n) => Math.round(n / 1024);
+  console.log(JSON.stringify({ pages: urls.length, assets: assetMap.size, files: saved, img_opt: { files: imgOpt.files, converted: imgOpt.converted, kb_before: kb(imgOpt.before), kb_after: kb(imgOpt.after), saved_pct: imgOpt.before ? Math.round((1 - imgOpt.after / imgOpt.before) * 100) : 0 } }));
 })();
