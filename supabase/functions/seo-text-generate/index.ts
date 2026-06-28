@@ -1,9 +1,28 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
+
+// Rate-limit через SECURITY DEFINER функцию (#2): защищает платный AI-ключ от abuse,
+// не требуя авторизации. Возвращает true, если запрос в пределах лимита.
+async function withinLimit(identifier: string, endpoint: string, limit: number, windowSec: number): Promise<boolean> {
+  try {
+    const sb = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? Deno.env.get('SUPABASE_ANON_KEY') ?? ''
+    );
+    const { data, error } = await sb.rpc('check_rate_limit', {
+      p_identifier: identifier, p_endpoint: endpoint, p_limit: limit, p_window_seconds: windowSec,
+    });
+    if (error) { console.error('rate-limit rpc error:', error.message); return true; } // не блокируем при сбое лимитера
+    return data !== false;
+  } catch (e) {
+    console.error('rate-limit exception:', e); return true;
+  }
+}
 
 interface SeoTextRequest {
   topic: string;              // тема/H1 страницы или название товара
@@ -26,6 +45,17 @@ serve(async (req) => {
     }: SeoTextRequest = await req.json();
 
     if (!topic) throw new Error('topic is required');
+
+    // Rate-limit (#2): на IP — 10 запросов/час; глобально — 300/сутки (защита платного ключа).
+    const ip = (req.headers.get('x-forwarded-for') || '').split(',')[0].trim() || 'unknown';
+    const okIp = await withinLimit(ip, 'seo-text-generate', 10, 3600);
+    const okGlobal = await withinLimit('global', 'seo-text-generate', 300, 86400);
+    if (!okIp || !okGlobal) {
+      return new Response(
+        JSON.stringify({ success: false, error: 'Превышен лимит запросов генерации. Попробуйте позже.' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 429 }
+      );
+    }
 
     const ANTHROPIC_API_KEY = Deno.env.get('ANTHROPIC_API_KEY');
     if (!ANTHROPIC_API_KEY) throw new Error('ANTHROPIC_API_KEY not configured');
