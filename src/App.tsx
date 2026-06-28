@@ -48,6 +48,7 @@ import Partnership from './pages/Partnership';
 import GuidePost from './pages/GuidePost';
 import OptimizationPricing from './pages/OptimizationPricing';
 import Checkout from './pages/Checkout';
+import BigSiteAudit from './pages/BigSiteAudit';
 import ClientProfile from './pages/ClientProfile';
 
 // Feature pages
@@ -112,6 +113,7 @@ function App() {
                     <Route path="/features" element={<Features />} />
                     <Route path="/pricing" element={<Pricing />} />
                     <Route path="/checkout" element={<Checkout />} />
+                    <Route path="/big-audit" element={<BigSiteAudit />} />
                     <Route path="/position-pricing" element={<PositionPricing />} />
                     <Route path="/contact" element={<Contact />} />
                     <Route path="/support" element={<Support />} />
