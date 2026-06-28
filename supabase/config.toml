@@ -1,5 +1,22 @@
 project_id = "dllusofuxonaemrttmwl"
 
+# Локальная разработка на 8GB MacBook: отключаем тяжёлые опциональные сервисы,
+# чтобы стек влез в память (иначе Docker падает / контейнеры unhealthy).
+[analytics]
+enabled = false
+
+[studio]
+enabled = false
+
+[realtime]
+enabled = false
+
+[storage.image_transformation]
+enabled = false
+
+[db.pooler]
+enabled = false
+
 [functions.audit-start]
 verify_jwt = false
 

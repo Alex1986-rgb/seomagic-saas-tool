@@ -35,8 +35,14 @@ fi
 [[ -f dist/index.html ]] || die "dist/index.html не найден — сначала собери проект"
 
 log "Подготовка SPA-fallback (404.html) и .nojekyll…"
-cp dist/index.html dist/404.html
+cp dist/index.html dist/404.html   # 404.html = generic SPA-оболочка (до пререндера)
 touch dist/.nojekyll
+
+# Статический пререндер мета/H1/canonical/JSON-LD по ключевым маршрутам (SEO)
+if [[ -f scripts/prerender.cjs ]]; then
+  log "Пререндер SEO-метаданных по маршрутам…"
+  node scripts/prerender.cjs || log "⚠ пререндер пропущен (ошибка), продолжаю"
+fi
 
 JS_FILE="$(grep -oE 'assets/index-[^\"]+\.js' dist/index.html | head -1)"
 [[ -n "$JS_FILE" ]] || die "не удалось определить главный JS-бандл в dist/index.html"

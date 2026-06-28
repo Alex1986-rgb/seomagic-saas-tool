@@ -33,8 +33,7 @@ Disallow: /site-audit?*
 Crawl-delay: 2
 
 # Sitemap
-Sitemap: https://seomarket.app/sitemap.xml
-Sitemap: https://seomarket.app/blog-sitemap.xml
+Sitemap: https://alex1986-rgb.github.io/seomagic-saas-tool/sitemap.xml
 
 # Хосты
-Host: seomarket.app
+Host: alex1986-rgb.github.io
