@@ -67,6 +67,23 @@ async function fetchText(url, timeout = 20000) {
 }
 
 const tag = (html, re) => { const m = html.match(re); return m ? m[1].trim() : null; };
+
+// Метрики качества текста (тошнота/водность/спам) — приближение Advego/Text.ru.
+const STOP = new Set(['и','в','во','не','что','он','на','я','с','со','как','а','то','все','она','так','его','но','да','ты','к','у','же','вы','за','бы','по','только','ее','от','о','из','до','для','мы','их','чем','без','под','или','это','эта','эти','уже','есть','быть','при','над','про','что','когда','чтобы','если','тоже','также','можно','нужно']);
+function textQuality(text) {
+  const tokens = (String(text || '').toLowerCase().replace(/ё/g, 'е').match(/[\p{L}\p{N}]+/gu) || []);
+  const words = tokens.length || 1;
+  const freq = {}; let sig = 0, stop = 0, rep = 0;
+  for (const t of tokens) { if (STOP.has(t)) { stop++; continue; } if (t.length < 3) continue; freq[t] = (freq[t] || 0) + 1; sig++; }
+  for (const w in freq) if (freq[w] > 1) rep += freq[w];
+  const max = sig ? Math.max(...Object.values(freq)) : 0;
+  return {
+    classicNausea: Math.round(Math.sqrt(max) * 10) / 10,
+    academicNausea: sig ? Math.round((rep / sig) * 1000) / 10 : 0,
+    water: Math.round((stop / words) * 1000) / 10,
+    spam: sig ? Math.round((max / sig) * 1000) / 10 : 0,
+  };
+}
 const rebind = (loc) => {
   try {
     const u = new URL(loc);
@@ -139,6 +156,7 @@ function analyze(url, res) {
     jsonld: (html.match(/application\/ld\+json/gi) || []).length,
     viewport: /<meta[^>]+name=["']viewport["']/i.test(html),
     words: (text.match(/[\p{L}\p{N}]+/gu) || []).length,
+    ...textQuality(text),
   };
 }
 
@@ -199,10 +217,12 @@ async function pool(items, n, fn) {
   const global = Math.round(seo * 0.35 + content * 0.3 + technical * 0.25 + social * 0.1);
 
   const issues_pct = Object.fromEntries(Object.entries(I).map(([k, v]) => [k, k === 'broken_404' ? brokenPct : pct(v)]));
+  const avg = (f) => N ? Math.round((ok.reduce((s, p) => s + (p[f] || 0), 0) / N) * 10) / 10 : 0;
   const data = {
     site: startUrl, scanned: ok.length, attempted: totalDiscovered, broken: broken.length,
     duration_sec: Math.round((Date.now() - t0) / 1000),
     scores: { global, seo, content, technical, social },
+    quality: { classicNausea: avg('classicNausea'), academicNausea: avg('academicNausea'), water: avg('water'), spam: avg('spam'), avgWords: avg('words') },
     issues_pct, issues_count: I,
   };
   if (OUT) { fs.writeFileSync(OUT, JSON.stringify({ ...data, pages: ok.concat(broken) }, null, 2)); log(`JSON → ${OUT}`); }

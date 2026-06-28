@@ -85,6 +85,16 @@ td{padding:8px 10px;border-bottom:1px solid #182236;vertical-align:top}.num{colo
 <div class="wrap">
 <div class="hero"><div class="score"><b>${S.global}</b><small>из 100</small></div>
 <div class="bars">${bar('SEO', S.seo)}${bar('Контент', S.content)}${bar('Технический', S.technical)}${bar('Соцсети (OG)', S.social)}</div></div>
+${d.quality ? (() => { const q = d.quality; const qc = (v, bad) => bad ? '#ef4444' : '#22c55e'; const cell = (val, lbl, bad) => `<div style="flex:1;background:#0f1626;border:1px solid #1d2638;border-radius:10px;padding:12px;text-align:center"><div style="font-size:20px;font-weight:800;color:${qc(val, bad)}">${val}</div><div style="font-size:10.5px;color:#8b97ad;margin-top:2px">${lbl}</div></div>`; return `
+<h2>Качество контента <span style="font-weight:400;color:#8b97ad;font-size:12px">· новая проверка</span></h2>
+<div style="display:flex;gap:10px;margin-bottom:6px">
+  ${cell(q.classicNausea, 'Тошнота классич.', q.classicNausea > 7)}
+  ${cell(q.academicNausea + '%', 'Тошнота академ.', q.academicNausea > 9)}
+  ${cell(q.water + '%', 'Водность', q.water > 60 || q.water < 10)}
+  ${cell(q.spam + '%', 'Заспамленность', q.spam > 60)}
+  ${cell(q.avgWords, 'Слов/стр. (сред.)', q.avgWords < 250)}
+</div>
+<div style="color:#8b97ad;font-size:11px;margin-bottom:4px">Нормы (Text.ru/Advego): тошнота ≤ 7, академическая ≤ 9%, водность 15–60%, заспамленность ≤ 60%.</div>`; })() : ''}
 ${items.length ? `
 <h2>Смета на исправление</h2>
 <table><thead><tr><th>#</th><th>Проблема / рекомендация</th><th class="r">% стр.</th><th class="r">Цена/ед.</th><th class="r">Кол-во</th><th class="r">Сумма</th></tr></thead>
@@ -94,7 +104,14 @@ ${items.length ? `
 <div class="pay-r"><div class="payamt">${fmt(total)} ₽</div><a class="paybtn" href="${esc(CHECKOUT)}">💳 Оплатить и исправить →</a></div></div>
 
 ${sections}` : '<div class="ok"><b>Проблем не найдено 🎉</b> Все проверенные параметры в норме.</div>'}
-<div class="foot"><span>SeoMarket — автоматический SEO-аудит и исправление</span><span>${esc(DATE)}</span></div>
+<h2>Возможности SeoMarket</h2>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:11.5px;color:#aeb8c9">
+  <div style="background:#0f1626;border:1px solid #1d2638;border-radius:8px;padding:10px"><b style="color:#e8edf5">🔎 Аудит больших сайтов</b><br>Реальный обход тысяч страниц (sitemap/BFS), браузерный режим для защищённых сайтов.</div>
+  <div style="background:#0f1626;border:1px solid #1d2638;border-radius:8px;padding:10px"><b style="color:#e8edf5">✍️ Генерация SEO-текста (Claude)</b><br>Блок с таблицами ~10 000 симв.: создать/переписать/дополнить, в т.ч. для интернет-магазинов.</div>
+  <div style="background:#0f1626;border:1px solid #1d2638;border-radius:8px;padding:10px"><b style="color:#e8edf5">📊 Контроль качества</b><br>Тошнота, водность, заспамленность — текст в нормах поисковиков.</div>
+  <div style="background:#0f1626;border:1px solid #1d2638;border-radius:8px;padding:10px"><b style="color:#e8edf5">⚙️ Авто-исправление «под ключ»</b><br>Копия сайта → фикс кода → ZIP/демо на поддомене → повторный аудит.</div>
+</div>
+<div class="foot"><span>SeoMarket — автоматический SEO-аудит, генерация контента и исправление</span><span>${esc(DATE)}</span></div>
 </div></body></html>`;
 fs.writeFileSync(OUT, html);
 console.log('total', total, 'issues', items.length, 'pages_listed', pages.length);
