@@ -363,7 +363,13 @@ function seoFix(pageUrl, html) {
   if ((html.match(/<h1[\s>]/gi) || []).length === 0 && !/data-seomarket="h1"/.test(html)) {
     html = html.replace(/<body([^>]*)>/i, `<body$1><h1 data-seomarket="h1" style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0">${esc(topic)}</h1>`);
   }
-  // Оптимизация картинок: alt (image SEO) + lazy-loading + async-декодирование (скорость, без CLS-вреда).
+  // Оптимизация картинок: описательный alt (image SEO) + lazy + async. Для товара — название + материал/размеры.
+  let altBase = topic;
+  if (isProduct(pageUrl)) {
+    const rs = parseSpecs(html);
+    const extra = [rs.material, ...rs.dims.slice(0, 2)].filter(Boolean).join(', ');
+    if (extra) altBase = `${topic} — ${extra}`.slice(0, 120);
+  }
   let imgIdx = 0;
   html = html.replace(/<img\b([^>]*)>/gi, (m, attrs) => {
     imgIdx++;
@@ -372,8 +378,8 @@ function seoFix(pageUrl, html) {
     if (!/\balt\s*=\s*["'][^"']*\S[^"']*["']/i.test(out)) {
       const src = (out.match(/\bsrc=["']([^"']+)["']/i) || [, ''])[1];
       let name = src.split('/').pop().split('?')[0].replace(/\.[a-z0-9]+$/i, '').replace(/[-_]+/g, ' ').trim();
-      if (/^[a-f0-9]{8,}$/i.test(name) || name.length < 3) name = '';
-      out = out.replace(/\s*\balt\s*=\s*["'][^"']*["']/i, '') + ` alt="${esc(topic + (name ? ' — ' + name : ''))}"`;
+      if (/^[a-f0-9]{4,}$/i.test(name) || name.length < 3) name = '';
+      out = out.replace(/\s*\balt\s*=\s*["'][^"']*["']/i, '') + ` alt="${esc(altBase + (name ? ' — ' + name : ''))}"`;
     }
     // lazy/async (первая картинка — eager, она обычно LCP); не дублируем, если уже задано
     if (!/\bloading\s*=/i.test(out)) out += imgIdx <= 1 ? ' loading="eager" fetchpriority="high"' : ' loading="lazy"';
@@ -612,6 +618,27 @@ async function pool(items, n, fn) { let i = 0, done = 0; await Promise.all(Array
       }
     } else { log('  (cwebp не найден — оптимизация картинок пропущена)'); }
   }
+
+  // 5) Image sitemap — помогает индексации картинок в Google/Яндекс Картинках.
+  try {
+    const walkS = (d, acc = []) => { for (const e of fs.readdirSync(d, { withFileTypes: true })) { const p = path.join(d, e.name); if (e.isDirectory()) walkS(p, acc); else if (/\.html?$/i.test(e.name)) acc.push(p); } return acc; };
+    const entries = [];
+    for (const f of walkS(OUT)) {
+      const rel = path.relative(OUT, f).replace(/index\.html?$/i, '');
+      const c = fs.readFileSync(f, 'utf8'); const imgs = []; const seen = new Set();
+      for (const m of c.matchAll(/<img\b[^>]*>/gi)) {
+        const src = (m[0].match(/\bsrc=["']([^"']+)["']/i) || [, ''])[1];
+        if (src.indexOf(DEMO) !== 0 || !/\.(webp|jpe?g|png)$/i.test(src) || seen.has(src)) continue;
+        seen.add(src); imgs.push({ src, alt: (m[0].match(/\balt=["']([^"']*)["']/i) || [, ''])[1] });
+      }
+      if (imgs.length) entries.push({ loc: DEMO + rel, imgs: imgs.slice(0, 25) });
+    }
+    const xml = '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">\n'
+      + entries.map((e) => `<url><loc>${esc(e.loc)}</loc>` + e.imgs.map((i) => `<image:image><image:loc>${esc(i.src)}</image:loc>${i.alt ? `<image:title>${esc(i.alt)}</image:title>` : ''}</image:image>`).join('') + '</url>').join('\n')
+      + '\n</urlset>';
+    fs.writeFileSync(path.join(OUT, 'sitemap-images.xml'), xml);
+    log(`image-sitemap: ${entries.length} страниц с картинками`);
+  } catch (e) { log('image-sitemap пропущен: ' + e.message); }
 
   const saved = fs.existsSync(OUT) ? require('child_process').execSync(`find ${OUT} -type f | wc -l`).toString().trim() : '0';
   const kb = (n) => Math.round(n / 1024);
