@@ -1,0 +1,3085 @@
+@import 'additional_styles.css';
+/* line 17, C:/Ruby/lib/ruby/gems/1.9.1/gems/compass-0.12.6/frameworks/compass/stylesheets/compass/reset/_utilities.scss */
+html, body, div, span, applet, object, iframe,
+h1, h2, h3, h4, h5, h6, p, blockquote, pre,
+a, abbr, acronym, address, big, cite, code,
+del, dfn, em, img, ins, kbd, q, s, samp,
+small, strike, strong, sub, sup, tt, var,
+b, u, i, center,
+dl, dt, dd, ol, ul, li,
+fieldset, form, label, legend,
+table, caption, tbody, tfoot, thead, tr, th, td,
+article, aside, canvas, details, embed,
+figure, figcaption, footer, header, hgroup,
+menu, nav, output, ruby, section, summary,
+time, mark, audio, video {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  font: inherit;
+  font-size: 100%;
+  vertical-align: baseline;
+}
+
+/* line 22, C:/Ruby/lib/ruby/gems/1.9.1/gems/compass-0.12.6/frameworks/compass/stylesheets/compass/reset/_utilities.scss */
+html {
+  line-height: 1;
+}
+
+/* line 24, C:/Ruby/lib/ruby/gems/1.9.1/gems/compass-0.12.6/frameworks/compass/stylesheets/compass/reset/_utilities.scss */
+ol, ul {
+  list-style: none;
+}
+
+/* line 26, C:/Ruby/lib/ruby/gems/1.9.1/gems/compass-0.12.6/frameworks/compass/stylesheets/compass/reset/_utilities.scss */
+table {
+  border-collapse: collapse;
+  border-spacing: 0;
+}
+
+/* line 28, C:/Ruby/lib/ruby/gems/1.9.1/gems/compass-0.12.6/frameworks/compass/stylesheets/compass/reset/_utilities.scss */
+caption, th, td {
+  text-align: left;
+  font-weight: normal;
+  vertical-align: middle;
+}
+
+/* line 30, C:/Ruby/lib/ruby/gems/1.9.1/gems/compass-0.12.6/frameworks/compass/stylesheets/compass/reset/_utilities.scss */
+q, blockquote {
+  quotes: none;
+}
+/* line 103, C:/Ruby/lib/ruby/gems/1.9.1/gems/compass-0.12.6/frameworks/compass/stylesheets/compass/reset/_utilities.scss */
+q:before, q:after, blockquote:before, blockquote:after {
+  content: "";
+  content: none;
+}
+
+/* line 32, C:/Ruby/lib/ruby/gems/1.9.1/gems/compass-0.12.6/frameworks/compass/stylesheets/compass/reset/_utilities.scss */
+a img {
+  border: none;
+}
+
+/* line 116, C:/Ruby/lib/ruby/gems/1.9.1/gems/compass-0.12.6/frameworks/compass/stylesheets/compass/reset/_utilities.scss */
+article, aside, details, figcaption, figure, footer, header, hgroup, menu, nav, section, summary {
+  display: block;
+}
+
+/* line 66, ../../../../ico/*.png */
+.ico-sprite, .ico-filter-del, .ico-good-popup-close, .ico-marker, .ico-search-btn {
+  background: url('/s/public/images/ico-s15e162b731.png') no-repeat;
+}
+
+/* line 60, C:/Ruby/lib/ruby/gems/1.9.1/gems/compass-0.12.6/frameworks/compass/stylesheets/compass/utilities/sprites/_base.scss */
+.ico-filter-del {
+  background-position: 0 0;
+  height: 10px;
+  width: 10px;
+}
+
+/* line 60, C:/Ruby/lib/ruby/gems/1.9.1/gems/compass-0.12.6/frameworks/compass/stylesheets/compass/utilities/sprites/_base.scss */
+.ico-good-popup-close {
+  background-position: -20px 0;
+  height: 16px;
+  width: 16px;
+}
+
+/* line 60, C:/Ruby/lib/ruby/gems/1.9.1/gems/compass-0.12.6/frameworks/compass/stylesheets/compass/utilities/sprites/_base.scss */
+.ico-marker {
+  background-position: -46px 0;
+  height: 5px;
+  width: 8px;
+}
+
+/* line 60, C:/Ruby/lib/ruby/gems/1.9.1/gems/compass-0.12.6/frameworks/compass/stylesheets/compass/utilities/sprites/_base.scss */
+.ico-search-btn {
+  background-position: -64px 0;
+  height: 10px;
+  width: 6px;
+}
+
+@-webkit-viewport {
+  width: device-width;
+}
+
+@-moz-viewport {
+  width: device-width;
+}
+
+@-ms-viewport {
+  width: device-width;
+}
+
+@-o-viewport {
+  width: device-width;
+}
+
+@viewport {
+  width: device-width;
+}
+
+/* line 1, C:/www/rim/public/s/public/sass/main/_main.sass */
+html, body {
+  height: 100%;
+  background: #efece4 url("/s/public/images/site/pattern.png");
+  font-size: 14px;
+}
+
+/* line 7, C:/www/rim/public/s/public/sass/main/_main.sass */
+textarea {
+  width: 100%;
+  height: 80px;
+  margin: 0 0 15px 0;
+  padding: 8px 10px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #4f3028;
+  border: 1px solid #e6d6c4;
+  resize: vertical;
+  -webkit-border-radius: 2px;
+  -moz-border-radius: 2px;
+  -ms-border-radius: 2px;
+  -o-border-radius: 2px;
+  border-radius: 2px;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
+  -webkit-box-shadow: 0 1px 0 0 white, 0 1px 4px rgba(175, 142, 119, 0.35) inset;
+  -moz-box-shadow: 0 1px 0 0 white, 0 1px 4px rgba(175, 142, 119, 0.35) inset;
+  box-shadow: 0 1px 0 0 white, 0 1px 4px rgba(175, 142, 119, 0.35) inset;
+}
+
+/* line 21, C:/www/rim/public/s/public/sass/main/_main.sass */
+hr {
+  height: 1px;
+  margin: 0 0 15px 0;
+  border: none;
+}
+
+/* line 26, C:/www/rim/public/s/public/sass/main/_main.sass */
+a {
+  text-decoration: none;
+  color: #66b8dc;
+  outline: none;
+  font-family: "Open Sans", Arial, "Helvetica", sans-serif;
+}
+
+/* line 32, C:/www/rim/public/s/public/sass/main/_main.sass */
+b,
+strong {
+  font-weight: 700;
+}
+
+/* line 36, C:/www/rim/public/s/public/sass/main/_main.sass */
+.fix {
+  width: 970px;
+  margin: 0 auto;
+}
+
+/* line 40, C:/www/rim/public/s/public/sass/main/_main.sass */
+.clear {
+  clear: both;
+  float: none !important;
+}
+
+/* line 44, C:/www/rim/public/s/public/sass/main/_main.sass */
+.wrapper {
+  min-height: 100%;
+  height: auto !important;
+  height: 100%;
+  background: url("/s/public/images/site/top-images.png") top center no-repeat;
+}
+
+/* line 50, C:/www/rim/public/s/public/sass/main/_main.sass */
+.wrapper-content {
+  padding: 20px 0 40px 0;
+  background: url("/s/public/images/site/bottom-images.png") bottom left no-repeat;
+}
+
+/* line 54, C:/www/rim/public/s/public/sass/main/_main.sass */
+.fl-l {
+  float: left;
+}
+
+/* line 57, C:/www/rim/public/s/public/sass/main/_main.sass */
+.fl-r {
+  float: right;
+}
+
+/* line 60, C:/www/rim/public/s/public/sass/main/_main.sass */
+.hide {
+  display: none !important;
+}
+
+/* line 64, C:/www/rim/public/s/public/sass/main/_main.sass */
+.ico {
+  display: inline-block;
+  position: absolute;
+}
+
+/* line 1, C:/www/rim/public/s/public/sass/lib/_rm-select.sass */
+.rm-select {
+  float: left;
+  position: relative;
+  margin-bottom: 10px;
+}
+/* line 6, C:/www/rim/public/s/public/sass/lib/_rm-select.sass */
+.rm-select.opened .ico-marker {
+  -webkit-transform: rotate(180deg);
+  -moz-transform: rotate(180deg);
+  -ms-transform: rotate(180deg);
+  -o-transform: rotate(180deg);
+  transform: rotate(180deg);
+}
+/* line 9, C:/www/rim/public/s/public/sass/lib/_rm-select.sass */
+.rm-select .rm-select-link {
+  display: block;
+  border: 1px solid #d4d0c4;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  o-text-overflow: ellipsis;
+  cursor: pointer;
+  background-color: #fbfaf6;
+  -webkit-border-radius: 6px;
+  -moz-border-radius: 6px;
+  -ms-border-radius: 6px;
+  -o-border-radius: 6px;
+  border-radius: 6px;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  -webkit-box-shadow: 0 1px 4px rgba(203, 186, 170, 0.56);
+  -moz-box-shadow: 0 1px 4px rgba(203, 186, 170, 0.56);
+  box-shadow: 0 1px 4px rgba(203, 186, 170, 0.56);
+  *zoom: 1;
+  filter: progid:DXImageTransform.Microsoft.gradient(gradientType=0, startColorstr='#FFFBFAF6', endColorstr='#FFF1EEE4');
+  background-image: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #fbfaf6), color-stop(100%, #f1eee4));
+  background-image: -webkit-linear-gradient(top, #fbfaf6 0%, #f1eee4 100%);
+  background-image: -moz-linear-gradient(top, #fbfaf6 0%, #f1eee4 100%);
+  background-image: -o-linear-gradient(top, #fbfaf6 0%, #f1eee4 100%);
+  background-image: linear-gradient(top, #fbfaf6 0%, #f1eee4 100%);
+}
+/* line 24, C:/www/rim/public/s/public/sass/lib/_rm-select.sass */
+.rm-select .rm-select-link .ico-marker {
+  display: block;
+  position: absolute;
+  top: 14px;
+  right: 13px;
+  cursor: pointer;
+  -webkit-transition: all 0.2s ease-in;
+  -moz-transition: all 0.2s ease-in;
+  -o-transition: all 0.2s ease-in;
+  transition: all 0.2s ease-in;
+}
+/* line 32, C:/www/rim/public/s/public/sass/lib/_rm-select.sass */
+.rm-select .rm-select-link-text {
+  display: block;
+  width: 140px;
+  padding: 8px 15px 9px 15px;
+  color: #766c68;
+  font-size: 13px;
+  font-weight: bold;
+  font-family: Arial, "Helvetica", sans-serif;
+}
+/* line 41, C:/www/rim/public/s/public/sass/lib/_rm-select.sass */
+.rm-select .rm-select-list {
+  display: none;
+  width: 100%;
+  position: absolute;
+  top: 28px;
+  left: 0;
+  overflow-y: auto;
+  z-index: 1;
+  background-color: white;
+  -webkit-border-radius: 0 0 6px 6px;
+  -moz-border-radius: 0 0 6px 6px;
+  -ms-border-radius: 0 0 6px 6px;
+  -o-border-radius: 0 0 6px 6px;
+  border-radius: 0 0 6px 6px;
+  -webkit-box-shadow: 0 1px 4px rgba(203, 186, 170, 0.56);
+  -moz-box-shadow: 0 1px 4px rgba(203, 186, 170, 0.56);
+  box-shadow: 0 1px 4px rgba(203, 186, 170, 0.56);
+}
+/* line 53, C:/www/rim/public/s/public/sass/lib/_rm-select.sass */
+.rm-select .rm-select-list li {
+  border-left: 1px solid #cccccc;
+  border-right: 1px solid #cccccc;
+  cursor: pointer;
+}
+/* line 58, C:/www/rim/public/s/public/sass/lib/_rm-select.sass */
+.rm-select .rm-select-list li.last {
+  border-bottom: 1px solid #cccccc;
+}
+/* line 61, C:/www/rim/public/s/public/sass/lib/_rm-select.sass */
+.rm-select .rm-select-list li.last span {
+  margin-bottom: 1px;
+}
+/* line 64, C:/www/rim/public/s/public/sass/lib/_rm-select.sass */
+.rm-select .rm-select-list li span {
+  display: block;
+  margin: 0 1px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  -webkit-transition: background 0.1s ease;
+  -moz-transition: background 0.1s ease;
+  -o-transition: background 0.1s ease;
+  transition: background 0.1s ease;
+}
+/* line 72, C:/www/rim/public/s/public/sass/lib/_rm-select.sass */
+.rm-select .rm-select-list li span:hover {
+  background: #dcdada;
+}
+
+/* line 1, C:/www/rim/public/s/public/sass/lib/_colorbox.sass */
+#colorbox,
+#cboxOverlay,
+#cboxWrapper {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 9999;
+  overflow: hidden;
+}
+
+/* line 10, C:/www/rim/public/s/public/sass/lib/_colorbox.sass */
+#cboxOverlay {
+  position: fixed;
+  width: 100%;
+  height: 100%;
+}
+
+/* line 15, C:/www/rim/public/s/public/sass/lib/_colorbox.sass */
+#cboxMiddleLeft,
+#cboxBottomLeft {
+  clear: left;
+}
+
+/* line 19, C:/www/rim/public/s/public/sass/lib/_colorbox.sass */
+#cboxContent {
+  position: relative;
+}
+
+/* line 22, C:/www/rim/public/s/public/sass/lib/_colorbox.sass */
+#cboxLoadedContent {
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* line 26, C:/www/rim/public/s/public/sass/lib/_colorbox.sass */
+#cboxTitle {
+  margin: 0;
+}
+
+/* line 29, C:/www/rim/public/s/public/sass/lib/_colorbox.sass */
+#cboxLoadingOverlay,
+#cboxLoadingGraphic {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+/* line 37, C:/www/rim/public/s/public/sass/lib/_colorbox.sass */
+#cboxPrevious,
+#cboxNext,
+#cboxClose,
+#cboxSlideshow {
+  cursor: pointer;
+}
+
+/* line 43, C:/www/rim/public/s/public/sass/lib/_colorbox.sass */
+.cboxPhoto {
+  float: left;
+  margin: auto;
+  border: 0;
+  display: block;
+  max-width: none;
+  -ms-interpolation-mode: bicubic;
+}
+
+/* line 51, C:/www/rim/public/s/public/sass/lib/_colorbox.sass */
+.cboxIframe {
+  width: 100%;
+  height: 100%;
+  display: block;
+  border: 0;
+}
+
+/* line 57, C:/www/rim/public/s/public/sass/lib/_colorbox.sass */
+#colorbox,
+#cboxContent,
+#cboxLoadedContent {
+  -webkit-box-sizing: content-box;
+  -moz-box-sizing: content-box;
+  box-sizing: content-box;
+}
+
+/* line 62, C:/www/rim/public/s/public/sass/lib/_colorbox.sass */
+#cboxOverlay {
+  background: white;
+}
+
+/* line 65, C:/www/rim/public/s/public/sass/lib/_colorbox.sass */
+#colorbox {
+  outline: 0;
+}
+
+/* line 68, C:/www/rim/public/s/public/sass/lib/_colorbox.sass */
+#cboxContent {
+  margin-top: 32px;
+  overflow: visible;
+  background: black;
+}
+
+/* line 73, C:/www/rim/public/s/public/sass/lib/_colorbox.sass */
+.cboxIframe {
+  background: white;
+}
+
+/* line 76, C:/www/rim/public/s/public/sass/lib/_colorbox.sass */
+#cboxError {
+  padding: 50px;
+  border: 1px solid #cccccc;
+}
+
+/* line 80, C:/www/rim/public/s/public/sass/lib/_colorbox.sass */
+#cboxLoadedContent {
+  background: black;
+  padding: 1px;
+}
+
+/* line 84, C:/www/rim/public/s/public/sass/lib/_colorbox.sass */
+#cboxLoadingGraphic {
+  background: url("/s/public/images/site/loading.gif") no-repeat center center;
+}
+
+/* line 87, C:/www/rim/public/s/public/sass/lib/_colorbox.sass */
+#cboxLoadingOverlay {
+  background: black;
+}
+
+/* line 90, C:/www/rim/public/s/public/sass/lib/_colorbox.sass */
+#cboxTitle {
+  position: absolute;
+  top: -22px;
+  left: 0;
+  color: black;
+}
+
+/* line 96, C:/www/rim/public/s/public/sass/lib/_colorbox.sass */
+#cboxCurrent {
+  position: absolute;
+  top: -22px;
+  right: 205px;
+  text-indent: -9999px;
+}
+
+/* line 102, C:/www/rim/public/s/public/sass/lib/_colorbox.sass */
+#cboxPrevious,
+#cboxNext,
+#cboxSlideshow,
+#cboxClose {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  overflow: visible;
+  text-indent: -9999px;
+  width: 20px;
+  height: 20px;
+  position: absolute;
+  top: -20px;
+  background: url("/s/public/images/site/controls.png") no-repeat 0 0;
+}
+/* line 116, C:/www/rim/public/s/public/sass/lib/_colorbox.sass */
+#cboxPrevious:active,
+#cboxNext:active,
+#cboxSlideshow:active,
+#cboxClose:active {
+  outline: 0;
+}
+
+/* line 119, C:/www/rim/public/s/public/sass/lib/_colorbox.sass */
+#cboxPrevious {
+  background-position: 0px 0px;
+  right: 44px;
+}
+/* line 122, C:/www/rim/public/s/public/sass/lib/_colorbox.sass */
+#cboxPrevious:hover {
+  background-position: 0px -25px;
+}
+
+/* line 125, C:/www/rim/public/s/public/sass/lib/_colorbox.sass */
+#cboxNext {
+  background-position: -25px 0px;
+  right: 22px;
+}
+/* line 128, C:/www/rim/public/s/public/sass/lib/_colorbox.sass */
+#cboxNext:hover {
+  background-position: -25px -25px;
+}
+
+/* line 131, C:/www/rim/public/s/public/sass/lib/_colorbox.sass */
+#cboxClose {
+  background-position: -50px 0px;
+  right: 0;
+}
+/* line 134, C:/www/rim/public/s/public/sass/lib/_colorbox.sass */
+#cboxClose:hover {
+  background-position: -50px -25px;
+}
+
+/* line 138, C:/www/rim/public/s/public/sass/lib/_colorbox.sass */
+.cboxSlideshow_on #cboxPrevious {
+  right: 66px;
+}
+/* line 141, C:/www/rim/public/s/public/sass/lib/_colorbox.sass */
+.cboxSlideshow_on #cboxSlideshow {
+  right: 44px;
+  background-position: -75px -25px;
+}
+/* line 144, C:/www/rim/public/s/public/sass/lib/_colorbox.sass */
+.cboxSlideshow_on #cboxSlideshow:hover {
+  background-position: -100px -25px;
+}
+
+/* line 148, C:/www/rim/public/s/public/sass/lib/_colorbox.sass */
+.cboxSlideshow_off #cboxPrevious {
+  right: 66px;
+}
+/* line 150, C:/www/rim/public/s/public/sass/lib/_colorbox.sass */
+.cboxSlideshow_off #cboxSlideshow {
+  right: 44px;
+  background-position: -100px 0px;
+}
+/* line 153, C:/www/rim/public/s/public/sass/lib/_colorbox.sass */
+.cboxSlideshow_off #cboxSlideshow:hover {
+  background-position: -75px -25px;
+}
+
+/* line 1, C:/www/rim/public/s/public/sass/element/header/_main.sass */
+.header {
+  float: right;
+  width: 730px;
+}
+/* line 5, C:/www/rim/public/s/public/sass/element/header/_main.sass */
+.header .header-left-box {
+  float: left;
+  width: 510px;
+}
+/* line 9, C:/www/rim/public/s/public/sass/element/header/_main.sass */
+.header .header-right-box {
+  float: right;
+  width: 200px;
+}
+
+/* line 1, C:/www/rim/public/s/public/sass/element/header/_left-box.sass */
+.header-logo {
+  margin-bottom: 5px;
+  text-align: center;
+}
+/* line 5, C:/www/rim/public/s/public/sass/element/header/_left-box.sass */
+.header-logo img {
+  display: inline-block;
+}
+
+/* line 9, C:/www/rim/public/s/public/sass/element/header/_left-box.sass */
+.header-sign {
+  margin-bottom: 15px;
+  color: #858585;
+  font-size: 18px;
+  line-height: 24px;
+  font-style: italic;
+  text-align: center;
+  font-family: "Georgia", Arial, "Helvetica", sans-serif;
+}
+
+/* line 18, C:/www/rim/public/s/public/sass/element/header/_left-box.sass */
+.header-img {
+  margin-bottom: 15px;
+}
+/* line 21, C:/www/rim/public/s/public/sass/element/header/_left-box.sass */
+.header-img img {
+  margin-left: 10px;
+}
+
+/* line 1, C:/www/rim/public/s/public/sass/element/header/_right-box.sass */
+.sell-img {
+  display: block;
+  margin: 20px 0 25px 0;
+  text-align: right;
+}
+/* line 6, C:/www/rim/public/s/public/sass/element/header/_right-box.sass */
+.sell-img img {
+  display: inline-block;
+}
+
+/* line 9, C:/www/rim/public/s/public/sass/element/header/_right-box.sass */
+.header-main-box {
+  padding: 35px 15px;
+  background: url("/s/public/images/site/header-box-bg.png") top right repeat-y;
+  -webkit-border-radius: 10px;
+  -moz-border-radius: 10px;
+  -ms-border-radius: 10px;
+  -o-border-radius: 10px;
+  border-radius: 10px;
+}
+/* line 14, C:/www/rim/public/s/public/sass/element/header/_right-box.sass */
+.header-main-box.negative-bot-indent {
+  position: relative;
+  padding: 15px;
+  min-height: 130px;
+  margin-bottom: -85px;
+  z-index: 2;
+}
+/* line 21, C:/www/rim/public/s/public/sass/element/header/_right-box.sass */
+.header-main-box.negative-bot-indent .header-cities {
+  margin-bottom: 0;
+}
+
+/* line 24, C:/www/rim/public/s/public/sass/element/header/_right-box.sass */
+.header-cities {
+  margin-bottom: 20px;
+}
+/* line 29, C:/www/rim/public/s/public/sass/element/header/_right-box.sass */
+.header-cities.in-index .header-cities-item.last.clicked {
+  margin-bottom: 35px;
+}
+/* line 34, C:/www/rim/public/s/public/sass/element/header/_right-box.sass */
+.header-cities .header-cities-item.clicked .header-cities-item-text {
+  color: #4a4a4a;
+  font-weight: bold;
+  border-bottom: 1px dotted transparent;
+}
+/* line 39, C:/www/rim/public/s/public/sass/element/header/_right-box.sass */
+.header-cities .header-cities-item.clicked .header-cities-item-box {
+  display: block;
+}
+/* line 42, C:/www/rim/public/s/public/sass/element/header/_right-box.sass */
+.header-cities .header-cities-item .header-cities-item-text {
+  display: inline-block;
+  margin-bottom: 10px;
+  color: #ba0404;
+  font-size: 18px;
+  border-bottom: 1px dotted rgba(186, 4, 4, 0.6);
+  cursor: pointer;
+  font-family: Arial, "Helvetica", sans-serif;
+}
+/* line 50, C:/www/rim/public/s/public/sass/element/header/_right-box.sass */
+.header-cities .header-cities-item .header-cities-item-text:hover {
+  border-bottom: 1px dotted transparent;
+}
+/* line 53, C:/www/rim/public/s/public/sass/element/header/_right-box.sass */
+.header-cities .header-cities-item .header-cities-item-box {
+  display: none;
+  margin-bottom: 15px;
+  padding-left: 20px;
+  border-left: 1px solid #e0ded8;
+}
+/* line 59, C:/www/rim/public/s/public/sass/element/header/_right-box.sass */
+.header-cities .header-cities-item .header-cities-item-box .header-cities-item-info {
+  display: block;
+  color: #707070;
+  font-size: 14px;
+  line-height: 20px;
+  font-family: Arial, "Helvetica", sans-serif;
+}
+
+/* line 68, C:/www/rim/public/s/public/sass/element/header/_right-box.sass */
+.header-filter .header-filter-title {
+  margin-bottom: 15px;
+  color: #6c6b6b;
+  font-size: 18px;
+  line-height: 21px;
+  font-family: "Georgia", Arial, "Helvetica", sans-serif;
+}
+/* line 75, C:/www/rim/public/s/public/sass/element/header/_right-box.sass */
+.header-filter .filter-btn {
+  margin-top: 10px;
+  padding: 8px 25px;
+}
+
+/* line 1, C:/www/rim/public/s/public/sass/element/button/_main.sass */
+button {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  outline: none;
+  cursor: pointer;
+}
+/* line 8, C:/www/rim/public/s/public/sass/element/button/_main.sass */
+button::-moz-focus-inner {
+  padding: 0;
+  border: 0;
+}
+
+/* line 14, C:/www/rim/public/s/public/sass/element/button/_main.sass */
+.red-btn {
+  display: inline-block;
+  padding: 11px 31px;
+  color: #f7ebeb;
+  font-size: 18px;
+  font-weight: bold;
+  background-color: #f67d76;
+  -webkit-border-radius: 23px;
+  -moz-border-radius: 23px;
+  -ms-border-radius: 23px;
+  -o-border-radius: 23px;
+  border-radius: 23px;
+  text-shadow: 0 1px 0 rgba(135, 49, 43, 0.75);
+  -webkit-box-shadow: 0 2px 1px rgba(130, 46, 41, 0.85);
+  -moz-box-shadow: 0 2px 1px rgba(130, 46, 41, 0.85);
+  box-shadow: 0 2px 1px rgba(130, 46, 41, 0.85);
+  *zoom: 1;
+  filter: progid:DXImageTransform.Microsoft.gradient(gradientType=0, startColorstr='#FFF67D76', endColorstr='#FFCA4D45');
+  background-image: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #f67d76), color-stop(14%, #e97169), color-stop(49%, #b7433c), color-stop(60%, #ae3a33), color-stop(72%, #af3a32), color-stop(93%, #c54a42), color-stop(100%, #ca4d45));
+  background-image: -webkit-linear-gradient(top, #f67d76 0%, #e97169 14%, #b7433c 49%, #ae3a33 60%, #af3a32 72%, #c54a42 93%, #ca4d45 100%);
+  background-image: -moz-linear-gradient(top, #f67d76 0%, #e97169 14%, #b7433c 49%, #ae3a33 60%, #af3a32 72%, #c54a42 93%, #ca4d45 100%);
+  background-image: -o-linear-gradient(top, #f67d76 0%, #e97169 14%, #b7433c 49%, #ae3a33 60%, #af3a32 72%, #c54a42 93%, #ca4d45 100%);
+  background-image: linear-gradient(top, #f67d76 0%, #e97169 14%, #b7433c 49%, #ae3a33 60%, #af3a32 72%, #c54a42 93%, #ca4d45 100%);
+  font-family: Arial, "Helvetica", sans-serif;
+}
+/* line 27, C:/www/rim/public/s/public/sass/element/button/_main.sass */
+.red-btn:hover {
+  background-color: #f67d76;
+  *zoom: 1;
+  filter: progid:DXImageTransform.Microsoft.gradient(gradientType=0, startColorstr='#FFF67D76', endColorstr='#FFCA4D45');
+  background-image: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #f67d76), color-stop(21%, #ef766e), color-stop(72%, #d45850), color-stop(100%, #ca4d45));
+  background-image: -webkit-linear-gradient(top, #f67d76 0%, #ef766e 21%, #d45850 72%, #ca4d45 100%);
+  background-image: -moz-linear-gradient(top, #f67d76 0%, #ef766e 21%, #d45850 72%, #ca4d45 100%);
+  background-image: -o-linear-gradient(top, #f67d76 0%, #ef766e 21%, #d45850 72%, #ca4d45 100%);
+  background-image: linear-gradient(top, #f67d76 0%, #ef766e 21%, #d45850 72%, #ca4d45 100%);
+}
+/* line 31, C:/www/rim/public/s/public/sass/element/button/_main.sass */
+.red-btn:active {
+  color: #f1b0b0;
+  background-color: #f67d76;
+  text-shadow: 0 1px 0 rgba(135, 49, 43, 0.75);
+  -webkit-box-shadow: 0 2px 1px rgba(130, 46, 41, 0.85), inset 0 11px 18px rgba(74, 33, 30, 0.75);
+  -moz-box-shadow: 0 2px 1px rgba(130, 46, 41, 0.85), inset 0 11px 18px rgba(74, 33, 30, 0.75);
+  box-shadow: 0 2px 1px rgba(130, 46, 41, 0.85), inset 0 11px 18px rgba(74, 33, 30, 0.75);
+  *zoom: 1;
+  filter: progid:DXImageTransform.Microsoft.gradient(gradientType=0, startColorstr='#FFF67D76', endColorstr='#FFCA4D45');
+  background-image: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #f67d76), color-stop(21%, #ef766e), color-stop(72%, #d45850), color-stop(100%, #ca4d45));
+  background-image: -webkit-linear-gradient(top, #f67d76 0%, #ef766e 21%, #d45850 72%, #ca4d45 100%);
+  background-image: -moz-linear-gradient(top, #f67d76 0%, #ef766e 21%, #d45850 72%, #ca4d45 100%);
+  background-image: -o-linear-gradient(top, #f67d76 0%, #ef766e 21%, #d45850 72%, #ca4d45 100%);
+  background-image: linear-gradient(top, #f67d76 0%, #ef766e 21%, #d45850 72%, #ca4d45 100%);
+}
+
+/* line 40, C:/www/rim/public/s/public/sass/element/button/_main.sass */
+.dark-btn {
+  display: block;
+  color: white;
+  font-size: 14px;
+  font-weight: bold;
+  background-color: #a09085;
+  font-family: Arial, "Helvetica", sans-serif;
+  text-shadow: 0 1px 0 #594543;
+  -webkit-border-radius: 16px;
+  -moz-border-radius: 16px;
+  -ms-border-radius: 16px;
+  -o-border-radius: 16px;
+  border-radius: 16px;
+  *zoom: 1;
+  filter: progid:DXImageTransform.Microsoft.gradient(gradientType=0, startColorstr='#FFA09085', endColorstr='#FF48423D');
+  background-image: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #a09085), color-stop(10%, #9c8d82), color-stop(26%, #908279), color-stop(81%, #564f48), color-stop(100%, #48423d));
+  background-image: -webkit-linear-gradient(top, #a09085 0%, #9c8d82 10%, #908279 26%, #564f48 81%, #48423d 100%);
+  background-image: -moz-linear-gradient(top, #a09085 0%, #9c8d82 10%, #908279 26%, #564f48 81%, #48423d 100%);
+  background-image: -o-linear-gradient(top, #a09085 0%, #9c8d82 10%, #908279 26%, #564f48 81%, #48423d 100%);
+  background-image: linear-gradient(top, #a09085 0%, #9c8d82 10%, #908279 26%, #564f48 81%, #48423d 100%);
+}
+/* line 51, C:/www/rim/public/s/public/sass/element/button/_main.sass */
+.dark-btn:hover {
+  background-color: #a39388;
+  *zoom: 1;
+  filter: progid:DXImageTransform.Microsoft.gradient(gradientType=0, startColorstr='#FFA39388', endColorstr='#FF857465');
+  background-image: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #a39388), color-stop(28%, #9c8c81), color-stop(75%, #8b7a6d), color-stop(100%, #857465));
+  background-image: -webkit-linear-gradient(top, #a39388 0%, #9c8c81 28%, #8b7a6d 75%, #857465 100%);
+  background-image: -moz-linear-gradient(top, #a39388 0%, #9c8c81 28%, #8b7a6d 75%, #857465 100%);
+  background-image: -o-linear-gradient(top, #a39388 0%, #9c8c81 28%, #8b7a6d 75%, #857465 100%);
+  background-image: linear-gradient(top, #a39388 0%, #9c8c81 28%, #8b7a6d 75%, #857465 100%);
+}
+/* line 55, C:/www/rim/public/s/public/sass/element/button/_main.sass */
+.dark-btn:active {
+  color: #d4cbc4;
+  background-color: #a39388;
+  text-shadow: 0 1px 0 #594543;
+  *zoom: 1;
+  filter: progid:DXImageTransform.Microsoft.gradient(gradientType=0, startColorstr='#FFA39388', endColorstr='#FF857465');
+  background-image: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #a39388), color-stop(28%, #9c8c81), color-stop(75%, #8b7a6d), color-stop(100%, #857465));
+  background-image: -webkit-linear-gradient(top, #a39388 0%, #9c8c81 28%, #8b7a6d 75%, #857465 100%);
+  background-image: -moz-linear-gradient(top, #a39388 0%, #9c8c81 28%, #8b7a6d 75%, #857465 100%);
+  background-image: -o-linear-gradient(top, #a39388 0%, #9c8c81 28%, #8b7a6d 75%, #857465 100%);
+  background-image: linear-gradient(top, #a39388 0%, #9c8c81 28%, #8b7a6d 75%, #857465 100%);
+  -webkit-box-shadow: inset 0 2px 16px #352b24;
+  -moz-box-shadow: inset 0 2px 16px #352b24;
+  box-shadow: inset 0 2px 16px #352b24;
+}
+
+/* line 63, C:/www/rim/public/s/public/sass/element/button/_main.sass */
+.gray-btn {
+  color: #807867;
+  font-size: 13px;
+  border: 1px solid #ada595;
+  background-color: rgba(255, 255, 255, 0.01);
+  cursor: pointer;
+  font-family: Arial, "Helvetica", sans-serif;
+  -webkit-transition: all 0.1s ease-in;
+  -moz-transition: all 0.1s ease-in;
+  -o-transition: all 0.1s ease-in;
+  transition: all 0.1s ease-in;
+  -webkit-border-radius: 15px;
+  -moz-border-radius: 15px;
+  -ms-border-radius: 15px;
+  -o-border-radius: 15px;
+  border-radius: 15px;
+}
+/* line 72, C:/www/rim/public/s/public/sass/element/button/_main.sass */
+.gray-btn:hover {
+  color: white;
+  background-color: #795b53;
+  border: 1px solid #795b53;
+  -webkit-border-radius: 15px;
+  -moz-border-radius: 15px;
+  -ms-border-radius: 15px;
+  -o-border-radius: 15px;
+  border-radius: 15px;
+}
+
+/* line 1, C:/www/rim/public/s/public/sass/element/breadcrumbs/_main.sass */
+.breadcrumbs {
+  width: 530px;
+  margin-bottom: 30px;
+}
+/* line 5, C:/www/rim/public/s/public/sass/element/breadcrumbs/_main.sass */
+.breadcrumbs .breadcrumbs-item {
+  float: left;
+}
+/* line 10, C:/www/rim/public/s/public/sass/element/breadcrumbs/_main.sass */
+.breadcrumbs .breadcrumbs-item a:hover span {
+  border-bottom: 1px solid transparent;
+}
+/* line 12, C:/www/rim/public/s/public/sass/element/breadcrumbs/_main.sass */
+.breadcrumbs .breadcrumbs-item a span {
+  color: #838383;
+  font-size: 12px;
+  border-bottom: 1px solid rgba(131, 131, 131, 0.6);
+  font-family: Arial, "Helvetica", sans-serif;
+}
+/* line 17, C:/www/rim/public/s/public/sass/element/breadcrumbs/_main.sass */
+.breadcrumbs .breadcrumbs-item span {
+  color: #838383;
+  font-size: 12px;
+  font-family: Arial, "Helvetica", sans-serif;
+}
+/* line 22, C:/www/rim/public/s/public/sass/element/breadcrumbs/_main.sass */
+.breadcrumbs .breadcrumbs-sep {
+  float: left;
+  margin: 0 7px;
+  color: #838383;
+  font-size: 14px;
+  font-family: Arial, "Helvetica", sans-serif;
+}
+
+/* line 2, C:/www/rim/public/s/public/sass/element/pagination/_main.sass */
+.pagination .pagination-item {
+  display: block;
+  float: left;
+  margin-right: 2px;
+  padding: 8px 12px 7px 12px;
+  color: #a10000;
+  font-size: 18px;
+  text-align: center;
+  border: 1px solid transparent;
+  -webkit-border-radius: 25px;
+  -moz-border-radius: 25px;
+  -ms-border-radius: 25px;
+  -o-border-radius: 25px;
+  border-radius: 25px;
+  font-family: Arial, "Helvetica", sans-serif;
+}
+/* line 13, C:/www/rim/public/s/public/sass/element/pagination/_main.sass */
+.pagination .pagination-item:hover {
+  color: #a6a092;
+  background-color: white;
+  border: 1px solid #eae9e2;
+}
+/* line 17, C:/www/rim/public/s/public/sass/element/pagination/_main.sass */
+.pagination .pagination-item:hover span {
+  border-bottom: 1px solid transparent;
+}
+/* line 19, C:/www/rim/public/s/public/sass/element/pagination/_main.sass */
+.pagination .pagination-item.current {
+  color: #a6a092;
+  background-color: white;
+  border: 1px solid #d3d0c2;
+  -webkit-box-shadow: inset 0 3px 7px rgba(129, 126, 117, 0.29);
+  -moz-box-shadow: inset 0 3px 7px rgba(129, 126, 117, 0.29);
+  box-shadow: inset 0 3px 7px rgba(129, 126, 117, 0.29);
+}
+/* line 24, C:/www/rim/public/s/public/sass/element/pagination/_main.sass */
+.pagination .pagination-item.current:hover {
+  color: #a6a092;
+  background-color: white;
+  border: 1px solid #d3d0c2;
+  -webkit-box-shadow: inset 0 3px 7px rgba(129, 126, 117, 0.29);
+  -moz-box-shadow: inset 0 3px 7px rgba(129, 126, 117, 0.29);
+  box-shadow: inset 0 3px 7px rgba(129, 126, 117, 0.29);
+}
+/* line 30, C:/www/rim/public/s/public/sass/element/pagination/_main.sass */
+.pagination .pagination-item.current:hover span {
+  border-bottom: 1px solid transparent;
+}
+/* line 32, C:/www/rim/public/s/public/sass/element/pagination/_main.sass */
+.pagination .pagination-item.current span {
+  border-bottom: 1px solid transparent;
+}
+/* line 35, C:/www/rim/public/s/public/sass/element/pagination/_main.sass */
+.pagination .pagination-item.unstyled {
+  border: 1px solid transparent;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+/* line 38, C:/www/rim/public/s/public/sass/element/pagination/_main.sass */
+.pagination .pagination-item.unstyled:hover {
+  color: #a10000;
+  background-color: transparent;
+  -webkit-box-shadow: 0;
+  -moz-box-shadow: 0;
+  box-shadow: 0;
+}
+/* line 43, C:/www/rim/public/s/public/sass/element/pagination/_main.sass */
+.pagination .pagination-item.unstyled span {
+  border-bottom: 1px solid transparent;
+}
+/* line 46, C:/www/rim/public/s/public/sass/element/pagination/_main.sass */
+.pagination .pagination-item span {
+  border-bottom: 1px solid #e7cac4;
+}
+
+/* line 1, C:/www/rim/public/s/public/sass/element/error/_main.sass */
+.input-holder {
+  float: left;
+  position: relative;
+}
+/* line 5, C:/www/rim/public/s/public/sass/element/error/_main.sass */
+.input-holder.error .error-message {
+  display: block;
+}
+/* line 7, C:/www/rim/public/s/public/sass/element/error/_main.sass */
+.input-holder.error input,
+.input-holder.error textarea {
+  border-color: #e4a676;
+  outline: none;
+  -webkit-box-shadow: none;
+  -moz-box-shadow: none;
+  box-shadow: none;
+}
+/* line 13, C:/www/rim/public/s/public/sass/element/error/_main.sass */
+.input-holder .error-message {
+  display: none;
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: auto;
+  height: 19px;
+  padding: 0 13px;
+  line-height: 19px;
+  color: white;
+  font-size: 11px;
+  font-weight: bold;
+  white-space: nowrap;
+  background: #ca5600;
+  z-index: 1;
+  -webkit-border-radius: 3px;
+  -moz-border-radius: 3px;
+  -ms-border-radius: 3px;
+  -o-border-radius: 3px;
+  border-radius: 3px;
+  font-family: Arial, "Helvetica", sans-serif;
+}
+
+/* line 1, C:/www/rim/public/s/public/sass/element/g-l/_main.sass */
+.g-l {
+  float: left;
+  width: 230px;
+  margin-top: 40px;
+}
+
+/* line 5, C:/www/rim/public/s/public/sass/element/g-l/_main.sass */
+.g-l-container {
+  padding: 20px 20px 30px 20px;
+  background: url("/s/public/images/site/g-l-bg.png") top left repeat-y;
+  -webkit-border-radius: 10px;
+  -moz-border-radius: 10px;
+  -ms-border-radius: 10px;
+  -o-border-radius: 10px;
+  border-radius: 10px;
+}
+
+/* line 10, C:/www/rim/public/s/public/sass/element/g-l/_main.sass */
+.g-l-title {
+  margin: 0 0 5px 10px;
+  color: #6c6b6b;
+  font-size: 18px;
+  line-height: 21px;
+  font-family: "Georgia", Arial, "Helvetica", sans-serif;
+}
+
+/* line 1, C:/www/rim/public/s/public/sass/element/g-l/_search.sass */
+.search-box {
+  position: relative;
+  margin-bottom: 20px;
+  -moz-placeholder-color: #cacaca;
+  -moz-placeholder-font-size: 12px;
+  -moz-placeholder-font-style: italic;
+  -ms-input-placeholder-color: #cacaca;
+  -ms-input-placeholder-font-size: 12px;
+  -ms-input-placeholder-font-style: italic;
+}
+/* line 5, C:/www/rim/public/s/public/sass/element/g-l/_search.sass */
+.search-box input {
+  width: 160px;
+  margin: 0;
+  padding: 6px 15px;
+  color: #cacaca;
+  font-size: 12px;
+  font-style: italic;
+  outline: none;
+  border: 1px solid rgba(99, 99, 99, 0.35);
+  background-color: rgba(255, 255, 255, 0.87);
+  font-family: Arial, "Helvetica", sans-serif;
+  -webkit-border-radius: 15px;
+  -moz-border-radius: 15px;
+  -ms-border-radius: 15px;
+  -o-border-radius: 15px;
+  border-radius: 15px;
+}
+/* line 18, C:/www/rim/public/s/public/sass/element/g-l/_search.sass */
+.search-box .search-box-btn {
+  display: block;
+  position: absolute;
+  top: 3px;
+  right: 4px;
+  margin: 0;
+  padding: 0;
+  width: 22px;
+  height: 22px;
+  background-color: #cebbb3;
+  -webkit-border-radius: 11px;
+  -moz-border-radius: 11px;
+  -ms-border-radius: 11px;
+  -o-border-radius: 11px;
+  border-radius: 11px;
+  background-image: -webkit-gradient(linear, 50% 100%, 50% 0%, color-stop(0%, #7b7775), color-stop(100%, #cebbb3));
+  background-image: -webkit-linear-gradient(bottom, #7b7775 0%, #cebbb3 100%);
+  background-image: -moz-linear-gradient(bottom, #7b7775 0%, #cebbb3 100%);
+  background-image: -o-linear-gradient(bottom, #7b7775 0%, #cebbb3 100%);
+  background-image: linear-gradient(bottom, #7b7775 0%, #cebbb3 100%);
+}
+/* line 31, C:/www/rim/public/s/public/sass/element/g-l/_search.sass */
+.search-box .search-box-btn .ico-search-btn {
+  top: 6px;
+  left: 9px;
+}
+/* line 35, C:/www/rim/public/s/public/sass/element/g-l/_search.sass */
+.search-box ::-webkit-input-placeholder {
+  color: #cacaca;
+  font-size: 12px;
+  font-style: italic;
+}
+/* line 45, C:/www/rim/public/s/public/sass/element/g-l/_search.sass */
+.search-box ::-moz-placeholder {
+  color: #cacaca;
+  font-size: 12px;
+  font-style: italic;
+}
+
+/* line 1, C:/www/rim/public/s/public/sass/element/g-l/_main-menu.sass */
+.main-menu {
+  margin-bottom: 20px;
+}
+/* line 6, C:/www/rim/public/s/public/sass/element/g-l/_main-menu.sass */
+.main-menu .main-menu-item.current .main-menu-item-link {
+  color: white;
+  background-color: #afafaf;
+}
+/* line 10, C:/www/rim/public/s/public/sass/element/g-l/_main-menu.sass */
+.main-menu .main-menu-item.current .main-menu-item-link span {
+  border-bottom: 1px solid transparent;
+}
+/* line 13, C:/www/rim/public/s/public/sass/element/g-l/_main-menu.sass */
+.main-menu .main-menu-item .main-menu-item-link {
+  display: inline-block;
+  padding: 6px 10px 7px 10px;
+  color: #5d5d5d;
+  font-size: 13px;
+  font-family: Arial, "Helvetica", sans-serif;
+  -webkit-border-radius: 11px;
+  -moz-border-radius: 11px;
+  -ms-border-radius: 11px;
+  -o-border-radius: 11px;
+  border-radius: 11px;
+  -webkit-transition: all 0.1s ease-in;
+  -moz-transition: all 0.1s ease-in;
+  -o-transition: all 0.1s ease-in;
+  transition: all 0.1s ease-in;
+}
+/* line 22, C:/www/rim/public/s/public/sass/element/g-l/_main-menu.sass */
+.main-menu .main-menu-item .main-menu-item-link:hover span {
+  border-bottom: 1px solid transparent;
+}
+/* line 24, C:/www/rim/public/s/public/sass/element/g-l/_main-menu.sass */
+.main-menu .main-menu-item .main-menu-item-link span {
+  border-bottom: 1px solid #c7c7c7;
+}
+
+/* line 1, C:/www/rim/public/s/public/sass/element/g-l/_menu-item.sass */
+.menu-item-container {
+  margin-top: 35px;
+  padding: 0 20px;
+}
+/* line 4, C:/www/rim/public/s/public/sass/element/g-l/_menu-item.sass */
+.menu-item-container .g-l-title {
+  margin-bottom: 15px;
+}
+
+/* line 10, C:/www/rim/public/s/public/sass/element/g-l/_menu-item.sass */
+.menu-item.fabric .menu-item-box .menu-item-link {
+  font-size: 14px;
+}
+/* line 13, C:/www/rim/public/s/public/sass/element/g-l/_menu-item.sass */
+.menu-item .menu-item-box {
+  margin-bottom: 2px;
+}
+/* line 16, C:/www/rim/public/s/public/sass/element/g-l/_menu-item.sass */
+.menu-item .menu-item-box .menu-item-link {
+  display: inline-block;
+  padding: 3px 10px 4px 10px;
+  color: #a10000;
+  font-family: "Arial";
+  font-size: 15px;
+  line-height: 21px;
+  -webkit-border-radius: 11px;
+  -moz-border-radius: 11px;
+  -ms-border-radius: 11px;
+  -o-border-radius: 11px;
+  border-radius: 11px;
+  -webkit-transition: all 0.1s ease-in;
+  -moz-transition: all 0.1s ease-in;
+  -o-transition: all 0.1s ease-in;
+  transition: all 0.1s ease-in;
+}
+/* line 25, C:/www/rim/public/s/public/sass/element/g-l/_menu-item.sass */
+.menu-item .menu-item-box .menu-item-link:hover {
+  color: white;
+  background-color: #afafaf;
+}
+/* line 29, C:/www/rim/public/s/public/sass/element/g-l/_menu-item.sass */
+.menu-item .menu-item-box .menu-item-link:hover span {
+  border-bottom: 1px solid transparent;
+}
+/* line 32, C:/www/rim/public/s/public/sass/element/g-l/_menu-item.sass */
+.menu-item .menu-item-box .menu-item-link span {
+  border-bottom: 1px solid #c38482;
+}
+
+/* line 1, C:/www/rim/public/s/public/sass/element/footer/_main.sass */
+.footer {
+  position: relative;
+  width: 540px;
+  margin-left: 240px;
+}
+/* line 6, C:/www/rim/public/s/public/sass/element/footer/_main.sass */
+.footer .footer-contacts {
+  margin-bottom: 25px;
+  min-height: 65px;
+}
+/* line 9, C:/www/rim/public/s/public/sass/element/footer/_main.sass */
+.footer .footer-contacts .footer-contacts-item {
+  float: left;
+  margin-right: 50px;
+  font-family: Arial, "Helvetica", sans-serif;
+}
+/* line 13, C:/www/rim/public/s/public/sass/element/footer/_main.sass */
+.footer .footer-contacts .footer-contacts-item.last {
+  margin-right: 0;
+}
+/* line 16, C:/www/rim/public/s/public/sass/element/footer/_main.sass */
+.footer .footer-contacts .footer-contacts-item .footer-contacts-title {
+  margin-bottom: 5px;
+  font-size: 15px;
+  line-height: 20px;
+  color: #ba0404;
+}
+/* line 21, C:/www/rim/public/s/public/sass/element/footer/_main.sass */
+.footer .footer-contacts .footer-contacts-item .footer-contacts-text {
+  font-size: 13px;
+  line-height: 20px;
+  color: #6b6b6b;
+}
+/* line 26, C:/www/rim/public/s/public/sass/element/footer/_main.sass */
+.footer .footer-copyright {
+  width: 570px;
+  margin-bottom: 25px;
+  padding: 25px 0;
+  color: #6b6b6b;
+  font-size: 13px;
+  background: url("/s/public/images/site/footer-border.png") left top repeat-x, url("/s/public/images/site/footer-border.png") left bottom repeat-x;
+  font-family: Arial, "Helvetica", sans-serif;
+}
+/* line 36, C:/www/rim/public/s/public/sass/element/footer/_main.sass */
+.footer .footer-developer .footer-developer-text {
+  color: #5f5f5f;
+  font-size: 12px;
+  line-height: 18px;
+  font-family: Arial, "Helvetica", sans-serif;
+}
+/* line 42, C:/www/rim/public/s/public/sass/element/footer/_main.sass */
+.footer .footer-developer .footer-developer-link {
+  color: #6c6b6b;
+  font-size: 24px;
+  font-weight: bold;
+  font-family: Arial, "Helvetica", sans-serif;
+}
+/* line 48, C:/www/rim/public/s/public/sass/element/footer/_main.sass */
+.footer .footer-img {
+  right: -190px;
+  bottom: -40px;
+  position: absolute;
+  width: 196px;
+  height: 397px;
+  background: url("/s/public/images/site/footer-img.png") left top no-repeat;
+}
+
+/* line 1, C:/www/rim/public/s/public/sass/blocks/content/_main.sass */
+.content {
+  float: right;
+  width: 730px;
+}
+
+/* line 5, C:/www/rim/public/s/public/sass/blocks/content/_main.sass */
+.content-title {
+  margin: 0 0 30px 0;
+  color: #6c6b6b;
+  font-size: 28px;
+  line-height: 32px;
+  text-align: center;
+  font-family: "Georgia", Arial, "Helvetica", sans-serif;
+}
+
+/* line 13, C:/www/rim/public/s/public/sass/blocks/content/_main.sass */
+.content-main-title {
+  width: 520px;
+  min-height: 40px;
+  margin-bottom: 30px;
+  color: #6b6b6b;
+  font-size: 28px;
+  line-height: 32px;
+  font-family: "Georgia", Arial, "Helvetica", sans-serif;
+}
+/* line 22, C:/www/rim/public/s/public/sass/blocks/content/_main.sass */
+.content-main-title.small-margin {
+  margin-bottom: 15px;
+}
+
+/* line 25, C:/www/rim/public/s/public/sass/blocks/content/_main.sass */
+.content-item-title {
+  margin-bottom: 25px;
+  font-size: 24px;
+  font-style: italic;
+  color: #6c6b6b;
+  font-family: "Georgia", Arial, "Helvetica", sans-serif;
+}
+
+/* line 1, C:/www/rim/public/s/public/sass/blocks/good/_preview.sass */
+.goods-preview {
+  float: left;
+  width: 225px;
+  margin: 0 27px 25px 0;
+}
+/* line 6, C:/www/rim/public/s/public/sass/blocks/good/_preview.sass */
+.goods-preview.last {
+  margin-right: 0;
+}
+/* line 9, C:/www/rim/public/s/public/sass/blocks/good/_preview.sass */
+.goods-preview .goods-preview-box {
+  display: block;
+}
+/* line 12, C:/www/rim/public/s/public/sass/blocks/good/_preview.sass */
+.goods-preview .goods-preview-box:hover .goods-preview-name {
+  color: #a10000;
+}
+/* line 14, C:/www/rim/public/s/public/sass/blocks/good/_preview.sass */
+.goods-preview .goods-preview-box:hover .goods-preview-name span {
+  border-bottom: 1px solid #e3b2b2;
+}
+/* line 17, C:/www/rim/public/s/public/sass/blocks/good/_preview.sass */
+.goods-preview .goods-preview-img {
+  display: table-cell;
+  width: 225px;
+  height: 170px;
+  vertical-align: middle;
+  text-align: center;
+  margin-bottom: 15px;
+  background-color: #efece4;
+  -webkit-box-shadow: 0 2px 8px rgba(203, 186, 170, 0.75);
+  -moz-box-shadow: 0 2px 8px rgba(203, 186, 170, 0.75);
+  box-shadow: 0 2px 8px rgba(203, 186, 170, 0.75);
+  -webkit-border-radius: 5px;
+  -moz-border-radius: 5px;
+  -ms-border-radius: 5px;
+  -o-border-radius: 5px;
+  border-radius: 5px;
+}
+/* line 27, C:/www/rim/public/s/public/sass/blocks/good/_preview.sass */
+.goods-preview .goods-preview-img img {
+  display: inline-block;
+  -webkit-border-radius: 5px;
+  -moz-border-radius: 5px;
+  -ms-border-radius: 5px;
+  -o-border-radius: 5px;
+  border-radius: 5px;
+}
+/* line 31, C:/www/rim/public/s/public/sass/blocks/good/_preview.sass */
+.goods-preview .goods-preview-name {
+  display: block;
+  margin: 15px 0 5px 0;
+  color: #5d5d5d;
+  font-size: 16px;
+  line-height: 20px;
+  font-family: Arial, "Helvetica", sans-serif;
+  display: block;
+  max-width: auto;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  -o-text-overflow: ellipsis;
+  -moz-text-overflow: ellipsis;
+}
+/* line 39, C:/www/rim/public/s/public/sass/blocks/good/_preview.sass */
+.goods-preview .goods-preview-name span {
+  border-bottom: 1px solid #918f8b;
+}
+/* line 42, C:/www/rim/public/s/public/sass/blocks/good/_preview.sass */
+.goods-preview .goods-preview-article {
+  color: #626262;
+  font-size: 12px;
+  font-family: Arial, "Helvetica", sans-serif;
+}
+
+/* line 1, C:/www/rim/public/s/public/sass/blocks/good/_list.sass */
+.goods-list {
+  margin-bottom: 70px;
+}
+
+/* line 1, C:/www/rim/public/s/public/sass/blocks/good/_view.sass */
+.good {
+  margin-bottom: 100px;
+}
+/* line 3, C:/www/rim/public/s/public/sass/blocks/good/_view.sass */
+.good .good-article {
+  margin-bottom: 25px;
+}
+/* line 6, C:/www/rim/public/s/public/sass/blocks/good/_view.sass */
+.good .good-article .good-article-text {
+  color: #616161;
+  font-size: 13px;
+  font-family: Arial, "Helvetica", sans-serif;
+}
+/* line 11, C:/www/rim/public/s/public/sass/blocks/good/_view.sass */
+.good .good-article .good-article-num {
+  display: inline-block;
+  padding: 4px 9px;
+  color: white;
+  font-size: 13px;
+  background-color: #a6a39c;
+  -webkit-border-radius: 5px;
+  -moz-border-radius: 5px;
+  -ms-border-radius: 5px;
+  -o-border-radius: 5px;
+  border-radius: 5px;
+  font-family: Arial, "Helvetica", sans-serif;
+}
+/* line 22, C:/www/rim/public/s/public/sass/blocks/good/_view.sass */
+.good .good-main-box {
+  padding-bottom: 45px;
+  border: 1px solid #e5dcd1;
+  -webkit-border-radius: 5px;
+  -moz-border-radius: 5px;
+  -ms-border-radius: 5px;
+  -o-border-radius: 5px;
+  border-radius: 5px;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
+}
+/* line 28, C:/www/rim/public/s/public/sass/blocks/good/_view.sass */
+.good .good-main-box .good-img {
+  width: 730px;
+  max-height: 360px;
+  margin: -1px 0 30px -1px;
+  text-align: center;
+  background-color: #efece4;
+  -webkit-border-radius: 5px 5px 0 0;
+  -moz-border-radius: 5px 5px 0 0;
+  -ms-border-radius: 5px 5px 0 0;
+  -o-border-radius: 5px 5px 0 0;
+  border-radius: 5px 5px 0 0;
+  -webkit-box-shadow: 0 2px 8px rgba(203, 186, 170, 0.75);
+  -moz-box-shadow: 0 2px 8px rgba(203, 186, 170, 0.75);
+  box-shadow: 0 2px 8px rgba(203, 186, 170, 0.75);
+}
+/* line 37, C:/www/rim/public/s/public/sass/blocks/good/_view.sass */
+.good .good-main-box .good-img img {
+  display: inline-block;
+}
+/* line 40, C:/www/rim/public/s/public/sass/blocks/good/_view.sass */
+.good .good-main-box .good-box {
+  text-align: center;
+}
+/* line 43, C:/www/rim/public/s/public/sass/blocks/good/_view.sass */
+.good .good-main-box .good-box .good-price-box {
+  display: inline-block;
+  position: relative;
+  margin-bottom: 20px;
+}
+/* line 22, C:/www/rim/public/s/public/sass/mixin/_font.scss */
+.good .good-main-box .good-box .good-price-box:after {
+  display: table;
+  content: " ";
+  clear: both;
+}
+/* line 49, C:/www/rim/public/s/public/sass/blocks/good/_view.sass */
+.good .good-main-box .good-box .good-price-box.with-old-price .old-price {
+  display: block;
+}
+/* line 52, C:/www/rim/public/s/public/sass/blocks/good/_view.sass */
+.good .good-main-box .good-box .good-price-box .good-btn {
+  float: left;
+}
+/* line 55, C:/www/rim/public/s/public/sass/blocks/good/_view.sass */
+.good .good-main-box .good-box .good-price {
+  display: block;
+  float: left;
+  padding: 0 35px 0 30px;
+  margin-right: 15px;
+  height: 43px;
+  border: 1px solid #c2c2c2;
+  background-color: rgba(247, 245, 238, 0.01);
+  -webkit-border-radius: 24px;
+  -moz-border-radius: 24px;
+  -ms-border-radius: 24px;
+  -o-border-radius: 24px;
+  border-radius: 24px;
+}
+/* line 65, C:/www/rim/public/s/public/sass/blocks/good/_view.sass */
+.good .good-main-box .good-box .good-price .price {
+  float: left;
+  color: #bb4139;
+  font-size: 22px;
+  line-height: 43px;
+  font-weight: bold;
+  font-family: Arial, "Helvetica", sans-serif;
+}
+/* line 73, C:/www/rim/public/s/public/sass/blocks/good/_view.sass */
+.good .good-main-box .good-box .good-price .old-price {
+  display: none;
+  position: relative;
+  float: left;
+  margin-right: 20px;
+  color: #474747;
+  font-size: 20px;
+  line-height: 44px;
+  font-weight: bold;
+  font-family: Arial, "Helvetica", sans-serif;
+}
+/* line 83, C:/www/rim/public/s/public/sass/blocks/good/_view.sass */
+.good .good-main-box .good-box .good-price .old-price:after {
+  display: block;
+  top: 20px;
+  left: 0;
+  position: absolute;
+  content: " ";
+  width: 102%;
+  height: 1px;
+  background-color: #c2554d;
+  -webkit-transform: rotate(20deg);
+  -moz-transform: rotate(20deg);
+  -ms-transform: rotate(20deg);
+  -o-transform: rotate(20deg);
+  transform: rotate(20deg);
+}
+/* line 94, C:/www/rim/public/s/public/sass/blocks/good/_view.sass */
+.good .good-main-box .good-box .ico-price {
+  display: block;
+  position: absolute;
+  top: 17px;
+  left: 10px;
+  width: 10px;
+  height: 10px;
+  border: 1px solid #c2c2c2;
+  -webkit-border-radius: 50%;
+  -moz-border-radius: 50%;
+  -ms-border-radius: 50%;
+  -o-border-radius: 50%;
+  border-radius: 50%;
+}
+/* line 104, C:/www/rim/public/s/public/sass/blocks/good/_view.sass */
+.good .good-main-box .good-info {
+  margin: 0 45px 20px 45px;
+}
+/* line 108, C:/www/rim/public/s/public/sass/blocks/good/_view.sass */
+.good .good-main-box .good-info .simple-text h2 {
+  margin-bottom: 15px;
+  color: dimgrey;
+  font-size: 18px;
+  font-weight: bold;
+  font-family: Arial, "Helvetica", sans-serif;
+}
+/* line 115, C:/www/rim/public/s/public/sass/blocks/good/_view.sass */
+.good .good-main-box .good-info .simple-text p {
+  margin-bottom: 35px;
+  color: #454545;
+  font-size: 14px;
+  font-family: Arial, "Helvetica", sans-serif;
+}
+/* line 121, C:/www/rim/public/s/public/sass/blocks/good/_view.sass */
+.good .good-main-box .good-info .simple-text table {
+  width: 630px;
+  margin-top: -10px;
+}
+/* line 126, C:/www/rim/public/s/public/sass/blocks/good/_view.sass */
+.good .good-main-box .good-info .simple-text table tr th {
+  display: inline-block;
+  width: 160px;
+  padding: 12px 10px 12px 0;
+  margin-right: 20px;
+  color: #747474;
+  font-size: 14px;
+  border-bottom: 1px solid #cbc8c2;
+  font-family: Arial, "Helvetica", sans-serif;
+}
+/* line 136, C:/www/rim/public/s/public/sass/blocks/good/_view.sass */
+.good .good-main-box .good-info .simple-text table tr td {
+  display: inline-block;
+  width: 425px;
+  padding: 12px 10px 12px 0;
+  color: #454545;
+  font-size: 14px;
+  border-bottom: 1px solid #cbc8c2;
+  font-family: Arial, "Helvetica", sans-serif;
+}
+/* line 145, C:/www/rim/public/s/public/sass/blocks/good/_view.sass */
+.good .good-main-box .good-info .simple-text table tr a {
+  color: #a80000;
+  font-size: 14px;
+  border-bottom: 1px solid rgba(168, 0, 0, 0.6);
+  font-family: Arial, "Helvetica", sans-serif;
+}
+/* line 150, C:/www/rim/public/s/public/sass/blocks/good/_view.sass */
+.good .good-main-box .good-info .simple-text table tr a:hover {
+  border-bottom: 1px solid transparent;
+}
+
+/* line 1, C:/www/rim/public/s/public/sass/blocks/good/popup/_main.sass */
+.good-popup {
+  display: none;
+  position: fixed;
+  top: 50px;
+  left: 50%;
+  margin-left: -320px;
+  width: 500px;
+  padding: 40px 95px 40px 50px;
+  background: white url("/s/public/images/site/popup-bg.png") top center no-repeat;
+  z-index: 999;
+  -webkit-border-radius: 3px;
+  -moz-border-radius: 3px;
+  -ms-border-radius: 3px;
+  -o-border-radius: 3px;
+  border-radius: 3px;
+}
+/* line 13, C:/www/rim/public/s/public/sass/blocks/good/popup/_main.sass */
+.good-popup .good-popup-close {
+  display: block;
+  position: absolute;
+  top: 25px;
+  right: 25px;
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+}
+/* line 22, C:/www/rim/public/s/public/sass/blocks/good/popup/_main.sass */
+.good-popup .good-popup-close .ico-good-popup-close {
+  top: 0;
+  left: 0;
+}
+/* line 26, C:/www/rim/public/s/public/sass/blocks/good/popup/_main.sass */
+.good-popup .good-popup-title {
+  margin-bottom: 10px;
+  color: #3f3f3f;
+  font-size: 22px;
+  font-weight: bold;
+  font-family: Arial, "Helvetica", sans-serif;
+}
+/* line 33, C:/www/rim/public/s/public/sass/blocks/good/popup/_main.sass */
+.good-popup .good-popup-name {
+  margin-bottom: 20px;
+  color: #ba0404;
+  font-size: 22px;
+  font-weight: bold;
+  font-family: Arial, "Helvetica", sans-serif;
+}
+/* line 40, C:/www/rim/public/s/public/sass/blocks/good/popup/_main.sass */
+.good-popup .good-popup-text {
+  margin-bottom: 20px;
+  color: #7f7f7f;
+  font-size: 13px;
+  line-height: 20px;
+  font-family: Arial, "Helvetica", sans-serif;
+}
+/* line 47, C:/www/rim/public/s/public/sass/blocks/good/popup/_main.sass */
+.good-popup .good-popup-text .popup-link {
+  color: #a10000;
+  font-size: 13px;
+  line-height: 20px;
+  border-bottom: 1px solid #e3b2b2;
+}
+/* line 53, C:/www/rim/public/s/public/sass/blocks/good/popup/_main.sass */
+.good-popup .good-popup-text .popup-link:hover {
+  border-bottom: 1px solid transparent;
+}
+/* line 56, C:/www/rim/public/s/public/sass/blocks/good/popup/_main.sass */
+.good-popup .good-popup-input-list {
+  width: 245px;
+  float: left;
+}
+/* line 59, C:/www/rim/public/s/public/sass/blocks/good/popup/_main.sass */
+.good-popup .good-popup-input-list.last {
+  float: right;
+}
+/* line 61, C:/www/rim/public/s/public/sass/blocks/good/popup/_main.sass */
+.good-popup input {
+  width: 223px;
+  margin: 0 0 15px 0;
+  padding: 8px 10px 9px 10px;
+  color: #797979;
+  font-size: 14px;
+  font-weight: bold;
+  outline: none;
+  border: 1px solid lightgrey;
+  background-color: white;
+  font-family: Arial, "Helvetica", sans-serif;
+  -webkit-border-radius: 4px;
+  -moz-border-radius: 4px;
+  -ms-border-radius: 4px;
+  -o-border-radius: 4px;
+  border-radius: 4px;
+  -webkit-box-shadow: inset 0 3px 4px rgba(172, 172, 172, 0.24);
+  -moz-box-shadow: inset 0 3px 4px rgba(172, 172, 172, 0.24);
+  box-shadow: inset 0 3px 4px rgba(172, 172, 172, 0.24);
+}
+/* line 75, C:/www/rim/public/s/public/sass/blocks/good/popup/_main.sass */
+.good-popup textarea {
+  width: 500px;
+  height: 80px;
+  margin: 0 0 30px 0;
+  padding: 8px 10px 9px 10px;
+  color: #797979;
+  font-size: 14px;
+  font-weight: bold;
+  outline: none;
+  resize: none;
+  border: 1px solid lightgrey;
+  background-color: white;
+  -webkit-border-radius: 4px;
+  -moz-border-radius: 4px;
+  -ms-border-radius: 4px;
+  -o-border-radius: 4px;
+  border-radius: 4px;
+  -webkit-box-shadow: inset 0 3px 4px rgba(172, 172, 172, 0.24);
+  -moz-box-shadow: inset 0 3px 4px rgba(172, 172, 172, 0.24);
+  box-shadow: inset 0 3px 4px rgba(172, 172, 172, 0.24);
+  font-family: Arial, "Helvetica", sans-serif;
+}
+/* line 91, C:/www/rim/public/s/public/sass/blocks/good/popup/_main.sass */
+.good-popup ::-webkit-input-placeholder {
+  color: #b8b8b8;
+  font-size: 14px;
+  font-weight: normal;
+  font-family: Arial, "Helvetica", sans-serif;
+}
+/* line 97, C:/www/rim/public/s/public/sass/blocks/good/popup/_main.sass */
+.good-popup ::-moz-placeholder {
+  color: #b8b8b8;
+  font-size: 14px;
+  font-weight: normal;
+  font-family: Arial, "Helvetica", sans-serif;
+}
+/* line 103, C:/www/rim/public/s/public/sass/blocks/good/popup/_main.sass */
+.good-popup ::-moz-placeholder {
+  color: #b8b8b8;
+  font-size: 14px;
+  font-weight: normal;
+  font-family: Arial, "Helvetica", sans-serif;
+}
+/* line 109, C:/www/rim/public/s/public/sass/blocks/good/popup/_main.sass */
+.good-popup ::-ms-input-placeholder {
+  color: #b8b8b8;
+  font-size: 14px;
+  font-weight: normal;
+  font-family: Arial, "Helvetica", sans-serif;
+}
+
+/* line 115, C:/www/rim/public/s/public/sass/blocks/good/popup/_main.sass */
+#overlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: #908984;
+  z-index: 998;
+  filter: progid:DXImageTransform.Microsoft.Alpha(Opacity=70);
+  opacity: 0.7;
+}
+
+/* line 2, C:/www/rim/public/s/public/sass/blocks/category/_filter.sass */
+.category-filter .rm-select {
+  margin-right: 14px;
+}
+/* line 4, C:/www/rim/public/s/public/sass/blocks/category/_filter.sass */
+.category-filter .rm-select.last {
+  margin-right: 0;
+}
+/* line 7, C:/www/rim/public/s/public/sass/blocks/category/_filter.sass */
+.category-filter .category-filter-select-list {
+  margin-bottom: 5px;
+}
+/* line 10, C:/www/rim/public/s/public/sass/blocks/category/_filter.sass */
+.category-filter .category-filter-box {
+  margin-bottom: 20px;
+}
+/* line 13, C:/www/rim/public/s/public/sass/blocks/category/_filter.sass */
+.category-filter .category-filter-goods {
+  float: left;
+  color: #6b6b6b;
+  font-size: 19px;
+  line-height: 31px;
+  font-family: Arial, "Helvetica", sans-serif;
+}
+
+/* line 20, C:/www/rim/public/s/public/sass/blocks/category/_filter.sass */
+.category-filter-amount {
+  float: right;
+}
+/* line 23, C:/www/rim/public/s/public/sass/blocks/category/_filter.sass */
+.category-filter-amount .category-filter-amount-text {
+  display: block;
+  float: left;
+  margin-right: 15px;
+  color: #988e8a;
+  font-size: 13px;
+  line-height: 32px;
+  font-family: Arial, "Helvetica", sans-serif;
+}
+/* line 32, C:/www/rim/public/s/public/sass/blocks/category/_filter.sass */
+.category-filter-amount .category-filter-amount-box {
+  display: block;
+  float: left;
+  border: 1px solid #d4d0c4;
+  -webkit-border-radius: 5px;
+  -moz-border-radius: 5px;
+  -ms-border-radius: 5px;
+  -o-border-radius: 5px;
+  border-radius: 5px;
+  -webkit-box-shadow: 0 1px 4px rgba(203, 186, 170, 0.56);
+  -moz-box-shadow: 0 1px 4px rgba(203, 186, 170, 0.56);
+  box-shadow: 0 1px 4px rgba(203, 186, 170, 0.56);
+}
+/* line 39, C:/www/rim/public/s/public/sass/blocks/category/_filter.sass */
+.category-filter-amount .category-filter-amount-box .category-filter-amount-item {
+  display: inline-block;
+  float: left;
+  width: 34px;
+  height: 31px;
+  color: #766c68;
+  font-size: 13px;
+  font-weight: bold;
+  line-height: 31px;
+  text-align: center;
+  background-color: #fbfaf6;
+  cursor: pointer;
+  font-family: Arial, "Helvetica", sans-serif;
+  *zoom: 1;
+  filter: progid:DXImageTransform.Microsoft.gradient(gradientType=0, startColorstr='#FFFBFAF6', endColorstr='#FFF1EEE4');
+  background-image: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #fbfaf6), color-stop(100%, #f1eee4));
+  background-image: -webkit-linear-gradient(top, #fbfaf6 0%, #f1eee4 100%);
+  background-image: -moz-linear-gradient(top, #fbfaf6 0%, #f1eee4 100%);
+  background-image: -o-linear-gradient(top, #fbfaf6 0%, #f1eee4 100%);
+  background-image: linear-gradient(top, #fbfaf6 0%, #f1eee4 100%);
+}
+/* line 55, C:/www/rim/public/s/public/sass/blocks/category/_filter.sass */
+.category-filter-amount .category-filter-amount-box .category-filter-amount-item.clicked {
+  color: #8e776d;
+  background-color: #e9e3d1;
+  *zoom: 1;
+  filter: progid:DXImageTransform.Microsoft.gradient(gradientType=0, startColorstr='#FFE9E3D1', endColorstr='#FFFBFAF7');
+  background-image: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #e9e3d1), color-stop(33%, #eeeadb), color-stop(70%, #f6f4ed), color-stop(100%, #fbfaf7));
+  background-image: -webkit-linear-gradient(top, #e9e3d1 0%, #eeeadb 33%, #f6f4ed 70%, #fbfaf7 100%);
+  background-image: -moz-linear-gradient(top, #e9e3d1 0%, #eeeadb 33%, #f6f4ed 70%, #fbfaf7 100%);
+  background-image: -o-linear-gradient(top, #e9e3d1 0%, #eeeadb 33%, #f6f4ed 70%, #fbfaf7 100%);
+  background-image: linear-gradient(top, #e9e3d1 0%, #eeeadb 33%, #f6f4ed 70%, #fbfaf7 100%);
+}
+/* line 61, C:/www/rim/public/s/public/sass/blocks/category/_filter.sass */
+.category-filter-amount .category-filter-amount-box .category-filter-amount-item.first {
+  border-right: 1px solid #d4d0c4;
+  -webkit-border-radius: 5px 0 0 5px;
+  -moz-border-radius: 5px 0 0 5px;
+  -ms-border-radius: 5px 0 0 5px;
+  -o-border-radius: 5px 0 0 5px;
+  border-radius: 5px 0 0 5px;
+}
+/* line 65, C:/www/rim/public/s/public/sass/blocks/category/_filter.sass */
+.category-filter-amount .category-filter-amount-box .category-filter-amount-item.last {
+  border-left: 1px solid #d4d0c4;
+  -webkit-border-radius: 0 5px 5px 0;
+  -moz-border-radius: 0 5px 5px 0;
+  -ms-border-radius: 0 5px 5px 0;
+  -o-border-radius: 0 5px 5px 0;
+  border-radius: 0 5px 5px 0;
+}
+
+/* line 1, C:/www/rim/public/s/public/sass/blocks/category/_dd.sass */
+.dd-choose-item {
+  display: inline-block;
+  position: relative;
+  margin: 0 10px 15px 0;
+}
+/* line 5, C:/www/rim/public/s/public/sass/blocks/category/_dd.sass */
+.dd-choose-item.last {
+  margin-right: 0;
+}
+/* line 7, C:/www/rim/public/s/public/sass/blocks/category/_dd.sass */
+.dd-choose-item.open {
+  z-index: 3;
+}
+/* line 9, C:/www/rim/public/s/public/sass/blocks/category/_dd.sass */
+.dd-choose-item.open .dd-choose-item-btn {
+  background: white;
+  border-bottom-color: transparent;
+  z-index: 2;
+  -webkit-box-shadow: 1px -1px 4px -1px rgba(203, 186, 170, 0.56);
+  -moz-box-shadow: 1px -1px 4px -1px rgba(203, 186, 170, 0.56);
+  box-shadow: 1px -1px 4px -1px rgba(203, 186, 170, 0.56);
+  -webkit-border-radius: 6px 6px 0 0;
+  -moz-border-radius: 6px 6px 0 0;
+  -ms-border-radius: 6px 6px 0 0;
+  -o-border-radius: 6px 6px 0 0;
+  border-radius: 6px 6px 0 0;
+}
+/* line 16, C:/www/rim/public/s/public/sass/blocks/category/_dd.sass */
+.dd-choose-item .dd-choose-item-btn {
+  display: block;
+  position: relative;
+  width: 175px;
+  padding: 8px 15px 9px 15px;
+  color: #4f3028;
+  cursor: pointer;
+  border: 1px solid #d4d0c4;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  o-text-overflow: ellipsis;
+  background-color: #fbfaf6;
+  -webkit-border-radius: 6px;
+  -moz-border-radius: 6px;
+  -ms-border-radius: 6px;
+  -o-border-radius: 6px;
+  border-radius: 6px;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
+  -webkit-box-shadow: 0 1px 4px rgba(203, 186, 170, 0.56);
+  -moz-box-shadow: 0 1px 4px rgba(203, 186, 170, 0.56);
+  box-shadow: 0 1px 4px rgba(203, 186, 170, 0.56);
+  *zoom: 1;
+  filter: progid:DXImageTransform.Microsoft.gradient(gradientType=0, startColorstr='#FFFBFAF6', endColorstr='#FFF1EEE4');
+  background-image: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #fbfaf6), color-stop(100%, #f1eee4));
+  background-image: -webkit-linear-gradient(top, #fbfaf6 0%, #f1eee4 100%);
+  background-image: -moz-linear-gradient(top, #fbfaf6 0%, #f1eee4 100%);
+  background-image: -o-linear-gradient(top, #fbfaf6 0%, #f1eee4 100%);
+  background-image: linear-gradient(top, #fbfaf6 0%, #f1eee4 100%);
+}
+/* line 36, C:/www/rim/public/s/public/sass/blocks/category/_dd.sass */
+.dd-choose-item .dd-choose-item-btn .dd-choose-item-main-text {
+  color: #766c68;
+  font-size: 13px;
+  font-weight: bold;
+  font-family: Arial, "Helvetica", sans-serif;
+}
+/* line 42, C:/www/rim/public/s/public/sass/blocks/category/_dd.sass */
+.dd-choose-item .dd-choose-item-btn .dd-choose-item-sec-text {
+  color: #aa9a90;
+  font-size: 13px;
+}
+/* line 46, C:/www/rim/public/s/public/sass/blocks/category/_dd.sass */
+.dd-choose-item .dd-choose-item-btn .ico-marker {
+  display: block;
+  position: absolute;
+  top: 14px;
+  right: 13px;
+  cursor: pointer;
+  -webkit-transition: all 0.2s ease-in;
+  -moz-transition: all 0.2s ease-in;
+  -o-transition: all 0.2s ease-in;
+  transition: all 0.2s ease-in;
+}
+/* line 54, C:/www/rim/public/s/public/sass/blocks/category/_dd.sass */
+.dd-choose-item .dd-choose-item-box {
+  display: none;
+  height: auto;
+  width: 200%;
+  padding: 20px;
+  background-color: white;
+  border: 1px solid #d4d0c4;
+  position: absolute;
+  top: 32px;
+  z-index: 1;
+  -webkit-border-radius: 0 6px 6px 6px;
+  -moz-border-radius: 0 6px 6px 6px;
+  -ms-border-radius: 0 6px 6px 6px;
+  -o-border-radius: 0 6px 6px 6px;
+  border-radius: 0 6px 6px 6px;
+  -webkit-box-shadow: 0 1px 4px rgba(203, 186, 170, 0.56);
+  -moz-box-shadow: 0 1px 4px rgba(203, 186, 170, 0.56);
+  box-shadow: 0 1px 4px rgba(203, 186, 170, 0.56);
+  -moz-placeholder-color: #b8b8b8;
+  -moz-placeholder-font-size: 13px;
+  -moz-placeholder-font-style: italic;
+  -moz-placeholder-font-weight: normal;
+  -moz-placeholder-font-family: Arial, "Helvetica", sans-serif;
+  -ms-input-placeholder-color: #b8b8b8;
+  -ms-input-placeholder-font-size: 13px;
+  -ms-input-placeholder-font-style: italic;
+  -ms-input-placeholder-font-weight: normal;
+  -ms-input-placeholder-font-family: Arial, "Helvetica", sans-serif;
+}
+/* line 66, C:/www/rim/public/s/public/sass/blocks/category/_dd.sass */
+.dd-choose-item .dd-choose-item-box.price-dd-box {
+  width: 360px;
+}
+/* line 68, C:/www/rim/public/s/public/sass/blocks/category/_dd.sass */
+.dd-choose-item .dd-choose-item-box.positioned {
+  -webkit-border-radius: 6px 0 6px 6px;
+  -moz-border-radius: 6px 0 6px 6px;
+  -ms-border-radius: 6px 0 6px 6px;
+  -o-border-radius: 6px 0 6px 6px;
+  border-radius: 6px 0 6px 6px;
+}
+/* line 70, C:/www/rim/public/s/public/sass/blocks/category/_dd.sass */
+.dd-choose-item .dd-choose-item-box.positioned-center {
+  -webkit-border-radius: 6px;
+  -moz-border-radius: 6px;
+  -ms-border-radius: 6px;
+  -o-border-radius: 6px;
+  border-radius: 6px;
+}
+/* line 73, C:/www/rim/public/s/public/sass/blocks/category/_dd.sass */
+.dd-choose-item .dd-choose-item-box input[type="text"] {
+  width: 60px;
+  height: 28px;
+  padding: 0 10px;
+  color: #797979;
+  font-size: 13px;
+  font-weight: bold;
+  background-color: white;
+  outline: none;
+  border: 1px solid lightgrey;
+  font-family: Arial, "Helvetica", sans-serif;
+  -webkit-border-radius: 4px;
+  -moz-border-radius: 4px;
+  -ms-border-radius: 4px;
+  -o-border-radius: 4px;
+  border-radius: 4px;
+  -webkit-box-shadow: inset 1px 1px 2px rgba(172, 172, 172, 0.19);
+  -moz-box-shadow: inset 1px 1px 2px rgba(172, 172, 172, 0.19);
+  box-shadow: inset 1px 1px 2px rgba(172, 172, 172, 0.19);
+}
+/* line 87, C:/www/rim/public/s/public/sass/blocks/category/_dd.sass */
+.dd-choose-item .dd-choose-item-box ::-webkit-input-placeholder {
+  color: #b8b8b8;
+  font-size: 13px;
+  font-style: italic;
+  font-weight: normal;
+  font-family: Arial, "Helvetica", sans-serif;
+}
+/* line 101, C:/www/rim/public/s/public/sass/blocks/category/_dd.sass */
+.dd-choose-item .dd-choose-item-box ::-moz-placeholder {
+  color: #b8b8b8;
+  font-size: 13px;
+  font-style: italic;
+  font-weight: normal;
+  font-family: Arial, "Helvetica", sans-serif;
+}
+/* line 115, C:/www/rim/public/s/public/sass/blocks/category/_dd.sass */
+.dd-choose-item .dd-choose-item-box .dd-choose-item-unit-box {
+  display: inline-block;
+  float: left;
+  width: 50%;
+}
+/* line 120, C:/www/rim/public/s/public/sass/blocks/category/_dd.sass */
+.dd-choose-item .dd-choose-item-box .dd-choose-item-unit-box.current .dd-choose-item-unit {
+  width: 80%;
+}
+/* line 123, C:/www/rim/public/s/public/sass/blocks/category/_dd.sass */
+.dd-choose-item .dd-choose-item-box .dd-choose-item-unit-box.current .dd-choose-item-unit .dd-choose-item-unit-name {
+  color: #a10000;
+  font-size: 14px;
+  border-bottom: 1px solid transparent;
+}
+/* line 128, C:/www/rim/public/s/public/sass/blocks/category/_dd.sass */
+.dd-choose-item .dd-choose-item-box .dd-choose-item-unit-box .dd-choose-item-unit {
+  display: inline-block;
+  width: 100%;
+  padding: 4px 0;
+  cursor: pointer;
+}
+/* line 135, C:/www/rim/public/s/public/sass/blocks/category/_dd.sass */
+.dd-choose-item .dd-choose-item-box .dd-choose-item-unit-box .dd-choose-item-unit:hover .dd-choose-item-unit-name.red {
+  border-bottom: 1px solid transparent;
+}
+/* line 138, C:/www/rim/public/s/public/sass/blocks/category/_dd.sass */
+.dd-choose-item .dd-choose-item-box .dd-choose-item-unit-box .dd-choose-item-unit .dd-choose-item-unit-name {
+  color: #5d5d5d;
+  font-size: 14px;
+  line-height: 21px;
+  font-family: Arial, "Helvetica", sans-serif;
+}
+/* line 144, C:/www/rim/public/s/public/sass/blocks/category/_dd.sass */
+.dd-choose-item .dd-choose-item-box .dd-choose-item-unit-box .dd-choose-item-unit .dd-choose-item-unit-name.red {
+  color: #a10000;
+  font-size: 14px;
+  line-height: 21px;
+  border-bottom: 1px solid #e3b4b4;
+  font-family: Arial, "Helvetica", sans-serif;
+}
+/* line 151, C:/www/rim/public/s/public/sass/blocks/category/_dd.sass */
+.dd-choose-item .dd-choose-item-box .dd-choose-item-unit-box .dd-choose-item-unit .dd-choose-item-count {
+  display: inline-block;
+  margin-top: 2px;
+  color: #a3a3a3;
+  font-size: 13px;
+  border-bottom: 0;
+  font-family: Arial, "Helvetica", sans-serif;
+}
+/* line 159, C:/www/rim/public/s/public/sass/blocks/category/_dd.sass */
+.dd-choose-item .dd-choose-item-box .dd-choose-item-unit-box .dd-choose-item-unit .input-checkbox {
+  float: left;
+  margin: 5px 10px 0 0;
+}
+/* line 163, C:/www/rim/public/s/public/sass/blocks/category/_dd.sass */
+.dd-choose-item .dd-choose-item-box .dd-choose-item-unit-box .dd-choose-item-unit .label-text {
+  float: left;
+  width: 80%;
+  line-height: 16px;
+  overflow: hidden;
+  cursor: pointer;
+}
+/* line 170, C:/www/rim/public/s/public/sass/blocks/category/_dd.sass */
+.dd-choose-item .dd-choose-item-box .dd-choose-item-unit-box .dd-choose-item-unit .label-text .dd-choose-item-unit-name {
+  border-bottom: 0;
+}
+/* line 173, C:/www/rim/public/s/public/sass/blocks/category/_dd.sass */
+.dd-choose-item .dd-choose-item-box .dd-choose-item-box-title {
+  margin-bottom: 20px;
+  color: #baaea1;
+  font-size: 13px;
+  font-style: italic;
+}
+/* line 179, C:/www/rim/public/s/public/sass/blocks/category/_dd.sass */
+.dd-choose-item .dd-choose-item-box .dd-size-item {
+  position: relative;
+  margin-bottom: 15px;
+  overflow: hidden;
+}
+/* line 184, C:/www/rim/public/s/public/sass/blocks/category/_dd.sass */
+.dd-choose-item .dd-choose-item-box .dd-size-item .dd-size-item-text {
+  display: inline-block;
+  float: left;
+  width: 35%;
+  padding: 8px 5% 7px 0;
+  color: #6b6b6b;
+  font-size: 13px;
+  line-height: 18px;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+/* line 194, C:/www/rim/public/s/public/sass/blocks/category/_dd.sass */
+.dd-choose-item .dd-choose-item-box .dd-size-item .dd-size-item-inputs {
+  float: left;
+}
+/* line 197, C:/www/rim/public/s/public/sass/blocks/category/_dd.sass */
+.dd-choose-item .dd-choose-item-box .dd-size-item .dd-size-item-inputs .dd-size-item-input {
+  float: left;
+  width: 65px;
+  margin-right: 10px;
+}
+/* line 202, C:/www/rim/public/s/public/sass/blocks/category/_dd.sass */
+.dd-choose-item .dd-choose-item-box .dd-size-item .ico-filter-del {
+  width: 10px;
+  height: 10px;
+  top: 9px;
+  right: 0;
+  cursor: pointer;
+}
+/* line 209, C:/www/rim/public/s/public/sass/blocks/category/_dd.sass */
+.dd-choose-item .dd-choose-item-btn-container {
+  padding-top: 20px;
+}
+/* line 211, C:/www/rim/public/s/public/sass/blocks/category/_dd.sass */
+.dd-choose-item .dd-choose-item-btn-container.small-indent {
+  padding-top: 10px;
+}
+/* line 214, C:/www/rim/public/s/public/sass/blocks/category/_dd.sass */
+.dd-choose-item .letter-choose-list {
+  margin-bottom: 10px;
+  padding-bottom: 10px;
+  background: url("/s/public/images/site/filter-border.png") left bottom repeat-x;
+}
+/* line 219, C:/www/rim/public/s/public/sass/blocks/category/_dd.sass */
+.dd-choose-item .letter-choose-list .letter-choose-item {
+  display: inline-block;
+  float: left;
+  width: 27px;
+  height: 27px;
+  margin-right: 1px;
+  color: #5d5d5d;
+  text-align: center;
+  font-size: 15px;
+  line-height: 27px;
+  cursor: pointer;
+  text-transform: uppercase;
+  -webkit-border-radius: 13px;
+  -moz-border-radius: 13px;
+  -ms-border-radius: 13px;
+  -o-border-radius: 13px;
+  border-radius: 13px;
+}
+/* line 232, C:/www/rim/public/s/public/sass/blocks/category/_dd.sass */
+.dd-choose-item .letter-choose-list .letter-choose-item.current {
+  background-color: #8f8d89;
+  color: white;
+  line-height: 26px;
+  font-weight: bold;
+}
+
+/* line 238, C:/www/rim/public/s/public/sass/blocks/category/_dd.sass */
+.main-btn {
+  float: left;
+  margin-right: 15px;
+  padding: 5px 20px 7px 20px;
+  outline: none;
+  border: 1px solid #d3cfc3;
+  background-color: #fbfaf6;
+  color: #756b67;
+  font-size: 13px;
+  font-weight: bold;
+  font-family: Arial, "Helvetica", sans-serif;
+  -webkit-border-radius: 15px;
+  -moz-border-radius: 15px;
+  -ms-border-radius: 15px;
+  -o-border-radius: 15px;
+  border-radius: 15px;
+  -webkit-box-shadow: 0 1px 4px rgba(203, 186, 170, 0.56);
+  -moz-box-shadow: 0 1px 4px rgba(203, 186, 170, 0.56);
+  box-shadow: 0 1px 4px rgba(203, 186, 170, 0.56);
+  *zoom: 1;
+  filter: progid:DXImageTransform.Microsoft.gradient(gradientType=0, startColorstr='#FFFBFAF6', endColorstr='#FFF1EEE4');
+  background-image: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #fbfaf6), color-stop(100%, #f1eee4));
+  background-image: -webkit-linear-gradient(top, #fbfaf6 0%, #f1eee4 100%);
+  background-image: -moz-linear-gradient(top, #fbfaf6 0%, #f1eee4 100%);
+  background-image: -o-linear-gradient(top, #fbfaf6 0%, #f1eee4 100%);
+  background-image: linear-gradient(top, #fbfaf6 0%, #f1eee4 100%);
+}
+
+/* line 254, C:/www/rim/public/s/public/sass/blocks/category/_dd.sass */
+.cancel-link {
+  float: left;
+  padding: 7px 20px 8px 20px;
+  border: 1px solid #cdc7bb;
+  color: #807867;
+  font-size: 13px;
+  background-color: rgba(255, 255, 255, 0.01);
+  cursor: pointer;
+  font-family: Arial, "Helvetica", sans-serif;
+  -webkit-border-radius: 15px;
+  -moz-border-radius: 15px;
+  -ms-border-radius: 15px;
+  -o-border-radius: 15px;
+  border-radius: 15px;
+}
+
+/* line 265, C:/www/rim/public/s/public/sass/blocks/category/_dd.sass */
+.catalog-price-filter-container {
+  margin-left: 25px;
+}
+/* line 267, C:/www/rim/public/s/public/sass/blocks/category/_dd.sass */
+.catalog-price-filter-container .price-input {
+  float: left;
+  margin: 2px 10px 0 0;
+}
+
+/* line 271, C:/www/rim/public/s/public/sass/blocks/category/_dd.sass */
+.go-to-all-link-container {
+  margin-bottom: 10px;
+  padding-bottom: 20px;
+  background: url("/s/public/images/site/filter-border.png") left bottom repeat-x;
+}
+
+/* line 276, C:/www/rim/public/s/public/sass/blocks/category/_dd.sass */
+.all-items-link {
+  display: inline-block;
+  float: left;
+  margin-right: -10px;
+  padding: 0 11px;
+  font-size: 14px;
+  color: #8f8d89;
+  line-height: 27px;
+  height: 27px;
+  font-weight: bold;
+  font-family: Arial, "Helvetica", sans-serif;
+}
+/* line 287, C:/www/rim/public/s/public/sass/blocks/category/_dd.sass */
+.all-items-link:hover {
+  border-bottom: none;
+}
+/* line 289, C:/www/rim/public/s/public/sass/blocks/category/_dd.sass */
+.all-items-link.current {
+  color: white;
+  cursor: default;
+  background-color: #8f8d89;
+  -webkit-border-radius: 11px;
+  -moz-border-radius: 11px;
+  -ms-border-radius: 11px;
+  -o-border-radius: 11px;
+  border-radius: 11px;
+}
+
+/* line 296, C:/www/rim/public/s/public/sass/blocks/category/_dd.sass */
+.all-items-count-text {
+  float: right;
+  margin-top: 10px;
+  color: #a3a3a3;
+  font-size: 13px;
+  font-style: italic;
+  font-family: Arial, "Helvetica", sans-serif;
+}
+
+/* line 304, C:/www/rim/public/s/public/sass/blocks/category/_dd.sass */
+.filter-chosen-items {
+  float: left;
+  max-width: 700px;
+  padding: 8px 0 25px 0;
+  overflow: hidden;
+}
+
+/* line 310, C:/www/rim/public/s/public/sass/blocks/category/_dd.sass */
+.reset-filter-link {
+  float: right;
+  padding: 0 15px;
+  color: #766c68;
+  font-size: 13px;
+  font-weight: bold;
+  line-height: 31px;
+  text-align: center;
+  background-color: #fbfaf6;
+  border: 1px solid #d4d0c4;
+  cursor: pointer;
+  font-family: Arial, "Helvetica", sans-serif;
+  -webkit-border-radius: 5px;
+  -moz-border-radius: 5px;
+  -ms-border-radius: 5px;
+  -o-border-radius: 5px;
+  border-radius: 5px;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
+  -webkit-box-shadow: 0 1px 4px rgba(203, 186, 170, 0.56);
+  -moz-box-shadow: 0 1px 4px rgba(203, 186, 170, 0.56);
+  box-shadow: 0 1px 4px rgba(203, 186, 170, 0.56);
+  *zoom: 1;
+  filter: progid:DXImageTransform.Microsoft.gradient(gradientType=0, startColorstr='#FFFBFAF6', endColorstr='#FFF1EEE4');
+  background-image: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #fbfaf6), color-stop(100%, #f1eee4));
+  background-image: -webkit-linear-gradient(top, #fbfaf6 0%, #f1eee4 100%);
+  background-image: -moz-linear-gradient(top, #fbfaf6 0%, #f1eee4 100%);
+  background-image: -o-linear-gradient(top, #fbfaf6 0%, #f1eee4 100%);
+  background-image: linear-gradient(top, #fbfaf6 0%, #f1eee4 100%);
+}
+
+/* line 328, C:/www/rim/public/s/public/sass/blocks/category/_dd.sass */
+.checked-item {
+  float: left;
+  margin-right: 15px;
+  padding-right: 15px;
+  position: relative;
+  font-size: 14px;
+  line-height: 21px;
+  font-style: italic;
+  color: #766c68;
+  font-family: Arial, "Helvetica", sans-serif;
+}
+/* line 339, C:/www/rim/public/s/public/sass/blocks/category/_dd.sass */
+.checked-item .ico-filter-del {
+  top: 5px;
+  right: 0;
+  cursor: pointer;
+}
+
+/* line 344, C:/www/rim/public/s/public/sass/blocks/category/_dd.sass */
+.checked-filter-item-list {
+  float: left;
+  width: 525px;
+}
+
+/* line 1, C:/www/rim/public/s/public/sass/blocks/category/_preview.sass */
+.category-preview {
+  display: block;
+  position: relative;
+  float: left;
+  width: 220px;
+  height: 200px;
+  margin: 0 35px 40px 0;
+  cursor: pointer;
+  -webkit-border-radius: 6px;
+  -moz-border-radius: 6px;
+  -ms-border-radius: 6px;
+  -o-border-radius: 6px;
+  border-radius: 6px;
+}
+/* line 10, C:/www/rim/public/s/public/sass/blocks/category/_preview.sass */
+.category-preview.last {
+  margin-right: 0;
+}
+/* line 13, C:/www/rim/public/s/public/sass/blocks/category/_preview.sass */
+.category-preview:hover .category-preview-name {
+  width: 178px;
+  color: white;
+  border: 1px solid #795b54;
+  border-top: 0;
+  background-color: #795b54;
+}
+/* line 20, C:/www/rim/public/s/public/sass/blocks/category/_preview.sass */
+.category-preview .category-preview-img {
+  display: block;
+  width: 220px;
+  height: 150px;
+}
+/* line 25, C:/www/rim/public/s/public/sass/blocks/category/_preview.sass */
+.category-preview .category-preview-img img {
+  -webkit-border-radius: 6px 6px 0px 0px;
+  -moz-border-radius: 6px 6px 0px 0px;
+  -ms-border-radius: 6px 6px 0px 0px;
+  -o-border-radius: 6px 6px 0px 0px;
+  border-radius: 6px 6px 0px 0px;
+}
+/* line 28, C:/www/rim/public/s/public/sass/blocks/category/_preview.sass */
+.category-preview .category-preview-name {
+  display: block;
+  position: absolute;
+  left: 0;
+  bottom: 1px;
+  width: 178px;
+  padding: 14px 20px;
+  color: #5b3732;
+  font-size: 18px;
+  line-height: 20px;
+  text-align: center;
+  background-color: #f7f5ee;
+  border: 1px solid #cebcaa;
+  border-top: 0;
+  font-family: Arial, "Helvetica", sans-serif;
+  -webkit-border-radius: 0px 0px 6px 6px;
+  -moz-border-radius: 0px 0px 6px 6px;
+  -ms-border-radius: 0px 0px 6px 6px;
+  -o-border-radius: 0px 0px 6px 6px;
+  border-radius: 0px 0px 6px 6px;
+  -webkit-transition: all 0.1s ease-in;
+  -moz-transition: all 0.1s ease-in;
+  -o-transition: all 0.1s ease-in;
+  transition: all 0.1s ease-in;
+  -webkit-box-shadow: 0 2px 8px rgba(203, 186, 170, 0.66);
+  -moz-box-shadow: 0 2px 8px rgba(203, 186, 170, 0.66);
+  box-shadow: 0 2px 8px rgba(203, 186, 170, 0.66);
+}
+
+/* line 1, C:/www/rim/public/s/public/sass/blocks/factory/list/_main.sass */
+.factory-list {
+  margin-bottom: 25px;
+}
+/* line 4, C:/www/rim/public/s/public/sass/blocks/factory/list/_main.sass */
+.factory-list .factory-list-category {
+  float: left;
+  margin-right: 40px;
+}
+/* line 8, C:/www/rim/public/s/public/sass/blocks/factory/list/_main.sass */
+.factory-list .factory-list-category .factory-list-category-name {
+  display: table-cell;
+  width: 50px;
+  height: 50px;
+  vertical-align: middle;
+  text-align: center;
+  font-size: 20px;
+  color: #2f2f2f;
+  text-transform: uppercase;
+  border: 1px solid #c4c4c3;
+  font-family: "Georgia", Arial, "Helvetica", sans-serif;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
+  -webkit-border-radius: 50px;
+  -moz-border-radius: 50px;
+  -ms-border-radius: 50px;
+  -o-border-radius: 50px;
+  border-radius: 50px;
+}
+/* line 22, C:/www/rim/public/s/public/sass/blocks/factory/list/_main.sass */
+.factory-list .factory-list-content {
+  float: left;
+}
+/* line 25, C:/www/rim/public/s/public/sass/blocks/factory/list/_main.sass */
+.factory-list .factory-list-content .factory-list-box {
+  float: left;
+  width: 180px;
+  margin-right: 40px;
+}
+/* line 29, C:/www/rim/public/s/public/sass/blocks/factory/list/_main.sass */
+.factory-list .factory-list-content .factory-list-box.last {
+  margin-right: 0;
+}
+/* line 32, C:/www/rim/public/s/public/sass/blocks/factory/list/_main.sass */
+.factory-list .factory-list-content .factory-list-box .factory-list-item {
+  margin-bottom: 15px;
+}
+/* line 35, C:/www/rim/public/s/public/sass/blocks/factory/list/_main.sass */
+.factory-list .factory-list-content .factory-list-box .factory-list-item .factory-list-link {
+  color: #5d5d5d;
+  font-size: 13px;
+  line-height: 19px;
+  text-transform: uppercase;
+  border-bottom: 1px solid #bdbcb8;
+  font-family: Arial, "Helvetica", sans-serif;
+  -webkit-transition: all 0.1s ease-in;
+  -moz-transition: all 0.1s ease-in;
+  -o-transition: all 0.1s ease-in;
+  transition: all 0.1s ease-in;
+}
+/* line 43, C:/www/rim/public/s/public/sass/blocks/factory/list/_main.sass */
+.factory-list .factory-list-content .factory-list-box .factory-list-item .factory-list-link:hover {
+  border-bottom: 1px solid transparent;
+}
+
+/* line 46, C:/www/rim/public/s/public/sass/blocks/factory/list/_main.sass */
+.factory-btn-box {
+  margin: 15px 0 70px 0;
+  text-align: center;
+}
+/* line 50, C:/www/rim/public/s/public/sass/blocks/factory/list/_main.sass */
+.factory-btn-box .factory-btn {
+  display: inline-block;
+  padding: 8px 25px;
+}
+
+/* line 1, C:/www/rim/public/s/public/sass/blocks/factory/list/_filter.sass */
+.factory-list-filter {
+  width: 700px;
+  margin-bottom: 40px;
+  padding: 16px 15px 17px 15px;
+  background-color: white;
+  -webkit-border-radius: 5px;
+  -moz-border-radius: 5px;
+  -ms-border-radius: 5px;
+  -o-border-radius: 5px;
+  border-radius: 5px;
+  -webkit-box-shadow: 0 2px 8px rgba(203, 186, 170, 0.75);
+  -moz-box-shadow: 0 2px 8px rgba(203, 186, 170, 0.75);
+  box-shadow: 0 2px 8px rgba(203, 186, 170, 0.75);
+}
+/* line 9, C:/www/rim/public/s/public/sass/blocks/factory/list/_filter.sass */
+.factory-list-filter .factory-list-filter-box {
+  display: block;
+  position: relative;
+  float: left;
+  width: 30px;
+  height: 30px;
+  line-height: 30px;
+  margin: 0 -1px;
+  font-size: 14px;
+  color: #7c7c7c;
+  text-align: center;
+  text-transform: uppercase;
+  cursor: pointer;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  font-family: Arial, "Helvetica", sans-serif;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
+  -webkit-border-radius: 5px;
+  -moz-border-radius: 5px;
+  -ms-border-radius: 5px;
+  -o-border-radius: 5px;
+  border-radius: 5px;
+  -webkit-transition: background-color 0.1s ease-in;
+  -moz-transition: background-color 0.1s ease-in;
+  -o-transition: background-color 0.1s ease-in;
+  transition: background-color 0.1s ease-in;
+}
+/* line 27, C:/www/rim/public/s/public/sass/blocks/factory/list/_filter.sass */
+.factory-list-filter .factory-list-filter-box:hover {
+  color: white;
+  background-color: #908d89;
+}
+/* line 30, C:/www/rim/public/s/public/sass/blocks/factory/list/_filter.sass */
+.factory-list-filter .factory-list-filter-box:hover:after {
+  border-right: 1px dotted transparent;
+}
+/* line 32, C:/www/rim/public/s/public/sass/blocks/factory/list/_filter.sass */
+.factory-list-filter .factory-list-filter-box:hover span {
+  border-bottom: 1px solid transparent;
+}
+/* line 35, C:/www/rim/public/s/public/sass/blocks/factory/list/_filter.sass */
+.factory-list-filter .factory-list-filter-box.last {
+  border-right: 1px solid transparent;
+}
+/* line 37, C:/www/rim/public/s/public/sass/blocks/factory/list/_filter.sass */
+.factory-list-filter .factory-list-filter-box.last:after {
+  border-right: 1px solid transparent;
+}
+/* line 40, C:/www/rim/public/s/public/sass/blocks/factory/list/_filter.sass */
+.factory-list-filter .factory-list-filter-box:after {
+  content: "";
+  height: 19px;
+  border-right: 1px dotted #bfb5aa;
+  position: absolute;
+  top: 7px;
+  right: 0;
+}
+/* line 47, C:/www/rim/public/s/public/sass/blocks/factory/list/_filter.sass */
+.factory-list-filter .factory-list-filter-box span {
+  border-bottom: 1px solid rgba(124, 124, 124, 0.6);
+}
+
+/* line 1, C:/www/rim/public/s/public/sass/blocks/factory/show/_main.sass */
+.factory-goods-list {
+  margin-bottom: 15px;
+}
+
+/* line 4, C:/www/rim/public/s/public/sass/blocks/factory/show/_main.sass */
+.show-all-goods-box {
+  margin: 5px 0 45px 0;
+  text-align: center;
+}
+/* line 8, C:/www/rim/public/s/public/sass/blocks/factory/show/_main.sass */
+.show-all-goods-box .show-all-goods {
+  font-size: 15px;
+}
+
+/* line 11, C:/www/rim/public/s/public/sass/blocks/factory/show/_main.sass */
+.factory-url-box {
+  margin-bottom: 150px;
+  width: 670px;
+  padding: 30px;
+  text-align: center;
+  background-color: rgba(255, 255, 255, 0.01);
+  -webkit-border-radius: 5px;
+  -moz-border-radius: 5px;
+  -ms-border-radius: 5px;
+  -o-border-radius: 5px;
+  border-radius: 5px;
+  -webkit-box-shadow: 0 2px 8px rgba(203, 186, 170, 0.75);
+  -moz-box-shadow: 0 2px 8px rgba(203, 186, 170, 0.75);
+  box-shadow: 0 2px 8px rgba(203, 186, 170, 0.75);
+}
+/* line 20, C:/www/rim/public/s/public/sass/blocks/factory/show/_main.sass */
+.factory-url-box .factory-url-text {
+  color: #5a5a5a;
+  font-size: 15px;
+  font-style: italic;
+  font-family: "Georgia", Arial, "Helvetica", sans-serif;
+}
+/* line 26, C:/www/rim/public/s/public/sass/blocks/factory/show/_main.sass */
+.factory-url-box .factory-url {
+  color: #ba0404;
+  font-size: 15px;
+  font-style: italic;
+  border-bottom: 1px solid #da9d98;
+  font-family: "Georgia", Arial, "Helvetica", sans-serif;
+}
+/* line 32, C:/www/rim/public/s/public/sass/blocks/factory/show/_main.sass */
+.factory-url-box .factory-url:hover {
+  border-bottom: 1px solid transparent;
+}
+
+/* line 1, C:/www/rim/public/s/public/sass/blocks/factory/show/_filter.sass */
+.factory-filter {
+  width: 650px;
+  margin-bottom: 25px;
+  padding: 25px 40px 0 40px;
+  background-color: rgba(255, 255, 255, 0.8);
+  -webkit-border-radius: 5px;
+  -moz-border-radius: 5px;
+  -ms-border-radius: 5px;
+  -o-border-radius: 5px;
+  border-radius: 5px;
+  -webkit-box-shadow: 0 2px 8px rgba(203, 186, 170, 0.75);
+  -moz-box-shadow: 0 2px 8px rgba(203, 186, 170, 0.75);
+  box-shadow: 0 2px 8px rgba(203, 186, 170, 0.75);
+}
+/* line 9, C:/www/rim/public/s/public/sass/blocks/factory/show/_filter.sass */
+.factory-filter .factory-filter-box {
+  float: left;
+  margin-bottom: 20px;
+}
+/* line 13, C:/www/rim/public/s/public/sass/blocks/factory/show/_filter.sass */
+.factory-filter .factory-filter-box .factory-filter-title {
+  margin-bottom: 20px;
+  color: #afafaf;
+  font-size: 20px;
+  font-family: "Georgia", Arial, "Helvetica", sans-serif;
+}
+/* line 19, C:/www/rim/public/s/public/sass/blocks/factory/show/_filter.sass */
+.factory-filter .factory-filter-box .factory-filter-list {
+  float: left;
+}
+/* line 22, C:/www/rim/public/s/public/sass/blocks/factory/show/_filter.sass */
+.factory-filter .factory-filter-box .factory-filter-list .factory-filter-list-box {
+  width: 170px;
+  margin: 0 20px 10px 0;
+}
+/* line 25, C:/www/rim/public/s/public/sass/blocks/factory/show/_filter.sass */
+.factory-filter .factory-filter-box .factory-filter-list .factory-filter-list-box.last {
+  margin-right: 0;
+}
+/* line 28, C:/www/rim/public/s/public/sass/blocks/factory/show/_filter.sass */
+.factory-filter .factory-filter-box .factory-filter-list .factory-filter-list-box .factory-filter-link {
+  color: #5d5d5d;
+  font-size: 14px;
+  line-height: 21px;
+  border-bottom: 1px solid #c4c4c3;
+  font-family: Arial, "Helvetica", sans-serif;
+}
+/* line 34, C:/www/rim/public/s/public/sass/blocks/factory/show/_filter.sass */
+.factory-filter .factory-filter-box .factory-filter-list .factory-filter-list-box .factory-filter-link:hover {
+  color: #a10000;
+  border-bottom: 1px solid #e3b2b2;
+}
+/* line 38, C:/www/rim/public/s/public/sass/blocks/factory/show/_filter.sass */
+.factory-filter .factory-filter-box .factory-filter-list .factory-filter-list-box span {
+  display: inline-block;
+  margin-left: 5px;
+  color: #a2a2a2;
+  font-size: 14px;
+}
+
+/* line 1, C:/www/rim/public/s/public/sass/blocks/contacts/_main.sass */
+.contacts-list {
+  margin-bottom: 150px;
+  background: url("/s/public/images/site/item-border.png") left top repeat-x;
+}
+
+/* line 5, C:/www/rim/public/s/public/sass/blocks/contacts/_main.sass */
+.contacts-item {
+  padding: 40px 0 10px 0;
+  background: url("/s/public/images/site/item-border.png") left bottom repeat-x;
+}
+/* line 9, C:/www/rim/public/s/public/sass/blocks/contacts/_main.sass */
+.contacts-item .contacts-item-img {
+  float: left;
+  width: 290px;
+  height: 220px;
+  margin: 0 40px 30px 0;
+  -webkit-border-radius: 5px;
+  -moz-border-radius: 5px;
+  -ms-border-radius: 5px;
+  -o-border-radius: 5px;
+  border-radius: 5px;
+  -webkit-box-shadow: 0 2px 8px rgba(203, 186, 170, 0.75);
+  -moz-box-shadow: 0 2px 8px rgba(203, 186, 170, 0.75);
+  box-shadow: 0 2px 8px rgba(203, 186, 170, 0.75);
+}
+/* line 17, C:/www/rim/public/s/public/sass/blocks/contacts/_main.sass */
+.contacts-item .contacts-item-img img {
+  -webkit-border-radius: 5px;
+  -moz-border-radius: 5px;
+  -ms-border-radius: 5px;
+  -o-border-radius: 5px;
+  border-radius: 5px;
+}
+/* line 20, C:/www/rim/public/s/public/sass/blocks/contacts/_main.sass */
+.contacts-item .contacts-item-info {
+  float: left;
+  width: 320px;
+}
+/* line 24, C:/www/rim/public/s/public/sass/blocks/contacts/_main.sass */
+.contacts-item .contacts-item-info .contacts-item-box {
+  margin-bottom: 20px;
+}
+/* line 27, C:/www/rim/public/s/public/sass/blocks/contacts/_main.sass */
+.contacts-item .contacts-item-info .contacts-item-box .contacts-item-title {
+  font-size: 14px;
+  line-height: 19px;
+  color: #6b6b6b;
+  font-weight: bold;
+  font-family: Arial, "Helvetica", sans-serif;
+}
+/* line 33, C:/www/rim/public/s/public/sass/blocks/contacts/_main.sass */
+.contacts-item .contacts-item-info .contacts-item-box .contacts-item-title.red {
+  font-size: 16px;
+  font-weight: normal;
+  color: #ba0404;
+}
+/* line 38, C:/www/rim/public/s/public/sass/blocks/contacts/_main.sass */
+.contacts-item .contacts-item-info .contacts-item-box .contacts-item-text {
+  font-size: 14px;
+  line-height: 21px;
+  color: #6b6b6b;
+  font-family: Arial, "Helvetica", sans-serif;
+}
+
+/* line 1, C:/www/rim/public/s/public/sass/blocks/news/_preview.sass */
+.index-news-list {
+  margin-bottom: 45px;
+}
+
+/* line 4, C:/www/rim/public/s/public/sass/blocks/news/_preview.sass */
+.news-list {
+  margin-bottom: 95px;
+}
+
+/* line 7, C:/www/rim/public/s/public/sass/blocks/news/_preview.sass */
+.news-small-list {
+  margin: 0 0 85px 0;
+}
+
+/* line 10, C:/www/rim/public/s/public/sass/blocks/news/_preview.sass */
+.news-item-preview {
+  margin-bottom: 40px;
+}
+/* line 13, C:/www/rim/public/s/public/sass/blocks/news/_preview.sass */
+.news-item-preview.small .news-item-preview-img {
+  width: 115px;
+  height: 85px;
+}
+/* line 17, C:/www/rim/public/s/public/sass/blocks/news/_preview.sass */
+.news-item-preview.small .news-item-preview-box {
+  width: 435px;
+}
+/* line 20, C:/www/rim/public/s/public/sass/blocks/news/_preview.sass */
+.news-item-preview.small .news-item-preview-text {
+  display: none;
+}
+/* line 23, C:/www/rim/public/s/public/sass/blocks/news/_preview.sass */
+.news-item-preview .news-item-preview-img {
+  float: left;
+  display: block;
+  width: 185px;
+  height: 135px;
+  margin-right: 30px;
+  -webkit-border-radius: 5px;
+  -moz-border-radius: 5px;
+  -ms-border-radius: 5px;
+  -o-border-radius: 5px;
+  border-radius: 5px;
+  -webkit-box-shadow: 0 4px 0 rgba(209, 205, 193, 0.75);
+  -moz-box-shadow: 0 4px 0 rgba(209, 205, 193, 0.75);
+  box-shadow: 0 4px 0 rgba(209, 205, 193, 0.75);
+}
+/* line 32, C:/www/rim/public/s/public/sass/blocks/news/_preview.sass */
+.news-item-preview .news-item-preview-img img {
+  -webkit-border-radius: 5px;
+  -moz-border-radius: 5px;
+  -ms-border-radius: 5px;
+  -o-border-radius: 5px;
+  border-radius: 5px;
+}
+/* line 35, C:/www/rim/public/s/public/sass/blocks/news/_preview.sass */
+.news-item-preview .news-item-preview-box {
+  float: left;
+  width: 485px;
+}
+/* line 39, C:/www/rim/public/s/public/sass/blocks/news/_preview.sass */
+.news-item-preview .news-item-preview-box .news-item-preview-date {
+  margin-bottom: 5px;
+  color: #868686;
+  font-size: 12px;
+  line-height: 18px;
+  font-style: italic;
+  font-family: Arial, "Helvetica", sans-serif;
+}
+/* line 47, C:/www/rim/public/s/public/sass/blocks/news/_preview.sass */
+.news-item-preview .news-item-preview-box .news-item-preview-name {
+  display: block;
+  margin-bottom: 15px;
+  color: #5d5d5d;
+  font-size: 20px;
+  line-height: 26px;
+  font-family: Arial, "Helvetica", sans-serif;
+}
+/* line 54, C:/www/rim/public/s/public/sass/blocks/news/_preview.sass */
+.news-item-preview .news-item-preview-box .news-item-preview-name:hover {
+  color: #a10000;
+}
+/* line 56, C:/www/rim/public/s/public/sass/blocks/news/_preview.sass */
+.news-item-preview .news-item-preview-box .news-item-preview-name:hover span {
+  border-bottom: 1px solid #e3b2b2;
+}
+/* line 58, C:/www/rim/public/s/public/sass/blocks/news/_preview.sass */
+.news-item-preview .news-item-preview-box .news-item-preview-name span {
+  border-bottom: 1px solid #a4a29e;
+}
+/* line 61, C:/www/rim/public/s/public/sass/blocks/news/_preview.sass */
+.news-item-preview .news-item-preview-box .news-item-preview-text {
+  color: #6c6b6b;
+  font-size: 13px;
+  line-height: 19px;
+  font-family: Arial, "Helvetica", sans-serif;
+}
+
+/* line 68, C:/www/rim/public/s/public/sass/blocks/news/_preview.sass */
+.news-btn-box .news-btn {
+  display: inline;
+  padding: 6px 15px 7px 15px;
+}
+
+/* line 1, C:/www/rim/public/s/public/sass/blocks/news/_item.sass */
+.news-item {
+  margin-bottom: 30px;
+}
+/* line 4, C:/www/rim/public/s/public/sass/blocks/news/_item.sass */
+.news-item .news-item-date {
+  margin-bottom: 20px;
+  color: #858585;
+  font-size: 12px;
+  font-style: italic;
+  font-family: Arial, "Helvetica", sans-serif;
+}
+
+/* line 1, C:/www/rim/public/s/public/sass/blocks/seo/_text.sass */
+.index-text-box {
+  width: 580px;
+  height: 275px;
+  margin-bottom: 25px;
+  overflow: hidden;
+}
+/* line 9, C:/www/rim/public/s/public/sass/blocks/seo/_text.sass */
+.index-text-box .simple-text h2 {
+  margin-bottom: 20px;
+  font-size: 24px;
+  line-height: 30px;
+  font-style: italic;
+  font-weight: normal;
+  color: #6c6b6b;
+  font-family: "Georgia", Arial, "Helvetica", sans-serif;
+}
+/* line 17, C:/www/rim/public/s/public/sass/blocks/seo/_text.sass */
+.index-text-box .simple-text p {
+  margin-bottom: 20px;
+  font-size: 13px;
+  line-height: 19px;
+  color: #6b6b6b;
+  font-family: Arial, "Helvetica", sans-serif;
+}
+
+/* line 24, C:/www/rim/public/s/public/sass/blocks/seo/_text.sass */
+.read-more-btn {
+  display: inline-block;
+  margin-bottom: 30px;
+  padding: 6px 15px 7px 15px;
+}
+
+/* line 29, C:/www/rim/public/s/public/sass/blocks/seo/_text.sass */
+.index-text-container {
+  position: relative;
+}
+/* line 32, C:/www/rim/public/s/public/sass/blocks/seo/_text.sass */
+.index-text-container .index-text-img {
+  position: absolute;
+  top: 90px;
+  right: 0;
+  width: 160px;
+  height: 141px;
+  background: url("/s/public/images/site/index-text-img.png") no-repeat;
+}
+
+/* line 1, C:/www/rim/public/s/public/sass/blocks/project/_main.sass */
+.project-item {
+  margin-bottom: 80px;
+}
+
+/* line 2, C:/www/rim/public/s/public/sass/typography/_simple-text.sass */
+.simple-text h2 {
+  margin-bottom: 15px;
+  color: dimgrey;
+  font-size: 18px;
+  font-weight: bold;
+  font-family: Arial, "Helvetica", sans-serif;
+}
+/* line 9, C:/www/rim/public/s/public/sass/typography/_simple-text.sass */
+.simple-text p {
+  margin-bottom: 20px;
+  color: #454545;
+  font-size: 14px;
+  line-height: 21px;
+  font-family: Arial, "Helvetica", sans-serif;
+}
+
+/* line 16, C:/www/rim/public/s/public/sass/typography/_simple-text.sass */
+.text-item {
+  margin-bottom: 80px;
+}
+/* line 19, C:/www/rim/public/s/public/sass/typography/_simple-text.sass */
+.text-item .simple-text h2 {
+  margin-bottom: 15px;
+  color: dimgrey;
+  font-size: 18px;
+  font-weight: bold;
+  font-family: Arial, "Helvetica", sans-serif;
+}
+/* line 26, C:/www/rim/public/s/public/sass/typography/_simple-text.sass */
+.text-item .simple-text h3 {
+  margin-bottom: 10px;
+  color: dimgrey;
+  font-size: 16px;
+  font-weight: bold;
+  font-family: Arial, "Helvetica", sans-serif;
+}
+/* line 32, C:/www/rim/public/s/public/sass/typography/_simple-text.sass */
+.text-item .simple-text p {
+  margin-bottom: 20px;
+  color: #454545;
+  font-size: 14px;
+  line-height: 21px;
+  font-family: Arial, "Helvetica", sans-serif;
+}
+/* line 38, C:/www/rim/public/s/public/sass/typography/_simple-text.sass */
+.text-item .simple-text img {
+  float: left;
+  margin: 0 30px 15px 0;
+}
+/* line 41, C:/www/rim/public/s/public/sass/typography/_simple-text.sass */
+.text-item .simple-text ol {
+  list-style-type: decimal;
+  margin: 0 0 25px 40px;
+}
+/* line 44, C:/www/rim/public/s/public/sass/typography/_simple-text.sass */
+.text-item .simple-text ol li {
+  color: #454545;
+  font-size: 14px;
+  line-height: 21px;
+  font-family: Arial, "Helvetica", sans-serif;
+}
+/* line 49, C:/www/rim/public/s/public/sass/typography/_simple-text.sass */
+.text-item .simple-text ul {
+  list-style-type: inherit;
+  margin: 0 0 25px 40px;
+}
+/* line 52, C:/www/rim/public/s/public/sass/typography/_simple-text.sass */
+.text-item .simple-text ul li {
+  color: #454545;
+  font-size: 14px;
+  line-height: 21px;
+  font-family: Arial, "Helvetica", sans-serif;
+}
+/* line 58, C:/www/rim/public/s/public/sass/typography/_simple-text.sass */
+.text-item .simple-text table {
+  width: 100%;
+  overflow: hidden;
+}
+/* line 62, C:/www/rim/public/s/public/sass/typography/_simple-text.sass */
+.text-item .simple-text table thead tr {
+  background: #efebdc;
+  border-bottom: 1px solid #c4bda1;
+}
+/* line 65, C:/www/rim/public/s/public/sass/typography/_simple-text.sass */
+.text-item .simple-text table thead tr:last-child {
+  background: #efebdc;
+}
+/* line 67, C:/www/rim/public/s/public/sass/typography/_simple-text.sass */
+.text-item .simple-text table thead tr td {
+  color: #595959;
+  font-size: 13px;
+  font-style: italic;
+  font-family: "Georgia", Arial, "Helvetica", sans-serif;
+}
+/* line 72, C:/www/rim/public/s/public/sass/typography/_simple-text.sass */
+.text-item .simple-text table tr {
+  background: white url("/s/public/images/site/table-border.png") left bottom repeat-x;
+}
+/* line 74, C:/www/rim/public/s/public/sass/typography/_simple-text.sass */
+.text-item .simple-text table tr:last-child {
+  background: white;
+}
+/* line 77, C:/www/rim/public/s/public/sass/typography/_simple-text.sass */
+.text-item .simple-text table tr th {
+  position: relative;
+  padding: 18px 10px 18px 25px;
+  background: #efebdc;
+  border-bottom: 1px solid #c4bda1;
+  color: #595959;
+  font-size: 13px;
+  font-style: italic;
+  font-family: "Georgia", Arial, "Helvetica", sans-serif;
+}
+/* line 87, C:/www/rim/public/s/public/sass/typography/_simple-text.sass */
+.text-item .simple-text table tr th:after {
+  content: "";
+  display: block;
+  position: absolute;
+  height: 25px;
+  width: 1px;
+  right: -1px;
+  top: 50%;
+  margin-top: -12px;
+  background: url("/s/public/images/site/td-border.png") top repeat-y;
+  z-index: 1;
+}
+/* line 98, C:/www/rim/public/s/public/sass/typography/_simple-text.sass */
+.text-item .simple-text table tr td {
+  position: relative;
+  padding: 18px 10px 18px 25px;
+  color: #646464;
+  font-size: 13px;
+  font-family: Arial, "Helvetica", sans-serif;
+}
+/* line 105, C:/www/rim/public/s/public/sass/typography/_simple-text.sass */
+.text-item .simple-text table tr td:after {
+  content: "";
+  display: block;
+  position: absolute;
+  height: 25px;
+  width: 1px;
+  right: -1px;
+  top: 50%;
+  margin-top: -12px;
+  background: url("/s/public/images/site/td-border.png") top repeat-y;
+}

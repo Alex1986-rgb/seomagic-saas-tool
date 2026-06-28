@@ -1,0 +1,33 @@
+.rm-select-list {
+    max-height: 210px;
+}
+
+.ui-autocomplete {
+    position: absolute;
+    top: 0;
+    left: 0;
+    cursor: default;
+}
+
+/* line 11, C:/www/arredamenti-git/public/s/public/sass/lib/_ui-autocomplete.scss */
+.ui-autocomplete a {
+    display: block;
+    padding: 8px 10px;
+    color: #797979;
+    font-size: 13px;
+    font-weight: 700;
+    background: #fff;
+    border: 1px solid #D3D3D3;
+    border-top: 0;
+    border-bottom: 1px solid #D3D3D3;
+    cursor: pointer;
+}
+
+/* line 23, C:/www/arredamenti-git/public/s/public/sass/lib/_ui-autocomplete.scss */
+.ui-autocomplete a:hover {
+    background: #dcdada;
+}
+
+.ui-helper-hidden-accessible {
+    display: none;
+}
