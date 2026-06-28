@@ -1,0 +1,1 @@
+import{S as r}from"./vendor-CNgkuSqq.js";import o from"./Dashboard-DC2erxVO.js";import"./export-BAQ8U8ZN.js";import"./index-MizwELzQ.js";import"./pdf-Cxz5Y9BD.js";import"./tabs-B_fLVrGW.js";import"./badge-BUYCTU2U.js";const n=()=>r.jsx(o,{});export{n as default};
