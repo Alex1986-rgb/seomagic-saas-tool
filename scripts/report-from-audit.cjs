@@ -40,7 +40,11 @@ items.forEach(([k, v]) => (ISSUES[k].sum = ISSUES[k].price * v));
 const total = items.reduce((a, [k, v]) => a + ISSUES[k].price * v, 0);
 const totalPages = items.reduce((a, [, v]) => a + v, 0);
 const CHECKOUT = getOpt('--checkout', `https://alex1986-rgb.github.io/seomagic-saas-tool/checkout?url=${encodeURIComponent(d.site)}&pages=${totalPages}&price=150&score=${S.global}`);
-const SEOTEXT_URL = getOpt('--seotext', `https://alex1986-rgb.github.io/seomagic-saas-tool/seo-text?url=${encodeURIComponent(d.site)}`);
+// Цена SEO-текста — за страницу; итог считается из числа страниц сайта.
+const SEOTEXT_PRICE = Number(getOpt('--seotext-price', 500));
+const seoTextPages = d.scanned || 0;
+const seoTextTotal = SEOTEXT_PRICE * seoTextPages;
+const SEOTEXT_URL = getOpt('--seotext', `https://alex1986-rgb.github.io/seomagic-saas-tool/seo-text?url=${encodeURIComponent(d.site)}&pages=${seoTextPages}&price=${SEOTEXT_PRICE}`);
 
 const smetaRows = items.map(([k, v], i) => `<tr><td class="num">${i + 1}</td><td><b>${ISSUES[k].n}</b><div class="rec">${ISSUES[k].rec}</div></td><td class="r"><span class="pill">${d.issues_pct[k]}%</span></td><td class="r">${fmt(ISSUES[k].price)} ₽</td><td class="r">${v}</td><td class="r"><b>${fmt(ISSUES[k].price * v)} ₽</b></td></tr>`).join('');
 
@@ -104,8 +108,8 @@ ${items.length ? `
 <div class="pay"><div><div class="pay-h">Исправить автоматически «под ключ»</div><div class="pay-d">После оплаты система создаст копию сайта, исправит код, развернёт демо, проведёт повторный аудит и пришлёт готовый сайт.</div></div>
 <div class="pay-r"><div class="payamt">${fmt(total)} ₽</div><a class="paybtn" href="${esc(CHECKOUT)}">💳 Оплатить и исправить →</a></div></div>
 
-<div class="pay" style="margin-top:12px"><div><div class="pay-h">Добавить SEO-текст на страницы</div><div class="pay-d">Развёрнутый SEO-блок с таблицами внизу каждой страницы: создать, переписать или дополнить тексты (включая карточки товаров) с контролем тошноты и водности.</div></div>
-<div class="pay-r"><a class="paybtn" href="${esc(SEOTEXT_URL)}">✍️ Выбрать функцию SEO-текста →</a></div></div>
+<div class="pay" style="margin-top:12px"><div><div class="pay-h">Добавить SEO-текст на страницы</div><div class="pay-d">Развёрнутый SEO-блок с таблицами внизу каждой страницы: создать, переписать или дополнить тексты (включая карточки товаров) с контролем тошноты и водности.</div><div class="pay-d" style="color:#ffb066;margin-top:6px">Цена: ${fmt(SEOTEXT_PRICE)} ₽/страница × ${seoTextPages} страниц</div></div>
+<div class="pay-r"><div class="payamt">${fmt(seoTextTotal)} ₽</div><a class="paybtn" href="${esc(SEOTEXT_URL)}">✍️ Выбрать функцию SEO-текста →</a></div></div>
 
 ${sections}` : '<div class="ok"><b>Проблем не найдено 🎉</b> Все проверенные параметры в норме.</div>'}
 <h2>Возможности SeoMarket</h2>
