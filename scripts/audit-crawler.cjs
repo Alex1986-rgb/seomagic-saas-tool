@@ -33,7 +33,11 @@ async function fetchText(url, timeout = 20000) {
   const ac = new AbortController();
   const t = setTimeout(() => ac.abort(), timeout);
   try {
-    const r = await fetch(url, { signal: ac.signal, redirect: 'follow', headers: { 'User-Agent': 'SeoMarketBot/1.0' } });
+    const r = await fetch(url, { signal: ac.signal, redirect: 'follow', headers: {
+      'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+      'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+      'Accept-Language': 'ru-RU,ru;q=0.9,en;q=0.8',
+    } });
     const html = await r.text();
     return { status: r.status, html, finalUrl: r.url };
   } catch (e) { return { status: 0, html: '', error: e.message }; }
@@ -118,7 +122,24 @@ async function pool(items, n, fn) {
   log(`К анализу: ${urls.length} страниц (потолок --max ${MAX}), конкурентность ${CONCURRENCY}`);
   const pages = await pool(urls, CONCURRENCY, async (u) => analyze(u, await fetchText(u)));
   const ok = pages.filter((p) => p.status >= 200 && p.status < 400);
-  const N = ok.length || 1;
+
+  // Честная обработка: если не обойдено ни одной страницы — это НЕ «100/100».
+  if (ok.length === 0) {
+    const blocked = pages.filter((p) => [401, 403, 429].includes(p.status)).length;
+    const code = pages.find((p) => p.status)?.status || 0;
+    const data = {
+      site: startUrl, scanned: 0, attempted: pages.length, blocked, scores: null,
+      error: blocked > 0
+        ? `Сайт блокирует автоматический обход (HTTP ${code}). Нужен реальный браузер, разрешённый IP или прокси.`
+        : `Не удалось обойти сайт (0 доступных страниц, код ${code || 'нет ответа'}). Проверьте URL/доступность.`,
+      issues_count: {}, issues_pct: {},
+    };
+    if (OUT) fs.writeFileSync(OUT, JSON.stringify(data, null, 2));
+    console.log(JSON.stringify(data, null, 2));
+    return;
+  }
+
+  const N = ok.length;
   const titleMap = {}; ok.forEach((p) => { const k = (p.title || '').toLowerCase(); if (k) titleMap[k] = (titleMap[k] || 0) + 1; });
   const I = {
     missing_title: ok.filter((p) => !p.title).length,

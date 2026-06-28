@@ -90,6 +90,7 @@ async function run(){
     const r=await fetch('/api/audit',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({url,max})});
     const j=await r.json();
     if(!j.ok){throw new Error(j.error||'Ошибка аудита')}
+    if(!j.data||j.data.scores==null||j.data.error){throw new Error((j.data&&j.data.error)||'Сайт недоступен для обхода (0 страниц)')}
     render(j.data);
   }catch(e){const er=document.getElementById('err');er.style.display='block';er.textContent='Ошибка: '+e.message}
   finally{go.disabled=false; st.style.display='none'}
