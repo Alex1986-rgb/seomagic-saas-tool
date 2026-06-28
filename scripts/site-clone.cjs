@@ -313,9 +313,17 @@ function contentBlockOld(topic) {
 
 function seoFix(pageUrl, html) {
   let title = tag(html, /<title[^>]*>([\s\S]*?)<\/title>/i) || '';
+  if (!title) {
+    // Уникальный title при отсутствии: имя из тела (рус.) → из URL-слага → запасной вариант (НЕ общий «Каталог»).
+    const fromBody = (tag(html, /<div class="good-popup-name">[«"]?([^«»"<]{3,90})/i)
+      || tag(html, /<h1[^>]*>([^<]{3,90})<\/h1>/i)
+      || tag(html, /<h2[^>]*>([^<]{3,90})<\/h2>/i) || '').replace(/[«»"]/g, '').replace(/\s+/g, ' ').trim();
+    let seg = '';
+    try { seg = decodeURIComponent((new URL(pageUrl).pathname.replace(/\/+$/, '').split('/').pop()) || '').replace(/-[a-z0-9]{1,8}$/i, '').replace(/[-_]+/g, ' ').trim(); } catch {}
+    title = fromBody || (seg ? seg.charAt(0).toUpperCase() + seg.slice(1) : 'Каталог');
+    html = html.replace(/<head([^>]*)>/i, `<head$1><title>${esc(title)}</title>`);
+  } else if (title.length > 65) html = html.replace(/<title[^>]*>[\s\S]*?<\/title>/i, `<title>${esc(shortenTitle(title))}</title>`);
   const topic = (title.split(/[—|–\-,]/)[0] || 'Каталог').trim() || 'Каталог';
-  if (!title) { title = `${topic}`; html = html.replace(/<head([^>]*)>/i, `<head$1><title>${esc(title)}</title>`); }
-  else if (title.length > 65) html = html.replace(/<title[^>]*>[\s\S]*?<\/title>/i, `<title>${esc(shortenTitle(title))}</title>`);
   if (!/<meta[^>]+name=["']description["']/i.test(html)) html = html.replace(/<\/title>/i, `</title>\n<meta name="description" content="${esc(topic)} — каталог, цены, доставка.">`);
   if (!/<link[^>]+rel=["']canonical["']/i.test(html)) html = html.replace(/<\/head>/i, `<link rel="canonical" href="${esc(pageUrl)}">\n</head>`);
   if (!/<meta[^>]+property=["']og:/i.test(html)) html = html.replace(/<\/head>/i, `<meta property="og:type" content="website"><meta property="og:title" content="${esc(title)}"><meta property="og:url" content="${esc(pageUrl)}">\n</head>`);
@@ -415,14 +423,21 @@ async function pool(items, n, fn) { let i = 0, done = 0; await Promise.all(Array
   log(`Страниц: ${urls.length}`);
 
   // 1) страницы: fetch → SEO-фикс → переписать ассеты → сохранить (конкурентно)
+  let brokenSrc = 0; const brokenList = [];
   await pool(urls, CONC, async (u) => {
     const r = await fetchRaw(u);
     if (r.status < 200 || r.status >= 400) { log(`  ✗ ${u} (${r.status})`); return; }
-    let html = seoFix(u, r.buf.toString('utf8'));
+    const raw = r.buf.toString('utf8');
+    // Пропускаем битые страницы самого сайта (PHP Fatal/исключения, soft-404 с кодом 200) — не клонируем мусор.
+    if (/Fatal error|Uncaught exception|such alias does not exist/i.test(raw) || (!/<\/head>/i.test(raw) && raw.length < 2500)) {
+      brokenSrc++; if (brokenList.length < 500) brokenList.push(u); log(`  ⚠ битая страница источника: ${u}`); return;
+    }
+    let html = seoFix(u, raw);
     html = processHtmlRefs(html, u);
     const pu = new URL(u); let p = pu.pathname.replace(/^\/+/, ''); if (p === '' || p.endsWith('/')) p += 'index.html'; else if (!/\.html?$/i.test(p)) p += '/index.html';
     const out = path.join(OUT, p); fs.mkdirSync(path.dirname(out), { recursive: true }); fs.writeFileSync(out, html);
   });
+  if (brokenSrc) { try { fs.writeFileSync(path.join(OUT, '_broken-source-pages.json'), JSON.stringify({ count: brokenSrc, urls: brokenList }, null, 2)); } catch {} log(`Битых страниц источника пропущено: ${brokenSrc}`); }
   log(`Ассетов к скачиванию: ${assetMap.size}`);
 
   // 2) скачиваем ассеты
@@ -537,5 +552,5 @@ async function pool(items, n, fn) { let i = 0, done = 0; await Promise.all(Array
 
   const saved = fs.existsSync(OUT) ? require('child_process').execSync(`find ${OUT} -type f | wc -l`).toString().trim() : '0';
   const kb = (n) => Math.round(n / 1024);
-  console.log(JSON.stringify({ pages: urls.length, assets: assetMap.size, files: saved, img_opt: { files: imgOpt.files, converted: imgOpt.converted, variants: imgOpt.variants, kb_before: kb(imgOpt.before), kb_after: kb(imgOpt.after), saved_pct: imgOpt.before ? Math.round((1 - imgOpt.after / imgOpt.before) * 100) : 0 } }));
+  console.log(JSON.stringify({ pages: urls.length, broken_source: brokenSrc, assets: assetMap.size, files: saved, img_opt: { files: imgOpt.files, converted: imgOpt.converted, variants: imgOpt.variants, kb_before: kb(imgOpt.before), kb_after: kb(imgOpt.after), saved_pct: imgOpt.before ? Math.round((1 - imgOpt.after / imgOpt.before) * 100) : 0 } }));
 })();
