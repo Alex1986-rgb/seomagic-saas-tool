@@ -163,23 +163,40 @@ Deno.serve(async (req) => {
       </html>
     `;
 
-    // Send emails using Resend (if configured) or log
-    console.log('Email would be sent to:', to_emails);
-    console.log('Public link:', publicLink);
-    
-    // Note: Resend integration would go here
-    // For now, we return success with the data
-    
-    return new Response(
-      JSON.stringify({
-        success: true,
-        recipients: to_emails.length,
-        public_link: publicLink || null
+    // Реальная отправка через Resend. Без ключа — честно сообщаем, что письмо НЕ ушло.
+    const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY');
+    const FROM = Deno.env.get('MAIL_FROM') || 'SeoMarket <onboarding@resend.dev>';
+    if (!RESEND_API_KEY) {
+      return new Response(
+        JSON.stringify({ success: false, error: 'RESEND_API_KEY не настроен — письмо не отправлено', public_link: publicLink || null }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 503 }
+      );
+    }
+
+    const emailResp = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${RESEND_API_KEY}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        from: FROM,
+        to: to_emails,
+        subject: `SEO-смета${url ? ' для ' + url : ''}`,
+        html: htmlContent,
       }),
-      { 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 200 
-      }
+    });
+
+    if (!emailResp.ok) {
+      const err = await emailResp.text();
+      console.error('Resend error:', err.slice(0, 300));
+      return new Response(
+        JSON.stringify({ success: false, error: 'Не удалось отправить письмо' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 502 }
+      );
+    }
+
+    const emailData = await emailResp.json();
+    return new Response(
+      JSON.stringify({ success: true, message_id: emailData.id, recipients: to_emails.length, public_link: publicLink || null }),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
     );
 
   } catch (error) {
