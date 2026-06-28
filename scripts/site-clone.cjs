@@ -122,7 +122,7 @@ function productContinuation(topic, real, pageUrl) {
   const type = (topic.split(/\s+/)[0] || 'Изделие').replace(/[^А-Яа-яA-Za-z]/g, '') || 'Изделие';
   const brand = cap(slug[1] || '') || 'итальянской фабрики';
   const seed = pageUrl || topic;
-  const L = (href, t) => `<a href="${href}">${t}</a>`;
+  const L = (href, t) => `<a href="${DEMO}${String(href).replace(/^\//, '')}">${t}</a>`;
   const isSoft = /диван|кроват|кресл|тахта|пуф|банкет/i.test(type);
   const upholstery = pick(['натуральная кожа премиум-класса', 'мягкая экокожа', 'износостойкий велюр', 'фактурная рогожка', 'шенилл'], seed, 2);
   const filling = pick(['независимый пружинный блок', 'высокоэластичный ППУ', 'натуральный пух и гусиное перо', 'холлофайбер'], seed + 'f', 2);
@@ -175,7 +175,7 @@ function contentBlock(topic, html, pageUrl) {
   const seed = (pageUrl || topic);
   const td = 'border:1px solid #ddd;padding:9px 13px;text-align:left;font-size:14px';
   const th = td + ';background:#f5f5f5;font-weight:600';
-  const L = (href, t) => `<a href="${href}" style="color:#c0142b">${t}</a>`;
+  const L = (href, t) => `<a href="${DEMO}${String(href).replace(/^\//, '')}" style="color:#c0142b">${t}</a>`;
 
   const upholstery = pick(['натуральная кожа премиум-класса', 'мягкая экокожа', 'износостойкий велюр', 'фактурная рогожка', 'практичный шенилл', 'классический гобелен', 'бархатистый микровелюр'], seed, 4);
   const fillings = pick(['пружинный блок «боннель»', 'независимый пружинный блок', 'высокоэластичный ППУ', 'холлофайбер', 'комфортный синтепон', 'натуральный пух и гусиное перо', 'мемори-пена'], seed + 'f', 4);
