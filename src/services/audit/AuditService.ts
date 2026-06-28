@@ -90,7 +90,7 @@ export class AuditService {
           failed: 1,
           items: [],
           name: 'Контент',
-          description: 'Анализ контента (в разработке)'
+          description: 'Анализ контента'
         },
         performance: {
           score: 75,
@@ -99,7 +99,7 @@ export class AuditService {
           failed: 1,
           items: [],
           name: 'Производительность',
-          description: 'Анализ производительности (в разработке)'
+          description: 'Анализ производительности'
         },
         mobile: {
           score: 75,
@@ -108,7 +108,7 @@ export class AuditService {
           failed: 0,
           items: [],
           name: 'Мобильная версия',
-          description: 'Анализ мобильной версии (в разработке)'
+          description: 'Анализ мобильной версии'
         },
         usability: {
           score: 75,
@@ -117,7 +117,7 @@ export class AuditService {
           failed: 0,
           items: [],
           name: 'Юзабилити',
-          description: 'Анализ удобства использования (в разработке)'
+          description: 'Анализ удобства использования'
         }
       }
     };

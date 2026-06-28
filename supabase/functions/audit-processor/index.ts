@@ -210,13 +210,39 @@ async function crawlPage(url: string, domain: string): Promise<any> {
 }
 
 async function extractSitemapUrls(baseUrl: string): Promise<string[]> {
-  try {
-    const response = await fetch(new URL('/sitemap.xml', baseUrl).toString());
-    if (response.ok) {
-      const xml = await response.text();
-      return Array.from(xml.matchAll(/<loc>(.*?)<\/loc>/g), m => m[1].trim());
-    }
-  } catch {}
+  // Пробуем несколько расположений sitemap: относительно базового пути (учёт
+  // подкаталога, напр. /my-site/sitemap.xml) и в корне домена. Это важно для
+  // сайтов, размещённых в подкаталоге (GitHub Pages, /app/ и т.п.).
+  const base = baseUrl.endsWith('/') ? baseUrl : baseUrl + '/';
+  const candidates = [
+    new URL('sitemap.xml', base).toString(),     // относительно базового пути
+    new URL('/sitemap.xml', baseUrl).toString(), // корень домена
+  ];
+  const baseOrigin = new URL(baseUrl).origin;
+  const basePrefix = new URL(base).pathname; // напр. "/" или "/preview/"
+  for (const sm of candidates) {
+    try {
+      const response = await fetch(sm);
+      if (response.ok) {
+        const xml = await response.text();
+        let urls = Array.from(xml.matchAll(/<loc>(.*?)<\/loc>/g), m => m[1].trim());
+        // Перепривязываем URL к аудируемому хосту/пути: sitemap может указывать на
+        // боевой домен (напр. при аудите preview-версии). Краулер должен оставаться
+        // на целевом сайте, а не уходить на другой хост.
+        urls = urls.map((loc) => {
+          try {
+            const u = new URL(loc);
+            if (u.origin !== baseOrigin || !u.pathname.startsWith(basePrefix)) {
+              return new URL(u.pathname.replace(/^\//, '') + u.search, base).toString();
+            }
+          } catch {}
+          return loc;
+        });
+        urls = Array.from(new Set(urls));
+        if (urls.length) return urls;
+      }
+    } catch {}
+  }
   return [];
 }
 
