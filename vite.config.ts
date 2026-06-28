@@ -23,7 +23,8 @@ export default defineConfig(({ mode }) => ({
   // Для деплоя на GitHub Pages (проектный сайт) приложение живёт по под-пути
   // /seomagic-saas-tool/. Включается переменной GITHUB_PAGES=true при сборке.
   // Обычные сборки (и продакшен на корне домена) остаются на "/".
-  base: process.env.GITHUB_PAGES === "true" ? "/seomagic-saas-tool/" : "/",
+  // GH_BASE позволяет задать произвольный под-путь (напр. для демо-поддомена /seomarket-demo/).
+  base: process.env.GH_BASE || (process.env.GITHUB_PAGES === "true" ? "/seomagic-saas-tool/" : "/"),
   build: {
     outDir: "dist",
     assetsDir: "assets",

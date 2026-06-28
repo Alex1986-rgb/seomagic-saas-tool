@@ -14,7 +14,7 @@
 const fs = require('fs');
 const path = require('path');
 
-const BASE = 'https://alex1986-rgb.github.io/seomagic-saas-tool';
+const BASE = process.env.PRERENDER_BASE || 'https://alex1986-rgb.github.io/seomagic-saas-tool';
 const DIST = path.resolve(__dirname, '..', 'dist');
 const OG = `${BASE}/og-image.jpg`;
 
