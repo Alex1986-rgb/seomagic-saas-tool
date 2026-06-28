@@ -37,16 +37,20 @@ const bar = (l, v) => `<div class="bar"><span class="bl">${l}</span><div class="
 
 const items = Object.entries(d.issues_count).filter(([k, v]) => v > 0 && ISSUES[k]).sort((a, b) => b[1] - a[1]);
 items.forEach(([k, v]) => (ISSUES[k].sum = ISSUES[k].price * v));
-const total = items.reduce((a, [k, v]) => a + ISSUES[k].price * v, 0);
-const totalPages = items.reduce((a, [, v]) => a + v, 0);
-const CHECKOUT = getOpt('--checkout', `https://alex1986-rgb.github.io/seomagic-saas-tool/checkout?url=${encodeURIComponent(d.site)}&pages=${totalPages}&price=150&score=${S.global}`);
-// Цена SEO-текста — за страницу; итог считается из числа страниц сайта.
-const SEOTEXT_PRICE = Number(getOpt('--seotext-price', 500));
-const seoTextPages = d.scanned || 0;
-const seoTextTotal = SEOTEXT_PRICE * seoTextPages;
-const SEOTEXT_URL = getOpt('--seotext', `https://alex1986-rgb.github.io/seomagic-saas-tool/seo-text?url=${encodeURIComponent(d.site)}&pages=${seoTextPages}&price=${SEOTEXT_PRICE}`);
-// Единая стоимость «под ключ»: исправление ошибок + SEO-тексты.
-const combinedTotal = total + seoTextTotal;
+// РЫНОЧНАЯ модель цен (РФ): за СТРАНИЦУ, а не за каждую ошибку (per-issue выходило нереально дорого).
+// Ориентир рынка: оптимизация страницы (мета/H1/canonical/og/разметка) ~100–200₽/стр;
+// SEO-текст с таблицами и FAQ ~150–300₽/стр; технический аудит — бесплатно (лид-ген).
+const OPT_PER_PAGE = Number(getOpt('--opt-price', 120));
+const TEXT_PER_PAGE = Number(getOpt('--seotext-price', 250));
+const okPages = pages.filter((p) => p.status >= 200 && p.status < 400);
+const pagesWithIssues = okPages.filter((p) => items.some(([k]) => ISSUES[k] && ISSUES[k].hit(p))).length + (d.issues_count.broken_404 || 0);
+const seoTextPages = d.scanned || okPages.length;
+const optTotal = OPT_PER_PAGE * pagesWithIssues;
+const seoTextTotal = TEXT_PER_PAGE * seoTextPages;
+const total = optTotal;                 // «исправление» = оптимизация страниц
+const combinedTotal = optTotal + seoTextTotal;
+const CHECKOUT = getOpt('--checkout', `https://alex1986-rgb.github.io/seomagic-saas-tool/checkout?url=${encodeURIComponent(d.site)}&pages=${pagesWithIssues}&price=${OPT_PER_PAGE}&score=${S.global}`);
+const SEOTEXT_URL = getOpt('--seotext', `https://alex1986-rgb.github.io/seomagic-saas-tool/seo-text?url=${encodeURIComponent(d.site)}&pages=${seoTextPages}&price=${TEXT_PER_PAGE}`);
 const CHECKOUT_FULL = `https://alex1986-rgb.github.io/seomagic-saas-tool/checkout?url=${encodeURIComponent(d.site)}&pages=${seoTextPages}&total=${combinedTotal}&service=full&score=${S.global}`;
 
 const smetaRows = items.map(([k, v], i) => `<tr><td class="num">${i + 1}</td><td><b>${ISSUES[k].n}</b><div class="rec">${ISSUES[k].rec}</div></td><td class="r"><span class="pill">${d.issues_pct[k]}%</span></td><td class="r">${fmt(ISSUES[k].price)} ₽</td><td class="r">${v}</td><td class="r"><b>${fmt(ISSUES[k].price * v)} ₽</b></td></tr>`).join('');
@@ -104,16 +108,20 @@ ${d.quality ? (() => { const q = d.quality; const qc = (v, bad) => bad ? '#ef444
 </div>
 <div style="color:#8b97ad;font-size:11px;margin-bottom:4px">Нормы (Text.ru/Advego): тошнота ≤ 7, академическая ≤ 9%, водность 15–60%, заспамленность ≤ 60%.</div>`; })() : ''}
 ${items.length ? `
-<h2>Смета на исправление</h2>
-<table><thead><tr><th>#</th><th>Проблема / рекомендация</th><th class="r">% стр.</th><th class="r">Цена/ед.</th><th class="r">Кол-во</th><th class="r">Сумма</th></tr></thead>
-<tbody>${smetaRows}<tr class="total"><td colspan="5">ИТОГО К ИСПРАВЛЕНИЮ</td><td class="r">${fmt(total)} ₽</td></tr></tbody></table>
+<h2>Смета на исправление (по рыночным ценам, за страницу)</h2>
+<table><thead><tr><th>Работа</th><th class="r">Цена/стр.</th><th class="r">Страниц</th><th class="r">Сумма</th></tr></thead>
+<tbody>
+<tr><td><b>Оптимизация страниц</b><div class="rec">Мета-теги, H1, canonical, Open Graph, разметка, структура</div></td><td class="r">${fmt(OPT_PER_PAGE)} ₽</td><td class="r">${pagesWithIssues}</td><td class="r"><b>${fmt(optTotal)} ₽</b></td></tr>
+<tr><td><b>SEO-тексты с таблицами и FAQ</b><div class="rec">Уникальный блок на каждой странице: текст, таблицы, вопросы-ответы</div></td><td class="r">${fmt(TEXT_PER_PAGE)} ₽</td><td class="r">${seoTextPages}</td><td class="r"><b>${fmt(seoTextTotal)} ₽</b></td></tr>
+<tr class="total"><td colspan="3">ИТОГО «ПОД КЛЮЧ»</td><td class="r">${fmt(combinedTotal)} ₽</td></tr></tbody></table>
+<div style="color:#8b97ad;font-size:11px;margin:6px 0 0">Технический аудит — бесплатно. Цены ниже агентств: оптимизация ${fmt(OPT_PER_PAGE)} ₽/стр, SEO-текст ${fmt(TEXT_PER_PAGE)} ₽/стр (рынок: 100–300 ₽/стр).</div>
 
 <div class="pay"><div class="pay-l">
   <div class="pay-h">Полная оптимизация «под ключ» — в топ поисковиков</div>
   <div class="pay-d">Оптимизируем ваш сайт <b style="color:#e8edf5">по всем параметрам</b> — технические ошибки, мета-теги, структура, скорость <b style="color:#e8edf5">и SEO-тексты с таблицами</b> на каждой странице, — чтобы сайт вышел в <b style="color:#ffb066">топ Яндекса и Google</b>. Создадим копию, исправим код, наполним тексты, развернём демо на поддомене и проведём повторный аудит.</div>
   <div style="margin-top:10px;font-size:11.5px;color:#aeb8c9">
-    <div style="display:flex;justify-content:space-between;max-width:340px"><span>Исправление ошибок (${items.length} ${items.length === 1 ? 'пункт' : 'пунктов'})</span><b style="color:#e8edf5">${fmt(total)} ₽</b></div>
-    <div style="display:flex;justify-content:space-between;max-width:340px;margin-top:3px"><span>SEO-тексты: ${fmt(SEOTEXT_PRICE)} ₽/стр × ${seoTextPages} стр</span><b style="color:#e8edf5">${fmt(seoTextTotal)} ₽</b></div>
+    <div style="display:flex;justify-content:space-between;max-width:360px"><span>Оптимизация: ${fmt(OPT_PER_PAGE)} ₽/стр × ${pagesWithIssues}</span><b style="color:#e8edf5">${fmt(optTotal)} ₽</b></div>
+    <div style="display:flex;justify-content:space-between;max-width:360px;margin-top:3px"><span>SEO-тексты: ${fmt(TEXT_PER_PAGE)} ₽/стр × ${seoTextPages}</span><b style="color:#e8edf5">${fmt(seoTextTotal)} ₽</b></div>
   </div>
 </div>
 <div class="pay-r"><div class="paysum" style="font-size:11px;color:#8b97ad">Всё включено</div><div class="payamt">${fmt(combinedTotal)} ₽</div><a class="paybtn" href="${esc(CHECKOUT_FULL)}">🚀 Оптимизировать в топ →</a><div style="font-size:9.5px;color:#6b788f;margin-top:7px;max-width:200px">Демо до оплаты · возврат, если позиции не вырастут</div></div></div>

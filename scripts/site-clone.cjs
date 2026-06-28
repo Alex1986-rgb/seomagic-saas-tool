@@ -59,6 +59,42 @@ function mapAsset(absUrl, ctHint) {
 const tag = (h, re) => { const m = h.match(re); return m ? m[1].trim() : null; };
 function shortenTitle(t) { t = t.trim(); if (t.length <= 65) return t; for (const s of [' — ', ' | ', ' – ', ' - ', ', ']) { const i = t.indexOf(s); if (i >= 30 && i <= 60) return t.slice(0, i).trim(); } return t.slice(0, 59).replace(/\s+\S*$/, '').trim() + '…'; }
 
+// Контент-блок (SEO-текст + 2 таблицы + FAQ + описание) — шаблонный, по теме страницы. Без AI.
+function contentBlock(topic) {
+  const tl = topic.toLowerCase();
+  const faqs = [
+    [`Что важно при выборе «${tl}»?`, 'Материалы, габариты, функциональность, гарантия и соответствие интерьеру. Подбирайте под задачи помещения и бюджет.'],
+    ['Сколько стоит доставка?', 'Доставка по городу и в регионы; стоимость зависит от габаритов и адреса — рассчитывается при оформлении.'],
+    ['Есть ли гарантия?', 'Да, на всю продукцию действует гарантия производителя; условия указаны в карточке товара.'],
+    ['Можно ли оплатить в рассрочку?', 'Да, доступны наличный и безналичный расчёт, оплата картой и рассрочка.'],
+    ['Как оформить заказ?', 'Добавьте товар в корзину или свяжитесь с менеджером — поможем с подбором и оформлением.'],
+    ['Делаете ли на заказ?', 'Да, возможно изготовление по индивидуальным размерам и конфигурации.'],
+    ['Как ухаживать за изделием?', 'Рекомендации по уходу зависят от материала; основные — беречь от влаги и прямых солнечных лучей.'],
+    ['Есть ли самовывоз?', 'Да, доступен самовывоз со склада; уточняйте адрес и режим работы у менеджера.'],
+  ];
+  const td = 'border:1px solid #ddd;padding:8px 12px;text-align:left';
+  const th = td + ';background:#f5f5f5;font-weight:600';
+  const faqHtml = faqs.map(([q, a]) => `<details style="border-bottom:1px solid #eee;padding:8px 0"><summary style="cursor:pointer;font-weight:600;color:#222">${esc(q)}</summary><p style="margin:6px 0 0;color:#555">${esc(a)}</p></details>`).join('');
+  return `<section data-seomarket="content" style="max-width:1100px;margin:40px auto;padding:24px 16px;border-top:2px solid #eee;font-family:Arial,sans-serif;line-height:1.65;color:#333">
+  <h2 style="font-size:24px;margin:0 0 14px;color:#1a1a1a">${esc(topic)} — подробнее</h2>
+  <p>${esc(topic)} — востребованное решение для дома и офиса. Ниже — полезная информация о выборе, характеристиках, доставке и оплате, которая поможет принять решение и делает страницу информативнее для поисковых систем.</p>
+  <p>Мы предлагаем большой выбор, честные цены и доставку по всей России. Грамотный подбор по материалам, габаритам и функциональности обеспечивает удобство и долговечность на годы.</p>
+  <h3 style="font-size:18px;margin:22px 0 8px">Ключевые параметры выбора</h3>
+  <table style="width:100%;border-collapse:collapse;margin:12px 0"><thead><tr><th style="${th}">Параметр</th><th style="${th}">На что обратить внимание</th></tr></thead><tbody>
+  <tr><td style="${td}">Материал</td><td style="${td}">Износостойкость, экологичность, тактильность</td></tr>
+  <tr><td style="${td}">Габариты</td><td style="${td}">Соответствие площади помещения</td></tr>
+  <tr><td style="${td}">Функциональность</td><td style="${td}">Механизмы, системы хранения</td></tr>
+  <tr><td style="${td}">Гарантия</td><td style="${td}">Срок и условия обслуживания</td></tr></tbody></table>
+  <h3 style="font-size:18px;margin:22px 0 8px">Доставка и оплата</h3>
+  <table style="width:100%;border-collapse:collapse;margin:12px 0"><thead><tr><th style="${th}">Услуга</th><th style="${th}">Условия</th></tr></thead><tbody>
+  <tr><td style="${td}">Доставка</td><td style="${td}">По городу и в регионы РФ</td></tr>
+  <tr><td style="${td}">Подъём и сборка</td><td style="${td}">По договорённости</td></tr>
+  <tr><td style="${td}">Оплата</td><td style="${td}">Наличные, карта, рассрочка</td></tr></tbody></table>
+  <h3 style="font-size:18px;margin:22px 0 10px">Частые вопросы</h3>
+  ${faqHtml}
+  </section>`;
+}
+
 function seoFix(pageUrl, html) {
   let title = tag(html, /<title[^>]*>([\s\S]*?)<\/title>/i) || '';
   const topic = (title.split(/[—|–\-,]/)[0] || 'Каталог').trim() || 'Каталог';
@@ -71,6 +107,14 @@ function seoFix(pageUrl, html) {
   // H1 (sr-only, accessibility-стандарт, НЕ клоакинг -9999px) только при отсутствии, идемпотентно
   if ((html.match(/<h1[\s>]/gi) || []).length === 0 && !/data-seomarket="h1"/.test(html)) {
     html = html.replace(/<body([^>]*)>/i, `<body$1><h1 data-seomarket="h1" style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0">${esc(topic)}</h1>`);
+  }
+  // Контент-блок (SEO-текст + таблицы + FAQ) перед </body>, идемпотентно
+  if (!/data-seomarket="content"/.test(html)) {
+    const faqLd = { '@context': 'https://schema.org', '@type': 'FAQPage', mainEntity: [
+      { '@type': 'Question', name: `Что важно при выборе «${topic.toLowerCase()}»?`, acceptedAnswer: { '@type': 'Answer', text: 'Материалы, габариты, функциональность, гарантия и соответствие интерьеру.' } },
+      { '@type': 'Question', name: 'Есть ли гарантия и доставка?', acceptedAnswer: { '@type': 'Answer', text: 'Да, гарантия производителя и доставка по всей России.' } },
+    ] };
+    html = html.replace(/<\/body>/i, `${contentBlock(topic)}<script type="application/ld+json">${JSON.stringify(faqLd)}</script>\n</body>`);
   }
   return html;
 }
