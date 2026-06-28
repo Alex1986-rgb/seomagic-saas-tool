@@ -33,8 +33,9 @@ function serve() {
   return http.createServer((req, res) => {
     let p = decodeURIComponent(req.url.split('?')[0]);
     if (p.startsWith(BASE_PATH)) p = p.slice(BASE_PATH.length) || '/';
-    let file = path.join(DIST, p);
-    if (fs.existsSync(file) && fs.statSync(file).isFile()) {
+    // Защита от path traversal: резолвим и проверяем, что путь не выходит за пределы DIST.
+    const file = path.resolve(DIST, '.' + path.posix.normalize('/' + p));
+    if (file.startsWith(DIST + path.sep) && fs.existsSync(file) && fs.statSync(file).isFile()) {
       res.writeHead(200, { 'Content-Type': MIME[path.extname(file)] || 'application/octet-stream' });
       fs.createReadStream(file).pipe(res);
     } else {
