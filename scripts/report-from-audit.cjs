@@ -20,6 +20,7 @@ const pathOf = (u) => { try { return new URL(u).pathname; } catch { return u; } 
 
 // Цены (модель сайта: ошибки 300₽, предупреждения 150₽), пояснения, детектор страниц, метрика.
 const ISSUES = {
+  broken_404: { n: 'Страница из sitemap отдаёт 404', price: 300, rec: 'Создать страницу/пререндер или убрать из sitemap', why: 'URL в sitemap, возвращающий 404, тратит краулинговый бюджет и мешает индексации.', hit: (p) => p.status === 0 || p.status >= 400, m: (p) => 'HTTP ' + (p.status || '—') },
   missing_title: { n: 'Отсутствует <title>', price: 300, rec: 'Добавить уникальный заголовок', why: 'Без title страница плохо ранжируется и невзрачно выглядит в выдаче.', hit: (p) => !p.title, m: () => 'нет' },
   missing_desc: { n: 'Нет meta description', price: 300, rec: 'Описание 120–160 символов', why: 'Description формирует сниппет в поиске и влияет на кликабельность.', hit: (p) => !p.desc, m: () => 'нет' },
   missing_h1: { n: 'Нет H1', price: 300, rec: 'Добавить один H1', why: 'H1 задаёт главную тему страницы для поисковика и пользователя.', hit: (p) => p.h1 === 0, m: () => 'H1=0' },
@@ -45,7 +46,8 @@ const smetaRows = items.map(([k, v], i) => `<tr><td class="num">${i + 1}</td><td
 // Секции: пояснение + список страниц по каждой проблеме
 const sections = items.map(([k]) => {
   const cfg = ISSUES[k];
-  const hit = pages.filter(cfg.hit);
+  // битые страницы перечисляем только в своей секции; остальные проблемы — только по доступным страницам
+  const hit = pages.filter((p) => (k === 'broken_404' ? cfg.hit(p) : (p.status >= 200 && p.status < 400 && cfg.hit(p))));
   const list = hit.slice(0, 60).map((p) => `<tr><td><a class="lnk" href="${esc(p.url)}">${esc(pathOf(p.url))}</a></td><td class="r"><span class="mt">${esc(cfg.m(p))}</span></td></tr>`).join('');
   const more = hit.length > 60 ? `<div class="more">…и ещё ${hit.length - 60} страниц</div>` : '';
   return `<h2>${cfg.n} — ${hit.length} страниц</h2>

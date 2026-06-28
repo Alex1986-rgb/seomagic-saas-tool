@@ -174,8 +174,12 @@ async function pool(items, n, fn) {
   }
 
   const N = ok.length;
+  // Битые страницы из обхода (4xx/5xx или без ответа) — напр. URL в sitemap, отдающие 404.
+  const broken = pages.filter((p) => p.status === 0 || p.status >= 400);
+  const totalDiscovered = ok.length + broken.length;
   const titleMap = {}; ok.forEach((p) => { const k = (p.title || '').toLowerCase(); if (k) titleMap[k] = (titleMap[k] || 0) + 1; });
   const I = {
+    broken_404: broken.length,
     missing_title: ok.filter((p) => !p.title).length,
     bad_title_len: ok.filter((p) => p.title && (p.titleLen < 10 || p.titleLen > 65)).length,
     dup_title: ok.filter((p) => p.title && titleMap[p.title.toLowerCase()] > 1).length,
@@ -187,19 +191,20 @@ async function pool(items, n, fn) {
     no_jsonld: ok.filter((p) => p.jsonld === 0).length,
   };
   const pct = (n) => Math.round((n / N) * 1000) / 10;
+  const brokenPct = totalDiscovered ? Math.round((broken.length / totalDiscovered) * 1000) / 10 : 0;
   const seo = Math.max(0, Math.round(100 - pct(I.missing_title) * 0.6 - pct(I.missing_desc) * 0.4 - pct(I.dup_title) * 0.3 - pct(I.bad_title_len) * 0.1));
   const content = Math.max(0, Math.round(100 - pct(I.thin) * 0.7 - pct(I.missing_h1) * 0.3));
-  const technical = Math.max(0, Math.round(100 - pct(I.missing_canonical) * 0.4 - pct(I.no_jsonld) * 0.25));
+  const technical = Math.max(0, Math.round(100 - pct(I.missing_canonical) * 0.4 - pct(I.no_jsonld) * 0.25 - brokenPct * 0.5));
   const social = Math.max(0, Math.round(100 - pct(I.missing_og) * 0.8));
   const global = Math.round(seo * 0.35 + content * 0.3 + technical * 0.25 + social * 0.1);
 
+  const issues_pct = Object.fromEntries(Object.entries(I).map(([k, v]) => [k, k === 'broken_404' ? brokenPct : pct(v)]));
   const data = {
-    site: startUrl, scanned: ok.length, errors: pages.length - ok.length,
+    site: startUrl, scanned: ok.length, attempted: totalDiscovered, broken: broken.length,
     duration_sec: Math.round((Date.now() - t0) / 1000),
     scores: { global, seo, content, technical, social },
-    issues_pct: Object.fromEntries(Object.entries(I).map(([k, v]) => [k, pct(v)])),
-    issues_count: I,
+    issues_pct, issues_count: I,
   };
-  if (OUT) { fs.writeFileSync(OUT, JSON.stringify({ ...data, pages: ok }, null, 2)); log(`JSON → ${OUT}`); }
+  if (OUT) { fs.writeFileSync(OUT, JSON.stringify({ ...data, pages: ok.concat(broken) }, null, 2)); log(`JSON → ${OUT}`); }
   console.log(JSON.stringify(data, null, 2));
 })();
