@@ -92,7 +92,7 @@ function analyze(url, res) {
   const desc = tag(html, /<meta[^>]+name=["']description["'][^>]+content=["']([^"']*)["']/i)
             || tag(html, /<meta[^>]+content=["']([^"']*)["'][^>]+name=["']description["']/i);
   const h1 = (html.match(/<h1[\s>]/gi) || []).length;
-  const text = html.replace(/<script[\s\S]*?<\/script>/gi, ' ').replace(/<style[\s\S]*?<\/style>/gi, ' ').replace(/<[^>]+>/g, ' ');
+  const text = html.replace(/<script[\s\S]*?<\/script\s*>/gi, ' ').replace(/<style[\s\S]*?<\/style\s*>/gi, ' ').replace(/<[^>]+>/g, ' ');
   return {
     url, status: res.status,
     title, titleLen: title ? title.length : 0, desc,
