@@ -8,7 +8,8 @@ import { componentTagger } from "lovable-tagger";
 export default defineConfig(({ mode }) => ({
   server: {
     host: "::",
-    port: 8080,
+    // Назначенный порт превью-харнесса (autoPort) через PORT env; иначе дефолт 8080.
+    port: Number(process.env.PORT) || 8080,
   },
   plugins: [
     react(),
