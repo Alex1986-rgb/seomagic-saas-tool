@@ -10,7 +10,7 @@ import { supabase } from '@/integrations/supabase/client';
 import SeoTextBlock, { SeoTextData } from './SeoTextBlock';
 import { analyzeText, TextQuality } from '@/utils/seoTextQuality';
 
-/** Генератор SEO-текста (Claude): форма → генерация → превью блока + метрики качества. */
+/** Генератор SEO-текста: форма → генерация → превью блока + метрики качества. */
 
 const stripHtml = (html: string) => html.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
 
@@ -58,8 +58,8 @@ const SeoTextGenerator: React.FC = () => {
       setQuality(analyzeText(res.intro + ' ' + stripHtml(res.bodyHtml)));
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e);
-      setError(/ANTHROPIC_API_KEY/.test(msg)
-        ? 'Не задан ключ Claude (ANTHROPIC_API_KEY) в настройках Supabase — добавьте, чтобы включить генерацию.'
+      setError(/ANTHROPIC_API_KEY|api.?key|not configured/i.test(msg)
+        ? 'Сервис генерации текста не настроен — добавьте ключ в настройках, чтобы включить генерацию.'
         : msg);
     } finally { setLoading(false); }
   };
@@ -67,7 +67,7 @@ const SeoTextGenerator: React.FC = () => {
   return (
     <div className="space-y-6">
       <Card>
-        <CardHeader><CardTitle className="text-lg flex items-center gap-2"><Sparkles className="h-5 w-5 text-primary" /> Генерация SEO-текста (Claude)</CardTitle></CardHeader>
+        <CardHeader><CardTitle className="text-lg flex items-center gap-2"><Sparkles className="h-5 w-5 text-primary" /> Генерация SEO-текста</CardTitle></CardHeader>
         <CardContent className="space-y-4">
           <div>
             <Label htmlFor="topic">Тема страницы / товар</Label>

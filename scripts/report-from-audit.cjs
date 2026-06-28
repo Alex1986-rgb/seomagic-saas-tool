@@ -40,6 +40,7 @@ items.forEach(([k, v]) => (ISSUES[k].sum = ISSUES[k].price * v));
 const total = items.reduce((a, [k, v]) => a + ISSUES[k].price * v, 0);
 const totalPages = items.reduce((a, [, v]) => a + v, 0);
 const CHECKOUT = getOpt('--checkout', `https://alex1986-rgb.github.io/seomagic-saas-tool/checkout?url=${encodeURIComponent(d.site)}&pages=${totalPages}&price=150&score=${S.global}`);
+const SEOTEXT_URL = getOpt('--seotext', `https://alex1986-rgb.github.io/seomagic-saas-tool/seo-text?url=${encodeURIComponent(d.site)}`);
 
 const smetaRows = items.map(([k, v], i) => `<tr><td class="num">${i + 1}</td><td><b>${ISSUES[k].n}</b><div class="rec">${ISSUES[k].rec}</div></td><td class="r"><span class="pill">${d.issues_pct[k]}%</span></td><td class="r">${fmt(ISSUES[k].price)} ₽</td><td class="r">${v}</td><td class="r"><b>${fmt(ISSUES[k].price * v)} ₽</b></td></tr>`).join('');
 
@@ -103,11 +104,14 @@ ${items.length ? `
 <div class="pay"><div><div class="pay-h">Исправить автоматически «под ключ»</div><div class="pay-d">После оплаты система создаст копию сайта, исправит код, развернёт демо, проведёт повторный аудит и пришлёт готовый сайт.</div></div>
 <div class="pay-r"><div class="payamt">${fmt(total)} ₽</div><a class="paybtn" href="${esc(CHECKOUT)}">💳 Оплатить и исправить →</a></div></div>
 
+<div class="pay" style="margin-top:12px"><div><div class="pay-h">Добавить SEO-текст на страницы</div><div class="pay-d">Развёрнутый SEO-блок с таблицами внизу каждой страницы: создать, переписать или дополнить тексты (включая карточки товаров) с контролем тошноты и водности.</div></div>
+<div class="pay-r"><a class="paybtn" href="${esc(SEOTEXT_URL)}">✍️ Выбрать функцию SEO-текста →</a></div></div>
+
 ${sections}` : '<div class="ok"><b>Проблем не найдено 🎉</b> Все проверенные параметры в норме.</div>'}
 <h2>Возможности SeoMarket</h2>
 <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:11.5px;color:#aeb8c9">
   <div style="background:#0f1626;border:1px solid #1d2638;border-radius:8px;padding:10px"><b style="color:#e8edf5">🔎 Аудит больших сайтов</b><br>Реальный обход тысяч страниц (sitemap/BFS), браузерный режим для защищённых сайтов.</div>
-  <div style="background:#0f1626;border:1px solid #1d2638;border-radius:8px;padding:10px"><b style="color:#e8edf5">✍️ Генерация SEO-текста (Claude)</b><br>Блок с таблицами ~10 000 симв.: создать/переписать/дополнить, в т.ч. для интернет-магазинов.</div>
+  <div style="background:#0f1626;border:1px solid #1d2638;border-radius:8px;padding:10px"><b style="color:#e8edf5">✍️ Генерация SEO-текста</b><br>Блок с таблицами ~10 000 симв.: создать/переписать/дополнить, в т.ч. для интернет-магазинов.</div>
   <div style="background:#0f1626;border:1px solid #1d2638;border-radius:8px;padding:10px"><b style="color:#e8edf5">📊 Контроль качества</b><br>Тошнота, водность, заспамленность — текст в нормах поисковиков.</div>
   <div style="background:#0f1626;border:1px solid #1d2638;border-radius:8px;padding:10px"><b style="color:#e8edf5">⚙️ Авто-исправление «под ключ»</b><br>Копия сайта → фикс кода → ZIP/демо на поддомене → повторный аудит.</div>
 </div>
