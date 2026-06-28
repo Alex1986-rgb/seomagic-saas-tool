@@ -1,4 +1,4 @@
-@import 'additional_styles.css';
+@import 'https://alex1986-rgb.github.io/seomagic-saas-tool/rimmebel/s/public/css/additional_styles.css';
 /* line 17, C:/Ruby/lib/ruby/gems/1.9.1/gems/compass-0.12.6/frameworks/compass/stylesheets/compass/reset/_utilities.scss */
 html, body, div, span, applet, object, iframe,
 h1, h2, h3, h4, h5, h6, p, blockquote, pre,
@@ -66,7 +66,7 @@ article, aside, details, figcaption, figure, footer, header, hgroup, menu, nav, 
 
 /* line 66, ../../../../ico/*.png */
 .ico-sprite, .ico-filter-del, .ico-good-popup-close, .ico-marker, .ico-search-btn {
-  background: url('/s/public/images/ico-s15e162b731.png') no-repeat;
+  background: url('https://alex1986-rgb.github.io/seomagic-saas-tool/rimmebel/s/public/images/ico-s15e162b731.png') no-repeat;
 }
 
 /* line 60, C:/Ruby/lib/ruby/gems/1.9.1/gems/compass-0.12.6/frameworks/compass/stylesheets/compass/utilities/sprites/_base.scss */
@@ -120,7 +120,7 @@ article, aside, details, figcaption, figure, footer, header, hgroup, menu, nav, 
 /* line 1, C:/www/rim/public/s/public/sass/main/_main.sass */
 html, body {
   height: 100%;
-  background: #efece4 url("/s/public/images/site/pattern.png");
+  background: #efece4 url("https://alex1986-rgb.github.io/seomagic-saas-tool/rimmebel/s/public/images/site/pattern.png");
   font-size: 14px;
 }
 
@@ -186,13 +186,13 @@ strong {
   min-height: 100%;
   height: auto !important;
   height: 100%;
-  background: url("/s/public/images/site/top-images.png") top center no-repeat;
+  background: url("https://alex1986-rgb.github.io/seomagic-saas-tool/rimmebel/s/public/images/site/top-images.png") top center no-repeat;
 }
 
 /* line 50, C:/www/rim/public/s/public/sass/main/_main.sass */
 .wrapper-content {
   padding: 20px 0 40px 0;
-  background: url("/s/public/images/site/bottom-images.png") bottom left no-repeat;
+  background: url("https://alex1986-rgb.github.io/seomagic-saas-tool/rimmebel/s/public/images/site/bottom-images.png") bottom left no-repeat;
 }
 
 /* line 54, C:/www/rim/public/s/public/sass/main/_main.sass */
@@ -455,7 +455,7 @@ strong {
 
 /* line 84, C:/www/rim/public/s/public/sass/lib/_colorbox.sass */
 #cboxLoadingGraphic {
-  background: url("/s/public/images/site/loading.gif") no-repeat center center;
+  background: url("https://alex1986-rgb.github.io/seomagic-saas-tool/rimmebel/s/public/images/site/loading.gif") no-repeat center center;
 }
 
 /* line 87, C:/www/rim/public/s/public/sass/lib/_colorbox.sass */
@@ -493,7 +493,7 @@ strong {
   height: 20px;
   position: absolute;
   top: -20px;
-  background: url("/s/public/images/site/controls.png") no-repeat 0 0;
+  background: url("https://alex1986-rgb.github.io/seomagic-saas-tool/rimmebel/s/public/images/site/controls.png") no-repeat 0 0;
 }
 /* line 116, C:/www/rim/public/s/public/sass/lib/_colorbox.sass */
 #cboxPrevious:active,
@@ -621,7 +621,7 @@ strong {
 /* line 9, C:/www/rim/public/s/public/sass/element/header/_right-box.sass */
 .header-main-box {
   padding: 35px 15px;
-  background: url("/s/public/images/site/header-box-bg.png") top right repeat-y;
+  background: url("https://alex1986-rgb.github.io/seomagic-saas-tool/rimmebel/s/public/images/site/header-box-bg.png") top right repeat-y;
   -webkit-border-radius: 10px;
   -moz-border-radius: 10px;
   -ms-border-radius: 10px;
@@ -1018,7 +1018,7 @@ button::-moz-focus-inner {
 /* line 5, C:/www/rim/public/s/public/sass/element/g-l/_main.sass */
 .g-l-container {
   padding: 20px 20px 30px 20px;
-  background: url("/s/public/images/site/g-l-bg.png") top left repeat-y;
+  background: url("https://alex1986-rgb.github.io/seomagic-saas-tool/rimmebel/s/public/images/site/g-l-bg.png") top left repeat-y;
   -webkit-border-radius: 10px;
   -moz-border-radius: 10px;
   -ms-border-radius: 10px;
@@ -1234,7 +1234,7 @@ button::-moz-focus-inner {
   padding: 25px 0;
   color: #6b6b6b;
   font-size: 13px;
-  background: url("/s/public/images/site/footer-border.png") left top repeat-x, url("/s/public/images/site/footer-border.png") left bottom repeat-x;
+  background: url("https://alex1986-rgb.github.io/seomagic-saas-tool/rimmebel/s/public/images/site/footer-border.png") left top repeat-x, url("https://alex1986-rgb.github.io/seomagic-saas-tool/rimmebel/s/public/images/site/footer-border.png") left bottom repeat-x;
   font-family: Arial, "Helvetica", sans-serif;
 }
 /* line 36, C:/www/rim/public/s/public/sass/element/footer/_main.sass */
@@ -1258,7 +1258,7 @@ button::-moz-focus-inner {
   position: absolute;
   width: 196px;
   height: 397px;
-  background: url("/s/public/images/site/footer-img.png") left top no-repeat;
+  background: url("https://alex1986-rgb.github.io/seomagic-saas-tool/rimmebel/s/public/images/site/footer-img.png") left top no-repeat;
 }
 
 /* line 1, C:/www/rim/public/s/public/sass/blocks/content/_main.sass */
@@ -1600,7 +1600,7 @@ button::-moz-focus-inner {
   margin-left: -320px;
   width: 500px;
   padding: 40px 95px 40px 50px;
-  background: white url("/s/public/images/site/popup-bg.png") top center no-repeat;
+  background: white url("https://alex1986-rgb.github.io/seomagic-saas-tool/rimmebel/s/public/images/site/popup-bg.png") top center no-repeat;
   z-index: 999;
   -webkit-border-radius: 3px;
   -moz-border-radius: 3px;
@@ -2160,7 +2160,7 @@ button::-moz-focus-inner {
 .dd-choose-item .letter-choose-list {
   margin-bottom: 10px;
   padding-bottom: 10px;
-  background: url("/s/public/images/site/filter-border.png") left bottom repeat-x;
+  background: url("https://alex1986-rgb.github.io/seomagic-saas-tool/rimmebel/s/public/images/site/filter-border.png") left bottom repeat-x;
 }
 /* line 219, C:/www/rim/public/s/public/sass/blocks/category/_dd.sass */
 .dd-choose-item .letter-choose-list .letter-choose-item {
@@ -2249,7 +2249,7 @@ button::-moz-focus-inner {
 .go-to-all-link-container {
   margin-bottom: 10px;
   padding-bottom: 20px;
-  background: url("/s/public/images/site/filter-border.png") left bottom repeat-x;
+  background: url("https://alex1986-rgb.github.io/seomagic-saas-tool/rimmebel/s/public/images/site/filter-border.png") left bottom repeat-x;
 }
 
 /* line 276, C:/www/rim/public/s/public/sass/blocks/category/_dd.sass */
@@ -2704,13 +2704,13 @@ button::-moz-focus-inner {
 /* line 1, C:/www/rim/public/s/public/sass/blocks/contacts/_main.sass */
 .contacts-list {
   margin-bottom: 150px;
-  background: url("/s/public/images/site/item-border.png") left top repeat-x;
+  background: url("https://alex1986-rgb.github.io/seomagic-saas-tool/rimmebel/s/public/images/site/item-border.png") left top repeat-x;
 }
 
 /* line 5, C:/www/rim/public/s/public/sass/blocks/contacts/_main.sass */
 .contacts-item {
   padding: 40px 0 10px 0;
-  background: url("/s/public/images/site/item-border.png") left bottom repeat-x;
+  background: url("https://alex1986-rgb.github.io/seomagic-saas-tool/rimmebel/s/public/images/site/item-border.png") left bottom repeat-x;
 }
 /* line 9, C:/www/rim/public/s/public/sass/blocks/contacts/_main.sass */
 .contacts-item .contacts-item-img {
@@ -2928,7 +2928,7 @@ button::-moz-focus-inner {
   right: 0;
   width: 160px;
   height: 141px;
-  background: url("/s/public/images/site/index-text-img.png") no-repeat;
+  background: url("https://alex1986-rgb.github.io/seomagic-saas-tool/rimmebel/s/public/images/site/index-text-img.png") no-repeat;
 }
 
 /* line 1, C:/www/rim/public/s/public/sass/blocks/project/_main.sass */
@@ -3033,7 +3033,7 @@ button::-moz-focus-inner {
 }
 /* line 72, C:/www/rim/public/s/public/sass/typography/_simple-text.sass */
 .text-item .simple-text table tr {
-  background: white url("/s/public/images/site/table-border.png") left bottom repeat-x;
+  background: white url("https://alex1986-rgb.github.io/seomagic-saas-tool/rimmebel/s/public/images/site/table-border.png") left bottom repeat-x;
 }
 /* line 74, C:/www/rim/public/s/public/sass/typography/_simple-text.sass */
 .text-item .simple-text table tr:last-child {
@@ -3060,7 +3060,7 @@ button::-moz-focus-inner {
   right: -1px;
   top: 50%;
   margin-top: -12px;
-  background: url("/s/public/images/site/td-border.png") top repeat-y;
+  background: url("https://alex1986-rgb.github.io/seomagic-saas-tool/rimmebel/s/public/images/site/td-border.png") top repeat-y;
   z-index: 1;
 }
 /* line 98, C:/www/rim/public/s/public/sass/typography/_simple-text.sass */
@@ -3081,5 +3081,5 @@ button::-moz-focus-inner {
   right: -1px;
   top: 50%;
   margin-top: -12px;
-  background: url("/s/public/images/site/td-border.png") top repeat-y;
+  background: url("https://alex1986-rgb.github.io/seomagic-saas-tool/rimmebel/s/public/images/site/td-border.png") top repeat-y;
 }
