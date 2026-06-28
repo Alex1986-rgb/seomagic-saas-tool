@@ -27,8 +27,8 @@ serve(async (req) => {
 
     if (!topic) throw new Error('topic is required');
 
-    const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
-    if (!LOVABLE_API_KEY) throw new Error('LOVABLE_API_KEY not configured');
+    const ANTHROPIC_API_KEY = Deno.env.get('ANTHROPIC_API_KEY');
+    if (!ANTHROPIC_API_KEY) throw new Error('ANTHROPIC_API_KEY not configured');
 
     const hasContent = existingContent.trim().length > 50;
     const effectiveMode = mode === 'auto' ? (hasContent ? 'rewrite' : 'create') : mode;
@@ -65,27 +65,31 @@ ${ecommerceBlock}
 Верни СТРОГО валидный JSON без markdown-обёртки:
 {"heading":"<H2 заголовок блока>","intro":"<вступительный абзац, plain text>","bodyHtml":"<полный текст в HTML: h3/p/ul/table>"}`;
 
-    const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
-      headers: { 'Authorization': `Bearer ${LOVABLE_API_KEY}`, 'Content-Type': 'application/json' },
+      headers: {
+        'x-api-key': ANTHROPIC_API_KEY,
+        'anthropic-version': '2023-06-01',
+        'content-type': 'application/json',
+      },
       body: JSON.stringify({
-        model: 'google/gemini-2.5-flash',
+        model: 'claude-sonnet-4-6',
+        max_tokens: 8000,
+        temperature: 0.7,
+        system,
         messages: [
-          { role: 'system', content: system },
           { role: 'user', content: prompt },
         ],
-        temperature: 0.7,
-        max_tokens: 8000,
       }),
     });
 
     if (!response.ok) {
       const err = await response.text();
-      throw new Error(`AI gateway error: ${response.status} ${err.slice(0, 200)}`);
+      throw new Error(`Anthropic API error: ${response.status} ${err.slice(0, 200)}`);
     }
 
     const data = await response.json();
-    let raw = data.choices?.[0]?.message?.content || '';
+    let raw = data.content?.[0]?.text || '';
     // Снимаем возможную markdown-обёртку ```json ... ```
     raw = raw.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/i, '').trim();
 
