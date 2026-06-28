@@ -423,6 +423,8 @@ async function pool(items, n, fn) { let i = 0, done = 0; await Promise.all(Array
     urls = Array.from(sm.buf.toString().matchAll(/<loc>(.*?)<\/loc>/g), (m) => rebind(m[1].trim())).filter(Boolean);
     urls = Array.from(new Set(urls)).slice(0, MAX);
   }
+  // Не считаем страницами URL-ассеты (картинки/шрифты/медиа в sitemap) — иначе они сохранятся как пустые «страницы».
+  urls = urls.filter((u) => !/\.(jpe?g|png|gif|webp|svg|css|js|mjs|woff2?|ttf|eot|ico|pdf|zip|rar|7z|mp4|webm|avi|mov|xml|json|txt)(\?|$)/i.test(u));
   if (!urls.length) urls = [START];
   log(`Страниц: ${urls.length}`);
 
@@ -442,6 +444,29 @@ async function pool(items, n, fn) { let i = 0, done = 0; await Promise.all(Array
     const out = path.join(OUT, p); fs.mkdirSync(path.dirname(out), { recursive: true }); fs.writeFileSync(out, html);
   });
   if (brokenSrc) { try { fs.writeFileSync(path.join(OUT, '_broken-source-pages.json'), JSON.stringify({ count: brokenSrc, urls: brokenList }, null, 2)); } catch {} log(`Битых страниц источника пропущено: ${brokenSrc}`); }
+
+  // 1b) Дедуп title: одинаковые <title> → добавляем уникальный суффикс из сегмента URL (рус. имя коллекции/модели).
+  {
+    const walkH = (d, acc = []) => { for (const e of fs.readdirSync(d, { withFileTypes: true })) { const p = path.join(d, e.name); if (e.isDirectory()) walkH(p, acc); else if (/\.html?$/i.test(e.name)) acc.push(p); } return acc; };
+    const htmls = walkH(OUT);
+    const groups = {};
+    for (const f of htmls) { const t = ((fs.readFileSync(f, 'utf8').match(/<title[^>]*>([\s\S]*?)<\/title>/i) || [, ''])[1] || '').replace(/\s+/g, ' ').trim(); (groups[t] = groups[t] || []).push(f); }
+    let deduped = 0;
+    for (const [t, files] of Object.entries(groups)) {
+      if (!t || files.length < 2) continue;
+      for (const f of files) {
+        const seg = (path.relative(OUT, f).replace(/[\\/]index\.html?$/i, '').split(/[\\/]/).pop() || '').replace(/-[a-z0-9]{1,8}$/i, '').replace(/[-_]+/g, ' ').trim();
+        const suf = seg ? seg.charAt(0).toUpperCase() + seg.slice(1) : '';
+        if (!suf || t.toLowerCase().includes(suf.toLowerCase())) continue;
+        const nt = shortenTitle(`${t} — ${suf}`);
+        let h = fs.readFileSync(f, 'utf8');
+        h = h.replace(/<title[^>]*>[\s\S]*?<\/title>/i, `<title>${esc(nt)}</title>`)
+             .replace(/(<meta[^>]+property=["']og:title["'][^>]+content=["'])[^"']*(["'])/i, `$1${esc(nt)}$2`);
+        fs.writeFileSync(f, h); deduped++;
+      }
+    }
+    if (deduped) log(`Дедуп title: уникализировано ${deduped} страниц`);
+  }
   log(`Ассетов к скачиванию: ${assetMap.size}`);
 
   // 2) скачиваем ассеты
