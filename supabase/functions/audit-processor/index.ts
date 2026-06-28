@@ -7,7 +7,9 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-const MICRO_BATCH_SIZE = 5;
+// Размер микро-батча и число батчей за один вызов — конфигурируемы под окружение.
+// На 8GB локально снизить (AUDIT_BATCHES_PER_RUN=1), чтобы пережить CPU-лимит изолята.
+const MICRO_BATCH_SIZE = Number(Deno.env.get('AUDIT_BATCH_SIZE') || 5);
 const PAGE_TIMEOUT = 8000;
 const MAX_DEPTH = 5;
 
@@ -57,11 +59,23 @@ function calculatePriority(url: string, depth: number, isFromSitemap: boolean = 
   return Math.max(0, priority);
 }
 
+// Потолок числа страниц под окружение (8GB локально → держать низким; облако → выше).
+const MAX_SAFE_PAGES = Number(Deno.env.get('AUDIT_MAX_PAGES') || 3000);
+
+// Репрезентативная выборка по размеру сайта. Для огромных сайтов (десятки тысяч —
+// миллионы страниц) полный обход нецелесообразен и нереалистичен — берём
+// статистически значимый срез (как Ahrefs/Screaming Frog), результат экстраполируется.
 function calculateEstimatedPages(sitemapCount: number, maxPages: number = 100): number {
-  if (sitemapCount === 0) return maxPages;
-  if (sitemapCount < 200) return Math.min(sitemapCount, maxPages);
-  if (sitemapCount < 1000) return Math.min(Math.ceil(sitemapCount * 0.3), 300);
-  return 300;
+  let auto: number;
+  if (sitemapCount === 0) auto = maxPages || 100;
+  else if (sitemapCount < 200) auto = sitemapCount;              // маленький сайт — весь
+  else if (sitemapCount < 1000) auto = Math.ceil(sitemapCount * 0.3);
+  else if (sitemapCount < 10000) auto = 1000;
+  else if (sitemapCount < 100000) auto = 2000;
+  else auto = 3000;                                             // 100k…1M+ — выборка
+  // Пользователь (deep) может запросить больше, но не выше потолка окружения.
+  const target = Math.max(auto, maxPages || 0);
+  return Math.min(target, MAX_SAFE_PAGES, sitemapCount > 0 ? sitemapCount : target);
 }
 
 // Follow redirects manually to track chain
@@ -563,7 +577,7 @@ async function processAuditInBackground(task_id: string) {
     let hasMore = true;
     let totalProcessed = task.pages_scanned || 0;
     let batchCount = task.batch_count || 0;
-    const MAX_BATCHES_PER_RUN = 3; // Process max 3 batches per invocation (~25s) to stay under CPU limit
+    const MAX_BATCHES_PER_RUN = Number(Deno.env.get('AUDIT_BATCHES_PER_RUN') || 3); // батчей за вызов (8GB: =1)
 
     let batchesThisRun = 0;
     while (hasMore && totalProcessed < estimatedPages && batchesThisRun < MAX_BATCHES_PER_RUN) {
