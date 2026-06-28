@@ -73,8 +73,8 @@ const AuditsHistory = lazy(() => import('./pages/AuditsHistory'));
 const OptimizationsHistory = lazy(() => import('./pages/OptimizationsHistory'));
 const SharedEstimate = lazy(() => import('./pages/SharedEstimate'));
 const Sitemap = lazy(() => import('./pages/Sitemap'));
-// Admin Routes
-import AdminRoutes from './routes/AdminRoutes';
+// Admin Routes (lazy — вся админка с графиками/PDF не грузится на публичных страницах)
+const AdminRoutes = lazy(() => import('./routes/AdminRoutes'));
 
 
 
