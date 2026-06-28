@@ -1,0 +1,1 @@
+import{S as e,a6 as a}from"./vendor-4aACfuwA.js";const i=({faqs:s})=>{const n={"@context":"https://schema.org","@type":"FAQPage",mainEntity:s.map(t=>({"@type":"Question",name:t.question,acceptedAnswer:{"@type":"Answer",text:t.answer}}))};return e.jsx(a,{children:e.jsx("script",{type:"application/ld+json",children:JSON.stringify(n)})})};export{i as F};
