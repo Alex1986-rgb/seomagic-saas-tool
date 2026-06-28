@@ -446,32 +446,85 @@ async function pool(items, n, fn) { let i = 0, done = 0; await Promise.all(Array
     const out = path.join(OUT, assetMap.get(absUrl)); const r = await fetchRaw(absUrl); if (r.status >= 200 && r.status < 400 && r.buf.length) { fs.mkdirSync(path.dirname(out), { recursive: true }); fs.writeFileSync(out, r.buf); }
   });
 
-  // 4) Оптимизация изображений → WebP (универсальная поддержка, реальная экономия). Ссылки .png/.jpg → .webp.
-  //    WebP берём только если он меньше оригинала; иначе оставляем исходник. Отключается --no-img-opt.
-  let imgOpt = { files: 0, converted: 0, before: 0, after: 0 };
+  // 4) Адаптивные картинки: WebP (главный + варианты srcset 480/768/1200) + width/height (анти-CLS).
+  //    Ссылки → .webp, <img> получают srcset/sizes/width/height. Отключается --no-img-opt.
+  let imgOpt = { files: 0, converted: 0, variants: 0, before: 0, after: 0 };
   if (process.argv.indexOf('--no-img-opt') < 0) {
     const cp = require('child_process');
     const hasCwebp = (() => { try { cp.execFileSync('cwebp', ['-version'], { stdio: 'ignore' }); return true; } catch { return false; } })();
+    const hasIdentify = (() => { try { cp.execFileSync('magick', ['-version'], { stdio: 'ignore' }); return true; } catch { return false; } })();
     if (hasCwebp) {
       const walk = (d, acc = []) => { for (const e of fs.readdirSync(d, { withFileTypes: true })) { const p = path.join(d, e.name); if (e.isDirectory()) walk(p, acc); else acc.push(p); } return acc; };
+      const dims = (f) => { if (!hasIdentify) return [0, 0]; try { return cp.execFileSync('magick', ['identify', '-format', '%w %h', f + '[0]'], { stdio: ['ignore', 'pipe', 'ignore'] }).toString().trim().split(/\s+/).map(Number); } catch { return [0, 0]; } };
       const imgs = walk(OUT).filter((f) => /\.(jpe?g|png)$/i.test(f));
       imgOpt.files = imgs.length;
       const Q = Number(getOpt('--img-quality', 80));
+      const SIZES = [480, 768, 1200];
+      const MAX_DIM = Number(getOpt('--img-max', 1600));
+      const manifest = {}; // relNoExt -> {w,h, main, srcset:[[w,rel],...]}
       for (let i = 0; i < imgs.length; i++) {
-        const f = imgs[i]; const wf = f.replace(/\.(jpe?g|png)$/i, '.webp');
+        const f = imgs[i]; const relNoExt = path.relative(OUT, f).replace(/\.(jpe?g|png)$/i, '');
+        const wf = path.join(OUT, relNoExt + '.webp');
         let ob = 0; try { ob = fs.statSync(f).size; } catch {}
         imgOpt.before += ob;
-        try { cp.execFileSync('cwebp', ['-quiet', '-q', String(Q), f, '-o', wf], { stdio: 'ignore' }); } catch {}
+        const [W, H] = dims(f);
+        // главный webp (с ограничением по большей стороне)
+        const mainArgs = ['-quiet', '-q', String(Q)];
+        if (W > MAX_DIM) mainArgs.push('-resize', String(MAX_DIM), '0');
+        try { cp.execFileSync('cwebp', [...mainArgs, f, '-o', wf], { stdio: 'ignore' }); } catch {}
         let nb = 0; try { nb = fs.existsSync(wf) ? fs.statSync(wf).size : 0; } catch {}
-        if (nb > 0 && nb < ob) { imgOpt.after += nb; imgOpt.converted++; }
-        else { if (nb > 0) { try { fs.unlinkSync(wf); } catch {} } imgOpt.after += ob; }
-        if ((i + 1) % 30 === 0) log(`  webp ${i + 1}/${imgs.length}`);
+        if (!(nb > 0 && nb < ob)) { if (nb > 0) { try { fs.unlinkSync(wf); } catch {} } imgOpt.after += ob; continue; }
+        imgOpt.after += nb; imgOpt.converted++;
+        const mainW = W > MAX_DIM ? MAX_DIM : (W || 0);
+        const srcset = [];
+        // варианты меньших размеров (без апскейла)
+        for (const s of SIZES) {
+          if (W && s < W && s < mainW) {
+            const vrel = `${relNoExt}-${s}w.webp`; const vout = path.join(OUT, vrel);
+            try { cp.execFileSync('cwebp', ['-quiet', '-q', String(Q), '-resize', String(s), '0', f, '-o', vout], { stdio: 'ignore' }); imgOpt.variants++; srcset.push([s, vrel]); } catch {}
+          }
+        }
+        srcset.push([mainW || (SIZES[SIZES.length - 1]), relNoExt + '.webp']);
+        manifest[relNoExt] = { w: W, h: H, main: relNoExt + '.webp', srcset };
+        if ((i + 1) % 25 === 0) log(`  webp ${i + 1}/${imgs.length}`);
       }
-      // переписываем ссылки в HTML/CSS: локальный .png/.jpg → .webp, если webp создан
-      const reExt = new RegExp('(' + DEMO.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '[^"\'\\s)]+?)\\.(png|jpe?g)\\b', 'gi');
-      for (const tf of walk(OUT).filter((x) => /\.(html?|css)$/i.test(x))) {
+      // переписываем HTML: <img> → webp src + srcset/sizes/width/height; затем общий своп .png/.jpg→.webp
+      const DESC = DEMO.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const reExt = new RegExp('(' + DESC + '[^"\'\\s)]+?)\\.(png|jpe?g)\\b', 'gi');
+      const relOf = (url) => { try { return decodeURIComponent(url.slice(DEMO.length)); } catch { return url.slice(DEMO.length); } };
+      for (const tf of walk(OUT).filter((x) => /\.html?$/i.test(x))) {
+        let c = fs.readFileSync(tf, 'utf8');
+        let bestImg = null; // самая крупная картинка страницы (для Product/ImageObject)
+        c = c.replace(/<img\b[^>]*>/gi, (tag) => {
+          const src = (tag.match(/\bsrc=["']([^"']+)["']/i) || [])[1];
+          if (!src || src.indexOf(DEMO) !== 0) return tag;
+          const info = manifest[relOf(src).replace(/\.(png|jpe?g|webp)$/i, '')];
+          if (!info) return tag;
+          if (!bestImg || (info.w || 0) > (bestImg.w || 0)) bestImg = info;
+          let t = tag.replace(/\bsrc=["'][^"']+["']/i, `src="${DEMO}${info.main}"`);
+          if (info.srcset.length > 1 && !/\bsrcset=/i.test(t)) {
+            const ss = info.srcset.map(([w, rel]) => `${DEMO}${rel} ${w}w`).join(', ');
+            t = t.replace(/<img/i, `<img srcset="${ss}" sizes="(max-width:768px) 100vw, 1200px"`);
+          }
+          if (info.w && info.h && !/\bwidth=/i.test(t)) t = t.replace(/<img/i, `<img width="${info.w}" height="${info.h}"`);
+          return t;
+        });
+        c = c.replace(reExt, (m, baseUrl) => fs.existsSync(path.join(OUT, relOf(baseUrl) + '.webp')) ? baseUrl + '.webp' : m);
+        // Product/ImageObject JSON-LD для карточек товара (/catalog/cat/slug/index.html)
+        const rp = tf.replace(/\\/g, '/');
+        if (/\/catalog\/[^/]+\/[^/]+\/index\.html$/i.test(rp) && bestImg && !/"@type":"Product"/.test(c)) {
+          const m2 = rp.match(/\/catalog\/[^/]+\/([^/]+)\/index\.html$/i);
+          const brand = (m2 ? (m2[1].split('-')[1] || '') : '').replace(/^./, (x) => x.toUpperCase());
+          const name = ((c.match(/<title[^>]*>([^<]+)/i) || [, ''])[1].split(/[—|–\-,]/)[0] || 'Товар').trim();
+          const ld = { '@context': 'https://schema.org', '@type': 'Product', name, image: [DEMO + bestImg.main], ...(brand ? { brand: { '@type': 'Brand', name: brand } } : {}) };
+          c = c.replace(/<\/body>/i, `<script type="application/ld+json">${JSON.stringify(ld)}</script>\n</body>`);
+        }
+        fs.writeFileSync(tf, c);
+      }
+      // CSS: фоновые url() → webp
+      for (const tf of walk(OUT).filter((x) => /\.css$/i.test(x))) {
         let c = fs.readFileSync(tf, 'utf8'); let changed = false;
-        c = c.replace(reExt, (m, baseUrl) => { let rel; try { rel = decodeURIComponent(baseUrl.slice(DEMO.length)); } catch { rel = baseUrl.slice(DEMO.length); } if (fs.existsSync(path.join(OUT, rel + '.webp'))) { changed = true; return baseUrl + '.webp'; } return m; });
+        c = c.replace(reExt, (m, baseUrl) => { if (fs.existsSync(path.join(OUT, relOf(baseUrl) + '.webp'))) { changed = true; return baseUrl + '.webp'; } return m; });
         if (changed) fs.writeFileSync(tf, c);
       }
     } else { log('  (cwebp не найден — оптимизация картинок пропущена)'); }
@@ -479,5 +532,5 @@ async function pool(items, n, fn) { let i = 0, done = 0; await Promise.all(Array
 
   const saved = fs.existsSync(OUT) ? require('child_process').execSync(`find ${OUT} -type f | wc -l`).toString().trim() : '0';
   const kb = (n) => Math.round(n / 1024);
-  console.log(JSON.stringify({ pages: urls.length, assets: assetMap.size, files: saved, img_opt: { files: imgOpt.files, converted: imgOpt.converted, kb_before: kb(imgOpt.before), kb_after: kb(imgOpt.after), saved_pct: imgOpt.before ? Math.round((1 - imgOpt.after / imgOpt.before) * 100) : 0 } }));
+  console.log(JSON.stringify({ pages: urls.length, assets: assetMap.size, files: saved, img_opt: { files: imgOpt.files, converted: imgOpt.converted, variants: imgOpt.variants, kb_before: kb(imgOpt.before), kb_after: kb(imgOpt.after), saved_pct: imgOpt.before ? Math.round((1 - imgOpt.after / imgOpt.before) * 100) : 0 } }));
 })();
