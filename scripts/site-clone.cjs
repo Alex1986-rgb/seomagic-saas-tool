@@ -374,9 +374,13 @@ function injectIntoSeoBox(html, block) {
 }
 
 // Переписываем ссылку: resolve относительно pageUrl, если наш хост — на демо-абсолютный локальный путь
+// Не-навигационные/потенциально опасные схемы — пропускаем (сравнение без учёта регистра).
+const SKIP_SCHEMES = new Set(['javascript', 'vbscript', 'data', 'blob', 'mailto', 'tel', 'about']);
 function rewriteRef(ref, pageUrl) {
   const t = ref.trim();
-  if (!t || t.startsWith('data:') || t.startsWith('#') || t.startsWith('mailto:') || t.startsWith('tel:') || t.startsWith('javascript:')) return null;
+  if (!t || t.startsWith('#')) return null;
+  const scheme = (t.match(/^([a-z][a-z0-9+.-]*):/i) || [, ''])[1].toLowerCase();
+  if (SKIP_SCHEMES.has(scheme)) return null;
   let abs; try { abs = new URL(t, pageUrl).toString(); } catch { return null; }
   if (new URL(abs).origin !== ORIGIN) {
     // внешние ассеты: апгрейд http→https, оставляем как есть
