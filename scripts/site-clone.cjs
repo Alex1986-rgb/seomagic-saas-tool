@@ -59,6 +59,112 @@ function mapAsset(absUrl, ctHint) {
 const tag = (h, re) => { const m = h.match(re); return m ? m[1].trim() : null; };
 function shortenTitle(t) { t = t.trim(); if (t.length <= 65) return t; for (const s of [' — ', ' | ', ' – ', ' - ', ', ']) { const i = t.indexOf(s); if (i >= 30 && i <= 60) return t.slice(0, i).trim(); } return t.slice(0, 59).replace(/\s+\S*$/, '').trim() + '…'; }
 
+// Общий премиум-стиль SEO-блока (категории и товары). !important перекрывает inline вёрстку.
+const SEO_STYLE = `<style>
+  .smk-seo{max-width:1080px;margin:44px auto;padding:34px 30px;background:#fff;border:1px solid #ececec;border-radius:14px;font-family:'Helvetica Neue',Arial,sans-serif;color:#2b2b2b;line-height:1.78!important;box-shadow:0 8px 30px rgba(0,0,0,.06)}
+  .smk-seo h2{font-size:28px!important;font-weight:800!important;color:#1a1a1a!important;margin:0 0 6px!important;letter-spacing:-.4px!important}
+  .smk-seo .smk-kicker{color:#9c7a3c!important;font-weight:700!important;font-size:13px!important;text-transform:uppercase;letter-spacing:1.4px;margin:0 0 16px!important}
+  .smk-seo h3{font-size:19px!important;font-weight:700!important;color:#1a1a1a!important;margin:28px 0 10px!important;padding-left:13px!important;border-left:3px solid #9c7a3c!important}
+  .smk-seo p{margin:0 0 13px!important;color:#3a3a3a!important;font-size:15.5px!important}
+  .smk-seo .smk-lead{font-size:17.5px!important;color:#222!important;font-weight:500!important}
+  .smk-seo strong{color:#1a1a1a!important;font-weight:700!important}
+  .smk-seo a{color:#9c7a3c!important;text-decoration:none!important;border-bottom:1px solid rgba(156,122,60,.45)!important}
+  .smk-seo table{width:100%!important;border-collapse:separate!important;border-spacing:0!important;margin:18px 0!important;border:1px solid #e6e6e6!important;border-radius:10px!important;overflow:hidden!important}
+  .smk-seo th{background:#1a1a1a!important;color:#fff!important;padding:12px 14px!important;text-align:left!important;font-size:12.5px!important;text-transform:uppercase!important;letter-spacing:.5px!important}
+  .smk-seo td{padding:11px 14px!important;border:0!important;border-top:1px solid #eee!important;font-size:14.5px!important;color:#3a3a3a!important}
+  .smk-seo tbody tr:nth-child(even) td{background:#faf8f4!important}
+  .smk-seo details{border:1px solid #ececec!important;border-radius:10px!important;padding:12px 16px!important;margin:8px 0!important;background:#fafafa!important}
+  .smk-seo summary{cursor:pointer!important;font-weight:600!important;color:#1a1a1a!important;list-style:none!important}
+  .smk-seo summary::-webkit-details-marker{display:none}
+  .smk-seo .smk-more{border:0!important;background:transparent!important;padding:0!important;margin:8px 0 0!important}
+  .smk-seo .smk-more>summary{color:#9c7a3c!important;font-size:15px!important;font-weight:700!important}
+  .smk-seo .smk-callout{background:#faf8f4!important;border-left:4px solid #9c7a3c!important;border-radius:8px!important;padding:14px 18px!important;margin:16px 0!important}
+  .smk-seo .smk-callout p{margin:0!important;font-size:15px!important;color:#4a4030!important}
+  </style>`;
+
+// Страница товара (карточка): /catalog/<категория>/<слаг> (3+ сегмента).
+function isProduct(pageUrl) {
+  try { const segs = new URL(pageUrl).pathname.replace(/^\/+|\/+$/g, '').split('/'); return segs[0] === 'catalog' && segs.length >= 3 && segs[2].length > 2; }
+  catch { return false; }
+}
+
+// Детальное продуктовое описание: ~5000 знаков + 1 таблица характеристик + FAQ. Про конкретное изделие.
+function productBlock(topic, html, pageUrl) {
+  const segs = (() => { try { return new URL(pageUrl).pathname.replace(/^\/+|\/+$/g, '').split('/'); } catch { return []; } })();
+  const slug = (segs[2] || '').split('-');
+  const cap = (s) => s ? s.charAt(0).toUpperCase() + s.slice(1) : '';
+  const type = (topic.split(/\s+/)[0] || 'Изделие').replace(/[^А-Яа-яA-Za-z]/g, '') || 'Изделие';
+  const brand = cap(slug[1] || '') || cap(slug[0] || '') || 'итальянской фабрики';
+  const seed = pageUrl || topic;
+  const L = (href, t) => `<a href="${href}">${t}</a>`;
+  const isSoft = /диван|кроват|кресл|тахта|пуф|банкет/i.test(type);
+  const upholstery = pick(['натуральная кожа премиум-класса', 'мягкая экокожа', 'износостойкий велюр', 'фактурная рогожка', 'шенилл', 'микровелюр'], seed, 2);
+  const filling = pick(['независимый пружинный блок', 'высокоэластичный ППУ', 'натуральный пух и гусиное перо', 'холлофайбер'], seed + 'f', 2);
+  const mech = pick(['еврокнижка', 'дельфин', 'аккордеон', 'выкатной'], seed + 'm', 1)[0];
+  const wood = pick(['массив дуба', 'массив бука', 'массив ореха', 'массив ясеня'], seed + 'w', 1)[0];
+  const finish = pick(['ручная патина', 'золочение поталью', 'художественная резьба', 'лаковое покрытие'], seed + 'd', 2);
+  const style = pick(['классика', 'неоклассика', 'ар-деко', 'модерн', 'прованс'], seed + 's', 1)[0];
+
+  const td = 'style="padding:11px 14px;border-top:1px solid #eee;font-size:14.5px"';
+  const thc = 'style="padding:11px 14px;border-top:1px solid #eee;font-size:14.5px;font-weight:700;color:#1a1a1a;width:38%;background:#faf8f4"';
+  const specRows = [
+    ['Бренд / фабрика', brand], ['Тип изделия', type], ['Коллекция', cap((slug.slice(2).join(' ') || '').replace(/\d+/g, '').trim()) || 'фирменная серия'],
+    ['Материал каркаса', wood], [isSoft ? 'Обивка' : 'Отделка', isSoft ? upholstery.join(', ') : finish.join(', ')],
+    isSoft ? ['Наполнение', filling.join(', ')] : ['Покрытие', 'экологичный лак'],
+    isSoft ? ['Механизм', mech] : ['Фурнитура', 'доводчики, направляющие премиум'],
+    ['Стиль', style], ['Страна-производитель', 'Италия'], ['Гарантия', '24 месяца'],
+  ].map(([k, v]) => `<tr><td ${thc}>${esc(k)}</td><td ${td}>${esc(v)}</td></tr>`).join('');
+
+  const softPara = isSoft
+    ? `<h3>Комфорт и механизм</h3><p>Внутри — ${esc(filling.join(' и '))}, что обеспечивает правильную поддержку и долговечность формы. ${mech ? `Модель оснащена механизмом трансформации «${esc(mech)}» для удобного спального места и ежедневного использования. ` : ''}Обивка из материалов ${esc(upholstery.join(', '))} приятна на ощупь, износостойка и проста в уходе; доступен выбор цвета под ваш интерьер.</p>`
+    : `<h3>Конструкция и отделка</h3><p>Корпус выполнен из ${esc(wood)} с отделкой в техниках ${esc(finish.join(', '))}, что придаёт изделию благородный, статусный вид. Используется надёжная фурнитура с доводчиками и плавным ходом ящиков/дверей, рассчитанная на долгий срок службы.</p>`;
+
+  const faqs = [
+    [`Из чего изготовлена модель «${esc(topic)}»?`, `Каркас — ${esc(wood)}; ${isSoft ? 'обивка — ' + esc(upholstery.join(', ')) + ', наполнение — ' + esc(filling.join(', ')) : 'отделка — ' + esc(finish.join(', '))}. Производитель — ${esc(brand)}, Италия.`],
+    ['Можно ли выбрать другой цвет/обивку?', 'Да, для большинства моделей доступен выбор цвета отделки и вариантов обивки. Уточните актуальные варианты у менеджера.'],
+    ['Какие сроки и условия доставки?', 'Доставка по всей России; срок зависит от наличия и фабрики. Возможны подъём и профессиональная сборка.'],
+    ['Действует ли гарантия?', 'Да, официальная гарантия 24 месяца от производителя; условия — в документах к заказу.'],
+  ];
+  const faqHtml = faqs.map(([q, a]) => `<details><summary>${q}</summary><p>${a}</p></details>`).join('');
+
+  const desc = `
+  <p class="smk-lead"><strong>${esc(topic)}</strong> — модель от ${esc(brand)} (Италия) в стиле ${esc(style)}. Это сочетание выразительного дизайна, качественных материалов и продуманной эргономики, которое станет акцентом интерьера и прослужит долгие годы.</p>
+  <details data-seomarket="more" class="smk-more"><summary>Читать полное описание ▾</summary>
+  <h3>О модели</h3>
+  <p>«${esc(topic)}» создана ${esc(brand)} — производителем с репутацией и узнаваемым почерком. Изделие воплощает характерные черты стиля ${esc(style)}: выверенные пропорции, внимание к деталям и качественные материалы. Такая ${esc(type.toLowerCase())} органично вписывается как в классические, так и в современные интерьеры, подчёркивая статус и вкус владельца.</p>
+  <h3>Дизайн и эстетика</h3>
+  <p>Силуэт модели лаконичен и одновременно выразителен. Линии корпуса, фактура поверхностей и отделка продуманы до мелочей, а ${esc(finish[0])} добавляет изделию глубину и индивидуальность. «${esc(topic)}» хорошо смотрится как самостоятельный акцент и в составе гарнитура, позволяя собрать целостный интерьерный ансамбль.</p>
+  ${softPara}
+  <h3>Материалы и качество</h3>
+  <p>В производстве используются проверенные материалы: ${esc(wood)} для каркаса, качественная фурнитура и сертифицированные покрытия. Все компоненты безопасны, экологичны и рассчитаны на ежедневную эксплуатацию. Контроль качества на каждом этапе гарантирует, что «${esc(topic)}» сохранит внешний вид и функциональность на протяжении многих лет.</p>
+  <h3>Размеры, эргономика и комфорт</h3>
+  <p>Перед покупкой рекомендуем уточнить точные габариты и сопоставить их с планировкой помещения и проходами. Продуманная эргономика обеспечивает удобство в ежедневном использовании, а ${isSoft ? 'грамотно подобранное наполнение — комфортную посадку и поддержку' : 'функциональные системы хранения — порядок и практичность'}. Менеджер поможет подобрать конфигурацию под ваше пространство.</p>
+  <h3>В интерьере и сочетания</h3>
+  <p>«${esc(topic)}» легко комбинируется с другими предметами коллекции и сопутствующей мебелью. Для гармоничного ансамбля обратите внимание на изделия того же стиля и палитры. Смотрите также: ${L('/catalog/spalni', 'спальни')}, ${L('/catalog/gostinye', 'гостиные')}, ${L('/catalog/myagkaya-mebel', 'мягкая мебель')} и наши ${L('/projects', 'реализованные проекты')}.</p>
+  <h3>Преимущества модели</h3>
+  <p>Среди ключевых достоинств «${esc(topic)}» — узнаваемый дизайн фабрики ${esc(brand)}, качественные материалы (${esc(wood)}${isSoft ? ', ' + esc(upholstery[0]) : ', ' + esc(finish[0])}), надёжная сборка и внимание к деталям. Изделие сочетает эстетику и практичность: оно одинаково уместно как акцент интерьера и как часть продуманного ансамбля, а проверенные комплектующие обеспечивают долгий срок службы без потери внешнего вида.</p>
+  <h3>Для каких интерьеров подходит</h3>
+  <p>Модель в стиле ${esc(style)} гармонично смотрится в квартирах, загородных домах и представительских помещениях. ${isSoft ? 'Для гостиных и спален она создаёт зону комфорта и отдыха' : 'Для гостиных, спален и кабинетов она добавляет порядок и функциональность'}, легко сочетаясь с текстилем, освещением и отделкой в близкой палитре. Дизайнеры рекомендуют поддержать «${esc(topic)}» предметами того же стиля для целостного образа интерьера.</p>
+  <h3>Комплектация, упаковка и сборка</h3>
+  <p>Изделие поставляется в заводской защитной упаковке, исключающей повреждения при транспортировке. В комплект входят необходимый крепёж и инструкция; при заказе доступны услуги подъёма и профессиональной сборки силами нашей бригады. Это экономит ваше время и гарантирует, что «${esc(topic)}» будет собрана корректно и прослужит максимально долго.</p>
+  <h3>Уход и эксплуатация</h3>
+  <p>Чтобы «${esc(topic)}» служила долго, берегите изделие от прямых солнечных лучей и избыточной влажности, проводите регулярную сухую чистку, а для ${isSoft ? 'кожи и текстиля используйте подходящие средства' : 'деревянных поверхностей — специальные полироли'}. Соблюдение простых правил ухода сохранит первоначальный вид на годы.</p>
+  <h3>Доставка, гарантия и заказ</h3>
+  <p>Доставляем по всей России, возможны подъём и профессиональная сборка. На изделие действует официальная гарантия производителя. Оформить заказ можно на сайте или через менеджера в разделе ${L('/contacts', 'контакты')} — поможем с выбором, рассчитаем стоимость с доставкой и подскажем сроки.</p>
+  <h3>Характеристики</h3>
+  <table><tbody>${specRows}</tbody></table>
+  <h3>Частые вопросы</h3>
+  ${faqHtml}
+  </details>`;
+
+  const style2 = SEO_STYLE;
+  return `${style2}<section data-seomarket="content" class="smk-seo">
+  <div class="smk-kicker">${esc(brand)} · Италия · ${esc(style)}</div>
+  <h2>${esc(topic)} — описание, характеристики, цена</h2>
+  ${desc}
+  </section>`;
+}
+
 // Извлекаем сигналы со страницы для уникализации текста: товары/подкатегории, бренды.
 function extractInfo(html, topic) {
   const names = new Set();
@@ -164,27 +270,7 @@ function contentBlock(topic, html, pageUrl) {
   <h3 style="font-size:19px;margin:24px 0 12px;color:#1a1a1a">Часто задаваемые вопросы</h3>
   <div style="display:flex;flex-wrap:wrap;gap:0 40px"><div style="flex:1;min-width:280px">${col1}</div><div style="flex:1;min-width:280px">${col2}</div></div>`;
 
-  const style = `<style>
-  .smk-seo{max-width:1080px;margin:44px auto;padding:34px 30px;background:#fff;border:1px solid #ececec;border-radius:14px;font-family:'Helvetica Neue',Arial,sans-serif;color:#2b2b2b;line-height:1.78!important;box-shadow:0 8px 30px rgba(0,0,0,.06)}
-  .smk-seo h2{font-size:28px!important;font-weight:800!important;color:#1a1a1a!important;margin:0 0 6px!important;letter-spacing:-.4px!important}
-  .smk-seo .smk-kicker{color:#9c7a3c!important;font-weight:700!important;font-size:13px!important;text-transform:uppercase;letter-spacing:1.4px;margin:0 0 16px!important}
-  .smk-seo h3{font-size:19px!important;font-weight:700!important;color:#1a1a1a!important;margin:28px 0 10px!important;padding-left:13px!important;border-left:3px solid #9c7a3c!important}
-  .smk-seo p{margin:0 0 13px!important;color:#3a3a3a!important;font-size:15.5px!important}
-  .smk-seo .smk-lead{font-size:17.5px!important;color:#222!important;font-weight:500!important}
-  .smk-seo strong{color:#1a1a1a!important;font-weight:700!important}
-  .smk-seo a{color:#9c7a3c!important;text-decoration:none!important;border-bottom:1px solid rgba(156,122,60,.45)!important}
-  .smk-seo table{width:100%!important;border-collapse:separate!important;border-spacing:0!important;margin:18px 0!important;border:1px solid #e6e6e6!important;border-radius:10px!important;overflow:hidden!important}
-  .smk-seo th{background:#1a1a1a!important;color:#fff!important;padding:12px 14px!important;text-align:left!important;font-size:12.5px!important;text-transform:uppercase!important;letter-spacing:.5px!important}
-  .smk-seo td{padding:11px 14px!important;border:0!important;border-top:1px solid #eee!important;font-size:14.5px!important;color:#3a3a3a!important}
-  .smk-seo tbody tr:nth-child(even) td{background:#faf8f4!important}
-  .smk-seo details{border:1px solid #ececec!important;border-radius:10px!important;padding:12px 16px!important;margin:8px 0!important;background:#fafafa!important}
-  .smk-seo summary{cursor:pointer!important;font-weight:600!important;color:#1a1a1a!important;list-style:none!important}
-  .smk-seo summary::-webkit-details-marker{display:none}
-  .smk-seo .smk-more{border:0!important;background:transparent!important;padding:0!important;margin:8px 0 0!important}
-  .smk-seo .smk-more>summary{color:#9c7a3c!important;font-size:15px!important;font-weight:700!important}
-  .smk-seo .smk-callout{background:#faf8f4!important;border-left:4px solid #9c7a3c!important;border-radius:8px!important;padding:14px 18px!important;margin:16px 0!important}
-  .smk-seo .smk-callout p{margin:0!important;font-size:15px!important;color:#4a4030!important}
-  </style>`;
+  const style = SEO_STYLE;
   const callout = `<div class="smk-callout"><p><strong>Кратко:</strong> ${esc(topic)} — премиальные материалы (${esc(woods[0])}, ${esc(upholstery[0])}), наполнение (${esc(fillings[0])}, ${esc(fillings[1])}), изготовление на заказ, доставка по РФ и официальная гарантия.</p></div>`;
   return `${style}<section data-seomarket="content" class="smk-seo">
   <div class="smk-kicker">Каталог · Экспертный гид</div>
@@ -262,9 +348,10 @@ function seoFix(pageUrl, html) {
     const cleaned = attrs.replace(/\s*\balt\s*=\s*["'][^"']*["']/i, '');
     return `<img${cleaned} alt="${alt}">`;
   });
-  // Контент-блок (уникальный SEO-текст + таблицы + FAQ + перелинковка) перед </body>, идемпотентно
+  // Контент-блок перед </body>, идемпотентно. Товар → детальное описание + 1 таблица; категория → гид.
   if (!/data-seomarket="content"/.test(html)) {
-    html = html.replace(/<\/body>/i, `${contentBlock(topic, html, pageUrl)}\n</body>`);
+    const block = isProduct(pageUrl) ? productBlock(topic, html, pageUrl) : contentBlock(topic, html, pageUrl);
+    html = html.replace(/<\/body>/i, `${block}\n</body>`);
   }
   return html;
 }
