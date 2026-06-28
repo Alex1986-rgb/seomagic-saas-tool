@@ -67,3 +67,20 @@ verify_jwt = false
 
 [functions.seo-text-generate]
 verify_jwt = false
+
+# Публичные функции — явно разрешаем анонимные вызовы (#5),
+# иначе Supabase по умолчанию ставит verify_jwt=true и отклоняет их.
+[functions.generate-sitemap]
+verify_jwt = false
+
+[functions.blog-sitemap]
+verify_jwt = false
+
+[functions.sitemap-export]
+verify_jwt = false
+
+[functions.health-check]
+verify_jwt = false
+
+[functions.issue-classifier]
+verify_jwt = false

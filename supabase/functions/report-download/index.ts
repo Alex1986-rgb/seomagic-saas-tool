@@ -36,9 +36,9 @@ serve(async (req) => {
 
     console.log(`Downloading report: ${report_id}`);
 
-    // Get report info
+    // Получаем запись отчёта (реальная таблица — pdf_reports, путь в file_path)
     const { data: report, error: reportError } = await supabaseClient
-      .from('reports')
+      .from('pdf_reports')
       .select('*')
       .eq('id', report_id)
       .single();
@@ -47,23 +47,28 @@ serve(async (req) => {
       throw new Error('Report not found');
     }
 
-    // Download from storage
+    // Скачиваем из бакета pdf-reports (куда пишет pdf-report-generate)
     const { data: fileData, error: downloadError } = await supabaseClient.storage
-      .from('reports')
-      .download(report.storage_path);
+      .from('pdf-reports')
+      .download(report.file_path);
 
     if (downloadError || !fileData) {
       throw new Error('Failed to download report');
     }
 
-    // Determine content type based on format
-    const contentType = report.format === 'json' 
-      ? 'application/json' 
-      : report.format === 'xml' 
-      ? 'application/xml' 
-      : 'application/pdf';
+    // Тип содержимого по расширению файла (отчёты сейчас в HTML)
+    const ext = (String(report.file_path).split('.').pop() || 'html').toLowerCase();
+    const contentType = ext === 'json' ? 'application/json'
+      : ext === 'xml' ? 'application/xml'
+      : ext === 'pdf' ? 'application/pdf'
+      : 'text/html';
 
-    const filename = `seo-report-${report.task_id}.${report.format}`;
+    const filename = `seo-report-${report.task_id || report.id}.${ext}`;
+
+    // Счётчик скачиваний (не критично при ошибке)
+    await supabaseClient.from('pdf_reports')
+      .update({ downloaded_count: (report.downloaded_count || 0) + 1, last_downloaded_at: new Date().toISOString() })
+      .eq('id', report_id);
 
     return new Response(fileData, {
       headers: {

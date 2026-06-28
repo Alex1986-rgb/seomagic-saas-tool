@@ -89,10 +89,11 @@ serve(async (req) => {
       throw new Error('Unsupported format. Use json or xml');
     }
 
-    // Save to storage
+    // Save to storage (единый бакет pdf-reports, путь reports/<файл> — как у pdf-report-generate)
+    const storagePath = `reports/${filename}`;
     const { data: uploadData, error: uploadError } = await supabaseClient.storage
-      .from('reports')
-      .upload(filename, reportContent, {
+      .from('pdf-reports')
+      .upload(storagePath, reportContent, {
         contentType,
         upsert: true,
       });
