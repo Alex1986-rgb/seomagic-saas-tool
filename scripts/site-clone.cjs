@@ -39,6 +39,28 @@ async function fetchRaw(url, retries = 2) {
   return { status: 0, buf: Buffer.alloc(0), ct: '' };
 }
 
+// Рендер SPA/JS-сайтов через системный Chrome (--dump-dom). Для сайтов, где сырой fetch даёт пустой каркас.
+// --render || --render auto → рендерить только пустые SPA-каркасы; --render always → рендерить все страницы.
+const CHROME = process.env.CHROME_BIN || '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
+const RENDER = (() => { const i = process.argv.indexOf('--render'); if (i < 0) return ''; const v = process.argv[i + 1]; return (v === 'always' || v === 'auto') ? v : 'auto'; })();
+let _prof = 0;
+function looksLikeSPA(html) {
+  if (!/<div[^>]+id=["'](root|app|__next|__nuxt|q-app)["']/i.test(html)) return false;
+  const text = html.replace(/<script[\s\S]*?<\/script>/gi, ' ').replace(/<style[\s\S]*?<\/style>/gi, ' ').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+  return text.length < 400; // каркас без отрендеренного контента
+}
+async function renderFetch(url, timeout = 35000) {
+  const pexec = require('util').promisify(require('child_process').execFile);
+  const prof = `/tmp/clone-prof-${process.pid}-${_prof++}`;
+  try {
+    const { stdout } = await pexec(CHROME, ['--headless=new', '--disable-gpu', '--no-sandbox', '--disable-dev-shm-usage',
+      `--user-data-dir=${prof}`, '--virtual-time-budget=5000', '--dump-dom', url],
+      { encoding: 'utf8', timeout, maxBuffer: 96 * 1024 * 1024 });
+    return stdout || '';
+  } catch { return ''; }
+  finally { try { fs.rmSync(prof, { recursive: true, force: true }); } catch {} }
+}
+
 const EXT_CT = { 'image/jpeg': '.jpg', 'image/png': '.png', 'image/webp': '.webp', 'image/gif': '.gif', 'image/svg+xml': '.svg', 'text/css': '.css', 'application/javascript': '.js', 'font/woff2': '.woff2', 'font/woff': '.woff' };
 
 // Карта: абсолютный URL ассета → локальный относительный путь
@@ -498,13 +520,21 @@ async function pool(items, n, fn) { let i = 0, done = 0; await Promise.all(Array
   for (const p of ['contacts', 'about', 'projects', 'catalog/spalni', 'catalog/gostinye', 'catalog/myagkaya-mebel']) enqueue(p, base);
   log(`Seed-страниц: ${queue.length} (sitemap+доп), BFS=${BFS ? 'вкл' : 'выкл'}`);
 
-  let brokenSrc = 0; const brokenList = []; let processed = 0;
+  let brokenSrc = 0; const brokenList = []; let processed = 0, rendered = 0;
+  // При рендере Chrome тяжёлый на 8ГБ → меньше параллелизма для страниц.
+  const PAGE_CONC = RENDER ? Math.min(CONC, 3) : CONC;
+  if (RENDER) log(`Рендер SPA: режим ${RENDER}, конкурентность страниц ${PAGE_CONC}`);
   while (queue.length && processed < MAX) {
-    const batch = queue.splice(0, CONC);
+    const batch = queue.splice(0, PAGE_CONC);
     await Promise.all(batch.map(async (u) => {
       const r = await fetchRaw(u);
       if (r.status < 200 || r.status >= 400) { log(`  ✗ ${u} (${r.status})`); return; }
-      const raw = r.buf.toString('utf8');
+      let raw = r.buf.toString('utf8');
+      // SPA/JS-рендер: подменяем пустой каркас на отрендеренный DOM (Chrome headless)
+      if (RENDER && (RENDER === 'always' || looksLikeSPA(raw))) {
+        const rd = await renderFetch(u);
+        if (rd && rd.length > raw.length) { raw = rd; rendered++; }
+      }
       if (/Fatal error|Uncaught exception|such alias does not exist/i.test(raw) || (!/<\/head>/i.test(raw) && raw.length < 2500)) {
         brokenSrc++; if (brokenList.length < 1000) brokenList.push(u); return; // битая страница источника — не клонируем
       }
@@ -518,7 +548,7 @@ async function pool(items, n, fn) { let i = 0, done = 0; await Promise.all(Array
     }));
     if (processed % 100 < CONC) log(`  обход: сохранено ${processed}, в очереди ${queue.length}`);
   }
-  log(`Всего сохранено страниц: ${processed}`);
+  log(`Всего сохранено страниц: ${processed}${RENDER ? ` (отрендерено Chrome: ${rendered})` : ''}`);
   if (brokenSrc) { try { fs.writeFileSync(path.join(OUT, '_broken-source-pages.json'), JSON.stringify({ count: brokenSrc, urls: brokenList }, null, 2)); } catch {} log(`Битых страниц источника пропущено: ${brokenSrc}`); }
 
   // 1b) Дедуп title: товары-варианты с ОДИНАКОВЫМ названием → вставляем артикул из URL (+счётчик-гарант).
