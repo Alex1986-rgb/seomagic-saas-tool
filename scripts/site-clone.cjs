@@ -707,10 +707,15 @@ async function pool(items, n, fn) { let i = 0, done = 0; await Promise.all(Array
     const walkS = (d, acc = []) => { for (const e of fs.readdirSync(d, { withFileTypes: true })) { const p = path.join(d, e.name); if (e.isDirectory()) walkS(p, acc); else if (/\.html?$/i.test(e.name)) acc.push(p); } return acc; };
     const entries = [];
     const allLocs = [];
+    const manifest = []; // DB-готовый список исправленных страниц (для ingest в fixed_pages)
     for (const f of walkS(OUT)) {
       const rel = path.relative(OUT, f).replace(/index\.html?$/i, '');
       allLocs.push(DEMO + rel);
       const c = fs.readFileSync(f, 'utf8'); const imgs = []; const seen = new Set();
+      // оригинальный URL страницы на сайте-источнике (для связи с page_analysis.url)
+      const origUrl = ORIGIN + '/' + rel;
+      const title = (c.match(/<title[^>]*>([\s\S]*?)<\/title>/i) || [, ''])[1].replace(/\s+/g, ' ').trim();
+      manifest.push({ url: origUrl, demo_url: DEMO + rel, file: path.relative(OUT, f), title });
       for (const m of c.matchAll(/<img\b[^>]*>/gi)) {
         const src = (m[0].match(/\bsrc=["']([^"']+)["']/i) || [, ''])[1];
         if (src.indexOf(DEMO) !== 0 || !/\.(webp|jpe?g|png)$/i.test(src) || seen.has(src)) continue;
@@ -724,7 +729,9 @@ async function pool(items, n, fn) { let i = 0, done = 0; await Promise.all(Array
       + entries.map((e) => `<url><loc>${esc(e.loc)}</loc>` + e.imgs.map((i) => `<image:image><image:loc>${esc(i.src)}</image:loc>${i.alt ? `<image:title>${esc(i.alt)}</image:title>` : ''}</image:image>`).join('') + '</url>').join('\n')
       + '\n</urlset>';
     fs.writeFileSync(path.join(OUT, 'sitemap-images.xml'), xml);
-    log(`sitemap: ${allLocs.length} URL · image-sitemap: ${entries.length} страниц`);
+    // Манифест исправленных страниц для серверного ingest в таблицу fixed_pages (см. scripts/ingest-fixed-pages.cjs).
+    fs.writeFileSync(path.join(OUT, '_fixed-pages.json'), JSON.stringify({ origin: ORIGIN, demo: DEMO, count: manifest.length, pages: manifest }, null, 2));
+    log(`sitemap: ${allLocs.length} URL · image-sitemap: ${entries.length} стр · манифест: ${manifest.length} стр`);
   } catch (e) { log('sitemap пропущен: ' + e.message); }
 
   const saved = fs.existsSync(OUT) ? require('child_process').execSync(`find ${OUT} -type f | wc -l`).toString().trim() : '0';
