@@ -794,6 +794,8 @@ async function pool(items, n, fn) { let i = 0, done = 0; await Promise.all(Array
     fs.writeFileSync(path.join(OUT, 'sitemap-images.xml'), xml);
     // Манифест исправленных страниц для серверного ingest в таблицу fixed_pages (см. scripts/ingest-fixed-pages.cjs).
     fs.writeFileSync(path.join(OUT, '_fixed-pages.json'), JSON.stringify({ origin: ORIGIN, demo: DEMO, count: manifest.length, pages: manifest }, null, 2));
+    // robots.txt со ссылкой на sitemap — поисковики ищут его в корне для обхода/индексации.
+    fs.writeFileSync(path.join(OUT, 'robots.txt'), `User-agent: *\nAllow: /\nDisallow: /cloned-assets/\n\nSitemap: ${DEMO}sitemap.xml\nSitemap: ${DEMO}sitemap-images.xml\n`);
     log(`sitemap: ${allLocs.length} URL · image-sitemap: ${entries.length} стр · манифест: ${manifest.length} стр`);
   } catch (e) { log('sitemap пропущен: ' + e.message); }
 
