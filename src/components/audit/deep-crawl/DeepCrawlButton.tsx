@@ -33,8 +33,13 @@ const DeepCrawlButton: React.FC<DeepCrawlButtonProps> = ({
       normalizedUrl = `https://${normalizedUrl}`;
     }
     
-    // Check if URL is lovable domain and warn, but allow it to continue if explicitly requested
-    const isLovableDomain = normalizedUrl.includes('lovableproject.com') || normalizedUrl.includes('lovable.app');
+    // Check if URL is lovable domain and warn, but allow it to continue if explicitly requested.
+    // Точное сравнение хоста, а не подстрока: иначе lovableproject.com.evil.com прошёл бы как «свой».
+    let lovableHost = '';
+    try { lovableHost = new URL(normalizedUrl).hostname.replace(/^www\./i, '').toLowerCase(); } catch { /* invalid URL */ }
+    const isLovableDomain =
+      lovableHost === 'lovableproject.com' || lovableHost.endsWith('.lovableproject.com') ||
+      lovableHost === 'lovable.app' || lovableHost.endsWith('.lovable.app');
     if (isLovableDomain) {
       console.warn("Attempting to scan Lovable project domain, this may not be intended");
       toast({

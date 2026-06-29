@@ -213,11 +213,14 @@ export class ContentExtractor {
     const links: string[] = [];
     $('a[href]').each((_, el) => {
       const href = $(el).attr('href');
-      if (href && !href.startsWith('#') && !href.startsWith('javascript:')) {
+      if (href && !href.startsWith('#')) {
         try {
           // Convert relative URLs to absolute
-          const absoluteUrl = new URL(href, url).href;
-          links.push(absoluteUrl);
+          const absolute = new URL(href, url);
+          // Allowlist по протоколу вместо неполного blocklist'а (javascript:/data:/vbscript:/…)
+          if (absolute.protocol === 'http:' || absolute.protocol === 'https:') {
+            links.push(absolute.href);
+          }
         } catch (error) {
           // Skip invalid URLs
         }
