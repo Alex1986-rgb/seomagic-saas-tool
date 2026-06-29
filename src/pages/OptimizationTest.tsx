@@ -92,8 +92,8 @@ export default function OptimizationTest() {
     } catch (error) {
       console.error('Error loading audits:', error);
       toast({
-        title: 'Error',
-        description: 'Failed to load completed audits',
+        title: 'Ошибка',
+        description: 'Не удалось загрузить завершённые аудиты',
         variant: 'destructive',
       });
     } finally {
@@ -104,8 +104,8 @@ export default function OptimizationTest() {
   const startOptimization = async () => {
     if (!selectedTaskId) {
       toast({
-        title: 'Error',
-        description: 'Please select an audit',
+        title: 'Ошибка',
+        description: 'Пожалуйста, выберите аудит',
         variant: 'destructive',
       });
       return;
@@ -138,14 +138,14 @@ export default function OptimizationTest() {
       setIsPolling(true);
 
       toast({
-        title: 'Success',
-        description: 'Optimization started successfully',
+        title: 'Готово',
+        description: 'Оптимизация успешно запущена',
       });
     } catch (error) {
       console.error('Error starting optimization:', error);
       toast({
-        title: 'Error',
-        description: error instanceof Error ? error.message : 'Failed to start optimization',
+        title: 'Ошибка',
+        description: error instanceof Error ? error.message : 'Не удалось запустить оптимизацию',
         variant: 'destructive',
       });
     } finally {
@@ -208,9 +208,9 @@ export default function OptimizationTest() {
   return (
     <div className="container mx-auto py-8 px-4 max-w-6xl">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-2">AI Optimization Test</h1>
+        <h1 className="text-3xl font-bold mb-2">Тест AI-оптимизации</h1>
         <p className="text-muted-foreground">
-          Test the full optimization cycle with Lovable AI
+          Полный цикл оптимизации сайта
         </p>
       </div>
 
@@ -222,10 +222,10 @@ export default function OptimizationTest() {
               <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary text-primary-foreground text-sm">
                 1
               </span>
-              Select Completed Audit
+              Выберите завершённый аудит
             </CardTitle>
             <CardDescription>
-              Choose an audit to optimize
+              Выберите аудит для оптимизации
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -235,7 +235,7 @@ export default function OptimizationTest() {
               </div>
             ) : audits.length === 0 ? (
               <p className="text-sm text-muted-foreground">
-                No completed audits found. Run an audit first.
+                Завершённых аудитов нет. Сначала запустите аудит.
               </p>
             ) : (
               <div className="space-y-2">
@@ -257,7 +257,7 @@ export default function OptimizationTest() {
                           </p>
                           <div className="flex gap-2 mt-1">
                             <Badge variant="outline" className="text-xs">
-                              Score: {audit.score || 'N/A'}
+                              Оценка: {audit.score || 'N/A'}
                             </Badge>
                             <Badge variant="outline" className="text-xs">
                               {audit.page_count || 0} pages
@@ -273,29 +273,29 @@ export default function OptimizationTest() {
           </CardContent>
         </Card>
 
-        {/* Step 2: Start Optimization */}
+        {/* Step 2: Запустить оптимизацию */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary text-primary-foreground text-sm">
                 2
               </span>
-              Start Optimization
+              Запустить оптимизацию
             </CardTitle>
             <CardDescription>
-              Launch AI-powered optimization
+              Запустить оптимизацию на базе ИИ
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             {selectedAudit && (
               <div className="p-3 rounded-lg bg-muted/50">
-                <p className="text-sm font-medium mb-1">Selected:</p>
+                <p className="text-sm font-medium mb-1">Выбрано:</p>
                 <p className="text-sm text-muted-foreground truncate">
                   {selectedAudit.url}
                 </p>
                 <div className="flex gap-2 mt-2">
                   <Badge variant="secondary" className="text-xs">
-                    SEO Score: {selectedAudit.score}
+                    SEO-оценка: {selectedAudit.score}
                   </Badge>
                   <Badge variant="secondary" className="text-xs">
                     {selectedAudit.page_count} pages
@@ -312,12 +312,12 @@ export default function OptimizationTest() {
               {isLoading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Starting...
+                  Запуск...
                 </>
               ) : (
                 <>
                   <Sparkles className="mr-2 h-4 w-4" />
-                  Start AI Optimization
+                  Запустить AI-оптимизацию
                 </>
               )}
             </Button>
@@ -364,7 +364,7 @@ export default function OptimizationTest() {
             <div className="grid gap-4 md:grid-cols-4">
               <Card>
                 <CardContent className="p-4">
-                  <p className="text-sm text-muted-foreground">Pages Optimized</p>
+                  <p className="text-sm text-muted-foreground">Оптимизировано страниц</p>
                   <p className="text-2xl font-bold text-primary">
                     {resultData.optimized_pages}
                   </p>
@@ -372,7 +372,7 @@ export default function OptimizationTest() {
               </Card>
               <Card>
                 <CardContent className="p-4">
-                  <p className="text-sm text-muted-foreground">Total Pages</p>
+                  <p className="text-sm text-muted-foreground">Всего страниц</p>
                   <p className="text-2xl font-bold">
                     {resultData.total_pages}
                   </p>
@@ -380,7 +380,7 @@ export default function OptimizationTest() {
               </Card>
               <Card>
                 <CardContent className="p-4">
-                  <p className="text-sm text-muted-foreground">Est. Score +</p>
+                  <p className="text-sm text-muted-foreground">Прогноз оценки +</p>
                   <p className="text-2xl font-bold text-green-600">
                     +{resultData.estimated_score_improvement}
                   </p>
@@ -388,7 +388,7 @@ export default function OptimizationTest() {
               </Card>
               <Card>
                 <CardContent className="p-4">
-                  <p className="text-sm text-muted-foreground">Total Cost</p>
+                  <p className="text-sm text-muted-foreground">Итоговая стоимость</p>
                   <p className="text-2xl font-bold">
                     ${resultData.total_cost.toFixed(2)}
                   </p>

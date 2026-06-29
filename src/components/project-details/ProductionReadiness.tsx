@@ -170,7 +170,7 @@ const ProductionReadiness: React.FC = () => {
       case 'critical':
         return 'bg-red-100 text-red-800 border-red-200';
       default:
-        return 'bg-gray-100 text-gray-800 border-gray-200';
+        return 'bg-muted text-muted-foreground border-border';
     }
   };
 
@@ -183,7 +183,7 @@ const ProductionReadiness: React.FC = () => {
       case 'critical':
         return 'text-red-600';
       default:
-        return 'text-gray-600';
+        return 'text-muted-foreground';
     }
   };
 
@@ -300,7 +300,7 @@ const ProductionReadiness: React.FC = () => {
                 <div className="flex items-center gap-3">
                   {item.completed ? 
                     <CheckCircle className="h-5 w-5 text-green-500" /> :
-                    <div className="h-5 w-5 rounded-full border-2 border-gray-300"></div>
+                    <div className="h-5 w-5 rounded-full border-2 border-border"></div>
                   }
                   <span className={item.completed ? 'line-through text-muted-foreground' : ''}>
                     {item.name}

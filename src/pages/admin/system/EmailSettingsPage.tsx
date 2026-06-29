@@ -7,8 +7,10 @@ import { Mail, Send, Save } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useToast } from "@/hooks/use-toast";
 
 const EmailSettingsPage = () => {
+  const { toast } = useToast();
   const [testEmailStatus, setTestEmailStatus] = React.useState<'idle' | 'sending' | 'success' | 'error'>('idle');
   const [smtpProvider, setSmtpProvider] = React.useState('smtp');
 
@@ -80,7 +82,7 @@ const EmailSettingsPage = () => {
                 <Send className="h-4 w-4" />
                 {testEmailStatus === 'sending' ? 'Отправка...' : 'Отправить тест'}
               </Button>
-              <Button className="flex gap-2">
+              <Button className="flex gap-2" onClick={() => toast({ title: 'Настройки сохранены', description: 'Параметры почты обновлены' })}>
                 <Save className="h-4 w-4" />
                 Сохранить настройки
               </Button>
@@ -107,7 +109,7 @@ const EmailSettingsPage = () => {
                     <p className="text-sm text-muted-foreground">Статус: {template.status}</p>
                   </div>
                 </div>
-                <Button variant="outline" size="sm">
+                <Button variant="outline" size="sm" onClick={() => toast({ title: 'Редактирование шаблона', description: template.name })}>
                   Редактировать
                 </Button>
               </div>

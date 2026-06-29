@@ -159,7 +159,7 @@ const ProxyManager: React.FC = () => {
               
               {isLoading && progress > 0 && (
                 <div className="mt-2">
-                  <div className="h-2 w-full bg-gray-200 rounded-full">
+                  <div className="h-2 w-full bg-muted rounded-full">
                     <div 
                       className="h-2 bg-primary rounded-full transition-all" 
                       style={{ width: `${progress}%` }} 
@@ -269,7 +269,7 @@ const ProxyManager: React.FC = () => {
               )}
               
               {activeProxies.length > 0 && activeProxies.length < 100 && !isLoading && (
-                <Alert className="mt-2 border-yellow-200 bg-yellow-50 text-yellow-800">
+                <Alert className="mt-2 border-yellow-500/20 bg-yellow-500/10 text-yellow-600 dark:text-yellow-400">
                   <AlertDescription>
                     Рекомендуется собрать больше прокси для лучшей производительности. Текущее количество ({activeProxies.length}) может быть недостаточным.
                   </AlertDescription>

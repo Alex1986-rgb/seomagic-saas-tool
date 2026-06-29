@@ -26,13 +26,13 @@ const Team: React.FC = () => {
               Эксперт в области SEO с 10-летним опытом. Основал SeoMarket с целью автоматизировать сложные процессы оптимизации.
             </p>
             <div className="flex gap-4">
-              <a href="#" className="text-muted-foreground hover:text-foreground transition-colors">
+              <a href="#" onClick={(e) => e.preventDefault()} aria-label="Социальная сеть" className="text-muted-foreground hover:text-foreground transition-colors cursor-pointer">
                 <Twitter size={18} />
               </a>
-              <a href="#" className="text-muted-foreground hover:text-foreground transition-colors">
+              <a href="#" onClick={(e) => e.preventDefault()} aria-label="Социальная сеть" className="text-muted-foreground hover:text-foreground transition-colors cursor-pointer">
                 <Linkedin size={18} />
               </a>
-              <a href="#" className="text-muted-foreground hover:text-foreground transition-colors">
+              <a href="#" onClick={(e) => e.preventDefault()} aria-label="Социальная сеть" className="text-muted-foreground hover:text-foreground transition-colors cursor-pointer">
                 <Github size={18} />
               </a>
             </div>
@@ -49,13 +49,13 @@ const Team: React.FC = () => {
               Опытный разработчик с фокусом на алгоритмы анализа данных и машинное обучение. Отвечает за архитектуру платформы.
             </p>
             <div className="flex gap-4">
-              <a href="#" className="text-muted-foreground hover:text-foreground transition-colors">
+              <a href="#" onClick={(e) => e.preventDefault()} aria-label="Социальная сеть" className="text-muted-foreground hover:text-foreground transition-colors cursor-pointer">
                 <Twitter size={18} />
               </a>
-              <a href="#" className="text-muted-foreground hover:text-foreground transition-colors">
+              <a href="#" onClick={(e) => e.preventDefault()} aria-label="Социальная сеть" className="text-muted-foreground hover:text-foreground transition-colors cursor-pointer">
                 <Linkedin size={18} />
               </a>
-              <a href="#" className="text-muted-foreground hover:text-foreground transition-colors">
+              <a href="#" onClick={(e) => e.preventDefault()} aria-label="Социальная сеть" className="text-muted-foreground hover:text-foreground transition-colors cursor-pointer">
                 <Github size={18} />
               </a>
             </div>
@@ -72,13 +72,13 @@ const Team: React.FC = () => {
               Эксперт в области поисковой оптимизации и контент-маркетинга. Отвечает за разработку алгоритмов анализа и рекомендаций.
             </p>
             <div className="flex gap-4">
-              <a href="#" className="text-muted-foreground hover:text-foreground transition-colors">
+              <a href="#" onClick={(e) => e.preventDefault()} aria-label="Социальная сеть" className="text-muted-foreground hover:text-foreground transition-colors cursor-pointer">
                 <Twitter size={18} />
               </a>
-              <a href="#" className="text-muted-foreground hover:text-foreground transition-colors">
+              <a href="#" onClick={(e) => e.preventDefault()} aria-label="Социальная сеть" className="text-muted-foreground hover:text-foreground transition-colors cursor-pointer">
                 <Linkedin size={18} />
               </a>
-              <a href="#" className="text-muted-foreground hover:text-foreground transition-colors">
+              <a href="#" onClick={(e) => e.preventDefault()} aria-label="Социальная сеть" className="text-muted-foreground hover:text-foreground transition-colors cursor-pointer">
                 <Github size={18} />
               </a>
             </div>
@@ -95,13 +95,13 @@ const Team: React.FC = () => {
               Специализируется на создании интуитивных интерфейсов с использованием современных технологий и фреймворков.
             </p>
             <div className="flex gap-4">
-              <a href="#" className="text-muted-foreground hover:text-foreground transition-colors">
+              <a href="#" onClick={(e) => e.preventDefault()} aria-label="Социальная сеть" className="text-muted-foreground hover:text-foreground transition-colors cursor-pointer">
                 <Twitter size={18} />
               </a>
-              <a href="#" className="text-muted-foreground hover:text-foreground transition-colors">
+              <a href="#" onClick={(e) => e.preventDefault()} aria-label="Социальная сеть" className="text-muted-foreground hover:text-foreground transition-colors cursor-pointer">
                 <Linkedin size={18} />
               </a>
-              <a href="#" className="text-muted-foreground hover:text-foreground transition-colors">
+              <a href="#" onClick={(e) => e.preventDefault()} aria-label="Социальная сеть" className="text-muted-foreground hover:text-foreground transition-colors cursor-pointer">
                 <Github size={18} />
               </a>
             </div>
@@ -118,13 +118,13 @@ const Team: React.FC = () => {
               Эксперт по высоконагруженным системам и обработке данных. Отвечает за серверную часть платформы и API.
             </p>
             <div className="flex gap-4">
-              <a href="#" className="text-muted-foreground hover:text-foreground transition-colors">
+              <a href="#" onClick={(e) => e.preventDefault()} aria-label="Социальная сеть" className="text-muted-foreground hover:text-foreground transition-colors cursor-pointer">
                 <Twitter size={18} />
               </a>
-              <a href="#" className="text-muted-foreground hover:text-foreground transition-colors">
+              <a href="#" onClick={(e) => e.preventDefault()} aria-label="Социальная сеть" className="text-muted-foreground hover:text-foreground transition-colors cursor-pointer">
                 <Linkedin size={18} />
               </a>
-              <a href="#" className="text-muted-foreground hover:text-foreground transition-colors">
+              <a href="#" onClick={(e) => e.preventDefault()} aria-label="Социальная сеть" className="text-muted-foreground hover:text-foreground transition-colors cursor-pointer">
                 <Github size={18} />
               </a>
             </div>
@@ -141,13 +141,13 @@ const Team: React.FC = () => {
               Креативный дизайнер с опытом разработки пользовательских интерфейсов для аналитических систем и SEO-инструментов.
             </p>
             <div className="flex gap-4">
-              <a href="#" className="text-muted-foreground hover:text-foreground transition-colors">
+              <a href="#" onClick={(e) => e.preventDefault()} aria-label="Социальная сеть" className="text-muted-foreground hover:text-foreground transition-colors cursor-pointer">
                 <Twitter size={18} />
               </a>
-              <a href="#" className="text-muted-foreground hover:text-foreground transition-colors">
+              <a href="#" onClick={(e) => e.preventDefault()} aria-label="Социальная сеть" className="text-muted-foreground hover:text-foreground transition-colors cursor-pointer">
                 <Linkedin size={18} />
               </a>
-              <a href="#" className="text-muted-foreground hover:text-foreground transition-colors">
+              <a href="#" onClick={(e) => e.preventDefault()} aria-label="Социальная сеть" className="text-muted-foreground hover:text-foreground transition-colors cursor-pointer">
                 <Github size={18} />
               </a>
             </div>

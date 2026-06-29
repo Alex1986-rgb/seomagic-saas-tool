@@ -23,18 +23,18 @@ const FeatureCard: React.FC<FeatureCardProps> = ({
   dragHandleProps = {}
 }) => {
   return (
-    <Card className="border-white/10 bg-black/30">
+    <Card className="border-border bg-muted/50">
       <CardContent className="p-4">
         <div className="flex justify-between mb-3">
           <div className="flex items-center gap-2">
             <Move 
-              className="h-4 w-4 text-gray-400 cursor-move" 
+              className="h-4 w-4 text-muted-foreground cursor-move" 
               {...dragHandleProps}
             />
             <Input 
               value={feature.name}
               onChange={(e) => onUpdate(feature.id, 'name', e.target.value)}
-              className="bg-black/20 border-white/10 w-[400px]"
+              className="bg-muted/40 border-border w-full max-w-[400px]"
               placeholder="Название возможности"
             />
           </div>
@@ -66,7 +66,7 @@ const FeatureCard: React.FC<FeatureCardProps> = ({
         <Textarea 
           value={feature.description}
           onChange={(e) => onUpdate(feature.id, 'description', e.target.value)}
-          className="bg-black/20 border-white/10 mb-3"
+          className="bg-muted/40 border-border mb-3"
           placeholder="Описание возможности"
           rows={2}
         />
@@ -77,7 +77,7 @@ const FeatureCard: React.FC<FeatureCardProps> = ({
               value={feature.icon} 
               onValueChange={(value) => onUpdate(feature.id, 'icon', value)}
             >
-              <SelectTrigger className="bg-black/20 border-white/10 w-[150px]">
+              <SelectTrigger className="bg-muted/40 border-border w-[150px]">
                 <SelectValue placeholder="Выберите иконку" />
               </SelectTrigger>
               <SelectContent>
@@ -96,7 +96,7 @@ const FeatureCard: React.FC<FeatureCardProps> = ({
               type="number"
               value={feature.order}
               onChange={(e) => onUpdate(feature.id, 'order', e.target.value)}
-              className="bg-black/20 border-white/10 w-[100px]"
+              className="bg-muted/40 border-border w-[100px]"
             />
           </div>
         </div>

@@ -53,36 +53,9 @@ const InteractiveOptimizationPanel: React.FC<InteractiveOptimizationPanelProps> 
   const [optimizationResult, setOptimizationResult] = useState<any>(null);
   const [localIsOptimized, setLocalIsOptimized] = useState(isOptimized);
 
-  // Fallback if no optimization items available
-  if (!optimizationItems || optimizationItems.length === 0) {
-    return (
-      <Card className="p-6 bg-card/90 backdrop-blur-sm">
-        <div className="text-center space-y-4">
-          <AlertCircle className="mx-auto h-12 w-12 text-warning" />
-          <h3 className="text-xl font-semibold">
-            Расчет сметы оптимизации
-          </h3>
-          <p className="text-muted-foreground max-w-md mx-auto">
-            Идет расчет стоимости оптимизации на основе результатов аудита.
-            Если это сообщение долго не исчезает, попробуйте обновить страницу.
-          </p>
-          <div className="flex gap-4 justify-center pt-4">
-            <Button onClick={() => window.location.reload()}>
-              <RefreshCw className="mr-2 h-4 w-4" />
-              Обновить страницу
-            </Button>
-            <Button 
-              variant="outline"
-              onClick={() => window.location.href = '/optimization-demo'}
-            >
-              <ExternalLink className="mr-2 h-4 w-4" />
-              Посмотреть демо
-            </Button>
-          </div>
-        </div>
-      </Card>
-    );
-  }
+  // ВАЖНО: никаких ранних return ДО хуков (Rules of Hooks). Пустой случай
+  // обрабатывается ниже, после всех useEffect/useMemo. Иначе при переходе
+  // optimizationItems []→populated число хуков менялось → краш.
 
   // Initialize selected keys with all high-priority items
   useEffect(() => {
@@ -148,10 +121,12 @@ const InteractiveOptimizationPanel: React.FC<InteractiveOptimizationPanelProps> 
   const handlePayment = () => {
     toast({
       title: 'Оплата успешно произведена',
-      description: 'Теперь вы можете запустить процесс оптимизации',
+      description: 'Запускаем процесс оптимизации…',
     });
     setIsPaymentComplete(true);
     setIsPaymentDialogOpen(false);
+    // После оплаты сразу стартуем оптимизацию (иначе ничего не происходило)
+    startOptimization();
   };
 
   const startOptimization = () => {
@@ -218,21 +193,30 @@ const InteractiveOptimizationPanel: React.FC<InteractiveOptimizationPanelProps> 
     setIsPaymentDialogOpen(true);
   };
 
-  // Fallback if no items
-  if (optimizationItems.length === 0) {
+  // Fallback if no items (после всех хуков — безопасно)
+  if (!optimizationItems || optimizationItems.length === 0) {
     return (
-      <Card className="mb-8">
-        <CardHeader>
-          <CardTitle>Оптимизация сайта</CardTitle>
-        </CardHeader>
-        <CardContent className="text-center py-8">
-          <p className="text-muted-foreground mb-4">
-            Данные оптимизации еще не сформированы. Попробуйте демо-версию.
+      <Card className="p-6 bg-card/90 backdrop-blur-sm">
+        <div className="text-center space-y-4">
+          <AlertCircle className="mx-auto h-12 w-12 text-amber-500" />
+          <h3 className="text-xl font-semibold">Расчет сметы оптимизации</h3>
+          <p className="text-muted-foreground max-w-md mx-auto">
+            Идет расчет стоимости оптимизации на основе результатов аудита.
+            Если сообщение долго не исчезает, обновите страницу.
           </p>
-          <Link to="/optimization-demo">
-            <Button>Посмотреть демо-версию</Button>
-          </Link>
-        </CardContent>
+          <div className="flex gap-4 justify-center pt-4">
+            <Button onClick={() => window.location.reload()}>
+              <RefreshCw className="mr-2 h-4 w-4" />
+              Обновить страницу
+            </Button>
+            <Link to="/optimization-demo">
+              <Button variant="outline">
+                <ExternalLink className="mr-2 h-4 w-4" />
+                Посмотреть демо
+              </Button>
+            </Link>
+          </div>
+        </div>
       </Card>
     );
   }

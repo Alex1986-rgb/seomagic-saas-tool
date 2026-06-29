@@ -104,6 +104,17 @@ const SiteAudit: React.FC = () => {
     }
   };
 
+  // Возвращает безопасный http(s)-href или '#'. Явная проверка протокола
+  // не даёт пользовательскому вводу превратиться в javascript:/data: ссылку (XSS).
+  const safeExternalHref = (raw: string): string => {
+    try {
+      const u = new URL(raw.startsWith('http') ? raw : `https://${raw}`);
+      return (u.protocol === 'http:' || u.protocol === 'https:') ? u.href : '#';
+    } catch {
+      return '#';
+    }
+  };
+
   // Check if this is a dynamic page with task_id
   const taskId = searchParams.get('task_id');
   const robotsContent = taskId ? 'noindex, nofollow' : 'index, follow, max-image-preview:large';
@@ -141,7 +152,7 @@ const SiteAudit: React.FC = () => {
                   />
                   {inputUrl && isValidUrl(inputUrl) && (
                     <a 
-                      href={inputUrl.startsWith('http') ? inputUrl : `https://${inputUrl}`}
+                      href={safeExternalHref(inputUrl)}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-primary transition-colors"

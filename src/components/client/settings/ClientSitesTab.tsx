@@ -1,9 +1,13 @@
 
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { AlertCircle, Globe, Trash } from 'lucide-react';
+import { useToast } from "@/hooks/use-toast";
 
 const ClientSitesTab: React.FC = () => {
+  const navigate = useNavigate();
+  const { toast } = useToast();
   return (
     <div className="space-y-6">
       <div className="text-center py-8">
@@ -12,14 +16,14 @@ const ClientSitesTab: React.FC = () => {
         <p className="text-muted-foreground mb-6">
           Здесь будут храниться ваши часто проверяемые сайты для быстрого доступа.
         </p>
-        <Button>
+        <Button onClick={() => navigate('/audit')}>
           Добавить сайт
         </Button>
       </div>
-      
+
       <div className="pt-6 border-t">
         <h3 className="text-lg font-medium mb-4">Опасная зона</h3>
-        <div className="p-4 border border-red-200 bg-red-50 rounded-lg text-red-800 mb-4">
+        <div className="p-4 border border-destructive/30 bg-destructive/10 rounded-lg text-destructive mb-4">
           <div className="flex items-start">
             <AlertCircle className="h-5 w-5 mr-3 mt-0.5 flex-shrink-0" />
             <div>
@@ -30,7 +34,7 @@ const ClientSitesTab: React.FC = () => {
             </div>
           </div>
         </div>
-        <Button variant="destructive" className="gap-2">
+        <Button variant="destructive" className="gap-2" onClick={() => { if (window.confirm('Удалить аккаунт? Все данные будут потеряны безвозвратно.')) toast({ title: 'Запрос на удаление принят', description: 'Аккаунт будет удалён (демо-режим)' }); }}>
           <Trash className="h-4 w-4" />
           <span>Удалить аккаунт</span>
         </Button>

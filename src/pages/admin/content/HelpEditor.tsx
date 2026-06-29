@@ -134,7 +134,7 @@ const HelpEditor: React.FC = () => {
         onSave={handleSave}
       >
         <div className="space-y-6">
-          <Card className="bg-black/20 border-white/10">
+          <Card className="bg-muted/40 border-border">
             <CardContent className="p-6">
               <h3 className="text-lg font-semibold mb-4">Настройки страницы справки</h3>
               <div className="space-y-4">
@@ -142,21 +142,21 @@ const HelpEditor: React.FC = () => {
                   <label className="block text-sm font-medium mb-2">Заголовок страницы</label>
                   <Input 
                     defaultValue="Центр помощи" 
-                    className="bg-black/20 border-white/10"
+                    className="bg-muted/40 border-border"
                   />
                 </div>
                 <div>
                   <label className="block text-sm font-medium mb-2">Описание</label>
                   <Textarea 
                     defaultValue="Ответы на часто задаваемые вопросы и руководства по использованию платформы" 
-                    className="bg-black/20 border-white/10"
+                    className="bg-muted/40 border-border"
                   />
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="bg-black/20 border-white/10">
+          <Card className="bg-muted/40 border-border">
             <CardContent className="p-6">
               <div className="flex justify-between items-center mb-4">
                 <h3 className="text-lg font-semibold">Часто задаваемые вопросы</h3>
@@ -168,13 +168,13 @@ const HelpEditor: React.FC = () => {
               
               <Accordion type="multiple" className="w-full">
                 {faqs.map((faq) => (
-                  <AccordionItem key={faq.id} value={faq.id} className="border-white/10">
-                    <AccordionTrigger className="hover:bg-white/5 px-4 rounded-t-md">
+                  <AccordionItem key={faq.id} value={faq.id} className="border-border">
+                    <AccordionTrigger className="hover:bg-muted/40 px-4 rounded-t-md">
                       <div className="flex items-center justify-between w-full pr-4">
                         <Input 
                           value={faq.question}
                           onChange={(e) => updateFaq(faq.id, 'question', e.target.value)}
-                          className="bg-transparent border-none hover:bg-white/5 focus:bg-black/20"
+                          className="bg-transparent border-none hover:bg-muted/40 focus:bg-muted/40"
                           placeholder="Введите вопрос"
                           onClick={(e) => e.stopPropagation()}
                         />
@@ -195,7 +195,7 @@ const HelpEditor: React.FC = () => {
                       <Textarea 
                         value={faq.answer}
                         onChange={(e) => updateFaq(faq.id, 'answer', e.target.value)}
-                        className="bg-black/20 border-white/10"
+                        className="bg-muted/40 border-border"
                         placeholder="Введите ответ на вопрос"
                         rows={3}
                       />
@@ -205,14 +205,14 @@ const HelpEditor: React.FC = () => {
               </Accordion>
               
               {faqs.length === 0 && (
-                <div className="p-8 text-center border border-dashed border-white/10 rounded-md bg-black/10">
-                  <p className="text-gray-400">Вопросы не найдены. Добавьте новый вопрос.</p>
+                <div className="p-8 text-center border border-dashed border-border rounded-md bg-black/10">
+                  <p className="text-muted-foreground">Вопросы не найдены. Добавьте новый вопрос.</p>
                 </div>
               )}
             </CardContent>
           </Card>
           
-          <Card className="bg-black/20 border-white/10">
+          <Card className="bg-muted/40 border-border">
             <CardContent className="p-6">
               <div className="flex justify-between items-center mb-4">
                 <h3 className="text-lg font-semibold">Категории справки</h3>
@@ -224,7 +224,7 @@ const HelpEditor: React.FC = () => {
               
               <div className="space-y-4">
                 {categories.map((category) => (
-                  <Card key={category.id} className="border-white/10 bg-black/30">
+                  <Card key={category.id} className="border-border bg-muted/50">
                     <CardContent className="p-4">
                       <div className="flex justify-between items-start mb-2">
                         <div className="flex-grow">
@@ -237,7 +237,7 @@ const HelpEditor: React.FC = () => {
                               );
                               setCategories(updatedCategories);
                             }}
-                            className="bg-black/20 border-white/10"
+                            className="bg-muted/40 border-border"
                           />
                         </div>
                         <Button 
@@ -259,7 +259,7 @@ const HelpEditor: React.FC = () => {
                             );
                             setCategories(updatedCategories);
                           }}
-                          className="bg-black/20 border-white/10"
+                          className="bg-muted/40 border-border"
                           rows={2}
                         />
                       </div>
@@ -278,7 +278,7 @@ const HelpEditor: React.FC = () => {
                                   );
                                   setCategories(updatedCategories);
                                 }}
-                                className="bg-black/20 border-white/10"
+                                className="bg-muted/40 border-border"
                               />
                               <Button 
                                 variant="ghost" 
@@ -306,7 +306,7 @@ const HelpEditor: React.FC = () => {
                               );
                               setCategories(updatedCategories);
                             }}
-                            className="border-white/10 hover:bg-white/5 w-full"
+                            className="border-border hover:bg-muted/40 w-full"
                           >
                             <PlusCircle className="h-4 w-4 mr-2" />
                             Добавить статью
@@ -318,8 +318,8 @@ const HelpEditor: React.FC = () => {
                 ))}
                 
                 {categories.length === 0 && (
-                  <div className="p-8 text-center border border-dashed border-white/10 rounded-md bg-black/10">
-                    <p className="text-gray-400">Категории не найдены. Добавьте новую категорию.</p>
+                  <div className="p-8 text-center border border-dashed border-border rounded-md bg-black/10">
+                    <p className="text-muted-foreground">Категории не найдены. Добавьте новую категорию.</p>
                   </div>
                 )}
               </div>

@@ -6,8 +6,10 @@ import PaymentTable from './payments/PaymentTable';
 import PaymentFilters from './payments/PaymentFilters';
 import { usePayments } from './payments/usePayments';
 import { AdminFormContainer, AdminFormTitle } from './AdminFormStyles';
+import { useToast } from "@/hooks/use-toast";
 
 const AdminPayments: React.FC = () => {
+  const { toast } = useToast();
   const {
     searchTerm,
     statusFilter,
@@ -30,12 +32,12 @@ const AdminPayments: React.FC = () => {
           />
           
           <div className="flex gap-2 justify-end">
-            <Button variant="outline" className="gap-2 w-full sm:w-auto">
+            <Button variant="outline" className="gap-2 w-full sm:w-auto" onClick={() => toast({ title: 'Фильтр по дате', description: 'Выбор диапазона дат (демо-режим)' })}>
               <Calendar className="h-4 w-4" />
               <span className="whitespace-nowrap">Фильтр по дате</span>
             </Button>
 
-            <Button className="gap-2 w-full sm:w-auto">
+            <Button className="gap-2 w-full sm:w-auto" onClick={() => toast({ title: 'Экспорт платежей', description: `Выгружено записей: ${filteredPayments.length}` })}>
               <FileText className="h-4 w-4" />
               <span>Экспорт</span>
             </Button>

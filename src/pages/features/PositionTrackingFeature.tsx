@@ -147,7 +147,7 @@ const PositionTrackingFeature: React.FC = () => {
                         <span className="text-xs text-muted-foreground">Изменение</span>
                         <span className={`text-xs font-medium ${
                           item.change > 0 ? 'text-green-600' : 
-                          item.change < 0 ? 'text-red-600' : 'text-gray-600'
+                          item.change < 0 ? 'text-red-600' : 'text-muted-foreground'
                         }`}>
                           {item.change > 0 ? '+' : ''}{item.change}
                         </span>
@@ -206,7 +206,7 @@ const PositionTrackingFeature: React.FC = () => {
           transition={{ duration: 0.5, delay: 0.3 }}
         >
           <Tabs defaultValue="features" className="w-full">
-            <TabsList className="grid w-full grid-cols-4">
+            <TabsList className="grid w-full grid-cols-2 md:grid-cols-4">
               <TabsTrigger value="features">Возможности</TabsTrigger>
               <TabsTrigger value="analytics">Аналитика</TabsTrigger>
               <TabsTrigger value="reports">Отчеты</TabsTrigger>

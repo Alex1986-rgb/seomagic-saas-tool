@@ -44,8 +44,8 @@ export function ProxySettingsTab({
           <Label>Активные прокси</Label>
           <Badge variant="outline" className={
             activeProxies > 0 
-              ? activeProxies >= 100 ? "bg-green-50 text-green-700" : "bg-yellow-50 text-yellow-700"
-              : "bg-red-50 text-red-700"
+              ? activeProxies >= 100 ? "bg-green-500/10 text-green-600 dark:text-green-400" : "bg-yellow-500/10 text-yellow-600 dark:text-yellow-400"
+              : "bg-red-500/10 text-red-600 dark:text-red-400"
           }>
             {activeProxies}
           </Badge>
@@ -124,7 +124,7 @@ export function ProxySettingsTab({
         )}
         
         {activeProxies > 0 && activeProxies < 100 && !isLoading && (
-          <Alert className="mt-2 border-yellow-200 bg-yellow-50 text-yellow-800">
+          <Alert className="mt-2 border-yellow-500/20 bg-yellow-500/10 text-yellow-600 dark:text-yellow-400">
             <AlertDescription>
               Рекомендуется собрать больше прокси для лучшей производительности. Текущее количество ({activeProxies}) может быть недостаточным.
             </AlertDescription>

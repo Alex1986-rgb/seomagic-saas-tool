@@ -1,5 +1,6 @@
 
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { withErrorBoundary } from '@/components/ErrorBoundary';
 
@@ -26,13 +27,13 @@ export const SiteCard: React.FC<SiteCardProps> = ({ url, lastOptimized, score })
       </div>
     </div>
     <div className="flex gap-2">
-      <Button variant="outline" size="sm">
-        Аналитика
+      <Button variant="outline" size="sm" asChild>
+        <Link to="/position-tracker">Аналитика</Link>
       </Button>
       <Button variant="outline" size="sm" asChild>
-        <a href={`/audit?url=${encodeURIComponent(url)}`}>
+        <Link to={`/audit?url=${encodeURIComponent(url)}`}>
           Оптимизировать
-        </a>
+        </Link>
       </Button>
     </div>
   </div>

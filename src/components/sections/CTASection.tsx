@@ -43,7 +43,7 @@ const CTASection: React.FC = () => (
         >
           <a 
             href="#top" 
-            className="bg-primary hover:bg-primary/90 text-white font-medium px-8 py-4 rounded-md inline-flex items-center justify-center gap-2 transition-colors shadow-lg hover:shadow-xl relative overflow-hidden group"
+            className="bg-primary hover:bg-primary/90 text-primary-foreground font-medium px-8 py-4 rounded-md inline-flex items-center justify-center gap-2 transition-colors shadow-lg hover:shadow-xl relative overflow-hidden group"
             onClick={(e) => {
               e.preventDefault();
               window.scrollTo({ top: 0, behavior: 'smooth' });

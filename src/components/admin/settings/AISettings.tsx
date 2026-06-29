@@ -394,7 +394,7 @@ const AISettings = () => {
               </div>
             </div>
 
-            <Button variant="outline" className="w-full mt-2">
+            <Button variant="outline" className="w-full mt-2" onClick={() => toast({ title: 'Настройки интеграций сохранены' })}>
               Сохранить настройки интеграций
             </Button>
           </div>

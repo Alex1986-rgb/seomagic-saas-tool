@@ -193,7 +193,7 @@ const PerformanceReports: React.FC = () => {
           transition={{ duration: 0.5, delay: 0.3 }}
         >
           <Tabs defaultValue="features" className="w-full">
-            <TabsList className="grid w-full grid-cols-4">
+            <TabsList className="grid w-full grid-cols-2 md:grid-cols-4">
               <TabsTrigger value="features">Возможности</TabsTrigger>
               <TabsTrigger value="formats">Форматы экспорта</TabsTrigger>
               <TabsTrigger value="automation">Автоматизация</TabsTrigger>

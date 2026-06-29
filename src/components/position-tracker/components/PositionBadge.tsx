@@ -34,9 +34,9 @@ export const PositionBadge: React.FC<PositionBadgeProps> = ({
   } else if (position <= 30) {
     badgeClass = "bg-yellow-50 text-yellow-700";
   } else if (position <= 100) {
-    badgeClass = "bg-gray-50 text-gray-700";
+    badgeClass = "bg-muted/40 text-foreground";
   } else {
-    badgeClass = "bg-gray-50 text-gray-700";
+    badgeClass = "bg-muted/40 text-foreground";
   }
   
   // Если есть предыдущая позиция и мы хотим показать изменение
@@ -55,7 +55,7 @@ export const PositionBadge: React.FC<PositionBadgeProps> = ({
               ? 'text-green-600 flex items-center' 
               : change < 0 
                 ? 'text-red-600 flex items-center' 
-                : 'text-gray-600 flex items-center'
+                : 'text-muted-foreground flex items-center'
           }`}>
             {change > 0 ? (
               <>

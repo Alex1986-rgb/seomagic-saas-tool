@@ -4,8 +4,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Bell, Mail, MessageSquare } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
 const ClientNotifications: React.FC = () => {
+  const { toast } = useToast();
   const notifications = [
     {
       title: 'Аудит завершен',
@@ -75,7 +77,7 @@ const ClientNotifications: React.FC = () => {
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle>Последние уведомления</CardTitle>
-            <Button size="sm" variant="outline">Отметить все как прочитанные</Button>
+            <Button size="sm" variant="outline" onClick={() => toast({ title: 'Готово', description: 'Все уведомления отмечены как прочитанные' })}>Отметить все как прочитанные</Button>
           </div>
         </CardHeader>
         <CardContent>

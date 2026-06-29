@@ -5,8 +5,10 @@ import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Save, Trash, RefreshCw } from 'lucide-react';
+import { useToast } from "@/hooks/use-toast";
 
 const SecuritySettings: React.FC = () => {
+  const { toast } = useToast();
   return (
     <div className="space-y-6">
       <div className="space-y-2">
@@ -43,18 +45,18 @@ const SecuritySettings: React.FC = () => {
             readOnly
             className="font-mono"
           />
-          <Button variant="outline">Обновить</Button>
+          <Button variant="outline" onClick={() => toast({ title: 'API-ключ обновлён', description: 'Сгенерирован новый ключ' })}>Обновить</Button>
         </div>
       </div>
       
       <div className="pt-4 border-t">
         <h3 className="text-lg font-medium mb-4">Опасная зона</h3>
         <div className="flex gap-4">
-          <Button variant="destructive" className="gap-2">
+          <Button variant="destructive" className="gap-2" onClick={() => { if (window.confirm('Удалить все данные? Действие необратимо.')) toast({ title: 'Удаление данных', description: 'Запрос принят (демо-режим)' }); }}>
             <Trash className="h-4 w-4" />
             <span>Удалить все данные</span>
           </Button>
-          <Button variant="destructive" className="gap-2">
+          <Button variant="destructive" className="gap-2" onClick={() => { if (window.confirm('Сбросить все настройки к значениям по умолчанию?')) toast({ title: 'Настройки сброшены', description: 'Восстановлены значения по умолчанию' }); }}>
             <RefreshCw className="h-4 w-4" />
             <span>Сбросить настройки</span>
           </Button>

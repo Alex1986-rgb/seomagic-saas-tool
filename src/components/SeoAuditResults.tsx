@@ -37,38 +37,32 @@ const SeoAuditResults: React.FC<SeoAuditResultsProps> = ({ url }) => {
   }, [url, toast]);
 
   useEffect(() => {
-    // Prevent multiple initialization attempts
-    if (!initializeAttempted.current && url) {
-      initializeAttempted.current = true;
-      
-      // Clear any existing timeout
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
-      }
-      
-      // Set timeout for initialization (a slight delay to ensure DOM is ready)
-      timeoutRef.current = setTimeout(() => {
-        setIsReady(true);
-      }, 200);
-      
-      // Set a timeout for the entire audit process (2.5 minutes)
-      const auditTimeout = setTimeout(() => {
-        console.log("Audit timed out after 2.5 minutes");
-        setError("Время аудита истекло. Пожалуйста, попробуйте снова или используйте другой URL.");
-        toast({
-          title: "Превышено время ожидания",
-          description: "Аудит занял слишком много времени. Сайт может быть слишком большим или недоступным.",
-          variant: "destructive",
-        });
-      }, 150000); // 2.5 minutes timeout
-      
-      return () => {
-        if (timeoutRef.current) {
-          clearTimeout(timeoutRef.current);
-        }
-        clearTimeout(auditTimeout);
-      };
-    }
+    if (!url) return;
+
+    initializeAttempted.current = true;
+
+    // Небольшая задержка перед показом результатов (StrictMode-safe:
+    // каждый проход эффекта планирует и очищает собственные таймеры).
+    const readyTimer = setTimeout(() => {
+      setIsReady(true);
+    }, 200);
+    timeoutRef.current = readyTimer;
+
+    // Таймаут на весь процесс аудита (2.5 минуты)
+    const auditTimeout = setTimeout(() => {
+      console.log("Audit timed out after 2.5 minutes");
+      setError("Время аудита истекло. Пожалуйста, попробуйте снова или используйте другой URL.");
+      toast({
+        title: "Превышено время ожидания",
+        description: "Аудит занял слишком много времени. Сайт может быть слишком большим или недоступным.",
+        variant: "destructive",
+      });
+    }, 150000); // 2.5 minutes timeout
+
+    return () => {
+      clearTimeout(readyTimer);
+      clearTimeout(auditTimeout);
+    };
   }, [url, toast]);
 
   if (!url) {

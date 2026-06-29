@@ -90,7 +90,7 @@ const MarketingEditor: React.FC = () => {
         onSave={handleSave}
       >
         <div className="space-y-6">
-          <Card className="bg-black/20 border-white/10">
+          <Card className="bg-muted/40 border-border">
             <CardContent className="p-6">
               <h3 className="text-lg font-semibold mb-4">Настройки попапов</h3>
               <div className="space-y-4">
@@ -98,14 +98,14 @@ const MarketingEditor: React.FC = () => {
                   <label className="block text-sm font-medium mb-2">Заголовок попапа</label>
                   <Input 
                     defaultValue="Получите бесплатный аудит сайта" 
-                    className="bg-black/20 border-white/10"
+                    className="bg-muted/40 border-border"
                   />
                 </div>
                 <div>
                   <label className="block text-sm font-medium mb-2">Текст попапа</label>
                   <Textarea 
                     defaultValue="Оставьте email и получите бесплатный SEO-аудит вашего сайта" 
-                    className="bg-black/20 border-white/10"
+                    className="bg-muted/40 border-border"
                   />
                 </div>
                 <div className="flex items-center justify-between">
@@ -117,14 +117,14 @@ const MarketingEditor: React.FC = () => {
                   <Input 
                     type="number"
                     defaultValue="15" 
-                    className="bg-black/20 border-white/10 w-[100px]"
+                    className="bg-muted/40 border-border w-[100px]"
                   />
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="bg-black/20 border-white/10">
+          <Card className="bg-muted/40 border-border">
             <CardContent className="p-6">
               <div className="flex justify-between items-center mb-4">
                 <h3 className="text-lg font-semibold">Маркетинговые кампании</h3>
@@ -136,7 +136,7 @@ const MarketingEditor: React.FC = () => {
               
               <div className="space-y-4 mt-6">
                 {campaigns.map((campaign) => (
-                  <Card key={campaign.id} className="border-white/10 bg-black/30">
+                  <Card key={campaign.id} className="border-border bg-muted/50">
                     <CardContent className="p-4">
                       <div className="flex justify-between mb-3">
                         <div className="flex-grow">
@@ -144,7 +144,7 @@ const MarketingEditor: React.FC = () => {
                           <Input 
                             value={campaign.name}
                             onChange={(e) => updateCampaign(campaign.id, 'name', e.target.value)}
-                            className="bg-black/20 border-white/10"
+                            className="bg-muted/40 border-border"
                           />
                         </div>
                         <div className="flex items-start ml-4">
@@ -170,7 +170,7 @@ const MarketingEditor: React.FC = () => {
                         <Textarea 
                           value={campaign.description}
                           onChange={(e) => updateCampaign(campaign.id, 'description', e.target.value)}
-                          className="bg-black/20 border-white/10"
+                          className="bg-muted/40 border-border"
                           rows={2}
                         />
                       </div>
@@ -179,7 +179,7 @@ const MarketingEditor: React.FC = () => {
                         <Input 
                           value={campaign.url}
                           onChange={(e) => updateCampaign(campaign.id, 'url', e.target.value)}
-                          className="bg-black/20 border-white/10"
+                          className="bg-muted/40 border-border"
                         />
                       </div>
                     </CardContent>
@@ -187,15 +187,15 @@ const MarketingEditor: React.FC = () => {
                 ))}
                 
                 {campaigns.length === 0 && (
-                  <div className="p-8 text-center border border-dashed border-white/10 rounded-md bg-black/10">
-                    <p className="text-gray-400">Кампании не найдены. Создайте новую маркетинговую кампанию.</p>
+                  <div className="p-8 text-center border border-dashed border-border rounded-md bg-black/10">
+                    <p className="text-muted-foreground">Кампании не найдены. Создайте новую маркетинговую кампанию.</p>
                   </div>
                 )}
               </div>
             </CardContent>
           </Card>
           
-          <Card className="bg-black/20 border-white/10">
+          <Card className="bg-muted/40 border-border">
             <CardContent className="p-6">
               <h3 className="text-lg font-semibold mb-4">Баннеры</h3>
               <div className="space-y-4">
@@ -203,21 +203,21 @@ const MarketingEditor: React.FC = () => {
                   <label className="block text-sm font-medium mb-2">Заголовок главного баннера</label>
                   <Input 
                     defaultValue="Оптимизация сайта за 3 дня" 
-                    className="bg-black/20 border-white/10"
+                    className="bg-muted/40 border-border"
                   />
                 </div>
                 <div>
                   <label className="block text-sm font-medium mb-2">Описание баннера</label>
                   <Textarea 
                     defaultValue="Мы проведем полный аудит и оптимизацию вашего сайта всего за 3 дня" 
-                    className="bg-black/20 border-white/10"
+                    className="bg-muted/40 border-border"
                   />
                 </div>
                 <div>
                   <label className="block text-sm font-medium mb-2">URL кнопки баннера</label>
                   <Input 
                     defaultValue="/services/express" 
-                    className="bg-black/20 border-white/10"
+                    className="bg-muted/40 border-border"
                   />
                 </div>
                 <div className="flex items-center justify-between">

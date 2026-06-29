@@ -24,7 +24,7 @@ const HomePageEditor: React.FC = () => {
         onSave={handleSave}
       >
         <div className="space-y-6">
-          <Card className="bg-black/20 border-white/10">
+          <Card className="bg-muted/40 border-border">
             <CardContent className="p-6">
               <h3 className="text-lg font-semibold mb-4">Секция Hero</h3>
               <div className="space-y-4">
@@ -32,28 +32,28 @@ const HomePageEditor: React.FC = () => {
                   <label className="block text-sm font-medium mb-2">Заголовок</label>
                   <Input 
                     defaultValue="Оптимизируйте ваш сайт с помощью искусственного интеллекта" 
-                    className="bg-black/20 border-white/10"
+                    className="bg-muted/40 border-border"
                   />
                 </div>
                 <div>
                   <label className="block text-sm font-medium mb-2">Подзаголовок</label>
                   <Textarea 
                     defaultValue="Автоматический SEO аудит и оптимизация для улучшения видимости вашего сайта" 
-                    className="bg-black/20 border-white/10"
+                    className="bg-muted/40 border-border"
                   />
                 </div>
                 <div>
                   <label className="block text-sm font-medium mb-2">Текст кнопки</label>
                   <Input 
                     defaultValue="Начать бесплатно" 
-                    className="bg-black/20 border-white/10"
+                    className="bg-muted/40 border-border"
                   />
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="bg-black/20 border-white/10">
+          <Card className="bg-muted/40 border-border">
             <CardContent className="p-6">
               <h3 className="text-lg font-semibold mb-4">Секция возможностей</h3>
               <div className="space-y-4">
@@ -66,7 +66,7 @@ const HomePageEditor: React.FC = () => {
             </CardContent>
           </Card>
 
-          <Card className="bg-black/20 border-white/10">
+          <Card className="bg-muted/40 border-border">
             <CardContent className="p-6">
               <h3 className="text-lg font-semibold mb-4">Секция CTA</h3>
               <div className="space-y-4">
@@ -74,14 +74,14 @@ const HomePageEditor: React.FC = () => {
                   <label className="block text-sm font-medium mb-2">Заголовок CTA</label>
                   <Input 
                     defaultValue="Попробуйте SEO аудит бесплатно" 
-                    className="bg-black/20 border-white/10"
+                    className="bg-muted/40 border-border"
                   />
                 </div>
                 <div>
                   <label className="block text-sm font-medium mb-2">Описание CTA</label>
                   <Textarea 
                     defaultValue="Получите полный отчет о состоянии вашего сайта" 
-                    className="bg-black/20 border-white/10"
+                    className="bg-muted/40 border-border"
                   />
                 </div>
               </div>

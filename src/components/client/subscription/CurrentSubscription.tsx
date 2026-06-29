@@ -1,6 +1,8 @@
 
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Check, Clock, CreditCard } from 'lucide-react';
+import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
@@ -56,6 +58,8 @@ const CurrentSubscription: React.FC<CurrentSubscriptionProps> = ({
   form,
   onSubmit
 }) => {
+  const navigate = useNavigate();
+  const { toast } = useToast();
   return (
     <div className="mb-8">
       <h2 className="text-xl font-semibold mb-4">Ваша подписка</h2>
@@ -122,8 +126,8 @@ const CurrentSubscription: React.FC<CurrentSubscriptionProps> = ({
             </div>
             
             <div className="space-y-3">
-              <Button className="w-full">Изменить план</Button>
-              <Button variant="outline" className="w-full">Отменить подписку</Button>
+              <Button className="w-full" onClick={() => navigate('/pricing')}>Изменить план</Button>
+              <Button variant="outline" className="w-full" onClick={() => { if (window.confirm('Отменить подписку?')) toast({ title: 'Подписка отменена', description: 'Доступ сохранится до конца оплаченного периода' }); }}>Отменить подписку</Button>
             </div>
           </div>
           

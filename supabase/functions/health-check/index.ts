@@ -25,15 +25,17 @@ serve(async (req) => {
       .select('id')
       .limit(1);
 
-    // Check storage connection
+    // Check storage connection (используемый бакет — audit-reports)
     const { error: storageError } = await supabaseClient.storage
-      .from('reports')
+      .from('audit-reports')
       .list('', { limit: 1 });
 
     const services = {
       database: !dbError ? 'ok' : 'error',
       storage: !storageError ? 'ok' : 'error',
-      openai: Deno.env.get('OPENAI_API_KEY') ? 'configured' : 'not configured',
+      // Реально используемые ключи AI-генерации и почты
+      lovable_ai: Deno.env.get('LOVABLE_API_KEY') ? 'configured' : 'not configured',
+      anthropic: Deno.env.get('ANTHROPIC_API_KEY') ? 'configured' : 'not configured',
       resend: Deno.env.get('RESEND_API_KEY') ? 'configured' : 'not configured',
     };
 

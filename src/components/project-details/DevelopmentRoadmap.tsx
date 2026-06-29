@@ -179,7 +179,7 @@ const DevelopmentRoadmap: React.FC = () => {
       case 'future':
         return 'bg-purple-100 text-purple-800 border-purple-200';
       default:
-        return 'bg-gray-100 text-gray-800 border-gray-200';
+        return 'bg-muted text-muted-foreground border-border';
     }
   };
 
@@ -194,7 +194,7 @@ const DevelopmentRoadmap: React.FC = () => {
       case 'low':
         return 'text-green-600';
       default:
-        return 'text-gray-600';
+        return 'text-muted-foreground';
     }
   };
 
@@ -207,7 +207,7 @@ const DevelopmentRoadmap: React.FC = () => {
       case 'low':
         return 'bg-green-100 text-green-800 border-green-200';
       default:
-        return 'bg-gray-100 text-gray-800 border-gray-200';
+        return 'bg-muted text-muted-foreground border-border';
     }
   };
 
@@ -254,7 +254,7 @@ const DevelopmentRoadmap: React.FC = () => {
                           <div className="flex items-center gap-2">
                             {item.completed ? 
                               <CheckCircle className="h-3 w-3 text-green-500" /> : 
-                              <div className="h-3 w-3 rounded-full border border-gray-300"></div>
+                              <div className="h-3 w-3 rounded-full border border-border"></div>
                             }
                             <span className={item.completed ? 'line-through text-muted-foreground' : ''}>
                               {item.name}

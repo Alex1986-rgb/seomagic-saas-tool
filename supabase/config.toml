@@ -1,5 +1,22 @@
 project_id = "dllusofuxonaemrttmwl"
 
+# Локальная разработка на 8GB MacBook: отключаем тяжёлые опциональные сервисы,
+# чтобы стек влез в память (иначе Docker падает / контейнеры unhealthy).
+[analytics]
+enabled = false
+
+[studio]
+enabled = false
+
+[realtime]
+enabled = false
+
+[storage.image_transformation]
+enabled = false
+
+[db.pooler]
+enabled = false
+
 [functions.audit-start]
 verify_jwt = false
 
@@ -44,3 +61,38 @@ verify_jwt = false
 
 [functions.create-notification]
 verify_jwt = false
+
+[functions.contact-submit]
+verify_jwt = false
+
+[functions.seo-text-generate]
+verify_jwt = false
+
+# Публичные функции — явно разрешаем анонимные вызовы (#5),
+# иначе Supabase по умолчанию ставит verify_jwt=true и отклоняет их.
+[functions.generate-sitemap]
+verify_jwt = false
+
+[functions.blog-sitemap]
+verify_jwt = false
+
+[functions.sitemap-export]
+verify_jwt = false
+
+[functions.health-check]
+verify_jwt = false
+
+[functions.issue-classifier]
+verify_jwt = false
+
+[functions.payment-create]
+verify_jwt = false
+
+[functions.order-status]
+verify_jwt = false
+
+[functions.payment-webhook]
+verify_jwt = false
+
+[functions.orders-list]
+verify_jwt = true

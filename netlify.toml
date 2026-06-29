@@ -1,0 +1,14 @@
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+[build.environment]
+  # Lovable-проект: react-day-picker@8 конфликтует с date-fns@4 — нужен legacy-peer-deps
+  NPM_FLAGS = "--legacy-peer-deps"
+  NODE_VERSION = "20"
+
+# SPA-роутинг: все маршруты отдаём index.html (React Router обрабатывает на клиенте)
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200

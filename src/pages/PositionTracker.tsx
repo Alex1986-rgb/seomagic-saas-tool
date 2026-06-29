@@ -1,6 +1,7 @@
 
 import React, { useState } from 'react';
 import Layout from '@/components/Layout';
+import { Tabs } from '@/components/ui/tabs';
 import TrackerHeader from '@/components/position-tracker/components/TrackerHeader';
 import TrackerContent from '@/components/position-tracker/components/TrackerContent';
 
@@ -17,16 +18,19 @@ const PositionTracker: React.FC = () => {
     <Layout>
       <div className="container mx-auto px-4 md:px-6 pt-24 md:pt-32 pb-12 md:pb-20">
         <div className="max-w-7xl mx-auto">
-          <TrackerHeader 
-            activeTab={activeTab} 
-            onTabChange={setActiveTab} 
-          />
-          
-          <TrackerContent 
-            activeTab={activeTab}
-            searchResults={searchResults}
-            onSearchComplete={handleSearchComplete}
-          />
+          {/* Единый Tabs-контекст для шапки (TabsList) и контента (TabsContent) */}
+          <Tabs value={activeTab} onValueChange={setActiveTab}>
+            <TrackerHeader
+              activeTab={activeTab}
+              onTabChange={setActiveTab}
+            />
+
+            <TrackerContent
+              activeTab={activeTab}
+              searchResults={searchResults}
+              onSearchComplete={handleSearchComplete}
+            />
+          </Tabs>
         </div>
       </div>
     </Layout>

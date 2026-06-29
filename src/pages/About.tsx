@@ -8,6 +8,7 @@ import TeamSection from '@/components/about/TeamSection';
 import TestimonialsSection from '@/components/about/TestimonialsSection';
 import CtaSection from '@/components/about/CtaSection';
 import { Separator } from '@/components/ui/separator';
+import { SEO } from '@/components/SEO';
 import { BreadcrumbSchema } from '@/components/seo/BreadcrumbSchema';
 import { LocalBusinessSchema } from '@/components/seo/LocalBusinessSchema';
 import { OrganizationSchema } from '@/components/seo/OrganizationSchema';
@@ -16,6 +17,11 @@ import { ReviewSchema } from '@/components/seo/ReviewSchema';
 const About = () => {
   return (
     <Layout>
+      <SEO
+        title="О сервисе SeoMarket — кто мы и наша миссия"
+        description="SeoMarket — команда экспертов по SEO. Узнайте о нашей миссии: сделать профессиональный SEO-аудит и оптимизацию доступными каждому."
+        canonicalUrl="/about"
+      />
       <BreadcrumbSchema items={[
         { name: 'Главная', url: '/' },
         { name: 'О нас', url: '/about' }

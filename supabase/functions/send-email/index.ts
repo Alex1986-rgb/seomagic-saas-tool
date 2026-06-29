@@ -46,6 +46,8 @@ serve(async (req) => {
       throw new Error('RESEND_API_KEY not configured');
     }
 
+    const FROM = Deno.env.get('MAIL_FROM') || 'SeoMarket <onboarding@resend.dev>';
+
     console.log(`Sending email to ${to} with subject: ${subject}`);
 
     let emailHtml = html || '';
@@ -89,7 +91,7 @@ serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        from: 'SEO Audit <onboarding@resend.dev>',
+        from: FROM,
         to: [to],
         subject: subject,
         html: emailHtml,

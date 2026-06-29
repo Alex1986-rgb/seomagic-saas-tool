@@ -4,21 +4,21 @@ import Layout from '@/components/Layout';
 import { OptimizationPlans } from '@/features/audit/components/results/components/optimization';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 
 const OptimizationPricing: React.FC = () => {
   const { toast } = useToast();
-  
+  const navigate = useNavigate();
+
   const handleSelectPlan = (plan: string) => {
     toast({
       title: "Тариф выбран",
       description: `Вы выбрали тариф "${plan}". Перенаправление на страницу аудита.`,
     });
-    
-    // In a real implementation, you would redirect or perform some action
+    // navigate учитывает base-путь (GitHub Pages /seomagic-saas-tool/)
     setTimeout(() => {
-      window.location.href = `/audit?plan=${plan}`;
+      navigate(`/audit?plan=${encodeURIComponent(plan)}`);
     }, 1000);
   };
   

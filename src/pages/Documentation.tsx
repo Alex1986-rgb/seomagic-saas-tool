@@ -1,5 +1,6 @@
 import React from 'react';
-import { useParams, Navigate } from 'react-router-dom';
+import { useParams, Navigate, useNavigate } from 'react-router-dom';
+import { useToast } from '@/hooks/use-toast';
 import Layout from '@/components/Layout';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -28,12 +29,15 @@ type DocumentationTab = 'user-guide' | 'developer-guide' | 'security' | 'faq';
 
 const Documentation: React.FC = () => {
   const { tab } = useParams<{ tab?: string }>();
+  const navigate = useNavigate();
+  const { toast } = useToast();
   const defaultTab: DocumentationTab = (tab as DocumentationTab) || 'user-guide';
   
   // Validate tab parameter
   const validTabs: DocumentationTab[] = ['user-guide', 'developer-guide', 'security', 'faq'];
   if (tab && !validTabs.includes(tab as DocumentationTab)) {
-    return <Navigate to="/documentation/user-guide" replace />;
+    // Маршрута /documentation/:tab нет — редиректим на базовый /documentation
+    return <Navigate to="/documentation" replace />;
   }
 
   const tabsData = [
@@ -113,11 +117,11 @@ const Documentation: React.FC = () => {
             </motion.p>
 
             <motion.div variants={itemVariants} className="flex flex-wrap justify-center gap-4 mb-12">
-              <Button variant="outline" className="gap-2 hover:scale-105 transition-transform">
+              <Button variant="outline" className="gap-2 hover:scale-105 transition-transform" onClick={() => toast({ title: 'Поиск по документации', description: 'Откройте нужный раздел во вкладках ниже' })}>
                 <Search className="w-4 h-4" />
                 Поиск в документации
               </Button>
-              <Button variant="outline" className="gap-2 hover:scale-105 transition-transform">
+              <Button variant="outline" className="gap-2 hover:scale-105 transition-transform" onClick={() => toast({ title: 'PDF-документация', description: 'Файл скоро будет доступен для скачивания' })}>
                 <Download className="w-4 h-4" />
                 Скачать PDF
               </Button>
@@ -218,11 +222,11 @@ const Documentation: React.FC = () => {
                 </p>
                 
                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                  <Button size="lg" className="gap-2 hover:scale-105 transition-transform">
+                  <Button size="lg" className="gap-2 hover:scale-105 transition-transform" onClick={() => navigate('/support')}>
                     Связаться с поддержкой
                     <ArrowRight className="w-4 h-4" />
                   </Button>
-                  <Button variant="outline" size="lg" className="hover:scale-105 transition-transform">
+                  <Button variant="outline" size="lg" className="hover:scale-105 transition-transform" onClick={() => navigate('/support')}>
                     Сообщество пользователей
                   </Button>
                 </div>

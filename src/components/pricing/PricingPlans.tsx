@@ -177,7 +177,7 @@ const PricingPlans: React.FC = () => {
               <p className="text-sm text-muted-foreground mt-1">{plan.description}</p>
               
               {plan.discount && (
-                <Badge variant="outline" className="mt-2 bg-green-50 text-green-700 border-green-200">
+                <Badge variant="outline" className="mt-2 bg-green-500/10 text-green-600 dark:text-green-400 border-green-500/20">
                   {plan.discount} скидка
                 </Badge>
               )}
@@ -231,7 +231,7 @@ const PricingPlans: React.FC = () => {
               className="w-full"
               asChild
             >
-              <Link to="/audit?plan={plan.name}">{plan.buttonText}</Link>
+              <Link to={`/audit?plan=${encodeURIComponent(plan.name)}`}>{plan.buttonText}</Link>
             </Button>
           </div>
         ))}

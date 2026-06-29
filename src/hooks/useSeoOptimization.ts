@@ -12,6 +12,7 @@ export interface AdvancedOptions {
   optimizeMetaTags: boolean;
   optimizeContent: boolean;
   dynamicRendering: boolean;
+  addSeoText: boolean;
 }
 
 export const useSeoOptimization = () => {
@@ -30,6 +31,7 @@ export const useSeoOptimization = () => {
     optimizeMetaTags: true,
     optimizeContent: true,
     dynamicRendering: false,
+    addSeoText: true,
   });
 
   const validateUrl = (input: string) => {

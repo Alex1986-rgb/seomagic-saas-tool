@@ -16,12 +16,12 @@ import { EventSchema } from '@/components/seo/EventSchema';
 import { SoftwareApplicationSchema } from '@/components/seo/SoftwareApplicationSchema';
 import { CourseSchema } from '@/components/seo/CourseSchema';
 import { JobPostingSchema } from '@/components/seo/JobPostingSchema';
+import { SEO } from '@/components/SEO';
 
 const Index: React.FC = () => {
   useEffect(() => {
     console.log("✅ Index page mounted successfully!");
-    document.title = "SEO Аудит и Оптимизация - SeoMarket";
-    
+
     return () => {
       console.log("❌ Index page unmounted");
     };
@@ -31,6 +31,11 @@ const Index: React.FC = () => {
   
   return (
     <Layout>
+      <SEO
+        title="SEO-аудит сайта онлайн — проверка и оптимизация | SeoMarket"
+        description="Бесплатный SEO-аудит сайта за минуту. Найдём технические ошибки, улучшим позиции в Яндекс и Google и повысим органический трафик."
+        canonicalUrl="/"
+      />
       <LocalBusinessSchema />
       <OrganizationSchema />
       <WebSiteSchema />

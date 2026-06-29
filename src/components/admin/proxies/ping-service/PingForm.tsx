@@ -221,7 +221,7 @@ const PingForm: React.FC<PingFormProps> = ({
       </div>
       
       {useProxies && activeProxiesCount === 0 && (
-        <Alert variant="default" className="bg-yellow-50">
+        <Alert variant="default" className="bg-yellow-500/10">
           <AlertCircle className="h-4 w-4" />
           <AlertDescription>
             Нет активных прокси. Будет использоваться прямое подключение. 
@@ -231,7 +231,7 @@ const PingForm: React.FC<PingFormProps> = ({
       )}
       
       {forceDirect && (
-        <Alert variant="default" className="bg-blue-50">
+        <Alert variant="default" className="bg-blue-500/10">
           <Wifi className="h-4 w-4" />
           <AlertDescription>
             Активирован режим прямого соединения. Прокси использоваться не будут.

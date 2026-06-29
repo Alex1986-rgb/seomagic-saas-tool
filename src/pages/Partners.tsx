@@ -6,8 +6,10 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/componen
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Star, Users, Zap, Globe, Award, TrendingUp } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 const Partners: React.FC = () => {
+  const navigate = useNavigate();
   const partners = [
     {
       name: "Google Analytics",
@@ -130,10 +132,10 @@ const Partners: React.FC = () => {
 
   const getTierColor = (tier: string) => {
     switch (tier) {
-      case 'Free': return 'bg-green-100 text-green-800';
+      case 'Free': return 'bg-green-500/15 text-green-600 dark:text-green-400';
       case 'Pro': return 'bg-blue-100 text-blue-800';
       case 'Premium': return 'bg-purple-100 text-purple-800';
-      default: return 'bg-gray-100 text-gray-800';
+      default: return 'bg-muted text-foreground';
     }
   };
 
@@ -190,7 +192,7 @@ const Partners: React.FC = () => {
                 </div>
               </CardContent>
               <CardFooter>
-                <Button>Стать партнером</Button>
+                <Button onClick={() => navigate('/partnership')}>Стать партнером</Button>
               </CardFooter>
             </Card>
           </TabsContent>
@@ -229,7 +231,7 @@ const Partners: React.FC = () => {
                 </div>
               </CardContent>
               <CardFooter>
-                <Button>Присоединиться к программе</Button>
+                <Button onClick={() => navigate('/partnership')}>Присоединиться к программе</Button>
               </CardFooter>
             </Card>
           </TabsContent>
@@ -268,7 +270,7 @@ const Partners: React.FC = () => {
                 </div>
               </CardContent>
               <CardFooter>
-                <Button>Связаться с нами</Button>
+                <Button onClick={() => navigate('/contact')}>Связаться с нами</Button>
               </CardFooter>
             </Card>
           </TabsContent>
@@ -347,10 +349,10 @@ const Partners: React.FC = () => {
           </p>
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button size="lg">
+            <Button size="lg" onClick={() => navigate('/partnership')}>
               Стать партнером
             </Button>
-            <Button variant="outline" size="lg">
+            <Button variant="outline" size="lg" onClick={() => navigate('/contact')}>
               Связаться с нами
             </Button>
           </div>

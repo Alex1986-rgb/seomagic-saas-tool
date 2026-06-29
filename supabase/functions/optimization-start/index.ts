@@ -57,6 +57,24 @@ serve(async (req) => {
       throw new Error('Audit not found or not completed');
     }
 
+    // Гейтинг по оплате (opt-in: REQUIRE_PAYMENT_FOR_OPTIMIZATION=true).
+    // Требует оплаченный заказ, привязанный к этому аудиту (audit_id) или task_id (meta).
+    if ((Deno.env.get('REQUIRE_PAYMENT_FOR_OPTIMIZATION') || '').toLowerCase() === 'true') {
+      const { data: paidOrder } = await supabase
+        .from('orders')
+        .select('id')
+        .eq('status', 'paid')
+        .or(`audit_id.eq.${auditResult.id},meta->>task_id.eq.${task_id}`)
+        .limit(1)
+        .maybeSingle();
+      if (!paidOrder) {
+        return new Response(
+          JSON.stringify({ error: 'payment_required', message: 'Оптимизация доступна после оплаты заказа' }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 402 }
+        );
+      }
+    }
+
     // Create optimization job
     const { data: optimizationJob, error: createError } = await supabase
       .from('optimization_jobs')

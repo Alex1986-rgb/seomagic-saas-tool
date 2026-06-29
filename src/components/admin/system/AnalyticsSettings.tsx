@@ -6,8 +6,10 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { BarChart2, Save, BarChart } from 'lucide-react';
+import { useToast } from "@/hooks/use-toast";
 
 const AnalyticsSettings: React.FC = () => {
+  const { toast } = useToast();
   const [isGoogleAnalytics, setIsGoogleAnalytics] = useState(true);
   const [isSelfHosted, setIsSelfHosted] = useState(false);
   const [googleAnalyticsId, setGoogleAnalyticsId] = useState('UA-123456789-1');
@@ -24,7 +26,7 @@ const AnalyticsSettings: React.FC = () => {
       isGoogleAnalytics, isSelfHosted, googleAnalyticsId,
       dataRetentionDays, collectUserData
     });
-    // Here would be an API call to save settings
+    toast({ title: 'Настройки сохранены', description: 'Параметры аналитики успешно обновлены' });
   };
   
   const handleToggleCollectData = (key: keyof typeof collectUserData) => {

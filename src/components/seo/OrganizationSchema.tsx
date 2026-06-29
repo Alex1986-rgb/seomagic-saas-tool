@@ -3,21 +3,24 @@ import { Helmet } from 'react-helmet-async';
 
 export const OrganizationSchema: React.FC = () => {
   const siteUrl = typeof window !== 'undefined' ? window.location.origin : 'https://seomarket.app';
-  
+  // base учитывает под-путь (GitHub Pages /seomagic-saas-tool/), иначе ассеты 404
+  const base = (import.meta.env.BASE_URL || '/');
+  const asset = (p: string) => `${siteUrl}${base}${p}`;
+
   const organizationSchema = {
     '@context': 'https://schema.org',
     '@type': 'Organization',
-    '@id': `${siteUrl}/#organization`,
+    '@id': `${siteUrl}${base}#organization`,
     name: 'SeoMarket',
     legalName: 'ООО "СеоМаркет"',
-    url: siteUrl,
+    url: `${siteUrl}${base}`,
     logo: {
       '@type': 'ImageObject',
-      url: `${siteUrl}/images/logo.png`,
+      url: asset('og-image.jpg'),
       width: 250,
       height: 60
     },
-    image: `${siteUrl}/images/og-image.jpg`,
+    image: asset('og-image.jpg'),
     description: 'Профессиональный SEO аудит и оптимизация сайтов. Мониторинг позиций в поисковых системах. Повышение органического трафика и улучшение видимости в поиске.',
     founder: {
       '@type': 'Person',

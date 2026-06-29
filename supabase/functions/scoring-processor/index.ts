@@ -589,12 +589,12 @@ serve(async (req) => {
     );
 
   } catch (error) {
-    console.error('Scoring processor error:', error);
-    
+    // Детали — в серверный лог; клиенту обобщённое сообщение (без стектрейса).
+    console.error('Scoring processor error:', error instanceof Error ? error.stack : error);
+
     return new Response(
       JSON.stringify({
-        error: error instanceof Error ? error.message : 'Unknown error',
-        details: error instanceof Error ? error.stack : undefined
+        error: 'Internal error while scoring audit'
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },

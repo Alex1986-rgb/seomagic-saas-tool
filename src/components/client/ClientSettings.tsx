@@ -6,8 +6,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useToast } from '@/hooks/use-toast';
 
 const ClientSettings: React.FC = () => {
+  const { toast } = useToast();
   return (
     <div className="space-y-6">
       <h3 className="text-lg md:text-xl font-semibold">Настройки профиля</h3>
@@ -35,7 +37,7 @@ const ClientSettings: React.FC = () => {
               <Input id="phone" defaultValue="+7 (999) 123-45-67" />
             </div>
           </div>
-          <Button>Сохранить изменения</Button>
+          <Button onClick={() => toast({ title: 'Изменения сохранены', description: 'Данные профиля обновлены' })}>Сохранить изменения</Button>
         </CardContent>
       </Card>
       

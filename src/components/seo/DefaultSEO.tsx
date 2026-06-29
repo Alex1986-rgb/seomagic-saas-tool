@@ -7,7 +7,7 @@ const DefaultSEO: React.FC = () => {
 
   const title = 'SEO Аудит и Оптимизация';
   const description = 'SEO аудит и оптимизация сайтов. Повысьте позиции и увеличьте органический трафик.';
-  const siteName = 'SEO Market';
+  const siteName = 'SeoMarket';
   const image = '/og-image.jpg';
 
   return (

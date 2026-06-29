@@ -117,9 +117,9 @@ const AdminUsers: React.FC = () => {
 
   const getPlanColor = (role: string) => {
     switch(role) {
-      case 'admin': return 'bg-[#FF3355]/80 text-white border-none';
-      case 'user': return 'bg-[#191B22]/80 text-[#36CFFF] border border-[#36CFFF]/20';
-      default: return 'bg-[#23263B]/70 text-white border border-[#483194]/10';
+      case 'admin': return 'bg-[#FF3355]/80 text-foreground border-none';
+      case 'user': return 'bg-card/80 text-[#36CFFF] border border-[#36CFFF]/20';
+      default: return 'bg-muted/70 text-foreground border border-border';
     }
   };
 
@@ -144,7 +144,7 @@ const AdminUsers: React.FC = () => {
               placeholder="Поиск пользователей..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 bg-[#191B22] border border-[#23263B] placeholder:text-[#b2b6cf] text-white focus:border-[#8B5CF6]/60 rounded-lg shadow-md"
+              className="pl-10 bg-card border border-border placeholder:text-muted-foreground text-foreground focus:border-[#8B5CF6]/60 rounded-lg shadow-md"
             />
           </div>
         </div>
@@ -154,13 +154,13 @@ const AdminUsers: React.FC = () => {
             <DropdownMenuTrigger asChild>
               <Button 
                 variant="outline" 
-                className="flex items-center bg-[#23263B] text-[#b2b6cf] border-none hover:bg-[#28213a] hover:text-[#36CFFF] transition-all rounded-lg px-4 py-2"
+                className="flex items-center bg-muted text-muted-foreground border-none hover:bg-muted hover:text-[#36CFFF] transition-all rounded-lg px-4 py-2"
               >
                 Роль: {filterRole === 'all' ? 'Все' : filterRole}
                 <ChevronDown className="h-4 w-4 ml-2" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent className="bg-[#23263B] border-[#483194]/25 shadow-xl z-[60] min-w-[160px] text-white">
+            <DropdownMenuContent className="bg-muted border-[#483194]/25 shadow-xl z-[60] min-w-[160px] text-foreground">
               <DropdownMenuItem onClick={() => setFilterRole('all')}>
                 <Check className={`h-4 w-4 mr-2 ${filterRole === 'all' ? 'opacity-100 text-[#8B5CF6]' : 'opacity-0'}`} />
                 Все
@@ -178,31 +178,31 @@ const AdminUsers: React.FC = () => {
         </div>
       </div>
       
-      <div className="overflow-x-auto rounded-2xl bg-[#191B22] border border-[#23263B]/40 shadow-xl">
+      <div className="overflow-x-auto rounded-2xl bg-card border border-border/40 shadow-xl">
         <table className="w-full rounded-2xl overflow-hidden">
           <thead>
-            <tr className="border-b border-[#28213a] bg-gradient-to-r from-[#23263B]/90 to-[#1A1F2C]/95">
+            <tr className="border-b border-[#28213a] bg-gradient-to-r from-card/90 to-muted/95">
               <th className="text-left py-4 px-5 font-bold text-lg text-gradient bg-gradient-to-r from-[#9b87f5] via-[#8B5CF6] to-[#0EA5E9] bg-clip-text text-transparent">Пользователь</th>
               <th className="text-left py-4 px-5 font-bold text-lg text-[#FF81C0]">Роль</th>
               <th className="text-left py-4 px-5 font-bold text-lg text-[#F6C778]">Проектов</th>
               <th className="text-left py-4 px-5 font-bold text-lg text-[#82FFD7]">Дата регистрации</th>
-              <th className="text-left py-4 px-5 font-bold text-lg text-white">Действия</th>
+              <th className="text-left py-4 px-5 font-bold text-lg text-foreground">Действия</th>
             </tr>
           </thead>
-          <tbody className="bg-[#191B22]/95">
+          <tbody className="bg-card/95">
             {filteredUsers.map(user => (
-              <tr key={user.id} className="border-b border-[#23263B]/60 hover:bg-[#23263B]/80 transition-colors duration-100">
+              <tr key={user.id} className="border-b border-border/60 hover:bg-muted/80 transition-colors duration-100">
                 <td className="py-5 px-5">
                   <div className="flex items-center gap-4">
                     <Avatar>
                       <AvatarImage src={user.avatar_url} />
-                      <AvatarFallback className="bg-[#23263B] text-[#8B5CF6]">
+                      <AvatarFallback className="bg-muted text-[#8B5CF6]">
                         <UserRound className="h-4 w-4" />
                       </AvatarFallback>
                     </Avatar>
                     <div>
-                      <div className="font-bold text-white">{user.full_name || 'Без имени'}</div>
-                      <div className="text-xs text-[#b2b6cf]">{user.email}</div>
+                      <div className="font-bold text-foreground">{user.full_name || 'Без имени'}</div>
+                      <div className="text-xs text-muted-foreground">{user.email}</div>
                     </div>
                   </div>
                 </td>
@@ -219,11 +219,11 @@ const AdminUsers: React.FC = () => {
                   <div className="flex gap-2">
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="sm" className="bg-[#23263B] hover:bg-[#2d2e3b] text-[#8B5CF6] rounded-md">
+                        <Button variant="ghost" size="sm" className="bg-muted hover:bg-muted text-[#8B5CF6] rounded-md">
                           <Edit className="h-4 w-4" />
                         </Button>
                       </DropdownMenuTrigger>
-                      <DropdownMenuContent className="bg-[#23263B] border-[#483194]/25 shadow-xl text-white">
+                      <DropdownMenuContent className="bg-muted border-[#483194]/25 shadow-xl text-foreground">
                         <DropdownMenuItem 
                           onClick={() => updateUserRole(user.id, user.role === 'admin' ? 'user' : 'admin')}
                         >
@@ -239,7 +239,7 @@ const AdminUsers: React.FC = () => {
         </table>
         
         {filteredUsers.length === 0 && (
-          <div className="p-8 text-center text-[#b2b6cf]">
+          <div className="p-8 text-center text-muted-foreground">
             {users.length === 0 ? 'Пользователи не найдены' : 'Нет пользователей, соответствующих фильтрам'}
           </div>
         )}

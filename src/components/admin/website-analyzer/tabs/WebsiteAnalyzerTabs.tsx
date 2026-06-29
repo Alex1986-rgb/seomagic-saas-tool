@@ -8,6 +8,14 @@ interface WebsiteAnalyzerTabsProps {
 }
 
 const WebsiteAnalyzerTabs: React.FC<WebsiteAnalyzerTabsProps> = ({ scannedUrls }) => {
+  const download = (filename: string, content: string, mime: string) => {
+    const blob = new Blob([content], { type: mime });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = filename; a.click();
+    URL.revokeObjectURL(url);
+  };
+  const sitemapXml = () => `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${scannedUrls.map((u) => `  <url>\n    <loc>${u}</loc>\n    <lastmod>${new Date().toISOString()}</lastmod>\n  </url>`).join('\n')}\n</urlset>`;
   return (
     <Tabs defaultValue="overview" className="space-y-4">
       <TabsList className="grid grid-cols-4 bg-card/50 backdrop-blur-sm">
@@ -24,8 +32,6 @@ const WebsiteAnalyzerTabs: React.FC<WebsiteAnalyzerTabsProps> = ({ scannedUrls }
             <div className="space-y-2">
               <p>Найдено страниц: {scannedUrls.length}</p>
               <p>Типы страниц: HTML</p>
-              <p>Средняя скорость загрузки: 0.5с</p>
-              <p>Версии протоколов: HTTP/1.1, HTTP/2</p>
             </div>
           ) : (
             <p className="text-muted-foreground">Запустите сканирование для получения данных</p>
@@ -76,7 +82,9 @@ ${scannedUrls.map(url => `  <url>
 </urlset>`}
                 </pre>
               </div>
-              <button className="bg-primary text-primary-foreground px-4 py-2 rounded">
+              <button
+                onClick={() => download('sitemap.xml', sitemapXml(), 'application/xml')}
+                className="bg-primary text-primary-foreground px-4 py-2 rounded">
                 Скачать sitemap.xml
               </button>
             </div>
@@ -93,15 +101,17 @@ ${scannedUrls.map(url => `  <url>
             <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
               <div className="border border-border rounded p-4 bg-card/30 backdrop-blur-sm">
                 <h4 className="font-medium mb-2">PDF отчет</h4>
-                <p className="text-sm mb-4 text-muted-foreground">Подробный отчет в формате PDF</p>
-                <button className="bg-primary text-primary-foreground px-4 py-2 rounded">
-                  Скачать PDF
+                <p className="text-sm mb-4 text-muted-foreground">Брендированный PDF со сметой формируется на странице результатов аудита</p>
+                <button disabled title="Доступно в результатах аудита" className="bg-muted text-muted-foreground px-4 py-2 rounded cursor-not-allowed opacity-60">
+                  PDF — в результатах аудита
                 </button>
               </div>
               <div className="border border-border rounded p-4 bg-card/30 backdrop-blur-sm">
                 <h4 className="font-medium mb-2">JSON экспорт</h4>
                 <p className="text-sm mb-4 text-muted-foreground">Полные данные в формате JSON</p>
-                <button className="bg-primary text-primary-foreground px-4 py-2 rounded">
+                <button
+                  onClick={() => download('scan-urls.json', JSON.stringify({ scannedAt: new Date().toISOString(), count: scannedUrls.length, urls: scannedUrls }, null, 2), 'application/json')}
+                  className="bg-primary text-primary-foreground px-4 py-2 rounded">
                   Скачать JSON
                 </button>
               </div>

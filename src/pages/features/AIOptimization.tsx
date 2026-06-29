@@ -158,8 +158,8 @@ const AIOptimization: React.FC = () => {
             <Button asChild size="lg" className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700">
               <Link to="/audit">Запустить ИИ оптимизацию</Link>
             </Button>
-            <Button variant="outline" size="lg">
-              Посмотреть демо
+            <Button variant="outline" size="lg" asChild>
+              <Link to="/demo">Посмотреть демо</Link>
             </Button>
           </div>
         </motion.div>
@@ -271,7 +271,7 @@ const AIOptimization: React.FC = () => {
           transition={{ duration: 0.5, delay: 0.4 }}
         >
           <Tabs defaultValue="process" className="w-full">
-            <TabsList className="grid w-full grid-cols-4">
+            <TabsList className="grid w-full grid-cols-2 md:grid-cols-4">
               <TabsTrigger value="process">Процесс</TabsTrigger>
               <TabsTrigger value="before-after">До и После</TabsTrigger>
               <TabsTrigger value="safety">Безопасность</TabsTrigger>
@@ -296,7 +296,7 @@ const AIOptimization: React.FC = () => {
                         <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold ${
                           step.status === 'completed' ? 'bg-green-100 text-green-700' :
                           step.status === 'in-progress' ? 'bg-blue-100 text-blue-700' :
-                          'bg-gray-100 text-gray-400'
+                          'bg-muted text-muted-foreground'
                         }`}>
                           {step.status === 'completed' ? '✓' : step.step}
                         </div>

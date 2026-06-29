@@ -95,9 +95,9 @@ const ProxyList: React.FC<ProxyListProps> = ({ proxies }) => {
       <TableCell className="font-medium">{proxy.ip}:{proxy.port}</TableCell>
       <TableCell>
         {proxy.status === 'active' ? (
-          <Badge variant="outline" className="bg-green-50 text-green-700">Активный</Badge>
+          <Badge variant="outline" className="bg-green-500/10 text-green-600 dark:text-green-400">Активный</Badge>
         ) : (
-          <Badge variant="outline" className="bg-red-50 text-red-700">Неактивный</Badge>
+          <Badge variant="outline" className="bg-red-500/10 text-red-600 dark:text-red-400">Неактивный</Badge>
         )}
       </TableCell>
       <TableCell>{proxy.speed ? `${proxy.speed} мс` : '-'}</TableCell>
@@ -108,9 +108,10 @@ const ProxyList: React.FC<ProxyListProps> = ({ proxies }) => {
           : 'Не проверялся'}
       </TableCell>
       <TableCell>
-        <Button 
-          variant="ghost" 
+        <Button
+          variant="ghost"
           size="icon"
+          aria-label="Удалить прокси"
           onClick={() => handleRemoveProxy(proxy.id)}
         >
           <Trash2 className="h-4 w-4 text-red-500" />

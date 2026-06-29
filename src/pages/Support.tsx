@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
@@ -7,34 +7,55 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { HelpCircle, Mail, MessageSquare, Phone, Search } from 'lucide-react';
 import Layout from '@/components/Layout';
+import { useNavigate } from 'react-router-dom';
+import { useToast } from '@/hooks/use-toast';
 
 const Support: React.FC = () => {
+  const navigate = useNavigate();
+  const { toast } = useToast();
   const faqItems = [
     {
+      category: 'general',
       question: "Как начать использовать SeoMarket?",
       answer: "Для начала работы зарегистрируйтесь на платформе, выберите подходящий тариф (включая бесплатный пробный период), и вы сразу получите доступ к базовым инструментам аудита и отслеживания позиций. Подробное руководство по началу работы доступно в разделе Руководства."
     },
     {
+      category: 'audit',
       question: "Какие типы аудита доступны на платформе?",
       answer: "SeoMarket предлагает несколько типов аудита: базовый технический аудит, полный SEO аудит, аудит контента, анализ ссылочной массы, проверка скорости и мобильной оптимизации. Каждый тип можно настроить под ваши конкретные потребности."
     },
     {
+      category: 'positions',
       question: "Как часто обновляются данные о позициях?",
       answer: "В зависимости от выбранного тарифа, данные о позициях могут обновляться ежедневно, два раза в неделю или еженедельно. Пользователи премиум-тарифов также могут настроить уведомления об изменениях позиций в режиме реального времени."
     },
     {
+      category: 'general',
       question: "Можно ли экспортировать отчеты?",
       answer: "Да, все отчеты можно экспортировать в форматах PDF, CSV, Excel или HTML. Также доступна функция автоматической отправки отчетов на email с выбранной периодичностью."
     },
     {
+      category: 'account',
       question: "Сколько сайтов я могу отслеживать?",
       answer: "Количество отслеживаемых сайтов зависит от выбранного тарифа. На бесплатном тарифе доступен один сайт, на профессиональном - до 5 сайтов, на бизнес-тарифе - до 20 сайтов. Для крупных компаний доступны индивидуальные решения."
     },
     {
+      category: 'audit',
       question: "Как сравнивать результаты аудита в динамике?",
       answer: "На платформе есть инструмент сравнения аудитов, который позволяет выбрать два или более отчета по одному сайту и визуально сравнить изменения по всем параметрам. Также доступны графики изменений ключевых метрик за выбранный период."
     }
   ];
+
+  const [activeCategory, setActiveCategory] = useState('general');
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const filteredFaq = faqItems.filter((item) => {
+    const matchesCategory = activeCategory === 'general' || item.category === activeCategory;
+    const q = searchQuery.trim().toLowerCase();
+    const matchesSearch =
+      !q || item.question.toLowerCase().includes(q) || item.answer.toLowerCase().includes(q);
+    return matchesCategory && matchesSearch;
+  });
 
   return (
     <Layout>
@@ -55,10 +76,12 @@ const Support: React.FC = () => {
           <div className="relative mx-auto max-w-2xl mb-16">
             <div className="relative">
               <Search className="absolute left-4 top-3.5 h-5 w-5 text-muted-foreground" />
-              <Input 
-                type="text" 
-                placeholder="Поиск по базе знаний..." 
+              <Input
+                type="text"
+                placeholder="Поиск по базе знаний..."
                 className="pl-12 py-6 text-lg"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
               />
               <Button className="absolute right-1.5 top-1.5">
                 Найти
@@ -84,7 +107,7 @@ const Support: React.FC = () => {
                 </p>
               </CardContent>
               <CardFooter>
-                <Button className="w-full">Начать чат</Button>
+                <Button className="w-full" onClick={() => toast({ title: 'Онлайн-чат', description: 'Чат поддержки скоро откроется' })}>Начать чат</Button>
               </CardFooter>
             </Card>
             
@@ -102,7 +125,7 @@ const Support: React.FC = () => {
                 </p>
               </CardContent>
               <CardFooter>
-                <Button variant="outline" className="w-full">Написать письмо</Button>
+                <Button variant="outline" className="w-full" onClick={() => { window.location.href = 'mailto:support@seomarket.ru'; }}>Написать письмо</Button>
               </CardFooter>
             </Card>
             
@@ -121,7 +144,7 @@ const Support: React.FC = () => {
                 <p className="font-medium">+7 (800) 123-45-67</p>
               </CardContent>
               <CardFooter>
-                <Button variant="outline" className="w-full">Заказать звонок</Button>
+                <Button variant="outline" className="w-full" onClick={() => navigate('/contact')}>Заказать звонок</Button>
               </CardFooter>
             </Card>
           </div>
@@ -132,7 +155,7 @@ const Support: React.FC = () => {
               <p className="text-muted-foreground mt-2">Быстрые ответы на распространенные вопросы</p>
             </div>
             
-            <Tabs defaultValue="general" className="w-full mb-8">
+            <Tabs value={activeCategory} onValueChange={setActiveCategory} className="w-full mb-8">
               <TabsList className="w-full flex justify-center flex-wrap">
                 <TabsTrigger value="general">Общие вопросы</TabsTrigger>
                 <TabsTrigger value="audit">Аудит сайта</TabsTrigger>
@@ -140,26 +163,28 @@ const Support: React.FC = () => {
                 <TabsTrigger value="account">Аккаунт и оплата</TabsTrigger>
               </TabsList>
             </Tabs>
-            
-            <Accordion type="single" collapsible className="w-full">
-              {faqItems.map((item, index) => (
-                <AccordionItem key={index} value={`item-${index}`}>
-                  <AccordionTrigger className="text-left">
-                    <div className="flex items-start">
-                      <HelpCircle className="h-5 w-5 mr-2 text-primary shrink-0 mt-0.5" />
-                      <span>{item.question}</span>
-                    </div>
-                  </AccordionTrigger>
-                  <AccordionContent className="pl-7">
-                    {item.answer}
-                  </AccordionContent>
-                </AccordionItem>
-              ))}
-            </Accordion>
-            
-            <div className="text-center mt-8">
-              <Button variant="outline" size="lg">Показать больше вопросов</Button>
-            </div>
+
+            {filteredFaq.length > 0 ? (
+              <Accordion type="single" collapsible className="w-full">
+                {filteredFaq.map((item, index) => (
+                  <AccordionItem key={item.question} value={`item-${index}`}>
+                    <AccordionTrigger className="text-left">
+                      <div className="flex items-start">
+                        <HelpCircle className="h-5 w-5 mr-2 text-primary shrink-0 mt-0.5" />
+                        <span>{item.question}</span>
+                      </div>
+                    </AccordionTrigger>
+                    <AccordionContent className="pl-7">
+                      {item.answer}
+                    </AccordionContent>
+                  </AccordionItem>
+                ))}
+              </Accordion>
+            ) : (
+              <p className="text-center text-muted-foreground py-8">
+                По вашему запросу ничего не найдено. Попробуйте изменить категорию или поисковый запрос.
+              </p>
+            )}
           </div>
           
           <div className="bg-gradient-to-r from-primary/10 to-purple-500/10 rounded-xl p-8 text-center">
@@ -167,7 +192,7 @@ const Support: React.FC = () => {
             <p className="text-muted-foreground max-w-xl mx-auto mb-6">
               Наша команда поддержки готова помочь вам с любыми вопросами по использованию платформы
             </p>
-            <Button size="lg">Связаться с поддержкой</Button>
+            <Button size="lg" onClick={() => navigate('/contact')}>Связаться с поддержкой</Button>
           </div>
         </div>
       </div>

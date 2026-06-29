@@ -1,5 +1,6 @@
 
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { RefreshCw, BarChart2, ArrowUpRight } from 'lucide-react';
 import { PositionData } from '@/services/position/positionTracker';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
@@ -19,6 +20,7 @@ interface OverviewTabProps {
 }
 
 const OverviewTab: React.FC<OverviewTabProps> = ({ history, isLoading, onRefresh }) => {
+  const navigate = useNavigate();
   // Calculate statistics
   const calculateStats = () => {
     if (!history.length) return { total: 0, top10: 0, top30: 0, notFound: 0 };
@@ -96,7 +98,7 @@ const OverviewTab: React.FC<OverviewTabProps> = ({ history, isLoading, onRefresh
       <div>
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-semibold">Топ ключевые слова</h3>
-          <Button variant="link" size="sm" className="gap-1" onClick={() => window.location.href = "/position-analytics"}>
+          <Button variant="link" size="sm" className="gap-1" onClick={() => navigate("/position-tracker")}>
             Подробная аналитика
             <ArrowUpRight className="h-4 w-4" />
           </Button>

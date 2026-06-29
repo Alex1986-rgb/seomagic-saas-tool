@@ -1,8 +1,10 @@
 
 import React from 'react';
 import { Search, Calendar, Link, ExternalLink, Download } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast";
 
 interface AuditCardProps {
   audit: {
@@ -21,6 +23,8 @@ interface AuditCardProps {
 }
 
 export const AuditCard: React.FC<AuditCardProps> = ({ audit }) => {
+  const navigate = useNavigate();
+  const { toast } = useToast();
   const getScoreColor = (score: number | null) => {
     if (score === null) return 'text-muted-foreground';
     if (score >= 80) return 'text-green-500';
@@ -73,13 +77,11 @@ export const AuditCard: React.FC<AuditCardProps> = ({ audit }) => {
               )}
               
               <div className="flex gap-2">
-                <Button variant="outline" size="sm" asChild>
-                  <a href={`/audit?url=${encodeURIComponent(audit.url)}`}>
-                    <ExternalLink className="h-4 w-4 mr-2" />
-                    Детали
-                  </a>
+                <Button variant="outline" size="sm" onClick={() => navigate(`/audit?url=${encodeURIComponent(audit.url)}`)}>
+                  <ExternalLink className="h-4 w-4 mr-2" />
+                  Детали
                 </Button>
-                <Button variant="outline" size="sm">
+                <Button variant="outline" size="sm" onClick={() => toast({ title: 'PDF-отчёт', description: `${audit.url} — отчёт формируется` })}>
                   <Download className="h-4 w-4 mr-2" />
                   PDF
                 </Button>

@@ -36,8 +36,8 @@ const SimpleSitemapCreatorTool: React.FC<SimpleSitemapCreatorToolProps> = ({
   const handleStartScan = async () => {
     if (!url) {
       toast({
-        title: "Error",
-        description: "Please enter a URL",
+        title: "Ошибка",
+        description: "Введите URL сайта",
         variant: "destructive"
       });
       return;
@@ -55,7 +55,7 @@ const SimpleSitemapCreatorTool: React.FC<SimpleSitemapCreatorToolProps> = ({
         <TextField
           value={url}
           onChange={(e) => setUrl(e.target.value)}
-          placeholder="Enter website URL (e.g., example.com)"
+          placeholder="Введите URL сайта (например, example.com)"
           className="flex-1"
         />
         <Button
@@ -64,7 +64,7 @@ const SimpleSitemapCreatorTool: React.FC<SimpleSitemapCreatorToolProps> = ({
           disabled={isScanning || isGenerating}
         >
           <Rocket className="mr-2 h-4 w-4" />
-          Scan
+          Сканировать
         </Button>
       </div>
       
@@ -76,7 +76,7 @@ const SimpleSitemapCreatorTool: React.FC<SimpleSitemapCreatorToolProps> = ({
             size="sm"
           >
             <Download className="mr-2 h-4 w-4" />
-            Download Sitemap
+            Скачать Sitemap
           </Button>
           
           <Button
@@ -85,7 +85,7 @@ const SimpleSitemapCreatorTool: React.FC<SimpleSitemapCreatorToolProps> = ({
             size="sm"
           >
             <Download className="mr-2 h-4 w-4" />
-            Download URLs as CSV
+            Скачать URL в CSV
           </Button>
         </div>
       )}
@@ -93,31 +93,31 @@ const SimpleSitemapCreatorTool: React.FC<SimpleSitemapCreatorToolProps> = ({
       {isScanning && (
         <div className="mt-4 space-y-2">
           <div className="flex justify-between text-sm">
-            <span>Scanning: {currentUrl}</span>
+            <span>Сканирование: {currentUrl}</span>
             <span>{progress}%</span>
           </div>
-          <div className="w-full bg-gray-200 rounded-full h-2">
+          <div className="w-full bg-muted rounded-full h-2">
             <div 
               className="bg-primary h-2 rounded-full transition-all"
               style={{ width: `${progress}%` }}
             ></div>
           </div>
           <div className="text-sm text-muted-foreground">
-            {urls ? `Found ${urls.length} URLs` : 'Scanning in progress...'}
+            {urls ? `Найдено ${urls.length} URL` : 'Идёт сканирование...'}
           </div>
         </div>
       )}
       
       {urls && urls.length > 0 && !isScanning && (
         <div className="mt-4 space-y-2">
-          <h3 className="font-semibold">Found URLs ({urls.length})</h3>
+          <h3 className="font-semibold">Найденные URL ({urls.length})</h3>
           <div className="max-h-60 overflow-y-auto p-3 border rounded-md bg-background/50">
             <ul className="space-y-1 text-sm">
               {urls.slice(0, 100).map((url, index) => (
                 <li key={index} className="truncate">{url}</li>
               ))}
               {urls.length > 100 && (
-                <li className="text-muted-foreground">...and {urls.length - 100} more</li>
+                <li className="text-muted-foreground">...и ещё {urls.length - 100}</li>
               )}
             </ul>
           </div>

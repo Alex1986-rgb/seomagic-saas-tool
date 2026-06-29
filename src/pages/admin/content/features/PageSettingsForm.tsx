@@ -17,7 +17,7 @@ const PageSettingsForm: React.FC<PageSettingsFormProps> = ({
   onSettingsChange
 }) => {
   return (
-    <Card className="bg-black/20 border-white/10">
+    <Card className="bg-muted/40 border-border">
       <CardContent className="p-6">
         <h3 className="text-lg font-semibold mb-4">Настройки страницы</h3>
         <div className="space-y-4">
@@ -26,7 +26,7 @@ const PageSettingsForm: React.FC<PageSettingsFormProps> = ({
             <Input 
               value={settings.title}
               onChange={(e) => onSettingsChange({...settings, title: e.target.value})}
-              className="bg-black/20 border-white/10"
+              className="bg-muted/40 border-border"
             />
           </div>
           <div>
@@ -34,7 +34,7 @@ const PageSettingsForm: React.FC<PageSettingsFormProps> = ({
             <Textarea 
               value={settings.subtitle}
               onChange={(e) => onSettingsChange({...settings, subtitle: e.target.value})}
-              className="bg-black/20 border-white/10"
+              className="bg-muted/40 border-border"
             />
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -44,7 +44,7 @@ const PageSettingsForm: React.FC<PageSettingsFormProps> = ({
                 value={settings.layout} 
                 onValueChange={(value) => onSettingsChange({...settings, layout: value})}
               >
-                <SelectTrigger className="bg-black/20 border-white/10">
+                <SelectTrigger className="bg-muted/40 border-border">
                   <SelectValue placeholder="Выберите макет" />
                 </SelectTrigger>
                 <SelectContent>

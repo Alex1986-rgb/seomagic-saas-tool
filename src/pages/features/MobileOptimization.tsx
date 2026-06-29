@@ -200,7 +200,7 @@ const MobileOptimization: React.FC = () => {
           transition={{ duration: 0.5, delay: 0.3 }}
         >
           <Tabs defaultValue="responsive" className="w-full">
-            <TabsList className="grid w-full grid-cols-4">
+            <TabsList className="grid w-full grid-cols-2 md:grid-cols-4">
               <TabsTrigger value="responsive">Адаптивность</TabsTrigger>
               <TabsTrigger value="usability">Юзабилити</TabsTrigger>
               <TabsTrigger value="performance">Производительность</TabsTrigger>

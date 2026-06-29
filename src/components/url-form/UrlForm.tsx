@@ -69,6 +69,7 @@ const UrlForm: React.FC = () => {
           onChange={handleInputChange}
           className={`pl-10 h-12 pr-24 text-base ${!isUrlValid ? 'border-destructive focus-visible:ring-destructive/30' : ''}`}
           aria-invalid={!isUrlValid}
+          aria-label="URL сайта для SEO-аудита"
         />
         
         <Button 

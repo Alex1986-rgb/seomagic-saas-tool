@@ -39,7 +39,9 @@ const TeamMember = ({ name, position, bio, image }: TeamMemberProps) => (
                 <motion.a
                   key={icon}
                   href="#"
-                  className="p-2 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors icon-3d float-3d"
+                  onClick={(e) => e.preventDefault()}
+                  aria-label={icon === 'linkedin' ? 'LinkedIn' : icon === 'mail' ? 'Эл. почта' : 'Профиль'}
+                  className="p-2 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors icon-3d float-3d cursor-pointer"
                   whileHover={{ scale: 1.1, y: -5 }}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}

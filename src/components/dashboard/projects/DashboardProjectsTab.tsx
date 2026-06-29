@@ -3,8 +3,10 @@ import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Globe } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 const DashboardProjectsTab: React.FC = () => {
+  const navigate = useNavigate();
   return (
     <Card className="backdrop-blur-sm bg-card/80 border border-primary/10">
       <CardHeader>
@@ -15,7 +17,7 @@ const DashboardProjectsTab: React.FC = () => {
               Управление вашими проектами
             </CardDescription>
           </div>
-          <Button size="sm">
+          <Button size="sm" onClick={() => navigate('/audit')}>
             Добавить проект
           </Button>
         </div>
@@ -35,7 +37,7 @@ const DashboardProjectsTab: React.FC = () => {
                   </p>
                 </div>
               </div>
-              <Button variant="outline" size="sm">
+              <Button variant="outline" size="sm" onClick={() => navigate(`/audit?url=${encodeURIComponent('https://' + site)}`)}>
                 Управление
               </Button>
             </div>

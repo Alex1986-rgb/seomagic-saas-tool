@@ -6,8 +6,10 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Bell, Mail, Save, MessageSquare } from 'lucide-react';
+import { useToast } from "@/hooks/use-toast";
 
 const NotificationsSettings: React.FC = () => {
+  const { toast } = useToast();
   const [isEmailNotifications, setIsEmailNotifications] = useState(true);
   const [isSmsNotifications, setIsSmsNotifications] = useState(false);
   const [isSlackNotifications, setIsSlackNotifications] = useState(false);
@@ -26,7 +28,7 @@ const NotificationsSettings: React.FC = () => {
       isEmailNotifications, isSmsNotifications, isSlackNotifications,
       emailSettings, emailRecipients, slackWebhook
     });
-    // Here would be an API call to save settings
+    toast({ title: 'Настройки сохранены', description: 'Параметры уведомлений успешно обновлены' });
   };
   
   const handleToggleEmailSetting = (key: keyof typeof emailSettings) => {

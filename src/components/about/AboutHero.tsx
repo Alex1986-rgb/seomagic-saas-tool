@@ -52,10 +52,10 @@ const AboutHero = () => {
           transition={{ delay: 0.5, duration: 0.5 }}
           className="flex flex-col sm:flex-row gap-4 justify-center"
         >
-          <Button size="lg" className="bg-primary hover:bg-primary/90 rounded-full px-8 gap-2">
+          <Button asChild size="lg" className="bg-primary hover:bg-primary/90 rounded-full px-8 gap-2">
             <Link to="/audit">Попробовать бесплатно</Link>
           </Button>
-          <Button size="lg" variant="outline" className="rounded-full px-8">
+          <Button asChild size="lg" variant="outline" className="rounded-full px-8">
             <Link to="/pricing">Узнать больше</Link>
           </Button>
         </motion.div>
@@ -67,9 +67,10 @@ const AboutHero = () => {
         transition={{ delay: 1, duration: 1 }}
         className="absolute bottom-8 left-0 right-0 flex justify-center"
       >
-        <Button 
-          variant="ghost" 
-          size="icon" 
+        <Button
+          variant="ghost"
+          size="icon"
+          aria-label="Прокрутить вниз"
           className="rounded-full animate-bounce"
           onClick={() => {
             window.scrollTo({

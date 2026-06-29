@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import Layout from '@/components/Layout';
 import { Button } from "@/components/ui/button";
@@ -12,6 +12,14 @@ import { SEO } from '@/components/SEO';
 import { BreadcrumbSchema } from '@/components/seo/BreadcrumbSchema';
 
 const Blog: React.FC = () => {
+  const [searchQuery, setSearchQuery] = useState('');
+  const q = searchQuery.trim().toLowerCase();
+  const filteredPosts = mockBlogPosts.filter((post) =>
+    !q ||
+    post.title?.toLowerCase().includes(q) ||
+    (post.excerpt || '').toLowerCase().includes(q) ||
+    (post.category || '').toLowerCase().includes(q)
+  );
   return (
     <Layout>
       <SEO
@@ -40,16 +48,18 @@ const Blog: React.FC = () => {
                 <Input
                   placeholder="Поиск статей..."
                   className="pl-8"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
                 />
               </div>
-              <Button variant="outline">
-                Категории
+              <Button variant="outline" onClick={() => setSearchQuery('')}>
+                {searchQuery ? 'Сбросить' : 'Категории'}
               </Button>
             </div>
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {mockBlogPosts.map((post) => (
+            {filteredPosts.map((post) => (
               <Card key={post.id} className="overflow-hidden h-full flex flex-col hover:shadow-lg transition-shadow duration-300">
                 <div className="relative h-48 overflow-hidden">
                   <LazyImage 

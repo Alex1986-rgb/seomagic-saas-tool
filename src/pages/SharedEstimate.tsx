@@ -53,7 +53,9 @@ const SharedEstimate: React.FC = () => {
         .eq('share_token', token)
         .single();
 
-      if (fetchError) throw new Error('Смета не найдена');
+      // estimate может быть null (нет строки): в демо-режиме .single() возвращает
+      // {data:null,error:null}, поэтому проверяем и data, и error до доступа к полям.
+      if (fetchError || !estimate) throw new Error('Смета не найдена');
       if (!estimate.is_active) throw new Error('Ссылка больше не активна');
 
       // Check expiration

@@ -3,7 +3,6 @@ import React, { ErrorInfo, useState, useEffect } from 'react';
 import { AlertTriangle, Home, RefreshCw, XOctagon } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { useNavigate } from 'react-router-dom';
 import { Card } from '@/components/ui/card';
 
 interface GlobalErrorBoundaryProps {
@@ -57,7 +56,6 @@ export class GlobalErrorBoundary extends React.Component<GlobalErrorBoundaryProp
   }
 
   resetError = () => {
-    console.log("Attempting to reset error in GlobalErrorBoundary");
     this.setState({
       hasError: false,
       error: null,
@@ -67,7 +65,6 @@ export class GlobalErrorBoundary extends React.Component<GlobalErrorBoundaryProp
 
   render() {
     if (this.state.hasError) {
-      console.log("GlobalErrorBoundary rendering error state");
       // If the component has errored too many times in succession, show a more permanent error
       if (this.state.errorCount >= 3) {
         return this.props.fallback || <PermanentErrorFallback error={this.state.error} />;
@@ -75,7 +72,6 @@ export class GlobalErrorBoundary extends React.Component<GlobalErrorBoundaryProp
       return this.props.fallback || <ErrorFallback error={this.state.error} resetError={this.resetError} />;
     }
     
-    console.log("GlobalErrorBoundary rendering children");
     return this.props.children;
   }
 }
@@ -86,7 +82,10 @@ interface ErrorFallbackProps {
 }
 
 export const ErrorFallback: React.FC<ErrorFallbackProps> = ({ error, resetError }) => {
-  const navigate = useNavigate();
+  // ВАЖНО: этот фоллбэк может рендериться вне <Router> (GlobalErrorBoundary
+  // смонтирован в AppProviders, снаружи роутера). Поэтому НЕЛЬЗЯ использовать
+  // useNavigate() — он бросит исключение и фоллбэк упадёт сам. Используем
+  // window.location с учётом base-пути (для GitHub Pages /seomagic-saas-tool/).
   const { toast } = useToast();
   const [isAttemptingRecovery, setIsAttemptingRecovery] = useState(false);
 
@@ -98,7 +97,6 @@ export const ErrorFallback: React.FC<ErrorFallbackProps> = ({ error, resetError 
   }, []);
 
   const handleRetry = async () => {
-    console.log("Attempting recovery in ErrorFallback");
     setIsAttemptingRecovery(true);
     
     // Artificial delay to allow React to clean up any problematic state
@@ -115,14 +113,9 @@ export const ErrorFallback: React.FC<ErrorFallbackProps> = ({ error, resetError 
   };
 
   const handleNavigateHome = () => {
-    console.log("Navigating home from ErrorFallback");
     resetError();
-    navigate('/');
-    toast({
-      title: "Навигация на главную",
-      description: "Возврат на главную страницу",
-      duration: 3000
-    });
+    // window.location вместо navigate() — работает и вне Router-контекста
+    window.location.href = import.meta.env.BASE_URL || '/';
   };
 
   return (
@@ -158,13 +151,11 @@ export const ErrorFallback: React.FC<ErrorFallbackProps> = ({ error, resetError 
 
 // More serious fallback for repeated errors
 const PermanentErrorFallback: React.FC<{error: Error | null}> = ({ error }) => {
-  const navigate = useNavigate();
   const { toast } = useToast();
   
   const handleReset = () => {
-    // Perform a full page refresh to reset all state
-    console.log("Performing full page refresh in PermanentErrorFallback");
-    window.location.href = '/';
+    // Perform a full page refresh to reset all state (учитываем base-путь Pages)
+    window.location.href = import.meta.env.BASE_URL || '/';
     
     toast({
       title: "Полный сброс",

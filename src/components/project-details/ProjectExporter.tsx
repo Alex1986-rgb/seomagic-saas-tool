@@ -264,11 +264,11 @@ const ProjectExporter: React.FC = () => {
                         Полное техническое описание проекта, готовность к продакшн и стратегия масштабирования
                     </p>
                     <div class="flex gap-4 justify-center">
-                        <button onclick="exportToPDF()" class="px-6 py-3 bg-white bg-opacity-20 text-white rounded-lg border border-white border-opacity-30 hover:bg-opacity-30 transition-all duration-300 flex items-center gap-2">
+                        <button onclick="exportToPDF()" class="px-6 py-3 bg-card bg-opacity-20 text-white rounded-lg border border-white border-opacity-30 hover:bg-opacity-30 transition-all duration-300 flex items-center gap-2">
                             <i data-lucide="download" class="icon"></i>
                             Экспорт PDF
                         </button>
-                        <button onclick="printPage()" class="px-6 py-3 bg-white bg-opacity-20 text-white rounded-lg border border-white border-opacity-30 hover:bg-opacity-30 transition-all duration-300 flex items-center gap-2">
+                        <button onclick="printPage()" class="px-6 py-3 bg-card bg-opacity-20 text-white rounded-lg border border-white border-opacity-30 hover:bg-opacity-30 transition-all duration-300 flex items-center gap-2">
                             <i data-lucide="printer" class="icon"></i>
                             Печать
                         </button>
@@ -566,7 +566,7 @@ const ProjectExporter: React.FC = () => {
                                         <div class="text-sm text-muted">Запланировано</div>
                                     </div>
                                     <div class="text-center">
-                                        <div class="text-2xl font-bold text-gray-600">1</div>
+                                        <div class="text-2xl font-bold text-muted-foreground">1</div>
                                         <div class="text-sm text-muted">Не начато</div>
                                     </div>
                                 </div>
@@ -943,14 +943,14 @@ const ProjectExporter: React.FC = () => {
                                                     </div>
                                                     <div class="flex items-center justify-between p-2 border rounded text-sm">
                                                         <div class="flex items-center gap-2">
-                                                            <div class="w-3 h-3 rounded-full border border-gray-300"></div>
+                                                            <div class="w-3 h-3 rounded-full border border-border"></div>
                                                             <span>Мобильная оптимизация</span>
                                                         </div>
                                                         <span class="text-xs font-medium text-orange-600">Высокий</span>
                                                     </div>
                                                     <div class="flex items-center justify-between p-2 border rounded text-sm">
                                                         <div class="flex items-center gap-2">
-                                                            <div class="w-3 h-3 rounded-full border border-gray-300"></div>
+                                                            <div class="w-3 h-3 rounded-full border border-border"></div>
                                                             <span>Автоматическое исправление</span>
                                                         </div>
                                                         <span class="text-xs font-medium text-yellow-600">Средний</span>

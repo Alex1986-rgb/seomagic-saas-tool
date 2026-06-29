@@ -9,6 +9,8 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import { useState } from "react";
 
 const formSchema = z.object({
   name: z.string().min(2, {
@@ -27,6 +29,7 @@ const formSchema = z.object({
 
 const ContactForm = () => {
   const { toast } = useToast();
+  const [submitting, setSubmitting] = useState(false);
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -37,14 +40,31 @@ const ContactForm = () => {
     },
   });
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log(values);
-    toast({
-      title: "Сообщение отправлено",
-      description: "Мы свяжемся с вами в ближайшее время.",
-      duration: 5000,
-    });
-    form.reset();
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    setSubmitting(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("contact-submit", {
+        body: values,
+      });
+      if (error || (data && data.success === false)) {
+        throw new Error((data && data.error) || error?.message || "Не удалось отправить");
+      }
+      toast({
+        title: "Сообщение отправлено",
+        description: "Мы свяжемся с вами в ближайшее время.",
+        duration: 5000,
+      });
+      form.reset();
+    } catch (e) {
+      toast({
+        title: "Ошибка отправки",
+        description: e instanceof Error ? e.message : "Попробуйте позже или напишите нам напрямую.",
+        variant: "destructive",
+        duration: 6000,
+      });
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   return (
@@ -110,8 +130,8 @@ const ContactForm = () => {
                 </FormItem>
               )}
             />
-            <Button type="submit" size="lg" className="w-full md:w-auto">
-              Отправить сообщение
+            <Button type="submit" size="lg" className="w-full md:w-auto" disabled={submitting}>
+              {submitting ? "Отправка…" : "Отправить сообщение"}
             </Button>
           </form>
         </Form>

@@ -44,10 +44,13 @@ self.addEventListener('fetch', event => {
   // Skip non-GET requests
   if (event.request.method !== 'GET') return;
   
-  // Skip API calls and other dynamic content
-  if (event.request.url.includes('/api/') || 
-      event.request.url.includes('chrome-extension') ||
-      event.request.url.includes('socket.io')) {
+  // Skip API calls and other dynamic content.
+  // Разбираем URL и проверяем протокол/путь точно, а не подстроку по всему URL
+  // (иначе https://evil.com/?x=/api/ ложно матчился бы).
+  let reqUrl;
+  try { reqUrl = new URL(event.request.url); } catch (e) { return; }
+  if (reqUrl.protocol === 'chrome-extension:') return;
+  if (reqUrl.pathname.includes('/api/') || reqUrl.pathname.includes('/socket.io')) {
     return;
   }
 

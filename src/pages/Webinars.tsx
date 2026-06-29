@@ -1,8 +1,10 @@
 
 import React from 'react';
 import Layout from '@/components/Layout';
+import { useToast } from '@/hooks/use-toast';
 
 const Webinars: React.FC = () => {
+  const { toast } = useToast();
   return (
     <Layout>
       <div className="container mx-auto py-32 px-4">
@@ -25,7 +27,7 @@ const Webinars: React.FC = () => {
               </p>
               <div className="flex justify-between items-center">
                 <span className="text-xs text-muted-foreground">45 минут</span>
-                <button className="text-primary hover:underline text-sm">Смотреть запись</button>
+                <button className="text-primary hover:underline text-sm" onClick={() => toast({ title: 'Запись вебинара', description: 'Скоро будет доступна для просмотра' })}>Смотреть запись</button>
               </div>
             </div>
           </div>
@@ -41,7 +43,7 @@ const Webinars: React.FC = () => {
               </p>
               <div className="flex justify-between items-center">
                 <span className="text-xs text-muted-foreground">60 минут</span>
-                <button className="text-primary hover:underline text-sm">Смотреть запись</button>
+                <button className="text-primary hover:underline text-sm" onClick={() => toast({ title: 'Запись вебинара', description: 'Скоро будет доступна для просмотра' })}>Смотреть запись</button>
               </div>
             </div>
           </div>
@@ -57,7 +59,7 @@ const Webinars: React.FC = () => {
               </p>
               <div className="flex justify-between items-center">
                 <span className="text-xs text-muted-foreground">50 минут</span>
-                <button className="text-primary hover:underline text-sm">Смотреть запись</button>
+                <button className="text-primary hover:underline text-sm" onClick={() => toast({ title: 'Запись вебинара', description: 'Скоро будет доступна для просмотра' })}>Смотреть запись</button>
               </div>
             </div>
           </div>

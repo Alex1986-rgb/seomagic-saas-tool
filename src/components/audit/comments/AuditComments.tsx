@@ -125,9 +125,13 @@ const AuditComments: React.FC<AuditCommentsProps> = ({ auditId }) => {
 
   return (
     <div className="neo-card p-6 mb-8">
-      <div 
+      <div
         className="flex justify-between items-center mb-4 cursor-pointer"
+        role="button"
+        tabIndex={0}
+        aria-expanded={expanded}
         onClick={() => setExpanded(!expanded)}
+        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setExpanded(!expanded); } }}
       >
         <h2 className="text-xl font-semibold flex items-center gap-2">
           <MessageSquare className="h-5 w-5" />
@@ -186,18 +190,20 @@ const AuditComments: React.FC<AuditCommentsProps> = ({ auditId }) => {
                         
                         {comment.isCurrentUser && (
                           <div className="flex gap-2">
-                            <Button 
-                              variant="ghost" 
-                              size="icon" 
+                            <Button
+                              variant="ghost"
+                              size="icon"
                               className="h-8 w-8"
+                              aria-label="Редактировать комментарий"
                               onClick={() => handleEditComment(comment)}
                             >
                               <Edit className="h-4 w-4" />
                             </Button>
-                            <Button 
-                              variant="ghost" 
-                              size="icon" 
+                            <Button
+                              variant="ghost"
+                              size="icon"
                               className="h-8 w-8 text-destructive hover:text-destructive/90"
+                              aria-label="Удалить комментарий"
                               onClick={() => handleDeleteComment(comment.id)}
                             >
                               <Trash2 className="h-4 w-4" />

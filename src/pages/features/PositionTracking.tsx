@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { ArrowLeft, BarChart, Target, CheckCircle, TrendingUp, Calendar, Eye, AlertCircle, Clock, Zap } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useToast } from '@/hooks/use-toast';
 import Layout from '@/components/Layout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -11,6 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
 
 const PositionTracking: React.FC = () => {
+  const { toast } = useToast();
   const [trackingProgress, setTrackingProgress] = useState(75);
 
   const trackingFeatures = [
@@ -118,8 +120,8 @@ const PositionTracking: React.FC = () => {
             <Button asChild size="lg" className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700">
               <Link to="/position-tracker">Запустить отслеживание</Link>
             </Button>
-            <Button variant="outline" size="lg">
-              Посмотреть демо
+            <Button variant="outline" size="lg" asChild>
+              <Link to="/demo">Посмотреть демо</Link>
             </Button>
           </div>
         </motion.div>
@@ -238,7 +240,7 @@ const PositionTracking: React.FC = () => {
           transition={{ duration: 0.5, delay: 0.4 }}
         >
           <Tabs defaultValue="keywords" className="w-full">
-            <TabsList className="grid w-full grid-cols-4">
+            <TabsList className="grid w-full grid-cols-2 md:grid-cols-4">
               <TabsTrigger value="keywords">Ключевые слова</TabsTrigger>
               <TabsTrigger value="engines">Поисковики</TabsTrigger>
               <TabsTrigger value="reports">Отчеты</TabsTrigger>
@@ -322,7 +324,7 @@ const PositionTracking: React.FC = () => {
                       <TrendingUp className="h-8 w-8 mx-auto mb-2 text-primary" />
                       <h4 className="font-semibold mb-2">Отчет по динамике</h4>
                       <p className="text-sm text-muted-foreground mb-3">Изменения позиций за период</p>
-                      <Button variant="outline" size="sm" className="w-full">Скачать</Button>
+                      <Button variant="outline" size="sm" className="w-full" onClick={() => toast({ title: "Скачать", description: "Доступно после регистрации" })}>Скачать</Button>
                     </div>
                     
                     <div className="p-4 border rounded-lg text-center">

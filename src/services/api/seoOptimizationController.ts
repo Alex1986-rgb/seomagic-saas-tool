@@ -23,14 +23,17 @@ class SeoOptimizationController {
 
       // Start the optimization process
       const taskId = `task_${Date.now()}`;
-      
-      // Store task info
-      localStorage.setItem(`task_${url}`, JSON.stringify({
+
+      // Store task info under the taskId (getTaskStatus reads `task_${taskId}`)
+      localStorage.setItem(`task_${taskId}`, JSON.stringify({
         id: taskId,
         url,
         crawlOptions: updatedCrawlOptions,
         optimizationOptions,
         status: 'started',
+        progress: 0,
+        pagesProcessed: 0,
+        totalPages: 42,
         startTime: new Date().toISOString()
       }));
 
@@ -49,20 +52,26 @@ class SeoOptimizationController {
       }
       
       const task = JSON.parse(taskJson);
-      
-      // Simulate task completion after some time
+
+      // Simulate progress and completion over ~10 seconds
       if (task.status === 'started') {
         const startTime = new Date(task.startTime).getTime();
-        const now = Date.now();
-        const elapsedTime = now - startTime;
-        
-        if (elapsedTime > 10000) { // Simulate completion after 10 seconds
+        const elapsedTime = Date.now() - startTime;
+        const total = task.totalPages || 42;
+        const ratio = Math.min(1, elapsedTime / 10000);
+
+        task.progress = Math.round(ratio * 100);
+        task.pagesProcessed = Math.round(ratio * total);
+
+        if (elapsedTime > 10000) { // completion after 10 seconds
           task.status = 'completed';
+          task.progress = 100;
+          task.pagesProcessed = total;
           task.endTime = new Date().toISOString();
-          localStorage.setItem(`task_${taskId}`, JSON.stringify(task));
         }
+        localStorage.setItem(`task_${taskId}`, JSON.stringify(task));
       }
-      
+
       return task;
     } catch (error) {
       console.error('Error getting task status:', error);

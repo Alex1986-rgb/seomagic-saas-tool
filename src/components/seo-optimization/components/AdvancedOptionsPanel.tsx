@@ -60,7 +60,8 @@ const getOptionLabel = (key: string): string => {
     optimizeImages: 'Оптимизировать изображения',
     optimizeHeadings: 'Оптимизировать заголовки',
     optimizeMetaTags: 'Оптимизировать мета-теги',
-    optimizeContent: 'Оптимизировать контент'
+    optimizeContent: 'Оптимизировать контент',
+    addSeoText: 'Добавить SEO-текст на страницы (блок с таблицами)'
   };
   return labels[key] || key;
 };

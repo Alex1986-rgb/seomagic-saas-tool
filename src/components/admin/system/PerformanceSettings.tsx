@@ -6,8 +6,10 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Activity, Save, BarChart, AlertTriangle } from 'lucide-react';
+import { useToast } from "@/hooks/use-toast";
 
 const PerformanceSettings: React.FC = () => {
+  const { toast } = useToast();
   const [cacheEnabled, setCacheEnabled] = useState(true);
   const [optimizeImages, setOptimizeImages] = useState(true);
   const [compressionEnabled, setCompressionEnabled] = useState(true);
@@ -25,7 +27,7 @@ const PerformanceSettings: React.FC = () => {
       cacheEnabled, optimizeImages, compressionEnabled,
       maxConcurrentRequests, requestTimeout, alertThresholds
     });
-    // Here would be an API call to save settings
+    toast({ title: 'Настройки сохранены', description: 'Параметры производительности успешно обновлены' });
   };
   
   const handleAlertThresholdChange = (key: keyof typeof alertThresholds, value: string) => {

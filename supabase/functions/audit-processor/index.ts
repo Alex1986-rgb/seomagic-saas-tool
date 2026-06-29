@@ -7,7 +7,9 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-const MICRO_BATCH_SIZE = 5;
+// Размер микро-батча и число батчей за один вызов — конфигурируемы под окружение.
+// На 8GB локально снизить (AUDIT_BATCHES_PER_RUN=1), чтобы пережить CPU-лимит изолята.
+const MICRO_BATCH_SIZE = Number(Deno.env.get('AUDIT_BATCH_SIZE') || 5);
 const PAGE_TIMEOUT = 8000;
 const MAX_DEPTH = 5;
 
@@ -57,11 +59,23 @@ function calculatePriority(url: string, depth: number, isFromSitemap: boolean = 
   return Math.max(0, priority);
 }
 
+// Потолок числа страниц под окружение (8GB локально → держать низким; облако → выше).
+const MAX_SAFE_PAGES = Number(Deno.env.get('AUDIT_MAX_PAGES') || 3000);
+
+// Репрезентативная выборка по размеру сайта. Для огромных сайтов (десятки тысяч —
+// миллионы страниц) полный обход нецелесообразен и нереалистичен — берём
+// статистически значимый срез (как Ahrefs/Screaming Frog), результат экстраполируется.
 function calculateEstimatedPages(sitemapCount: number, maxPages: number = 100): number {
-  if (sitemapCount === 0) return maxPages;
-  if (sitemapCount < 200) return Math.min(sitemapCount, maxPages);
-  if (sitemapCount < 1000) return Math.min(Math.ceil(sitemapCount * 0.3), 300);
-  return 300;
+  let auto: number;
+  if (sitemapCount === 0) auto = maxPages || 100;
+  else if (sitemapCount < 200) auto = sitemapCount;              // маленький сайт — весь
+  else if (sitemapCount < 1000) auto = Math.ceil(sitemapCount * 0.3);
+  else if (sitemapCount < 10000) auto = 1000;
+  else if (sitemapCount < 100000) auto = 2000;
+  else auto = 3000;                                             // 100k…1M+ — выборка
+  // Пользователь (deep) может запросить больше, но не выше потолка окружения.
+  const target = Math.max(auto, maxPages || 0);
+  return Math.min(target, MAX_SAFE_PAGES, sitemapCount > 0 ? sitemapCount : target);
 }
 
 // Follow redirects manually to track chain
@@ -170,10 +184,14 @@ async function crawlPage(url: string, domain: string): Promise<any> {
     
     const languageDetected = ($('html').attr('lang') || '').split('-')[0] || 'unknown';
     const allLinks = $('a[href]').map((_, el) => $(el).attr('href')).get();
+    // Точное сравнение хостов (www-нечувствительно), а не по подстроке —
+    // иначе evil-domain.com.attacker.net прошёл бы как «внутренний».
+    const stripWww = (h: string) => h.replace(/^www\./i, '').toLowerCase();
+    const targetHost = stripWww(domain);
     const internalLinks = allLinks.filter(link => {
       try {
         if (!link || link.startsWith('#')) return false;
-        return new URL(link, url).hostname === domain;
+        return stripWww(new URL(link, url).hostname) === targetHost;
       } catch { return false; }
     });
     
@@ -200,7 +218,10 @@ async function crawlPage(url: string, domain: string): Promise<any> {
       transfer_size: response.headers.get('content-length') ? parseInt(response.headers.get('content-length')!) : null
     };
   } catch (error) {
-    if (url.includes('example.com') || url.includes('localhost')) {
+    let host = '';
+    try { host = new URL(url).hostname; } catch { /* невалидный URL */ }
+    const isTestHost = host === 'example.com' || host.endsWith('.example.com') || host === 'localhost' || host === '127.0.0.1';
+    if (isTestHost) {
       return { url, title: `Page: ${url}`, h1_count: 1, h1_text: 'Test', h2_count: 3, h3_count: 5,
         word_count: 500, image_count: 10, status_code: 200, is_indexable: true,
         page_type: detectPageType(url), internalLinks: [] };
@@ -210,13 +231,39 @@ async function crawlPage(url: string, domain: string): Promise<any> {
 }
 
 async function extractSitemapUrls(baseUrl: string): Promise<string[]> {
-  try {
-    const response = await fetch(new URL('/sitemap.xml', baseUrl).toString());
-    if (response.ok) {
-      const xml = await response.text();
-      return Array.from(xml.matchAll(/<loc>(.*?)<\/loc>/g), m => m[1].trim());
-    }
-  } catch {}
+  // Пробуем несколько расположений sitemap: относительно базового пути (учёт
+  // подкаталога, напр. /my-site/sitemap.xml) и в корне домена. Это важно для
+  // сайтов, размещённых в подкаталоге (GitHub Pages, /app/ и т.п.).
+  const base = baseUrl.endsWith('/') ? baseUrl : baseUrl + '/';
+  const candidates = [
+    new URL('sitemap.xml', base).toString(),     // относительно базового пути
+    new URL('/sitemap.xml', baseUrl).toString(), // корень домена
+  ];
+  const baseOrigin = new URL(baseUrl).origin;
+  const basePrefix = new URL(base).pathname; // напр. "/" или "/preview/"
+  for (const sm of candidates) {
+    try {
+      const response = await fetch(sm);
+      if (response.ok) {
+        const xml = await response.text();
+        let urls = Array.from(xml.matchAll(/<loc>(.*?)<\/loc>/g), m => m[1].trim());
+        // Перепривязываем URL к аудируемому хосту/пути: sitemap может указывать на
+        // боевой домен (напр. при аудите preview-версии). Краулер должен оставаться
+        // на целевом сайте, а не уходить на другой хост.
+        urls = urls.map((loc) => {
+          try {
+            const u = new URL(loc);
+            if (u.origin !== baseOrigin || !u.pathname.startsWith(basePrefix)) {
+              return new URL(u.pathname.replace(/^\//, '') + u.search, base).toString();
+            }
+          } catch {}
+          return loc;
+        });
+        urls = Array.from(new Set(urls));
+        if (urls.length) return urls;
+      }
+    } catch {}
+  }
   return [];
 }
 
@@ -537,7 +584,7 @@ async function processAuditInBackground(task_id: string) {
     let hasMore = true;
     let totalProcessed = task.pages_scanned || 0;
     let batchCount = task.batch_count || 0;
-    const MAX_BATCHES_PER_RUN = 3; // Process max 3 batches per invocation (~25s) to stay under CPU limit
+    const MAX_BATCHES_PER_RUN = Number(Deno.env.get('AUDIT_BATCHES_PER_RUN') || 3); // батчей за вызов (8GB: =1)
 
     let batchesThisRun = 0;
     while (hasMore && totalProcessed < estimatedPages && batchesThisRun < MAX_BATCHES_PER_RUN) {
@@ -662,13 +709,11 @@ serve(async (req) => {
     });
     
   } catch (error) {
-    console.error('Audit processor error:', error);
-    
+    // Детали логируем на сервере, клиенту — обобщённое сообщение (без стектрейса).
+    console.error('Audit processor error:', error instanceof Error ? error.stack : error);
+
     return new Response(
-      JSON.stringify({
-        error: error instanceof Error ? error.message : 'Unknown error',
-        details: error instanceof Error ? error.stack : undefined
-      }),
+      JSON.stringify({ error: 'Internal error while processing audit' }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }

@@ -1,9 +1,10 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { motion } from 'framer-motion';
+import { useToast } from '@/hooks/use-toast';
 import { 
   MessageCircle, 
   Send, 
@@ -15,6 +16,18 @@ import {
 } from 'lucide-react';
 
 const SocialLinks = () => {
+  const { toast } = useToast();
+  const [newsletterEmail, setNewsletterEmail] = useState('');
+
+  const handleSubscribe = () => {
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(newsletterEmail)) {
+      toast({ title: 'Введите корректный email', variant: 'destructive' });
+      return;
+    }
+    setNewsletterEmail('');
+    toast({ title: 'Вы подписаны', description: 'Спасибо за подписку на рассылку!' });
+  };
+
   const socialPlatforms = [
     {
       name: "Telegram",
@@ -22,7 +35,7 @@ const SocialLinks = () => {
       url: "#",
       description: "Новости и обновления",
       followers: "2.5K",
-      color: "bg-blue-500",
+      color: "bg-blue-500/100",
       gradient: "from-blue-500 to-blue-600"
     },
     {
@@ -31,7 +44,7 @@ const SocialLinks = () => {
       url: "#",
       description: "SEO уроки и вебинары",
       followers: "15K",
-      color: "bg-red-500",
+      color: "bg-red-500/100",
       gradient: "from-red-500 to-red-600"
     },
     {
@@ -94,7 +107,7 @@ const SocialLinks = () => {
                   <div className={`w-16 h-16 bg-gradient-to-br ${platform.gradient} rounded-full flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform duration-300`}>
                     <platform.icon className="w-8 h-8 text-white" />
                   </div>
-                  <Badge className="absolute -top-1 -right-1 bg-green-100 text-green-800 text-xs">
+                  <Badge className="absolute -top-1 -right-1 bg-green-500/15 text-green-600 dark:text-green-400 text-xs">
                     {platform.followers}
                   </Badge>
                 </div>
@@ -104,10 +117,13 @@ const SocialLinks = () => {
                   {platform.description}
                 </p>
                 
-                <Button 
-                  variant="outline" 
-                  size="sm" 
+                <Button
+                  variant="outline"
+                  size="sm"
                   className="w-full group-hover:bg-primary group-hover:text-primary-foreground transition-colors"
+                  onClick={() => platform.url && platform.url !== '#'
+                    ? window.open(platform.url, '_blank', 'noopener,noreferrer')
+                    : toast({ title: platform.name, description: 'Ссылка скоро появится' })}
                 >
                   Подписаться
                   <ExternalLink className="w-3 h-3 ml-2" />
@@ -155,12 +171,16 @@ const SocialLinks = () => {
                 Получайте еженедельные советы по SEO и эксклюзивные материалы
               </p>
               <div className="flex gap-3">
-                <input 
-                  type="email" 
-                  placeholder="Ваш email" 
+                <input
+                  type="email"
+                  placeholder="Ваш email"
+                  aria-label="Email для рассылки"
+                  value={newsletterEmail}
+                  onChange={(e) => setNewsletterEmail(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === 'Enter') handleSubscribe(); }}
                   className="flex-1 px-4 py-2 border border-input rounded-md bg-background"
                 />
-                <Button>Подписаться</Button>
+                <Button onClick={handleSubscribe}>Подписаться</Button>
               </div>
               <p className="text-xs text-muted-foreground mt-3">
                 Мы не спамим. Отписаться можно в любой момент.

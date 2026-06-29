@@ -163,7 +163,7 @@ const AuditComparison: React.FC<AuditComparisonProps> = ({ currentAudit, history
                         <p className="text-sm text-muted-foreground mb-1">Изменение оценки:</p>
                         <p className={`text-2xl font-bold ${
                           scoreDiff.isNeutral 
-                            ? 'text-gray-500' 
+                            ? 'text-muted-foreground' 
                             : scoreDiff.isPositive 
                               ? 'text-green-500' 
                               : 'text-red-500'
@@ -235,10 +235,10 @@ const AuditComparison: React.FC<AuditComparisonProps> = ({ currentAudit, history
                               </div>
                               <div className={`px-3 py-1 rounded ${
                                 diff === 0 
-                                  ? 'bg-gray-100 text-gray-500' 
+                                  ? 'bg-muted text-muted-foreground' 
                                   : diff > 0 
-                                    ? 'bg-green-100 text-green-600' 
-                                    : 'bg-red-100 text-red-600'
+                                    ? 'bg-green-500/15 text-green-600' 
+                                    : 'bg-red-500/15 text-red-600'
                               }`}>
                                 {diff === 0 ? 'Без изменений' : (diff > 0 ? '+' : '') + diff}
                               </div>
