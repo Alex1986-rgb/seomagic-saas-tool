@@ -19,6 +19,22 @@ export function formatError(error: unknown): string {
 }
 
 /**
+ * Возвращает безопасный http(s)-URL для атрибута href или '#'.
+ * Явная проверка протокола через new URL() не даёт недоверенному значению
+ * (item.url из результатов скана, пользовательский ввод) стать
+ * javascript:/data:/vbscript: ссылкой (XSS через DOM).
+ */
+export function safeHref(raw: string | null | undefined): string {
+  if (!raw) return '#';
+  try {
+    const u = new URL(raw.startsWith('http') ? raw : `https://${raw}`);
+    return (u.protocol === 'http:' || u.protocol === 'https:') ? u.href : '#';
+  } catch {
+    return '#';
+  }
+}
+
+/**
  * Creates a promise that rejects after a specified timeout
  */
 export function createTimeout(ms: number, message = 'Operation timed out'): Promise<never> {

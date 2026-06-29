@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { ExternalLink } from "lucide-react";
+import { safeHref } from "@/lib/utils";
 
 interface UrlInputProps {
   url: string;
@@ -24,9 +25,9 @@ const UrlInput: React.FC<UrlInputProps> = ({ url, isValid, onChange }) => {
         />
         {isValid && url && (
           <Button variant="outline" asChild>
-            <a 
-              href={url.startsWith('http') ? url : `https://${url}`} 
-              target="_blank" 
+            <a
+              href={safeHref(url)}
+              target="_blank"
               rel="noopener noreferrer"
             >
               <ExternalLink className="h-4 w-4" />
