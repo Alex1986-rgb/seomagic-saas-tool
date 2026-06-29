@@ -84,3 +84,12 @@ verify_jwt = false
 
 [functions.issue-classifier]
 verify_jwt = false
+
+[functions.payment-create]
+verify_jwt = false
+
+[functions.order-status]
+verify_jwt = false
+
+[functions.payment-webhook]
+verify_jwt = false

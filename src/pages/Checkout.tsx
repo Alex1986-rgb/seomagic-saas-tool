@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import { supabase, isDemoMode } from '@/integrations/supabase/client';
 import Layout from '@/components/Layout';
 import { SEO } from '@/components/SEO';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -34,15 +35,52 @@ const Checkout: React.FC = () => {
 
   const site = params.get('url') || 'zavod-red.ru';
   const pages = Number(params.get('pages') || 75);
-  const pricePerPage = Number(params.get('price') || 150);
-  const totalParam = Number(params.get('total') || 0);
-  const total = totalParam > 0 ? totalParam : pages * pricePerPage;
   const isFull = params.get('service') === 'full'; // полная оптимизация: исправление + SEO-тексты
+  // Цены синхронизированы с сервером (payment-create): опт. 120 ₽/стр, SEO-текст 250 ₽/стр.
+  const perPage = isFull ? 370 : (params.get('service') === 'seo-text' ? 250 : 120);
+  const totalParam = Number(params.get('total') || 0);
+  const total = totalParam > 0 ? totalParam : pages * perPage;
   const scoreBefore = Number(params.get('score') || 98);
   const scoreAfter = 100;
 
   const [phase, setPhase] = useState<'order' | 'running' | 'done'>('order');
   const [activeStep, setActiveStep] = useState(-1);
+  const [ordering, setOrdering] = useState(false);
+  const [orderId, setOrderId] = useState<string | null>(params.get('order'));
+
+  // Возврат с провайдера оплаты (?order=<id>) — проверяем статус заказа.
+  useEffect(() => {
+    const oid = params.get('order');
+    if (!oid || isDemoMode) return;
+    (async () => {
+      try {
+        const { data } = await supabase.functions.invoke('order-status', { body: { orderId: oid } });
+        if (data?.order?.status === 'paid') { setPhase('running'); runPipeline(); }
+      } catch { /* заказ не найден — остаёмся на форме */ }
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Создание заказа: в демо без бэкенда — сразу визуализация; иначе payment-create.
+  const createOrder = async () => {
+    if (isDemoMode) { runPipeline(); return; }
+    setOrdering(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('payment-create', {
+        body: { url: site, service: isFull ? 'full' : 'fix', pages, score_before: scoreBefore },
+      });
+      if (error || !data?.success) throw new Error(data?.error || error?.message || 'Ошибка создания заказа');
+      setOrderId(data.orderId);
+      if (data.confirmationUrl) { window.location.href = data.confirmationUrl; return; } // редирект на оплату
+      // провайдер не подключён (демо-режим бэкенда): заказ создан, показываем пайплайн как превью
+      toast({ title: `Заказ создан №${String(data.orderId).slice(0, 8)}`, description: 'Платёжный провайдер ещё не подключён — показываем демо результата.' });
+      runPipeline();
+    } catch (e) {
+      toast({ title: 'Не удалось оформить', description: (e as Error).message, variant: 'destructive' });
+    } finally {
+      setOrdering(false);
+    }
+  };
 
   const runPipeline = () => {
     setPhase('running');
@@ -111,11 +149,12 @@ const Checkout: React.FC = () => {
         {phase === 'order' && (
           <Card>
             <CardContent className="p-6 text-center">
-              <Button size="lg" className="w-full md:w-auto gap-2" onClick={runPipeline}>
-                <CreditCard className="h-5 w-5" /> Оплатить {fmt(total)} ₽ и исправить
+              <Button size="lg" className="w-full md:w-auto gap-2" onClick={createOrder} disabled={ordering}>
+                {ordering ? <Loader2 className="h-5 w-5 animate-spin" /> : <CreditCard className="h-5 w-5" />}
+                {ordering ? 'Создаём заказ…' : `Оплатить ${fmt(total)} ₽ и исправить`}
               </Button>
               <p className="text-xs text-muted-foreground mt-3">
-                Демо-режим оплаты. Реальный платёжный провайдер подключается отдельно.
+                Безопасная оплата. Сумма рассчитана по {pages} страницам. {orderId ? `Заказ №${orderId.slice(0, 8)}.` : ''}
               </p>
             </CardContent>
           </Card>
