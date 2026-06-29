@@ -184,10 +184,14 @@ async function crawlPage(url: string, domain: string): Promise<any> {
     
     const languageDetected = ($('html').attr('lang') || '').split('-')[0] || 'unknown';
     const allLinks = $('a[href]').map((_, el) => $(el).attr('href')).get();
+    // Точное сравнение хостов (www-нечувствительно), а не по подстроке —
+    // иначе evil-domain.com.attacker.net прошёл бы как «внутренний».
+    const stripWww = (h: string) => h.replace(/^www\./i, '').toLowerCase();
+    const targetHost = stripWww(domain);
     const internalLinks = allLinks.filter(link => {
       try {
         if (!link || link.startsWith('#')) return false;
-        return new URL(link, url).hostname === domain;
+        return stripWww(new URL(link, url).hostname) === targetHost;
       } catch { return false; }
     });
     
