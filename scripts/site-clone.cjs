@@ -26,7 +26,8 @@ const ORIGIN = new URL(START).origin;
 const HOST = new URL(START).hostname.replace(/^www\./i, ''); // нормализованный хост (www == без www)
 const sameHost = (u) => { try { return new URL(u).hostname.replace(/^www\./i, '') === HOST; } catch { return false; } };
 const base = START.endsWith('/') ? START : START + '/';
-const UA = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 Chrome/120.0 Safari/537.36';
+// User-Agent переопределяется (--ua "…" или CLONE_UA) — для сайтов с WAF-allowlist по UA (напр. myarredo пускает только ботов).
+const UA = getOpt('--ua', process.env.CLONE_UA || 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 Chrome/120.0 Safari/537.36');
 const log = (m) => process.stderr.write(m + '\n');
 const esc = (s) => String(s || '').replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 const rebind = (u) => { try { const x = new URL(u); return new URL(x.pathname.replace(/^\//, '') + x.search, base).toString(); } catch { return null; } };
@@ -586,15 +587,21 @@ function seoFix(pageUrl, html) {
   // Вставка контента, идемпотентно.
   //  • Товар: продолжаем РОДНОЕ описание под картинкой (с реальными данными) + SEO-текст внизу (в seo-text-box).
   //  • Категория: SEO-текст внизу (в seo-text-box, иначе перед </body>).
+  // «Уже есть текст?» — суммарная проза в <p>. Если её много (>1800), НЕ дублируем своим SEO-блоком
+  // (напр. категории myarredo с родным текстом ~20к). --force-text форсирует добавление всегда.
+  const proseLen = (html.match(/<p[^>]*>[\s\S]*?<\/p>/gi) || []).reduce((s, p) => s + p.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim().length, 0);
+  const richText = proseLen > 1800 && process.argv.indexOf('--force-text') < 0;
   if (!/data-seomarket="content"/.test(html) && !/data-seomarket="desc"/.test(html)) {
     if (isProduct(pageUrl, html)) {
-      const real = parseSpecs(html);
-      const cont = productContinuation(topic, real, pageUrl);
-      if (/<h2>\s*Описание\s*<\/h2>\s*<p>[\s\S]*?<\/p>/i.test(html)) html = html.replace(/(<h2>\s*Описание\s*<\/h2>\s*<p>[\s\S]*?<\/p>)/i, `$1${cont}`);
-      else if (/<h2>\s*Характеристики\s*<\/h2>/i.test(html)) html = html.replace(/(<h2>\s*Характеристики\s*<\/h2>)/i, `${cont}$1`);
-      else html = injectIntoSeoBox(html, cont);
-      html = injectIntoSeoBox(html, contentBlockV2(catTopic(pageUrl), html, pageUrl));
-    } else {
+      if (!richText) { // у карточки нет описания → добавляем (где есть «Описание» — продолжаем его)
+        const real = parseSpecs(html);
+        const cont = productContinuation(topic, real, pageUrl);
+        if (/<h2>\s*Описание\s*<\/h2>\s*<p>[\s\S]*?<\/p>/i.test(html)) html = html.replace(/(<h2>\s*Описание\s*<\/h2>\s*<p>[\s\S]*?<\/p>)/i, `$1${cont}`);
+        else if (/<h2>\s*Характеристики\s*<\/h2>/i.test(html)) html = html.replace(/(<h2>\s*Характеристики\s*<\/h2>)/i, `${cont}$1`);
+        else html = injectIntoSeoBox(html, cont);
+        html = injectIntoSeoBox(html, contentBlockV2(catTopic(pageUrl), html, pageUrl));
+      }
+    } else if (!richText) {
       html = injectIntoSeoBox(html, contentBlockV2(topic, html, pageUrl));
     }
   }
