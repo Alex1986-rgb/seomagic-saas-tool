@@ -122,4 +122,4 @@ SaaS «сайт под ключ»: **клиент вводит URL → ауди�
 - Обычный `git clone` тяжёлой ветки gh-pages рвётся на флаки-сети → перешли на blobless+sparse+HTTP/1.1 с reuse `/tmp/ghp` и safety-guard'ом (abort при staged-изменениях вне демо-папки — защита rimmebel).
 - Live HTML страниц проверять ТОЛЬКО с cache-bust: CDN отдаёт старый HTML даже после обновления sitemap (давало призрачные «дефекты»).
 - `.github/workflows/deploy-pages.yml` (Actions, force-replace dist) снёс бы демо-подпапки — запаркован в scratchpad, не коммитить без `keep_files:true`.
-- Нюанс размещения SEO-блока на myarredo: подвал — мультиблок `<div class="footer jsftr">`; блок встаёт выше © внутри подвала, не строго над всем подвалом (кандидат: целить в первый footer-элемент в `injectIntoSeoBox`).
+- ~~Нюанс размещения SEO-блока на myarredo~~ → ИСПРАВЛЕНО (коммит `8966863`): `injectIntoSeoBox` теперь целит в первый footer-элемент в нижней половине документа → SEO-блок над ВСЕМ подвалом. Проверено на live (`7b3273e3`): SEO idx 124122 < footer 136702, 47/47 товарных страниц.
