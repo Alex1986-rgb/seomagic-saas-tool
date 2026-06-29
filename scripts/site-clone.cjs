@@ -17,6 +17,9 @@ const DEMO = (process.argv[4] || '').replace(/\/+$/, '') + '/';
 const getOpt = (n, d) => { const i = process.argv.indexOf(n); return i >= 0 && process.argv[i + 1] ? process.argv[i + 1] : d; };
 const MAX = Number(getOpt('--max', 10));
 const CONC = Number(getOpt('--concurrency', 10)); // конкурентность загрузки страниц/ассетов (сеть = узкое место)
+// --prod: боевая публикация на ТАРГЕТ (DEMO = домен/поддомен клиента) → canonical/og на таргет.
+// По умолчанию (демо): canonical/og на ИСТОЧНИК — чтобы демо-копия не конкурировала с живым сайтом в выдаче.
+const PROD = process.argv.includes('--prod');
 if (!START || !OUT || !process.argv[4]) { console.error('node scripts/site-clone.cjs <startUrl> <outDir> <demoBaseUrl> [--max N]'); process.exit(1); }
 
 const ORIGIN = new URL(START).origin;
@@ -374,15 +377,18 @@ function seoFix(pageUrl, html) {
     html = html.replace(/<head([^>]*)>/i, `<head$1><title>${esc(title)}</title>`);
   } else if (title.length > 65) html = html.replace(/<title[^>]*>[\s\S]*?<\/title>/i, `<title>${esc(shortenTitle(title))}</title>`);
   const topic = (title.split(/[—|–\-,]/)[0] || 'Каталог').trim() || 'Каталог';
+  // Целевой URL для canonical/og: в --prod → на таргет (DEMO), иначе на источник (демо не конкурирует в выдаче).
+  let canonUrl = pageUrl;
+  if (PROD) { try { canonUrl = DEMO + new URL(pageUrl).pathname.replace(/^\/+/, ''); } catch { canonUrl = pageUrl; } }
   if (!/<meta[^>]+name=["']description["']/i.test(html)) {
     const fp = firstParagraph(html);
     const dsc = (fp ? `${topic} — ${fp}` : `${topic} — каталог, цены, доставка.`).slice(0, 200);
     html = html.replace(/<\/title>/i, `</title>\n<meta name="description" content="${esc(dsc)}">`);
   }
   if (!/<meta[^>]+name=["']viewport["']/i.test(html)) html = html.replace(/<\/head>/i, `<meta name="viewport" content="width=device-width, initial-scale=1">\n</head>`);
-  if (!/<link[^>]+rel=["']canonical["']/i.test(html)) html = html.replace(/<\/head>/i, `<link rel="canonical" href="${esc(pageUrl)}">\n</head>`);
-  if (!/<meta[^>]+property=["']og:/i.test(html)) html = html.replace(/<\/head>/i, `<meta property="og:type" content="website"><meta property="og:title" content="${esc(title)}"><meta property="og:url" content="${esc(pageUrl)}">\n</head>`);
-  if (!/application\/ld\+json/i.test(html)) html = html.replace(/<\/head>/i, `<script type="application/ld+json">${JSON.stringify({ '@context': 'https://schema.org', '@type': 'BreadcrumbList', itemListElement: [{ '@type': 'ListItem', position: 1, name: 'Главная', item: ORIGIN + '/' }, { '@type': 'ListItem', position: 2, name: topic, item: pageUrl }] })}</script>\n</head>`);
+  if (!/<link[^>]+rel=["']canonical["']/i.test(html)) html = html.replace(/<\/head>/i, `<link rel="canonical" href="${esc(canonUrl)}">\n</head>`);
+  if (!/<meta[^>]+property=["']og:/i.test(html)) html = html.replace(/<\/head>/i, `<meta property="og:type" content="website"><meta property="og:title" content="${esc(title)}"><meta property="og:url" content="${esc(canonUrl)}">\n</head>`);
+  if (!/application\/ld\+json/i.test(html)) html = html.replace(/<\/head>/i, `<script type="application/ld+json">${JSON.stringify({ '@context': 'https://schema.org', '@type': 'BreadcrumbList', itemListElement: [{ '@type': 'ListItem', position: 1, name: 'Главная', item: (PROD ? DEMO : ORIGIN + '/') }, { '@type': 'ListItem', position: 2, name: topic, item: canonUrl }] })}</script>\n</head>`);
   // H1 (sr-only, accessibility-стандарт, НЕ клоакинг -9999px) только при отсутствии, идемпотентно
   if ((html.match(/<h1[\s>]/gi) || []).length === 0 && !/data-seomarket="h1"/.test(html)) {
     html = html.replace(/<body([^>]*)>/i, `<body$1><h1 data-seomarket="h1" style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0">${esc(topic)}</h1>`);
@@ -468,8 +474,11 @@ function processHtmlRefs(html, pageUrl) {
   // (реальный src ставит JS оригинала, которого офлайн нет → без этого картинки не появятся)
   html = html.replace(/\bdata-(?:src|original|lazy-src)=(["'])([^"']+)\1/gi, (m, q, u) => `src=${q}${u}${q} data-was-lazy="1"`);
   html = html.replace(/\bdata-srcset=(["'])([^"']+)\1/gi, (m, q, u) => `srcset=${q}${u}${q}`);
-  // ассеты (img/script/source/link) src/href → локальные демо-пути
+  // ассеты (img/script/source/link) src/href → локальные демо-пути.
+  // НО <link rel=canonical|alternate|prev|next> — это URL СТРАНИЦ, не ассеты: их НЕ переписываем как файлы
+  // (иначе canonical превращается в cloned-assets/<hash>.bin). canonical ставит seoFix.
   html = html.replace(/(<(?:img|script|source|link)\b[^>]*?\b(?:src|href)=)(["'])([^"']+)\2/gi, (m, pre, q, url) => {
+    if (/^<link\b/i.test(pre) && /\brel=["'](canonical|alternate|prev|next)["']/i.test(pre)) return m;
     const nu = rewriteRef(url, pageUrl); return nu ? `${pre}${q}${nu}${q}` : m;
   });
   // навигационные <a href> → на DEMO-страницы (чтобы не уводило на исходный сайт)
