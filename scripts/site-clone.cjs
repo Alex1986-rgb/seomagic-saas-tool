@@ -98,9 +98,14 @@ const SEO_STYLE = `<style>
   .smk-seo .smk-lead{font-size:17.5px!important;color:#222!important;font-weight:500!important}
   .smk-seo strong{color:#1a1a1a!important;font-weight:700!important}
   .smk-seo a{color:#9c7a3c!important;text-decoration:none!important;border-bottom:1px solid rgba(156,122,60,.45)!important}
-  .smk-seo table{width:100%!important;border-collapse:separate!important;border-spacing:0!important;margin:18px 0!important;border:1px solid #e6e6e6!important;border-radius:10px!important;overflow:hidden!important}
-  .smk-seo th{background:#1a1a1a!important;color:#fff!important;padding:12px 14px!important;text-align:left!important;font-size:12.5px!important;text-transform:uppercase!important;letter-spacing:.5px!important}
+  .smk-seo table{width:100%!important;display:table!important;table-layout:auto!important;box-sizing:border-box!important;border-collapse:separate!important;border-spacing:0!important;margin:18px 0!important;border:1px solid #e6e6e6!important;border-radius:10px!important;overflow:hidden!important}
+  .smk-seo thead{display:table-header-group!important}
+  .smk-seo tbody{display:table-row-group!important}
+  .smk-seo tr{display:table-row!important;float:none!important;width:auto!important}
+  .smk-seo th,.smk-seo td{display:table-cell!important;float:none!important;vertical-align:top!important;white-space:normal!important;box-sizing:border-box!important;width:auto!important}
+  .smk-seo th{background:#1a1a1a!important;color:#fff!important;padding:12px 14px!important;text-align:left!important;font-size:12.5px!important;text-transform:uppercase!important;letter-spacing:.5px!important;border:0!important}
   .smk-seo td{padding:11px 14px!important;border:0!important;border-top:1px solid #eee!important;font-size:14.5px!important;color:#3a3a3a!important}
+  .smk-seo th:after,.smk-seo td:after,.smk-seo th:before,.smk-seo td:before{content:none!important;display:none!important}
   .smk-seo tbody tr:nth-child(even) td{background:#faf8f4!important}
   .smk-seo details{border:1px solid #ececec!important;border-radius:10px!important;padding:12px 16px!important;margin:8px 0!important;background:#fafafa!important}
   .smk-seo summary{cursor:pointer!important;font-weight:600!important;color:#1a1a1a!important;list-style:none!important}
