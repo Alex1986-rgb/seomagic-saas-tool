@@ -538,7 +538,14 @@ function firstParagraph(html) {
 
 function seoFix(pageUrl, html) {
   html = ensureStructure(html);
+  // ФИКС ОШИБКИ: чистим мусор нулевых атрибутов «Длина: 0см / Диаметр: 0 см» из title и description
+  // (генерируется CMS, лезет в выдачу и бьёт CTR — частая ошибка карточек).
+  const cleanMeta = (t) => t
+    .replace(/\s*[·|,;–—-]?\s*[A-Za-zА-Яа-яЁё][A-Za-zА-Яа-яЁё .]*:\s*0(?:[.,]\d+)?\s*(?:см|мм|cm|mm|кг|kg|гр?|шт|м)(?![A-Za-zА-Яа-яЁё0-9])\.?/gi, '')
+    .replace(/\s{2,}/g, ' ').replace(/\s*[·|,;–—-]\s*$/g, '').replace(/^\s*[·|,;–—-]\s*/g, '').trim();
   let title = tag(html, /<title[^>]*>([\s\S]*?)<\/title>/i) || '';
+  if (title) { const ct = cleanMeta(title); if (ct && ct !== title) { title = ct; html = html.replace(/<title[^>]*>[\s\S]*?<\/title>/i, `<title>${esc(title)}</title>`); } }
+  html = html.replace(/(<meta[^>]+name=["']description["'][^>]+content=["'])([^"']*)(["'])/i, (m, a, c, b) => { const cc = cleanMeta(c); return cc !== c ? a + esc(cc) + b : m; });
   if (!title) {
     // Уникальный title при отсутствии: имя из тела (рус.) → из URL-слага → запасной вариант (НЕ общий «Каталог»).
     const fromBody = (tag(html, /<div class="good-popup-name">[«"]?([^«»"<]{3,90})/i)
@@ -562,6 +569,14 @@ function seoFix(pageUrl, html) {
   if (!/<link[^>]+rel=["']canonical["']/i.test(html)) html = html.replace(/<\/head>/i, `<link rel="canonical" href="${esc(canonUrl)}">\n</head>`);
   if (!/<meta[^>]+property=["']og:/i.test(html)) html = html.replace(/<\/head>/i, `<meta property="og:type" content="website"><meta property="og:title" content="${esc(title)}"><meta property="og:url" content="${esc(canonUrl)}">\n</head>`);
   if (!/application\/ld\+json/i.test(html)) html = html.replace(/<\/head>/i, `<script type="application/ld+json">${JSON.stringify({ '@context': 'https://schema.org', '@type': 'BreadcrumbList', itemListElement: [{ '@type': 'ListItem', position: 1, name: 'Главная', item: (PROD ? DEMO : ORIGIN + '/') }, { '@type': 'ListItem', position: 2, name: topic, item: canonUrl }] })}</script>\n</head>`);
+  // ФИКС ОШИБКИ: дубли H1 — на странице должен быть один H1. Лишние понижаем до H2 (первый оставляем).
+  if ((html.match(/<h1[\s>]/gi) || []).length > 1) {
+    let seenH1 = 0; const stack = [];
+    html = html.replace(/<(\/?)h1(\b[^>]*)>/gi, (m, slash, attrs) => {
+      if (!slash) { seenH1++; const t = seenH1 === 1 ? 'h1' : 'h2'; stack.push(t); return `<${t}${attrs}>`; }
+      return `</${stack.pop() || 'h1'}>`;
+    });
+  }
   // H1 (sr-only, accessibility-стандарт, НЕ клоакинг -9999px) только при отсутствии, идемпотентно
   if ((html.match(/<h1[\s>]/gi) || []).length === 0 && !/data-seomarket="h1"/.test(html)) {
     html = html.replace(/<body([^>]*)>/i, `<body$1><h1 data-seomarket="h1" style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0">${esc(topic)}</h1>`);
