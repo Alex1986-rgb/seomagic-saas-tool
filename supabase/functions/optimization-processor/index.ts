@@ -205,12 +205,12 @@ serve(async (req) => {
     );
 
   } catch (error) {
-    console.error('Optimization processor error:', error);
-    
+    // Детали — в серверный лог; клиенту обобщённое сообщение (без стектрейса/деталей).
+    console.error('Optimization processor error:', error instanceof Error ? error.stack : error);
+
     return new Response(
       JSON.stringify({
-        error: error instanceof Error ? error.message : 'Unknown error',
-        details: error instanceof Error ? error.stack : undefined
+        error: 'Internal error while optimizing site'
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
