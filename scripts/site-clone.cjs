@@ -218,6 +218,105 @@ function extractInfo(html, topic) {
 // Хэш URL → детерминированный выбор вариаций (псевдо-уникальность без AI)
 function pick(arr, seed, n) { const out = []; let h = 0; for (const c of seed) h = (h * 31 + c.charCodeAt(0)) >>> 0; const a = [...arr]; while (a.length && out.length < n) { out.push(a.splice(h % a.length, 1)[0]); h = (h * 1103515245 + 12345) >>> 0; } return out; }
 
+// Стоп-слова RU+EN + типовой UI-мусор — чтобы ключи были осмысленными на любом сайте.
+const STOP = new Set(('и в во не на я с со как а то все всё она так его но да ты к у же вы за бы по только ее мне было вот от меню чем была сам чтоб без будто чего раз тоже себе под будет тогда кто этот того потому этого какой совсем нет здесь этом один почти мой тем чтобы нее сейчас были куда зачем всех никогда можно при наконец два об другой хоть после над больше тот через эти нас про всего них какая много разве сама свою этой может они тут где есть надо ней для мы тебя их есть быть был это эта эти оо или ни уже еще ещё также если что чтобы каждый весь вся свои наш ваш ваша ваши наши также более менее очень ' +
+  'the and for are with you this that from your our all has have was were will can not but use any out get how who why what when which their them they этом ' +
+  'главная корзина поиск войти каталог контакты заказать купить цена цены руб подробнее далее назад вперед вперёд читать показать сравнить избранное профиль регистрация вход выход home cart search login menu more page site about ' +
+  'артикул применить очистить сбросить фильтр фильтры сортировка сортировать сортировке найдено товар товары товаров штука штук цвет цвета бренд бренды наличие новинка новинки хит акция акции скидка скидки добавить выбрать выбор количество доставка оплата гарантия рублей заказ ' +
+  'quot nbsp laquo raquo mdash ndash amp copy reg trade hellip rsquo lsquo').split(/\s+/));
+
+// Ключевые слова и биграммы из САМОГО текста страницы (page-derived уникальность, ниша-агностично).
+function pageKeywords(html, topic) {
+  let body = (html || '').replace(/<script[\s\S]*?<\/script\b[^>]*>/gi, ' ').replace(/<style[\s\S]*?<\/style\b[^>]*>/gi, ' ')
+    .replace(/<(header|nav|footer)[\s\S]*?<\/\1>/gi, ' ').replace(/<[^>]+>/g, ' ').replace(/&[a-z#0-9]+;/gi, ' ').toLowerCase();
+  const tl = (topic || '').toLowerCase();
+  const tokens = body.match(/[a-zа-яё][a-zа-яё-]{3,}/gi) || [];
+  const freq = {}, bg = {}; let prev = null;
+  for (let w of tokens) { w = w.trim(); if (w.length < 4 || STOP.has(w)) { prev = null; continue; } freq[w] = (freq[w] || 0) + 1; if (prev) { const p = prev + ' ' + w; bg[p] = (bg[p] || 0) + 1; } prev = w; }
+  const words = Object.entries(freq).filter(([w, c]) => c >= 2 && !tl.includes(w)).sort((a, b) => b[1] - a[1]).map(([w]) => w).slice(0, 10);
+  const phrases = Object.entries(bg).filter(([, c]) => c >= 2).sort((a, b) => b[1] - a[1]).map(([p]) => p).slice(0, 6);
+  return { words, phrases };
+}
+
+// Реальные внутренние ссылки страницы (для перелинковки «Смотрите также» — page-derived).
+function extractLinks(html) {
+  const out = [], seen = new Set();
+  for (const m of (html || '').matchAll(/<a\b[^>]+href=["']([^"'#?]+)["'][^>]*>([^<]{4,40})<\/a>/gi)) {
+    const text = m[2].replace(/\s+/g, ' ').trim();
+    if (!text || /^(главная|меню|корзина|поиск|войти|каталог|контакты|регистрация|вход|\d+|«|»|→|читать|подробн|показать|купить|заказать)/i.test(text)) continue;
+    let p; try { p = new URL(m[1], base).pathname.replace(/^\/+/, ''); } catch { continue; }
+    if (!p || p.length < 2 || /\.(jpe?g|png|webp|svg|css|js|pdf)$/i.test(p) || seen.has(p)) continue;
+    seen.add(p); out.push({ path: p, text });
+    if (out.length >= 8) break;
+  }
+  return out;
+}
+
+// УНИВЕРСАЛЬНЫЙ page-derived SEO-текст: уникален по странице (ключи/позиции/ссылки самой страницы),
+// ниша-агностичен (мебель/одежда/электроника/услуги), структура варьируется по хэшу URL.
+function contentBlockV2(topic, html, pageUrl) {
+  const tl = (topic || 'раздел').toLowerCase();
+  const seed = pageUrl || topic || '';
+  const h2 = (html || '');
+  const cap = (s) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : s);
+  const items = extractInfo(h2, topic);
+  const kw = pageKeywords(h2, topic);
+  const keys = [...kw.phrases, ...kw.words];
+  const keysTop = keys.slice(0, 8);
+  const rel = extractLinks(h2).slice(0, 5);
+  const furniture = /мебель|кроват|диван|шкаф|комод|кресл|матрас|спальн|гостин|обивк|каркас|тумб|столеш/i.test(h2 + ' ' + tl);
+  const td = 'border:1px solid #ddd;padding:9px 13px;text-align:left;font-size:14px';
+  const th = td + ';background:#f5f5f5;font-weight:600';
+  const L = (href, t) => `<a href="${DEMO}${String(href).replace(/^\//, '')}" style="color:#c0142b">${t}</a>`;
+
+  const introTpl = pick([
+    `<strong>${esc(topic)}</strong> — гид по разделу: что выбрать, на что смотреть и как заказать.`,
+    `Раздел «<strong>${esc(topic)}</strong>» — помогаем выбрать оптимальный вариант под задачу и бюджет.`,
+    `Всё о «<strong>${esc(topic)}</strong>»: ключевые параметры, сравнение и условия покупки в одном месте.`,
+    `<strong>${esc(topic)}</strong>: как не ошибиться с выбором и получить лучшее соотношение цены и качества.`,
+  ], seed + 'i', 1)[0];
+  const intro = `<p class="smk-lead">${introTpl}</p>`;
+
+  const itemsLine = items.length ? `<p>В этом разделе, в частности: <strong>${items.map(esc).join(', ')}</strong> — и другие позиции под разные задачи и бюджет.</p>` : '';
+  const keysLine = keysTop.length ? `<p>Основные темы и характеристики раздела: <strong>${keysTop.map((k) => esc(cap(k))).join(', ')}</strong> — на них и стоит ориентироваться при выборе.</p>` : '';
+
+  const aspectRows = (keysTop.length ? keysTop.slice(0, 6) : [tl]).map((k) => `<tr><td style="${td}">${esc(cap(k))}</td><td style="${td}">сравните варианты, оцените качество, соответствие задаче и цену</td></tr>`).join('');
+  const keysTable = `<h3 style="font-size:19px;margin:22px 0 8px;color:#1a1a1a">Ключевые параметры выбора</h3><table style="width:100%;border-collapse:collapse;margin:12px 0"><thead><tr><th style="${th}">Параметр</th><th style="${th}">На что обратить внимание</th></tr></thead><tbody>${aspectRows}</tbody></table>`;
+
+  let niche = '';
+  if (furniture) {
+    const up = pick(['натуральная кожа', 'экокожа', 'велюр', 'рогожка', 'шенилл'], seed, 3);
+    const fil = pick(['независимый пружинный блок', 'ППУ', 'холлофайбер', 'пух и перо'], seed + 'f', 3);
+    const wood = pick(['массив дуба', 'массив бука', 'массив ореха', 'шпон'], seed + 'w', 2);
+    niche = `<h3 style="font-size:19px;margin:22px 0 8px;color:#1a1a1a">Материалы и наполнение</h3><p>Для «${esc(tl)}» применяются обивка (${esc(up.join(', '))}), наполнение (${esc(fil.join(', '))}) и каркас из ${esc(wood.join(', '))}. Сочетание материалов определяет комфорт, износостойкость и срок службы.</p>`;
+  }
+
+  const howTo = `<h3 style="font-size:19px;margin:22px 0 8px;color:#1a1a1a">Как выбрать</h3><p>При выборе «${esc(tl)}» отталкивайтесь от задачи, бюджета и условий эксплуатации.${keysTop.length ? ` Сравните варианты по параметрам: ${keysTop.slice(0, 4).map(esc).join(', ')}.` : ''} Сопоставляйте цену и качество, изучайте описание и характеристики. Наши специалисты помогут подобрать оптимальное решение.</p>`;
+
+  const deliveryTable = `<h3 style="font-size:19px;margin:22px 0 8px;color:#1a1a1a">Доставка и оплата</h3><table style="width:100%;border-collapse:collapse;margin:12px 0"><thead><tr><th style="${th}">Услуга</th><th style="${th}">Условия</th></tr></thead><tbody><tr><td style="${td}">Доставка</td><td style="${td}">по городу и в регионы, расчёт при оформлении</td></tr><tr><td style="${td}">Оплата</td><td style="${td}">наличные, карта, безналичный расчёт</td></tr><tr><td style="${td}">Гарантия</td><td style="${td}">официальная гарантия производителя</td></tr></tbody></table>`;
+
+  const seeAlso = rel.length ? `<h3 style="font-size:19px;margin:22px 0 8px;color:#1a1a1a">Смотрите также</h3><p>${rel.map((r) => `<a href="${DEMO}${esc(r.path)}" style="color:#c0142b">${esc(r.text)}</a>`).join(' · ')}</p>` : '';
+
+  // FAQ из ключей/позиций САМОЙ страницы (уникальные вопросы) + универсальные
+  const faqs = [];
+  keysTop.slice(0, 3).forEach((k) => faqs.push([`Что важно при выборе «${esc(cap(k))}»?`, `Оцените качество, характеристики и соответствие вашей задаче; сравните несколько вариантов «${esc(k)}» по цене и параметрам — поможем определиться.`]));
+  if (items[0]) faqs.push([`Что входит в раздел «${esc(topic)}»?`, `Представлены ${items.slice(0, 4).map(esc).join(', ')} и другие позиции — под разные задачи и бюджет.`]);
+  faqs.push(['Сколько стоит доставка?', 'Зависит от габаритов и адреса, рассчитывается при оформлении; возможны доставка по регионам и самовывоз.']);
+  faqs.push(['Действует ли гарантия?', 'Да, официальная гарантия производителя; условия — в карточке товара.']);
+  faqs.push(['Как оформить заказ?', `Добавьте в корзину или свяжитесь с нами — поможем с выбором и оформлением. Контакты — ${L('/contacts', 'здесь')}.`]);
+  while (faqs.length < 6) faqs.push(['Можно ли получить консультацию?', 'Да, напишите или позвоните — подскажем по ассортименту, наличию и срокам.']);
+  const faqItem = ([q, a]) => `<details style="border-bottom:1px solid #eee;padding:9px 0"><summary style="cursor:pointer;font-weight:600;color:#1a1a1a">${q}</summary><p style="margin:7px 0 0;color:#555">${a}</p></details>`;
+  const half = Math.ceil(faqs.length / 2);
+  const faqHtml = `<h3 style="font-size:19px;margin:24px 0 12px;color:#1a1a1a">Частые вопросы</h3><div style="display:flex;flex-wrap:wrap;gap:0 40px"><div style="flex:1;min-width:280px">${faqs.slice(0, half).map(faqItem).join('')}</div><div style="flex:1;min-width:280px">${faqs.slice(half).map(faqItem).join('')}</div></div>`;
+
+  // порядок средних секций варьируем по хэшу → структура отличается между страницами
+  const mid = pick([keysTable, niche, howTo, deliveryTable, seeAlso].filter(Boolean), seed + 'order', 99);
+  const full = [itemsLine, keysLine, ...mid, faqHtml].filter(Boolean).join('\n');
+
+  const callout = `<div class="smk-callout"><p><strong>Кратко:</strong> ${esc(topic)}${keysTop.length ? ` — ключевое: ${keysTop.slice(0, 4).map(esc).join(', ')}` : ''}. Подбор под задачу и бюджет, доставка и гарантия.</p></div>`;
+  return `${SEO_STYLE}<section data-seomarket="content" class="smk-seo"><div class="smk-kicker">${esc(cap(catTopic(pageUrl) || 'Раздел'))} · Гид по выбору</div><h2>${esc(topic)}: ключевое и как выбрать</h2>${intro}${callout}<details data-seomarket="more" class="smk-more"><summary>Читать полностью ▾</summary>${full}</details></section>`;
+}
+
 // Профессиональный SEO-текст ~10000 знаков, уникализированный по теме/товарам, с перелинковкой,
 // раскрытием по стрелке (первый абзац виден, далее весь текст). Мебельная конкретика.
 function contentBlock(topic, html, pageUrl) {
@@ -450,9 +549,9 @@ function seoFix(pageUrl, html) {
       if (/<h2>\s*Описание\s*<\/h2>\s*<p>[\s\S]*?<\/p>/i.test(html)) html = html.replace(/(<h2>\s*Описание\s*<\/h2>\s*<p>[\s\S]*?<\/p>)/i, `$1${cont}`);
       else if (/<h2>\s*Характеристики\s*<\/h2>/i.test(html)) html = html.replace(/(<h2>\s*Характеристики\s*<\/h2>)/i, `${cont}$1`);
       else html = injectIntoSeoBox(html, cont);
-      html = injectIntoSeoBox(html, contentBlock(catTopic(pageUrl), html, pageUrl));
+      html = injectIntoSeoBox(html, contentBlockV2(catTopic(pageUrl), html, pageUrl));
     } else {
-      html = injectIntoSeoBox(html, contentBlock(topic, html, pageUrl));
+      html = injectIntoSeoBox(html, contentBlockV2(topic, html, pageUrl));
     }
   }
   return html;
