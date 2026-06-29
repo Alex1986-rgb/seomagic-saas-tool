@@ -24,6 +24,8 @@ if (!START || !OUT || !process.argv[4]) { console.error('node scripts/site-clone
 
 const ORIGIN = new URL(START).origin;
 const HOST = new URL(START).hostname.replace(/^www\./i, ''); // нормализованный хост (www == без www)
+// Полное экранирование строки для вставки в RegExp (все метасимволы + backslash), а не только точка.
+const escapeRe = (s) => String(s).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 const sameHost = (u) => { try { return new URL(u).hostname.replace(/^www\./i, '') === HOST; } catch { return false; } };
 const base = START.endsWith('/') ? START : START + '/';
 // User-Agent переопределяется (--ua "…" или CLONE_UA) — для сайтов с WAF-allowlist по UA (напр. myarredo пускает только ботов).
@@ -239,7 +241,7 @@ const STOP = new Set(('и в во не на я с со как а то все в�
 function pageKeywords(html, topic) {
   let body = (html || '');
   // вырезаем региональный свитчер (ссылки на ДРУГИЕ поддомены того же домена: brest.host, vitebsk.host…)
-  try { body = body.replace(new RegExp('<a\\b[^>]+href=["\\\']https?://[a-z0-9-]+\\.' + HOST.replace(/\./g, '\\.') + '[^"\\\']*["\\\'][^>]*>[\\s\\S]*?</a>', 'gi'), ' '); } catch {}
+  try { body = body.replace(new RegExp('<a\\b[^>]+href=["\\\']https?://[a-z0-9-]+\\.' + escapeRe(HOST) + '[^"\\\']*["\\\'][^>]*>[\\s\\S]*?</a>', 'gi'), ' '); } catch {}
   body = body.replace(/<script[\s\S]*?<\/script\b[^>]*>/gi, ' ').replace(/<style[\s\S]*?<\/style\b[^>]*>/gi, ' ')
     .replace(/<(header|nav|footer)[\s\S]*?<\/\1>/gi, ' ').replace(/<[^>]+>/g, ' ').replace(/&[a-z#0-9]+;/gi, ' ').toLowerCase();
   const tl = (topic || '').toLowerCase();
