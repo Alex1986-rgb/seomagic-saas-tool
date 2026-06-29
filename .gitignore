@@ -22,3 +22,8 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Supabase function secrets (НИКОГДА не коммитить)
+supabase/functions/.env
+supabase/.env
+**/functions/.env
