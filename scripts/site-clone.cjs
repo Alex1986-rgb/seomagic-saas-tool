@@ -49,7 +49,7 @@ const RENDER = (() => { const i = process.argv.indexOf('--render'); if (i < 0) r
 let _prof = 0;
 function looksLikeSPA(html) {
   if (!/<div[^>]+id=["'](root|app|__next|__nuxt|q-app)["']/i.test(html)) return false;
-  const text = html.replace(/<script[\s\S]*?<\/script>/gi, ' ').replace(/<style[\s\S]*?<\/style>/gi, ' ').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+  const text = html.replace(/<script[\s\S]*?<\/script\b[^>]*>/gi, ' ').replace(/<style[\s\S]*?<\/style\b[^>]*>/gi, ' ').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
   return text.length < 400; // каркас без отрендеренного контента
 }
 async function renderFetch(url, timeout = 35000) {
