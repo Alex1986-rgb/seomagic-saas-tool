@@ -42,6 +42,7 @@ serve(async (req) => {
     const { data: order, error } = await supabase.from('orders').insert({
       url, service, pages, amount, status: 'pending', provider,
       customer_email: email, audit_id: body.audit_id ?? null, score_before: body.score_before ?? null,
+      meta: body.task_id ? { task_id: body.task_id } : {},
     }).select('id, amount, currency').single();
     if (error) throw error;
 

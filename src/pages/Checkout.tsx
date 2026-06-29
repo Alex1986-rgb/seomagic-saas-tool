@@ -67,7 +67,7 @@ const Checkout: React.FC = () => {
     setOrdering(true);
     try {
       const { data, error } = await supabase.functions.invoke('payment-create', {
-        body: { url: site, service: isFull ? 'full' : 'fix', pages, score_before: scoreBefore },
+        body: { url: site, service: isFull ? 'full' : 'fix', pages, score_before: scoreBefore, task_id: params.get('task_id') || undefined },
       });
       if (error || !data?.success) throw new Error(data?.error || error?.message || 'Ошибка создания заказа');
       setOrderId(data.orderId);
