@@ -6,28 +6,18 @@ export class CaptchaService {
   private botableApiKey: string = '';
 
   constructor(captchaApiKey?: string, botableApiKey?: string) {
-    if (captchaApiKey) this.captchaApiKey = captchaApiKey;
-    if (botableApiKey) this.botableApiKey = botableApiKey;
-    
-    this.loadApiKeysFromStorage();
-  }
-
-  private loadApiKeysFromStorage() {
-    const storedCaptchaKey = localStorage.getItem('captchaApiKey');
-    const storedBotableKey = localStorage.getItem('botableApiKey');
-    
-    if (storedCaptchaKey) this.captchaApiKey = storedCaptchaKey;
-    if (storedBotableKey) this.botableApiKey = storedBotableKey;
+    // Ключи только в памяти сессии — не пишем в localStorage (clear-text storage).
+    // Постоянные значения берём из env (VITE_CAPTCHA_API_KEY / VITE_BOTABLE_API_KEY).
+    this.captchaApiKey = captchaApiKey || (import.meta.env.VITE_CAPTCHA_API_KEY as string) || '';
+    this.botableApiKey = botableApiKey || (import.meta.env.VITE_BOTABLE_API_KEY as string) || '';
   }
 
   setCaptchaApiKey(apiKey: string): void {
     this.captchaApiKey = apiKey;
-    localStorage.setItem('captchaApiKey', apiKey);
   }
-  
+
   setBotableApiKey(apiKey: string): void {
     this.botableApiKey = apiKey;
-    localStorage.setItem('botableApiKey', apiKey);
   }
   
   getCaptchaApiKey(): string {

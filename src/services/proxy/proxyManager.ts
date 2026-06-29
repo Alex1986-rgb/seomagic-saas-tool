@@ -14,7 +14,12 @@ export class ProxyManager {
   private proxySources: ProxySources;
   private pingManager: PingManager;
   private proxyCollector: ProxyCollector;
-  
+
+  // Ключи captcha/botable держим только в памяти сессии — не пишем в localStorage
+  // (clear-text storage). Постоянные значения берём из env.
+  private captchaApiKey: string = (import.meta.env.VITE_CAPTCHA_API_KEY as string) || '';
+  private botableApiKey: string = (import.meta.env.VITE_BOTABLE_API_KEY as string) || '';
+
   public defaultProxySources: ProxySourcesType = {
     'freeproxylists': {
       url: 'https://www.freeproxylists.net/',
@@ -189,28 +194,28 @@ export class ProxyManager {
    * Get captcha API key
    */
   getCaptchaApiKey(): string {
-    return localStorage.getItem('captchaApiKey') || '';
+    return this.captchaApiKey;
   }
 
   /**
    * Set Botable API key
    */
   setBotableApiKey(apiKey: string): void {
-    localStorage.setItem('botableApiKey', apiKey);
+    this.botableApiKey = apiKey;
   }
-  
+
   /**
    * Set captcha API key
    */
   setCaptchaApiKey(apiKey: string): void {
-    localStorage.setItem('captchaApiKey', apiKey);
+    this.captchaApiKey = apiKey;
   }
 
   /**
    * Get Botable API key
    */
   getBotableApiKey(): string {
-    return localStorage.getItem('botableApiKey') || '';
+    return this.botableApiKey;
   }
   
   /**

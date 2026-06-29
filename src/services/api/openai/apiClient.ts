@@ -2,29 +2,32 @@
 import axios from 'axios';
 
 class OpenAIApiClient {
+  // Ключ держим только в памяти на время сессии — не пишем в localStorage
+  // (clear-text storage). Постоянный ключ задаётся через env (VITE_OPENAI_API_KEY)
+  // или, правильнее, проксируется через серверную edge-функцию.
   private apiKey: string | null = null;
 
   setApiKey(key: string): void {
     this.apiKey = key;
-    localStorage.setItem('openai_api_key', key);
   }
 
   getApiKey(): string | null {
     if (this.apiKey) {
       return this.apiKey;
     }
-    
-    const storedKey = localStorage.getItem('openai_api_key');
-    if (storedKey) {
-      this.apiKey = storedKey;
-      return storedKey;
+
+    const envKey = import.meta.env.VITE_OPENAI_API_KEY as string | undefined;
+    if (envKey) {
+      this.apiKey = envKey;
+      return envKey;
     }
-    
+
     return null;
   }
 
   async makeRequest(messages: { role: string; content: string; }[], model?: string, options: { maxTokens?: number, temperature?: number } = {}): Promise<any> {
-    if (!this.apiKey) {
+    const apiKey = this.getApiKey();
+    if (!apiKey) {
       throw new Error('OpenAI API key not set');
     }
 
@@ -43,12 +46,12 @@ class OpenAIApiClient {
         },
         {
           headers: {
-            'Authorization': `Bearer ${this.apiKey}`,
+            'Authorization': `Bearer ${apiKey}`,
             'Content-Type': 'application/json'
           }
         }
       );
-  
+
       return response.data.choices[0].message.content;
     } catch (error) {
       console.error('Error calling OpenAI API:', error);
@@ -71,10 +74,11 @@ class OpenAIApiClient {
   }
   
   async generateImage(prompt: string, size: '1024x1024' | '512x512' | '256x256' = '1024x1024'): Promise<string> {
-    if (!this.apiKey) {
+    const apiKey = this.getApiKey();
+    if (!apiKey) {
       throw new Error('OpenAI API key not set');
     }
-    
+
     try {
       const response = await axios.post(
         'https://api.openai.com/v1/images/generations',
@@ -85,7 +89,7 @@ class OpenAIApiClient {
         },
         {
           headers: {
-            'Authorization': `Bearer ${this.apiKey}`,
+            'Authorization': `Bearer ${apiKey}`,
             'Content-Type': 'application/json'
           }
         }
