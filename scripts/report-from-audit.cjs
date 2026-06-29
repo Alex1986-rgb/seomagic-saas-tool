@@ -42,9 +42,12 @@ items.forEach(([k, v]) => (ISSUES[k].sum = ISSUES[k].price * v));
 // SEO-текст с таблицами и FAQ ~150–300₽/стр; технический аудит — бесплатно (лид-ген).
 const OPT_PER_PAGE = Number(getOpt('--opt-price', 120));
 const TEXT_PER_PAGE = Number(getOpt('--seotext-price', 250));
+const SITE_PAGES = Number(getOpt('--site-pages', 0)); // масштаб сметы на весь сайт (если задан)
 const okPages = pages.filter((p) => p.status >= 200 && p.status < 400);
-const pagesWithIssues = okPages.filter((p) => items.some(([k]) => ISSUES[k] && ISSUES[k].hit(p))).length + (d.issues_count.broken_404 || 0);
-const seoTextPages = d.scanned || okPages.length;
+const pagesWithIssues = SITE_PAGES || (okPages.filter((p) => items.some(([k]) => ISSUES[k] && ISSUES[k].hit(p))).length + (d.issues_count.broken_404 || 0));
+const seoTextPages = SITE_PAGES || d.scanned || okPages.length;
+// Аудит ПОСЛЕ (для блока «до→после»)
+const after = getOpt('--after', '') ? JSON.parse(fs.readFileSync(getOpt('--after', ''), 'utf8')) : null;
 const optTotal = OPT_PER_PAGE * pagesWithIssues;
 const seoTextTotal = TEXT_PER_PAGE * seoTextPages;
 const total = optTotal;                 // «исправление» = оптимизация страниц
@@ -97,6 +100,12 @@ td{padding:8px 10px;border-bottom:1px solid #182236;vertical-align:top}.num{colo
 <div class="wrap">
 <div class="hero"><div class="score"><b>${S.global}</b><small>из 100</small></div>
 <div class="bars">${bar('SEO', S.seo)}${bar('Контент', S.content)}${bar('Технический', S.technical)}${bar('Соцсети (OG)', S.social)}</div></div>
+${after ? (() => { const A = after.scores; const cmp = (l, b, a) => `<div style="flex:1;min-width:96px;background:#0f1626;border:1px solid #1d2638;border-radius:10px;padding:11px;text-align:center"><div style="font-size:10.5px;color:#8b97ad;margin-bottom:5px">${l}</div><div style="font-size:18px;font-weight:800"><span style="color:#ef4444">${b}</span> <span style="color:#6b788f">→</span> <span style="color:#22c55e">${a}</span></div></div>`; return `
+<h2>Результат: до → после оптимизации</h2>
+<div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:6px">
+  ${cmp('Общая оценка', S.global, A.global)}${cmp('SEO', S.seo, A.seo)}${cmp('Контент', S.content, A.content)}${cmp('Технический', S.technical, A.technical)}${cmp('Соцсети', S.social, A.social)}
+</div>
+<div class="ok">✅ После оптимизации: уникальные title/description, H1, canonical, Open Graph, Schema.org, SEO-тексты с таблицами и FAQ, WebP-картинки с alt и адаптивом — оценка <b>${A.global}/100</b>. Демо доступно до оплаты.</div>` })() : ''}
 ${d.quality ? (() => { const q = d.quality; const qc = (v, bad) => bad ? '#ef4444' : '#22c55e'; const cell = (val, lbl, bad) => `<div style="flex:1;background:#0f1626;border:1px solid #1d2638;border-radius:10px;padding:12px;text-align:center"><div style="font-size:20px;font-weight:800;color:${qc(val, bad)}">${val}</div><div style="font-size:10.5px;color:#8b97ad;margin-top:2px">${lbl}</div></div>`; return `
 <h2>Качество контента <span style="font-weight:400;color:#8b97ad;font-size:12px">· новая проверка</span></h2>
 <div style="display:flex;gap:10px;margin-bottom:6px">
