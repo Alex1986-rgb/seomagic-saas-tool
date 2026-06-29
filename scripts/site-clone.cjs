@@ -641,13 +641,18 @@ function seoFix(pageUrl, html) {
   return html;
 }
 
-// Кладём блок в родной seo-text-box (перед футером); если его нет — перед </body>.
+// Кладём блок в родной seo-text-box (перед футером); если его нет — НАД всем подвалом; иначе перед </body>.
 function injectIntoSeoBox(html, block) {
-  // SEO-текст ВСЕГДА до подвала. 1) родной seo-text-box; 2) перед подвалом (надёжно: последнее вхождение
-  // <footer> / class|id с footer/podval / блок с ©); 3) перед </body>.
+  // SEO-текст ВСЕГДА до подвала. 1) родной seo-text-box; 2) НАД подвалом (перед ВЕРХОМ блока подвала —
+  // первый <footer>/class|id с footer/podval в нижней половине документа; подвал часто мультиблочный
+  // (<div class="footer ..."> города→меню→контакты→©), поэтому НЕ последнее вхождение — оно глубоко внутри);
+  // 3) перед элементом с ©; 4) перед </body>.
   if (/<div class="seo-text-box">/.test(html)) return html.replace(/<div class="seo-text-box">/, `<div class="seo-text-box">${block}`);
-  const marks = [...html.matchAll(/<(?:footer\b|[a-z][a-z0-9]*\b[^>]*\b(?:class|id)=["'][^"']*(?:footer|podval)[^"']*["'])/gi)];
-  let pos = marks.length ? marks[marks.length - 1].index : -1;
+  const marks = [...html.matchAll(/<(?:footer\b|[a-z][a-z0-9]*\b[^>]*\b(?:class|id)=["'][^"']*(?:footer|podval)[^"']*["'])/gi)].map(m => m.index);
+  let pos = -1;
+  const late = marks.filter(i => i > html.length * 0.5); // отсекаем случайные «footer»-классы в верхней части
+  if (late.length) pos = late[0];                        // верх подвала
+  else if (marks.length) pos = marks[marks.length - 1];  // фолбэк: подвал только в верхней половине — берём последний
   if (pos < 0) { const c = html.lastIndexOf('©'); if (c > 0) { const lt = html.lastIndexOf('<', c); if (lt > 0) pos = lt; } }
   if (pos > 0) return html.slice(0, pos) + block + '\n' + html.slice(pos);
   return html.replace(/<\/body>/i, `${block}\n</body>`);
