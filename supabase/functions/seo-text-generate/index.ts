@@ -6,21 +6,44 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-// Rate-limit через SECURITY DEFINER функцию (#2): защищает платный AI-ключ от abuse,
-// не требуя авторизации. Возвращает true, если запрос в пределах лимита.
-async function withinLimit(identifier: string, endpoint: string, limit: number, windowSec: number): Promise<boolean> {
+// Rate-limit через SECURITY DEFINER функции (#2): защищают платный AI-ключ от abuse,
+// не требуя авторизации (анонимный вызов сохраняется).
+function rlClient() {
+  return createClient(
+    Deno.env.get('SUPABASE_URL') ?? '',
+    Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? Deno.env.get('SUPABASE_ANON_KEY') ?? ''
+  );
+}
+
+// Per-IP оконный лимит. Fail-OPEN: при сбое лимитера не блокируем обычных юзеров
+// (низкий риск — IP-окно короткое, а бюджет в любом случае прикрыт глобальным cap'ом ниже).
+async function withinIpLimit(identifier: string, endpoint: string, limit: number, windowSec: number): Promise<boolean> {
   try {
-    const sb = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? Deno.env.get('SUPABASE_ANON_KEY') ?? ''
-    );
-    const { data, error } = await sb.rpc('check_rate_limit', {
+    const { data, error } = await rlClient().rpc('check_rate_limit', {
       p_identifier: identifier, p_endpoint: endpoint, p_limit: limit, p_window_seconds: windowSec,
     });
-    if (error) { console.error('rate-limit rpc error:', error.message); return true; } // не блокируем при сбое лимитера
+    if (error) { console.error('ip rate-limit rpc error:', error.message); return true; }
     return data !== false;
   } catch (e) {
-    console.error('rate-limit exception:', e); return true;
+    console.error('ip rate-limit exception:', e); return true;
+  }
+}
+
+// Жёсткий ГЛОБАЛЬНЫЙ дневной cap — главный защитник бюджета платного ключа.
+// Fail-CLOSED: при сбое/ошибке лимитера блокируем, чтобы при недоступном счётчике
+// нельзя было слить бюджет. Атомарный инкремент в БД (check_global_cap).
+async function withinGlobalCap(endpoint: string, limit: number): Promise<boolean> {
+  try {
+    const { data, error } = await rlClient().rpc('check_global_cap', {
+      p_endpoint: endpoint, p_limit: limit,
+    });
+    if (error) { console.error('global cap rpc error:', error.message); return false; }
+    const row = Array.isArray(data) ? data[0] : data;
+    if (!row || typeof row.allowed !== 'boolean') { console.error('global cap: unexpected response', data); return false; }
+    if (!row.allowed) console.warn(`global cap hit for ${endpoint}: used=${row.used}/${row.cap}`);
+    return row.allowed;
+  } catch (e) {
+    console.error('global cap exception:', e); return false;
   }
 }
 
@@ -46,13 +69,21 @@ serve(async (req) => {
 
     if (!topic) throw new Error('topic is required');
 
-    // Rate-limit (#2): на IP — 10 запросов/час; глобально — 300/сутки (защита платного ключа).
+    // Rate-limit (#2): на IP — 10 запросов/час (fail-open); глобально — жёсткий cap 300/сутки
+    // (fail-closed, защита бюджета платного ключа). Анонимный вызов сохраняется.
+    // Сначала проверяем IP-лимит, чтобы флуд с одного адреса не съедал глобальный дневной слот.
     const ip = (req.headers.get('x-forwarded-for') || '').split(',')[0].trim() || 'unknown';
-    const okIp = await withinLimit(ip, 'seo-text-generate', 10, 3600);
-    const okGlobal = await withinLimit('global', 'seo-text-generate', 300, 86400);
-    if (!okIp || !okGlobal) {
+    const okIp = await withinIpLimit(ip, 'seo-text-generate', 10, 3600);
+    if (!okIp) {
       return new Response(
-        JSON.stringify({ success: false, error: 'Превышен лимит запросов генерации. Попробуйте позже.' }),
+        JSON.stringify({ success: false, error: 'Превышен лимит запросов с вашего адреса. Попробуйте через час.' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 429 }
+      );
+    }
+    const okGlobal = await withinGlobalCap('seo-text-generate', 300);
+    if (!okGlobal) {
+      return new Response(
+        JSON.stringify({ success: false, error: 'Достигнут дневной лимит генерации текстов. Попробуйте завтра.' }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 429 }
       );
     }
