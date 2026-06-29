@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
+import { safeHref } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -208,9 +209,9 @@ export const ContentUniquenessChecker: React.FC<ContentUniquenessCheckerProps> =
                         {results.map((item, index) => (
                           <tr key={index} className={index % 2 === 0 ? 'bg-background' : 'bg-muted/20'}>
                             <td className="p-3 truncate max-w-[200px]">
-                              <a 
-                                href={item.url} 
-                                target="_blank" 
+                              <a
+                                href={safeHref(item.url)}
+                                target="_blank"
                                 rel="noopener noreferrer" 
                                 className="text-primary hover:underline"
                               >

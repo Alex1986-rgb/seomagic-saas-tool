@@ -1,5 +1,6 @@
 
 import React, { useState } from 'react';
+import { safeHref } from '@/lib/utils';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -142,12 +143,12 @@ export function DuplicatesDetector({ domain }: DuplicatesDetectorProps) {
                   {duplicatesFound.map((item, index) => (
                     <tr key={index} className="border-t">
                       <td className="px-4 py-3 truncate max-w-[180px]">
-                        <a href={item.url} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">
+                        <a href={safeHref(item.url)} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">
                           {item.url}
                         </a>
                       </td>
                       <td className="px-4 py-3 truncate max-w-[180px]">
-                        <a href={item.duplicateUrl} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">
+                        <a href={safeHref(item.duplicateUrl)} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">
                           {item.duplicateUrl}
                         </a>
                       </td>
