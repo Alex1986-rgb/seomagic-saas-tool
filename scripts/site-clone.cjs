@@ -231,11 +231,16 @@ const STOP = new Set(('и в во не на я с со как а то все в�
   'артикул применить очистить сбросить фильтр фильтры сортировка сортировать сортировке найдено товар товары товаров штука штук цвет цвета бренд бренды наличие новинка новинки хит акция акции скидка скидки добавить выбрать выбор количество доставка оплата гарантия рублей заказ ' +
   'quot nbsp laquo raquo mdash ndash amp copy reg trade hellip rsquo lsquo ' +
   // мусор из слагов/кодов моделей (даты, версии) — не ключи
-  'january february march april june july august september october november december update version edition collection new old item code art').split(/\s+/));
+  'january february march april june july august september october november december update version edition collection new old item code art ' +
+  // города/гео (региональные свитчеры засоряют ключи) — РФ/РБ крупные
+  'москва санкт петербург спб минск брест витебск гомель гродно могилёв могилев новосибирск екатеринбург казань нижний новгород самара ростов уфа краснодар пермь воронеж волгоград севастополь симферополь сочи город регион доставка').split(/\s+/));
 
 // Ключевые слова и биграммы из САМОГО текста страницы (page-derived уникальность, ниша-агностично).
 function pageKeywords(html, topic) {
-  let body = (html || '').replace(/<script[\s\S]*?<\/script\b[^>]*>/gi, ' ').replace(/<style[\s\S]*?<\/style\b[^>]*>/gi, ' ')
+  let body = (html || '');
+  // вырезаем региональный свитчер (ссылки на ДРУГИЕ поддомены того же домена: brest.host, vitebsk.host…)
+  try { body = body.replace(new RegExp('<a\\b[^>]+href=["\\\']https?://[a-z0-9-]+\\.' + HOST.replace(/\./g, '\\.') + '[^"\\\']*["\\\'][^>]*>[\\s\\S]*?</a>', 'gi'), ' '); } catch {}
+  body = body.replace(/<script[\s\S]*?<\/script\b[^>]*>/gi, ' ').replace(/<style[\s\S]*?<\/style\b[^>]*>/gi, ' ')
     .replace(/<(header|nav|footer)[\s\S]*?<\/\1>/gi, ' ').replace(/<[^>]+>/g, ' ').replace(/&[a-z#0-9]+;/gi, ' ').toLowerCase();
   const tl = (topic || '').toLowerCase();
   const tokens = body.match(/[a-zа-яё][a-zа-яё-]{3,}/gi) || [];
