@@ -240,16 +240,24 @@ function pageKeywords(html, topic) {
 
 // Реальные внутренние ссылки страницы (для перелинковки «Смотрите также» — page-derived).
 function extractLinks(html) {
-  const out = [], seen = new Set();
-  for (const m of (html || '').matchAll(/<a\b[^>]+href=["']([^"'#?]+)["'][^>]*>([^<]{4,40})<\/a>/gi)) {
-    const text = m[2].replace(/\s+/g, ' ').trim();
-    if (!text || /^(главная|меню|корзина|поиск|войти|каталог|контакты|регистрация|вход|\d+|«|»|→|читать|подробн|показать|купить|заказать)/i.test(text)) continue;
-    let p; try { p = new URL(m[1], base).pathname.replace(/^\/+/, ''); } catch { continue; }
-    if (!p || p.length < 2 || /\.(jpe?g|png|webp|svg|css|js|pdf)$/i.test(p) || seen.has(p)) continue;
-    seen.add(p); out.push({ path: p, text });
-    if (out.length >= 8) break;
+  const out = [], seen = new Set(), seenText = new Set();
+  for (const m of (html || '').matchAll(/<a\b[^>]*\bhref=["']([^"']+)["'][^>]*>([\s\S]*?)<\/a>/gi)) {
+    const href = m[1].trim();
+    if (/^(javascript:|mailto:|tel:|data:|#)/i.test(href)) continue; // не навигационные схемы
+    const text = m[2].replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim(); // вложенные теги (картинки/span) → чистый текст
+    if (text.length < 4 || text.length > 50) continue;
+    const tlk = text.toLowerCase();
+    if (!text || seenText.has(tlk) || /^(главн|меню|корзин|поиск|войти|каталог|контакт|регистрац|вход|все категории|\d+|«|»|→|читать|подробн|показать|купить|заказать|смотреть)/i.test(tlk)) continue;
+    let u; try { u = new URL(href, base); } catch { continue; }
+    if (!/^https?:$/.test(u.protocol) || u.hostname.replace(/^www\./i, '') !== HOST) continue; // только наш хост
+    const p = u.pathname.replace(/^\/+/, '');
+    if (!p || p.length < 3 || /[()]|void/i.test(p) || /\.(jpe?g|png|webp|svg|css|js|pdf)$/i.test(p) || seen.has(p)) continue;
+    seen.add(p); seenText.add(tlk); out.push({ path: p, text });
+    if (out.length >= 60) break; // соберём кандидатов, ниже приоритезируем
   }
-  return out;
+  // Приоритет — релевантные странице ссылки (каталог/товары/категории), затем прочее.
+  out.sort((a, b) => (/catalog|product|tovar|catalog/i.test(b.path) ? 1 : 0) - (/catalog|product|tovar/i.test(a.path) ? 1 : 0));
+  return out.slice(0, 8);
 }
 
 // УНИВЕРСАЛЬНЫЙ page-derived SEO-текст: уникален по странице (ключи/позиции/ссылки самой страницы),
@@ -269,52 +277,89 @@ function contentBlockV2(topic, html, pageUrl) {
   const th = td + ';background:#f5f5f5;font-weight:600';
   const L = (href, t) => `<a href="${DEMO}${String(href).replace(/^\//, '')}" style="color:#c0142b">${t}</a>`;
 
+  const H = (t) => `<h3 style="font-size:19px;margin:22px 0 8px;color:#1a1a1a">${t}</h3>`;
+  // Синонимы темы — чтобы не переспамить ключ (низкая тошнота/водность по правилам SEO-текста).
+  const SYN = pick(['ассортимент', 'каталог раздела', 'коллекция', 'подборка', 'линейка'], seed + 'syn', 4);
+  let si = 0; const syn = () => SYN[si++ % SYN.length];
+  // Пул внутренних ссылок страницы для перелинковки ВНУТРИ абзацев (контекстно).
+  const links = rel.length ? rel : [{ path: '', text: 'главную' }, { path: 'contacts/', text: 'контакты' }];
+  let li = 0; const nextL = () => { const r = links[li++ % links.length]; return `<a href="${DEMO}${esc(r.path)}" style="color:#c0142b">${esc(r.text)}</a>`; };
+  const kList = keysTop.length ? keysTop.slice(0, 5).map(esc).join(', ') : tl;
+
   const introTpl = pick([
-    `<strong>${esc(topic)}</strong> — гид по разделу: что выбрать, на что смотреть и как заказать.`,
-    `Раздел «<strong>${esc(topic)}</strong>» — помогаем выбрать оптимальный вариант под задачу и бюджет.`,
-    `Всё о «<strong>${esc(topic)}</strong>»: ключевые параметры, сравнение и условия покупки в одном месте.`,
-    `<strong>${esc(topic)}</strong>: как не ошибиться с выбором и получить лучшее соотношение цены и качества.`,
+    `<strong>${esc(topic)}</strong> — подробный гид по разделу: что выбрать, на какие характеристики смотреть и как оформить заказ выгодно.`,
+    `Раздел «<strong>${esc(topic)}</strong>» — помогаем разобраться в ассортименте и выбрать оптимальный вариант под вашу задачу и бюджет.`,
+    `Всё о «<strong>${esc(topic)}</strong>» в одном месте: ключевые параметры, советы по выбору, сравнение и условия покупки.`,
+    `<strong>${esc(topic)}</strong>: как не ошибиться с выбором, на что обратить внимание и получить лучшее соотношение цены и качества.`,
   ], seed + 'i', 1)[0];
   const intro = `<p class="smk-lead">${introTpl}</p>`;
 
-  const itemsLine = items.length ? `<p>В этом разделе, в частности: <strong>${items.map(esc).join(', ')}</strong> — и другие позиции под разные задачи и бюджет.</p>` : '';
-  const keysLine = keysTop.length ? `<p>Основные темы и характеристики раздела: <strong>${keysTop.map((k) => esc(cap(k))).join(', ')}</strong> — на них и стоит ориентироваться при выборе.</p>` : '';
+  // 1) О разделе (2 абзаца) — с вплетённой ссылкой
+  const about = H('О разделе') + `<p>${cap(syn())} «${esc(topic)}» собран так, чтобы вы быстро нашли подходящее решение. Мы делаем акцент на качестве, честных ценах и удобстве выбора: для каждой позиции указаны характеристики и условия покупки, а консультанты готовы помочь с подбором. Если нужен смежный вариант — загляните в ${nextL()}.</p>` +
+    `<p>Здесь вы найдёте варианты под разные задачи, стили и бюджеты. Грамотный выбор экономит время и деньги: важно заранее определить требования и сравнить несколько вариантов по ключевым параметрам — об этом ниже.</p>`;
 
+  // 2) Что представлено (реальные позиции) + ссылка
+  const itemsLine = items.length
+    ? H('Что представлено') + `<p>В ${syn()}е, в частности: <strong>${items.map(esc).join(', ')}</strong> — и другие позиции. Подберём вариант под ваши требования; смежные решения смотрите также в ${nextL()}.</p>`
+    : '';
+
+  // 3) Ключевые параметры (таблица из ключей страницы) + вводный абзац
   const aspectRows = (keysTop.length ? keysTop.slice(0, 6) : [tl]).map((k) => `<tr><td style="${td}">${esc(cap(k))}</td><td style="${td}">сравните варианты, оцените качество, соответствие задаче и цену</td></tr>`).join('');
-  const keysTable = `<h3 style="font-size:19px;margin:22px 0 8px;color:#1a1a1a">Ключевые параметры выбора</h3><table style="width:100%;border-collapse:collapse;margin:12px 0"><thead><tr><th style="${th}">Параметр</th><th style="${th}">На что обратить внимание</th></tr></thead><tbody>${aspectRows}</tbody></table>`;
+  const keysTable = H('Ключевые параметры выбора') + `<p>Чтобы выбор был осознанным, ориентируйтесь на параметры ниже — они напрямую влияют на удобство и срок службы.</p>` +
+    `<table style="width:100%;border-collapse:collapse;margin:12px 0"><thead><tr><th style="${th}">Параметр</th><th style="${th}">На что обратить внимание</th></tr></thead><tbody>${aspectRows}</tbody></table>`;
 
+  // 4) Как выбрать — развёрнутый список
+  const howTo = H('Как выбрать') + `<p>При выборе «${esc(tl)}» отталкивайтесь от задачи, бюджета и условий эксплуатации.${keysTop.length ? ` Особое внимание — параметрам: ${kList}.` : ''}</p>` +
+    `<ul style="margin:8px 0 8px 18px;color:#3a3a3a"><li>определите задачу и бюджет — это сузит выбор;</li><li>сравните 2–3 варианта по ключевым характеристикам;</li><li>проверьте качество материалов и репутацию производителя;</li><li>уточните наличие, сроки и условия доставки;</li><li>сопоставьте цену и ценность, а не только цифру на ценнике.</li></ul>` +
+    `<p>Если сомневаетесь — напишите нам, поможем подобрать оптимальное решение и ответим на вопросы.</p>`;
+
+  // 5) Ниша-усилитель (мебель и т.п.) — опционально, развёрнуто
   let niche = '';
   if (furniture) {
-    const up = pick(['натуральная кожа', 'экокожа', 'велюр', 'рогожка', 'шенилл'], seed, 3);
-    const fil = pick(['независимый пружинный блок', 'ППУ', 'холлофайбер', 'пух и перо'], seed + 'f', 3);
+    const up = pick(['натуральная кожа', 'экокожа', 'велюр', 'рогожка', 'шенилл', 'микровелюр'], seed, 3);
+    const fil = pick(['независимый пружинный блок', 'высокоэластичный ППУ', 'холлофайбер', 'натуральный пух и перо'], seed + 'f', 3);
     const wood = pick(['массив дуба', 'массив бука', 'массив ореха', 'шпон'], seed + 'w', 2);
-    niche = `<h3 style="font-size:19px;margin:22px 0 8px;color:#1a1a1a">Материалы и наполнение</h3><p>Для «${esc(tl)}» применяются обивка (${esc(up.join(', '))}), наполнение (${esc(fil.join(', '))}) и каркас из ${esc(wood.join(', '))}. Сочетание материалов определяет комфорт, износостойкость и срок службы.</p>`;
+    niche = H('Материалы, наполнение и каркас') + `<p>Для «${esc(tl)}» применяются обивка (${esc(up.join(', '))}), наполнение (${esc(fil.join(', '))}) и каркас из ${esc(wood.join(', '))}. Сочетание материалов определяет комфорт, износостойкость и срок службы — выбирайте под интенсивность использования и стиль интерьера.</p>`;
   }
 
-  const howTo = `<h3 style="font-size:19px;margin:22px 0 8px;color:#1a1a1a">Как выбрать</h3><p>При выборе «${esc(tl)}» отталкивайтесь от задачи, бюджета и условий эксплуатации.${keysTop.length ? ` Сравните варианты по параметрам: ${keysTop.slice(0, 4).map(esc).join(', ')}.` : ''} Сопоставляйте цену и качество, изучайте описание и характеристики. Наши специалисты помогут подобрать оптимальное решение.</p>`;
+  // 6) Кому подойдёт / сценарии
+  const usecase = H('Кому и для чего подойдёт') + `<p>${cap(syn())} универсален: подходит и для дома, и для бизнеса. Для частного использования важны комфорт и внешний вид, для коммерческих помещений — износостойкость и практичность. Подскажем вариант под ваш сценарий и поможем собрать решение целиком.</p>`;
 
-  const deliveryTable = `<h3 style="font-size:19px;margin:22px 0 8px;color:#1a1a1a">Доставка и оплата</h3><table style="width:100%;border-collapse:collapse;margin:12px 0"><thead><tr><th style="${th}">Услуга</th><th style="${th}">Условия</th></tr></thead><tbody><tr><td style="${td}">Доставка</td><td style="${td}">по городу и в регионы, расчёт при оформлении</td></tr><tr><td style="${td}">Оплата</td><td style="${td}">наличные, карта, безналичный расчёт</td></tr><tr><td style="${td}">Гарантия</td><td style="${td}">официальная гарантия производителя</td></tr></tbody></table>`;
+  // 7) Частые ошибки
+  const mistakes = H('Частые ошибки при выборе') + `<ul style="margin:8px 0 8px 18px;color:#3a3a3a"><li>выбор только по цене без учёта качества и срока службы;</li><li>игнорирование характеристик и реальных габаритов;</li><li>покупка без сравнения нескольких вариантов;</li><li>невнимание к условиям гарантии и доставки.</li></ul>`;
 
-  const seeAlso = rel.length ? `<h3 style="font-size:19px;margin:22px 0 8px;color:#1a1a1a">Смотрите также</h3><p>${rel.map((r) => `<a href="${DEMO}${esc(r.path)}" style="color:#c0142b">${esc(r.text)}</a>`).join(' · ')}</p>` : '';
+  // 8) Уход и эксплуатация
+  const care = H('Уход и эксплуатация') + `<p>Чтобы покупка служила долго, соблюдайте простые правила ухода: берегите от прямых солнечных лучей и влаги, регулярно очищайте подходящими средствами, следуйте рекомендациям производителя. Правильный уход сохраняет внешний вид и свойства на годы.</p>`;
 
-  // FAQ из ключей/позиций САМОЙ страницы (уникальные вопросы) + универсальные
+  // 9) Доставка/оплата/гарантия — таблица + абзац со ссылкой
+  const deliveryTable = H('Доставка, оплата и гарантия') + `<table style="width:100%;border-collapse:collapse;margin:12px 0"><thead><tr><th style="${th}">Услуга</th><th style="${th}">Условия</th></tr></thead><tbody><tr><td style="${td}">Доставка</td><td style="${td}">по городу и в регионы, расчёт при оформлении</td></tr><tr><td style="${td}">Оплата</td><td style="${td}">наличные, карта, безналичный расчёт, рассрочка</td></tr><tr><td style="${td}">Гарантия</td><td style="${td}">официальная гарантия производителя</td></tr></tbody></table>` +
+    `<p>Точные сроки и стоимость доставки рассчитываются при оформлении. Остались вопросы по оплате или доставке — свяжитесь с нами через ${L('/contacts', 'раздел контактов')}.</p>`;
+
+  // 10) Почему мы + перелинковка
+  const why = H('Почему выбирают нас') + `<p>Большой ассортимент, честные цены без переплат, профессиональная консультация и доставка по всей России. Поможем подобрать «${esc(tl)}» под вашу задачу и бюджет. Смотрите также наши ${nextL()} и ${nextL()} — возможно, там найдётся то, что нужно.</p>`;
+
+  // 11) Смотрите также — отдельным блоком (все ссылки страницы)
+  const seeAlso = rel.length ? H('Смотрите также') + `<p>${rel.map((r) => `<a href="${DEMO}${esc(r.path)}" style="color:#c0142b">${esc(r.text)}</a>`).join(' · ')}</p>` : '';
+
+  // FAQ (8) из ключей/позиций страницы + универсальные
   const faqs = [];
   keysTop.slice(0, 3).forEach((k) => faqs.push([`Что важно при выборе «${esc(cap(k))}»?`, `Оцените качество, характеристики и соответствие вашей задаче; сравните несколько вариантов «${esc(k)}» по цене и параметрам — поможем определиться.`]));
   if (items[0]) faqs.push([`Что входит в раздел «${esc(topic)}»?`, `Представлены ${items.slice(0, 4).map(esc).join(', ')} и другие позиции — под разные задачи и бюджет.`]);
+  faqs.push(['Как сделать правильный выбор?', `Определите задачу и бюджет, сравните варианты по ключевым параметрам${keysTop.length ? ` (${kList})` : ''}, уточните наличие и сроки. При сомнениях — спросите консультанта.`]);
   faqs.push(['Сколько стоит доставка?', 'Зависит от габаритов и адреса, рассчитывается при оформлении; возможны доставка по регионам и самовывоз.']);
   faqs.push(['Действует ли гарантия?', 'Да, официальная гарантия производителя; условия — в карточке товара.']);
   faqs.push(['Как оформить заказ?', `Добавьте в корзину или свяжитесь с нами — поможем с выбором и оформлением. Контакты — ${L('/contacts', 'здесь')}.`]);
-  while (faqs.length < 6) faqs.push(['Можно ли получить консультацию?', 'Да, напишите или позвоните — подскажем по ассортименту, наличию и срокам.']);
+  faqs.push(['Можно ли получить консультацию?', 'Да, напишите или позвоните — подскажем по ассортименту, наличию и срокам.']);
   const faqItem = ([q, a]) => `<details style="border-bottom:1px solid #eee;padding:9px 0"><summary style="cursor:pointer;font-weight:600;color:#1a1a1a">${q}</summary><p style="margin:7px 0 0;color:#555">${a}</p></details>`;
   const half = Math.ceil(faqs.length / 2);
-  const faqHtml = `<h3 style="font-size:19px;margin:24px 0 12px;color:#1a1a1a">Частые вопросы</h3><div style="display:flex;flex-wrap:wrap;gap:0 40px"><div style="flex:1;min-width:280px">${faqs.slice(0, half).map(faqItem).join('')}</div><div style="flex:1;min-width:280px">${faqs.slice(half).map(faqItem).join('')}</div></div>`;
+  const faqHtml = H('Частые вопросы') + `<div style="display:flex;flex-wrap:wrap;gap:0 40px"><div style="flex:1;min-width:280px">${faqs.slice(0, half).map(faqItem).join('')}</div><div style="flex:1;min-width:280px">${faqs.slice(half).map(faqItem).join('')}</div></div>`;
 
-  // порядок средних секций варьируем по хэшу → структура отличается между страницами
-  const mid = pick([keysTable, niche, howTo, deliveryTable, seeAlso].filter(Boolean), seed + 'order', 99);
-  const full = [itemsLine, keysLine, ...mid, faqHtml].filter(Boolean).join('\n');
+  // Порядок средних секций варьируем по хэшу → структура отличается между страницами
+  const mid = pick([keysTable, howTo, niche, usecase, mistakes, care, deliveryTable].filter(Boolean), seed + 'order', 99);
+  const full = [about, itemsLine, ...mid, why, seeAlso, faqHtml].filter(Boolean).join('\n');
 
   const callout = `<div class="smk-callout"><p><strong>Кратко:</strong> ${esc(topic)}${keysTop.length ? ` — ключевое: ${keysTop.slice(0, 4).map(esc).join(', ')}` : ''}. Подбор под задачу и бюджет, доставка и гарантия.</p></div>`;
-  return `${SEO_STYLE}<section data-seomarket="content" class="smk-seo"><div class="smk-kicker">${esc(cap(catTopic(pageUrl) || 'Раздел'))} · Гид по выбору</div><h2>${esc(topic)}: ключевое и как выбрать</h2>${intro}${callout}<details data-seomarket="more" class="smk-more"><summary>Читать полностью ▾</summary>${full}</details></section>`;
+  return `${SEO_STYLE}<section data-seomarket="content" class="smk-seo"><div class="smk-kicker">${esc(cap(catTopic(pageUrl) || 'Раздел'))} · Гид по выбору</div><h2>${esc(topic)}: полный гид по выбору</h2>${intro}${callout}<details data-seomarket="more" class="smk-more"><summary>Читать полностью ▾</summary>${full}</details></section>`;
 }
 
 // Профессиональный SEO-текст ~10000 знаков, уникализированный по теме/товарам, с перелинковкой,
