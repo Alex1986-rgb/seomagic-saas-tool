@@ -110,8 +110,14 @@ const SEO_STYLE = `<style>
   .smk-seo .smk-callout p{margin:0!important;font-size:15px!important;color:#4a4030!important}
   </style>`;
 
-// Страница товара (карточка): /catalog/<категория>/<слаг> (3+ сегмента).
-function isProduct(pageUrl) {
+// Страница товара (карточка) — CMS-агностично: JSON-LD Product / og:type=product / microdata,
+// затем как fallback URL-паттерн /catalog/<категория>/<слаг> (3+ сегмента, rimmebel-стиль).
+function isProduct(pageUrl, html) {
+  if (html) {
+    if (/"@type"\s*:\s*"Product"/i.test(html)) return true;
+    if (/<meta[^>]+property=["']og:type["'][^>]+content=["']product["']/i.test(html)) return true;
+    if (/itemtype=["']https?:\/\/schema\.org\/Product["']/i.test(html)) return true;
+  }
   try { const segs = new URL(pageUrl).pathname.replace(/^\/+|\/+$/g, '').split('/'); return segs[0] === 'catalog' && segs.length >= 3 && segs[2].length > 2; }
   catch { return false; }
 }
@@ -123,21 +129,39 @@ function catTopic(pageUrl) {
   catch { return 'Каталог'; }
 }
 
-// Парсим реальные данные карточки из родного блока good-info (материалы, габариты, наличие, текст описания).
+// Парсим характеристики карточки CMS-агностично: good-info (rimmebel) → любая таблица/dl → JSON-LD Product.
 function parseSpecs(html) {
-  const out = { material: '', dims: [], availability: '', desc: '' };
-  const i = html.indexOf('good-info'); if (i < 0) return out;
-  const seg = html.slice(i, i + 5000);
-  for (const m of seg.matchAll(/<th>([^<]+)<\/th>\s*<td>([\s\S]*?)<\/td>/gi)) {
-    const k = m[1].replace(/\s+/g, ' ').trim();
-    const v = m[2].replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
-    if (!v) continue;
-    if (/материал/i.test(k)) out.material = v;
-    else if (/наличие/i.test(k)) out.availability = v.replace(/\s*Как сделать заказ\?.*/i, '').trim();
-    else if (/(длина|ширина|глубина|высота|диаметр)/i.test(k)) out.dims.push(`${k} — ${v}`);
+  const out = { material: '', dims: [], availability: '', desc: '', brand: '', price: '' };
+  const norm = (v) => String(v).replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+  // 1) good-info (rimmebel) — приоритет (реальные размеры); иначе любая таблица/dl характеристик
+  const gi = html.indexOf('good-info');
+  let seg = gi >= 0 ? html.slice(gi, gi + 6000) : '';
+  if (!seg) { const t = html.match(/<table[\s\S]*?<\/table>/i); const dl = html.match(/<dl[\s\S]*?<\/dl>/i); seg = (t ? t[0] : '') + (dl ? dl[0] : ''); }
+  for (const m of seg.matchAll(/<(?:th|dt)[^>]*>([^<]+)<\/(?:th|dt)>\s*<(?:td|dd)[^>]*>([\s\S]*?)<\/(?:td|dd)>/gi)) {
+    const k = norm(m[1]); const v = norm(m[2]); if (!v) continue;
+    if (/материал|material/i.test(k)) { if (!out.material) out.material = v; }
+    else if (/наличие|stock|availab/i.test(k)) out.availability = v.replace(/\s*Как сделать заказ\?.*/i, '').trim();
+    else if (/(длина|ширина|глубина|высота|диаметр|размер|width|height|depth|length|dimension)/i.test(k)) out.dims.push(`${k} — ${v}`);
   }
-  const dm = seg.match(/<h2>\s*Описание\s*<\/h2>\s*<p>([\s\S]*?)<\/p>/i);
-  out.desc = dm ? dm[1].replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim() : '';
+  // 2) JSON-LD Product — бренд/материал/цена/описание/доп-свойства (универсально для любой CMS)
+  for (const m of html.matchAll(/<script[^>]+application\/ld\+json[^>]*>([\s\S]*?)<\/script\b[^>]*>/gi)) {
+    let j; try { j = JSON.parse(m[1].trim()); } catch { continue; }
+    for (const o of (Array.isArray(j) ? j : (j['@graph'] || [j]))) {
+      if (!o || !/product/i.test(String(o['@type'] || ''))) continue;
+      if (!out.material && o.material) out.material = norm(o.material);
+      if (!out.brand && o.brand) out.brand = norm(o.brand.name || o.brand);
+      if (!out.desc && o.description) out.desc = norm(o.description).slice(0, 300);
+      const offer = Array.isArray(o.offers) ? o.offers[0] : o.offers;
+      if (!out.price && offer && offer.price) out.price = String(offer.price);
+      for (const ap of (o.additionalProperty || [])) {
+        const k = norm(ap.name), v = norm(ap.value); if (!k || !v) continue;
+        if (/материал|material/i.test(k) && !out.material) out.material = v;
+        else if (/(длина|ширина|высота|глубина|размер|width|height|depth|length)/i.test(k)) out.dims.push(`${k} — ${v}`);
+      }
+    }
+  }
+  if (!out.desc) { const dm = seg.match(/<h2>\s*Описание\s*<\/h2>\s*<p>([\s\S]*?)<\/p>/i); if (dm) out.desc = norm(dm[1]); }
+  out.dims = [...new Set(out.dims)].slice(0, 6);
   return out;
 }
 
@@ -395,7 +419,7 @@ function seoFix(pageUrl, html) {
   }
   // Оптимизация картинок: описательный alt (image SEO) + lazy + async. Для товара — название + материал/размеры.
   let altBase = topic;
-  if (isProduct(pageUrl)) {
+  if (isProduct(pageUrl, html)) {
     const rs = parseSpecs(html);
     const extra = [rs.material, ...rs.dims.slice(0, 2)].filter(Boolean).join(', ');
     if (extra) altBase = `${topic} — ${extra}`.slice(0, 120);
@@ -420,7 +444,7 @@ function seoFix(pageUrl, html) {
   //  • Товар: продолжаем РОДНОЕ описание под картинкой (с реальными данными) + SEO-текст внизу (в seo-text-box).
   //  • Категория: SEO-текст внизу (в seo-text-box, иначе перед </body>).
   if (!/data-seomarket="content"/.test(html) && !/data-seomarket="desc"/.test(html)) {
-    if (isProduct(pageUrl)) {
+    if (isProduct(pageUrl, html)) {
       const real = parseSpecs(html);
       const cont = productContinuation(topic, real, pageUrl);
       if (/<h2>\s*Описание\s*<\/h2>\s*<p>[\s\S]*?<\/p>/i.test(html)) html = html.replace(/(<h2>\s*Описание\s*<\/h2>\s*<p>[\s\S]*?<\/p>)/i, `$1${cont}`);
