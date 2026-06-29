@@ -93,3 +93,6 @@ verify_jwt = false
 
 [functions.payment-webhook]
 verify_jwt = false
+
+[functions.orders-list]
+verify_jwt = true
