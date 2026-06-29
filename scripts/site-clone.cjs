@@ -27,6 +27,9 @@ const HOST = new URL(START).hostname.replace(/^www\./i, ''); // нормализ
 // Полное экранирование строки для вставки в RegExp (все метасимволы + backslash), а не только точка.
 const escapeRe = (s) => String(s).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 const sameHost = (u) => { try { return new URL(u).hostname.replace(/^www\./i, '') === HOST; } catch { return false; } };
+// Ассет «нашего» сайта — тот же домен ИЛИ его поддомен (img./cdn./static. того же корня): их надо скачивать локально,
+// иначе картинки с отдельного CDN (img.myarredo.by) остаются remote и не видны на демо (hotlink/WAF).
+const assetSameSite = (u) => { try { const h = new URL(u).hostname.replace(/^www\./i, ''); return h === HOST || h.endsWith('.' + HOST); } catch { return false; } };
 const base = START.endsWith('/') ? START : START + '/';
 // User-Agent переопределяется (--ua "…" или CLONE_UA) — для сайтов с WAF-allowlist по UA (напр. myarredo пускает только ботов).
 const UA = getOpt('--ua', process.env.CLONE_UA || 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 Chrome/120.0 Safari/537.36');
@@ -90,32 +93,32 @@ function mapAsset(absUrl, ctHint) {
 const tag = (h, re) => { const m = h.match(re); return m ? m[1].trim() : null; };
 function shortenTitle(t) { t = t.trim(); if (t.length <= 65) return t; for (const s of [' — ', ' | ', ' – ', ' - ', ', ']) { const i = t.indexOf(s); if (i >= 30 && i <= 60) return t.slice(0, i).trim(); } return t.slice(0, 59).replace(/\s+\S*$/, '').trim() + '…'; }
 
-// Общий премиум-стиль SEO-блока (категории и товары). !important перекрывает inline вёрстку.
+// НЕЙТРАЛЬНЫЙ стиль SEO-блока — наследует типографику/цвета САЙТА (font/color: inherit, em, currentColor),
+// нейтральные серые рамки (видны и на светлой, и на тёмной теме). !important перекрывает inline вёрстку.
 const SEO_STYLE = `<style>
-  .smk-seo{max-width:1080px;margin:44px auto;padding:34px 30px;background:#fff;border:1px solid #ececec;border-radius:14px;font-family:'Helvetica Neue',Arial,sans-serif;color:#2b2b2b;line-height:1.78!important;box-shadow:0 8px 30px rgba(0,0,0,.06)}
-  .smk-seo h2{font-size:28px!important;font-weight:800!important;color:#1a1a1a!important;margin:0 0 6px!important;letter-spacing:-.4px!important}
-  .smk-seo .smk-kicker{color:#9c7a3c!important;font-weight:700!important;font-size:13px!important;text-transform:uppercase;letter-spacing:1.4px;margin:0 0 16px!important}
-  .smk-seo h3{font-size:19px!important;font-weight:700!important;color:#1a1a1a!important;margin:28px 0 10px!important;padding-left:13px!important;border-left:3px solid #9c7a3c!important}
-  .smk-seo p{margin:0 0 13px!important;color:#3a3a3a!important;font-size:15.5px!important}
-  .smk-seo .smk-lead{font-size:17.5px!important;color:#222!important;font-weight:500!important}
-  .smk-seo strong{color:#1a1a1a!important;font-weight:700!important}
-  .smk-seo a{color:#9c7a3c!important;text-decoration:none!important;border-bottom:1px solid rgba(156,122,60,.45)!important}
-  .smk-seo table{width:100%!important;display:table!important;table-layout:auto!important;box-sizing:border-box!important;border-collapse:separate!important;border-spacing:0!important;margin:18px 0!important;border:1px solid #e6e6e6!important;border-radius:10px!important;overflow:hidden!important}
+  .smk-seo{max-width:1100px;margin:32px auto;padding:22px 0;border-top:1px solid rgba(128,128,128,.3)!important;font:inherit;color:inherit!important;line-height:1.7!important}
+  .smk-seo .smk-kicker{font-size:.8em!important;text-transform:uppercase;letter-spacing:1px;opacity:.6;margin:0 0 .6em!important;color:inherit!important;border:0!important;padding:0!important}
+  .smk-seo h2{font-size:1.7em!important;font-weight:700!important;margin:0 0 .4em!important;color:inherit!important;line-height:1.25!important;letter-spacing:0!important}
+  .smk-seo h3{font-size:1.2em!important;font-weight:700!important;margin:1.3em 0 .4em!important;color:inherit!important;padding:0!important;border:0!important}
+  .smk-seo p,.smk-seo li{margin:0 0 .8em!important;color:inherit!important;font-size:1em!important}
+  .smk-seo .smk-lead{font-size:1.1em!important}
+  .smk-seo ul{margin:.4em 0 .8em 1.2em!important}
+  .smk-seo strong{font-weight:700!important;color:inherit!important}
+  .smk-seo a{color:inherit!important;text-decoration:underline!important;text-underline-offset:2px;border:0!important}
+  .smk-seo table{width:100%!important;display:table!important;table-layout:auto!important;box-sizing:border-box!important;border-collapse:collapse!important;border-spacing:0!important;margin:1em 0!important;font-size:.95em!important;border:0!important;border-radius:0!important;box-shadow:none!important}
   .smk-seo thead{display:table-header-group!important}
   .smk-seo tbody{display:table-row-group!important}
   .smk-seo tr{display:table-row!important;float:none!important;width:auto!important}
-  .smk-seo th,.smk-seo td{display:table-cell!important;float:none!important;vertical-align:top!important;white-space:normal!important;box-sizing:border-box!important;width:auto!important}
-  .smk-seo th{background:#1a1a1a!important;color:#fff!important;padding:12px 14px!important;text-align:left!important;font-size:12.5px!important;text-transform:uppercase!important;letter-spacing:.5px!important;border:0!important}
-  .smk-seo td{padding:11px 14px!important;border:0!important;border-top:1px solid #eee!important;font-size:14.5px!important;color:#3a3a3a!important}
+  .smk-seo th,.smk-seo td{display:table-cell!important;float:none!important;vertical-align:top!important;white-space:normal!important;box-sizing:border-box!important;width:auto!important;padding:9px 12px!important;border:1px solid rgba(128,128,128,.35)!important;text-align:left!important;color:inherit!important;font-size:1em!important;text-transform:none!important;letter-spacing:0!important;background:transparent!important}
+  .smk-seo th{font-weight:700!important;background:rgba(128,128,128,.1)!important}
   .smk-seo th:after,.smk-seo td:after,.smk-seo th:before,.smk-seo td:before{content:none!important;display:none!important}
-  .smk-seo tbody tr:nth-child(even) td{background:#faf8f4!important}
-  .smk-seo details{border:1px solid #ececec!important;border-radius:10px!important;padding:12px 16px!important;margin:8px 0!important;background:#fafafa!important}
-  .smk-seo summary{cursor:pointer!important;font-weight:600!important;color:#1a1a1a!important;list-style:none!important}
+  .smk-seo details{border:0!important;border-bottom:1px solid rgba(128,128,128,.25)!important;border-radius:0!important;padding:8px 0!important;margin:0!important;background:transparent!important}
+  .smk-seo summary{cursor:pointer!important;font-weight:600!important;color:inherit!important;list-style:none!important}
   .smk-seo summary::-webkit-details-marker{display:none}
-  .smk-seo .smk-more{border:0!important;background:transparent!important;padding:0!important;margin:8px 0 0!important}
-  .smk-seo .smk-more>summary{color:#9c7a3c!important;font-size:15px!important;font-weight:700!important}
-  .smk-seo .smk-callout{background:#faf8f4!important;border-left:4px solid #9c7a3c!important;border-radius:8px!important;padding:14px 18px!important;margin:16px 0!important}
-  .smk-seo .smk-callout p{margin:0!important;font-size:15px!important;color:#4a4030!important}
+  .smk-seo .smk-more{border:0!important;background:transparent!important;padding:0!important;margin:.5em 0 0!important}
+  .smk-seo .smk-more>summary{color:inherit!important;text-decoration:underline!important}
+  .smk-seo .smk-callout{background:rgba(128,128,128,.07)!important;border:0!important;border-left:3px solid currentColor!important;border-radius:0!important;padding:.6em 1em!important;margin:1em 0!important}
+  .smk-seo .smk-callout p{margin:0!important}
   </style>`;
 
 // Страница товара (карточка) — CMS-агностично: JSON-LD Product / og:type=product / microdata,
@@ -573,7 +576,10 @@ function seoFix(pageUrl, html) {
     html = html.replace(/<\/title>/i, `</title>\n<meta name="description" content="${esc(dsc)}">`);
   }
   if (!/<meta[^>]+name=["']viewport["']/i.test(html)) html = html.replace(/<\/head>/i, `<meta name="viewport" content="width=device-width, initial-scale=1">\n</head>`);
+  // canonical: добавить если нет; если есть, но битый (указывает на cloned-assets/.bin от старого прогона) — починить
   if (!/<link[^>]+rel=["']canonical["']/i.test(html)) html = html.replace(/<\/head>/i, `<link rel="canonical" href="${esc(canonUrl)}">\n</head>`);
+  else html = html.replace(/<link\b[^>]*\brel=["']canonical["'][^>]*>/i, (tag) => /cloned-assets|\.bin/i.test(tag) ? `<link rel="canonical" href="${esc(canonUrl)}">` : tag)
+                  .replace(/<link\b[^>]*\bhref=["'][^"']*(?:cloned-assets|\.bin)[^"']*["'][^>]*\brel=["']canonical["'][^>]*>/i, `<link rel="canonical" href="${esc(canonUrl)}">`);
   if (!/<meta[^>]+property=["']og:/i.test(html)) html = html.replace(/<\/head>/i, `<meta property="og:type" content="website"><meta property="og:title" content="${esc(title)}"><meta property="og:url" content="${esc(canonUrl)}">\n</head>`);
   if (!/application\/ld\+json/i.test(html)) html = html.replace(/<\/head>/i, `<script type="application/ld+json">${JSON.stringify({ '@context': 'https://schema.org', '@type': 'BreadcrumbList', itemListElement: [{ '@type': 'ListItem', position: 1, name: 'Главная', item: (PROD ? DEMO : ORIGIN + '/') }, { '@type': 'ListItem', position: 2, name: topic, item: canonUrl }] })}</script>\n</head>`);
   // ФИКС ОШИБКИ: дубли H1 — на странице должен быть один H1. Лишние понижаем до H2 (первый оставляем).
@@ -637,7 +643,13 @@ function seoFix(pageUrl, html) {
 
 // Кладём блок в родной seo-text-box (перед футером); если его нет — перед </body>.
 function injectIntoSeoBox(html, block) {
+  // SEO-текст ВСЕГДА до подвала. 1) родной seo-text-box; 2) перед подвалом (надёжно: последнее вхождение
+  // <footer> / class|id с footer/podval / блок с ©); 3) перед </body>.
   if (/<div class="seo-text-box">/.test(html)) return html.replace(/<div class="seo-text-box">/, `<div class="seo-text-box">${block}`);
+  const marks = [...html.matchAll(/<(?:footer\b|[a-z][a-z0-9]*\b[^>]*\b(?:class|id)=["'][^"']*(?:footer|podval)[^"']*["'])/gi)];
+  let pos = marks.length ? marks[marks.length - 1].index : -1;
+  if (pos < 0) { const c = html.lastIndexOf('©'); if (c > 0) { const lt = html.lastIndexOf('<', c); if (lt > 0) pos = lt; } }
+  if (pos > 0) return html.slice(0, pos) + block + '\n' + html.slice(pos);
   return html.replace(/<\/body>/i, `${block}\n</body>`);
 }
 
@@ -650,8 +662,8 @@ function rewriteRef(ref, pageUrl) {
   const scheme = (t.match(/^([a-z][a-z0-9+.-]*):/i) || [, ''])[1].toLowerCase();
   if (SKIP_SCHEMES.has(scheme)) return null;
   let abs; try { abs = new URL(t, pageUrl).toString(); } catch { return null; }
-  if (!sameHost(abs)) {
-    // внешние ассеты: апгрейд http→https, оставляем как есть
+  if (!assetSameSite(abs)) {
+    // действительно внешние ассеты (google/fonts/CDN-сторонние): апгрейд http→https, оставляем как есть
     return abs.replace(/^http:\/\//i, 'https://');
   }
   const rel = mapAsset(abs);
@@ -671,15 +683,32 @@ function rewritePageLink(href, pageUrl) {
 }
 
 function processHtmlRefs(html, pageUrl) {
-  // lazy-load: поднимаем data-src/data-original/data-lazy-src → src, data-srcset → srcset
-  // (реальный src ставит JS оригинала, которого офлайн нет → без этого картинки не появятся)
+  // lazy-load: реальная картинка в data-src/data-original/data-lazy-src, а в src — плейсхолдер (data-uri/spacer).
+  // Поднимаем data-src → src, УДАЛЯЯ плейсхолдерный src (иначе двойной src → браузер показывает пустой плейсхолдер).
+  html = html.replace(/<img\b[^>]*>/gi, (tag) => {
+    const ds = tag.match(/\bdata-(?:src|original|lazy-src)=(["'])([^"']+)\1/i);
+    if (ds) {
+      tag = tag.replace(/\bsrc=(["'])[^"']*\1/i, '').replace(/\sdata-(?:src|original|lazy-src)=(["'])([^"']+)\1/i, ` src=$1$2$1 data-was-lazy="1"`);
+      if (!/\bsrc=/i.test(tag)) tag = tag.replace(/<img/i, `<img src=${ds[1]}${ds[2]}${ds[1]}`);
+    }
+    const dss = tag.match(/\bdata-srcset=(["'])([^"']+)\1/i);
+    if (dss) tag = tag.replace(/\bsrcset=(["'])[^"']*\1/i, '').replace(/\bdata-srcset=/i, 'srcset=');
+    return tag;
+  });
+  // на случай data-src вне <img> (source/div-фоны)
   html = html.replace(/\bdata-(?:src|original|lazy-src)=(["'])([^"']+)\1/gi, (m, q, u) => `src=${q}${u}${q} data-was-lazy="1"`);
   html = html.replace(/\bdata-srcset=(["'])([^"']+)\1/gi, (m, q, u) => `srcset=${q}${u}${q}`);
   // ассеты (img/script/source/link) src/href → локальные демо-пути.
   // НО <link rel=canonical|alternate|prev|next> — это URL СТРАНИЦ, не ассеты: их НЕ переписываем как файлы
   // (иначе canonical превращается в cloned-assets/<hash>.bin). canonical ставит seoFix.
-  html = html.replace(/(<(?:img|script|source|link)\b[^>]*?\b(?:src|href)=)(["'])([^"']+)\2/gi, (m, pre, q, url) => {
-    if (/^<link\b/i.test(pre) && /\brel=["'](canonical|alternate|prev|next)["']/i.test(pre)) return m;
+  // <link> обрабатываем ЦЕЛИКОМ: rel=canonical|alternate|prev|next — это URL СТРАНИЦ, не ассеты, их НЕ трогаем
+  // (проверяем rel во всём теге, а не только до href — у части сайтов порядок href...rel).
+  html = html.replace(/<link\b[^>]*>/gi, (tag) => {
+    if (/\brel=["'](?:canonical|alternate|prev|next)["']/i.test(tag)) return tag;
+    return tag.replace(/(\bhref=)(["'])([^"']+)\2/i, (m, pre, q, url) => { const nu = rewriteRef(url, pageUrl); return nu ? `${pre}${q}${nu}${q}` : m; });
+  });
+  // img/script/source src/href → локальные демо-пути
+  html = html.replace(/(<(?:img|script|source)\b[^>]*?\b(?:src|href)=)(["'])([^"']+)\2/gi, (m, pre, q, url) => {
     const nu = rewriteRef(url, pageUrl); return nu ? `${pre}${q}${nu}${q}` : m;
   });
   // навигационные <a href> → на DEMO-страницы (чтобы не уводило на исходный сайт)
