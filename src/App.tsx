@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from './components/ui/sonner';
 import { ThemeProvider } from './contexts/ThemeContext';
 import DefaultSEO from './components/seo/DefaultSEO';
@@ -8,7 +8,6 @@ import { PerformanceDebugger } from './components/debug';
 
 // Pages
 import Index from './pages/Index';
-import Home from './pages/Home';
 import About from './pages/About';
 import Channel from './pages/Channel';
 import Audit from './pages/Audit';
@@ -35,8 +34,6 @@ import Careers from './pages/Careers';
 import Reports from './pages/Reports';
 import Settings from './pages/Settings';
 import AuditHistory from './pages/AuditHistory';
-import ClientDashboard from './pages/ClientDashboard';
-import AdminDashboard from './pages/AdminDashboard';
 import ApiDocs from './pages/ApiDocs';
 import Faq from './pages/Faq';
 import Partners from './pages/Partners';
@@ -74,26 +71,13 @@ import Sitemap from './pages/Sitemap';
 // Admin Routes
 import AdminRoutes from './routes/AdminRoutes';
 
+// Auth guards
+import ProtectedRoute from './components/auth/ProtectedRoute';
+import AdminRouteGuard from './components/admin/AdminRouteGuard';
+
 
 
 function App() {
-  console.log('🚀 App component rendering');
-  
-  // Add debug logging to detect issues
-  React.useEffect(() => {
-    console.log('✅ App component mounted');
-    console.log('📊 Current theme:', document.documentElement.classList.toString());
-    console.log('🎨 CSS Variables test:', {
-      background: getComputedStyle(document.documentElement).getPropertyValue('--background'),
-      foreground: getComputedStyle(document.documentElement).getPropertyValue('--foreground'),
-      primary: getComputedStyle(document.documentElement).getPropertyValue('--primary')
-    });
-    
-    return () => {
-      console.log('❌ App component unmounted');
-    };
-  }, []);
-  
   return (
     <ThemeProvider defaultTheme="dark" storageKey="seo-market-theme">
       <Router>
@@ -103,7 +87,7 @@ function App() {
           <main id="main-content" role="main">
             <Routes>
                     <Route path="/" element={<Index />} />
-                    <Route path="/home" element={<Home />} />
+                    <Route path="/home" element={<Navigate to="/" replace />} />
                     <Route path="/about" element={<About />} />
                     <Route path="/channel" element={<Channel />} />
                     <Route path="/audit" element={<Audit />} />
@@ -119,8 +103,8 @@ function App() {
                     <Route path="/careers" element={<Careers />} />
                     <Route path="/privacy" element={<Privacy />} />
                     <Route path="/terms" element={<Terms />} />
-                    <Route path="/dashboard" element={<Dashboard />} />
-                    <Route path="/profile" element={<Profile />} />
+                    <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+                    <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
                     <Route path="/auth" element={<Auth />} />
                     <Route path="/blog" element={<Blog />} />
                     <Route path="/blog/:id" element={<BlogPost />} />
@@ -162,7 +146,7 @@ function App() {
                     {/* Additional pages */}
                     <Route path="/optimization-demo" element={<OptimizationDemo />} />
                     <Route path="/optimization-test" element={<OptimizationTest />} />
-                    <Route path="/optimizations" element={<OptimizationsHistory />} />
+                    <Route path="/optimizations" element={<ProtectedRoute><OptimizationsHistory /></ProtectedRoute>} />
                     <Route path="/all-pages" element={<AllPages />} />
                     <Route path="/pages" element={<AllPages />} />
                     <Route path="/seo-optimization" element={<SeoOptimizationPage />} />
@@ -174,18 +158,20 @@ function App() {
                     <Route path="/demo" element={<Demo />} />
                     <Route path="/partnership" element={<Partnership />} />
                     <Route path="/optimization-pricing" element={<OptimizationPricing />} />
-                    <Route path="/client-profile" element={<ClientProfile />} />
-                    
-                    {/* Client and Admin Dashboard Routes */}
-                    <Route path="/reports" element={<Reports />} />
-                    <Route path="/settings" element={<Settings />} />
-                    <Route path="/audit-history" element={<AuditHistory />} />
-                    <Route path="/audits" element={<AuditsHistory />} />
-                    <Route path="/client-dashboard" element={<ClientDashboard />} />
-                    <Route path="/admin-dashboard" element={<AdminDashboard />} />
-                    
-                    {/* Admin Routes */}
-                    <Route path="/admin/*" element={<AdminRoutes />} />
+                    <Route path="/client-profile" element={<ProtectedRoute><ClientProfile /></ProtectedRoute>} />
+
+                    {/* Client account routes (require login) */}
+                    <Route path="/reports" element={<ProtectedRoute><Reports /></ProtectedRoute>} />
+                    <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+                    <Route path="/audit-history" element={<ProtectedRoute><AuditHistory /></ProtectedRoute>} />
+                    <Route path="/audits" element={<ProtectedRoute><AuditsHistory /></ProtectedRoute>} />
+
+                    {/* Legacy placeholder dashboards → redirect to the real areas */}
+                    <Route path="/client-dashboard" element={<Navigate to="/dashboard" replace />} />
+                    <Route path="/admin-dashboard" element={<Navigate to="/admin" replace />} />
+
+                    {/* Admin Routes (require admin role) */}
+                    <Route path="/admin/*" element={<AdminRouteGuard><AdminRoutes /></AdminRouteGuard>} />
                     
                     {/* 404 - Must be last */}
                     <Route path="*" element={<NotFound />} />

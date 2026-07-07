@@ -1,6 +1,7 @@
 import { getHistoricalData } from './positionHistory';
 import { proxyManager } from '../proxy/proxyManager';
 import { BrowserEmulator } from './browserEmulator';
+import { fetchRealPosition } from './serpProvider';
 
 // Интерфейсы для типизации
 export interface KeywordPosition {
@@ -179,7 +180,16 @@ const findRealPosition = async (
 ): Promise<number> => {
   try {
     console.log(`Поиск реальной позиции для ${domain} по запросу "${keyword}" в ${searchEngine}`);
-    
+
+    // Try the real SERP provider first (DataForSEO via the position-check edge
+    // function). If it isn't configured (no API key) or fails, fall back to the
+    // local estimate below so the UI keeps working.
+    const real = await fetchRealPosition({ domain, keyword, searchEngine, region });
+    if (real.configured && real.success) {
+      console.log(`Реальная позиция из SERP-провайдера: ${real.position}`);
+      return real.position;
+    }
+
     // Создаем экземпляр эмулятора браузера
     const browserEmulator = new BrowserEmulator();
     

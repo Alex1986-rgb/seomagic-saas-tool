@@ -200,11 +200,9 @@ async function crawlPage(url: string, domain: string): Promise<any> {
       transfer_size: response.headers.get('content-length') ? parseInt(response.headers.get('content-length')!) : null
     };
   } catch (error) {
-    if (url.includes('example.com') || url.includes('localhost')) {
-      return { url, title: `Page: ${url}`, h1_count: 1, h1_text: 'Test', h2_count: 3, h3_count: 5,
-        word_count: 500, image_count: 10, status_code: 200, is_indexable: true,
-        page_type: detectPageType(url), internalLinks: [] };
-    }
+    // Real fetch failed — propagate so the page is recorded as an error rather
+    // than fabricating fake metrics. (Previously returned hardcoded test data
+    // for example.com/localhost, which could leak into production results.)
     throw error;
   }
 }
