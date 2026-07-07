@@ -43,41 +43,52 @@
 
 ## ⚠️ Осталось доделать (нужны ваши ключи/решения)
 
-### 1. Отслеживание позиций — сейчас полностью имитация
-`src/services/position/positionTracker.ts` генерирует позиции через `Math.random()`
-+ хеш домена; SERP-запросов нет, история в localStorage.
-**Что нужно:**
-- Выбрать источник данных: **DataForSEO**, **SerpApi** или **XMLRiver** (платно).
-- Создать edge-функцию `position-check` (браузерный скрапинг из клиента невозможен
-  из-за CORS и капчи) — она обращается к провайдеру по ключу из `Deno.env`.
-- Хранить историю в таблице (напр. `position_history`) вместо localStorage.
-- Переключить `PositionMonitor`/`use-position-tracker` на реальную функцию.
-- **Решение за вами:** провайдер + бюджет. Дайте ключ — подключу.
+### 1. Отслеживание позиций — бэкенд подключён, нужен ключ
+**Сделано:** создана edge-функция `position-check` (провайдер **DataForSEO**,
+Google/Yandex organic, Live Advanced) с проверкой авторизации; клиент
+(`serpProvider.ts` + `positionTracker.findRealPosition`) сначала пробует реальный
+SERP, а при отсутствии ключа/ошибке **мягко откатывается** на локальную оценку —
+ничего не ломается.
+**Осталось (ваше):**
+- Завести аккаунт DataForSEO и задать секреты `DATAFORSEO_LOGIN` /
+  `DATAFORSEO_PASSWORD` в Supabase → функция сразу начнёт отдавать реальные позиции.
+- ⚠️ Функция написана по документации DataForSEO, но **не прогонялась против живого
+  API** (нет ключа) — проверьте на паре запросов после настройки.
+- (Улучшение) хранить историю позиций в таблице вместо localStorage.
+- Если предпочитаете **SerpApi/XMLRiver** — скажите, поменяю провайдера в
+  `position-check` (интерфейс клиента не изменится).
 
-### 2. AI-оптимизация — основной UI ходит в мок
-`services/api/seoOptimizationController.ts` пишет в localStorage и «завершает»
-задачу по таймеру; реальные функции (`optimization-start/processor/...`,
-Gemini через Lovable AI) вызываются только из тестовой страницы `OptimizationTest`.
-Причём функции выдают **текстовые рекомендации**, а не переписанный сайт.
-**Что нужно:**
+### 2. AI-оптимизация — исправлен баг статуса, UI-переключение осталось
+**Сделано:** починен реальный баг в `optimization-status` (читал `optimization_id`
+только из query-строки, хотя `functions.invoke` шлёт body) — теперь боевой поток
+(как в `OptimizationTest`) работает.
+**Осталось (ваше решение):**
 - Задать `LOVABLE_API_KEY` в секретах Supabase.
-- Переключить `useSeoOptimization` с `seoOptimizationController` на
-  `optimization-start` + опрос `optimization-status`.
-- Решить продуктово: «оптимизация» = рекомендации или реальная генерация
-  переписанного HTML + сборка архива сайта (сейчас архив — заглушка-Blob).
+- Переключить основной UI (`useSeoOptimization` → `seoOptimizationController`,
+  сейчас localStorage-мок) на `optimization-start` + `optimization-status`. Это
+  **не простая замена вызова**: боевой `optimization-start` требует уже
+  **завершённого аудита** (`task_id` из `audit_results`), т.е. UX надо перестроить
+  на «сначала аудит → потом оптимизация этого аудита». Не стал переделывать вслепую
+  без прогона на вашей базе, чтобы не сломать страницу.
+- Продуктово решить: «оптимизация» = текстовые рекомендации (как сейчас в функции)
+  или реальная генерация переписанного HTML + архив сайта (сейчас архив — заглушка).
 
-### 3. Генерация PDF
-`pdf-report-generate` формирует HTML, а не PDF; в `ProjectExporter` PDF-экспорт —
-`alert(...)`. Пайплайн скачивания рассогласован: `report-download` читает таблицу
-`reports`, а `report-generate` пишет в `pdf_reports`.
-**Что нужно:** привести к одной таблице и добавить реальную генерацию PDF
-(например, через сервис рендеринга или jsPDF на клиенте — jsPDF уже в зависимостях).
+### 3. Генерация PDF — частично
+**Сделано:** обе `alert`-заглушки PDF-экспорта в `ProjectExporter` заменены на
+реальный браузерный print-to-PDF (`window.print()`).
+**Осталось:** `pdf-report-generate` формирует HTML, а не PDF; пайплайн скачивания
+рассогласован (`report-download` читает таблицу `reports`, а `report-generate`
+пишет в `pdf_reports`). Для полноценного PDF аудита: свести к одной таблице и
+задействовать существующий `src/utils/pdf/generateAuditPdf` (jsPDF) — но нужно
+сматчить структуру `audit_results.audit_data` с типом `AuditData` (лучше делать
+с прогоном на реальных данных). Сейчас скачивание в `AuditsHistory` отдаёт
+надёжный JSON.
 
 ## 🔧 Требуемые секреты (Supabase → Edge Functions → Secrets)
 - `LOVABLE_API_KEY` — AI-шлюз (`optimization-processor`, `create-notification`).
 - `RESEND_API_KEY` — почта (`send-email`, `send-estimate-email`).
 - `SUPABASE_URL` / `SUPABASE_ANON_KEY` / `SUPABASE_SERVICE_ROLE_KEY` — платформа.
-- (Фаза 3) ключ SERP-провайдера для позиций.
+- `DATAFORSEO_LOGIN` / `DATAFORSEO_PASSWORD` — реальные позиции (`position-check`).
 
 ## 🧹 Рекомендуемая чистка (не блокирует)
 - Удалить мёртвый faker-код: `services/audit/{generators,seoDetails,history,

@@ -27,8 +27,18 @@ serve(async (req) => {
       throw new Error('Unauthorized');
     }
 
+    // Accept optimization_id from the query string (GET) or the JSON body,
+    // since supabase.functions.invoke sends a POST body rather than query params.
     const url = new URL(req.url);
-    const optimization_id = url.searchParams.get('optimization_id');
+    let optimization_id = url.searchParams.get('optimization_id');
+    if (!optimization_id && req.method === 'POST') {
+      try {
+        const body = await req.json();
+        optimization_id = body?.optimization_id ?? null;
+      } catch {
+        /* no body */
+      }
+    }
 
     if (!optimization_id) {
       throw new Error('optimization_id is required');
