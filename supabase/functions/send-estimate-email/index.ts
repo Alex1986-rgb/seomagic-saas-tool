@@ -163,22 +163,46 @@ Deno.serve(async (req) => {
       </html>
     `;
 
-    // Send emails using Resend (if configured) or log
-    console.log('Email would be sent to:', to_emails);
-    console.log('Public link:', publicLink);
-    
-    // Note: Resend integration would go here
-    // For now, we return success with the data
-    
+    // Send the estimate to every recipient via Resend.
+    const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY');
+    if (!RESEND_API_KEY) {
+      throw new Error('RESEND_API_KEY not configured');
+    }
+
+    const subject = `Смета на SEO-продвижение — ${url}`;
+    const emailResponse = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${RESEND_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        from: 'SeoMarket <onboarding@resend.dev>',
+        to: to_emails,
+        subject,
+        html: htmlContent,
+      }),
+    });
+
+    if (!emailResponse.ok) {
+      const errorData = await emailResponse.text();
+      console.error('Resend API error:', errorData);
+      throw new Error(`Failed to send estimate email: ${errorData}`);
+    }
+
+    const emailData = await emailResponse.json();
+    console.log('Estimate email sent:', emailData?.id, 'recipients:', to_emails.length);
+
     return new Response(
       JSON.stringify({
         success: true,
         recipients: to_emails.length,
+        email_id: emailData?.id ?? null,
         public_link: publicLink || null
       }),
-      { 
+      {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 200 
+        status: 200
       }
     );
 
