@@ -90,11 +90,24 @@ SERP, а при отсутствии ключа/ошибке **мягко отк
 - `SUPABASE_URL` / `SUPABASE_ANON_KEY` / `SUPABASE_SERVICE_ROLE_KEY` — платформа.
 - `DATAFORSEO_LOGIN` / `DATAFORSEO_PASSWORD` — реальные позиции (`position-check`).
 
+## 🔐 Зависимости / уязвимости
+Было 35 уязвимостей (3 critical). Сделано → осталось **5** (0 critical):
+- Удалён `puppeteer` из зависимостей фронтенда (не использовался в браузере,
+  только в комментариях) — убрал большинство уязвимостей (ws, tar-fs, undici).
+- `npm audit fix` (без breaking) + мажор `jspdf@4` / `jspdf-autotable@5` (закрыл
+  critical). ⚠️ jspdf — мажор-апгрейд: `tsc` и `vite build` зелёные, но
+  **проверьте визуально генерацию PDF** после мержа.
+- Остались: `vite`/`esbuild` (moderate, dev-only — требуют vite@8) и `xlsx`
+  (high, фикса в npm нет; SheetJS раздаёт фикс только со своего CDN
+  `https://cdn.sheetjs.com` — при желании перевести установку туда).
+- ⚠️ Обновлён `package-lock.json`; основной `bun.lockb` **устарел** — выполните
+  `bun install`, чтобы пересобрать его (в среде правок bun не было).
+
 ## 🧹 Рекомендуемая чистка (не блокирует)
 - Удалить мёртвый faker-код: `services/audit/{generators,seoDetails,history,
   recommendations,optimizedSite,sitemap}.ts`, легаси `AuditService`,
-  `auditDataService` (`@deprecated`), `optimizerApiService` — риск «протечки»
-  моков в UI при рефакторинге.
+  `auditDataService` (`@deprecated`) — риск «протечки» моков в UI при рефакторинге.
+  (`optimizerApiService` уже удалён — был 0 импортёров.)
 - Консолидировать `AuditHistory` vs `AuditsHistory`, `Partners` vs `Partnership`.
 - Почистить ~266 `console.log` в проде.
 - Добавить тесты (сейчас их нет).
