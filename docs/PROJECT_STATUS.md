@@ -76,13 +76,15 @@ SERP, а при отсутствии ключа/ошибке **мягко отк
 ### 3. Генерация PDF — частично
 **Сделано:** обе `alert`-заглушки PDF-экспорта в `ProjectExporter` заменены на
 реальный браузерный print-to-PDF (`window.print()`).
-**Осталось:** `pdf-report-generate` формирует HTML, а не PDF; пайплайн скачивания
-рассогласован (`report-download` читает таблицу `reports`, а `report-generate`
-пишет в `pdf_reports`). Для полноценного PDF аудита: свести к одной таблице и
-задействовать существующий `src/utils/pdf/generateAuditPdf` (jsPDF) — но нужно
-сматчить структуру `audit_results.audit_data` с типом `AuditData` (лучше делать
-с прогоном на реальных данных). Сейчас скачивание в `AuditsHistory` отдаёт
-надёжный JSON.
+**Сделано:** пайплайн скачивания отчётов исправлен — `report-download` теперь
+читает `report_id` из body (не только query), проверяет владение через таблицу
+`pdf_reports` (RLS), а файл из приватного бакета тянет service-role клиентом
+(раньше упёрлось бы в RLS), формат берёт из расширения. Раньше функция читала
+несуществующую таблицу `reports` и падала.
+**Осталось:** `pdf-report-generate` формирует HTML, а не PDF (для полноценного PDF
+аудита задействовать `src/utils/pdf/generateAuditPdf` (jsPDF), сматчив структуру
+`audit_results.audit_data` с типом `AuditData` — лучше с прогоном на реальных
+данных). Скачивание в `AuditsHistory` пока отдаёт надёжный JSON.
 
 ## 🔧 Требуемые секреты (Supabase → Edge Functions → Secrets)
 - `LOVABLE_API_KEY` — AI-шлюз (`optimization-processor`, `create-notification`).
@@ -104,10 +106,11 @@ SERP, а при отсутствии ключа/ошибке **мягко отк
   `bun install`, чтобы пересобрать его (в среде правок bun не было).
 
 ## 🧹 Рекомендуемая чистка (не блокирует)
-- Удалить мёртвый faker-код: `services/audit/{generators,seoDetails,history,
-  recommendations,optimizedSite,sitemap}.ts`, легаси `AuditService`,
-  `auditDataService` (`@deprecated`) — риск «протечки» моков в UI при рефакторинге.
-  (`optimizerApiService` уже удалён — был 0 импортёров.)
+- Удалить остатки мёртвого faker-кода: `services/audit/{history,recommendations,
+  optimizedSite,sitemap}.ts` (ещё есть импортёры — требуют аккуратной развязки),
+  легаси `AuditService`, `auditDataService` (`@deprecated`).
+  (Уже удалены: `optimizerApiService`, `services/audit/generators.ts`,
+  `services/audit/seoDetails.ts` — были без импортёров.)
 - Консолидировать `AuditHistory` vs `AuditsHistory`, `Partners` vs `Partnership`.
 - Почистить ~266 `console.log` в проде.
 - Добавить тесты (сейчас их нет).
