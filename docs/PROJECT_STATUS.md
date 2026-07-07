@@ -113,4 +113,7 @@ SERP, а при отсутствии ключа/ошибке **мягко отк
   `services/audit/seoDetails.ts` — были без импортёров.)
 - Консолидировать `AuditHistory` vs `AuditsHistory`, `Partners` vs `Partnership`.
 - Почистить ~266 `console.log` в проде.
-- Добавить тесты (сейчас их нет).
+- Расширить тесты. **Каркас добавлен:** Vitest (`npm test`), 16 юнит-тестов
+  (`vitest.config.ts`, `*.test.ts` рядом с кодом) — покрыты `lib/utils`,
+  pdf-форматтеры и новый `serpProvider` (фолбэк/маппинг движка). Дальше стоит
+  покрыть скоринг и утилиты аудита.
