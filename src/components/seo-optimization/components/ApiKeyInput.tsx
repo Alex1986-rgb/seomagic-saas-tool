@@ -8,7 +8,7 @@ const ApiKeyInput: React.FC = () => {
     <Alert className="bg-primary/10 border border-primary/20">
       <CheckCircle2 className="h-4 w-4 text-primary" />
       <AlertDescription className="text-foreground">
-        AI функции настроены через Lovable AI
+        AI функции работают через Anthropic API (Claude)
       </AlertDescription>
     </Alert>
   );

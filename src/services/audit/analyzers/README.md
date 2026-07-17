@@ -144,7 +144,7 @@ const seoResults = seoAnalyzer.analyze();
 - Resource optimization
 
 ### Этап 3: Content Analyzer (с AI)
-- Качество контента (Lovable AI)
+- Качество контента (Anthropic Claude)
 - Keyword density
 - Duplicate content detection
 - Readability scores

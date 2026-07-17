@@ -1,4 +1,5 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
+import { ANTHROPIC_MODEL, anthropicClient, textFromMessage } from '../_shared/anthropic.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -72,9 +73,9 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Generate notification content using Lovable AI
-    console.log('Generating notification with Lovable AI...');
-    
+    // Generate notification content using the Anthropic API (Claude)
+    console.log('Generating notification with Claude...');
+
     const aiPrompt = type === 'audit_completed' 
       ? `Создай краткое SEO-уведомление о завершении аудита сайта ${audit_data?.url || 'неизвестен'}. 
          Общий балл: ${audit_data?.score || 'N/A'}/100, SEO балл: ${audit_data?.seo_score || 'N/A'}/100.
@@ -89,59 +90,39 @@ Deno.serve(async (req) => {
          Тон: профессиональный, позитивный, мотивирующий.`
       : `Создай уведомление о событии типа ${type}`;
 
-    const aiResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${Deno.env.get('LOVABLE_API_KEY')}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'google/gemini-2.5-flash',
-        messages: [
-          {
-            role: 'system',
-            content: 'Ты - помощник для создания SEO-уведомлений. Отвечай только валидным JSON без markdown.'
+    let notificationContent: { title: string; message: string };
+    try {
+      const anthropic = anthropicClient();
+      const aiMessage = await anthropic.messages.create({
+        model: ANTHROPIC_MODEL,
+        max_tokens: 1024,
+        output_config: {
+          effort: 'low',
+          format: {
+            type: 'json_schema',
+            schema: {
+              type: 'object',
+              properties: {
+                title: { type: 'string' },
+                message: { type: 'string' },
+              },
+              required: ['title', 'message'],
+              additionalProperties: false,
+            },
           },
-          {
-            role: 'user',
-            content: aiPrompt
-          }
-        ],
-        tools: [
-          {
-            type: 'function',
-            function: {
-              name: 'create_notification',
-              description: 'Create notification text',
-              parameters: {
-                type: 'object',
-                properties: {
-                  title: { type: 'string' },
-                  message: { type: 'string' }
-                },
-                required: ['title', 'message'],
-                additionalProperties: false
-              }
-            }
-          }
-        ],
-        tool_choice: { type: 'function', function: { name: 'create_notification' } }
-      }),
-    });
-
-    if (!aiResponse.ok) {
-      console.error('AI API error:', aiResponse.status);
-      throw new Error(`AI API failed: ${aiResponse.status}`);
+        },
+        system: 'Ты - помощник для создания SEO-уведомлений.',
+        messages: [{ role: 'user', content: aiPrompt }],
+      });
+      notificationContent = JSON.parse(textFromMessage(aiMessage));
+    } catch (aiError) {
+      // Notification delivery must not fail because of the AI call — fall back to a template.
+      console.error('AI notification generation failed:', aiError);
+      notificationContent = {
+        title: `Аудит завершен: ${audit_data?.url || 'сайт'}`,
+        message: `Проверка завершена! Общий балл: ${audit_data?.score || 'N/A'}/100. Проверено страниц: ${audit_data?.pages_scanned || 0}.`,
+      };
     }
-
-    const aiData = await aiResponse.json();
-    const toolCall = aiData.choices?.[0]?.message?.tool_calls?.[0];
-    const notificationContent = toolCall 
-      ? JSON.parse(toolCall.function.arguments)
-      : {
-          title: `Аудит завершен: ${audit_data?.url || 'сайт'}`,
-          message: `Проверка завершена! Общий балл: ${audit_data?.score || 'N/A'}/100. Проверено страниц: ${audit_data?.pages_scanned || 0}.`
-        };
 
     console.log('Generated notification:', notificationContent);
 

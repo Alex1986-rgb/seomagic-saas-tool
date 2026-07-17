@@ -2,13 +2,13 @@
 
 ## Overview
 
-This guide explains how to test the full AI optimization cycle using the new optimization-processor Edge Function with Lovable AI integration.
+This guide explains how to test the full AI optimization cycle using the new optimization-processor Edge Function with Anthropic API (Claude) integration.
 
 ## Prerequisites
 
 1. **Completed Audit**: You must have at least one completed audit in the database
 2. **Authentication**: User must be logged in
-3. **Lovable AI**: Automatically configured (google/gemini-2.5-flash)
+3. **Anthropic API**: set the `ANTHROPIC_API_KEY` secret (model: claude-opus-4-8, override via `ANTHROPIC_MODEL`)
 
 ## Testing Steps
 
@@ -79,7 +79,7 @@ For each optimized page:
   - Meta Description
   - Word Count
   - H1 Count
-- **AI Recommendations**: Detailed SEO improvement suggestions from Lovable AI
+- **AI Recommendations**: Detailed SEO improvement suggestions from Claude
 
 ## Edge Functions Flow
 
@@ -117,7 +117,7 @@ Automatically invoked by optimization-start:
 1. Fetches audit results and page analysis
 2. For each page (up to 50):
    - Builds optimization prompt
-   - Calls Lovable AI Gateway
+   - Calls the Anthropic API (Claude)
    - Model: `google/gemini-2.5-flash`
    - Temperature: 0.7
    - Max tokens: 2000
@@ -181,9 +181,9 @@ Response:
 
 ## AI Integration Details
 
-### Lovable AI Gateway
+### Anthropic API
 
-**Endpoint:** `https://ai.gateway.lovable.dev/v1/chat/completions`
+**Endpoint:** `https://api.anthropic.com/v1/messages` (via `@anthropic-ai/sdk`)
 
 **Model:** `google/gemini-2.5-flash`
 - Balanced Gemini model
@@ -241,7 +241,7 @@ Recommendations:
 
 ### Optimization Stuck in Processing
 **Possible causes:**
-- Lovable AI rate limit
+- Anthropic API rate limit
 - Network issues
 - Edge function timeout
 
@@ -258,7 +258,7 @@ Recommendations:
 
 **Solution:**
 - Check `page_analysis` table has data
-- Verify LOVABLE_API_KEY is set
+- Verify ANTHROPIC_API_KEY is set
 - Review edge function logs
 
 ### Cost Too High

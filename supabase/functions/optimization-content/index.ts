@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
+import { ANTHROPIC_MODEL, Anthropic, anthropicClient, textFromMessage } from "../_shared/anthropic.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -33,10 +34,7 @@ serve(async (req) => {
       throw new Error('task_id and prompt are required');
     }
 
-    const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
-    if (!LOVABLE_API_KEY) {
-      throw new Error('LOVABLE_API_KEY not configured');
-    }
+    const anthropic = anthropicClient();
 
     console.log(`Optimizing content for task: ${task_id}`);
 
@@ -51,43 +49,29 @@ serve(async (req) => {
       throw new Error('Audit results not found');
     }
 
-    // Call Lovable AI Gateway for content optimization
-    const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${LOVABLE_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'google/gemini-2.5-flash',
+    // Call the Anthropic API (Claude) for content optimization
+    let optimizedContent: string;
+    try {
+      const message = await anthropic.messages.create({
+        model: ANTHROPIC_MODEL,
+        max_tokens: 4096,
+        thinking: { type: 'adaptive' },
+        system: 'You are an SEO expert. Optimize the content for better search engine rankings while maintaining readability and user engagement.',
         messages: [
-          {
-            role: 'system',
-            content: 'You are an SEO expert. Optimize the content for better search engine rankings while maintaining readability and user engagement.',
-          },
           {
             role: 'user',
             content: `${prompt}\n\nAudit data: ${JSON.stringify(auditResult.audit_data)}`,
           },
         ],
-        max_tokens: 2000,
-      }),
-    });
-
-    if (!response.ok) {
-      if (response.status === 429) {
+      });
+      optimizedContent = textFromMessage(message);
+    } catch (aiError) {
+      if (aiError instanceof Anthropic.RateLimitError) {
         throw new Error('Rate limits exceeded, please try again later.');
       }
-      if (response.status === 402) {
-        throw new Error('Payment required, please add funds to your Lovable AI workspace.');
-      }
-      const errorData = await response.text();
-      console.error('Lovable AI error:', errorData);
-      throw new Error(`Lovable AI error: ${response.status}`);
+      console.error('Anthropic API error:', aiError);
+      throw new Error('AI request failed');
     }
-
-    const data = await response.json();
-    const optimizedContent = data.choices[0].message.content;
 
     // Create optimization job record
     await supabaseClient.from('optimization_jobs').insert({

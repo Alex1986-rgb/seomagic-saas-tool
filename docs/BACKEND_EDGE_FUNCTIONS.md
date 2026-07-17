@@ -467,7 +467,7 @@ console.log(`Average score: ${stats.average_seo_score}`);
 
 ### Этап 5: Optimization Edge Functions
 - Создать `optimization-processor` для AI оптимизации
-- Интегрировать с Lovable AI
+- Интегрировать с Anthropic API (Claude)
 - Сохранять результаты в `optimization_jobs`
 
 ### Этап 6: Admin Dashboard
@@ -553,11 +553,11 @@ console.log(`Average score: ${stats.average_seo_score}`);
 ---
 
 ### optimization-processor
-**Purpose**: Process optimization using Lovable AI
+**Purpose**: Process optimization using the Anthropic API (Claude)
 **Status**: ✅ Implemented
 
 **Features**:
-- Uses Lovable AI Gateway (google/gemini-2.5-flash)
+- Uses the Anthropic API (claude-opus-4-8 by default, override via ANTHROPIC_MODEL)
 - Processes up to 50 pages per job
 - Generates SEO recommendations per page
 - Saves results to optimization_jobs table
@@ -644,7 +644,7 @@ console.log(`Average score: ${stats.average_seo_score}`);
 
 Edge Functions обеспечивают:
 - ✅ Серверное сканирование сайтов
-- ✅ AI оптимизация контента (Lovable AI)
+- ✅ AI оптимизация контента (Anthropic Claude)
 - ✅ Реальное сохранение данных в БД
 - ✅ Отслеживание прогресса в реальном времени
 - ✅ Безопасность через RLS

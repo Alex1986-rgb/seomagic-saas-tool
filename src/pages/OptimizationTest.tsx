@@ -210,7 +210,7 @@ export default function OptimizationTest() {
       <div className="mb-8">
         <h1 className="text-3xl font-bold mb-2">AI Optimization Test</h1>
         <p className="text-muted-foreground">
-          Test the full optimization cycle with Lovable AI
+          Test the full optimization cycle with Claude (Anthropic API)
         </p>
       </div>
 
@@ -335,7 +335,7 @@ export default function OptimizationTest() {
                   <div className="space-y-2">
                     <Progress value={undefined} className="h-2" />
                     <p className="text-xs text-muted-foreground">
-                      Processing with Lovable AI (google/gemini-2.5-flash)...
+                      Processing with Claude (Anthropic API)...
                     </p>
                   </div>
                 )}

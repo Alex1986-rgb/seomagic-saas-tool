@@ -180,7 +180,7 @@ export default function OptimizationsHistory() {
         <CardHeader>
           <CardTitle>Оптимизации ({filteredOptimizations.length})</CardTitle>
           <CardDescription>
-            История всех AI оптимизаций с использованием Lovable AI
+            История всех AI оптимизаций с использованием Claude (Anthropic API)
           </CardDescription>
         </CardHeader>
         <CardContent>
