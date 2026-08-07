@@ -86,6 +86,9 @@ export const collectPagesContent = async (
           canonicalUrl: $('link[rel="canonical"]').attr('href') || undefined,
         },
         content: $('body').text().replace(/\s+/g, ' ').trim(),
+        // Сохраняем исходную разметку — оптимизация встраивается в неё,
+        // а не пересобирает страницу заново.
+        rawHtml: typeof response.data === 'string' ? response.data : String(response.data),
         images: [],
         headings: {
           h1: [],

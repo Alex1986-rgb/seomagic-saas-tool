@@ -91,6 +91,13 @@ export interface PageContent {
   url: string;
   title: string;
   content: string;
+  /**
+   * Исходный HTML страницы целиком, как отдал сервер.
+   * Нужен, чтобы оптимизация ВСТРАИВАЛАСЬ в существующую вёрстку,
+   * а не пересобирала страницу с нуля (иначе теряются шапка, меню,
+   * стили, формы и скрипты сайта).
+   */
+  rawHtml?: string;
   metadata: {
     title?: string;
     description?: string;
