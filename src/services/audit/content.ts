@@ -16,6 +16,8 @@ export interface PageContent {
     canonicalUrl?: string;
   };
   content: string;
+  /** Исходная разметка страницы: оптимизация встраивается в неё, а не пересобирает страницу. */
+  rawHtml?: string;
   images: {
     url: string;
     alt: string | null;

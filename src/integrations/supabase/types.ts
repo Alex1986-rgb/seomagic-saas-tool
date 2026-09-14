@@ -893,6 +893,98 @@ export type Database = {
         }
         Relationships: []
       }
+      position_checks: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          depth: number
+          domain: string
+          error: string | null
+          id: string
+          keywords_checked: number
+          keywords_total: number
+          provider: string | null
+          region: string | null
+          search_engine: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          depth?: number
+          domain: string
+          error?: string | null
+          id?: string
+          keywords_checked?: number
+          keywords_total?: number
+          provider?: string | null
+          region?: string | null
+          search_engine: string
+          status?: string
+          user_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          depth?: number
+          domain?: string
+          error?: string | null
+          id?: string
+          keywords_checked?: number
+          keywords_total?: number
+          provider?: string | null
+          region?: string | null
+          search_engine?: string
+          status?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      position_results: {
+        Row: {
+          check_id: string
+          checked_at: string
+          id: string
+          keyword: string
+          position: number
+          previous_position: number | null
+          search_engine: string
+          search_url: string | null
+          url: string | null
+        }
+        Insert: {
+          check_id: string
+          checked_at?: string
+          id?: string
+          keyword: string
+          position: number
+          previous_position?: number | null
+          search_engine: string
+          search_url?: string | null
+          url?: string | null
+        }
+        Update: {
+          check_id?: string
+          checked_at?: string
+          id?: string
+          keyword?: string
+          position?: number
+          previous_position?: number | null
+          search_engine?: string
+          search_url?: string | null
+          url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "position_results_check_id_fkey"
+            columns: ["check_id"]
+            isOneToOne: false
+            referencedRelation: "position_checks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       pricing_rules: {
         Row: {
           bundle_includes: Json | null

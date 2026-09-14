@@ -85,8 +85,8 @@ export const usePositionTrackerForm = (onSearchComplete?: Function) => {
       const domainForCheck = formattedDomain.replace(/^https?:\/\//, '');
       
       toast({
-        title: "Запуск браузера",
-        description: `Запуск эмуляции браузера для проверки позиций ${filteredKeywords.length} ключевых слов`,
+        title: "Проверяем позиции",
+        description: `Запрашиваем выдачу по ${filteredKeywords.length} запросам`,
       });
       
       // Using real position checking service
@@ -107,9 +107,13 @@ export const usePositionTrackerForm = (onSearchComplete?: Function) => {
       
       console.log(`Статистика позиций: TOP-10: ${inTop10}, TOP-30: ${inTop30}, не найдено: ${notFound}`);
 
+      const failed = results.failures?.length ?? 0;
       toast({
-        title: "Успешно",
-        description: `Проверены позиции для ${filteredKeywords.length} ключевых слов для ${domainForCheck}`,
+        title: failed > 0 ? "Проверено частично" : "Успешно",
+        description: failed > 0
+          ? `Получены позиции по ${results.keywords.length} запросам, ${failed} не проверено`
+          : `Проверены позиции по ${results.keywords.length} запросам для ${domainForCheck}`,
+        variant: failed > 0 ? "destructive" : undefined,
       });
 
       if (onSearchComplete) {
@@ -119,7 +123,7 @@ export const usePositionTrackerForm = (onSearchComplete?: Function) => {
       console.error(error);
       toast({
         title: "Ошибка",
-        description: "Не удалось выполнить проверку позиций",
+        description: error instanceof Error ? error.message : "Не удалось выполнить проверку позиций",
         variant: "destructive",
       });
     } finally {

@@ -1,65 +1,100 @@
+import { supabase } from '@/integrations/supabase/client';
+import { KeywordPosition, PositionData } from './positionTracker';
 
-import { PositionData } from './positionTracker';
+/** Сколько последних проверок показываем в истории. */
+const HISTORY_LIMIT = 50;
 
-// Get historical data for a domain
+/**
+ * История проверок позиций из базы.
+ *
+ * Раньше история лежала в localStorage и состояла из сгенерированных чисел.
+ * Теперь это записи проверок пользователя: они переживают смену браузера и
+ * доступны только владельцу (RLS).
+ */
 export const getHistoricalData = async (domain?: string): Promise<PositionData[]> => {
   try {
-    const historyJson = localStorage.getItem('position_history');
-    const history: PositionData[] = historyJson ? JSON.parse(historyJson) : [];
-    
-    if (domain) {
-      return history.filter(item => item.domain === domain);
+    let query = supabase
+      .from('position_checks')
+      .select('id, domain, search_engine, region, depth, status, provider, created_at')
+      .order('created_at', { ascending: false })
+      .limit(HISTORY_LIMIT);
+
+    if (domain) query = query.eq('domain', domain);
+
+    const { data: checks, error } = await query;
+    if (error) throw error;
+    if (!checks || checks.length === 0) return [];
+
+    const { data: rows, error: rowsError } = await supabase
+      .from('position_results')
+      .select('check_id, keyword, search_engine, position, previous_position, url, search_url, checked_at')
+      .in('check_id', checks.map((c) => c.id));
+    if (rowsError) throw rowsError;
+
+    const byCheck = new Map<string, KeywordPosition[]>();
+    for (const row of rows ?? []) {
+      const list = byCheck.get(row.check_id) ?? [];
+      list.push({
+        keyword: row.keyword,
+        position: row.position,
+        previousPosition: row.previous_position ?? undefined,
+        url: row.url ?? undefined,
+        searchEngine: row.search_engine,
+        searchUrl: row.search_url ?? undefined,
+        lastChecked: row.checked_at,
+      });
+      byCheck.set(row.check_id, list);
     }
-    
-    return history;
+
+    return checks.map((check) => ({
+      domain: check.domain,
+      timestamp: check.created_at,
+      date: check.created_at,
+      keywords: byCheck.get(check.id) ?? [],
+      searchEngine: check.search_engine,
+      region: check.region ?? undefined,
+      depth: check.depth,
+      scanFrequency: 'once',
+      scanId: check.id,
+      provider: check.provider ?? undefined,
+      status: check.status,
+    }));
   } catch (error) {
-    console.error('Ошибка получения исторических данных:', error);
+    console.error('Ошибка получения истории позиций:', error);
     return [];
   }
 };
 
-// Alias getHistoricalData as getPositionHistory for backward compatibility
+// Псевдоним для обратной совместимости с интерфейсом.
 export const getPositionHistory = getHistoricalData;
 
-// Save a new position check result to history
-export const saveToHistory = (result: PositionData): void => {
-  try {
-    const historyJson = localStorage.getItem('position_history');
-    let history: PositionData[] = historyJson ? JSON.parse(historyJson) : [];
-    
-    // Add the new result to the beginning of the history array
-    history.unshift(result);
-    
-    // Limit the history size (for performance reasons)
-    if (history.length > 100) {
-      history = history.slice(0, 100);
-    }
-    
-    // Save the updated history
-    localStorage.setItem('position_history', JSON.stringify(history));
-    
-    // Dispatch an event to notify other components
+/**
+ * Проверки сохраняет сервер в момент проверки, поэтому клиенту сохранять нечего.
+ * Функция оставлена, чтобы не ломать вызывающий код, и только уведомляет интерфейс.
+ */
+export const saveToHistory = (_result: PositionData): void => {
+  if (typeof window !== 'undefined') {
     window.dispatchEvent(new CustomEvent('position-history-updated'));
-  } catch (error) {
-    console.error('Ошибка сохранения в историю:', error);
   }
 };
 
-// Clear history for a domain or all history
-export const clearHistory = (domain?: string): void => {
+/** Удаление истории: по домену или целиком. Каскадом уходят и результаты. */
+export const clearHistory = async (domain?: string): Promise<void> => {
   try {
-    if (domain) {
-      const historyJson = localStorage.getItem('position_history');
-      const history: PositionData[] = historyJson ? JSON.parse(historyJson) : [];
-      const filteredHistory = history.filter(item => item.domain !== domain);
-      localStorage.setItem('position_history', JSON.stringify(filteredHistory));
-    } else {
-      localStorage.removeItem('position_history');
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('Требуется вход в аккаунт');
+
+    let query = supabase.from('position_checks').delete().eq('user_id', user.id);
+    if (domain) query = query.eq('domain', domain);
+
+    const { error } = await query;
+    if (error) throw error;
+
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('position-history-updated'));
     }
-    
-    // Dispatch an event to notify other components
-    window.dispatchEvent(new CustomEvent('position-history-updated'));
   } catch (error) {
-    console.error('Ошибка очистки истории:', error);
+    console.error('Ошибка очистки истории позиций:', error);
+    throw error;
   }
 };
