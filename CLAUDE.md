@@ -20,9 +20,13 @@ bun run lint       # eslint
   через edge-функцию `positions-check`, результаты лежат в `position_checks` /
   `position_results`. Ключи поставщика — в секретах Supabase, см. `docs/POSITION_TRACKING.md`.
   Без ключей раздел честно отказывается работать, чисел не выдумывает.
-- **«Автоматическая оптимизация» в основном UI — всё ещё мок**
-  (`seoOptimizationController`: localStorage + setTimeout), хотя рабочие edge-функции
-  optimization-* существуют и вызываются только со страницы `OptimizationTest`.
+- **ИИ-оптимизация — реальная** (сентябрь 2026): `seoOptimizationController` ведёт
+  цепочку `audit-start → audit-status → optimization-start → optimization-status`,
+  тексты переписывает Anthropic. Сборка исправленной копии сайта на сервере пока
+  не реализована — интерфейс об этом честно сообщает.
+- **Личный кабинет и админка — витрина**: данные берутся из `mock-data.ts`, обращений
+  к базе нет (кроме `/audits`, `/optimizations` и админского раздела пользователей).
+  Полный разбор — `docs/reports/2026-09-14-audit-gotovnosti-produkta.md`.
 - Прежде чем «чинить» фичу, проверь, не мок ли она.
 
 ## Связанные проекты

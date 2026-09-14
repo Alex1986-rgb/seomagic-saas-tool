@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { findDomainPosition } from './serp.ts';
+import { findDomainPosition, parseXmlRiverUrls } from './serp.ts';
 
 describe('findDomainPosition', () => {
   const serp = [
@@ -34,5 +34,34 @@ describe('findDomainPosition', () => {
 
   it('пропускает мусорные ссылки, не роняя проверку', () => {
     expect(findDomainPosition(['не-ссылка', 'https://example.com/'], 'example.com').position).toBe(2);
+  });
+});
+
+describe('parseXmlRiverUrls', () => {
+  // Форма ответа снята с живого запроса к XMLRiver 14.09.2026.
+  const xml = `<?xml version="1.0" encoding="UTF-8" ?>
+<yandexsearch version="1.0"><response><results><grouping>
+  <group id="1"><doc><url>https://mosseo.ru/audit/</url><title>Аудит</title><contenttype>organic</contenttype></doc></group>
+  <group id="2"><doc><url>https://ads.example.com/promo</url><title>Реклама</title><contenttype>paid</contenttype></doc></group>
+  <group id="3"><doc><url>https://pr-cy.ru/audit/</url><title>Аудит онлайн</title><contenttype>organic</contenttype></doc></group>
+  <group id="4"><doc><url><![CDATA[https://seranking.com/ru/audit/]]></url><title>SE Ranking</title></doc></group>
+</grouping></results></response></yandexsearch>`;
+
+  it('берёт ссылки в порядке выдачи', () => {
+    expect(parseXmlRiverUrls(xml)[0]).toBe('https://mosseo.ru/audit/');
+  });
+
+  it('пропускает неорганические блоки, чтобы позиция не уезжала вниз', () => {
+    const urls = parseXmlRiverUrls(xml);
+    expect(urls).not.toContain('https://ads.example.com/promo');
+    expect(findDomainPosition(urls, 'pr-cy.ru').position).toBe(2);
+  });
+
+  it('считает органическим блок без указанного типа и разворачивает CDATA', () => {
+    expect(parseXmlRiverUrls(xml)[2]).toBe('https://seranking.com/ru/audit/');
+  });
+
+  it('возвращает пустой список на ответе без результатов', () => {
+    expect(parseXmlRiverUrls('<response><error code="15">Ничего не найдено</error></response>')).toEqual([]);
   });
 });

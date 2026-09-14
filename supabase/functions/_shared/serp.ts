@@ -125,33 +125,121 @@ async function fetchXmlRiver({ engine, query, region, depth }: SerpRequest): Pro
     ? 'https://xmlriver.com/search_yandex/xml'
     : 'https://xmlriver.com/search/xml';
 
-  const params = new URLSearchParams({
-    user,
-    key,
-    query,
-    groupby: String(Math.min(100, Math.max(10, depth))),
-  });
   // Google — код страны, Яндекс — числовой код региона.
   const loc = region || REGION_DEFAULTS[engine];
-  if (engine === 'yandex') params.set('lr', loc);
-  else params.set('country', loc);
+  const wanted = Math.min(100, Math.max(10, depth));
 
-  const url = `${base}?${params.toString()}`;
-  const res = await fetch(url);
-  if (!res.ok) {
-    throw new SerpProviderError(`XMLRiver ответил ${res.status}`, 502);
+  // За один запрос XMLRiver отдаёт одну страницу выдачи. Её размер задаётся не
+  // в запросе, а в «Настройках сбора» личного кабинета — по умолчанию около
+  // десяти органических результатов. Поэтому глубину набираем постранично: при
+  // настройке в сто результатов хватит одного запроса, при десяти понадобится
+  // несколько. Каждая страница платная, так что лишних запросов не делаем —
+  // останавливаемся, как только набрали нужное или страница пришла пустой.
+  const urls: string[] = [];
+  const seen = new Set<string>();
+  for (let page = 1; page <= XMLRIVER_MAX_PAGES; page++) {
+    const params = new URLSearchParams({ user, key, query });
+    if (engine === 'yandex') params.set('lr', loc);
+    else params.set('country', loc);
+    // Первая страница запрашивается без параметра: page=0 и page=1 дают её же.
+    if (page > 1) params.set('page', String(page));
+
+    const pageUrls = await fetchXmlRiverPage(`${base}?${params.toString()}`);
+    if (pageUrls.length === 0) break;
+
+    // Если кабинет отдаёт страницу целиком, следующая может повторить часть
+    // ссылок — повторы не должны сдвигать позицию.
+    for (const value of pageUrls) {
+      if (seen.has(value)) continue;
+      seen.add(value);
+      urls.push(value);
+    }
+    if (urls.length >= wanted) break;
   }
-  const xml = await res.text();
 
-  const error = xml.match(/<error[^>]*>([\s\S]*?)<\/error>/i);
-  if (error) throw new SerpProviderError(`XMLRiver: ${stripCdata(error[1])}`, 502);
+  return {
+    urls: urls.slice(0, wanted),
+    provider: 'xmlriver',
+    searchUrl: humanSearchUrl(engine, query, loc),
+  };
+}
 
-  // Из выдачи нужен только порядок ссылок, поэтому полноценный разбор XML избыточен.
-  const urls = [...xml.matchAll(/<url>([\s\S]*?)<\/url>/gi)]
-    .map((m) => stripCdata(m[1]).trim())
-    .filter(Boolean);
+/**
+ * Потолок страниц на один запрос. При стандартной настройке кабинета (десять
+ * результатов на страницу) этого хватает на глубину 100; выше — уже не столько
+ * полезных данных, сколько расход баланса.
+ */
+const XMLRIVER_MAX_PAGES = 10;
 
-  return { urls, provider: 'xmlriver', searchUrl: humanSearchUrl(engine, query, loc) };
+/** Одна страница выдачи XMLRiver с повторами на штатную «выполните перезапрос». */
+async function fetchXmlRiverPage(url: string): Promise<string[]> {
+
+  // XMLRiver штатно отвечает ошибкой 500 «Выполните перезапрос», когда не получил
+  // ответ от поисковика: это не сбой, а просьба повторить. Повторяем сами, иначе
+  // каждая вторая проверка падала бы у пользователя на пустом месте.
+  let xml = '';
+  let lastTransientError = '';
+  for (let attempt = 1; attempt <= XMLRIVER_MAX_ATTEMPTS; attempt++) {
+    const res = await fetch(url);
+    if (!res.ok) throw new SerpProviderError(`XMLRiver ответил ${res.status}`, 502);
+    xml = await res.text();
+
+    const error = xml.match(/<error\s+code="(\d+)"[^>]*>([\s\S]*?)<\/error>/i);
+    if (!error) break;
+
+    const code = Number(error[1]);
+    const message = stripCdata(error[2]).trim();
+
+    // 15 — поисковик ничего не нашёл. Это валидный результат: сайта в выдаче нет.
+    if (code === 15) return [];
+
+    if (code !== 500) throw new SerpProviderError(`XMLRiver: ${message}`, 502);
+
+    lastTransientError = message;
+    if (attempt < XMLRIVER_MAX_ATTEMPTS) await delay(XMLRIVER_RETRY_DELAY_MS * attempt);
+  }
+
+  if (lastTransientError && /<error/i.test(xml)) {
+    throw new SerpProviderError(
+      `XMLRiver не отдал выдачу за ${XMLRIVER_MAX_ATTEMPTS} попытки: ${lastTransientError}`,
+      502,
+    );
+  }
+
+  return parseXmlRiverUrls(xml);
+}
+
+const XMLRIVER_MAX_ATTEMPTS = 3;
+const XMLRIVER_RETRY_DELAY_MS = 1500;
+
+function delay(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+/**
+ * Порядок органических ссылок из ответа XMLRiver.
+ *
+ * Разбираем поштучно каждый <doc>, а не все <url> подряд: в выдаче попадаются
+ * блоки с типом, отличным от organic (реклама, картинки, видео), и они не
+ * занимают позицию в органике — иначе позиция сайта уезжала бы вниз.
+ */
+export function parseXmlRiverUrls(xml: string): string[] {
+  const urls: string[] = [];
+
+  for (const doc of xml.matchAll(/<doc>([\s\S]*?)<\/doc>/gi)) {
+    const body = doc[1];
+    const contentType = body.match(/<contenttype>([\s\S]*?)<\/contenttype>/i);
+    // Тип указан не всегда; когда его нет, считаем результат органическим.
+    if (contentType && stripCdata(contentType[1]).trim().toLowerCase() !== 'organic') continue;
+
+    const url = body.match(/<url>([\s\S]*?)<\/url>/i);
+    if (!url) continue;
+
+    const value = stripCdata(url[1]).trim();
+    if (value) urls.push(value);
+  }
+
+  return urls;
 }
 
 function stripCdata(value: string): string {
