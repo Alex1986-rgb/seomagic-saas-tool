@@ -85,6 +85,11 @@ serve(async (req) => {
     const depth = Math.min(100, Math.max(10, body.depth ?? 100));
     const region = body.region?.trim() || undefined;
     const requested = body.searchEngine ?? 'google';
+    // Поставщики отдают только эти две системы. Молча подменять запрошенную
+    // систему другой нельзя — пользователь будет считать результат чужой выдачи своим.
+    if (!['google', 'yandex', 'all'].includes(requested)) {
+      return json({ error: `Поисковая система «${requested}» не поддерживается: доступны Google и Яндекс` }, 400);
+    }
     const engines: SearchEngine[] = requested === 'all' ? ['google', 'yandex'] : [requested as SearchEngine];
 
     // Запись результатов — под service-role: пользователь не должен иметь

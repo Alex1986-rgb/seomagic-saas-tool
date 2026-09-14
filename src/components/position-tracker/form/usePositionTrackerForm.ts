@@ -7,12 +7,10 @@ import { positionTrackerFormSchema, type FormData } from './schema';
 import { useKeywordsManager } from './useKeywordsManager';
 import { useKeywordsInput } from './useKeywordsInput';
 import { checkPositions } from '@/services/position/positionTracker';
-import { useProxyManager } from '@/hooks/use-proxy-manager';
 
 export const usePositionTrackerForm = (onSearchComplete?: Function) => {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
-  const { activeProxies } = useProxyManager();
 
   const form = useForm<FormData>({
     resolver: zodResolver(positionTrackerFormSchema),
@@ -61,17 +59,6 @@ export const usePositionTrackerForm = (onSearchComplete?: Function) => {
         throw new Error("Все ключевые слова пусты");
       }
       
-      // Check for available proxies
-      const hasActiveProxies = activeProxies && activeProxies.length > 0;
-      
-      if (values.useProxy && !hasActiveProxies) {
-        toast({
-          title: "Внимание",
-          description: "Нет активных прокси. Проверка может быть менее точной.",
-          variant: "default",
-        });
-      }
-      
       // Format domain
       let formattedDomain = values.domain;
       if (!formattedDomain.match(/^https?:\/\//)) {
@@ -97,7 +84,6 @@ export const usePositionTrackerForm = (onSearchComplete?: Function) => {
         region: values.region,
         depth: values.depth,
         scanFrequency: values.scanFrequency,
-        useProxy: values.useProxy && hasActiveProxies
       });
       
       // Output information on found positions

@@ -16,7 +16,7 @@ const TrackerHeader: React.FC<TrackerHeaderProps> = () => {
     <div className="mb-6 md:mb-10">
       <h1 className="text-2xl md:text-4xl font-bold mb-2 md:mb-4">Анализ позиций сайта</h1>
       <p className="text-sm md:text-lg text-muted-foreground">
-        Отслеживайте позиции вашего сайта в поисковых системах Яндекс, Google и Mail.ru
+        Отслеживайте позиции вашего сайта в Яндексе и Google
       </p>
 
       <div className="mt-6">

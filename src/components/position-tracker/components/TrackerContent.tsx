@@ -15,11 +15,11 @@ interface TrackerContentProps {
 }
 
 // Define the valid search engine types to match the position tracker's expectations
-type SearchEngineType = "google" | "yandex" | "mailru" | "all";
+type SearchEngineType = "google" | "yandex" | "all";
 
 // Helper function to ensure the search engine string is of the correct type
 const validateSearchEngine = (engine: string): SearchEngineType => {
-  const validEngines: SearchEngineType[] = ["google", "yandex", "mailru", "all"];
+  const validEngines: SearchEngineType[] = ["google", "yandex", "all"];
   return validEngines.includes(engine as SearchEngineType) 
     ? (engine as SearchEngineType) 
     : "all"; // Default to "all" if invalid
