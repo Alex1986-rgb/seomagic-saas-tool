@@ -594,7 +594,8 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({
         error: error instanceof Error ? error.message : 'Unknown error',
-        details: error instanceof Error ? error.stack : undefined
+        // Стек остаётся в логах функции: наружу его отдавать нельзя —
+        // он раскрывает устройство сервиса.
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
