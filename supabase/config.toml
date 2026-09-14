@@ -1,5 +1,8 @@
 project_id = "dllusofuxonaemrttmwl"
 
+[functions.position-check]
+verify_jwt = true
+
 [functions.audit-start]
 verify_jwt = false
 

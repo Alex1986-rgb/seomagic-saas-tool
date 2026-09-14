@@ -1,8 +1,6 @@
 
-export * from './generators';
 export * from './recommendations';
 export * from './history';
-export * from './seoDetails';
 export * from './sitemap';
 
 // Export issues and pricing services
