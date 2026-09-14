@@ -12,12 +12,6 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { 
-  BrokenLinksAnalyzer, 
-  DuplicatesDetector,
-  SiteStructureVisualization,
-  ContentUniquenessChecker
-} from '@/components/position-tracker';
 import { PositionData, checkPositions } from '@/services/position/positionTracker';
 import { getPositionHistory, getHistoricalData } from '@/services/position/positionHistory';
 import { exportHistoryToExcel } from '@/services/position/exportService';
@@ -531,7 +525,7 @@ const AdminPositions: React.FC = () => {
       </div>
 
       <Tabs defaultValue={activeTab} value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="mb-4 grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6">
+        <TabsList className="mb-4 grid grid-cols-2">
           <TabsTrigger value="history" className="flex items-center gap-1">
             <History className="h-4 w-4" />
             История проверок
@@ -539,22 +533,6 @@ const AdminPositions: React.FC = () => {
           <TabsTrigger value="domains" className="flex items-center gap-1">
             <Webhook className="h-4 w-4" />
             Домены
-          </TabsTrigger>
-          <TabsTrigger value="positions" className="flex items-center gap-1">
-            <Search className="h-4 w-4" />
-            Позиции
-          </TabsTrigger>
-          <TabsTrigger value="linkAnalysis" className="flex items-center gap-1">
-            <Link2Off className="h-4 w-4" />
-            Анализ ссылок
-          </TabsTrigger>
-          <TabsTrigger value="duplicates" className="flex items-center gap-1">
-            <CopyX className="h-4 w-4" />
-            Дубликаты
-          </TabsTrigger>
-          <TabsTrigger value="sitemap" className="flex items-center gap-1">
-            <FolderTree className="h-4 w-4" />
-            Структура сайта
           </TabsTrigger>
         </TabsList>
 
@@ -680,53 +658,6 @@ const AdminPositions: React.FC = () => {
           </Card>
         </TabsContent>
 
-        <TabsContent value="positions">
-          <ContentUniquenessChecker 
-            domain={selectedDomain || ''} 
-          />
-        </TabsContent>
-
-        <TabsContent value="linkAnalysis">
-          <BrokenLinksAnalyzer 
-            domain={selectedDomain || ''} 
-          />
-        </TabsContent>
-
-        <TabsContent value="duplicates">
-          <DuplicatesDetector
-            domain={selectedDomain || ''}
-          />
-        </TabsContent>
-
-        <TabsContent value="sitemap">
-          {selectedDomain ? (
-            <SiteStructureVisualization 
-              domain={selectedDomain}
-              className="mt-4"
-            />
-          ) : (
-            <Card>
-              <CardContent className="py-10 text-center">
-                <FolderTree className="h-10 w-10 text-muted-foreground mx-auto mb-4" />
-                <p className="text-muted-foreground mb-4">
-                  Выберите домен для визуализации структуры сайта
-                </p>
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2">
-                  {topDomains.slice(0, 5).map((item, index) => (
-                    <Button 
-                      key={index} 
-                      variant="outline" 
-                      size="sm"
-                      onClick={() => handleCheckDomain(item.domain)}
-                    >
-                      {item.domain}
-                    </Button>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          )}
-        </TabsContent>
       </Tabs>
     </div>
   );

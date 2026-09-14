@@ -1,64 +1,73 @@
+import React from 'react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { ArrowRight, BarChart, Globe, Repeat } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
-import React, { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { BarChart, Navigation, Search, Route } from 'lucide-react';
-import { BrokenLinksAnalyzer } from './BrokenLinksAnalyzer';
-import { SiteStructureVisualization } from './SiteStructureVisualization';
-import { DuplicatesDetector } from './DuplicatesDetector';
-import { ContentUniquenessChecker } from './ContentUniquenessChecker';
-
+/**
+ * Блок о трекинге позиций на главной странице.
+ *
+ * Раньше здесь стояли четыре вкладки с имитациями: «Позиции» показывали
+ * проверку уникальности, а битые ссылки, структура и дубликаты выдавали
+ * заранее написанные результаты для любого домена. Настоящие данные такого
+ * рода собирает аудит сайта, а позиции проверяются в своём разделе — туда и
+ * ведём, вместо того чтобы показывать выдуманное.
+ */
 const PositionTrackerFeature: React.FC = () => {
-  const [activeTab, setActiveTab] = useState('positions');
-  const [domain, setDomain] = useState('example.com');
+  const navigate = useNavigate();
+
+  const points = [
+    {
+      icon: <Globe className="h-5 w-5 text-primary" />,
+      title: 'Яндекс и Google',
+      text: 'Проверка по нужному региону — от Москвы до другой страны.',
+    },
+    {
+      icon: <BarChart className="h-5 w-5 text-primary" />,
+      title: 'Настоящая выдача',
+      text: 'Позиция берётся из поисковой выдачи, а не рассчитывается по формуле.',
+    },
+    {
+      icon: <Repeat className="h-5 w-5 text-primary" />,
+      title: 'История проверок',
+      text: 'Каждая проверка сохраняется — видно, куда двигается сайт.',
+    },
+  ];
 
   return (
     <div className="space-y-6">
-      <h2 className="text-2xl font-bold text-center mb-6">Отслеживание позиций сайта</h2>
-      
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid grid-cols-4 mb-6">
-          <TabsTrigger value="positions" className="flex items-center gap-2">
-            <BarChart className="h-4 w-4" />
-            <span>Позиции</span>
-          </TabsTrigger>
-          <TabsTrigger value="broken" className="flex items-center gap-2">
-            <Route className="h-4 w-4" />
-            <span>Битые ссылки</span>
-          </TabsTrigger>
-          <TabsTrigger value="structure" className="flex items-center gap-2">
-            <Navigation className="h-4 w-4" />
-            <span>Структура</span>
-          </TabsTrigger>
-          <TabsTrigger value="duplicates" className="flex items-center gap-2">
-            <Search className="h-4 w-4" />
-            <span>Дубликаты</span>
-          </TabsTrigger>
-        </TabsList>
-        
-        <TabsContent value="positions">
-          <Card>
-            <CardHeader>
-              <CardTitle>Позиции в поисковых системах</CardTitle>
+      <div className="text-center space-y-2">
+        <h2 className="text-2xl font-bold">Отслеживание позиций сайта</h2>
+        <p className="text-muted-foreground">
+          Где ваш сайт находится по важным запросам — сегодня и месяц назад
+        </p>
+      </div>
+
+      <div className="grid gap-4 md:grid-cols-3">
+        {points.map((point) => (
+          <Card key={point.title}>
+            <CardHeader className="pb-2">
+              <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center mb-2">
+                {point.icon}
+              </div>
+              <CardTitle className="text-base">{point.title}</CardTitle>
             </CardHeader>
             <CardContent>
-              <ContentUniquenessChecker domain={domain} />
+              <CardDescription>{point.text}</CardDescription>
             </CardContent>
           </Card>
-        </TabsContent>
-        
-        <TabsContent value="broken">
-          <BrokenLinksAnalyzer domain={domain} />
-        </TabsContent>
-        
-        <TabsContent value="structure">
-          <SiteStructureVisualization domain={domain} />
-        </TabsContent>
-        
-        <TabsContent value="duplicates">
-          <DuplicatesDetector domain={domain} />
-        </TabsContent>
-      </Tabs>
+        ))}
+      </div>
+
+      <div className="flex flex-col sm:flex-row gap-3 justify-center">
+        <Button className="gap-2" onClick={() => navigate('/position-tracker')}>
+          Проверить позиции
+          <ArrowRight className="h-4 w-4" />
+        </Button>
+        <Button variant="outline" onClick={() => navigate('/audit')}>
+          Сделать аудит сайта
+        </Button>
+      </div>
     </div>
   );
 };
