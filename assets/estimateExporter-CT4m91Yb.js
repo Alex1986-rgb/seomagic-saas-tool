@@ -1,0 +1,17 @@
+import{c as y}from"./index-BE3V8Xa4.js";import{utils as s,write as g}from"./xlsx-D_0l8YDs.js";/**
+ * @license lucide-react v0.484.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */const S=[["path",{d:"M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0",key:"1nclc0"}],["circle",{cx:"12",cy:"12",r:"3",key:"1v7zrd"}]],f=y("eye",S);/**
+ * @license lucide-react v0.484.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */const w=[["path",{d:"M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z",key:"1rqfz7"}],["path",{d:"M14 2v4a2 2 0 0 0 2 2h4",key:"tnqrlb"}],["path",{d:"M8 13h2",key:"yr2amv"}],["path",{d:"M14 13h2",key:"un5t4a"}],["path",{d:"M8 17h2",key:"2yhykz"}],["path",{d:"M14 17h2",key:"10kma7"}]],R=y("file-spreadsheet",w);/**
+ * @license lucide-react v0.484.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */const _=[["circle",{cx:"18",cy:"5",r:"3",key:"gq8acd"}],["circle",{cx:"6",cy:"12",r:"3",key:"w7nqdw"}],["circle",{cx:"18",cy:"19",r:"3",key:"1xt0gg"}],["line",{x1:"8.59",x2:"15.42",y1:"13.51",y2:"17.49",key:"47mynk"}],["line",{x1:"15.41",x2:"8.59",y1:"6.51",y2:"10.49",key:"1n3mei"}]],L=y("share-2",_);async function U(a,c,r){const t=s.book_new(),n=[["SEO Аудит - Смета на оптимизацию"],[],["Сайт:",r],["Дата:",new Date().toLocaleDateString("ru-RU")],[],["Показатель","Значение"],["Итого работ:",`${c.subtotal.toLocaleString("ru-RU")} ₽`],["Скидка:",`${c.discount.toLocaleString("ru-RU")} ₽`],["К оплате:",`${c.final.toLocaleString("ru-RU")} ₽`]],u=s.aoa_to_sheet(n);s.book_append_sheet(t,u,"Сводка");const l=a.reduce((e,o)=>(e[o.category]||(e[o.category]={count:0,cost:0}),e[o.category].count+=o.count,e[o.category].cost+=o.cost*o.count,e),{}),d=[["Смета по категориям"],[],["Категория","Количество","Стоимость"],...Object.entries(l).map(([e,o])=>[e,o.count,`${o.cost.toLocaleString("ru-RU")} ₽`]),[],["Итого:",Object.values(l).reduce((e,o)=>e+o.count,0),`${c.subtotal.toLocaleString("ru-RU")} ₽`]],p=s.aoa_to_sheet(d);s.book_append_sheet(t,p,"По категориям");const i=[["Детализация работ"],[],["Категория","Тип","Количество","Цена за единицу","Сумма"],...a.map(e=>[e.category,e.type,e.count,`${e.cost.toLocaleString("ru-RU")} ₽`,`${(e.cost*e.count).toLocaleString("ru-RU")} ₽`])],h=s.aoa_to_sheet(i);s.book_append_sheet(t,h,"Детализация");const k=g(t,{bookType:"xlsx",type:"array"});return new Blob([k],{type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"})}async function $(a,c){const t=[["Смета на SEO-оптимизацию"],[`Сайт: ${c}`],[`Дата: ${new Date().toLocaleDateString("ru-RU")}`],[],["Категория","Тип","Количество","Цена за единицу","Сумма"],...a.map(n=>[n.category,n.type,n.count,n.cost,n.cost*n.count])].map(n=>n.join(",")).join(`
+`);return new Blob([t],{type:"text/csv;charset=utf-8;"})}function m(a,c){const r=window.URL.createObjectURL(a),t=document.createElement("a");t.href=r,t.download=c,document.body.appendChild(t),t.click(),document.body.removeChild(t),window.URL.revokeObjectURL(r)}function v(a,c){const r=a.replace(/^https?:\/\//,"").replace(/[^a-z0-9]/gi,"-"),t=new Date().toISOString().split("T")[0];return`estimate-${r}-${t}.${c}`}export{f as E,R as F,L as S,$ as a,m as d,U as e,v as g};

@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /cloned-assets/
+
+Sitemap: https://alex1986-rgb.github.io/seomagic-saas-tool/myarredo-by/sitemap.xml
+Sitemap: https://alex1986-rgb.github.io/seomagic-saas-tool/myarredo-by/sitemap-images.xml

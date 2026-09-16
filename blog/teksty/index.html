@@ -1,0 +1,58 @@
+
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <!-- favicon.svg в проекте нет, есть только favicon.ico. -->
+    <link rel="icon" type="image/x-icon" href="/seomagic-saas-tool/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!--
+      Заголовок и описание задаёт компонент PageSeo на каждой странице. Здесь
+      они стояли тоже — и в готовой странице оказывалось по два тега
+      description и og:title. Дубли метатегов поисковики считают ошибкой:
+      ровно за это ругается наш собственный аудит.
+
+      Статический <meta name="robots" content="index, follow"> тоже убран.
+      Helmet его не видит и не заменяет, поэтому на /auth, 404, сметах по
+      ссылке и в кабинете рядом с noindex из PageSeo стоял второй, разрешающий
+      тег, а Яндекс при противоречии учитывает разрешающую директиву. Без тега
+      страница и так индексируется, запрет ставит PageSeo там, где он нужен.
+    -->
+    <meta name="theme-color" content="#8b5cf6" />
+    <link rel="apple-touch-icon" href="/seomagic-saas-tool/apple-touch-icon.png" />
+    <link rel="manifest" href="/seomagic-saas-tool/manifest.json" />
+    
+    <!-- Preconnect to critical domains -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="dns-prefetch" href="https://rbkwhejnhiwmktqwkakz.supabase.co" />
+    
+    <!-- Preload critical fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@400;600;700&display=swap" rel="stylesheet" />
+    
+    <script type="module" crossorigin src="/seomagic-saas-tool/assets/index-BE3V8Xa4.js"></script>
+    <link rel="stylesheet" crossorigin href="/seomagic-saas-tool/assets/index-BaaPKDyr.css">
+      <title data-rh="true">Тексты категорий: как писать, чтобы это не выглядело спамом — SeoMarket</title>
+    <meta data-rh="true" name="description" content="Зачем нужен текст на странице категории, что в нём писать, где его размещать и почему объём сам по себе не спасает страницу от статуса малоценной." />
+    <link data-rh="true" rel="canonical" href="https://alex1986-rgb.github.io/seomagic-saas-tool/blog/teksty/" />
+    <meta data-rh="true" property="og:type" content="article" />
+    <meta data-rh="true" property="og:locale" content="ru_RU" />
+    <meta data-rh="true" property="og:title" content="Тексты категорий: как писать, чтобы это не выглядело спамом — SeoMarket" />
+    <meta data-rh="true" property="og:description" content="Зачем нужен текст на странице категории, что в нём писать, где его размещать и почему объём сам по себе не спасает страницу от статуса малоценной." />
+    <meta data-rh="true" property="og:url" content="https://alex1986-rgb.github.io/seomagic-saas-tool/blog/teksty/" />
+    <meta data-rh="true" property="og:site_name" content="SeoMarket" />
+    <meta data-rh="true" property="og:image" content="https://images.unsplash.com/photo-1764557380057-53ff582146b8?w=1600&amp;q=80&amp;auto=format&amp;fit=crop" />
+    <meta data-rh="true" name="twitter:card" content="summary_large_image" />
+    <script data-rh="true" type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"Тексты категорий: как писать, чтобы это не выглядело спамом","description":"Зачем нужен текст на странице категории, что в нём писать, где его размещать и почему объём сам по себе не спасает страницу от статуса малоценной.","datePublished":"2026-08-22","dateModified":"2026-08-22","inLanguage":"ru-RU","articleSection":"Контент","mainEntityOfPage":{"@type":"WebPage","@id":"https://alex1986-rgb.github.io/seomagic-saas-tool/blog/teksty/"},"image":["https://images.unsplash.com/photo-1764557380057-53ff582146b8?w=1600&q=80&auto=format&fit=crop"],"author":{"@type":"Organization","name":"SeoMarket","url":"https://alex1986-rgb.github.io/seomagic-saas-tool/"},"publisher":{"@type":"Organization","name":"SeoMarket","url":"https://alex1986-rgb.github.io/seomagic-saas-tool/"}}</script>
+    <script data-rh="true" type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Главная","item":"https://alex1986-rgb.github.io/seomagic-saas-tool/"},{"@type":"ListItem","position":2,"name":"Блог","item":"https://alex1986-rgb.github.io/seomagic-saas-tool/blog/"},{"@type":"ListItem","position":3,"name":"Тексты категорий: как писать, чтобы это не выглядело спамом","item":"https://alex1986-rgb.github.io/seomagic-saas-tool/blog/teksty/"}]}</script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <!--
+      Сторонний скрипт cdn.gpteng.co (редактор Lovable) убран с боевой страницы.
+      Он грузился на каждой странице сайта, имел полный доступ к ней — включая
+      формы и сессию вошедшего пользователя, — а сейчас ещё и не отвечает, то
+      есть каждая страница ждала недоступный домен. Для работы сайта он не нужен.
+    -->
+  </body>
+</html>

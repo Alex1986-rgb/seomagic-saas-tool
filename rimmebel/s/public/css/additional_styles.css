@@ -1,0 +1,37 @@
+/*
+*additional styles for seo opt 
+*/
+.seo-text-box {
+  width: auto;
+  height: auto;
+  margin-bottom: 25px;
+  overflow: hidden;
+}
+
+.seo-text-box .simple-text h1 {
+  width: 520px;
+  min-height: 40px;
+  margin-bottom: 30px;
+  color: #6b6b6b;
+  font-size: 28px;
+  line-height: 32px;
+  font-family: "Georgia", Arial, "Helvetica", sans-serif;
+}
+
+.seo-text-box .simple-text h2 {
+  margin-bottom: 20px;
+  font-size: 24px;
+  line-height: 30px;
+  font-style: italic;
+  font-weight: normal;
+  color: #6c6b6b;
+  font-family: "Georgia", Arial, "Helvetica", sans-serif;
+}
+
+.seo-text-box .simple-text p {
+  margin-bottom: 20px;
+  font-size: 13px;
+  line-height: 19px;
+  color: #6b6b6b;
+  font-family: Arial, "Helvetica", sans-serif;
+}

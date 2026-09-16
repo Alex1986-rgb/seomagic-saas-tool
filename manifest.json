@@ -1,0 +1,17 @@
+{
+  "name": "SEO Аудит и Оптимизация",
+  "short_name": "SEO Аудит",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#8b5cf6",
+  "description": "SEO аудит и оптимизация сайтов. Повысьте позиции в поисковых системах и увеличьте органический трафик.",
+  "icons": [
+    {
+      "src": "apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    }
+  ],
+  "scope": "."
+}
