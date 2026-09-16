@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ComparisonData } from '@/services/audit/historyService';
 import { TrendingUp, TrendingDown, Minus } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { toNumber } from '@/lib/numbers';
 
 interface ComparisonCardProps {
   comparison: ComparisonData | null;
@@ -30,7 +31,7 @@ const ComparisonCard: React.FC<ComparisonCardProps> = ({ comparison }) => {
       return (
         <div className="flex items-center gap-1 text-success">
           <TrendingUp className="w-4 h-4" />
-          <span className="font-semibold">+{change.toFixed(1)}</span>
+          <span className="font-semibold">+{toNumber(change).toFixed(1)}</span>
         </div>
       );
     }
@@ -38,7 +39,7 @@ const ComparisonCard: React.FC<ComparisonCardProps> = ({ comparison }) => {
       return (
         <div className="flex items-center gap-1 text-destructive">
           <TrendingDown className="w-4 h-4" />
-          <span className="font-semibold">{change.toFixed(1)}</span>
+          <span className="font-semibold">{toNumber(change).toFixed(1)}</span>
         </div>
       );
     }
@@ -108,12 +109,12 @@ const ComparisonCard: React.FC<ComparisonCardProps> = ({ comparison }) => {
                 {metric.change < 0 ? (
                   <div className="flex items-center gap-1 text-success">
                     <TrendingDown className="w-4 h-4" />
-                    <span className="font-semibold">{metric.change.toFixed(1)}%</span>
+                    <span className="font-semibold">{toNumber(metric.change).toFixed(1)}%</span>
                   </div>
                 ) : metric.change > 0 ? (
                   <div className="flex items-center gap-1 text-destructive">
                     <TrendingUp className="w-4 h-4" />
-                    <span className="font-semibold">+{metric.change.toFixed(1)}%</span>
+                    <span className="font-semibold">+{toNumber(metric.change).toFixed(1)}%</span>
                   </div>
                 ) : (
                   <div className="flex items-center gap-1 text-muted-foreground">

@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ExternalLink, Zap, AlertCircle, AlertTriangle, CheckCircle2, Clock, FileText, Image as ImageIcon, Heading1 } from 'lucide-react';
 import { PageAnalysisRow } from './types';
+import { toNumber } from '@/lib/numbers';
 
 interface PageDetailViewProps {
   page: PageAnalysisRow | null;
@@ -50,7 +51,7 @@ const PageDetailView: React.FC<PageDetailViewProps> = ({ page, isOpen, onClose }
                   </div>
                   <div>
                     <div className="text-xs text-muted-foreground">Время загрузки</div>
-                    <div className="font-bold">{page.loadTime.toFixed(2)}s</div>
+                    <div className="font-bold">{toNumber(page.loadTime).toFixed(2)}s</div>
                   </div>
                 </div>
 

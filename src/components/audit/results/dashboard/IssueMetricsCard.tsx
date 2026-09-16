@@ -2,6 +2,7 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { AlertCircle, FileText, Heading1, Link2, Eye, Zap, Repeat } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { toNumber } from '@/lib/numbers';
 
 interface IssueMetric {
   label: string;
@@ -34,15 +35,15 @@ const IssueMetricsCard: React.FC<IssueMetricsCardProps> = ({
   pctLongRedirectChains = 0
 }) => {
   const metrics: IssueMetric[] = [
-    { label: 'Без Title', value: pctMissingTitle, icon: <FileText className="h-4 w-4" />, color: 'text-orange-500' },
-    { label: 'Без H1', value: pctMissingH1, icon: <Heading1 className="h-4 w-4" />, color: 'text-orange-500' },
-    { label: 'Без Description', value: pctMissingDescription, icon: <FileText className="h-4 w-4" />, color: 'text-orange-500' },
-    { label: 'Без Canonical', value: pctMissingCanonical, icon: <Link2 className="h-4 w-4" />, color: 'text-yellow-500' },
-    { label: 'Не индексируются', value: pctNotIndexable, icon: <Eye className="h-4 w-4" />, color: 'text-red-500' },
-    { label: 'Тонкий контент', value: pctThinContent, icon: <FileText className="h-4 w-4" />, color: 'text-yellow-500' },
-    { label: 'Медленные', value: pctSlowPages, icon: <Zap className="h-4 w-4" />, color: 'text-red-500' },
-    { label: 'С редиректами', value: pctPagesWithRedirects, icon: <Repeat className="h-4 w-4" />, color: 'text-yellow-500' },
-    { label: 'Длинные цепочки', value: pctLongRedirectChains, icon: <AlertCircle className="h-4 w-4" />, color: 'text-red-500' }
+    { label: 'Без Title', value: toNumber(pctMissingTitle), icon: <FileText className="h-4 w-4" />, color: 'text-orange-500' },
+    { label: 'Без H1', value: toNumber(pctMissingH1), icon: <Heading1 className="h-4 w-4" />, color: 'text-orange-500' },
+    { label: 'Без Description', value: toNumber(pctMissingDescription), icon: <FileText className="h-4 w-4" />, color: 'text-orange-500' },
+    { label: 'Без Canonical', value: toNumber(pctMissingCanonical), icon: <Link2 className="h-4 w-4" />, color: 'text-yellow-500' },
+    { label: 'Не индексируются', value: toNumber(pctNotIndexable), icon: <Eye className="h-4 w-4" />, color: 'text-red-500' },
+    { label: 'Тонкий контент', value: toNumber(pctThinContent), icon: <FileText className="h-4 w-4" />, color: 'text-yellow-500' },
+    { label: 'Медленные', value: toNumber(pctSlowPages), icon: <Zap className="h-4 w-4" />, color: 'text-red-500' },
+    { label: 'С редиректами', value: toNumber(pctPagesWithRedirects), icon: <Repeat className="h-4 w-4" />, color: 'text-yellow-500' },
+    { label: 'Длинные цепочки', value: toNumber(pctLongRedirectChains), icon: <AlertCircle className="h-4 w-4" />, color: 'text-red-500' }
   ];
 
   const significantMetrics = metrics.filter(m => m.value > 0);

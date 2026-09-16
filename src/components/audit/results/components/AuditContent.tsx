@@ -7,6 +7,8 @@ import AuditOptimizationSection from './AuditOptimizationSection';
 import AuditResultsViewSwitcher from '../dashboard/AuditResultsViewSwitcher';
 import { AuditHistoryData } from '@/types/audit';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { LayoutDashboard, List } from 'lucide-react';
 
 interface AuditContentProps {
@@ -103,8 +105,23 @@ const AuditContent: React.FC<AuditContentProps> = ({
         onDownloadSitemap={onDownloadSitemap}
       />
       
-      {/* Display results - show structure even during loading */}
-      {(!isLoading && !isScanning && !auditError && auditData && recommendations) && (
+      {(!isLoading && !isScanning && !auditError && !auditData) && (
+        <Card className="p-8 text-center">
+          <h3 className="text-lg font-medium mb-2">Результаты пока не готовы</h3>
+          <p className="text-sm text-muted-foreground mb-4">
+            Аудит завершён, но данные ещё не записались. Обновите страницу через несколько секунд.
+          </p>
+          <Button variant="outline" onClick={onRetry}>Обновить</Button>
+        </Card>
+      )}
+
+      {/*
+        Результаты показываем, как только есть данные аудита. Раньше сюда же
+        входило условие на рекомендации, а они были заглушкой `null` — поэтому
+        после завершения аудита экран оставался пустым, хотя данные уже лежали
+        в базе. Рекомендации, если их нет, просто не рисуют свой блок.
+      */}
+      {(!isLoading && !isScanning && !auditError && auditData) && (
         <>
           {/* Tabs for switching between views */}
           <Tabs value={viewMode} onValueChange={(value) => setViewMode(value as 'dashboard' | 'classic')} className="mb-6">

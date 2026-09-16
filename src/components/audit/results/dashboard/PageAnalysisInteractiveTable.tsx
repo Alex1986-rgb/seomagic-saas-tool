@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Search, ArrowUpDown, ChevronLeft, ChevronRight, ExternalLink } from 'lucide-react';
 import { PageAnalysisRow } from './types';
+import { toNumber } from '@/lib/numbers';
 
 interface PageAnalysisInteractiveTableProps {
   pages: PageAnalysisRow[];
@@ -172,7 +173,7 @@ const PageAnalysisInteractiveTable: React.FC<PageAnalysisInteractiveTableProps> 
                         {page.issuesCount}
                       </Badge>
                     </TableCell>
-                    <TableCell>{page.loadTime.toFixed(2)}s</TableCell>
+                    <TableCell>{toNumber(page.loadTime).toFixed(2)}s</TableCell>
                     <TableCell>
                       <Button
                         variant="ghost"

@@ -1,5 +1,6 @@
 
 import { useState, useCallback, useRef } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { useToast } from './use-toast';
 import { validationService } from '@/services/validation/validationService';
 import { reportingService } from '@/services/reporting/reportingService';
@@ -45,6 +46,7 @@ export const useScan = (url: string, onPageCountUpdate?: (count: number) => void
   const [taskId, setTaskId] = useState<string | null>(null);
   const [scanLogs, setScanLogs] = useState<ScanLogEntry[]>([]);
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const errorCountRef = useRef<number>(0);
   const MAX_POLLING_ERRORS = 3;
@@ -278,6 +280,20 @@ export const useScan = (url: string, onPageCountUpdate?: (count: number) => void
             // THEN stop polling
             clearInterval(pollInterval);
             pollingIntervalRef.current = null;
+
+            /**
+             * Часть данных дописывается уже после того, как обход объявлен
+             * завершённым: замечания складывает классификатор, метрики —
+             * обработчик. Экраны успевают прочитать пустоту и запоминают её,
+             * поэтому после завершения просим перечитать всё, что относится
+             * к этой задаче.
+             */
+            queryClient.invalidateQueries({ queryKey: ['auditResults'] });
+            queryClient.invalidateQueries({ queryKey: ['auditIssues'] });
+            queryClient.invalidateQueries({ queryKey: ['auditRecommendations'] });
+            queryClient.invalidateQueries({ queryKey: ['taskMetrics'] });
+            queryClient.invalidateQueries({ queryKey: ['pageAnalysis'] });
+            queryClient.invalidateQueries({ queryKey: ['auditHistory'] });
             
             toast({
               title: "Сканирование завершено",
