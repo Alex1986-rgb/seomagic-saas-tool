@@ -2,6 +2,7 @@
 import React from "react";
 import SecuritySettings from "@/components/admin/system/SecuritySettings";
 import { Card, CardContent } from "@/components/ui/card";
+import PageSeo from '@/components/seo/PageSeo';
 
 const SecurityMonitor = () => (
   <div className="border rounded-md p-4 bg-muted my-6">
@@ -18,6 +19,11 @@ const SecurityMonitor = () => (
 
 const SecuritySettingsPage = () => (
   <div className="container mx-auto px-4 py-8 max-w-3xl">
+    <PageSeo
+      title="Безопасность: двухфакторный вход, IP-фильтры и политики"
+      description="Политики защиты аккаунтов: двухфакторная аутентификация, ограничения по IP, защита от подбора паролей и журнал событий входа."
+      noindex
+    />
     <h2 className="text-2xl font-bold mb-3">Безопасность</h2>
     <p className="mb-4 text-muted-foreground">Настройки защиты и политики безопасности, текущий статус важных параметров.</p>
     <SecurityMonitor />

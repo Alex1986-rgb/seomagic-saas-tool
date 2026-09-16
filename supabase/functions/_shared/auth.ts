@@ -77,3 +77,66 @@ export function authErrorResponse(err: unknown, corsHeaders: Record<string, stri
   }
   return null;
 }
+
+/**
+ * Кто вызывает функцию: служебный ключ, вошедший пользователь или гость.
+ *
+ * Функции обработки аудита ходят в базу служебным ключом, то есть RLS их не
+ * ограничивает. Без такой проверки любой желающий мог подставить чужой
+ * `task_id` и получить или переписать чужой аудит.
+ */
+export async function resolveCaller(
+  req: Request,
+): Promise<{ userId: string | null; isService: boolean }> {
+  const token = bearer(req);
+  const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+  if (token && serviceKey && token === serviceKey) return { userId: null, isService: true };
+  if (!token) return { userId: null, isService: false };
+
+  const anonKey = Deno.env.get('SUPABASE_ANON_KEY') ?? '';
+  // Ключ anon приходит в заголовке и у неавторизованных вызовов — это не вход.
+  if (token === anonKey) return { userId: null, isService: false };
+
+  const supabase = createClient(Deno.env.get('SUPABASE_URL') ?? '', anonKey);
+  const { data: { user } } = await supabase.auth.getUser(token);
+  return { userId: user?.id ?? null, isService: false };
+}
+
+/**
+ * Доступ к задаче аудита.
+ *
+ * Задача без хозяина — гостевой аудит: её идентификатор знает только тот, кто
+ * её запустил, поэтому доступ открыт. У задачи с хозяином работать может он
+ * сам, администратор или служебный вызов.
+ */
+export async function assertTaskAccess(req: Request, taskId: string): Promise<string | null> {
+  const { userId, isService } = await resolveCaller(req);
+  if (isService) return null;
+
+  const admin = createClient(
+    Deno.env.get('SUPABASE_URL') ?? '',
+    Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
+  );
+
+  const { data: task } = await admin
+    .from('audit_tasks')
+    .select('user_id')
+    .eq('id', taskId)
+    .maybeSingle();
+
+  if (!task) throw new AuthError('Задача аудита не найдена', 404);
+  if (task.user_id === null) return userId;
+  if (task.user_id === userId) return userId;
+
+  if (userId) {
+    const { data: role } = await admin
+      .from('user_roles')
+      .select('role')
+      .eq('user_id', userId)
+      .eq('role', 'admin')
+      .maybeSingle();
+    if (role) return userId;
+  }
+
+  throw new AuthError('Доступ к чужой задаче аудита запрещён', 403);
+}

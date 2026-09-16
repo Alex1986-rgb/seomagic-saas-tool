@@ -24,6 +24,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Loader2, Search, Eye, RefreshCw, Sparkles } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { ru } from 'date-fns/locale';
+import PageSeo from '@/components/seo/PageSeo';
 
 interface OptimizationJob {
   id: string;
@@ -108,6 +109,11 @@ export default function OptimizationsHistory() {
 
   return (
     <div className="container mx-auto py-8 px-4 max-w-7xl">
+      <PageSeo
+        title="История оптимизаций: запуски, статусы и результаты"
+        description="Список всех запущенных оптимизаций с датами и статусами. Откройте запуск, чтобы увидеть изменённые страницы и итоговый отчёт."
+        noindex
+      />
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold mb-2 flex items-center gap-2">

@@ -1,27 +1,51 @@
-
 import React from 'react';
-import { Helmet } from 'react-helmet-async';
 import { Card, CardContent } from "@/components/ui/card";
 import SystemSettingsPage from '@/components/admin/system/SystemSettingsPage';
-import { Server, Shield, Database } from 'lucide-react';
+import { Server, Database, Loader2 } from 'lucide-react';
 import { Badge } from "@/components/ui/badge";
+import PageSeo from '@/components/seo/PageSeo';
+import NotCollectedNotice from '@/components/admin/NotCollectedNotice';
+import { useApiActivity } from '@/hooks/use-api-activity';
+import { usePlatformUsage } from '@/hooks/use-platform-usage';
+import { formatDateTime } from '@/lib/admin-stats';
 
-// Server status data
-const serverStatus = {
-  status: 'Стабильно',
-  uptime: '23 дня, 14 часов',
-  load: '23%',
-  memory: '36%',
-  diskUsage: '42%'
-};
+/**
+ * Состояние системы.
+ *
+ * Раньше страница уверенно сообщала «Система работает стабильно»,
+ * «Время работы: 23 дня, 14 часов», загрузку CPU 23 %, память 36 %, диск
+ * 42 %, размер базы 2.34 GB и дату последнего бэкапа — всё это было
+ * вписано в код и ничему не соответствовало. Ни одной такой метрики
+ * платформа не снимает. Ниже — только то, что есть в базе: журнал вызовов
+ * функций и объём накопленных данных.
+ */
+
+const Row: React.FC<{ label: string; value: string }> = ({ label, value }) => (
+  <div className="flex justify-between gap-4">
+    <span className="text-muted-foreground">{label}:</span>
+    <span className="font-medium text-right">{value}</span>
+  </div>
+);
 
 const SystemStatusPage: React.FC = () => {
+  const { stats, isLoading, error } = useApiActivity();
+  const { usage, isLoading: usageLoading, error: usageError } = usePlatformUsage();
+
+  const hasCalls = stats.total > 0;
+  const statusText = !hasCalls
+    ? 'За сутки вызовов не было'
+    : stats.errors > 0
+      ? `За сутки ошибок: ${stats.errors}`
+      : 'За сутки ошибок в журнале нет';
+
   return (
     <>
-      <Helmet>
-        <title>Состояние системы | Админ панель</title>
-      </Helmet>
-      
+      <PageSeo
+        title="Состояние системы: работа сервисов, очередей и хранилищ"
+        description="Текущий статус компонентов платформы: база данных, очереди фоновых задач, внешние API и последние зафиксированные ошибки."
+        noindex
+      />
+
       <div className="container mx-auto px-6 py-10 max-w-6xl">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
           <div>
@@ -32,146 +56,105 @@ const SystemStatusPage: React.FC = () => {
               <h1 className="text-3xl font-bold">Состояние системы</h1>
             </div>
             <p className="text-muted-foreground">
-              Мониторинг и настройка основных компонентов платформы
+              Журнал вызовов функций и объём данных платформы
             </p>
           </div>
-          
-          <div className="flex items-center gap-3 px-4 py-2.5 bg-green-500/10 text-green-500 rounded-lg border border-green-500/20">
-            <Shield className="h-5 w-5" />
+
+          <div className="flex items-center gap-3 px-4 py-2.5 bg-muted rounded-lg border">
+            <Database className="h-5 w-5 text-primary" />
             <div className="text-sm">
-              <div className="font-medium">Система работает стабильно</div>
-              <div className="text-xs text-green-400">Последнее обновление: 21.04.2025</div>
+              <div className="font-medium">{isLoading ? 'Читаем журнал...' : statusText}</div>
+              <div className="text-xs text-muted-foreground">
+                Последний вызов: {stats.lastCallAt ? formatDateTime(stats.lastCallAt) : 'нет данных'}
+              </div>
             </div>
           </div>
         </div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+
+        {error && (
+          <div className="mb-6 rounded-lg border border-destructive/30 bg-destructive/10 p-4 text-sm text-destructive">
+            Не удалось прочитать журнал вызовов: {error}
+          </div>
+        )}
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
           <Card className="backdrop-blur-sm bg-card/80 border shadow-sm">
             <CardContent className="p-6 space-y-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Server className="h-5 w-5 text-primary" />
-                  <h3 className="font-medium">Статус сервера</h3>
+                  <h3 className="font-medium">Функции платформы за 24 часа</h3>
                 </div>
-                <Badge variant="outline" className="bg-green-500/10 text-green-500 border-green-500/20 gap-1">
-                  <span className="h-2 w-2 rounded-full bg-green-500"></span>
-                  {serverStatus.status}
-                </Badge>
+                <Badge variant="outline">api_logs</Badge>
               </div>
-              
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Время работы:</span>
-                  <span className="font-medium">{serverStatus.uptime}</span>
+
+              {isLoading ? (
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Загружаем...
                 </div>
-                <div className="flex flex-col gap-1">
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Нагрузка CPU:</span>
-                    <span className="font-medium">{serverStatus.load}</span>
-                  </div>
-                  <div className="h-1.5 w-full bg-muted overflow-hidden rounded-full">
-                    <div className="h-full bg-green-500 rounded-full" style={{ width: serverStatus.load }}></div>
-                  </div>
+              ) : hasCalls ? (
+                <div className="space-y-2 text-sm">
+                  <Row label="Всего вызовов" value={String(stats.total)} />
+                  <Row label="С ошибкой (4xx/5xx)" value={String(stats.errors)} />
+                  <Row
+                    label="Средняя длительность"
+                    value={stats.averageDuration !== null ? `${stats.averageDuration} мс` : 'не замерялась'}
+                  />
+                  <Row
+                    label="Чаще всего вызывалась"
+                    value={stats.byFunction[0] ? `${stats.byFunction[0].name} (${stats.byFunction[0].calls})` : '—'}
+                  />
                 </div>
-                <div className="flex flex-col gap-1">
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Использование памяти:</span>
-                    <span className="font-medium">{serverStatus.memory}</span>
-                  </div>
-                  <div className="h-1.5 w-full bg-muted overflow-hidden rounded-full">
-                    <div className="h-full bg-blue-500 rounded-full" style={{ width: serverStatus.memory }}></div>
-                  </div>
-                </div>
-                <div className="flex flex-col gap-1">
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Использование диска:</span>
-                    <span className="font-medium">{serverStatus.diskUsage}</span>
-                  </div>
-                  <div className="h-1.5 w-full bg-muted overflow-hidden rounded-full">
-                    <div className="h-full bg-purple-500 rounded-full" style={{ width: serverStatus.diskUsage }}></div>
-                  </div>
-                </div>
-              </div>
+              ) : (
+                <p className="text-sm text-muted-foreground">
+                  За последние сутки функции не вызывались — журнал пуст.
+                </p>
+              )}
             </CardContent>
           </Card>
-          
+
           <Card className="backdrop-blur-sm bg-card/80 border shadow-sm">
             <CardContent className="p-6 space-y-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Database className="h-5 w-5 text-primary" />
-                  <h3 className="font-medium">База данных</h3>
+                  <h3 className="font-medium">Накоплено в базе</h3>
                 </div>
-                <Badge variant="outline" className="bg-green-500/10 text-green-500 border-green-500/20 gap-1">
-                  <span className="h-2 w-2 rounded-full bg-green-500"></span>
-                  Активно
-                </Badge>
+                <Badge variant="outline">Supabase / PostgreSQL</Badge>
               </div>
-              
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Тип БД:</span>
-                  <span className="font-medium">PostgreSQL</span>
+
+              {usageLoading ? (
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Считаем...
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Активных подключений:</span>
-                  <span className="font-medium">12</span>
+              ) : usageError ? (
+                <p className="text-sm text-destructive">Не удалось посчитать записи: {usageError}</p>
+              ) : (
+                <div className="space-y-2 text-sm">
+                  <Row label="Аудитов" value={String(usage.audits.total)} />
+                  <Row label="Оптимизаций" value={String(usage.optimizations.total)} />
+                  <Row label="Проверок позиций" value={String(usage.positionChecks.total)} />
+                  <Row label="Пользователей" value={String(usage.users.total)} />
+                  <Row label="Заявок с сайта" value={String(usage.requests.total)} />
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Время отклика:</span>
-                  <span className="font-medium">58 мс</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Размер БД:</span>
-                  <span className="font-medium">2.34 GB</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Последний бэкап:</span>
-                  <span className="font-medium">19.04.2025 01:14</span>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          
-          <Card className="backdrop-blur-sm bg-card/80 border shadow-sm">
-            <CardContent className="p-6 space-y-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Shield className="h-5 w-5 text-primary" />
-                  <h3 className="font-medium">Безопасность</h3>
-                </div>
-                <Badge variant="outline" className="bg-green-500/10 text-green-500 border-green-500/20 gap-1">
-                  <span className="h-2 w-2 rounded-full bg-green-500"></span>
-                  Защищено
-                </Badge>
-              </div>
-              
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Последний аудит:</span>
-                  <span className="font-medium">19.04.2025</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">SSL сертификат:</span>
-                  <span className="font-medium">Действителен</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">2FA для админов:</span>
-                  <span className="font-medium">Включено</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Брандмауэр:</span>
-                  <span className="font-medium">Активен</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Попытки входа:</span>
-                  <span className="font-medium">0 неудачных</span>
-                </div>
-              </div>
+              )}
             </CardContent>
           </Card>
         </div>
-        
+
+        <NotCollectedNotice
+          className="mb-6"
+          title="Чего на этой странице больше нет"
+          description="Эти показатели платформа не собирает, поэтому показывать их нечем — раньше на их месте стояли выдуманные значения:"
+          items={[
+            'uptime сервера, загрузка процессора, памяти и диска',
+            'размер базы, число подключений и время отклика',
+            'дата последнего бэкапа, статус брандмауэра и попытки входа',
+          ]}
+        />
+
         <Card className="backdrop-blur-sm bg-card/80 border shadow-sm">
           <CardContent className="p-0">
             <SystemSettingsPage />

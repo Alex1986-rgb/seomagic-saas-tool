@@ -79,7 +79,8 @@ const EmailSettings: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="space-y-2">
           <Label htmlFor="smtp-user">SMTP Пользователь</Label>
-          <Input id="smtp-user" defaultValue="notifications@seomarket.ru" />
+          {/* Было notifications@seomarket.ru — такого ящика нет, подставлять нечего. */}
+          <Input id="smtp-user" placeholder="Например, notifications@вашдомен.ru" />
         </div>
         
         <div className="space-y-2">
@@ -94,7 +95,8 @@ const EmailSettings: React.FC = () => {
         
         <div className="space-y-2">
           <Label htmlFor="email-from">Email отправителя</Label>
-          <Input id="email-from" defaultValue="SeoMarket <noreply@seomarket.ru>" />
+          {/* Было SeoMarket <noreply@seomarket.ru> — адрес выдуман. */}
+          <Input id="email-from" placeholder="Например, SeoMarket &lt;noreply@вашдомен.ru&gt;" />
         </div>
       </div>
       

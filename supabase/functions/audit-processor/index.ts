@@ -1,4 +1,10 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import {
+  canonicalizeUrl as canonicalize,
+  isSameSite,
+  parseSiteOrigin,
+  type SiteOrigin,
+} from "../_shared/crawl-url.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
 import * as cheerio from "https://esm.sh/cheerio@1.0.0";
 
@@ -11,30 +17,20 @@ const MICRO_BATCH_SIZE = 5;
 const PAGE_TIMEOUT = 8000;
 const MAX_DEPTH = 5;
 
-// URL utilities
-function normalizeUrl(url: string): string {
-  try {
-    const urlObj = new URL(url);
-    urlObj.hostname = urlObj.hostname.replace(/^www\./, '');
-    if (urlObj.pathname.endsWith('/') && urlObj.pathname.length > 1) {
-      urlObj.pathname = urlObj.pathname.slice(0, -1);
-    }
-    urlObj.hash = '';
-    const params = Array.from(urlObj.searchParams.entries()).sort(([a], [b]) => a.localeCompare(b));
-    urlObj.search = '';
-    params.forEach(([key, value]) => urlObj.searchParams.append(key, value));
-    return urlObj.toString();
-  } catch { return url; }
+// Приведение адресов к одному виду вынесено в общий модуль: там же лежат тесты,
+// которые следят, чтобы один документ не попадал в очередь по нескольку раз.
+let siteOrigin: SiteOrigin | null = null;
+
+function setSiteOrigin(url: string): void {
+  siteOrigin = parseSiteOrigin(url);
 }
 
-const BLOCKED_PARAMS = ['utm_source', 'utm_medium', 'utm_campaign', 'fbclid', 'gclid', 'replytocom', 'share'];
+function sameSite(hostname: string): boolean {
+  return isSameSite(hostname, siteOrigin);
+}
 
-function filterQueryParams(url: string): string {
-  try {
-    const urlObj = new URL(url);
-    BLOCKED_PARAMS.forEach(param => urlObj.searchParams.delete(param));
-    return urlObj.toString();
-  } catch { return url; }
+function canonicalizeUrl(url: string): string {
+  return canonicalize(url, siteOrigin);
 }
 
 function detectPageType(url: string): string {
@@ -128,8 +124,52 @@ async function followRedirects(startUrl: string, maxRedirects = 10): Promise<Red
   };
 }
 
+/**
+ * Включено ли сжатие ответов на сервере.
+ *
+ * Обычный fetch распаковывает ответ сам и убирает заголовок content-encoding,
+ * поэтому признак «сжатие есть» всегда выходил ложным — и замечание «не
+ * включено сжатие» выставлялось каждой странице подряд, надувая смету. Здесь
+ * заголовок Accept-Encoding задан явно: тогда ответ не распаковывается, и
+ * content-encoding виден. Сжатие настраивается на сервере, а не на странице,
+ * поэтому проверяем один раз на сайт и запоминаем.
+ */
+const compressionBySite = new Map<string, { compressed: boolean | null; type: string | null }>();
+
+async function detectCompression(url: string): Promise<{ compressed: boolean | null; type: string | null }> {
+  let host: string;
+  try { host = new URL(url).host; } catch { return { compressed: null, type: null }; }
+
+  const known = compressionBySite.get(host);
+  if (known) return known;
+
+  let result: { compressed: boolean | null; type: string | null } = { compressed: null, type: null };
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), PAGE_TIMEOUT);
+    const response = await fetch(url, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (compatible; SEO-Auditor/1.0)',
+        'Accept-Encoding': 'gzip, deflate, br',
+      },
+      signal: controller.signal,
+    });
+    clearTimeout(timeoutId);
+
+    const encoding = response.headers.get('content-encoding');
+    await response.body?.cancel();
+    result = { compressed: !!encoding, type: encoding?.split(',')[0].trim() ?? null };
+  } catch (error) {
+    // Не смогли проверить — так и запишем: «неизвестно» лучше выдуманного «нет».
+    console.error('Не удалось проверить сжатие:', error instanceof Error ? error.message : error);
+  }
+
+  compressionBySite.set(host, result);
+  return result;
+}
+
 async function crawlPage(url: string, domain: string): Promise<any> {
-  const startTime = Date.now();
+  // Время каждого запроса меряется отдельно, ниже.
   try {
     // First, follow redirects to get the chain
     const redirectInfo = await followRedirects(url);
@@ -139,13 +179,17 @@ async function crawlPage(url: string, domain: string): Promise<any> {
     // Now fetch the final URL for content analysis
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), PAGE_TIMEOUT);
+    // Время меряем от самого запроса страницы. Раньше отсчёт шёл до обхода
+    // переадресаций, и в «ответ сервера» попадала вся цепочка — страницы
+    // помечались медленными на ровном месте.
+    const fetchStartedAt = Date.now();
     const response = await fetch(finalUrl, {
       headers: { 'User-Agent': 'Mozilla/5.0 (compatible; SEO-Auditor/1.0)' },
       redirect: 'manual',
       signal: controller.signal
     });
     clearTimeout(timeoutId);
-    const ttfb = Date.now() - startTime;
+    const ttfb = Date.now() - fetchStartedAt;
     const html = await response.text();
     const $ = cheerio.load(html);
     
@@ -174,23 +218,28 @@ async function crawlPage(url: string, domain: string): Promise<any> {
       url: $(el).attr('href')
     })).get().filter(tag => tag.lang);
     
+    const compression = await detectCompression(finalUrl);
     const languageDetected = ($('html').attr('lang') || '').split('-')[0] || 'unknown';
     const allLinks = $('a[href]').map((_, el) => $(el).attr('href')).get();
     const internalLinks = allLinks.filter(link => {
       try {
         if (!link || link.startsWith('#')) return false;
-        return new URL(link, url).hostname === domain;
+        return sameSite(new URL(link, url).hostname);
       } catch { return false; }
     });
     
     return {
       url, title, description, h1: h1Tags, h1_count: h1Tags.length, h1_text: h1Text,
       h2_count: h2Count, h3_count: h3Count, image_count: images.length, word_count: wordCount,
-      load_time: Number(((Date.now() - startTime) / 1000).toFixed(2)), status_code: response.status,
+      load_time: Number(((Date.now() - fetchStartedAt) / 1000).toFixed(2)), status_code: response.status,
       links: allLinks, internalLinks, externalLinks: [], images,
       is_indexable: !robotsMeta.toLowerCase().includes('noindex'), robots_meta: robotsMeta || null,
       canonical_url: canonicalUrl, has_canonical: !!canonicalUrl,
-      canonical_points_to_self: canonicalUrl === url, text_html_ratio: textHtmlRatio,
+      // Сравниваем адреса в одном виде: раньше canonical сайта сверялся с
+      // переписанным адресом и почти всегда «не совпадал».
+      canonical_points_to_self: !!canonicalUrl
+        && canonicalizeUrl(new URL(canonicalUrl, finalUrl).toString()) === canonicalizeUrl(finalUrl),
+      text_html_ratio: textHtmlRatio,
       has_thin_content: wordCount < 150, missing_alt_images_count: missingAltCount,
       content_type: response.headers.get('content-type') || 'text/html',
       content_length: html.length, has_viewport: hasViewport,
@@ -200,9 +249,9 @@ async function crawlPage(url: string, domain: string): Promise<any> {
       ttfb: Number((ttfb / 1000).toFixed(3)), 
       redirect_chain_length: redirectChainLength, 
       final_url: finalUrl,
-      // Compression detection (Sprint 3)
-      is_compressed: !!response.headers.get('content-encoding'),
-      compression_type: response.headers.get('content-encoding')?.split(',')[0].trim() || null,
+      // Проверка сжатия — отдельным запросом, один раз на сайт.
+      is_compressed: compression.compressed,
+      compression_type: compression.type,
       transfer_size: response.headers.get('content-length') ? parseInt(response.headers.get('content-length')!) : null
     };
   } catch (error) {
@@ -224,15 +273,41 @@ async function extractSitemapUrls(baseUrl: string): Promise<string[]> {
   return [];
 }
 
+/**
+ * Ставит адреса в очередь, пропуская уже поставленные.
+ *
+ * Раньше каждая ссылка добавлялась обычной вставкой, обёрнутой в try/catch с
+ * пометкой «ошибки дублей игнорируем». Но клиент базы не бросает исключение на
+ * ошибке вставки, а возвращает её в ответе, и никто её не смотрел. Сквозные
+ * ссылки — меню, подвал — попадали в очередь заново с каждой страницы, и сайт
+ * обходился по кругу. Теперь повторы отсекает база: уникальность пары
+ * «задача + адрес», повторная вставка молча пропускается.
+ */
+async function enqueueUrls(supabase: any, entries: any[]): Promise<void> {
+  if (entries.length === 0) return;
+
+  const { error } = await supabase
+    .from('url_queue')
+    .upsert(entries, { onConflict: 'task_id,url', ignoreDuplicates: true });
+
+  if (error) {
+    console.error('Не удалось поставить адреса в очередь:', error.message);
+  }
+}
+
 async function initializeCrawl(supabase: any, taskId: string, url: string, estimatedPages: number, sitemapUrls: string[]) {
   console.log(`Initializing crawl: ${url}, estimated pages: ${estimatedPages}, sitemap URLs: ${sitemapUrls.length}`);
   
+  // Вид начального адреса задаёт вид всех остальных: протокол и «www» берутся
+  // отсюда, иначе один сайт обходится в нескольких обличьях.
+  setSiteOrigin(url);
+
   // Add homepage first
-  const normalizedUrl = normalizeUrl(filterQueryParams(url));
+  const normalizedUrl = canonicalizeUrl(url);
   const initialPriority = calculatePriority(normalizedUrl, 0, true);
   const pageType = detectPageType(normalizedUrl);
   
-  await supabase.from('url_queue').insert({
+  await enqueueUrls(supabase, [{
     task_id: taskId,
     url: normalizedUrl,
     status: 'pending',
@@ -240,12 +315,12 @@ async function initializeCrawl(supabase: any, taskId: string, url: string, estim
     depth: 0,
     parent_url: null,
     page_type: pageType
-  });
+  }]);
   
   // Add sitemap URLs if available
   if (sitemapUrls.length > 0) {
     const sitemapEntries = sitemapUrls
-      .map(sUrl => normalizeUrl(filterQueryParams(sUrl)))
+      .map(sUrl => canonicalizeUrl(sUrl))
       .filter(sUrl => sUrl !== normalizedUrl) // Don't duplicate homepage
       .slice(0, estimatedPages) // Respect estimated pages limit
       .map(sUrl => ({
@@ -259,14 +334,7 @@ async function initializeCrawl(supabase: any, taskId: string, url: string, estim
       }));
     
     if (sitemapEntries.length > 0) {
-      // Insert in batches to avoid conflicts
-      for (const entry of sitemapEntries) {
-        try {
-          await supabase.from('url_queue').insert(entry);
-        } catch (e) {
-          // Ignore duplicate key errors
-        }
-      }
+      await enqueueUrls(supabase, sitemapEntries);
     }
   }
   
@@ -311,7 +379,11 @@ async function processMicroBatch(supabase: any, taskId: string, domain: string) 
     
     // Insert comprehensive page analysis with all Sprint 1 fields
     try {
-      const { error: insertError } = await supabase.from('page_analysis').insert({
+      // Повторный разбор того же адреса (возобновление аудита, ссылка на себя)
+      // обновляет запись, а не плодит вторую: страницы считаются по адресам.
+      const { error: insertError } = await supabase
+        .from('page_analysis')
+        .upsert({
         audit_id: taskData?.audit_id,
         task_id: taskId,
         url: page.url,
@@ -363,10 +435,12 @@ async function processMicroBatch(supabase: any, taskId: string, domain: string) 
         external_links_count: page.external_links_count || 0,
         
         // Compression (Sprint 3)
-        is_compressed: page.is_compressed || false,
+        // Не проверили — пишем «неизвестно». Раньше здесь стояло `|| false`, и
+        // непроверенное превращалось в «сжатия нет» с оплатой работ по смете.
+        is_compressed: page.is_compressed ?? null,
         compression_type: page.compression_type || null,
         transfer_size: page.transfer_size || null
-      });
+        }, { onConflict: 'task_id,url' });
 
       if (insertError) {
         console.error('Failed to insert page_analysis:', {
@@ -386,38 +460,31 @@ async function processMicroBatch(supabase: any, taskId: string, domain: string) 
     const currentDepth = queueItem.depth || 0;
     if (currentDepth < MAX_DEPTH && page.internalLinks && page.internalLinks.length > 0) {
       const newDepth = currentDepth + 1;
-      const newUrls = page.internalLinks
-        .map(link => {
-          try {
-            // Resolve relative URLs
-            const absoluteUrl = new URL(link, page.url).toString();
-            return filterQueryParams(normalizeUrl(absoluteUrl));
-          } catch {
-            return null;
-          }
-        })
-        .filter(url => url !== null) as string[];
+      const newUrls = Array.from(new Set(
+        page.internalLinks
+          .map(link => {
+            try {
+              // Resolve relative URLs
+              const absoluteUrl = new URL(link, page.url).toString();
+              return canonicalizeUrl(absoluteUrl);
+            } catch {
+              return null;
+            }
+          })
+          .filter(url => url !== null) as string[]
+      ));
       
       console.log(`Discovered ${newUrls.length} internal links from ${page.url} at depth ${currentDepth}`);
       
-      for (const newUrl of newUrls) {
-        const priority = calculatePriority(newUrl, newDepth);
-        const pageType = detectPageType(newUrl);
-        
-        try {
-          await supabase.from('url_queue').insert({
-            task_id: taskId,
-            url: newUrl,
-            status: 'pending',
-            priority,
-            depth: newDepth,
-            parent_url: page.url,
-            page_type: pageType
-          });
-        } catch (e) {
-          // Ignore duplicate key errors (URL already in queue)
-        }
-      }
+      await enqueueUrls(supabase, newUrls.map(newUrl => ({
+        task_id: taskId,
+        url: newUrl,
+        status: 'pending',
+        priority: calculatePriority(newUrl, newDepth),
+        depth: newDepth,
+        parent_url: page.url,
+        page_type: detectPageType(newUrl)
+      })));
     }
   }
 
@@ -534,6 +601,11 @@ async function processAuditInBackground(task_id: string) {
       return;
     }
     
+    // Обход идёт пачками, каждая — отдельный заход функции. Вид адресов задаём
+    // заново: иначе во втором заходе ссылки приводились бы к другому облику
+    // сайта и та же страница попадала бы в очередь второй раз.
+    setSiteOrigin(task.url);
+
     const domain = new URL(task.url).hostname;
     const estimatedPages = task.estimated_pages || 100;
     

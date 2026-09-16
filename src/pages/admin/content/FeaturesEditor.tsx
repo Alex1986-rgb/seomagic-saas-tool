@@ -1,11 +1,11 @@
 
 import React, { useState } from 'react';
-import { Helmet } from 'react-helmet-async';
 import BaseContentEditor from '@/components/admin/content/BaseContentEditor';
 import { useToast } from '@/hooks/use-toast';
 import { Feature, PageSettings } from './features/types';
 import PageSettingsForm from './features/PageSettingsForm';
 import FeaturesList from './features/FeaturesList';
+import PageSeo from '@/components/seo/PageSeo';
 
 const FeaturesEditor: React.FC = () => {
   const { toast } = useToast();
@@ -90,9 +90,11 @@ const FeaturesEditor: React.FC = () => {
 
   return (
     <>
-      <Helmet>
-        <title>Редактирование возможностей | Админ панель</title>
-      </Helmet>
+      <PageSeo
+        title="Редактор возможностей: список и порядок функций сервиса"
+        description="Управление карточками функций на публичных страницах: добавление и удаление, описания, иконки и порядок вывода на сайте."
+        noindex
+      />
       
       <BaseContentEditor
         title="Редактирование возможностей"

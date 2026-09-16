@@ -1,6 +1,5 @@
 
 import React, { useEffect } from 'react';
-import { Helmet } from 'react-helmet-async';
 import { 
   BarChart2, 
   Users, 
@@ -12,6 +11,7 @@ import {
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
+import PageSeo from '@/components/seo/PageSeo';
 
 const Dashboard: React.FC = () => {
   useEffect(() => {
@@ -23,9 +23,11 @@ const Dashboard: React.FC = () => {
 
   return (
     <div className="container mx-auto px-6 py-10 max-w-6xl">
-      <Helmet>
-        <title>Админ-панель | Дашборд</title>
-      </Helmet>
+      <PageSeo
+        title="Панель администратора: сводка по работе всей платформы"
+        description="Стартовый экран админки: ключевые показатели сервиса и быстрые переходы к пользователям, аудитам, аналитике и настройкам."
+        noindex
+      />
       
       <div className="mb-8 px-8 py-10 rounded-3xl bg-gradient-to-br from-blue-600/20 via-purple-500/20 to-indigo-600/20 flex items-center gap-6 border border-primary/20 shadow-2xl">
         <div className="bg-primary/20 text-primary rounded-full p-5 shadow-lg">

@@ -10,6 +10,7 @@ import FeatureHeader from './components/FeatureHeader';
 import FeatureContent from './components/FeatureContent';
 import FeatureSidebar from './components/FeatureSidebar';
 import RelatedFeatures from './components/RelatedFeatures';
+import PageSeo from '@/components/seo/PageSeo';
 
 const defaultBenefits = [
   'Повышение позиций в поисковых системах',
@@ -75,6 +76,10 @@ ${featureData.description}
 
   return (
     <Layout>
+      <PageSeo
+        title={featureData.title}
+        description={featureData.description}
+      />
       <div className="container mx-auto px-4 py-16 md:py-24">
         <FeatureHeader 
           icon={featureData.icon}

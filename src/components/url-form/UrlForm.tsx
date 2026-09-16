@@ -37,7 +37,10 @@ const UrlForm: React.FC = () => {
           title: "Переход к аудиту",
           description: `Анализируем сайт: ${formattedUrl}`,
         });
-        navigate(`/audit?url=${encodeURIComponent(formattedUrl)}`);
+        // Ведём на /site-audit: именно там аудит запускается. Страница /audit
+        // только показывает готовые результаты, и человек с главной попадал на
+        // пустой экран с заголовком «Результаты SEO аудита».
+        navigate(`/site-audit?url=${encodeURIComponent(formattedUrl)}`);
       } catch (error) {
         console.error("Navigation error:", error);
         toast({
@@ -57,23 +60,28 @@ const UrlForm: React.FC = () => {
   
   return (
     <form onSubmit={handleSubmit} className="w-full">
-      <div className="relative flex items-center">
-        <div className="absolute left-3">
-          <Search className="h-5 w-5 text-muted-foreground" />
+      {/* На телефоне кнопка лежала поверх поля и закрывала половину строки:
+          «Введите URL ва…» — дальше текст уезжал под кнопку. На узком экране
+          ставим кнопку под полем, на широком оставляем внутри. */}
+      <div className="flex flex-col gap-2 sm:relative sm:flex-row sm:items-center sm:gap-0">
+        <div className="relative w-full">
+          <div className="absolute left-3 top-1/2 -translate-y-1/2">
+            <Search className="h-5 w-5 text-muted-foreground" />
+          </div>
+
+          <Input
+            type="text"
+            placeholder="Введите URL вашего сайта"
+            value={url}
+            onChange={handleInputChange}
+            className={`pl-10 h-12 text-base sm:pr-40 ${!isUrlValid ? 'border-destructive focus-visible:ring-destructive/30' : ''}`}
+            aria-invalid={!isUrlValid}
+          />
         </div>
-        
-        <Input
-          type="text"
-          placeholder="Введите URL вашего сайта"
-          value={url}
-          onChange={handleInputChange}
-          className={`pl-10 h-12 pr-24 text-base ${!isUrlValid ? 'border-destructive focus-visible:ring-destructive/30' : ''}`}
-          aria-invalid={!isUrlValid}
-        />
-        
-        <Button 
-          type="submit" 
-          className="absolute right-1 h-10"
+
+        <Button
+          type="submit"
+          className="h-12 w-full sm:absolute sm:right-1 sm:h-10 sm:w-auto"
           aria-label="Начать аудит"
         >
           Начать аудит <ArrowRight className="ml-2 h-4 w-4" />

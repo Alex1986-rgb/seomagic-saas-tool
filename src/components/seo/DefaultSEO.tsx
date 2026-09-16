@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { Helmet } from 'react-helmet-async';
+import { absoluteAssetUrl } from '@/lib/asset-url';
 
 const DefaultSEO: React.FC = () => {
   const url = typeof window !== 'undefined' ? window.location.href.split('#')[0] : '';
@@ -8,7 +9,7 @@ const DefaultSEO: React.FC = () => {
   const title = 'SEO Аудит и Оптимизация';
   const description = 'SEO аудит и оптимизация сайтов. Повысьте позиции и увеличьте органический трафик.';
   const siteName = 'SEO Market';
-  const image = '/og-image.jpg';
+  const image = absoluteAssetUrl('/og-image.jpg');
 
   return (
     <Helmet>
@@ -54,7 +55,7 @@ const DefaultSEO: React.FC = () => {
           '@type': 'Organization',
           name: siteName,
           url: typeof window !== 'undefined' ? window.location.origin : '',
-          logo: `${typeof window !== 'undefined' ? window.location.origin : ''}/apple-touch-icon.png`,
+          logo: absoluteAssetUrl('/apple-touch-icon.png'),
           description: description,
           contactPoint: {
             '@type': 'ContactPoint',

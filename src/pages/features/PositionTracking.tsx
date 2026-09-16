@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
+import PageSeo from '@/components/seo/PageSeo';
 
 const PositionTracking: React.FC = () => {
   const [trackingProgress, setTrackingProgress] = useState(75);
@@ -81,6 +82,10 @@ const PositionTracking: React.FC = () => {
 
   return (
     <Layout>
+      <PageSeo
+        title="Отслеживание позиций сайта в Яндексе и Google по запросам"
+        description="Регулярный съём выдачи по вашим запросам, история изменений и отчёты по регионам — сразу видно, что растёт, а что проседает."
+      />
       <div className="container mx-auto px-4 py-16 md:py-24">
         {/* Навигация */}
         <div className="mb-8">

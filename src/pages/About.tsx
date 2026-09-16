@@ -12,10 +12,15 @@ import { BreadcrumbSchema } from '@/components/seo/BreadcrumbSchema';
 import { LocalBusinessSchema } from '@/components/seo/LocalBusinessSchema';
 import { OrganizationSchema } from '@/components/seo/OrganizationSchema';
 import { ReviewSchema } from '@/components/seo/ReviewSchema';
+import PageSeo from '@/components/seo/PageSeo';
 
 const About = () => {
   return (
     <Layout>
+      <PageSeo
+        title="О сервисе: как устроены наш SEO-аудит и оптимизация"
+        description="Чем занимается платформа, как работает автоматический аудит сайта, кто в команде и почему сервису можно доверить проверку проекта."
+      />
       <BreadcrumbSchema items={[
         { name: 'Главная', url: '/' },
         { name: 'О нас', url: '/about' }

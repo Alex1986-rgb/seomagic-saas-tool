@@ -90,16 +90,22 @@ const AuditShareResults: React.FC<AuditShareResultsProps> = ({
       return;
     }
 
+    // Без задачи аудита отправлять нечего. Раньше в этом случае интерфейс ждал
+    // секунду и объявлял «Отчёт отправлен» — письмо никуда не уходило, а человек
+    // ждал его на почте.
+    if (!taskId) {
+      toast({
+        title: "Отчёт пока не готов",
+        description: "Дождитесь окончания аудита — тогда отчёт можно будет отправить.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsSendingEmail(true);
     try {
-      if (taskId) {
-        // Use backend API to send email
-        await seoApiService.sendEmailReport(taskId, emailInput);
-      } else {
-        // Fallback to frontend implementation (simulated)
-        await new Promise(resolve => setTimeout(resolve, 1000));
-      }
-      
+      await seoApiService.sendEmailReport(taskId, emailInput);
+
       setIsEmailDialogOpen(false);
       toast({
         title: "Отчет отправлен",

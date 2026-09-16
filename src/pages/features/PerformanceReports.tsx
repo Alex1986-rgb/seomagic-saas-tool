@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
+import PageSeo from '@/components/seo/PageSeo';
 
 const PerformanceReports: React.FC = () => {
   const [selectedReport, setSelectedReport] = useState('comprehensive');
@@ -80,6 +81,10 @@ const PerformanceReports: React.FC = () => {
 
   return (
     <Layout>
+      <PageSeo
+        title="Отчёты о производительности: скорость и Core Web Vitals"
+        description="Наглядные отчёты по времени загрузки страниц и ключевым метрикам с указанием, что именно тормозит сайт и как это исправить."
+      />
       <div className="container mx-auto px-4 py-16 md:py-24">
         {/* Навигация */}
         <div className="mb-8">

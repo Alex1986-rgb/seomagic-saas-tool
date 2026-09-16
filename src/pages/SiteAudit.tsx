@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
-import { Helmet } from 'react-helmet-async';
 import { useToast } from "@/hooks/use-toast";
 import Layout from '@/components/Layout';
+import PageSeo from '@/components/seo/PageSeo';
 import { AuditProvider } from '@/contexts/AuditContext';
 import AuditResultsContainer from '@/components/audit/results/AuditResultsContainer';
 import { AuditWorkspace } from '@/components/audit/AuditWorkspace';
@@ -104,18 +104,16 @@ const SiteAudit: React.FC = () => {
     }
   };
 
-  // Check if this is a dynamic page with task_id
-  const taskId = searchParams.get('task_id');
-  const robotsContent = taskId ? 'noindex, nofollow' : 'index, follow, max-image-preview:large';
+  // Результат конкретной задачи — это персональная страница, в индекс её не пускаем
+  const isTaskResult = Boolean(searchParams.get('task_id'));
 
   return (
     <Layout>
-      <Helmet>
-        <title>SEO Аудит Сайта | SeoMarket</title>
-        <meta name="description" content="Проведите полный SEO аудит вашего сайта. Анализ технических параметров, контента, производительности и получите рекомендации по оптимизации." />
-        <meta name="robots" content={robotsContent} />
-        <link rel="canonical" href="https://seomarket.app/site-audit" />
-      </Helmet>
+      <PageSeo
+        title="Полный SEO-аудит сайта: технический анализ и отчёт"
+        description="Проверка технических параметров, метатегов, контента и скорости загрузки с готовыми рекомендациями по каждой найденной проблеме."
+        noindex={isTaskResult}
+      />
       <div className="container mx-auto px-4 md:px-6 pt-24 md:pt-32 pb-12 md:pb-20">
         <motion.div 
           className="max-w-6xl mx-auto"

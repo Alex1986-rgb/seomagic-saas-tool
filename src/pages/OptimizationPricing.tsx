@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
+import PageSeo from '@/components/seo/PageSeo';
 
 const OptimizationPricing: React.FC = () => {
   const { toast } = useToast();
@@ -24,6 +25,10 @@ const OptimizationPricing: React.FC = () => {
   
   return (
     <Layout>
+      <PageSeo
+        title="Тарифы на оптимизацию сайта и расчёт итоговой сметы"
+        description="Сколько стоит оптимизация страниц: из чего складывается цена, что входит в работу и как получить смету по своему сайту онлайн."
+      />
       <div className="container mx-auto py-10">
         <div className="mb-6">
           <Button variant="ghost" size="sm" className="gap-1" asChild>

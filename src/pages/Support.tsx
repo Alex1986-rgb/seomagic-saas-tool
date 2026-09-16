@@ -7,6 +7,8 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { HelpCircle, Mail, MessageSquare, Phone, Search } from 'lucide-react';
 import Layout from '@/components/Layout';
+import { SITE_CONTACTS } from '@/config/site-contacts';
+import PageSeo from '@/components/seo/PageSeo';
 
 const Support: React.FC = () => {
   const faqItems = [
@@ -38,6 +40,10 @@ const Support: React.FC = () => {
 
   return (
     <Layout>
+      <PageSeo
+        title="Поддержка пользователей: помощь и ответы на вопросы"
+        description="Как связаться со специалистами, что стоит проверить до обращения и какие вопросы решаются быстрее всего. Ниже — частые вопросы."
+      />
       <div className="container mx-auto px-4 py-32">
         <div className="max-w-6xl mx-auto">
           <motion.div 
@@ -106,24 +112,37 @@ const Support: React.FC = () => {
               </CardFooter>
             </Card>
             
-            <Card className="neo-card">
-              <CardHeader className="text-center">
-                <div className="mx-auto bg-primary/10 p-3 rounded-full w-14 h-14 flex items-center justify-center mb-4">
-                  <Phone className="h-7 w-7 text-primary" />
-                </div>
-                <CardTitle>Телефонная поддержка</CardTitle>
-                <CardDescription>Поговорите с нашими специалистами</CardDescription>
-              </CardHeader>
-              <CardContent className="text-center">
-                <p className="text-muted-foreground mb-4">
-                  Доступна с 9:00 до 18:00 по московскому времени в рабочие дни.
-                </p>
-                <p className="font-medium">+7 (800) 123-45-67</p>
-              </CardContent>
-              <CardFooter>
-                <Button variant="outline" className="w-full">Заказать звонок</Button>
-              </CardFooter>
-            </Card>
+            {/*
+              Карточка обещала телефонную поддержку по номеру
+              +7 (800) 123-45-67 — этого номера не существует, но люди по нему
+              звонили. Пока в SITE_CONTACTS нет настоящего телефона, обещать
+              телефонную поддержку нечем, поэтому карточки нет.
+            */}
+            {SITE_CONTACTS.telephone && (
+              <Card className="neo-card">
+                <CardHeader className="text-center">
+                  <div className="mx-auto bg-primary/10 p-3 rounded-full w-14 h-14 flex items-center justify-center mb-4">
+                    <Phone className="h-7 w-7 text-primary" />
+                  </div>
+                  <CardTitle>Телефонная поддержка</CardTitle>
+                  <CardDescription>Поговорите с нашими специалистами</CardDescription>
+                </CardHeader>
+                <CardContent className="text-center">
+                  <p className="text-muted-foreground mb-4">
+                    Доступна с 9:00 до 18:00 по московскому времени в рабочие дни.
+                  </p>
+                  <a
+                    href={`tel:${SITE_CONTACTS.telephone.replace(/[^+\d]/g, '')}`}
+                    className="font-medium hover:text-primary transition-colors"
+                  >
+                    {SITE_CONTACTS.telephone}
+                  </a>
+                </CardContent>
+                <CardFooter>
+                  <Button variant="outline" className="w-full">Заказать звонок</Button>
+                </CardFooter>
+              </Card>
+            )}
           </div>
           
           <div className="mb-16">

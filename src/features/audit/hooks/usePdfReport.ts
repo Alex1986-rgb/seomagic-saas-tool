@@ -1,6 +1,7 @@
 import { useToast } from "@/hooks/use-toast";
 import { AuditData, AuditHistoryItem } from '@/types/audit';
 import { generateAuditPdf } from '@/utils/pdf/auditPdf';
+import { fetchPageAnalysis } from '@/services/audit/fetchPageAnalysis';
 import { generateHistoryPDF } from '@/utils/pdf/historyPdf';
 import { OptimizationItem } from '@/features/audit/types/optimization-types';
 
@@ -32,6 +33,8 @@ export const usePdfReport = () => {
     });
     
     try {
+      const pageAnalysis = await fetchPageAnalysis(auditData.id);
+
       const pdfBlob = await generateAuditPdf({
         auditData,
         url,
@@ -39,7 +42,8 @@ export const usePdfReport = () => {
         pageStats,
         optimizationCost,
         optimizationItems,
-        date: new Date().toISOString()
+        date: new Date().toISOString(),
+        pageAnalysis
       });
       
       if (!pdfBlob) throw new Error("Не удалось создать PDF");

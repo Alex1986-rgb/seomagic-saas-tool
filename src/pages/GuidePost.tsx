@@ -9,6 +9,7 @@ import GuideCarousel from '@/components/guides/GuideCarousel';
 import GuideContent from '@/components/guides/GuideContent';
 import GuideCallToAction from '@/components/guides/GuideCallToAction';
 import { BreadcrumbSchema } from '@/components/seo/BreadcrumbSchema';
+import PageSeo from '@/components/seo/PageSeo';
 
 const GuidePost: React.FC = () => {
   const { id } = useParams();
@@ -37,6 +38,11 @@ const GuidePost: React.FC = () => {
 
   return (
     <Layout>
+      <PageSeo
+        title={guide.title}
+        description={guide.description}
+        image={guide.image}
+      />
       <BreadcrumbSchema items={[
         { name: 'Главная', url: '/' },
         { name: 'Руководства', url: '/guides' },

@@ -1,6 +1,5 @@
 
 import React, { useMemo, useCallback } from 'react';
-import { Helmet } from 'react-helmet-async';
 import { Globe } from 'lucide-react';
 import WebsiteAnalyzerHeader from '@/components/admin/website-analyzer/WebsiteAnalyzerHeader';
 import SupabaseWarning from '@/components/admin/website-analyzer/SupabaseWarning';
@@ -9,6 +8,7 @@ import { useWebsiteAnalyzer } from '@/hooks/use-website-analyzer';
 import ScanForm from '@/components/admin/website-analyzer/ScanForm';
 import WebsiteAnalyzerTabs from '@/components/admin/website-analyzer/tabs/WebsiteAnalyzerTabs';
 import { AuditProvider } from '@/contexts/AuditContext';
+import PageSeo from '@/components/seo/PageSeo';
 
 const WebsiteAnalyzerPage: React.FC = () => {
   const {
@@ -44,9 +44,11 @@ const WebsiteAnalyzerPage: React.FC = () => {
 
   return (
     <AuditProvider initialUrl={url}>
-      <Helmet>
-        <title>Анализатор сайтов | Админ панель</title>
-      </Helmet>
+      <PageSeo
+        title="Анализатор сайтов: глубокое сканирование и карта адресов"
+        description="Служебный инструмент администратора: полный обход сайта без ограничений по страницам и построение карты найденных адресов."
+        noindex
+      />
       <div className="container mx-auto px-2 md:px-4 py-6 md:py-10 max-w-4xl">
         <WebsiteAnalyzerHeader />
         <SupabaseWarning />

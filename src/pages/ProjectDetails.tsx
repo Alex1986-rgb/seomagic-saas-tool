@@ -10,10 +10,16 @@ import ScalabilityPlanning from '@/components/project-details/ScalabilityPlannin
 import ProjectExporter from '@/components/project-details/ProjectExporter';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card } from '@/components/ui/card';
+import PageSeo from '@/components/seo/PageSeo';
 
 const ProjectDetails: React.FC = () => {
   return (
     <Layout>
+      <PageSeo
+        title="Детали проекта: архитектура, статус функций и планы"
+        description="Техническое описание платформы: из чего она собрана, какие функции готовы, что в работе и как планируется масштабирование."
+        noindex
+      />
       <div className="container mx-auto px-4 py-16 md:py-24">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-12">

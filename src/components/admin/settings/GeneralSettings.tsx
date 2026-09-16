@@ -7,12 +7,16 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge"; // Added missing Badge import
 import { Save, Check } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
+import { SITE_CONTACTS } from '@/config/site-contacts';
 
 const GeneralSettings: React.FC = () => {
   const [siteName, setSiteName] = useState("SeoMarket");
   const [siteUrl, setSiteUrl] = useState("https://seomarket.ru");
-  const [adminEmail, setAdminEmail] = useState("admin@seomarket.ru");
-  const [contactEmail, setContactEmail] = useState("support@seomarket.ru");
+  // Здесь по умолчанию стояли несуществующие ящики admin@seomarket.ru и
+  // support@seomarket.ru. Контактный адрес берём из SITE_CONTACTS, почту
+  // администратора не выдумываем — её вписывает сам администратор.
+  const [adminEmail, setAdminEmail] = useState("");
+  const [contactEmail, setContactEmail] = useState(SITE_CONTACTS.email);
   const [description, setDescription] = useState("SeoMarket - платформа для SEO-аудита и автоматической оптимизации сайтов.");
   const [maintenanceMode, setMaintenanceMode] = useState(false);
   const [isSaving, setIsSaving] = useState(false);

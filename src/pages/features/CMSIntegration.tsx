@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import PageSeo from '@/components/seo/PageSeo';
 
 const CMSIntegration: React.FC = () => {
   const [selectedCMS, setSelectedCMS] = useState('wordpress');
@@ -119,6 +120,10 @@ const CMSIntegration: React.FC = () => {
 
   return (
     <Layout>
+      <PageSeo
+        title="Интеграция с CMS: перенос правок прямо в вашу систему"
+        description="Как подключить сайт на популярной CMS, чтобы выгружать рекомендации сервиса и применять изменения без ручного копирования."
+      />
       <div className="container mx-auto px-4 py-16 md:py-24">
         {/* Навигация */}
         <div className="mb-8">

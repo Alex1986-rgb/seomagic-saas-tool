@@ -3,11 +3,17 @@ import React from 'react';
 import AdminUsers from '@/components/admin/AdminUsers';
 import UserStatsCards from '@/components/admin/UserStatsCards';
 import UserCharts from '@/components/admin/UserCharts';
-import { Users, Monitor, BarChart2 } from "lucide-react";
+import { Users, BarChart2 } from "lucide-react";
+import PageSeo from '@/components/seo/PageSeo';
 
 const AdminUsersPage: React.FC = () => {
   return (
     <div className="container mx-auto py-10 max-w-6xl">
+      <PageSeo
+        title="Пользователи сервиса: учётные записи, роли и доступы"
+        description="Список зарегистрированных клиентов: смена роли, выдача и отзыв доступа, блокировка аккаунтов и просмотр последней активности."
+        noindex
+      />
       {/* DARK Gradient Header */}
       <div className="mb-8 px-6 py-8 rounded-3xl bg-gradient-to-br from-[#1A1F2C] via-[#28213a]/90 to-[#403E43]/95 flex items-center gap-6 border border-[#483194]/30 shadow-2xl">
         <div className="bg-[#28213a]/80 text-primary rounded-full p-5 shadow-lg border border-[#7E69AB]/30">
@@ -18,8 +24,7 @@ const AdminUsersPage: React.FC = () => {
             Пользователи
           </h1>
           <div className="flex gap-4 text-muted-foreground">
-            <BarChart2 className="h-5 w-5" /> Графики активности
-            <Monitor className="h-5 w-5" /> Онлайн-сессии
+            <BarChart2 className="h-5 w-5" /> Регистрации и роли по данным базы
           </div>
         </div>
       </div>

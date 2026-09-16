@@ -70,7 +70,7 @@ export const ProductSchema: React.FC<ProductSchemaProps> = ({
     '@id': `${siteUrl}/pricing#product-${index + 1}`,
     name: product.name,
     description: product.description,
-    image: `${siteUrl}/images/product-${product.sku?.toLowerCase()}.jpg`,
+    // Картинок тарифов (/images/product-*.jpg) в проекте нет — поле убрано.
     brand: {
       '@type': 'Brand',
       name: 'SeoMarket'

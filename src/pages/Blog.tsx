@@ -8,17 +8,15 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Search, Book } from 'lucide-react';
 import { mockBlogPosts } from '@/data/mockData';
 import { LazyImage } from '@/components/LazyImage';
-import { SEO } from '@/components/SEO';
 import { BreadcrumbSchema } from '@/components/seo/BreadcrumbSchema';
+import PageSeo from '@/components/seo/PageSeo';
 
 const Blog: React.FC = () => {
   return (
     <Layout>
-      <SEO
-        title="Блог о SEO оптимизации | SeoMarket"
-        description="Экспертные статьи о SEO, продвижении сайтов, аналитике и оптимизации. Актуальные новости и практические советы по SEO."
-        canonicalUrl="/blog"
-        keywords="SEO блог, статьи про SEO, продвижение сайтов, SEO оптимизация, SEO гайды"
+      <PageSeo
+        title="Блог о SEO: статьи, гайды и разборы по продвижению"
+        description="Практические материалы о поисковой оптимизации: технический аудит, работа с метатегами, контент, ссылки и аналитика трафика."
       />
       <BreadcrumbSchema items={[
         { name: 'Главная', url: '/' },

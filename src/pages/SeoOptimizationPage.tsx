@@ -2,15 +2,14 @@
 import React from 'react';
 import Layout from '@/components/Layout';
 import SeoOptimizationPanel from '@/components/seo-optimization/SeoOptimizationPanel';
-import { SEO } from '@/components/SEO';
+import PageSeo from '@/components/seo/PageSeo';
 
 const SeoOptimizationPage: React.FC = () => {
   return (
     <Layout>
-      <SEO 
-        title="SEO Аудит и Оптимизация Сайтов"
-        description="Полностью автоматизированная система для SEO аудита и оптимизации сайтов. Исправляйте SEO ошибки и повышайте рейтинг вашего сайта в поисковых системах."
-        keywords="SEO, аудит, оптимизация, сайт, поисковая оптимизация, метатеги, контент, производительность"
+      <PageSeo
+        title="Автоматическая SEO-оптимизация страниц и метатегов"
+        description="Сервис сканирует сайт, находит слабые места и переписывает заголовки, описания и тексты страниц под поисковые запросы клиента."
       />
       
       <div className="container mx-auto px-4 md:px-6 pt-24 md:pt-32 pb-12 md:pb-20">

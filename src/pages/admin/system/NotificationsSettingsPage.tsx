@@ -2,6 +2,7 @@
 import React from "react";
 import NotificationsSettings from "@/components/admin/system/NotificationsSettings";
 import { Card, CardContent } from "@/components/ui/card";
+import PageSeo from '@/components/seo/PageSeo';
 
 const NotificationsMonitor = () => (
   <div className="border rounded-md p-4 bg-muted my-6">
@@ -18,6 +19,11 @@ const NotificationsMonitor = () => (
 
 const NotificationsSettingsPage = () => (
   <div className="container mx-auto px-4 py-8 max-w-3xl">
+    <PageSeo
+      title="Системные уведомления: почта, SMS и Slack-оповещения"
+      description="Настройка каналов оповещений и мониторинг рассылок: сколько писем ушло, где были ошибки и кто получает критические события."
+      noindex
+    />
     <h2 className="text-2xl font-bold mb-3">Системные уведомления</h2>
     <p className="mb-4 text-muted-foreground">Настройка email, SMS, Slack уведомлений и мониторинг их состояния.</p>
     <NotificationsMonitor />

@@ -3,6 +3,7 @@ import { FileText } from 'lucide-react';
 import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { useToast } from "@/hooks/use-toast";
 import { generateAuditPdf } from '@/utils/pdf/auditPdf';
+import { fetchPageAnalysis } from '@/services/audit/fetchPageAnalysis';
 import { AuditData } from '@/types/audit';
 import { OptimizationItem } from '@/features/audit/types/optimization-types';
 import { seoApiService } from '@/api/seoApiService';
@@ -82,15 +83,20 @@ const ExportPDF: React.FC<ExportPDFProps> = ({
           console.log('Could not fetch historical data:', error);
         }
         
-        const pdfBlob = await generateAuditPdf({ 
-          auditData, 
+        // Постраничный разбор берём из базы: в отчёт должны попасть настоящие
+        // страницы сайта, а не придуманные генератором.
+        const pageAnalysis = await fetchPageAnalysis(auditData.id);
+
+        const pdfBlob = await generateAuditPdf({
+          auditData,
           url,
           optimizationCost,
           optimizationItems,
           pageStats,
           date: new Date().toISOString(),
           historicalData,
-          comparisonData
+          comparisonData,
+          pageAnalysis
         });
         
         setProgress('Сохранение файла...');

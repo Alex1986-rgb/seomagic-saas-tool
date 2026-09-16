@@ -8,6 +8,7 @@
  */
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { assertTaskAccess, authErrorResponse } from "../_shared/auth.ts";
 import { generateText } from "../_shared/llm.ts";
 import { concurrencyFromEnv, runPool } from "../_shared/pool.ts";
 
@@ -76,6 +77,30 @@ serve(async (req) => {
       task_id: string;
       options: OptimizationOptions;
     };
+
+    // Обработчик тратит деньги на языковую модель. Проверка входа тут была, а
+    // проверки, что задача своя, — нет: любой вошедший мог запустить работу по
+    // чужому аудиту.
+    try {
+      await assertTaskAccess(req, task_id);
+    } catch (err) {
+      const denied = authErrorResponse(err, corsHeaders);
+      if (denied) return denied;
+      throw err;
+    }
+
+    const { data: jobOwner } = await supabase
+      .from('optimization_jobs')
+      .select('user_id')
+      .eq('id', optimization_id)
+      .maybeSingle();
+
+    if (jobOwner && jobOwner.user_id && jobOwner.user_id !== user.id) {
+      return new Response(
+        JSON.stringify({ success: false, error: 'Доступ к чужому заданию запрещён' }),
+        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+      );
+    }
 
     console.log('Starting optimization process:', { optimization_id, task_id, options });
 

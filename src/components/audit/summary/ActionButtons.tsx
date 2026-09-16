@@ -4,6 +4,7 @@ import { FileText, Share, ExternalLink, Download, FileJson } from 'lucide-react'
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { generateAuditPdf } from '@/utils/pdf/auditPdf';
+import { fetchPageAnalysis } from '@/services/audit/fetchPageAnalysis';
 import { 
   DropdownMenu, 
   DropdownMenuContent, 
@@ -25,7 +26,8 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ auditData, url, onDownloa
   const handleDownloadPDF = async () => {
     try {
       if (auditData) {
-        await generateAuditPdf({ auditData, url });
+        const pageAnalysis = await fetchPageAnalysis(auditData.id);
+        await generateAuditPdf({ auditData, url, pageAnalysis });
         toast({
           title: "Отчёт сохранён",
           description: "PDF-отчёт успешно сохранён на ваше устройство",

@@ -1,5 +1,4 @@
 import React from 'react';
-import { Helmet } from 'react-helmet-async';
 import AdminSettings from '@/components/admin/AdminSettings';
 import { Card, CardContent } from "@/components/ui/card";
 import { 
@@ -25,6 +24,7 @@ import {
 } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
+import PageSeo from '@/components/seo/PageSeo';
 
 const recentChanges = [
   { action: "Изменены настройки SMTP", user: "Анна С.", time: "20 мин назад" },
@@ -121,9 +121,11 @@ const managedPages = [
 const AdminSettingsPage: React.FC = () => {
   return (
     <>
-      <Helmet>
-        <title>Настройки | Админ панель</title>
-      </Helmet>
+      <PageSeo
+        title="Настройки платформы: параметры, доступы и интеграции"
+        description="Основные настройки сервиса: реквизиты, почта, внешние интеграции и параметры, влияющие на работу аудита и личного кабинета."
+        noindex
+      />
       <div className="container mx-auto px-4 md:px-8 py-10 max-w-6xl text-white">
         <div className="mb-8 px-8 py-10 rounded-3xl bg-gradient-to-br from-[#222222] to-[#1a1a1a] text-white shadow-lg flex flex-col md:flex-row items-center gap-8 border border-white/10">
           <div className="flex-shrink-0 bg-primary/20 text-primary rounded-full p-6 shadow-inner border border-primary/20">

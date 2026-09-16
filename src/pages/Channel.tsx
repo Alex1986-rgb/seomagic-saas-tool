@@ -4,6 +4,8 @@ import Layout from '@/components/Layout';
 import { Button } from '@/components/ui/button';
 import { YoutubeIcon, Video, Play, ExternalLink } from 'lucide-react';
 import { motion } from 'framer-motion';
+import PageSeo from '@/components/seo/PageSeo';
+import { assetUrl } from '@/lib/asset-url';
 
 const Channel: React.FC = () => {
   const videos = [
@@ -11,7 +13,7 @@ const Channel: React.FC = () => {
       id: 1,
       title: 'SEO оптимизация для начинающих',
       description: 'В этом видео мы рассмотрим основы SEO оптимизации для начинающих.',
-      thumbnail: '/images/placeholder.jpg',
+      thumbnail: assetUrl('/images/placeholder.jpg'),
       date: '10 мая 2024',
       views: 1250,
       link: '#',
@@ -20,7 +22,7 @@ const Channel: React.FC = () => {
       id: 2,
       title: 'Как повысить позиции в поисковой выдаче',
       description: 'Практические советы по повышению позиций вашего сайта в поисковой выдаче.',
-      thumbnail: '/images/placeholder.jpg',
+      thumbnail: assetUrl('/images/placeholder.jpg'),
       date: '2 мая 2024',
       views: 980,
       link: '#',
@@ -29,7 +31,7 @@ const Channel: React.FC = () => {
       id: 3,
       title: 'Анализ конкурентов: как и зачем',
       description: 'Подробный разбор процесса анализа конкурентов и его важность для SEO.',
-      thumbnail: '/images/placeholder.jpg',
+      thumbnail: assetUrl('/images/placeholder.jpg'),
       date: '25 апреля 2024',
       views: 1520,
       link: '#',
@@ -46,6 +48,10 @@ const Channel: React.FC = () => {
 
   return (
     <Layout>
+      <PageSeo
+        title="Видеоканал о SEO: уроки, разборы и обзоры платформы"
+        description="Последние видео об аудите сайтов, работе с позициями и оптимизации контента. Смотрите разборы и учитесь на реальных примерах."
+      />
       <div className="container mx-auto px-4 py-16 md:py-24">
         {/* Channel Header */}
         <div className="flex flex-col md:flex-row gap-6 items-start mb-16">

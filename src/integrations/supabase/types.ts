@@ -47,6 +47,51 @@ export type Database = {
         }
         Relationships: []
       }
+      contact_requests: {
+        Row: {
+          amount: number | null
+          created_at: string
+          email: string
+          id: string
+          kind: string
+          message: string | null
+          name: string | null
+          site_url: string | null
+          status: string
+          subject: string | null
+          task_id: string | null
+          user_id: string | null
+        }
+        Insert: {
+          amount?: number | null
+          created_at?: string
+          email: string
+          id?: string
+          kind?: string
+          message?: string | null
+          name?: string | null
+          site_url?: string | null
+          status?: string
+          subject?: string | null
+          task_id?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          amount?: number | null
+          created_at?: string
+          email?: string
+          id?: string
+          kind?: string
+          message?: string | null
+          name?: string | null
+          site_url?: string | null
+          status?: string
+          subject?: string | null
+          task_id?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       audit_files: {
         Row: {
           audit_id: string | null

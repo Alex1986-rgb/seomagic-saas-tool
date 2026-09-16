@@ -1,10 +1,15 @@
 
 import React from 'react';
 import Layout from '@/components/Layout';
+import PageSeo from '@/components/seo/PageSeo';
 
 const Webinars: React.FC = () => {
   return (
     <Layout>
+      <PageSeo
+        title="Вебинары по SEO: расписание эфиров и записи прошедших"
+        description="Онлайн-встречи с разбором практических задач: аудит сайта, работа с позициями и контентом. Регистрируйтесь или смотрите записи."
+      />
       <div className="container mx-auto py-32 px-4">
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold mb-4">Вебинары</h1>

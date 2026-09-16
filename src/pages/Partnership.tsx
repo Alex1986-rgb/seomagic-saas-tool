@@ -4,6 +4,7 @@ import Layout from '@/components/Layout';
 import { motion } from 'framer-motion';
 import { Button } from "@/components/ui/button";
 import { Briefcase, Handshake, Users } from 'lucide-react';
+import PageSeo from '@/components/seo/PageSeo';
 
 const Partnership: React.FC = () => {
   const partnershipBenefits = [
@@ -26,6 +27,10 @@ const Partnership: React.FC = () => {
 
   return (
     <Layout>
+      <PageSeo
+        title="Партнёрство: сотрудничество с агентствами и студиями"
+        description="Форматы совместной работы для агентств, студий и фрилансеров. Расскажите о своём проекте — подберём подходящую модель сотрудничества."
+      />
       <div className="container mx-auto px-4 py-32">
         <motion.div 
           initial={{ opacity: 0, y: 20 }}

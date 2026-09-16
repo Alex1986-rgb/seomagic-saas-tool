@@ -20,6 +20,7 @@ const AdminAuditsPage = React.lazy(() => import('@/pages/admin/AdminAuditsPage')
 const AdminPositionsPage = React.lazy(() => import('@/pages/admin/AdminPositionsPage'));
 const AdminProxiesPage = React.lazy(() => import('@/pages/admin/AdminProxiesPage'));
 const AdminPaymentsPage = React.lazy(() => import('@/pages/admin/AdminPaymentsPage'));
+const AdminRequestsPage = React.lazy(() => import('@/pages/admin/AdminRequestsPage'));
 
 // Lazy load system settings sections
 const SystemSettingsPage = React.lazy(() => import('@/pages/admin/system/SystemSettingsPage'));
@@ -75,6 +76,11 @@ const AdminRoutes: React.FC = () => {
         <Route path="settings" element={
           <Suspense fallback={<FullscreenLoader />}>
             <AdminSettingsPage />
+          </Suspense>
+        } />
+        <Route path="requests" element={
+          <Suspense fallback={<FullscreenLoader text="Загрузка заявок..." />}>
+            <AdminRequestsPage />
           </Suspense>
         } />
         <Route path="users" element={

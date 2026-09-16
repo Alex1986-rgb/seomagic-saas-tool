@@ -3,24 +3,24 @@
 <html lang="ru">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <!-- favicon.svg в проекте нет, есть только favicon.ico. -->
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="SEO аудит и оптимизация сайтов. Повысьте позиции в поисковых системах и увеличьте органический трафик." />
-    <meta name="keywords" content="SEO, аудит сайта, оптимизация сайта, поисковая оптимизация, продвижение сайта" />
-    <meta name="author" content="SEO аудит сервис" />
+    <!--
+      Заголовок и описание задаёт компонент PageSeo на каждой странице. Здесь
+      они стояли тоже — и в готовой странице оказывалось по два тега
+      description и og:title. Дубли метатегов поисковики считают ошибкой:
+      ровно за это ругается наш собственный аудит.
+    -->
     <meta name="robots" content="index, follow" />
     <meta name="theme-color" content="#8b5cf6" />
-    <meta property="og:type" content="website" />
-    <meta property="og:title" content="SEO Аудит и Оптимизация" />
-    <meta property="og:description" content="SEO аудит и оптимизация сайтов. Повысьте позиции в поисковых системах и увеличьте органический трафик." />
-    <meta property="og:image" content="/og-image.jpg" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <link rel="manifest" href="/manifest.json" />
     
     <!-- Preconnect to critical domains -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link rel="dns-prefetch" href="https://dllusofuxonaemrttmwl.supabase.co" />
+    <link rel="dns-prefetch" href="https://rbkwhejnhiwmktqwkakz.supabase.co" />
     
     <!-- Preload critical fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@400;600;700&display=swap" rel="stylesheet" />
@@ -28,7 +28,12 @@
   </head>
   <body>
     <div id="root"></div>
-    <script src="https://cdn.gpteng.co/gptengineer.js" type="module"></script>
+    <!--
+      Сторонний скрипт cdn.gpteng.co (редактор Lovable) убран с боевой страницы.
+      Он грузился на каждой странице сайта, имел полный доступ к ней — включая
+      формы и сессию вошедшего пользователя, — а сейчас ещё и не отвечает, то
+      есть каждая страница ждала недоступный домен. Для работы сайта он не нужен.
+    -->
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

@@ -149,30 +149,14 @@ const AuditResultsDashboard: React.FC<AuditResultsDashboardProps> = ({
       }));
     }
     
-    // Fallback to mock data if no real data available
-    const pages: PageAnalysisRow[] = [];
-    const pageCount = Math.min(auditData.pageCount || 10, 50);
-    
-    for (let i = 0; i < pageCount; i++) {
-      const issuesForPage = allIssues.filter(() => Math.random() > 0.7).slice(0, Math.floor(Math.random() * 5));
-      const score = Math.max(0, 100 - issuesForPage.length * 15);
-      
-      pages.push({
-        url: `${auditData.url}${i === 0 ? '' : `/page-${i}`}`,
-        title: `Страница ${i + 1}`,
-        statusCode: 200,
-        loadTime: 0.5 + Math.random() * 2,
-        wordCount: 300 + Math.floor(Math.random() * 1000),
-        imageCount: Math.floor(Math.random() * 20),
-        h1Count: 1,
-        issuesCount: issuesForPage.length,
-        issues: issuesForPage,
-        score: score
-      });
-    }
-    
-    return pages;
-  }, [auditData, allIssues, pageAnalysisData]);
+    // Разбора страниц нет — показываем пустую таблицу с объяснением.
+    //
+    // Раньше здесь подставлялись придуманные страницы: адреса вида /page-1,
+    // заголовки «Страница 1», случайное время загрузки, случайное число
+    // картинок и случайно выбранные замечания. От настоящих данных они в
+    // таблице ничем не отличались.
+    return [];
+  }, [pageAnalysisData]);
 
   const handlePageClick = (page: PageAnalysisRow) => {
     setSelectedPage(page);
@@ -250,10 +234,16 @@ const AuditResultsDashboard: React.FC<AuditResultsDashboardProps> = ({
       <TopIssuesPanel issues={allIssues} />
 
       {/* Page Analysis Table */}
-      <PageAnalysisInteractiveTable
-        pages={pageAnalysis}
-        onPageClick={handlePageClick}
-      />
+      {pageAnalysis.length > 0 ? (
+        <PageAnalysisInteractiveTable
+          pages={pageAnalysis}
+          onPageClick={handlePageClick}
+        />
+      ) : (
+        <div className="rounded-lg border border-dashed p-6 text-center text-sm text-muted-foreground">
+          Разбор по страницам ещё не собран. Он появится, когда аудит пройдёт до конца.
+        </div>
+      )}
 
       {/* Page Detail Drawer */}
       <PageDetailView

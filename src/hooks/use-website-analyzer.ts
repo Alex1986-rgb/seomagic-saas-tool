@@ -1,8 +1,10 @@
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { useToast } from './use-toast';
 import { useScan } from './use-scan';
 import { validationService } from '@/services/validation/validationService';
+import { fetchIssueSummary } from '@/services/audit/fetchIssueSummary';
+import { fetchPageAnalysis } from '@/services/audit/fetchPageAnalysis';
 
 export interface WebsiteAnalyzerResults {
   totalPages: number;
@@ -29,19 +31,38 @@ export const useWebsiteAnalyzer = () => {
   const { toast } = useToast();
   
   // Initialize scan functionality
+  // Идентификатор задачи нужен в обработчике завершения: он вызывается позже,
+  // когда обход уже закончился, и значение из замыкания было бы устаревшим.
+  const taskIdRef = useRef<string | null>(null);
+
   const {
     isScanning,
     scanDetails,
     taskId,
     startScan,
     cancelScan
-  } = useScan(url, (pagesCount) => {
-    // Update results based on scanned pages
-    setScanResults(prev => ({
-      ...prev,
-      totalPages: pagesCount
-    }));
+  } = useScan(url, async (pagesCount) => {
+    setScanResults(prev => ({ ...prev, totalPages: pagesCount }));
+
+    // Обход закончился — забираем настоящие страницы и замечания.
+    const finishedTaskId = taskIdRef.current;
+    const [pages, summary] = await Promise.all([
+      fetchPageAnalysis(finishedTaskId),
+      fetchIssueSummary(finishedTaskId),
+    ]);
+
+    setScannedUrls(pages.map((page) => page.url));
+    setScanResults({
+      totalPages: pages.length || pagesCount,
+      brokenLinks: summary.brokenLinks,
+      duplicateContent: summary.duplicateContent,
+      missingMetadata: summary.missingMetadata,
+    });
   });
+
+  useEffect(() => {
+    taskIdRef.current = taskId ?? null;
+  }, [taskId]);
   
   // Handle URL change
   const handleUrlChange = useCallback((newUrl: string) => {
@@ -68,21 +89,15 @@ export const useWebsiteAnalyzer = () => {
         return;
       }
 
-      // Generate mock URLs for testing
-      const mockUrls = Array(10).fill(0).map((_, i) => 
-        `${url.startsWith('http') ? url : 'https://' + url}/${i === 0 ? '' : 'page' + i}`
-      );
-      setScannedUrls(mockUrls);
-      
-      await startScan();
-      
-      // Update scan results with mock data
-      setScanResults({
-        totalPages: mockUrls.length,
-        brokenLinks: Math.floor(Math.random() * 5),
-        duplicateContent: Math.floor(Math.random() * 3),
-        missingMetadata: Math.floor(Math.random() * 8)
-      });
+      // Раньше здесь создавался список из десяти несуществующих адресов
+      // (site.ru/page1 … page9), а «битые ссылки», «дубли» и «нет описания»
+      // выбирались случайными числами. Теперь просто запускаем настоящий
+      // аудит: результаты подставит обработчик завершения.
+      setScannedUrls([]);
+      setScanResults({ totalPages: 0, brokenLinks: 0, duplicateContent: 0, missingMetadata: 0 });
+
+      const startedTaskId = await startScan();
+      if (startedTaskId) taskIdRef.current = startedTaskId;
     } catch (error) {
       console.error('Error starting scan:', error);
       toast({
@@ -91,7 +106,7 @@ export const useWebsiteAnalyzer = () => {
         variant: "destructive",
       });
     }
-  }, [url, isError, toast, startScan]);
+  }, [url, isError, toast, startScan, taskId]);
   
   return {
     url,

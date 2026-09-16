@@ -84,7 +84,10 @@ const Navbar: React.FC = () => {
         )}
       </AnimatePresence>
 
-      {process.env.NODE_ENV !== 'production' && (
+      {/* Кнопки «Войти (Debug)» и «Сделать админом» — только для разработки.
+          Признак берём у Vite: process.env в браузере не существует, и опечатка
+          в этой строке вывела бы отладочные кнопки на живой сайт. */}
+      {import.meta.env.DEV && (
         <DebugControls 
           isLoggedIn={safeUser.isLoggedIn}
           isAdmin={safeUser.isAdmin}

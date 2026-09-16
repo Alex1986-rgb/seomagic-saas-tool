@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
+import { assertPublicUrl, UnsafeUrlError } from "../_shared/url-guard.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -38,9 +39,21 @@ serve(async (req) => {
     const { url, options }: AuditStartRequest = await req.json();
     console.log('Request body:', { url, options });
 
-    // Validate URL
-    if (!url || !url.startsWith('http')) {
+    // Проверять можно только настоящий сайт в интернете. Раньше сюда проходил
+    // любой адрес, и нашим сервером можно было постучаться во внутреннюю сеть.
+    if (!url) {
       throw new Error('Invalid URL provided');
+    }
+    try {
+      assertPublicUrl(url);
+    } catch (err) {
+      if (err instanceof UnsafeUrlError) {
+        return new Response(
+          JSON.stringify({ success: false, error: err.message }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+        );
+      }
+      throw err;
     }
 
     const taskType = options?.type || 'quick';

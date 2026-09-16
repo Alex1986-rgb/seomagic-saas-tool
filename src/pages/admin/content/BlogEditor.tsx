@@ -1,6 +1,5 @@
 
 import React, { useState } from 'react';
-import { Helmet } from 'react-helmet-async';
 import BaseContentEditor from '@/components/admin/content/BaseContentEditor';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -10,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { PlusCircle, Edit, Trash2, Calendar, Tag, User } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import PageSeo from '@/components/seo/PageSeo';
 
 interface BlogPost {
   id: string;
@@ -129,9 +129,11 @@ const BlogEditor: React.FC = () => {
 
   return (
     <>
-      <Helmet>
-        <title>Управление блогом | Админ панель</title>
-      </Helmet>
+      <PageSeo
+        title="Управление блогом: статьи, категории и настройки раздела"
+        description="Создание и правка материалов блога: тексты статей, обложки, категории и параметры публичной страницы со списком публикаций."
+        noindex
+      />
       
       <BaseContentEditor
         title="Управление блогом"

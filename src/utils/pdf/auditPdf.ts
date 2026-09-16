@@ -32,6 +32,27 @@ export interface GenerateAuditPdfOptions {
   isPartial?: boolean;
   completionPercentage?: number;
   partialDataNote?: string;
+  /**
+   * Разобранные страницы сайта из таблицы `page_analysis`. Без них раздел
+   * постраничного анализа в отчёт не попадает: раньше на его месте печатались
+   * выдуманные страницы (/products, /services) со случайными оценками и
+   * временем загрузки — отчёт с такими данными уносили клиенту.
+   */
+  pageAnalysis?: AuditPageRow[];
+}
+
+/** Строка разбора страницы — то, что действительно измерено краулером. */
+export interface AuditPageRow {
+  url: string;
+  status_code?: number | null;
+  load_time?: number | null;
+  content_length?: number | null;
+  title?: string | null;
+  description?: string | null;
+  h1_count?: number | null;
+  issues_critical?: number | null;
+  issues_warning?: number | null;
+  issues_info?: number | null;
 }
 
 interface AuditIssue {
@@ -295,11 +316,12 @@ export const generateAuditPdf = async (options: GenerateAuditPdfOptions): Promis
   }
 
   // === АНАЛИЗ СТРАНИЦ ===
-  if (opts.includePageAnalysis && auditData.pageCount && auditData.pageCount > 1) {
+  // Печатаем, только когда есть разобранные страницы. Пустой раздел честнее
+  // раздела с выдуманными адресами.
+  if (opts.includePageAnalysis && options.pageAnalysis && options.pageAnalysis.length > 0) {
     doc.addPage();
-    
-    // Подготовка данных для анализа страниц
-    const pageAnalysisData = preparePageAnalysisData(auditData);
+
+    const pageAnalysisData = preparePageAnalysisData(options.pageAnalysis);
     addPageAnalysisSection(doc, pageAnalysisData, 20);
   }
 
@@ -681,9 +703,16 @@ function prepareOpportunitiesRecommendations(auditData: AuditData): Recommendati
 }
 
 /**
- * Подготовка данных для анализа страниц
+ * Подготовка данных для анализа страниц.
+ *
+ * Раньше эта функция сама придумывала страницы: брала домен, приписывала к нему
+ * /products, /services, /about, /contacts, /blog, раздавала им случайные оценки
+ * 60–95, случайное время загрузки и иногда — ответ 404. В отчёте, который
+ * показывают клиенту, это выглядело как результат обхода сайта.
+ *
+ * Теперь берём то, что измерено краулером.
  */
-function preparePageAnalysisData(auditData: AuditData): {
+function preparePageAnalysisData(rows: AuditPageRow[]): {
   pages: PageAnalysisItem[];
   summary: {
     totalPages: number;
@@ -692,81 +721,43 @@ function preparePageAnalysisData(auditData: AuditData): {
     totalIssues: number;
   };
 } {
-  const pages: PageAnalysisItem[] = [];
-  
-  // Создаем моковые данные страниц на основе auditData
-  // В реальности эти данные должны приходить из audit_results.pages_data
-  const pageCount = auditData.pageCount || 1;
-  const baseUrl = new URL(auditData.url || 'https://example.com');
-  
-  // Генерируем данные для главной страницы
-  pages.push({
-    url: baseUrl.origin + '/',
-    statusCode: 200,
-    loadTime: 450,
-    pageSize: 2500,
-    seoScore: auditData.score,
-    issues: {
-      critical: auditData.issues.critical?.length || 0,
-      warning: auditData.issues.important?.length || 0,
-      info: auditData.issues.opportunities?.length || 0
-    },
-    metaTitle: 'Главная страница',
-    metaDescription: 'Описание главной страницы',
-    h1Count: 1
+  const pages: PageAnalysisItem[] = rows.map((row) => {
+    const critical = Number(row.issues_critical ?? 0);
+    const warning = Number(row.issues_warning ?? 0);
+    const info = Number(row.issues_info ?? 0);
+
+    // Оценку страницы не выдумываем: считаем от числа найденных замечаний.
+    const seoScore = Math.max(0, 100 - critical * 15 - warning * 5 - info * 2);
+
+    return {
+      url: row.url,
+      statusCode: Number(row.status_code ?? 200),
+      // В базе время хранится в секундах, в отчёте показываем миллисекунды.
+      loadTime: Math.round(Number(row.load_time ?? 0) * 1000),
+      pageSize: Math.round(Number(row.content_length ?? 0) / 1024),
+      seoScore,
+      issues: { critical, warning, info },
+      metaTitle: row.title ?? '',
+      metaDescription: row.description ?? '',
+      h1Count: Number(row.h1_count ?? 0),
+    };
   });
-  
-  // Генерируем данные для остальных страниц
-  const sections = ['products', 'services', 'about', 'contacts', 'blog'];
-  const remainingPages = Math.min(pageCount - 1, 20); // Ограничиваем до 20 страниц для примера
-  
-  for (let i = 0; i < remainingPages; i++) {
-    const section = sections[i % sections.length];
-    const pageNum = Math.floor(i / sections.length) + 1;
-    const urlPath = pageNum > 1 ? `${section}/${pageNum}` : section;
-    
-    const randomScore = 60 + Math.random() * 35;
-    const randomLoadTime = 300 + Math.random() * 2000;
-    const hasIssues = Math.random() > 0.6;
-    
-    pages.push({
-      url: `${baseUrl.origin}/${urlPath}`,
-      statusCode: hasIssues && Math.random() > 0.8 ? 404 : 200,
-      loadTime: Math.round(randomLoadTime),
-      pageSize: Math.round(1500 + Math.random() * 3000),
-      seoScore: Math.round(randomScore),
-      issues: {
-        critical: hasIssues ? Math.floor(Math.random() * 3) : 0,
-        warning: hasIssues ? Math.floor(Math.random() * 5) : 0,
-        info: Math.floor(Math.random() * 3)
-      },
-      metaTitle: `${section.charAt(0).toUpperCase() + section.slice(1)} - Page ${pageNum}`,
-      metaDescription: `Description for ${section} page ${pageNum}`,
-      h1Count: 1
-    });
-  }
-  
-  // Вычисляем сводную статистику
-  const avgLoadTime = Math.round(
-    pages.reduce((sum, p) => sum + p.loadTime, 0) / pages.length
-  );
-  
-  const avgSeoScore = Math.round(
-    pages.reduce((sum, p) => sum + p.seoScore, 0) / pages.length
-  );
-  
+
+  const count = pages.length || 1;
+  const avgLoadTime = Math.round(pages.reduce((sum, p) => sum + p.loadTime, 0) / count);
+  const avgSeoScore = Math.round(pages.reduce((sum, p) => sum + p.seoScore, 0) / count);
   const totalIssues = pages.reduce(
     (sum, p) => sum + p.issues.critical + p.issues.warning + p.issues.info,
-    0
+    0,
   );
-  
+
   return {
     pages,
     summary: {
       totalPages: pages.length,
       avgLoadTime,
       avgSeoScore,
-      totalIssues
-    }
+      totalIssues,
+    },
   };
 }

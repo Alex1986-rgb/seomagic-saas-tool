@@ -2,9 +2,16 @@
 import axios from 'axios';
 
 class OpenAIApiClient {
-  // Ключ держим только в памяти на время сессии — не пишем в localStorage
-  // (clear-text storage). Постоянный ключ задаётся через env (VITE_OPENAI_API_KEY)
-  // или, правильнее, проксируется через серверную edge-функцию.
+  /**
+   * Ключ живёт только в памяти вкладки.
+   *
+   * Раньше он мог браться из переменной VITE_OPENAI_API_KEY. Всё, что начинается
+   * с VITE_, Vite подставляет прямо в собранный файл — то есть ключ уезжал в
+   * браузер каждому посетителю и его можно было выписать из исходников страницы
+   * и тратить наш счёт. Переменную больше не читаем: ключ либо вводит
+   * администратор на время работы, либо запрос идёт через серверную функцию,
+   * где ключ хранится в секретах проекта.
+   */
   private apiKey: string | null = null;
 
   setApiKey(key: string): void {
@@ -12,17 +19,7 @@ class OpenAIApiClient {
   }
 
   getApiKey(): string | null {
-    if (this.apiKey) {
-      return this.apiKey;
-    }
-
-    const envKey = import.meta.env.VITE_OPENAI_API_KEY as string | undefined;
-    if (envKey) {
-      this.apiKey = envKey;
-      return envKey;
-    }
-
-    return null;
+    return this.apiKey;
   }
 
   async makeRequest(messages: { role: string; content: string; }[], model?: string, options: { maxTokens?: number, temperature?: number } = {}): Promise<any> {

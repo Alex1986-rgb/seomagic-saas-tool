@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
+import PageSeo from '@/components/seo/PageSeo';
 
 const PositionTrackingFeature: React.FC = () => {
   const [selectedKeyword, setSelectedKeyword] = useState('seo аудит');
@@ -73,6 +74,10 @@ const PositionTrackingFeature: React.FC = () => {
 
   return (
     <Layout>
+      <PageSeo
+        title="Мониторинг позиций сайта: ежедневный контроль выдачи"
+        description="Следите за местом сайта по ключевым запросам: графики динамики, сравнение периодов и оповещения о резких изменениях позиций."
+      />
       <div className="container mx-auto px-4 py-16 md:py-24">
         {/* Навигация */}
         <div className="mb-8">

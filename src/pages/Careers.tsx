@@ -3,10 +3,15 @@ import React from 'react';
 import Layout from '@/components/Layout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import PageSeo from '@/components/seo/PageSeo';
 
 const Careers: React.FC = () => {
   return (
     <Layout>
+      <PageSeo
+        title="Вакансии и карьера: работа в команде SEO-платформы"
+        description="Открытые позиции, условия работы и то, как устроены процессы внутри команды. Не нашли подходящую вакансию — присылайте резюме."
+      />
       <div className="container mx-auto py-32 px-4">
         <div className="text-center mb-16">
           <h1 className="text-4xl font-bold mb-4">Карьера в SeoMarket</h1>

@@ -7,6 +7,7 @@ import { Mail, Send, Save } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import PageSeo from '@/components/seo/PageSeo';
 
 const EmailSettingsPage = () => {
   const [testEmailStatus, setTestEmailStatus] = React.useState<'idle' | 'sending' | 'success' | 'error'>('idle');
@@ -21,6 +22,11 @@ const EmailSettingsPage = () => {
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-3xl">
+      <PageSeo
+        title="Настройки почты: SMTP, отправитель и шаблоны писем"
+        description="Параметры отправки писем: сервер SMTP, адрес отправителя, шаблоны системных уведомлений и проверка доставки тестовых сообщений."
+        noindex
+      />
       <h2 className="text-2xl font-bold mb-3">Настройки почты</h2>
       <p className="mb-4 text-muted-foreground">
         Конфигурация почтового сервера и шаблонов уведомлений.

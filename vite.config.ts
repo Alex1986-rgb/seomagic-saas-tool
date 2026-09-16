@@ -20,7 +20,11 @@ export default defineConfig(({ mode }) => ({
       "@": path.resolve(__dirname, "./src"),
     },
   },
-  base: "/",
+  // Сайт опубликован на GitHub Pages по адресу с подпутём
+  // (/seomagic-saas-tool/). При сборке с корнем «/» страница ищет свои файлы
+  // не там и открывается пустой — так живой сайт уже можно было положить одной
+  // выкладкой. Свой домен задаётся переменной VITE_BASE_PATH="/".
+  base: process.env.VITE_BASE_PATH ?? (mode === 'production' ? '/seomagic-saas-tool/' : '/'),
   build: {
     outDir: "dist",
     assetsDir: "assets",
@@ -28,36 +32,19 @@ export default defineConfig(({ mode }) => ({
     minify: mode === 'production',
     rollupOptions: {
       output: {
-        manualChunks: (id) => {
-          if (id.includes('node_modules')) {
-            if (id.includes('react') || id.includes('react-dom')) {
-              return 'vendor-react';
-            }
-            if (id.includes('lucide') || id.includes('@radix-ui')) {
-              return 'vendor-ui';
-            }
-            if (id.includes('date-fns') || id.includes('recharts')) {
-              return 'vendor-data';
-            }
-            return 'vendor-other';
-          }
-          
-          if (id.includes('/components/ui/')) {
-            return 'ui-components';
-          }
-          
-          if (id.includes('/components/admin/')) {
-            return 'admin-components';
-          }
-          
-          if (id.includes('/pages/admin/')) {
-            return 'admin-pages';
-          }
-          
-          if (id.includes('/components/audit/')) {
-            return 'audit-components';
-          }
-        }
+        /**
+         * Ручное разбиение на части убрано.
+         *
+         * Правило `id.includes('react')` забирало в «vendor-react» всё, в чьём
+         * пути встречается слово react: @radix-ui/react-dialog, react-hook-form,
+         * react-helmet-async. Зависимые друг от друга библиотеки оказывались в
+         * разных частях, части ссылались друг на друга по кругу («Circular
+         * chunk: vendor-other -> vendor-react -> vendor-other» в выводе сборки),
+         * и в браузере одна из них исполнялась раньше другой. Итог: собранный
+         * сайт открывался пустым с ошибкой «Cannot read properties of undefined
+         * (reading 'createContext')». Разбиение оставляем сборщику — он
+         * учитывает зависимости и циклов не создаёт.
+         */
       }
     }
   },

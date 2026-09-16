@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { assertTaskAccess, authErrorResponse } from "../_shared/auth.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -42,6 +43,15 @@ serve(async (req) => {
 
     if (!task_id) {
       throw new Error('task_id is required');
+    }
+
+    // Оптимизация тратит деньги на модель — по чужой задаче её не запустить.
+    try {
+      await assertTaskAccess(req, task_id);
+    } catch (err) {
+      const denied = authErrorResponse(err, corsHeaders);
+      if (denied) return denied;
+      throw err;
     }
 
     console.log('Starting optimization for task:', task_id);

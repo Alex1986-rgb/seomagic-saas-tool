@@ -3,7 +3,8 @@ import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { 
   LayoutDashboard, Globe, Bell, MonitorCheck, Settings, Users, BarChart, 
-  Server, Database, File, Search, Activity, CreditCard, Shield, Webhook
+  Server, Database, File, Search, Activity, CreditCard, Shield, Webhook,
+  Mail
 } from 'lucide-react';
 import SidebarGroup from './SidebarGroup';
 import SidebarLink from './SidebarLink';
@@ -99,6 +100,13 @@ const AdminSidebar: React.FC = () => {
               active={currentPath.includes('/admin/users')}
             >
               Пользователи
+            </SidebarLink>
+            <SidebarLink
+              to="/admin/requests"
+              icon={Mail}
+              active={currentPath.includes('/admin/requests')}
+            >
+              Заявки
             </SidebarLink>
             <SidebarLink 
               to="/admin/payments" 

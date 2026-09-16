@@ -3,6 +3,7 @@ import React, { useState, useCallback, memo, useRef, useEffect } from 'react';
 import { LazyLoadImage } from 'react-lazy-load-image-component';
 import 'react-lazy-load-image-component/src/effects/blur.css';
 import { cn } from '@/lib/utils';
+import { assetUrl } from '@/lib/asset-url';
 
 interface LazyImageProps {
   src: string;
@@ -28,6 +29,10 @@ export const LazyImage: React.FC<LazyImageProps> = memo(({
   onLoad: externalOnLoad,
   onError: externalOnError
 }) => {
+  // Заглушка лежит в public — путь считаем от адреса публикации.
+  const placeholder = assetUrl('/images/placeholder.jpg');
+  const resolvedSrc = assetUrl(src);
+
   const [isLoaded, setIsLoaded] = useState(false);
   const [hasError, setHasError] = useState(false);
   const imgRef = useRef<HTMLImageElement>(null);
@@ -76,7 +81,7 @@ export const LazyImage: React.FC<LazyImageProps> = memo(({
       <LazyLoadImage
         ref={imgRef}
         alt={alt}
-        src={hasError ? '/images/placeholder.jpg' : src}
+        src={hasError ? placeholder : resolvedSrc}
         effect="blur"
         className={cn(
           className,
@@ -86,9 +91,9 @@ export const LazyImage: React.FC<LazyImageProps> = memo(({
         width={width}
         height={height}
         threshold={200}
-        srcSet={generateSrcSet(src)}
+        srcSet={generateSrcSet(resolvedSrc)}
         sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-        placeholderSrc="/images/placeholder.jpg"
+        placeholderSrc={placeholder}
         onLoad={handleLoad}
         onError={handleError}
         wrapperClassName="w-full h-full"

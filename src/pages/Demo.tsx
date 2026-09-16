@@ -12,12 +12,17 @@ import DemoServiceProcess from '@/components/demo/DemoServiceProcess';
 import DemoUserGuide from '@/components/demo/DemoUserGuide';
 import DemoFeatures from '@/components/demo/DemoFeatures';
 import DemoInteractiveExample from '@/components/demo/DemoInteractiveExample';
+import PageSeo from '@/components/seo/PageSeo';
 
 const Demo: React.FC = () => {
   console.log("Demo page rendering");
   
   return (
     <Layout>
+      <PageSeo
+        title="Демо сервиса: как проходит аудит и оптимизация сайта"
+        description="Посмотрите на готовом примере, как сервис сканирует страницы, находит ошибки и предлагает исправления — без регистрации."
+      />
       <section className="py-20 relative overflow-hidden">
         {/* Use simple gradient backgrounds instead of image references */}
         <div className="absolute inset-0 bg-gradient-to-b from-background via-primary/5 to-background/90 -z-10" />

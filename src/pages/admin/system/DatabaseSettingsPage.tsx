@@ -2,6 +2,7 @@
 import React from "react";
 import DatabaseSettings from "@/components/admin/system/DatabaseSettings";
 import { Card, CardContent } from "@/components/ui/card";
+import PageSeo from '@/components/seo/PageSeo';
 
 const DatabaseStats = () => (
   <div className="border rounded-md p-4 bg-muted my-6">
@@ -19,6 +20,11 @@ const DatabaseStats = () => (
 
 const DatabaseSettingsPage = () => (
   <div className="container mx-auto px-6 py-10 max-w-3xl">
+    <PageSeo
+      title="База данных: параметры подключения, нагрузка и бэкапы"
+      description="Настройки соединения с базой, пул подключений и кеширование, а также текущая нагрузка, число сессий и время отклика сервера."
+      noindex
+    />
     <h1 className="text-3xl font-bold mb-6">База данных</h1>
     <p className="mb-4 text-muted-foreground">Настройки подключения и оптимизации базы данных, а также мониторинг состояния сервера.</p>
     <DatabaseStats />

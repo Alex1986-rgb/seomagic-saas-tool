@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
+import PageSeo from '@/components/seo/PageSeo';
 
 const CompetitorAnalysis: React.FC = () => {
   const [selectedCompetitor, setSelectedCompetitor] = useState('competitor1');
@@ -76,6 +77,10 @@ const CompetitorAnalysis: React.FC = () => {
 
   return (
     <Layout>
+      <PageSeo
+        title="Анализ конкурентов: сравнение сайтов по видимости в поиске"
+        description="Сравните свой сайт с конкурентами по ключевым запросам, структуре и техническим параметрам, чтобы найти точки роста трафика."
+      />
       <div className="container mx-auto px-4 py-16 md:py-24">
         {/* Навигация */}
         <div className="mb-8">

@@ -1,99 +1,79 @@
-
 import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { CheckCircle, CreditCard, AlertCircle, ChevronDown, ChevronUp } from 'lucide-react';
+import { AlertCircle, CheckCircle, ChevronDown, ChevronUp, Receipt } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import OptimizationPromptTemplates from './OptimizationPromptTemplates';
+import { submitContactRequest, SUPPORT_EMAIL } from '@/services/contact/submitRequest';
+
+/**
+ * Счёт на оплату оптимизации.
+ *
+ * Раньше это окно просило номер карты, срок и CVV, ждало полторы секунды и
+ * объявляло платёж прошедшим: приём карт не подключён, деньги никуда не шли, а
+ * данные карты вводились в форму, которая с ними ничего не умеет. Собирать их
+ * нельзя. Теперь окно честно говорит, что онлайн-оплата не подключена, и
+ * оставляет заявку на счёт — её видит администратор.
+ */
 
 interface PaymentDialogProps {
   url: string;
   optimizationCost: number;
+  /** Вызывается после того, как заявка на счёт принята. */
   onPayment: () => void;
   isDialogOpen: boolean;
   setIsDialogOpen: (open: boolean) => void;
   onSelectPrompt?: (prompt: string) => void;
+  taskId?: string | null;
 }
 
-const PaymentDialog: React.FC<PaymentDialogProps> = ({ 
-  url, 
-  optimizationCost, 
+const PaymentDialog: React.FC<PaymentDialogProps> = ({
+  url,
+  optimizationCost,
   onPayment,
   isDialogOpen,
   setIsDialogOpen,
-  onSelectPrompt
+  onSelectPrompt,
+  taskId,
 }) => {
-  const [cardNumber, setCardNumber] = useState('');
-  const [expiryDate, setExpiryDate] = useState('');
-  const [cvv, setCvv] = useState('');
-  const [cardName, setCardName] = useState('');
-  const [processing, setProcessing] = useState(false);
+  const [email, setEmail] = useState('');
+  const [name, setName] = useState('');
+  const [comment, setComment] = useState('');
+  const [sending, setSending] = useState(false);
+  const [sent, setSent] = useState(false);
   const [error, setError] = useState('');
   const [showPromptTemplates, setShowPromptTemplates] = useState(false);
-  
-  const formatCardNumber = (value: string) => {
-    // Remove all non-digit characters
-    const digits = value.replace(/\D/g, '');
-    
-    // Add a space after every 4 digits
-    const formatted = digits.replace(/(\d{4})(?=\d)/g, '$1 ');
-    
-    // Limit to 19 characters (16 digits + 3 spaces)
-    return formatted.substring(0, 19);
-  };
-  
-  const formatExpiryDate = (value: string) => {
-    // Remove all non-digit characters
-    const digits = value.replace(/\D/g, '');
-    
-    // Format as MM/YY
-    if (digits.length > 2) {
-      return `${digits.substring(0, 2)}/${digits.substring(2, 4)}`;
-    }
-    return digits;
-  };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    
-    // Simple validation
-    if (cardNumber.replace(/\s/g, '').length !== 16) {
-      setError('Введите корректный номер карты (16 цифр)');
+
+    if (!/^[^@\s]+@[^@\s.]+\.[^@\s]+$/.test(email)) {
+      setError('Укажите почту, на которую выставить счёт');
       return;
     }
-    
-    if (expiryDate.length !== 5) {
-      setError('Введите корректную дату (ММ/ГГ)');
-      return;
-    }
-    
-    if (cvv.length !== 3) {
-      setError('CVV должен содержать 3 цифры');
-      return;
-    }
-    
-    if (!cardName) {
-      setError('Введите имя владельца карты');
-      return;
-    }
-    
-    // Simulate payment processing
-    setProcessing(true);
-    
-    setTimeout(() => {
-      setProcessing(false);
+
+    setSending(true);
+    try {
+      await submitContactRequest({
+        kind: 'invoice',
+        name: name || undefined,
+        email,
+        subject: `Счёт на оптимизацию ${url}`,
+        message: comment || undefined,
+        siteUrl: url,
+        amount: optimizationCost,
+        taskId,
+      });
+      setSent(true);
       onPayment();
-      setIsDialogOpen(false);
-      
-      // Reset form
-      setCardNumber('');
-      setExpiryDate('');
-      setCvv('');
-      setCardName('');
-    }, 1500);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Не удалось отправить заявку');
+    } finally {
+      setSending(false);
+    }
   };
 
   const handleSelectPrompt = (prompt: string) => {
@@ -106,128 +86,135 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
     <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
       <DialogContent className="sm:max-w-[600px]">
         <DialogHeader>
-          <DialogTitle>Оплата оптимизации</DialogTitle>
+          <DialogTitle>Счёт на оптимизацию</DialogTitle>
           <DialogDescription>
-            Оплата услуги оптимизации сайта {url}
+            Оптимизация сайта {url}
           </DialogDescription>
         </DialogHeader>
-        
-        {onSelectPrompt && (
-          <div className="mb-6">
-            <div className="flex items-center justify-between mb-2">
-              <h3 className="text-sm font-medium">Параметры оптимизации</h3>
-              <Button 
-                variant="ghost" 
-                size="sm"
-                onClick={() => setShowPromptTemplates(!showPromptTemplates)}
-                className="h-8 px-2 text-xs flex items-center gap-1"
-              >
-                {showPromptTemplates ? (
-                  <>
-                    <ChevronUp className="h-3 w-3" /> Скрыть шаблоны
-                  </>
-                ) : (
-                  <>
-                    <ChevronDown className="h-3 w-3" /> Выбрать шаблон оптимизации
-                  </>
+
+        {sent ? (
+          <div className="space-y-4 py-2">
+            <div className="flex items-start gap-3 rounded-lg border border-green-200 bg-green-50 p-4 dark:border-green-900 dark:bg-green-950/40">
+              <CheckCircle className="mt-0.5 h-5 w-5 text-green-600" />
+              <div className="text-sm">
+                <p className="font-medium">Заявка принята</p>
+                <p className="text-muted-foreground">
+                  Счёт на {optimizationCost.toLocaleString('ru-RU')} ₽ придёт на {email}.
+                  {SUPPORT_EMAIL ? ` Вопросы — на ${SUPPORT_EMAIL}.` : ''}
+                </p>
+              </div>
+            </div>
+            <DialogFooter>
+              <Button onClick={() => setIsDialogOpen(false)}>Понятно</Button>
+            </DialogFooter>
+          </div>
+        ) : (
+          <>
+            {onSelectPrompt && (
+              <div className="mb-2">
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="text-sm font-medium">Параметры оптимизации</h3>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setShowPromptTemplates(!showPromptTemplates)}
+                    className="h-8 px-2 text-xs flex items-center gap-1"
+                  >
+                    {showPromptTemplates ? (
+                      <>
+                        <ChevronUp className="h-3 w-3" /> Скрыть шаблоны
+                      </>
+                    ) : (
+                      <>
+                        <ChevronDown className="h-3 w-3" /> Выбрать шаблон оптимизации
+                      </>
+                    )}
+                  </Button>
+                </div>
+
+                {showPromptTemplates && (
+                  <OptimizationPromptTemplates
+                    onSelectPrompt={handleSelectPrompt}
+                    className="mb-4"
+                  />
                 )}
-              </Button>
-            </div>
-            
-            {showPromptTemplates && (
-              <OptimizationPromptTemplates 
-                onSelectPrompt={handleSelectPrompt}
-                className="mb-4"
-              />
+              </div>
             )}
-          </div>
-        )}
-        
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <Card className="p-4 bg-muted/30">
-            <div className="flex justify-between items-center mb-2">
-              <span className="text-sm text-muted-foreground">Сумма к оплате:</span>
-              <span className="font-bold">{optimizationCost.toLocaleString('ru-RU')} ₽</span>
-            </div>
-          </Card>
-          
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="cardNumber">Номер карты</Label>
-              <Input
-                id="cardNumber"
-                placeholder="0000 0000 0000 0000"
-                value={cardNumber}
-                onChange={(e) => setCardNumber(formatCardNumber(e.target.value))}
-                maxLength={19}
-                required
-              />
-            </div>
-            
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="expiryDate">Срок действия</Label>
-                <Input
-                  id="expiryDate"
-                  placeholder="MM/YY"
-                  value={expiryDate}
-                  onChange={(e) => setExpiryDate(formatExpiryDate(e.target.value))}
-                  maxLength={5}
-                  required
-                />
+
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <Card className="p-4 bg-muted/30">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-muted-foreground">Сумма по смете:</span>
+                  <span className="font-bold">{optimizationCost.toLocaleString('ru-RU')} ₽</span>
+                </div>
+                <p className="mt-3 text-xs text-muted-foreground">
+                  Оплата картой на сайте пока не подключена. Оставьте почту — пришлём счёт
+                  и согласуем состав работ.
+                </p>
+              </Card>
+
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="invoiceEmail">Почта для счёта</Label>
+                  <Input
+                    id="invoiceEmail"
+                    type="email"
+                    placeholder="you@company.ru"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="invoiceName">Имя или организация</Label>
+                  <Input
+                    id="invoiceName"
+                    placeholder="Необязательно"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="invoiceComment">Комментарий</Label>
+                  <Input
+                    id="invoiceComment"
+                    placeholder="Например: нужен счёт на юрлицо"
+                    value={comment}
+                    onChange={(e) => setComment(e.target.value)}
+                  />
+                </div>
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="cvv">CVV</Label>
-                <Input
-                  id="cvv"
-                  placeholder="123"
-                  value={cvv}
-                  onChange={(e) => setCvv(e.target.value.replace(/\D/g, '').substring(0, 3))}
-                  maxLength={3}
-                  type="password"
-                  required
-                />
-              </div>
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="cardName">Имя владельца</Label>
-              <Input
-                id="cardName"
-                placeholder="IVAN IVANOV"
-                value={cardName}
-                onChange={(e) => setCardName(e.target.value.toUpperCase())}
-                required
-              />
-            </div>
-          </div>
-          
-          {error && (
-            <div className="flex items-center text-red-600 text-sm gap-2">
-              <AlertCircle className="h-4 w-4" />
-              {error}
-            </div>
-          )}
-          
-          <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
-              Отмена
-            </Button>
-            <Button type="submit" disabled={processing}>
-              {processing ? (
-                <>
-                  <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-background border-t-transparent"></div>
-                  Обработка...
-                </>
-              ) : (
-                <>
-                  <CreditCard className="mr-2 h-4 w-4" />
-                  Оплатить
-                </>
+
+              {error && (
+                <div className="flex items-center text-red-600 text-sm gap-2">
+                  <AlertCircle className="h-4 w-4" />
+                  {error}
+                </div>
               )}
-            </Button>
-          </DialogFooter>
-        </form>
+
+              <DialogFooter>
+                <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
+                  Отмена
+                </Button>
+                <Button type="submit" disabled={sending}>
+                  {sending ? (
+                    <>
+                      <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-background border-t-transparent"></div>
+                      Отправляем...
+                    </>
+                  ) : (
+                    <>
+                      <Receipt className="mr-2 h-4 w-4" />
+                      Запросить счёт
+                    </>
+                  )}
+                </Button>
+              </DialogFooter>
+            </form>
+          </>
+        )}
       </DialogContent>
     </Dialog>
   );

@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
+import { assertTaskAccess, authErrorResponse } from "../_shared/auth.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -33,6 +34,16 @@ serve(async (req) => {
     if (!task_id) {
       console.error('[OPTIMIZATION-CALCULATE] No task_id provided in request');
       throw new Error('task_id is required');
+    }
+
+    // Смета считается служебным ключом и стоит денег — чужую задачу считать
+    // нельзя.
+    try {
+      await assertTaskAccess(req, task_id);
+    } catch (err) {
+      const denied = authErrorResponse(err, corsHeaders);
+      if (denied) return denied;
+      throw err;
     }
 
     console.log('[OPTIMIZATION-CALCULATE] Processing task:', task_id);
@@ -109,26 +120,36 @@ serve(async (req) => {
       userId = user?.id || null;
     }
 
-    // Save calculation results to optimization_jobs table
-    const { error: saveError } = await supabaseClient
+    // Смета по задаче одна: пересчёт обновляет её, а не плодит строки. Раньше
+    // здесь стоял upsert по task_id, из-за которого на task_id держали
+    // уникальный индекс, — и запуск оптимизации по посчитанной задаче падал,
+    // потому что строку уже занимала смета.
+    const estimateRow = {
+      task_id: task_id,
+      user_id: userId,
+      // Это смета, а не выполненная работа. Раньше здесь стояло «completed»,
+      // и в истории оптимизаций копились «выполненные» задания, по которым
+      // ни одна страница не была переписана.
+      status: 'estimated',
+      cost: totalCost,
+      result_data: {
+        estimate_id: estimate?.id || null,
+        items,
+        total: totalCost
+      },
+      options: null
+    };
+
+    const { data: existingEstimate } = await supabaseClient
       .from('optimization_jobs')
-      .upsert({
-        task_id: task_id,
-        user_id: userId,
-        // Это смета, а не выполненная работа. Раньше здесь стояло «completed»,
-        // и в истории оптимизаций копились «выполненные» задания, по которым
-        // ни одна страница не была переписана.
-        status: 'estimated',
-        cost: totalCost,
-        result_data: { 
-          estimate_id: estimate?.id || null,
-          items,
-          total: totalCost
-        },
-        options: null
-      }, {
-        onConflict: 'task_id'
-      });
+      .select('id')
+      .eq('task_id', task_id)
+      .eq('status', 'estimated')
+      .maybeSingle();
+
+    const { error: saveError } = existingEstimate
+      ? await supabaseClient.from('optimization_jobs').update(estimateRow).eq('id', existingEstimate.id)
+      : await supabaseClient.from('optimization_jobs').insert(estimateRow);
 
     if (saveError) {
       console.error('[OPTIMIZATION-CALCULATE] Failed to save results:', saveError);

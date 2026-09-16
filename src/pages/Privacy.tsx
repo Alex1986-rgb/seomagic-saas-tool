@@ -3,10 +3,16 @@ import { motion } from 'framer-motion';
 import { Button } from "@/components/ui/button";
 import Layout from '@/components/Layout';
 import { BreadcrumbSchema } from '@/components/seo/BreadcrumbSchema';
+import { SITE_CONTACTS } from '@/config/site-contacts';
+import PageSeo from '@/components/seo/PageSeo';
 
 const Privacy: React.FC = () => {
   return (
     <Layout>
+      <PageSeo
+        title="Политика конфиденциальности: как мы храним ваши данные"
+        description="Какие данные собирает сервис, зачем они нужны, как они хранятся и кому передаются, и как отозвать своё согласие на их обработку."
+      />
       <BreadcrumbSchema items={[
         { name: 'Главная', url: '/' },
         { name: 'Конфиденциальность', url: '/privacy' }
@@ -79,7 +85,27 @@ const Privacy: React.FC = () => {
             <p>Мы можем обновлять эту политику конфidentialности время от времени. Мы уведомим вас о существенных изменениях, опубликовав новую версию на нашем сайте или отправив вам уведомление.</p>
             
             <h2>9. Контактная информация</h2>
-            <p>Если у вас есть вопросы или опасения относительно этой политики конфиденциальности или обработки ваших данных, пожалуйста, свяжитесь с нами по адресу privacy@seomarket.ru.</p>
+            {/*
+              Здесь стояла придуманная почта privacy@seomarket.ru: обращение по
+              персональным данным уходило в никуда. Адрес берём из
+              SITE_CONTACTS, без него — рабочая форма обратной связи.
+            */}
+            {SITE_CONTACTS.email ? (
+              <p>
+                Если у вас есть вопросы или опасения относительно этой политики конфиденциальности
+                или обработки ваших данных, пожалуйста, свяжитесь с нами по адресу{' '}
+                <a href={`mailto:${SITE_CONTACTS.email}`} className="text-primary underline">
+                  {SITE_CONTACTS.email}
+                </a>
+                .
+              </p>
+            ) : (
+              <p>
+                Если у вас есть вопросы или опасения относительно этой политики конфиденциальности
+                или обработки ваших данных, напишите нам через{' '}
+                <a href="/contact" className="text-primary underline">форму обратной связи</a>.
+              </p>
+            )}
           </div>
           
           <div className="mt-12 text-center">

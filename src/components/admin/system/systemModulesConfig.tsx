@@ -1,6 +1,5 @@
 
 import React from 'react';
-import { Badge } from "@/components/ui/badge";
 import { Database, Shield, DatabaseBackup, Key, Mail, FileText, Users, Bell, BarChart2, Activity } from 'lucide-react';
 
 export const SYSTEM_MODULES = [
@@ -9,7 +8,7 @@ export const SYSTEM_MODULES = [
     label: "База данных",
     desc: "Параметры подключения, мониторинг и оптимизация работы БД.",
     to: "/admin/system/database",
-    badge: <Badge variant="outline" className="ml-2">В работе</Badge>,
+    badge: undefined,
   },
   {
     icon: <Shield className="h-5 w-5 text-primary" />,
@@ -72,6 +71,6 @@ export const SYSTEM_MODULES = [
     label: "Производительность",
     desc: "Мониторинг ресурсов и автоматизация оповещений.",
     to: "/admin/system/performance",
-    badge: <Badge variant="destructive" className="ml-2">ALERT</Badge>,
+    badge: undefined,
   }
 ];

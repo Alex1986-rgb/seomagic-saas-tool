@@ -9,6 +9,7 @@ import { Loader2, Lock, Eye, Download, FileSpreadsheet, Share2, AlertCircle } fr
 import { OptimizationItem } from '@/types/audit/optimization-types';
 import { useToast } from '@/hooks/use-toast';
 import { exportEstimateToExcel, downloadBlob, generateEstimateFilename } from '@/utils/export/estimateExporter';
+import PageSeo from '@/components/seo/PageSeo';
 
 interface SharedEstimateData {
   estimate_data: OptimizationItem[];
@@ -211,6 +212,11 @@ const SharedEstimate: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-background py-8 px-4">
+      <PageSeo
+        title="Смета на SEO-оптимизацию сайта по защищённой ссылке"
+        description="Расчёт стоимости работ по конкретному сайту: перечень страниц, объём правок и итоговая сумма. Ссылка действует ограниченное время."
+        noindex
+      />
       <div className="max-w-4xl mx-auto space-y-6">
         {/* Header */}
         <Card className="p-6">

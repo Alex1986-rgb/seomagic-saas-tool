@@ -2,6 +2,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Shield, Lock, Key, AlertTriangle, Eye } from 'lucide-react';
+import { SITE_CONTACTS } from '@/config/site-contacts';
 
 const SecurityDocs: React.FC = () => {
   return (
@@ -66,8 +67,25 @@ const SecurityDocs: React.FC = () => {
               <AlertTriangle className="h-5 w-5 mr-2" />
               Сообщить об уязвимости
             </h4>
+            {/*
+              Здесь стояла придуманная почта security@seomarket.ru: сообщение об
+              уязвимости уходило в никуда. Адрес берётся из SITE_CONTACTS, без
+              него отправляем в форму обратной связи.
+            */}
             <p className="mt-2">
-              Обнаружили уязвимость? Сообщите нам на <a href="mailto:security@seomarket.ru" className="text-primary underline">security@seomarket.ru</a>
+              Обнаружили уязвимость?{' '}
+              {SITE_CONTACTS.email ? (
+                <>
+                  Сообщите нам на{' '}
+                  <a href={`mailto:${SITE_CONTACTS.email}`} className="text-primary underline">
+                    {SITE_CONTACTS.email}
+                  </a>
+                </>
+              ) : (
+                <>
+                  Напишите нам через <a href="/contact" className="text-primary underline">форму обратной связи</a>
+                </>
+              )}
             </p>
           </div>
         </div>

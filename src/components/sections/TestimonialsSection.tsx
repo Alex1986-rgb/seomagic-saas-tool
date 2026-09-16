@@ -7,7 +7,6 @@ import TestimonialCard from '../testimonials/TestimonialCard';
 const TestimonialsSection: React.FC = () => (
   <section className="py-20 overflow-hidden relative">
     <div className="absolute inset-0 bg-gradient-to-b from-background/80 to-background/50 -z-10" />
-    <div className="absolute inset-0 bg-[url('/img/metal-texture.jpg')] opacity-10 mix-blend-overlay -z-10" />
     
     <div className="container mx-auto px-4 md:px-6">
       <div className="text-center mb-16">

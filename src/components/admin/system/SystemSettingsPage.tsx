@@ -1,9 +1,9 @@
 
 import React from 'react';
-import { Database, Shield, Users, Bell, BarChart2, Activity, Info } from 'lucide-react';
+import { Database, Shield, Users, Bell, BarChart2, Activity } from 'lucide-react';
+import SystemInfo from './SystemInfo';
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
 // Список разделов системных настроек
@@ -13,7 +13,7 @@ const TILES = [
     label: "База данных",
     desc: "Параметры подключения, мониторинг и оптимизация работы БД.",
     to: "/admin/system/database",
-    badge: <Badge variant="outline" className="ml-2">В работе</Badge>,
+    badge: undefined,
   },
   {
     icon: <Shield className="h-5 w-5 text-primary" />,
@@ -48,25 +48,9 @@ const TILES = [
     label: "Производительность",
     desc: "Мониторинг ресурсов и автоматизация оповещений.",
     to: "/admin/system/performance",
-    badge: <Badge variant="destructive" className="ml-2">ALERT</Badge>,
+    badge: undefined,
   }
 ];
-
-// Компонент актуальной информации о системе
-const SystemInfo = () => (
-  <div className="bg-gradient-to-br from-blue-600/5 to-indigo-600/5 border rounded-md p-4 flex flex-col md:flex-row md:items-center gap-4 mb-6">
-    <Info className="h-6 w-6 text-primary" />
-    <div>
-      <div className="text-md font-medium mb-1">Краткая информация о системе:</div>
-      <ul className="list-disc pl-6 text-muted-foreground space-y-1 text-sm">
-        <li>Последний аудит безопасности: <span className="text-foreground font-medium">19.04.2025</span></li>
-        <li>Текущий релиз: <span className="text-primary font-bold">v2.8.1</span></li>
-        <li>Интеграции активны (Slack, Analytica)</li>
-        <li>Зарегистрировано пользователей: <span className="text-foreground font-medium">13</span>, администраторов: <span className="font-medium">3</span></li>
-      </ul>
-    </div>
-  </div>
-);
 
 const SystemSettingsPage: React.FC = () => {
   const navigate = useNavigate();

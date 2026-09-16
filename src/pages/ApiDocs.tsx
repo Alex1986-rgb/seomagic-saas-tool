@@ -2,10 +2,15 @@
 import React from 'react';
 import Layout from '@/components/Layout';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import PageSeo from '@/components/seo/PageSeo';
 
 const ApiDocs: React.FC = () => {
   return (
     <Layout>
+      <PageSeo
+        title="Документация API: запуск SEO-аудита и выгрузка отчётов"
+        description="Описание REST API платформы: авторизация по ключу, эндпоинты аудита и отслеживания позиций, форматы ответов и примеры запросов."
+      />
       <div className="container mx-auto py-32 px-4">
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold mb-4">API Документация</h1>

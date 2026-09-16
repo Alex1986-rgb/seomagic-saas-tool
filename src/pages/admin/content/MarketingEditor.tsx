@@ -1,6 +1,5 @@
 
 import React, { useState } from 'react';
-import { Helmet } from 'react-helmet-async';
 import BaseContentEditor from '@/components/admin/content/BaseContentEditor';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -9,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { PlusCircle, Trash2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import PageSeo from '@/components/seo/PageSeo';
 
 interface MarketingCampaign {
   id: string;
@@ -80,9 +80,11 @@ const MarketingEditor: React.FC = () => {
 
   return (
     <>
-      <Helmet>
-        <title>Маркетинговые материалы | Админ панель</title>
-      </Helmet>
+      <PageSeo
+        title="Маркетинговые материалы: акции, промо-страницы, баннеры"
+        description="Управление рекламными блоками сервиса: запуск акций, тексты промо-страниц и настройка маркетинговых кампаний внутри платформы."
+        noindex
+      />
       
       <BaseContentEditor
         title="Маркетинговые материалы"

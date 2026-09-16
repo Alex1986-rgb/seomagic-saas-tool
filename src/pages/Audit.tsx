@@ -1,14 +1,28 @@
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { Navigate, useSearchParams } from 'react-router-dom';
 import { useToast } from "@/hooks/use-toast";
 import Layout from '@/components/Layout';
 import AuditTimeoutMessage from "@/components/audit/AuditTimeoutMessage";
 import AuditLoaderSection from "@/components/audit/AuditLoaderSection";
 import { AuditProvider } from '@/contexts/AuditContext';
+import PageSeo from '@/components/seo/PageSeo';
 
 const Audit: React.FC = () => {
   const [searchParams] = useSearchParams();
+
+  /**
+   * Аудит по адресу сайта запускается на `/site-audit` — там живёт рабочая
+   * цепочка обхода. Сюда же вели и главная форма, и ссылки из писем, а страница
+   * умела только показывать готовые результаты: человек видел заголовок
+   * «Результаты SEO аудита» и пустоту под ним. Старые ссылки переводим на
+   * рабочую страницу, чтобы проверка действительно началась.
+   */
+  const requestedUrl = searchParams.get('url');
+  if (requestedUrl && !searchParams.get('task_id')) {
+    return <Navigate to={`/site-audit?url=${encodeURIComponent(requestedUrl)}`} replace />;
+  }
+
   const [url, setUrl] = useState<string>('');
   const [error, setError] = useState<string | null>(null);
   const [showAdvancedTools, setShowAdvancedTools] = useState(false);
@@ -140,6 +154,10 @@ const Audit: React.FC = () => {
 
   return (
     <Layout>
+      <PageSeo
+        title="Бесплатный SEO-аудит сайта онлайн за несколько минут"
+        description="Введите адрес сайта и получите отчёт: ошибки метатегов, битые ссылки, скорость загрузки и структура страниц с рекомендациями."
+      />
       <AuditProvider initialUrl={url || ''}>
         <AuditLoaderSection
           url={url}

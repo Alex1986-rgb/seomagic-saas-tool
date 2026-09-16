@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
+import PageSeo from '@/components/seo/PageSeo';
 
 const AutoFix: React.FC = () => {
   const [fixingProgress, setFixingProgress] = useState(68);
@@ -73,6 +74,10 @@ const AutoFix: React.FC = () => {
 
   return (
     <Layout>
+      <PageSeo
+        title="Автоисправление SEO-ошибок: метатеги, заголовки, ссылки"
+        description="Сервис не только находит проблемы, но и готовит исправления: корректные метатеги, заголовки страниц и описания изображений."
+      />
       <div className="container mx-auto px-4 py-16 md:py-24">
         {/* Навигация */}
         <div className="mb-8">

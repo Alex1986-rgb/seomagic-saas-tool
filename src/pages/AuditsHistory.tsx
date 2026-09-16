@@ -26,6 +26,7 @@ import { auditService } from '@/modules/audit/services/auditService';
 import { Loader2, Search, MoreVertical, Eye, Trash2, Download, RefreshCw, PlayCircle } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { ru } from 'date-fns/locale';
+import PageSeo from '@/components/seo/PageSeo';
 
 export default function AuditsHistory() {
   const navigate = useNavigate();
@@ -199,6 +200,11 @@ export default function AuditsHistory() {
 
   return (
     <div className="container mx-auto py-8 px-4 max-w-7xl">
+      <PageSeo
+        title="Аудиты сайтов: статусы, результаты и повторный запуск"
+        description="Таблица всех аудитов с поиском по адресу и фильтром по статусу. Можно продолжить прерванную проверку, скачать отчёт или удалить запись."
+        noindex
+      />
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold mb-2">История аудитов</h1>

@@ -7,9 +7,10 @@ export class CaptchaService {
 
   constructor(captchaApiKey?: string, botableApiKey?: string) {
     // Ключи только в памяти сессии — не пишем в localStorage (clear-text storage).
-    // Постоянные значения берём из env (VITE_CAPTCHA_API_KEY / VITE_BOTABLE_API_KEY).
-    this.captchaApiKey = captchaApiKey || (import.meta.env.VITE_CAPTCHA_API_KEY as string) || '';
-    this.botableApiKey = botableApiKey || (import.meta.env.VITE_BOTABLE_API_KEY as string) || '';
+    // Ключи задаются на время работы: VITE-переменные попадают в собранный
+    // файл, то есть ключ увидел бы каждый посетитель сайта.
+    this.captchaApiKey = captchaApiKey || '';
+    this.botableApiKey = botableApiKey || '';
   }
 
   setCaptchaApiKey(apiKey: string): void {

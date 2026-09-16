@@ -6,6 +6,7 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/componen
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Star, Users, Zap, Globe, Award, TrendingUp } from 'lucide-react';
+import PageSeo from '@/components/seo/PageSeo';
 
 const Partners: React.FC = () => {
   const partners = [
@@ -139,6 +140,10 @@ const Partners: React.FC = () => {
 
   return (
     <Layout>
+      <PageSeo
+        title="Партнёрская программа: условия, интеграции и отзывы"
+        description="Как зарабатывать на рекомендациях сервиса: условия участия, доступные интеграции и опыт действующих партнёров платформы."
+      />
       <div className="container mx-auto py-32 px-4">
         <div className="text-center mb-16">
           <h1 className="text-4xl font-bold mb-4">Партнерская программа</h1>

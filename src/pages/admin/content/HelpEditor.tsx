@@ -1,6 +1,5 @@
 
 import React, { useState } from 'react';
-import { Helmet } from 'react-helmet-async';
 import BaseContentEditor from '@/components/admin/content/BaseContentEditor';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -14,6 +13,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { useToast } from '@/hooks/use-toast';
+import PageSeo from '@/components/seo/PageSeo';
 
 interface FAQ {
   id: string;
@@ -124,9 +124,11 @@ const HelpEditor: React.FC = () => {
 
   return (
     <>
-      <Helmet>
-        <title>Редактирование справки | Админ панель</title>
-      </Helmet>
+      <PageSeo
+        title="Редактор справки: инструкции, статьи и частые вопросы"
+        description="Правка справочных материалов сервиса: разделы документации, пошаговые инструкции для клиентов и блок вопросов и ответов."
+        noindex
+      />
       
       <BaseContentEditor
         title="Редактирование справки"

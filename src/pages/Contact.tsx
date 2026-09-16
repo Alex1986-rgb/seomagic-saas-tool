@@ -11,6 +11,8 @@ import { MapPin, Clock, Phone, Mail, MessageCircle, Headphones, Calendar } from 
 import { BreadcrumbSchema } from '@/components/seo/BreadcrumbSchema';
 import { LocalBusinessSchema } from '@/components/seo/LocalBusinessSchema';
 import { OrganizationSchema } from '@/components/seo/OrganizationSchema';
+import { SITE_CONTACTS, hasPostalAddress } from '@/config/site-contacts';
+import PageSeo from '@/components/seo/PageSeo';
 
 const Contact: React.FC = () => {
   const containerVariants = {
@@ -63,6 +65,10 @@ const Contact: React.FC = () => {
 
   return (
     <Layout>
+      <PageSeo
+        title="Контакты: телефон, почта и форма связи с поддержкой"
+        description="Телефон, электронная почта и адрес офиса. Напишите через форму — ответим на вопросы об аудите, тарифах и подключении сервиса."
+      />
       <BreadcrumbSchema items={[
         { name: 'Главная', url: '/' },
         { name: 'Контакты', url: '/contact' }
@@ -182,14 +188,27 @@ const Contact: React.FC = () => {
                     <CardContent className="p-6">
                       <h3 className="font-semibold mb-4">Быстрая связь</h3>
                       <div className="space-y-4">
-                        <Button variant="outline" className="w-full justify-start">
-                          <Phone className="w-4 h-4 mr-2" />
-                          Позвонить сейчас
-                        </Button>
-                        <Button variant="outline" className="w-full justify-start">
-                          <Mail className="w-4 h-4 mr-2" />
-                          Написать email
-                        </Button>
+                        {/*
+                          Кнопки «Позвонить» и «Написать email» никуда не вели.
+                          Теперь это настоящие ссылки на контакты из
+                          SITE_CONTACTS, и без контакта кнопки просто нет.
+                        */}
+                        {SITE_CONTACTS.telephone && (
+                          <Button variant="outline" className="w-full justify-start" asChild>
+                            <a href={`tel:${SITE_CONTACTS.telephone.replace(/[^+\d]/g, '')}`}>
+                              <Phone className="w-4 h-4 mr-2" />
+                              Позвонить сейчас
+                            </a>
+                          </Button>
+                        )}
+                        {SITE_CONTACTS.email && (
+                          <Button variant="outline" className="w-full justify-start" asChild>
+                            <a href={`mailto:${SITE_CONTACTS.email}`}>
+                              <Mail className="w-4 h-4 mr-2" />
+                              Написать email
+                            </a>
+                          </Button>
+                        )}
                         <Button variant="outline" className="w-full justify-start">
                           <MessageCircle className="w-4 h-4 mr-2" />
                           Открыть чат
@@ -201,7 +220,14 @@ const Contact: React.FC = () => {
               </motion.div>
             </div>
             
-            {/* Map and Location Section */}
+            {/*
+              Раздел «Наше местоположение» описывал офис, которого нет:
+              «Москва, ул. Примерная, д. 123, БЦ "Технополис", офис 456» и
+              станцию метро «Примерная». Людей звали приехать в никуда.
+              Теперь весь блок показывается, только если в SITE_CONTACTS
+              заполнен настоящий адрес.
+            */}
+            {hasPostalAddress() && (
             <motion.div
               className="mt-20"
               initial={{ opacity: 0, y: 20 }}
@@ -236,32 +262,10 @@ const Contact: React.FC = () => {
                       <div className="flex items-start">
                         <MapPin className="w-6 h-6 text-primary mr-3 mt-1" />
                         <div>
-                          <h3 className="font-semibold mb-2">Центральный офис</h3>
+                          <h3 className="font-semibold mb-2">Офис</h3>
                           <address className="not-italic text-muted-foreground leading-relaxed">
-                            Москва, ул. Примерная, д. 123,<br />
-                            БЦ "Технополис", офис 456<br />
-                            119991, Российская Федерация
+                            {SITE_CONTACTS.addressLocality}, {SITE_CONTACTS.streetAddress}
                           </address>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                  
-                  <Card className="neo-card">
-                    <CardContent className="p-6">
-                      <h3 className="font-semibold mb-4">Как добраться</h3>
-                      <div className="space-y-3 text-sm text-muted-foreground">
-                        <div className="flex items-start">
-                          <div className="w-2 h-2 bg-primary rounded-full mt-2 mr-3 flex-shrink-0"></div>
-                          <span>Станция метро "Примерная" - 5 минут пешком</span>
-                        </div>
-                        <div className="flex items-start">
-                          <div className="w-2 h-2 bg-primary rounded-full mt-2 mr-3 flex-shrink-0"></div>
-                          <span>Автобусные остановки: 15, 25, 105</span>
-                        </div>
-                        <div className="flex items-start">
-                          <div className="w-2 h-2 bg-primary rounded-full mt-2 mr-3 flex-shrink-0"></div>
-                          <span>Парковка: подземная, 2 часа бесплатно</span>
                         </div>
                       </div>
                     </CardContent>
@@ -274,6 +278,7 @@ const Contact: React.FC = () => {
                 </div>
               </div>
             </motion.div>
+            )}
             
             {/* Social Links */}
             <SocialLinks />

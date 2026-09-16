@@ -1,41 +1,40 @@
 import React from 'react';
 import { Helmet } from 'react-helmet-async';
 
-export const ReviewSchema: React.FC = () => {
-  const siteUrl = typeof window !== 'undefined' ? window.location.origin : 'https://seomarket.app';
-  
-  const reviews = [
-    {
-      author: 'Алексей Морозов',
-      position: 'Директор по маркетингу',
-      company: 'TechnoSphere',
-      rating: 5,
-      reviewBody: 'Отличный сервис для SEO аудита! Детальный анализ помог выявить и исправить критические ошибки на сайте.',
-      datePublished: '2024-01-15'
-    },
-    {
-      author: 'Марина Соколова',
-      position: 'SEO-специалист',
-      company: 'Digital Agency Pro',
-      rating: 5,
-      reviewBody: 'Инструменты мониторинга позиций работают безупречно. Очень удобный интерфейс и быстрая генерация отчётов.',
-      datePublished: '2024-02-20'
-    },
-    {
-      author: 'Дмитрий Волков',
-      position: 'Владелец бизнеса',
-      company: 'E-commerce Solutions',
-      rating: 5,
-      reviewBody: 'Профессиональный подход к SEO оптимизации. Рекомендации помогли значительно улучшить видимость сайта в поиске.',
-      datePublished: '2024-03-10'
-    }
-  ];
+/**
+ * Разметка отзывов для поисковых систем.
+ *
+ * Здесь лежали три придуманных отзыва с именами, компаниями и общей оценкой
+ * 5,0 из 5 — их видели Яндекс и Google и показывали звёзды в выдаче. Отзывов
+ * этих не существует: за такую разметку сайт получает ручные санкции, а люди
+ * приходят по ложному обещанию. Пока настоящих отзывов нет, разметки нет тоже:
+ * компонент ничего не выводит, а когда отзывы появятся — их передают сюда.
+ */
 
+export interface SiteReview {
+  author: string;
+  rating: number;
+  reviewBody: string;
+  datePublished: string;
+  position?: string;
+  company?: string;
+}
+
+interface ReviewSchemaProps {
+  reviews?: SiteReview[];
+}
+
+export const ReviewSchema: React.FC<ReviewSchemaProps> = ({ reviews = [] }) => {
+  const siteUrl = typeof window !== 'undefined' ? window.location.origin : 'https://seomarket.app';
+
+  if (reviews.length === 0) return null;
+
+  const ratingSum = reviews.reduce((sum, review) => sum + review.rating, 0);
   const aggregateRating = {
-    ratingValue: 5,
+    ratingValue: Number((ratingSum / reviews.length).toFixed(1)),
     reviewCount: reviews.length,
     bestRating: 5,
-    worstRating: 5
+    worstRating: 1,
   };
 
   const reviewSchema = {

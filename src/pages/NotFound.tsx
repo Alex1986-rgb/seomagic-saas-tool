@@ -5,6 +5,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { FileSearch, Home, ShieldCheck } from 'lucide-react';
 import Layout from '@/components/Layout';
+import PageSeo from '@/components/seo/PageSeo';
 
 const NotFound: React.FC = () => {
   const location = useLocation();
@@ -26,6 +27,11 @@ const NotFound: React.FC = () => {
 
   return (
     <Layout>
+      <PageSeo
+        title="Ошибка 404: такой страницы на сайте сервиса не существует"
+        description="Адрес введён с ошибкой или страница удалена. Вернитесь на главную, откройте карту сайта или выберите нужный раздел в меню."
+        noindex
+      />
       <div className="container mx-auto px-4 flex flex-col items-center justify-center min-h-[80vh] text-center">
         <motion.div
           initial={{ opacity: 0, y: 20 }}

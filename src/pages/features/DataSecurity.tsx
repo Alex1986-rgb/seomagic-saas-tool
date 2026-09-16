@@ -8,6 +8,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { SITE_CONTACTS } from '@/config/site-contacts';
+import PageSeo from '@/components/seo/PageSeo';
 
 const DataSecurity: React.FC = () => {
   const securityFeatures = [
@@ -89,6 +91,10 @@ const DataSecurity: React.FC = () => {
 
   return (
     <Layout>
+      <PageSeo
+        title="Безопасность данных: шифрование, доступы и хранение"
+        description="Как сервис хранит результаты аудитов и учётные данные: шифрование канала, разграничение доступа и регулярные резервные копии."
+      />
       <div className="container mx-auto px-4 py-16 md:py-24">
         {/* Навигация */}
         <div className="mb-8">
@@ -322,11 +328,44 @@ const DataSecurity: React.FC = () => {
                       </ul>
                     </div>
                     
+                    {/*
+                      Здесь были придуманные контакты: почта
+                      security@seomarket.com и «горячая линия»
+                      +7 (495) 123-45-67. Вопрос о защите данных уходил в
+                      пустоту. Теперь контакты берутся из SITE_CONTACTS, а если
+                      их нет — предлагаем форму обратной связи, которая работает.
+                    */}
                     <div className="p-4 border rounded-lg">
                       <h4 className="font-semibold mb-2">Контакты по вопросам безопасности</h4>
                       <div className="text-sm text-muted-foreground">
-                        <p>Ответственный за защиту данных: security@seomarket.com</p>
-                        <p>Горячая линия: +7 (495) 123-45-67</p>
+                        {SITE_CONTACTS.email && (
+                          <p>
+                            Ответственный за защиту данных:{' '}
+                            <a href={`mailto:${SITE_CONTACTS.email}`} className="text-primary underline">
+                              {SITE_CONTACTS.email}
+                            </a>
+                          </p>
+                        )}
+                        {SITE_CONTACTS.telephone && (
+                          <p>
+                            Телефон:{' '}
+                            <a
+                              href={`tel:${SITE_CONTACTS.telephone.replace(/[^+\d]/g, '')}`}
+                              className="text-primary underline"
+                            >
+                              {SITE_CONTACTS.telephone}
+                            </a>
+                          </p>
+                        )}
+                        {!SITE_CONTACTS.email && !SITE_CONTACTS.telephone && (
+                          <p>
+                            Напишите нам через{' '}
+                            <Link to="/contact" className="text-primary underline">
+                              форму обратной связи
+                            </Link>
+                            .
+                          </p>
+                        )}
                         <p>Время ответа: в течение 24 часов</p>
                       </div>
                     </div>

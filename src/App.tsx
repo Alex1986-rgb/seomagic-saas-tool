@@ -80,7 +80,9 @@ import AdminRouteGuard from './components/admin/AdminRouteGuard';
 function App() {
   return (
     <ThemeProvider defaultTheme="dark" storageKey="seo-market-theme">
-      <Router>
+      {/* Тот же подпуть, что и у сборки: иначе переходы внутри сайта ведут
+          мимо приложения. */}
+      <Router basename={import.meta.env.BASE_URL}>
         <SkipLink />
         <div className="App min-h-screen bg-background text-foreground" data-app="true">
           <DefaultSEO />

@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { FileText, Download, Filter, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import PageSeo from '@/components/seo/PageSeo';
 
 const LogSettingsPage = () => {
   const [logLevel, setLogLevel] = React.useState('info');
@@ -12,6 +13,11 @@ const LogSettingsPage = () => {
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-3xl">
+      <PageSeo
+        title="Логирование событий: уровни записи, хранение и выгрузка"
+        description="Что писать в журнал событий, как долго хранить записи и как выгружать логи для разбора инцидентов и ошибок в работе платформы."
+        noindex
+      />
       <h2 className="text-2xl font-bold mb-3">Логирование событий</h2>
       <p className="mb-4 text-muted-foreground">
         Просмотр и настройка системных логов, мониторинг событий.

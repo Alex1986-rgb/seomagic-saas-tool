@@ -1,53 +1,54 @@
 import React from 'react';
 import { Helmet } from 'react-helmet-async';
+import { SITE_CONTACTS, hasPostalAddress, withoutEmpty } from '@/config/site-contacts';
+import { absoluteAssetUrl } from '@/lib/asset-url';
 
+/**
+ * Разметка организации с адресом.
+ *
+ * Здесь был описан офис, которого нет: «ул. Примерная, д. 123, БЦ
+ * "Технополис", офис 456», координаты центра Москвы, приёмные часы и телефон
+ * 8 800 123-45-67. Поисковые системы принимали это за настоящую точку на карте.
+ *
+ * Без настоящего адреса разметка не выводится вовсе: сервис работает онлайн, и
+ * притворяться конторой с приёмными часами ему незачем. Появится офис — данные
+ * вписываются в `src/config/site-contacts.ts`.
+ */
 export const LocalBusinessSchema: React.FC = () => {
   const siteUrl = typeof window !== 'undefined' ? window.location.origin : 'https://seomarket.app';
-  
+
+  if (!hasPostalAddress()) return null;
+
   const localBusinessSchema = {
     '@context': 'https://schema.org',
     '@type': 'LocalBusiness',
     '@id': `${siteUrl}/#localbusiness`,
     name: 'SeoMarket',
-    description: 'Профессиональный SEO аудит и оптимизация сайтов. Мониторинг позиций в поисковых системах.',
+    description: 'SEO-аудит и оптимизация сайтов, отслеживание позиций в поиске.',
     url: siteUrl,
-    logo: `${siteUrl}/images/logo.png`,
-    image: `${siteUrl}/images/og-image.jpg`,
-    telephone: '+78001234567',
-    email: 'info@seomarket.ru',
-    priceRange: '$$',
+    // Логотипа /images/logo.png в проекте нет — поле убрано. Картинка лежит
+    // в корне public, а не в /images.
+    image: absoluteAssetUrl('/og-image.jpg'),
     address: {
       '@type': 'PostalAddress',
-      streetAddress: 'ул. Примерная, д. 123, БЦ "Технополис", офис 456',
-      addressLocality: 'Москва',
-      addressCountry: 'RU'
+      streetAddress: SITE_CONTACTS.streetAddress,
+      addressLocality: SITE_CONTACTS.addressLocality,
+      addressCountry: SITE_CONTACTS.addressCountry,
     },
-    geo: {
-      '@type': 'GeoCoordinates',
-      latitude: 55.7558,
-      longitude: 37.6173
-    },
-    openingHoursSpecification: [
-      {
-        '@type': 'OpeningHoursSpecification',
-        dayOfWeek: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'],
-        opens: '09:00',
-        closes: '18:00'
-      }
-    ],
-    contactPoint: {
-      '@type': 'ContactPoint',
-      telephone: '+78001234567',
-      contactType: 'customer service',
-      email: 'info@seomarket.ru',
-      availableLanguage: ['Russian'],
-      areaServed: 'RU'
-    },
-    sameAs: [
-      'https://vk.com/seomarket',
-      'https://t.me/seomarket',
-      'https://twitter.com/seomarket'
-    ]
+    ...withoutEmpty({
+      telephone: SITE_CONTACTS.telephone,
+      email: SITE_CONTACTS.email,
+      sameAs: SITE_CONTACTS.social,
+    }),
+    ...(SITE_CONTACTS.geo
+      ? {
+          geo: {
+            '@type': 'GeoCoordinates',
+            latitude: SITE_CONTACTS.geo.latitude,
+            longitude: SITE_CONTACTS.geo.longitude,
+          },
+        }
+      : {}),
   };
 
   return (
@@ -58,3 +59,5 @@ export const LocalBusinessSchema: React.FC = () => {
     </Helmet>
   );
 };
+
+export default LocalBusinessSchema;

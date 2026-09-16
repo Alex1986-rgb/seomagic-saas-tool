@@ -6,7 +6,9 @@ import { ArrowRight, ChartBar } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const PositionTrackerSection: React.FC = () => {
-  // Sample position data for demonstration
+  // Витрина на главной: показываем, как выглядит отчёт о позициях. Числа здесь
+  // условные, поэтому блок прямо подписан «пример» — иначе посетитель принимает
+  // их за настоящие данные какого-то сайта.
   const positionData = [
     { keyword: 'купить смартфон', engine: 'Google', position: 3, change: 2 },
     { keyword: 'интернет магазин техники', engine: 'Google', position: 5, change: -7 },
@@ -104,8 +106,13 @@ const PositionTrackerSection: React.FC = () => {
             className="bg-card rounded-xl shadow-lg border border-border/50"
           >
             <div className="p-5 border-b border-border">
-              <h3 className="text-lg font-medium">Позиции сайта</h3>
-              <div className="text-sm text-muted-foreground">example.com</div>
+              <div className="flex items-center justify-between gap-3">
+                <h3 className="text-lg font-medium">Так выглядит отчёт о позициях</h3>
+                <span className="rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">
+                  Пример
+                </span>
+              </div>
+              <div className="text-sm text-muted-foreground">Условные данные для демонстрации</div>
             </div>
             <div className="bg-muted/30 p-4 text-center">
               <div className="inline-flex items-center text-lg font-medium text-green-500">

@@ -27,6 +27,7 @@ import {
   Eye,
   Settings
 } from 'lucide-react';
+import PageSeo from '@/components/seo/PageSeo';
 
 const FeaturesPage: React.FC = () => {
   const containerVariants = {
@@ -165,6 +166,10 @@ const FeaturesPage: React.FC = () => {
 
   return (
     <Layout>
+      <PageSeo
+        title="Возможности платформы: аудит, позиции и оптимизация"
+        description="Обзор функций: сканирование всех страниц, анализ метаданных, отслеживание позиций, отчёты о скорости загрузки и правка текстов."
+      />
       <BreadcrumbSchema items={[
         { name: 'Главная', url: '/' },
         { name: 'Возможности', url: '/features' }

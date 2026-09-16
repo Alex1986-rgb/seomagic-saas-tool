@@ -1,4 +1,17 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.81.1';
+import { AuthError, authErrorResponse, resolveCaller } from '../_shared/auth.ts';
+
+/** Ограничение на письмо: рассылка со сметой — не список рассылки. */
+const MAX_RECIPIENTS = 5;
+
+/** Всё, что пришло от пользователя, попадает в письмо как текст, не как разметка. */
+const escapeHtml = (value: unknown): string =>
+  String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -28,6 +41,14 @@ Deno.serve(async (req) => {
   try {
     console.log('Sending estimate email...');
 
+    // Функция отправляет письма нашим ключом Resend. Без входа она была
+    // открытым ретранслятором: любой мог слать что угодно куда угодно от имени
+    // сервиса.
+    const caller = await resolveCaller(req);
+    if (!caller.isService && !caller.userId) {
+      throw new AuthError('Отправка сметы доступна после входа', 401);
+    }
+
     const {
       to_emails,
       estimate_data,
@@ -40,6 +61,15 @@ Deno.serve(async (req) => {
     // Validate inputs
     if (!to_emails || to_emails.length === 0) {
       throw new Error('No recipient emails provided');
+    }
+
+    if (to_emails.length > MAX_RECIPIENTS) {
+      throw new Error(`За раз смету можно отправить не более чем на ${MAX_RECIPIENTS} адресов`);
+    }
+
+    const badAddress = to_emails.find((address) => !/^[^@\s]+@[^@\s.]+\.[^@\s]+$/.test(String(address)));
+    if (badAddress) {
+      throw new Error(`Неверный адрес получателя: ${badAddress}`);
     }
 
     // Create public link if requested
@@ -91,7 +121,7 @@ Deno.serve(async (req) => {
     const categoryRows = Object.entries(categoryTotals)
       .map(([category, data]: [string, any]) => `
         <tr>
-          <td style="padding: 12px; border-bottom: 1px solid #e5e7eb;">${category}</td>
+          <td style="padding: 12px; border-bottom: 1px solid #e5e7eb;">${escapeHtml(category)}</td>
           <td style="padding: 12px; border-bottom: 1px solid #e5e7eb; text-align: center;">${data.count}</td>
           <td style="padding: 12px; border-bottom: 1px solid #e5e7eb; text-align: right; font-weight: 600;">
             ${data.cost.toLocaleString('ru-RU')} ₽
@@ -119,11 +149,11 @@ Deno.serve(async (req) => {
           <div class="container">
             <div class="header">
               <h1 style="margin: 0;">Смета на SEO-оптимизацию</h1>
-              <p style="margin: 10px 0 0 0; opacity: 0.9;">Сайт: ${url}</p>
+              <p style="margin: 10px 0 0 0; opacity: 0.9;">Сайт: ${escapeHtml(url)}</p>
             </div>
             
             <div class="content">
-              ${message ? `<p style="margin-bottom: 20px;">${message}</p>` : ''}
+              ${message ? `<p style="margin-bottom: 20px;">${escapeHtml(message)}</p>` : ''}
               
               <h2 style="margin: 20px 0 10px 0;">Работы по категориям</h2>
               <table>
@@ -169,7 +199,7 @@ Deno.serve(async (req) => {
       throw new Error('RESEND_API_KEY not configured');
     }
 
-    const subject = `Смета на SEO-продвижение — ${url}`;
+    const subject = `Смета на SEO-продвижение — ${String(url ?? '').slice(0, 120)}`;
     const emailResponse = await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: {
@@ -208,6 +238,8 @@ Deno.serve(async (req) => {
 
   } catch (error) {
     console.error('Error sending estimate email:', error);
+    const denied = authErrorResponse(error, corsHeaders);
+    if (denied) return denied;
     return new Response(
       JSON.stringify({
         success: false,

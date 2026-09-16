@@ -10,6 +10,9 @@ import TabContent from './TabContent';
 const GrowthVisualization: React.FC<GrowthVisualizationProps> = ({
   beforeAfterData
 }) => {
+  const seoData = beforeAfterData.seo ?? [];
+  const performanceData = beforeAfterData.performance ?? [];
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -20,7 +23,7 @@ const GrowthVisualization: React.FC<GrowthVisualizationProps> = ({
       <GrowthHeader />
       
       <Tabs defaultValue="overview" className="mt-6">
-        <GrowthTabs />
+        <GrowthTabs hasSeo={seoData.length > 0} hasPerformance={performanceData.length > 0} />
         
         <TabsContent value="overview">
           <TabContent 
@@ -30,21 +33,25 @@ const GrowthVisualization: React.FC<GrowthVisualizationProps> = ({
           />
         </TabsContent>
         
-        <TabsContent value="seo">
-          <TabContent 
-            title="Рост SEO метрик" 
-            data={beforeAfterData.seo}
-            chartType="area"
-          />
-        </TabsContent>
-        
-        <TabsContent value="performance">
-          <TabContent 
-            title="Улучшение производительности" 
-            data={beforeAfterData.performance}
-            chartType="area"
-          />
-        </TabsContent>
+        {seoData.length > 0 && (
+          <TabsContent value="seo">
+            <TabContent
+              title="Рост SEO метрик"
+              data={seoData}
+              chartType="area"
+            />
+          </TabsContent>
+        )}
+
+        {performanceData.length > 0 && (
+          <TabsContent value="performance">
+            <TabContent
+              title="Улучшение производительности"
+              data={performanceData}
+              chartType="area"
+            />
+          </TabsContent>
+        )}
       </Tabs>
     </motion.div>
   );

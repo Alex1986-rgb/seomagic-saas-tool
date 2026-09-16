@@ -6,6 +6,7 @@ import { Key, Plus, Copy, Trash } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Label } from "@/components/ui/label";
+import PageSeo from '@/components/seo/PageSeo';
 
 const ApiKeysPage = () => {
   const [showNewKeyForm, setShowNewKeyForm] = React.useState(false);
@@ -20,6 +21,11 @@ const ApiKeysPage = () => {
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-3xl">
+      <PageSeo
+        title="API-ключи и доступы: выдача, отзыв и ограничения запросов"
+        description="Управление ключами для внешних интеграций: создание новых, ограничение по адресам и отключение скомпрометированных ключей."
+        noindex
+      />
       <h2 className="text-2xl font-bold mb-3">API ключи и доступ</h2>
       <p className="mb-4 text-muted-foreground">
         Управление API ключами для интеграции сторонних сервисов.

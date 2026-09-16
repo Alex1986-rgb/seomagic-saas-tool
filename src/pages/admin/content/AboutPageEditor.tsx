@@ -1,6 +1,5 @@
 
 import React, { useState } from 'react';
-import { Helmet } from 'react-helmet-async';
 import BaseContentEditor from '@/components/admin/content/BaseContentEditor';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -8,7 +7,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { PlusCircle, Trash2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { SEO } from '@/components/SEO';
+import PageSeo from '@/components/seo/PageSeo';
 
 const AboutPageEditor: React.FC = () => {
   const { toast } = useToast();
@@ -42,9 +41,11 @@ const AboutPageEditor: React.FC = () => {
 
   return (
     <>
-      <Helmet>
-        <title>Редактирование страницы "О нас" | Админ панель</title>
-      </Helmet>
+      <PageSeo
+        title="Редактор страницы «О нас»: тексты, блоки и команда"
+        description="Правка содержимого публичной страницы о компании: заголовки, описание миссии, состав команды и SEO-параметры самой страницы."
+        noindex
+      />
       
       <BaseContentEditor
         title='Редактирование страницы "О нас"'

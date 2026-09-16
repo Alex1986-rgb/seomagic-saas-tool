@@ -129,19 +129,20 @@ const NavbarMobile: React.FC<NavbarMobileProps> = ({
             Все страницы
           </Link>
           
-          {/* Admin link - always visible in mobile menu */}
-          <Link 
-            to="/admin"
-            className="flex items-center justify-between px-4 py-3 bg-purple-500/10 hover:bg-purple-500/20 rounded-md transition-colors"
-          >
-            <div className="flex items-center gap-2">
-              <ShieldCheck className="h-4 w-4 text-purple-500" />
-              <span className="font-medium">Админ-панель</span>
-            </div>
-            <Badge variant="default" className="bg-purple-500">
-              ADMIN
-            </Badge>
-          </Link>
+          {/* Ссылка в админку — только администратору. Раньше её видел каждый
+              посетитель: раздел закрыт проверкой прав, но кнопка в чужой
+              кабинет в меню смущала людей. */}
+          {isAdmin && (
+            <Link
+              to="/admin"
+              className="flex items-center justify-between px-4 py-3 bg-purple-500/10 hover:bg-purple-500/20 rounded-md transition-colors"
+            >
+              <div className="flex items-center gap-2">
+                <ShieldCheck className="h-4 w-4 text-purple-500" />
+                <span className="font-medium">Админ-панель</span>
+              </div>
+            </Link>
+          )}
         </nav>
         
         <div className="flex items-center gap-3 pt-4 border-t border-border/50">

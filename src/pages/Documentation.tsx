@@ -23,6 +23,7 @@ import {
   Clock,
   ArrowRight
 } from 'lucide-react';
+import PageSeo from '@/components/seo/PageSeo';
 
 type DocumentationTab = 'user-guide' | 'developer-guide' | 'security' | 'faq';
 
@@ -84,6 +85,10 @@ const Documentation: React.FC = () => {
 
   return (
     <Layout>
+      <PageSeo
+        title="Документация сервиса: инструкции и ответы на вопросы"
+        description="Разделы справки: как запустить аудит, прочитать отчёт, настроить проекты, отслеживать позиции и подключиться к API платформы."
+      />
       <BreadcrumbSchema items={[
         { name: 'Главная', url: '/' },
         { name: 'Документация', url: '/documentation' }

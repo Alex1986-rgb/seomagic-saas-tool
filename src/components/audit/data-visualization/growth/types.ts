@@ -6,9 +6,13 @@ export interface BeforeAfterDataPoint {
 }
 
 export interface GrowthVisualizationData {
-  performance: BeforeAfterDataPoint[];
-  seo: BeforeAfterDataPoint[];
   overview: BeforeAfterDataPoint[];
+  /**
+   * Разбивки по SEO и скорости показываем, только когда есть что сравнивать.
+   * Раньше сюда передавали заготовленные числа, одинаковые для любого сайта.
+   */
+  seo?: BeforeAfterDataPoint[];
+  performance?: BeforeAfterDataPoint[];
 }
 
 export interface GrowthVisualizationProps {

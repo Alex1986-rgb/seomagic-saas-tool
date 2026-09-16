@@ -187,6 +187,8 @@ const AuditContent: React.FC<AuditContentProps> = ({
           <div id="optimization-section">
             <InteractiveOptimizationPanel
               url={url}
+              taskId={auditData.id}
+              currentScore={auditData.score}
               optimizationCost={optimizationCost}
               optimizationItems={optimizationItems}
               pageCount={auditData.pageCount || 0}
@@ -217,33 +219,40 @@ const AuditContent: React.FC<AuditContentProps> = ({
       </motion.div>
     );
 
-    const showGrowthVisualization = auditData.previousScore !== undefined || 
-      (historyData && historyData.items?.length > 1);
+    /**
+     * Сравнение «было → стало».
+     *
+     * Здесь лежал заготовленный набор: разделы «SEO» и «Производительность»
+     * были вписаны в код целиком (Meta-теги 55→85, Core Web Vitals 40→70) и
+     * показывались любому сайту одинаково, а в общем разделе вместо
+     * отсутствующей прошлой оценки подставлялись числа 65, 60, 55, 70 и 45 —
+     * то есть «рост» рисовался даже там, где сравнивать было не с чем.
+     *
+     * Теперь сравнение строится только по настоящей прошлой оценке. Нет
+     * второго аудита — блок не показывается.
+     */
+    const previousScore = auditData.previousScore;
+    const showGrowthVisualization = previousScore !== undefined;
 
-    // Sample data for growth visualization (would typically come from props)
-    const growthData = {
-      overview: [
-        { category: 'Общий балл', before: auditData.previousScore || 65, after: auditData.score },
-        { category: 'SEO', before: auditData.details?.seo?.previousScore || 60, after: auditData.details?.seo?.score },
-        { category: 'Производительность', before: auditData.details?.performance?.previousScore || 55, after: auditData.details?.performance?.score },
-        { category: 'Контент', before: auditData.details?.content?.previousScore || 70, after: auditData.details?.content?.score },
-        { category: 'Технические аспекты', before: auditData.details?.technical?.previousScore || 45, after: auditData.details?.technical?.score },
-      ],
-      seo: [
-        { category: 'Meta-теги', before: 55, after: 85 },
-        { category: 'Ключевые слова', before: 60, after: 80 },
-        { category: 'С��руктура URL', before: 70, after: 90 },
-        { category: 'Внутренние ссылки', before: 50, after: 75 },
-        { category: 'Внешние ссылки', before: 65, after: 85 },
-      ],
-      performance: [
-        { category: 'Время загрузки', before: 45, after: 75 },
-        { category: 'Размер страницы', before: 50, after: 80 },
-        { category: 'Кеширование', before: 60, after: 90 },
-        { category: 'Мобильная оптимизация', before: 55, after: 85 },
-        { category: 'Core Web Vitals', before: 40, after: 70 },
-      ]
-    };
+    const growthData = showGrowthVisualization
+      ? {
+          overview: [
+            { category: 'Общий балл', before: previousScore as number, after: auditData.score },
+            ...(['seo', 'content', 'performance', 'technical'] as const).flatMap((key) => {
+              const section = auditData.details?.[key];
+              const before = section?.previousScore;
+              if (before === undefined || section?.score === undefined) return [];
+              const titles: Record<typeof key, string> = {
+                seo: 'SEO',
+                content: 'Контент',
+                performance: 'Производительность',
+                technical: 'Технические аспекты',
+              };
+              return [{ category: titles[key], before, after: section.score }];
+            }),
+          ],
+        }
+      : null;
 
     return (
       <>
@@ -262,7 +271,7 @@ const AuditContent: React.FC<AuditContentProps> = ({
           0.15
         )}
         
-        {showGrowthVisualization && 
+        {showGrowthVisualization && growthData && 
           renderWithAnimation(
             <GrowthVisualization beforeAfterData={growthData} />,
             0.2

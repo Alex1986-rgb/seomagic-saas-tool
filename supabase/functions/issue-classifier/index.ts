@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
+import { assertTaskAccess, authErrorResponse } from "../_shared/auth.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -196,7 +197,9 @@ function classifyTechnicalIssues(pageData: any): ClassifiedIssue[] {
   }
 
   // No compression
-  if (!pageData.is_compressed) {
+  // Замечание ставим, только когда сжатия точно нет. Пустое значение означает
+  // «проверить не удалось» — выдумывать по нему работы в смете нельзя.
+  if (pageData.is_compressed === false) {
     issues.push({
       issue_type: 'no_compression',
       category: 'performance',
@@ -445,6 +448,16 @@ serve(async (req) => {
 
     const { task_id } = await req.json();
     
+    // Классификатор переписывает замечания по задаче служебным ключом —
+    // пускаем только своего обработчика, хозяина задачи или администратора.
+    try {
+      await assertTaskAccess(req, task_id);
+    } catch (err) {
+      const denied = authErrorResponse(err, corsHeaders);
+      if (denied) return denied;
+      throw err;
+    }
+
     console.log(`[ISSUE-CLASSIFIER] Starting classification for task: ${task_id}`);
 
     // Fetch task data to get audit_id and user_id

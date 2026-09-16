@@ -276,65 +276,20 @@ export const PaymentDetailsFields: React.FC<{ form: UseFormReturn<any> }> = ({ f
   
   return (
     <>
+      {/*
+        Здесь стояли поля номера карты, имени держателя, срока и CVV. Приём карт
+        на сайте не подключён: введённые данные никуда не уходили и уйти не
+        могли, а собирать реквизиты карты формой, которая с ними ничего не
+        делает, нельзя. Оплату картой подключаем через платёжного провайдера —
+        реквизиты будет принимать он, на своей стороне.
+      */}
       {paymentMethod === "card" && (
-        <>
-          <div className="grid grid-cols-2 gap-4">
-            <FormField
-              control={form.control}
-              name="cardNumber"
-              render={({ field }) => (
-                <FormItem className="col-span-2">
-                  <FormLabel>Номер карты</FormLabel>
-                  <FormControl>
-                    <Input placeholder="1234 5678 9012 3456" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="cardHolder"
-              render={({ field }) => (
-                <FormItem className="col-span-2">
-                  <FormLabel>Имя держателя</FormLabel>
-                  <FormControl>
-                    <Input placeholder="IVAN IVANOV" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="expiry"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Срок действия</FormLabel>
-                  <FormControl>
-                    <Input placeholder="MM/YY" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="cvv"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>CVV</FormLabel>
-                  <FormControl>
-                    <Input type="password" placeholder="123" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
-        </>
+        <div className="rounded-md border border-dashed p-4 text-sm text-muted-foreground">
+          Оплата картой на сайте пока не подключена. Выберите другой способ или
+          напишите нам — выставим счёт.
+        </div>
       )}
-      
+
       {["yoomoney", "qiwi", "webmoney", "paypal"].includes(paymentMethod) && (
         <FormField
           control={form.control}

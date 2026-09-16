@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
+import PageSeo from '@/components/seo/PageSeo';
 
 const MobileOptimization: React.FC = () => {
   const [selectedDevice, setSelectedDevice] = useState('mobile');
@@ -69,6 +70,10 @@ const MobileOptimization: React.FC = () => {
 
   return (
     <Layout>
+      <PageSeo
+        title="Проверка мобильной версии: адаптивность и удобство"
+        description="Как сайт выглядит на телефонах: размеры шрифтов, кликабельные элементы, настройка viewport и скорость загрузки на мобильных."
+      />
       <div className="container mx-auto px-4 py-16 md:py-24">
         {/* Навигация */}
         <div className="mb-8">

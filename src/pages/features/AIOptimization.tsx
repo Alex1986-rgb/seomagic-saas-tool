@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
+import PageSeo from '@/components/seo/PageSeo';
 
 const AIOptimization: React.FC = () => {
   const [automationLevel, setAutomationLevel] = useState(90);
@@ -120,6 +121,10 @@ const AIOptimization: React.FC = () => {
 
   return (
     <Layout>
+      <PageSeo
+        title="ИИ-оптимизация контента: переписываем тексты страниц"
+        description="Как нейросеть улучшает заголовки, описания и тексты страниц: что именно меняется, на каких данных и как проверить результат."
+      />
       <div className="container mx-auto px-4 py-16 md:py-24">
         {/* Навигация */}
         <div className="mb-8">

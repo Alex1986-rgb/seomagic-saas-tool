@@ -16,8 +16,10 @@ export class ProxyManager {
 
   // Ключи captcha/botable держим только в памяти сессии — не пишем в localStorage
   // (clear-text storage). Постоянные значения берём из env.
-  private captchaApiKey: string = (import.meta.env.VITE_CAPTCHA_API_KEY as string) || '';
-  private botableApiKey: string = (import.meta.env.VITE_BOTABLE_API_KEY as string) || '';
+  // Ключи не берём из VITE-переменных: они попадают в собранный файл и видны
+  // любому посетителю. Задаются на время работы через настройки.
+  private captchaApiKey: string = '';
+  private botableApiKey: string = '';
 
   public defaultProxySources: ProxySourcesType = {
     'freeproxylists': {

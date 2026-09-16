@@ -1,18 +1,16 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Helmet } from 'react-helmet-async';
 import { sitemapPages } from '@/utils/sitemap-generator';
 import { BreadcrumbsWrapper } from '@/components/navigation/BreadcrumbsWrapper';
+import PageSeo from '@/components/seo/PageSeo';
 
 const Sitemap = () => {
   return (
     <div className="min-h-screen bg-background">
-      <Helmet>
-        <title>Карта сайта | SeoMarket</title>
-        <meta name="description" content="Карта сайта SeoMarket - все страницы нашего сервиса SEO аудита и оптимизации" />
-        <meta name="robots" content="index, follow" />
-        <link rel="canonical" href="https://seomarket.app/sitemap" />
-      </Helmet>
+      <PageSeo
+        title="Карта сайта: структура разделов и все страницы сервиса"
+        description="Навигация по сайту одним списком: аудит, отслеживание позиций, тарифы, документация, блог, справка и юридические документы."
+      />
 
       <div className="container mx-auto px-4 py-16">
         <div className="max-w-4xl mx-auto">

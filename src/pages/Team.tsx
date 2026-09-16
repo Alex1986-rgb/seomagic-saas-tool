@@ -2,10 +2,15 @@
 import React from 'react';
 import Layout from '@/components/Layout';
 import { Github, Linkedin, Twitter } from 'lucide-react';
+import PageSeo from '@/components/seo/PageSeo';
 
 const Team: React.FC = () => {
   return (
     <Layout>
+      <PageSeo
+        title="Наша команда: кто разрабатывает платформу SEO-аудита"
+        description="Специалисты, которые развивают сервис: разработка, SEO-экспертиза и поддержка клиентов. Коротко о каждом участнике команды."
+      />
       <div className="container mx-auto py-32 px-4">
         <div className="text-center mb-16">
           <h1 className="text-4xl font-bold mb-4">Наша команда</h1>

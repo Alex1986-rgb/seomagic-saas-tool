@@ -4,6 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { DatabaseBackup, Download, History, RotateCcw } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import PageSeo from '@/components/seo/PageSeo';
 
 const BackupSettingsPage = () => {
   const [backupStatus, setBackupStatus] = React.useState<'idle' | 'creating' | 'success' | 'error'>('idle');
@@ -20,6 +21,11 @@ const BackupSettingsPage = () => {
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-3xl">
+      <PageSeo
+        title="Резервное копирование: расписание и хранение копий"
+        description="Настройка бэкапов базы и файлов: периодичность копирования, срок хранения и проверка последнего успешного резервирования."
+        noindex
+      />
       <h2 className="text-2xl font-bold mb-3">Резервное копирование</h2>
       <p className="mb-4 text-muted-foreground">
         Управление резервными копиями базы данных и настроек системы.

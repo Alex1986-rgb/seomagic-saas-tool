@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
+import PageSeo from '@/components/seo/PageSeo';
 
 const SpeedAnalysis: React.FC = () => {
   const [selectedMetric, setSelectedMetric] = useState('lcp');
@@ -72,6 +73,10 @@ const SpeedAnalysis: React.FC = () => {
 
   return (
     <Layout>
+      <PageSeo
+        title="Проверка скорости загрузки сайта: замеры и причины"
+        description="Измеряем время отклика и отрисовки страниц, показываем тяжёлые скрипты и картинки и даём конкретные шаги для ускорения сайта."
+      />
       <div className="container mx-auto px-4 py-16 md:py-24">
         {/* Навигация */}
         <div className="mb-8">

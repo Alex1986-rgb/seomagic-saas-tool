@@ -1,12 +1,12 @@
 
 import React from 'react';
-import { Helmet } from 'react-helmet-async';
 import Layout from '@/components/Layout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { CheckCircle, Tags, Search, FileText, ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import PageSeo from '@/components/seo/PageSeo';
 
 const MetadataAnalysis: React.FC = () => {
   const benefits = [
@@ -20,10 +20,10 @@ const MetadataAnalysis: React.FC = () => {
 
   return (
     <Layout>
-      <Helmet>
-        <title>Анализ метаданных | SEO Market</title>
-        <meta name="description" content="Глубокий анализ метаданных вашего сайта для максимальной оптимизации поисковой выдачи" />
-      </Helmet>
+      <PageSeo
+        title="Анализ метаданных: title, description и заголовки H1-H6"
+        description="Проверка метатегов всех страниц сайта: дубли, пустые и слишком длинные значения, корректность заголовков и микроразметки."
+      />
       
       <div className="min-h-screen bg-gradient-to-br from-background via-background/95 to-muted/30">
         <div className="container mx-auto px-4 py-16 md:py-24">

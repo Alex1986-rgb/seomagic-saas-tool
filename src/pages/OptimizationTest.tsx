@@ -8,6 +8,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Loader2, CheckCircle, XCircle, Clock, Sparkles, AlertCircle, Play } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useNavigate } from 'react-router-dom';
+import PageSeo from '@/components/seo/PageSeo';
 
 interface AuditTask {
   task_id: string;
@@ -207,6 +208,11 @@ export default function OptimizationTest() {
 
   return (
     <div className="container mx-auto py-8 px-4 max-w-6xl">
+      <PageSeo
+        title="Тестовый стенд ИИ-оптимизации контента страниц сайта"
+        description="Служебная страница для проверки оптимизатора: запуск цепочки аудита и оптимизации на тестовых данных и просмотр ответа сервиса."
+        noindex
+      />
       <div className="mb-8">
         <h1 className="text-3xl font-bold mb-2">AI Optimization Test</h1>
         <p className="text-muted-foreground">

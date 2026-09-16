@@ -1,5 +1,5 @@
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -23,7 +23,10 @@ export const DeepCrawlProgressDialog: React.FC<DeepCrawlProgressDialogProps> = (
 }) => {
   const [attemptCount, setAttemptCount] = useState(0);
   const { toast } = useToast();
-  
+  // Обход запускается один раз на открытие окна: каждый запуск — это настоящая
+  // задача на сервере, лишние повторы плодят дубли аудитов.
+  const hasStartedRef = useRef(false);
+
   const {
     isLoading,
     progress,
@@ -42,11 +45,17 @@ export const DeepCrawlProgressDialog: React.FC<DeepCrawlProgressDialogProps> = (
   const retryScanning = () => {
     setAttemptCount(prevCount => prevCount + 1);
     console.log(`Retrying scan, attempt ${attemptCount + 1}`);
-    startCrawl();
+    void startCrawl();
   };
 
   useEffect(() => {
-    if (open && initialStage === 'starting' && !isLoading) {
+    if (!open) {
+      hasStartedRef.current = false;
+      return;
+    }
+
+    if (initialStage === 'starting' && !hasStartedRef.current) {
+      hasStartedRef.current = true;
       // Extract domain from URL for better display
       let displayDomain = "";
       try {
@@ -61,36 +70,16 @@ export const DeepCrawlProgressDialog: React.FC<DeepCrawlProgressDialogProps> = (
         title: "Запуск сканирования",
         description: `Начинаем сканирование сайта: ${displayDomain}`,
       });
-      startCrawl();
+      void startCrawl();
     }
-  }, [open, initialStage, isLoading, startCrawl, url, toast]);
+  }, [open, initialStage, startCrawl, url, toast]);
 
-  // Add a loading timeout checker
-  useEffect(() => {
-    // If scanning is stuck in starting stage for more than 12 seconds
-    if (crawlStage === 'starting' && isLoading) {
-      const timeoutId = setTimeout(() => {
-        if (crawlStage === 'starting' && attemptCount < 2) {
-          console.log("Scan seems to be stuck in starting phase, retrying...");
-          toast({
-            title: "Перезапуск сканирования",
-            description: "Сканирование зависло на начальном этапе, выполняем перезапуск",
-            variant: "default"
-          });
-          retryScanning();
-        } else if (crawlStage === 'starting' && attemptCount >= 2) {
-          console.error("Failed to start scanning after multiple attempts");
-          toast({
-            title: "Ошибка сканирования",
-            description: "Не удалось запустить сканирование после нескольких попыток",
-            variant: "destructive"
-          });
-        }
-      }, 12000);
-      
-      return () => clearTimeout(timeoutId);
-    }
-  }, [crawlStage, isLoading, attemptCount, toast]);
+  /**
+   * Раньше здесь висел таймер: если через 12 секунд обход всё ещё «готовился»,
+   * окно молча перезапускало его. С настоящим сканированием такой перезапуск
+   * означал бы вторую задачу на сервере поверх первой, поэтому перезапуск
+   * остался только ручной — кнопкой «Попробовать снова».
+   */
 
   const handleCancel = () => {
     cancelCrawl();

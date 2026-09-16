@@ -8,6 +8,7 @@ import Layout from '@/components/Layout';
 import GuideCard from '@/components/guides/GuideCard';
 import { guides } from '@/data/guidesData';
 import { BreadcrumbSchema } from '@/components/seo/BreadcrumbSchema';
+import PageSeo from '@/components/seo/PageSeo';
 
 const Guides: React.FC = () => {
   const [activeTab, setActiveTab] = useState('all');
@@ -41,6 +42,10 @@ const Guides: React.FC = () => {
 
   return (
     <Layout>
+      <PageSeo
+        title="Руководства по SEO: пошаговые инструкции и видеоуроки"
+        description="Пошаговые материалы для новичков и практиков: от базовой настройки сайта до работы с семантикой, ссылками и веб-аналитикой."
+      />
       <BreadcrumbSchema items={[
         { name: 'Главная', url: '/' },
         { name: 'Руководства', url: '/guides' }

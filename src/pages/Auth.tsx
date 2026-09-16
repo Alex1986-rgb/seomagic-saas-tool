@@ -5,6 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { LoginForm, RegisterForm, SocialAuth } from "@/components/auth";
 import AuthContainer from "@/components/auth/AuthContainer";
 import { useAuth } from '@/contexts/AuthContext';
+import PageSeo from '@/components/seo/PageSeo';
 
 const Auth: React.FC = () => {
   const [searchParams] = useSearchParams();
@@ -43,6 +44,11 @@ const Auth: React.FC = () => {
       title="Доступ к SeoMarket"
       description="Войдите или создайте аккаунт для доступа к расширенным возможностям"
     >
+      <PageSeo
+        title="Вход и регистрация: доступ к личному кабинету сервиса"
+        description="Войдите под своей учётной записью или создайте новую, чтобы запускать аудиты, следить за позициями и хранить историю отчётов."
+        noindex
+      />
       <Tabs defaultValue={defaultTab} className="w-full">
         <TabsList className="grid w-full grid-cols-2 mb-6">
           <TabsTrigger value="login">Вход</TabsTrigger>

@@ -27,20 +27,11 @@ export const SoftwareApplicationSchema: React.FC<SoftwareApplicationSchemaProps>
     description: description,
     operatingSystem: operatingSystem,
     applicationCategory: applicationCategory,
-    image: `${siteUrl}/images/app-icon.png`,
-    screenshot: [
-      `${siteUrl}/images/app-screenshot-1.jpg`,
-      `${siteUrl}/images/app-screenshot-2.jpg`,
-      `${siteUrl}/images/app-screenshot-3.jpg`,
-      `${siteUrl}/images/app-screenshot-4.jpg`
-    ],
-    aggregateRating: {
-      '@type': 'AggregateRating',
-      ratingValue: '4.8',
-      ratingCount: '1247',
-      bestRating: '5',
-      worstRating: '1'
-    },
+    // Иконки и скриншотов приложения (/images/app-icon.png,
+    // /images/app-screenshot-1..4.jpg) в проекте нет — поля убраны.
+    // Здесь стояла средняя оценка 4,8 по 1247 отзывам — числа выдуманные, а
+    // поисковики показывали по ним звёзды в выдаче. Появятся настоящие
+    // отзывы — вернём вместе с ними.
     offers: {
       '@type': 'Offer',
       price: price,
@@ -55,14 +46,10 @@ export const SoftwareApplicationSchema: React.FC<SoftwareApplicationSchemaProps>
     softwareVersion: '2.1.0',
     fileSize: '45MB',
     releaseNotes: 'Обновлена система аналитики, добавлены новые метрики для отслеживания позиций, улучшена производительность и исправлены ошибки.',
-    downloadUrl: [
-      'https://apps.apple.com/app/seomarket/id123456789',
-      'https://play.google.com/store/apps/details?id=com.seomarket.app'
-    ],
-    installUrl: [
-      'https://apps.apple.com/app/seomarket/id123456789',
-      'https://play.google.com/store/apps/details?id=com.seomarket.app'
-    ],
+    // Ссылки на приложение в App Store (id123456789) и Google Play были
+    // выдуманы: мобильного приложения нет. Поисковик показывал кнопку
+    // «Установить», которая вела в никуда.
+
     featureList: [
       'Комплексный SEO аудит сайта',
       'Мониторинг позиций в реальном времени',

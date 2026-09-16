@@ -2,6 +2,7 @@
 import React from "react";
 import PerformanceSettings from "@/components/admin/system/PerformanceSettings";
 import { Card, CardContent } from "@/components/ui/card";
+import PageSeo from '@/components/seo/PageSeo';
 
 const PerformanceDashboard = () => (
   <div className="border rounded-md p-4 bg-muted my-6">
@@ -19,6 +20,11 @@ const PerformanceDashboard = () => (
 
 const PerformanceSettingsPage = () => (
   <div className="container mx-auto px-4 py-8 max-w-3xl">
+    <PageSeo
+      title="Производительность: кэширование, лимиты и пороги нагрузки"
+      description="Параметры работы платформы под нагрузкой: кэширование, ограничения на запросы и правила оповещений об аномалиях в работе."
+      noindex
+    />
     <h2 className="text-2xl font-bold mb-3">Производительность</h2>
     <p className="mb-4 text-muted-foreground">Мониторинг, настройка параметров работы платформы и автоматизация оповещений.</p>
     <PerformanceDashboard />

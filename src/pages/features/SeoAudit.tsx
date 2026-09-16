@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
+import PageSeo from '@/components/seo/PageSeo';
 
 const SeoAudit: React.FC = () => {
   const [checkProgress, setCheckProgress] = useState(85);
@@ -68,6 +69,10 @@ const SeoAudit: React.FC = () => {
 
   return (
     <Layout>
+      <PageSeo
+        title="SEO-аудит сайта: что проверяет сервис и как читать отчёт"
+        description="Полный список проверок: технические ошибки, метатеги, скорость, структура и контент. Как устроен отчёт и с чего начать правки."
+      />
       <div className="container mx-auto px-4 py-16 md:py-24">
         {/* Навигация */}
         <div className="mb-8">

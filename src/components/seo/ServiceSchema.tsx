@@ -1,8 +1,16 @@
 import React from 'react';
 import { Helmet } from 'react-helmet-async';
+import { SITE_CONTACTS } from '@/config/site-contacts';
 
+/**
+ * В разметке услуг пятью строками был прописан телефон +7 800 123-45-67,
+ * которого не существует: поисковики показывали его рядом с каждой услугой.
+ * Номер берётся из SITE_CONTACTS, и пока его нет, поле servicePhone в разметку
+ * просто не попадает.
+ */
 export const ServiceSchema: React.FC = () => {
   const siteUrl = typeof window !== 'undefined' ? window.location.origin : 'https://seomarket.app';
+  const servicePhone = SITE_CONTACTS.telephone ? { servicePhone: SITE_CONTACTS.telephone } : {};
   
   const services = [
     {
@@ -18,7 +26,7 @@ export const ServiceSchema: React.FC = () => {
       availableChannel: {
         '@type': 'ServiceChannel',
         serviceUrl: `${siteUrl}/features`,
-        servicePhone: '+78001234567',
+        ...servicePhone,
         availableLanguage: 'Russian'
       },
       category: 'SEO Services',
@@ -47,7 +55,7 @@ export const ServiceSchema: React.FC = () => {
       availableChannel: {
         '@type': 'ServiceChannel',
         serviceUrl: `${siteUrl}/position-pricing`,
-        servicePhone: '+78001234567',
+        ...servicePhone,
         availableLanguage: 'Russian'
       },
       category: 'SEO Services',
@@ -77,7 +85,7 @@ export const ServiceSchema: React.FC = () => {
       availableChannel: {
         '@type': 'ServiceChannel',
         serviceUrl: `${siteUrl}/features`,
-        servicePhone: '+78001234567',
+        ...servicePhone,
         availableLanguage: 'Russian'
       },
       category: 'SEO Services',
@@ -100,7 +108,7 @@ export const ServiceSchema: React.FC = () => {
       availableChannel: {
         '@type': 'ServiceChannel',
         serviceUrl: `${siteUrl}/features`,
-        servicePhone: '+78001234567',
+        ...servicePhone,
         availableLanguage: 'Russian'
       },
       category: 'SEO Services',
@@ -123,7 +131,7 @@ export const ServiceSchema: React.FC = () => {
       availableChannel: {
         '@type': 'ServiceChannel',
         serviceUrl: `${siteUrl}/features`,
-        servicePhone: '+78001234567',
+        ...servicePhone,
         availableLanguage: 'Russian'
       },
       category: 'SEO Services',

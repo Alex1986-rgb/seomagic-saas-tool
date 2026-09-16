@@ -21,9 +21,14 @@ import {
   getPriorityStats,
 } from './auditToInteractiveMapper';
 import { Link } from 'react-router-dom';
+import { runOptimization } from '@/services/optimization/runOptimization';
 
 interface InteractiveOptimizationPanelProps {
   url: string;
+  /** Задача аудита, по которой запускается оптимизация. Без неё запуск невозможен. */
+  taskId?: string | null;
+  /** Оценка сайта по аудиту — от неё считается «было». */
+  currentScore?: number;
   optimizationCost?: number;
   optimizationItems?: OptimizationItem[];
   pageCount?: number;
@@ -36,6 +41,8 @@ type ViewMode = 'audit-results' | 'edit-estimate';
 
 const InteractiveOptimizationPanel: React.FC<InteractiveOptimizationPanelProps> = ({
   url,
+  taskId,
+  currentScore = 0,
   optimizationCost = 0,
   optimizationItems = [],
   pageCount = 0,
@@ -145,18 +152,28 @@ const InteractiveOptimizationPanel: React.FC<InteractiveOptimizationPanelProps> 
     });
   };
 
-  const handlePayment = () => {
+  // Раньше здесь объявлялось «Оплата успешно произведена» — при неподключённом
+  // приёме платежей. Теперь это заявка на счёт, и говорим мы именно о ней.
+  const handleInvoiceRequested = () => {
     toast({
-      title: 'Оплата успешно произведена',
-      description: 'Теперь вы можете запустить процесс оптимизации',
+      title: 'Заявка на счёт принята',
+      description: 'Пришлём счёт на почту и согласуем состав работ.',
     });
     setIsPaymentComplete(true);
     setIsPaymentDialogOpen(false);
   };
 
-  const startOptimization = () => {
+  /**
+   * Запуск оптимизации.
+   *
+   * Раньше полоса двигалась случайными числами, а «результат» был вписан в код:
+   * было 65, стало 92 — одинаково для любого сайта, при том что на сервер не
+   * уходило ничего. Теперь запускается настоящая работа, а полоса показывает,
+   * сколько страниц переписано.
+   */
+  const startOptimization = async () => {
     const validation = validateSelection(optimizationItems, selectedKeys);
-    
+
     if (!validation.valid) {
       toast({
         title: 'Ошибка',
@@ -173,27 +190,58 @@ const InteractiveOptimizationPanel: React.FC<InteractiveOptimizationPanelProps> 
       });
     }
 
+    if (!taskId) {
+      toast({
+        title: 'Оптимизация недоступна',
+        description: 'Не видим аудит, к которому относится смета. Запустите аудит заново.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
     setIsOptimizing(true);
     setOptimizationProgress(0);
 
-    const interval = setInterval(() => {
-      setOptimizationProgress((prev) => {
-        if (prev >= 100) {
-          clearInterval(interval);
-          setLocalIsOptimized(true);
+    try {
+      const outcome = await runOptimization(
+        taskId,
+        { fixMetaTags: true, improveContent: true, language: 'ru' },
+        ({ processed, total }) => {
+          setOptimizationProgress(total > 0 ? Math.min(99, Math.round((processed / total) * 100)) : 5);
+        },
+      );
 
-          setTimeout(() => {
-            setOptimizationResult({
-              beforeScore: 65,
-              afterScore: 65 + estimatedScoreChange,
-            });
-          }, 1000);
+      if (outcome.status === 'failed') {
+        throw new Error(outcome.error ?? 'Оптимизация не удалась');
+      }
 
-          return 100;
-        }
-        return prev + Math.random() * 2;
+      setOptimizationProgress(100);
+      setLocalIsOptimized(true);
+      setOptimizationResult({
+        beforeScore: currentScore,
+        // Оценку после работ поставит следующий аудит: пока страницы только
+        // переписаны, придумывать новый балл нельзя.
+        afterScore: null,
+        pages: outcome.pages,
+        failures: outcome.failures,
+        cost: outcome.cost,
+        status: outcome.status,
       });
-    }, 200);
+
+      toast({
+        title: outcome.status === 'partial' ? 'Оптимизация прошла частично' : 'Оптимизация завершена',
+        description: `Переписано страниц: ${outcome.pages.length}` +
+          (outcome.failures.length > 0 ? `, не удалось: ${outcome.failures.length}` : ''),
+      });
+    } catch (error) {
+      toast({
+        title: 'Оптимизация не запустилась',
+        description: error instanceof Error ? error.message : 'Неизвестная ошибка',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsOptimizing(false);
+    }
   };
 
   const handleOpenPaymentDialog = () => {
@@ -255,8 +303,6 @@ const InteractiveOptimizationPanel: React.FC<InteractiveOptimizationPanelProps> 
       <OptimizationProcessContainer
         url={url}
         progress={optimizationProgress}
-        setOptimizationResult={setOptimizationResult}
-        setLocalIsOptimized={setLocalIsOptimized}
       />
     );
   }
@@ -373,7 +419,7 @@ const InteractiveOptimizationPanel: React.FC<InteractiveOptimizationPanelProps> 
       <PaymentDialog
         url={url}
         optimizationCost={selectedTotalCost}
-        onPayment={handlePayment}
+        onPayment={handleInvoiceRequested}
         isDialogOpen={isPaymentDialogOpen}
         setIsDialogOpen={setIsPaymentDialogOpen}
       />

@@ -7,6 +7,7 @@ import VideoLoading from './VideoLoading';
 import VideoProgressBar from './VideoProgressBar';
 import VideoInfo from './VideoInfo';
 import { useVideoPlayer } from './hooks/useVideoPlayer';
+import { assetUrl } from '@/lib/asset-url';
 
 interface VideoPlayerProps {
   src?: string;
@@ -42,6 +43,10 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
   audioEnabled = false
 }) => {
   const [isLoading, setIsLoading] = useState(true);
+
+  // Видео и постер лежат в public: путь надо считать от адреса публикации.
+  const videoSrc = assetUrl(src);
+  const posterSrc = assetUrl(poster);
   
   // Using a custom hook to centralize video player logic
   const {
@@ -102,8 +107,8 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
       
       <video
         ref={videoRef}
-        src={src}
-        poster={poster}
+        src={videoSrc}
+        poster={posterSrc}
         className="w-full h-full object-cover"
         autoPlay={autoPlay}
         loop={loop}
@@ -113,11 +118,9 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
         onTimeUpdate={handleTimeUpdate}
       />
       
-      {/* Add audio element for separate audio track if needed */}
-      {audioEnabled && (
-        <audio ref={audioRef} src="/audio/background.mp3" loop />
-      )}
-      
+      {/* Отдельная звуковая дорожка убрана: файла /audio/background.mp3 в
+          проекте нет, тег грузил несуществующий адрес. */}
+
       {controls && (
         <>
           <VideoProgressBar progress={progress} onSeek={handleSeek} />

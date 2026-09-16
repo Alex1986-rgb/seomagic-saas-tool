@@ -113,34 +113,35 @@ export class IssueClassifier {
   static classifyTechnicalIssues(pageData: any): ClassifiedIssue[] {
     const issues: ClassifiedIssue[] = [];
 
-    // Slow page load (fixed name)
-    if (pageData.load_time && pageData.load_time > 3000) {
+    // Время в базе хранится в секундах: раньше здесь сравнивали с
+    // миллисекундами, и замечание не срабатывало никогда.
+    if (pageData.load_time && pageData.load_time > 3) {
       issues.push({
         issue_type: 'slow_page',
         category: 'performance',
-        severity: pageData.load_time > 5000 ? 'critical' : 'high',
-        description: `Slow page load time (${(pageData.load_time / 1000).toFixed(2)}s) on ${pageData.url}`,
+        severity: pageData.load_time > 5 ? 'critical' : 'high',
+        description: `Slow page load time (${Number(pageData.load_time).toFixed(2)}s) on ${pageData.url}`,
         recommendation: 'Optimize images, minify CSS/JS, enable compression',
         can_auto_fix: false,
         metadata: { url: pageData.url, load_time: pageData.load_time }
       });
     }
 
-    // High TTFB
-    if (pageData.ttfb && pageData.ttfb > 600) {
+    // High TTFB — тоже в секундах.
+    if (pageData.ttfb && pageData.ttfb > 0.6) {
       issues.push({
         issue_type: 'high_ttfb',
         category: 'performance',
         severity: 'high',
-        description: `High Time to First Byte (${pageData.ttfb}ms) on ${pageData.url}`,
+        description: `High Time to First Byte (${Math.round(Number(pageData.ttfb) * 1000)}ms) on ${pageData.url}`,
         recommendation: 'Optimize server response time, use CDN, enable caching',
         can_auto_fix: false,
         metadata: { url: pageData.url, ttfb: pageData.ttfb }
       });
     }
 
-    // No compression
-    if (!pageData.is_compressed) {
+    // Сжатие: пустое значение означает «проверить не удалось», а не «сжатия нет».
+    if (pageData.is_compressed === false) {
       issues.push({
         issue_type: 'no_compression',
         category: 'performance',

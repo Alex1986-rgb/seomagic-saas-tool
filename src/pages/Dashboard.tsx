@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import DashboardLayout from '@/components/dashboard/DashboardLayout';
 import DashboardHeader from '@/components/dashboard/DashboardHeader';
 import DashboardTabs from '@/components/dashboard/DashboardTabs';
+import PageSeo from '@/components/seo/PageSeo';
 
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
@@ -16,6 +17,11 @@ const Dashboard: React.FC = () => {
   
   return (
     <div className="container py-6 md:py-10">
+      <PageSeo
+        title="Панель управления: сводка по сайтам, аудитам и задачам"
+        description="Главный экран личного кабинета: состояние проектов, последние проверки, динамика позиций и быстрый запуск нового аудита."
+        noindex
+      />
       <DashboardLayout activeTab={activeTab} setActiveTab={setActiveTab}>
         <motion.div
           initial={{ opacity: 0, y: 20 }}

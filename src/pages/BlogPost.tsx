@@ -8,7 +8,7 @@ import { BlogPostHeader } from '@/components/blog/BlogPostHeader';
 import BlogPostContent from '@/components/blog/BlogPostContent';
 import { RelatedPosts } from '@/components/blog/RelatedPosts';
 import { BlogPost as BlogPostType } from '@/types/blog';
-import { SEO } from '@/components/SEO';
+import PageSeo from '@/components/seo/PageSeo';
 import { ArticleSEO } from '@/components/seo/ArticleSEO';
 import { BreadcrumbSchema } from '@/components/seo/BreadcrumbSchema';
 
@@ -98,12 +98,10 @@ const BlogPost: React.FC = () => {
 
   return (
     <Layout>
-      <SEO
-        title={`${post.title} | Блог SeoMarket`}
+      <PageSeo
+        title={post.title}
         description={post.excerpt}
-        canonicalUrl={`/blog/${post.id}`}
-        ogImage={post.image}
-        keywords={post.tags.join(', ')}
+        image={post.image}
       />
       <ArticleSEO post={post} />
       <BreadcrumbSchema items={[

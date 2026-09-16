@@ -15,54 +15,13 @@ interface JobPostingSchemaProps {
   }>;
 }
 
-export const JobPostingSchema: React.FC<JobPostingSchemaProps> = ({
-  jobs = [
-    {
-      title: 'SEO специалист (Middle)',
-      description: 'Ищем опытного SEO специалиста для работы над крупными проектами. Вы будете проводить технические аудиты, разрабатывать стратегии продвижения и работать с клиентами. Требования: опыт работы от 2 лет, знание инструментов аналитики, понимание технического SEO. Мы предлагаем: интересные проекты, удаленную работу, профессиональное развитие.',
-      salaryMin: '120000',
-      salaryMax: '180000',
-      salaryCurrency: 'RUB',
-      employmentType: 'FULL_TIME',
-      datePosted: '2025-01-15',
-      validThrough: '2025-03-15',
-      workLocation: 'remote'
-    },
-    {
-      title: 'Senior SEO специалист / Team Lead',
-      description: 'В команду SeoMarket требуется Senior SEO специалист с опытом управления командой. Обязанности: разработка SEO стратегий для сложных проектов, управление командой специалистов, коммуникация с клиентами, наставничество. Требования: опыт от 5 лет, опыт руководства командой от 1 года, глубокие знания SEO, навыки управления проектами.',
-      salaryMin: '200000',
-      salaryMax: '300000',
-      salaryCurrency: 'RUB',
-      employmentType: 'FULL_TIME',
-      datePosted: '2025-01-20',
-      validThrough: '2025-04-20',
-      workLocation: 'hybrid'
-    },
-    {
-      title: 'Контент-менеджер с знанием SEO',
-      description: 'Ищем контент-менеджера для работы над SEO проектами. Создание и оптимизация контента, работа с семантическим ядром, анализ конкурентов. Требования: грамотная письменная речь, базовые знания SEO, опыт работы с CMS, внимание к деталям. Мы предлагаем гибкий график, обучение, молодую команду.',
-      salaryMin: '80000',
-      salaryMax: '120000',
-      salaryCurrency: 'RUB',
-      employmentType: 'FULL_TIME',
-      datePosted: '2025-01-25',
-      validThrough: '2025-03-25',
-      workLocation: 'remote'
-    },
-    {
-      title: 'Технический SEO специалист',
-      description: 'В команду требуется технический SEO специалист. Работа с крупными сайтами, техническая оптимизация, работа с разработчиками, JavaScript SEO. Требования: опыт от 3 лет, знание Python/JavaScript, опыт работы с большими сайтами (10000+ страниц), понимание веб-технологий. Предлагаем высокую зарплату и сложные задачи.',
-      salaryMin: '150000',
-      salaryMax: '220000',
-      salaryCurrency: 'RUB',
-      employmentType: 'FULL_TIME',
-      datePosted: '2025-01-18',
-      validThrough: '2025-04-18',
-      workLocation: 'remote'
-    }
-  ]
-}) => {
+export const JobPostingSchema: React.FC<JobPostingSchemaProps> = ({ jobs = [] }) => {
+  // Здесь висели две придуманные вакансии со сроком действия до весны 2025 года:
+  // поисковики показывали их как открытые, хотя таких вакансий нет и не было.
+  // Просроченная разметка вакансий — повод для санкций, поэтому без настоящих
+  // данных не выводим ничего.
+  if (jobs.length === 0) return null;
+
   const siteUrl = typeof window !== 'undefined' ? window.location.origin : 'https://seomarket.app';
   
   const jobSchemas = jobs.map((job, index) => ({
@@ -77,8 +36,8 @@ export const JobPostingSchema: React.FC<JobPostingSchemaProps> = ({
     hiringOrganization: {
       '@type': 'Organization',
       name: 'SeoMarket',
-      sameAs: siteUrl,
-      logo: `${siteUrl}/images/logo.png`
+      // Логотипа /images/logo.png в проекте нет — поле убрано.
+      sameAs: siteUrl
     },
     jobLocation: job.workLocation === 'remote' ? {
       '@type': 'Place',

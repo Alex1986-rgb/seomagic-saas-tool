@@ -7,8 +7,8 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { FAQSchema } from '@/components/seo/FAQSchema';
-import { SEO } from '@/components/SEO';
 import { BreadcrumbSchema } from '@/components/seo/BreadcrumbSchema';
+import PageSeo from '@/components/seo/PageSeo';
 
 const Faq: React.FC = () => {
   const faqData = [
@@ -44,11 +44,9 @@ const Faq: React.FC = () => {
 
   return (
     <Layout>
-      <SEO
-        title="Часто задаваемые вопросы | SeoMarket"
-        description="Ответы на самые популярные вопросы о SEO аудите, мониторинге позиций, тарифах и использовании платформы SeoMarket"
-        canonicalUrl="/faq"
-        keywords="FAQ SEO, вопросы о SEO, SEO аудит FAQ, вопросы о продвижении"
+      <PageSeo
+        title="Ответы на частые вопросы об аудите, тарифах и отчётах"
+        description="Что такое SEO-аудит, как отслеживаются позиции, чем отличаются тарифы, можно ли выгрузить отчёт и как работает API сервиса."
       />
       <BreadcrumbSchema items={[
         { name: 'Главная', url: '/' },

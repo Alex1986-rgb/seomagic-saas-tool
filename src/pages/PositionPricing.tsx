@@ -5,17 +5,15 @@ import PositionPricingPlans from '@/components/position-pricing/PositionPricingP
 import PositionPricingFeatures from '@/components/position-pricing/PositionPricingFeatures';
 import PositionPricingFAQ from '@/components/position-pricing/PositionPricingFAQ';
 import PositionPricingCTA from '@/components/position-pricing/PositionPricingCTA';
-import { SEO } from '@/components/SEO';
 import { BreadcrumbSchema } from '@/components/seo/BreadcrumbSchema';
+import PageSeo from '@/components/seo/PageSeo';
 
 const PositionPricing: React.FC = () => {
   return (
     <Layout>
-      <SEO
-        title="Цены на мониторинг позиций | SeoMarket"
-        description="Тарифы на отслеживание позиций сайта в поисковых системах. FAQ о мониторинге позиций и возможностях сервиса."
-        canonicalUrl="/position-pricing"
-        keywords="цены на мониторинг позиций, отслеживание позиций сайта, проверка позиций"
+      <PageSeo
+        title="Тарифы на мониторинг позиций сайта в Яндексе и Google"
+        description="Стоимость отслеживания позиций: сколько запросов входит в тариф, как часто снимается выдача и что показывает итоговый отчёт."
       />
       <BreadcrumbSchema items={[
         { name: 'Главная', url: '/' },
