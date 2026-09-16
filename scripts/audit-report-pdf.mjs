@@ -8,11 +8,13 @@
  * Запуск:
  *   node scripts/audit-report-pdf.mjs [--task <id>] [--out отчёт.pdf]
  *
- * Нужны переменные SUPABASE_ACCESS_TOKEN и SUPABASE_PROJECT_REF
- * (или --project <ref>).
+ * Проект берётся из supabase/config.toml, токен — из окружения либо из
+ * ~/.claude/secrets/supabase.env.
  */
 import { jsPDF } from 'jspdf';
 import { readFileSync, existsSync } from 'node:fs';
+import { homedir } from 'node:os';
+import { join } from 'node:path';
 
 // Палитра сайта: те же токены, что в src/styles/variables.css.
 const COLOR = {
@@ -74,11 +76,43 @@ function arg(name, fallback = null) {
   return i > -1 && process.argv[i + 1] ? process.argv[i + 1] : fallback;
 }
 
+/**
+ * Доступы: из окружения, а если их там нет — из файла секретов рядом с
+ * настройками Claude. Так отчёт собирается одной командой, без преамбулы
+ * с экспортом переменных, и ключи по-прежнему лежат вне репозитория.
+ */
+function readSecretsFile() {
+  const path = join(homedir(), '.claude/secrets/supabase.env');
+  if (!existsSync(path)) return {};
+  const values = {};
+  for (const line of readFileSync(path, 'utf8').split('\n')) {
+    const trimmed = line.trim();
+    if (!trimmed || trimmed.startsWith('#')) continue;
+    const eq = trimmed.indexOf('=');
+    if (eq > 0) values[trimmed.slice(0, eq).trim()] = trimmed.slice(eq + 1).trim();
+  }
+  return values;
+}
+
+/** Ссылка на проект известна из конфигурации Supabase — спрашивать её незачем. */
+function projectFromConfig() {
+  const path = 'supabase/config.toml';
+  if (!existsSync(path)) return null;
+  const match = readFileSync(path, 'utf8').match(/^project_id\s*=\s*"([^"]+)"/m);
+  return match ? match[1] : null;
+}
+
+const secrets = readSecretsFile();
+
 async function query(sql) {
-  const ref = arg('project', process.env.SUPABASE_PROJECT_REF);
-  const token = process.env.SUPABASE_ACCESS_TOKEN;
-  if (!ref || !token) {
-    throw new Error('Нужны SUPABASE_PROJECT_REF и SUPABASE_ACCESS_TOKEN');
+  const ref = arg('project', process.env.SUPABASE_PROJECT_REF || projectFromConfig());
+  const token = process.env.SUPABASE_ACCESS_TOKEN || secrets.SUPABASE_ACCESS_TOKEN;
+  if (!ref) throw new Error('Не понял, к какому проекту обращаться: укажите --project <ref>');
+  if (!token) {
+    throw new Error(
+      'Нет доступа к базе: задайте SUPABASE_ACCESS_TOKEN или пропишите его '
+      + 'в ~/.claude/secrets/supabase.env',
+    );
   }
   const res = await fetch(`https://api.supabase.com/v1/projects/${ref}/database/query`, {
     method: 'POST',
