@@ -5,6 +5,7 @@ import {
   parseSiteOrigin,
   type SiteOrigin,
 } from "../_shared/crawl-url.ts";
+import { detectCompression } from "../_shared/compression.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
 import * as cheerio from "https://esm.sh/cheerio@1.0.0";
 
@@ -122,50 +123,6 @@ async function followRedirects(startUrl: string, maxRedirects = 10): Promise<Red
     finalUrl: currentUrl,
     chainLength: redirectCount
   };
-}
-
-/**
- * Включено ли сжатие ответов на сервере.
- *
- * Обычный fetch распаковывает ответ сам и убирает заголовок content-encoding,
- * поэтому признак «сжатие есть» всегда выходил ложным — и замечание «не
- * включено сжатие» выставлялось каждой странице подряд, надувая смету. Здесь
- * заголовок Accept-Encoding задан явно: тогда ответ не распаковывается, и
- * content-encoding виден. Сжатие настраивается на сервере, а не на странице,
- * поэтому проверяем один раз на сайт и запоминаем.
- */
-const compressionBySite = new Map<string, { compressed: boolean | null; type: string | null }>();
-
-async function detectCompression(url: string): Promise<{ compressed: boolean | null; type: string | null }> {
-  let host: string;
-  try { host = new URL(url).host; } catch { return { compressed: null, type: null }; }
-
-  const known = compressionBySite.get(host);
-  if (known) return known;
-
-  let result: { compressed: boolean | null; type: string | null } = { compressed: null, type: null };
-  try {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), PAGE_TIMEOUT);
-    const response = await fetch(url, {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (compatible; SEO-Auditor/1.0)',
-        'Accept-Encoding': 'gzip, deflate, br',
-      },
-      signal: controller.signal,
-    });
-    clearTimeout(timeoutId);
-
-    const encoding = response.headers.get('content-encoding');
-    await response.body?.cancel();
-    result = { compressed: !!encoding, type: encoding?.split(',')[0].trim() ?? null };
-  } catch (error) {
-    // Не смогли проверить — так и запишем: «неизвестно» лучше выдуманного «нет».
-    console.error('Не удалось проверить сжатие:', error instanceof Error ? error.message : error);
-  }
-
-  compressionBySite.set(host, result);
-  return result;
 }
 
 async function crawlPage(url: string, domain: string): Promise<any> {

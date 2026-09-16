@@ -96,6 +96,9 @@ CREATE POLICY "Модели меняет администратор" ON public.l
 
 -- 3. Смета — одна на задачу, запусков оптимизации — сколько угодно -----------
 
+-- Уникальность держится ограничением таблицы, а не отдельным индексом:
+-- индекс под ним удалить нельзя, снимаем само ограничение.
+ALTER TABLE public.optimization_jobs DROP CONSTRAINT IF EXISTS optimization_jobs_task_id_unique;
 DROP INDEX IF EXISTS public.optimization_jobs_task_id_unique;
 CREATE UNIQUE INDEX IF NOT EXISTS optimization_jobs_one_estimate_per_task
   ON public.optimization_jobs (task_id) WHERE status = 'estimated';
