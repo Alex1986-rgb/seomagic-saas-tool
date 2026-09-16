@@ -513,7 +513,7 @@ const taskFilter = arg('task');
 const out = arg('out', 'audit-report.pdf');
 
 const resultRows = await query(
-  `select r.page_count, r.seo_score, r.technical_score, r.content_score, r.performance_score,
+  `select r.task_id, r.page_count, r.seo_score, r.technical_score, r.content_score, r.performance_score,
           r.global_score, t.url, t.created_at
      from audit_results r
      join audit_tasks t on t.id = r.task_id
@@ -526,9 +526,12 @@ if (!Array.isArray(resultRows) || resultRows.length === 0) {
   process.exit(1);
 }
 
+// Замечания берём строго того аудита, о котором отчёт: в базе лежат и другие
+// прогоны, и без этого условия смета складывалась бы из нескольких проверок.
 const issues = await query(
   `select severity, issue_type, count(*) n, max(recommendation) recommendation
      from issues
+    where task_id = '${resultRows[0].task_id}'
     group by severity, issue_type
     order by case severity when 'high' then 1 when 'medium' then 2 else 3 end, n desc`,
 );
