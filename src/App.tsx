@@ -8,10 +8,10 @@ import { PerformanceDebugger } from './components/debug';
 import { LoadingSpinner } from './components/ui/loading';
 
 // Главная — первая страница для большинства посетителей, её грузим сразу.
-import Index from './pages/Index';
+// С 16.09.2026 публичный сайт собран по макету design/seomarket-v2 (дизайн-система Industry).
+import Landing from './pages/site/Landing';
 
 // Auth guards
-import ProtectedRoute from './components/auth/ProtectedRoute';
 import AdminRouteGuard from './components/admin/AdminRouteGuard';
 
 /**
@@ -63,69 +63,32 @@ function lazy(factory: () => Promise<{ default: React.ComponentType }>) {
   );
 }
 
-// Pages
-const About = lazy(() => import('./pages/About'));
-const Channel = lazy(() => import('./pages/Channel'));
-const Audit = lazy(() => import('./pages/Audit'));
-const Features = lazy(() => import('./pages/Features'));
-const Pricing = lazy(() => import('./pages/Pricing'));
-const PositionPricing = lazy(() => import('./pages/PositionPricing'));
-const Contact = lazy(() => import('./pages/Contact'));
-const Privacy = lazy(() => import('./pages/Privacy'));
-const Terms = lazy(() => import('./pages/Terms'));
-const Dashboard = lazy(() => import('./pages/Dashboard'));
-const Profile = lazy(() => import('./pages/Profile'));
-const Auth = lazy(() => import('./pages/Auth'));
-const Blog = lazy(() => import('./pages/Blog'));
-const BlogPost = lazy(() => import('./pages/BlogPost'));
-const Documentation = lazy(() => import('./pages/Documentation'));
-const PositionTracker = lazy(() => import('./pages/PositionTracker'));
+// Публичный сайт (Industry)
+const BlogIndex = lazy(() => import('./pages/site/BlogIndex'));
+const BlogArticle = lazy(() => import('./pages/site/BlogArticle'));
+const Reviews = lazy(() => import('./pages/site/Reviews'));
+const About = lazy(() => import('./pages/site/About'));
+const Contacts = lazy(() => import('./pages/site/Contacts'));
+const Offer = lazy(() => import('./pages/site/Offer'));
+const Privacy = lazy(() => import('./pages/site/Privacy'));
+const Cookie = lazy(() => import('./pages/site/Cookie'));
+const Refund = lazy(() => import('./pages/site/Refund'));
+const Security = lazy(() => import('./pages/site/Security'));
+const SiteMap = lazy(() => import('./pages/site/SiteMap'));
+const NotFound = lazy(() => import('./pages/NotFound'));
+
+// Прежние страницы, у которых нет замены в новом сайте и которые ещё нужны
 const SiteAudit = lazy(() => import('./pages/SiteAudit'));
 const ProjectDetails = lazy(() => import('./pages/ProjectDetails'));
-const Support = lazy(() => import('./pages/Support'));
-const Team = lazy(() => import('./pages/Team'));
-const Guides = lazy(() => import('./pages/Guides'));
-const Webinars = lazy(() => import('./pages/Webinars'));
-const Careers = lazy(() => import('./pages/Careers'));
-const Reports = lazy(() => import('./pages/Reports'));
-const Settings = lazy(() => import('./pages/Settings'));
-const AuditHistory = lazy(() => import('./pages/AuditHistory'));
-const ApiDocs = lazy(() => import('./pages/ApiDocs'));
-const Faq = lazy(() => import('./pages/Faq'));
-const Partners = lazy(() => import('./pages/Partners'));
-const IPInfo = lazy(() => import('./pages/IPInfo'));
-const NotFound = lazy(() => import('./pages/NotFound'));
-const Demo = lazy(() => import('./pages/Demo'));
-const Partnership = lazy(() => import('./pages/Partnership'));
-const GuidePost = lazy(() => import('./pages/GuidePost'));
-const OptimizationPricing = lazy(() => import('./pages/OptimizationPricing'));
-const ClientProfile = lazy(() => import('./pages/ClientProfile'));
-
-// Feature pages
-const SiteScanning = lazy(() => import('./pages/features/SiteScanning'));
-const MetadataAnalysis = lazy(() => import('./pages/features/MetadataAnalysis'));
-const AutoFix = lazy(() => import('./pages/features/AutoFix'));
-const CompetitorAnalysis = lazy(() => import('./pages/features/CompetitorAnalysis'));
-const PerformanceReports = lazy(() => import('./pages/features/PerformanceReports'));
-const DataSecurity = lazy(() => import('./pages/features/DataSecurity'));
-const CMSIntegration = lazy(() => import('./pages/features/CMSIntegration'));
-const SeoAudit = lazy(() => import('./pages/features/SeoAudit'));
-const AIOptimization = lazy(() => import('./pages/features/AIOptimization'));
-const PositionTracking = lazy(() => import('./pages/features/PositionTracking'));
-const SpeedAnalysis = lazy(() => import('./pages/features/SpeedAnalysis'));
-const MobileOptimization = lazy(() => import('./pages/features/MobileOptimization'));
-const OptimizationDemo = lazy(() => import('./pages/OptimizationDemo'));
-const AllPages = lazy(() => import('./pages/AllPages'));
-const SeoOptimizationPage = lazy(() => import('./pages/SeoOptimizationPage'));
-const OptimizationTest = lazy(() => import('./pages/OptimizationTest'));
-const AuditsHistory = lazy(() => import('./pages/AuditsHistory'));
-const OptimizationsHistory = lazy(() => import('./pages/OptimizationsHistory'));
-const SharedEstimate = lazy(() => import('./pages/SharedEstimate'));
-const Sitemap = lazy(() => import('./pages/Sitemap'));
+const SharedEstimateLegacy = lazy(() => import('./pages/SharedEstimate'));
 
 // Admin Routes: страницы внутри и так грузятся по требованию, а сам раздел
 // посетителям сайта не нужен вовсе.
 const AdminRoutes = lazy(() => import('./routes/AdminRoutes'));
+
+// Кабинет 2.0 по макету design/seomarket-v2 — отдельная часть со своей дизайн-системой (Industry),
+// её стили и шрифты грузятся только при входе на /app.
+const CabinetRoutes = lazy(() => import('./cabinet/CabinetRoutes'));
 
 const PageFallback: React.FC = () => (
   <div className="min-h-screen flex items-center justify-center" role="status" aria-label="Загрузка страницы">
@@ -154,96 +117,80 @@ function App() {
               на который ведут ссылки сайта, остальные переадресуют на него.
             */}
             <Routes>
-                    <Route path="/" element={<Index />} />
-                    <Route path="/home" element={<Navigate to="/" replace />} />
+                    {/* Публичный сайт по макету. Каждая страница — свой адрес и свой PageSeo. */}
+                    <Route path="/" element={<Landing />} />
+                    <Route path="/blog" element={<BlogIndex />} />
+                    <Route path="/blog/:slug" element={<BlogArticle />} />
+                    <Route path="/otzyvy" element={<Reviews />} />
                     <Route path="/about" element={<About />} />
-                    <Route path="/channel" element={<Channel />} />
-                    <Route path="/audit" element={<Audit />} />
-                    <Route path="/features" element={<Features />} />
-                    <Route path="/pricing" element={<Pricing />} />
-                    <Route path="/position-pricing" element={<PositionPricing />} />
-                    <Route path="/contact" element={<Contact />} />
-                    <Route path="/support" element={<Support />} />
-                    <Route path="/team" element={<Team />} />
-                    <Route path="/guides" element={<Guides />} />
-                    <Route path="/guides/:id" element={<GuidePost />} />
-                    <Route path="/webinars" element={<Webinars />} />
-                    <Route path="/careers" element={<Careers />} />
+                    <Route path="/contact" element={<Contacts />} />
+                    <Route path="/oferta" element={<Offer />} />
                     <Route path="/privacy" element={<Privacy />} />
-                    <Route path="/terms" element={<Terms />} />
-                    <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-                    <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
-                    <Route path="/auth" element={<Auth />} />
-                    <Route path="/blog" element={<Blog />} />
-                    <Route path="/blog/:id" element={<BlogPost />} />
-                    <Route path="/documentation" element={<Documentation />} />
-                    <Route path="/docs" element={<Navigate to="/documentation" replace />} />
-                    <Route path="/position-tracker" element={<PositionTracker />} />
+                    <Route path="/cookie" element={<Cookie />} />
+                    <Route path="/vozvrat" element={<Refund />} />
+                    <Route path="/bezopasnost" element={<Security />} />
+                    <Route path="/sitemap" element={<SiteMap />} />
+
+                    {/* Кабинет 2.0: вход и защита — внутри CabinetRoutes */}
+                    <Route path="/app/*" element={<CabinetRoutes />} />
+
+                    {/* Бесплатная проверка без входа — прежний экран, пока лендинг не запускает аудит сам */}
                     <Route path="/site-audit" element={<SiteAudit />} />
-                    {/* Внутренняя страница о состоянии проекта: посетителям сайта не нужна,
-                        открыта только администратору. */}
+                    {/* Ссылки из уже отправленных писем со сметой */}
+                    <Route path="/shared-estimate/:token" element={<SharedEstimateLegacy />} />
+                    {/* Внутренняя страница о состоянии проекта: открыта только администратору. */}
                     <Route path="/project-details" element={<AdminRouteGuard><ProjectDetails /></AdminRouteGuard>} />
-
-                    {/* Feature pages: основные адреса английские, русские переадресуют */}
-                    <Route path="/features/site-scanning" element={<SiteScanning />} />
-                    <Route path="/features/полное-сканирование-сайта" element={<Navigate to="/features/site-scanning" replace />} />
-                    <Route path="/features/metadata-analysis" element={<MetadataAnalysis />} />
-                    <Route path="/features/auto-fix" element={<AutoFix />} />
-                    <Route path="/features/автоматическое-исправление" element={<Navigate to="/features/auto-fix" replace />} />
-                    {/* Отдельная страница по этому адресу дублировала /position-tracking */}
-                    <Route path="/features/отслеживание-позиций" element={<Navigate to="/position-tracking" replace />} />
-                    <Route path="/features/competitor-analysis" element={<CompetitorAnalysis />} />
-                    <Route path="/features/анализ-конкурентов" element={<Navigate to="/features/competitor-analysis" replace />} />
-                    <Route path="/features/performance-reports" element={<PerformanceReports />} />
-                    <Route path="/features/отчеты-производительности" element={<Navigate to="/features/performance-reports" replace />} />
-                    <Route path="/features/data-security" element={<DataSecurity />} />
-                    <Route path="/features/безопасность-данных" element={<Navigate to="/features/data-security" replace />} />
-                    <Route path="/features/cms-integration" element={<CMSIntegration />} />
-                    <Route path="/features/интеграция-cms" element={<Navigate to="/features/cms-integration" replace />} />
-
-                    {/* New feature pages - English URLs */}
-                    <Route path="/features/seo-audit" element={<SeoAudit />} />
-                    <Route path="/features/ai-optimization" element={<AIOptimization />} />
-                    {/* Основной адрес — /position-tracking: на него ведёт пункт «Позиции» в меню */}
-                    <Route path="/position-tracking" element={<PositionTracking />} />
-                    <Route path="/features/position-tracking" element={<Navigate to="/position-tracking" replace />} />
-
-                    {/* Speed and Mobile optimization routes */}
-                    <Route path="/features/speed-analysis" element={<SpeedAnalysis />} />
-                    <Route path="/features/mobile-optimization" element={<MobileOptimization />} />
-
-                    {/* Shared estimate page */}
-                    <Route path="/shared-estimate/:token" element={<SharedEstimate />} />
-
-                    {/* Additional pages */}
-                    <Route path="/optimization-demo" element={<OptimizationDemo />} />
-                    <Route path="/optimization-test" element={<OptimizationTest />} />
-                    <Route path="/optimizations" element={<ProtectedRoute><OptimizationsHistory /></ProtectedRoute>} />
-                    <Route path="/pages" element={<AllPages />} />
-                    <Route path="/all-pages" element={<Navigate to="/pages" replace />} />
-                    <Route path="/seo-optimization" element={<SeoOptimizationPage />} />
-                    <Route path="/api-docs" element={<ApiDocs />} />
-                    <Route path="/faq" element={<Faq />} />
-                    <Route path="/partners" element={<Partners />} />
-                    <Route path="/ip-info" element={<IPInfo />} />
-                    <Route path="/sitemap" element={<Sitemap />} />
-                    <Route path="/demo" element={<Demo />} />
-                    <Route path="/partnership" element={<Partnership />} />
-                    <Route path="/optimization-pricing" element={<OptimizationPricing />} />
-                    <Route path="/client-profile" element={<ProtectedRoute><ClientProfile /></ProtectedRoute>} />
-
-                    {/* Client account routes (require login) */}
-                    <Route path="/reports" element={<ProtectedRoute><Reports /></ProtectedRoute>} />
-                    <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
-                    <Route path="/audit-history" element={<ProtectedRoute><AuditHistory /></ProtectedRoute>} />
-                    <Route path="/audits" element={<ProtectedRoute><AuditsHistory /></ProtectedRoute>} />
-
-                    {/* Legacy placeholder dashboards → redirect to the real areas */}
-                    <Route path="/client-dashboard" element={<Navigate to="/dashboard" replace />} />
-                    <Route path="/admin-dashboard" element={<Navigate to="/admin" replace />} />
-
-                    {/* Admin Routes (require admin role) */}
                     <Route path="/admin/*" element={<AdminRouteGuard><AdminRoutes /></AdminRouteGuard>} />
+
+                    {/*
+                      Переадресации со страниц прежнего сайта (16.09.2026). У них были внешние ссылки и
+                      место в поиске, поэтому адреса не бросаем в 404, а ведём на ближайший раздел нового
+                      сайта. Страницы тарифов и подписок удалены по сути: подписок у сервиса нет.
+                    */}
+                    <Route path="/home" element={<Navigate to="/" replace />} />
+                    <Route path="/reviews" element={<Navigate to="/otzyvy" replace />} />
+                    <Route path="/terms" element={<Navigate to="/oferta" replace />} />
+                    <Route path="/pricing" element={<Navigate to="/#ceny" replace />} />
+                    <Route path="/position-pricing" element={<Navigate to="/#ceny" replace />} />
+                    <Route path="/optimization-pricing" element={<Navigate to="/#ceny" replace />} />
+                    <Route path="/faq" element={<Navigate to="/#faq" replace />} />
+                    <Route path="/features" element={<Navigate to="/#proverki" replace />} />
+                    <Route path="/features/*" element={<Navigate to="/#proverki" replace />} />
+                    <Route path="/position-tracking" element={<Navigate to="/#uslugi" replace />} />
+                    <Route path="/demo" element={<Navigate to="/#kak" replace />} />
+                    <Route path="/optimization-demo" element={<Navigate to="/#kak" replace />} />
+                    <Route path="/webinars" element={<Navigate to="/blog" replace />} />
+                    <Route path="/guides" element={<Navigate to="/blog" replace />} />
+                    <Route path="/guides/*" element={<Navigate to="/blog" replace />} />
+                    <Route path="/team" element={<Navigate to="/about" replace />} />
+                    <Route path="/careers" element={<Navigate to="/about" replace />} />
+                    <Route path="/partners" element={<Navigate to="/about" replace />} />
+                    <Route path="/partnership" element={<Navigate to="/about" replace />} />
+                    <Route path="/channel" element={<Navigate to="/about" replace />} />
+                    <Route path="/documentation" element={<Navigate to="/about" replace />} />
+                    <Route path="/docs" element={<Navigate to="/about" replace />} />
+                    <Route path="/api-docs" element={<Navigate to="/about" replace />} />
+                    <Route path="/support" element={<Navigate to="/contact" replace />} />
+                    <Route path="/pages" element={<Navigate to="/sitemap" replace />} />
+                    <Route path="/all-pages" element={<Navigate to="/sitemap" replace />} />
+                    <Route path="/ip-info" element={<Navigate to="/bezopasnost" replace />} />
+
+                    {/* Прежний кабинет → кабинет 2.0 */}
+                    <Route path="/auth" element={<Navigate to="/app/login" replace />} />
+                    <Route path="/dashboard" element={<Navigate to="/app" replace />} />
+                    <Route path="/client-dashboard" element={<Navigate to="/app" replace />} />
+                    <Route path="/profile" element={<Navigate to="/app/settings" replace />} />
+                    <Route path="/client-profile" element={<Navigate to="/app/settings" replace />} />
+                    <Route path="/settings" element={<Navigate to="/app/settings" replace />} />
+                    <Route path="/reports" element={<Navigate to="/app/reports" replace />} />
+                    <Route path="/audit-history" element={<Navigate to="/app/history" replace />} />
+                    <Route path="/audits" element={<Navigate to="/app/history" replace />} />
+                    <Route path="/audit" element={<Navigate to="/app/audit" replace />} />
+                    <Route path="/optimizations" element={<Navigate to="/app/optimize" replace />} />
+                    <Route path="/seo-optimization" element={<Navigate to="/app/optimize" replace />} />
+                    <Route path="/optimization-test" element={<Navigate to="/app/optimize" replace />} />
+                    <Route path="/position-tracker" element={<Navigate to="/app/positions" replace />} />
+                    <Route path="/admin-dashboard" element={<Navigate to="/app/admin" replace />} />
 
                     {/* 404 - Must be last */}
                     <Route path="*" element={<NotFound />} />

@@ -2,7 +2,6 @@
 import { defineConfig, loadEnv } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
-import { componentTagger } from "lovable-tagger";
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {
@@ -18,11 +17,10 @@ export default defineConfig(({ mode }) => {
       host: "::",
       port: 8080,
     },
-    plugins: [
-      react(),
-      mode === 'development' &&
-      componentTagger(),
-    ].filter(Boolean),
+    // lovable-tagger убран (16.09.2026): в dev он вписывал data-lov-* атрибуты в JSX и на части
+    // файлов ломал разбор («Unexpected token `Screen`. Expected jsx identifier») — экраны кабинета
+    // не открывались в разработке, хотя прод-сборка проходила. Проект больше не редактируется в Lovable.
+    plugins: [react()],
     resolve: {
       alias: {
         "@": path.resolve(__dirname, "./src"),

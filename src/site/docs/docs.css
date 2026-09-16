@@ -1,0 +1,27 @@
+/*
+ * Раздел «Документы»: то, что не укладывается в инлайн-стили макета.
+ * Общие правила оглавления (data-toc, data-tocitem, data-on) — в src/site/site.css.
+ */
+
+/* Пункты оглавления без линеек, как в макете: общее правило [data-toc] a из site.css рисует их для
+   оглавления статьи и по специфичности перебивает [data-tocitem]. */
+.ds-site [data-toc] a[data-tocitem] { border-bottom: 0; padding: 7px 0; }
+
+/* На узком экране оглавление встаёт над документом. Восемь пунктов столбиком съедали бы
+   первый экран телефона, поэтому они переносятся строкой. */
+.ds-site [data-toclist] { display: grid; }
+@media (max-width: 900px) {
+  .ds-site [data-toclist] { display: flex; flex-wrap: wrap; gap: 0 var(--space-4); }
+}
+
+/* Ссылки внутри текста документов подчёркнуты: в сплошном юридическом тексте ссылку
+   только цветом не отличить. */
+.ds-site [data-doc] p a, .ds-site [data-doc] li a { text-decoration: underline; text-underline-offset: 2px; }
+
+/* Форма заявки: подсветка поля с ошибкой (aria-invalid ставит сама форма). */
+.ds-site [data-form] .input[aria-invalid='true'] { border-color: var(--color-critical-ink); }
+.ds-site [data-form] [data-fielderror] { display: block; font-size: 12.5px; margin-top: 5px; color: var(--color-critical-ink); }
+.ds-site [data-form] input[type='checkbox'] { width: 16px; height: 16px; margin: 2px 0 0; flex: none; accent-color: var(--color-accent); }
+
+/* Карта сайта: ссылки с иконками не переносятся под иконку. */
+.ds-site [data-maplinks] a { display: flex; align-items: flex-start; gap: var(--space-2); }

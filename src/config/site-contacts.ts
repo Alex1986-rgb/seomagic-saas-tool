@@ -49,3 +49,44 @@ export function withoutEmpty<T extends Record<string, unknown>>(source: T): Part
   }
   return result as Partial<T>;
 }
+
+/**
+ * Реквизиты юрлица (или ИП) для страницы «Контакты и реквизиты» и документов.
+ *
+ * В макете стояли заглушки — ИНН 7712345678, счёт из нулей, «[ФИО]». Показывать их нельзя:
+ * поисковики и платёжные провайдеры сверяют реквизиты на сайте с договором, а клиент
+ * по выдуманному ИНН не найдёт организацию. Пока юрлицо не зарегистрировано, все поля
+ * пустые, и страница вместо таблицы говорит честно: договор не заключается, оплата не
+ * принимается. Заполнили поле — строка появится сама; пустые строки не выводятся.
+ */
+export interface SiteLegal {
+  /** Полное наименование: «Общество с ограниченной ответственностью „…“» или «ИП …». */
+  legalName: string;
+  inn: string;
+  /** ОГРН для организации. */
+  ogrn: string;
+  /** ОГРНИП для индивидуального предпринимателя. */
+  ogrnip: string;
+  legalAddress: string;
+  bankName: string;
+  bik: string;
+  /** Расчётный счёт. */
+  account: string;
+  /** Корреспондентский счёт банка. */
+  corrAccount: string;
+}
+
+export const SITE_LEGAL: SiteLegal = {
+  legalName: '',
+  inn: '',
+  ogrn: '',
+  ogrnip: '',
+  legalAddress: '',
+  bankName: '',
+  bik: '',
+  account: '',
+  corrAccount: '',
+};
+
+/** Опубликованы ли реквизиты: без наименования и ИНН таблица не имеет смысла. */
+export const hasLegalDetails = (): boolean => Boolean(SITE_LEGAL.legalName && SITE_LEGAL.inn);

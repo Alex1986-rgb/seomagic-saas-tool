@@ -1,0 +1,20 @@
+/*
+ * Блог: то, что не задать инлайном.
+ *
+ * Карточки статей в макете — сплошная ссылка <a> вокруг фото. У нас внутри фото есть подпись
+ * автора Unsplash со своей ссылкой, а ссылка внутри ссылки — невалидный HTML (и React ругается).
+ * Поэтому карточка — обычный блок, ссылка стоит на заголовке, а её ::after растянут на всю карточку.
+ * Подпись автора (z-index 2 в SitePhoto) остаётся над растянутой ссылкой и кликается отдельно.
+ */
+.ds-site [data-stretched] { color: inherit; text-decoration: none; }
+.ds-site [data-stretched]:hover { color: inherit; text-decoration: none; }
+.ds-site [data-stretched]::after { content: ''; position: absolute; inset: 0; z-index: 1; }
+.ds-site [data-stretched]:focus-visible { outline: none; }
+.ds-site [data-stretched]:focus-visible::after { outline: 2px solid var(--color-accent); outline-offset: 4px; }
+
+/* Лента статей: заголовок подсвечивается при наведении на карточку, как [data-card] в макете. */
+.ds-site [data-blogcard]:hover [data-cardtitle] { color: var(--color-accent-700); }
+.ds-site [data-blogcard] [data-cardtitle] { transition: color .15s ease; }
+
+/* Пункт оглавления текущего раздела. */
+.ds-site [data-toc] a[aria-current='true'] { color: var(--color-text); font-weight: 600; }

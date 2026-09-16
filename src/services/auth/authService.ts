@@ -40,7 +40,10 @@ export interface ProfileUpdate {
  */
 const appHomeUrl = (): string => {
   const base = import.meta.env.BASE_URL || '/';
-  return `${window.location.origin}${base.endsWith('/') ? base : `${base}/`}`;
+  // После подтверждения почты и входа через Google человек попадает в кабинет, а не на главную сайта:
+  // на главной ему нечего делать, а кабинет сразу предложит первый аудит. Адрес …/app должен быть
+  // в Supabase → Auth → Redirect URLs, иначе Supabase вернёт на Site URL.
+  return `${window.location.origin}${base.endsWith('/') ? base : `${base}/`}app`;
 };
 
 /**
