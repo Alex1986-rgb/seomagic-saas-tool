@@ -17,8 +17,11 @@ import { absoluteAssetUrl, absolutePageUrl } from '@/lib/asset-url';
 const DefaultSEO: React.FC = () => {
   // useLocation перерисовывает компонент при переходах, иначе canonical
   // оставался от первой открытой страницы. Адрес — без query и якоря.
+  // Со слэшем на конце, как в PageSeo и в пререндере (scripts/prerender.cjs):
+  // GitHub Pages отдаёт /pricing переадресацией на /pricing/, и canonical без
+  // слэша указывал бы на переадресацию.
   const { pathname } = useLocation();
-  const url = absolutePageUrl(pathname);
+  const url = absolutePageUrl(pathname.endsWith('/') ? pathname : `${pathname}/`);
 
   const title = 'SEO Аудит и Оптимизация';
   const description = 'SEO аудит и оптимизация сайтов. Повысьте позиции и увеличьте органический трафик.';

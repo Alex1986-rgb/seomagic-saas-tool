@@ -21,6 +21,7 @@ import {
 } from './auditToInteractiveMapper';
 import { Link } from 'react-router-dom';
 import { runOptimization } from '@/services/optimization/runOptimization';
+import { plural } from '@/lib/issue-labels';
 
 interface InteractiveOptimizationPanelProps {
   url: string;
@@ -58,6 +59,8 @@ const InteractiveOptimizationPanel: React.FC<InteractiveOptimizationPanelProps> 
   const [isInvoiceRequested, setIsInvoiceRequested] = useState(false);
   const [isOptimizing, setIsOptimizing] = useState(false);
   const [optimizationProgress, setOptimizationProgress] = useState(0);
+  // Предел страниц за запуск — из ответа сервера, если он его назвал.
+  const [pageLimit, setPageLimit] = useState<number | null>(null);
   const [optimizationResult, setOptimizationResult] = useState<any>(null);
   const [localIsOptimized, setLocalIsOptimized] = useState(isOptimized);
 
@@ -154,13 +157,15 @@ const InteractiveOptimizationPanel: React.FC<InteractiveOptimizationPanelProps> 
 
     setIsOptimizing(true);
     setOptimizationProgress(0);
+    setPageLimit(null);
 
     try {
       const outcome = await runOptimization(
         taskId,
         { fixMetaTags: true, improveContent: true, language: 'ru' },
-        ({ processed, total }) => {
+        ({ processed, total, pageLimit: limit }) => {
           setOptimizationProgress(total > 0 ? Math.min(99, Math.round((processed / total) * 100)) : 5);
+          setPageLimit(typeof limit === 'number' ? limit : null);
         },
       );
 
@@ -234,10 +239,17 @@ const InteractiveOptimizationPanel: React.FC<InteractiveOptimizationPanelProps> 
   // Show optimization process if optimizing
   if (isOptimizing) {
     return (
-      <OptimizationProcessContainer
-        url={url}
-        progress={optimizationProgress}
-      />
+      <>
+        <OptimizationProcessContainer
+          url={url}
+          progress={optimizationProgress}
+        />
+        {pageLimit !== null && (
+          <p className="-mt-4 mb-6 text-sm text-muted-foreground">
+            За запуск обработаем до {pageLimit} {plural(pageLimit, ['страницы', 'страниц', 'страниц'])}
+          </p>
+        )}
+      </>
     );
   }
 

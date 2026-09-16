@@ -7,6 +7,18 @@ import NotCollectedNotice from "@/components/admin/NotCollectedNotice";
 import { supabase } from "@/integrations/supabase/client";
 import PageSeo from '@/components/seo/PageSeo';
 
+/** Текст ошибки из ответа функции полезнее общего «non-2xx status code». */
+async function readFunctionError(error: unknown): Promise<string | null> {
+  const context = (error as { context?: Response } | null)?.context;
+  if (!context || typeof context.json !== 'function') return null;
+  try {
+    const body = await context.json();
+    return typeof body?.error === 'string' ? body.error : null;
+  } catch {
+    return null;
+  }
+}
+
 /**
  * Настройки почты.
  *
@@ -40,17 +52,19 @@ const EmailSettingsPage = () => {
         return;
       }
 
+      // Текст письма собирает сервер: готовые html и text функция больше не
+      // принимает, без задачи она шлёт фиксированное тестовое письмо — и только
+      // по запросу пользователя с ролью admin.
       const { data, error } = await supabase.functions.invoke('send-email', {
         body: {
           to,
           subject: 'Проверка отправки писем SeoMarket',
-          html: '<p>Это тестовое письмо из админки. Если оно пришло, отправка писем работает.</p>',
-          text: 'Это тестовое письмо из админки. Если оно пришло, отправка писем работает.',
         },
       });
 
       if (error) {
-        setStatus({ state: 'error', message: error.message || 'Функция отправки вернула ошибку' });
+        const serverMessage = await readFunctionError(error);
+        setStatus({ state: 'error', message: serverMessage || error.message || 'Функция отправки вернула ошибку' });
         return;
       }
       if (!data?.success) {
@@ -92,7 +106,8 @@ const EmailSettingsPage = () => {
             <h3 className="font-medium">Проверка отправки</h3>
             <p className="text-sm text-muted-foreground">
               Отправит настоящее письмо на адрес, под которым вы вошли. Успех покажется, только
-              если функция отправки его подтвердит.
+              если функция отправки его подтвердит. Проверка работает только у пользователя с
+              ролью admin — остальным функция откажет.
             </p>
           </div>
 

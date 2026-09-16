@@ -13,7 +13,7 @@ import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrig
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { PositionData, checkPositions } from '@/services/position/positionTracker';
-import { getPositionHistory, getHistoricalData } from '@/services/position/positionHistory';
+import { getPositionHistory } from '@/services/position/positionHistory';
 import { exportHistoryToExcel } from '@/services/position/exportService';
 
 const AdminPositions: React.FC = () => {

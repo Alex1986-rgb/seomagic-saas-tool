@@ -71,10 +71,10 @@ Deno.serve(async (req) => {
       }
     );
 
-    // Check user notification preferences
+    // Настройки уведомлений пользователя
     const { data: profile, error: profileError } = await supabaseClient
       .from('profiles')
-      .select('email, email_notifications, notify_audit_completed, notify_optimization, notify_marketing')
+      .select('notify_audit_completed, notify_optimization, notify_marketing')
       .eq('id', user_id)
       .single();
 
@@ -83,13 +83,17 @@ Deno.serve(async (req) => {
       throw profileError;
     }
 
-    // Check if notifications are enabled for this type
-    const notificationEnabled = profile?.email_notifications && (
-      (type === 'audit_completed' && profile.notify_audit_completed) ||
-      (type === 'optimization_completed' && profile.notify_optimization) ||
-      (type === 'marketing' && profile.notify_marketing) ||
-      (type === 'system')
-    );
+    // Запись в кабинете решают только флаги по типу события. Раньше её ещё
+    // отключал флаг email_notifications, хотя писем функция не отправляет
+    // (email_sent: false): человек выключал «письма» и терял уведомления в
+    // кабинете. Пока письма не отправляются, флаг писем в решении не участвует.
+    // Пустое значение флага считаем включённым — как значение по умолчанию в
+    // таблице и в настройках кабинета.
+    const notificationEnabled =
+      (type === 'audit_completed' && profile?.notify_audit_completed !== false) ||
+      (type === 'optimization_completed' && profile?.notify_optimization !== false) ||
+      (type === 'marketing' && profile?.notify_marketing === true) ||
+      (type === 'system');
 
     if (!notificationEnabled) {
       console.log(`Notifications disabled for user ${user_id}, type ${type}`);

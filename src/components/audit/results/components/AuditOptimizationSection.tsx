@@ -15,6 +15,7 @@ import {
   type OptimizationOutcome,
   type OptimizationProgress,
 } from '@/services/optimization/runOptimization';
+import { plural } from '@/lib/issue-labels';
 
 interface AuditOptimizationSectionProps {
   url: string;
@@ -233,6 +234,11 @@ const AuditOptimizationSection: React.FC<AuditOptimizationSectionProps> = ({
             <Progress
               value={liveProgress.total > 0 ? (liveProgress.processed / liveProgress.total) * 100 : 5}
             />
+            {typeof liveProgress.pageLimit === 'number' && (
+              <p className="text-xs text-muted-foreground">
+                За запуск обработаем до {liveProgress.pageLimit} {plural(liveProgress.pageLimit, ['страницы', 'страниц', 'страниц'])}
+              </p>
+            )}
           </div>
         )}
 

@@ -3,13 +3,14 @@ import { Link } from 'react-router-dom';
 import { sitemapPages } from '@/utils/sitemap-generator';
 import { BreadcrumbsWrapper } from '@/components/navigation/BreadcrumbsWrapper';
 import PageSeo from '@/components/seo/PageSeo';
+import { assetUrl } from '@/lib/asset-url';
 
 const Sitemap = () => {
   return (
     <div className="min-h-screen bg-background">
       <PageSeo
         title="Карта сайта: структура разделов и все страницы сервиса"
-        description="Навигация по сайту одним списком: аудит, отслеживание позиций, тарифы, документация, блог, справка и юридические документы."
+        description="Основные разделы сайта одним списком: аудит сайта, возможности, тарифы, о сервисе, контакты и блог, а также XML-карта для поисковых систем."
       />
 
       <div className="container mx-auto px-4 py-16">
@@ -49,12 +50,19 @@ const Sitemap = () => {
             </nav>
 
             {/*
-              Здесь была ссылка «Для поисковых систем доступен XML sitemap» на
-              /sitemap.xml. Такого файла сайт не публикует (в public его нет, при
-              сборке он не создаётся), а ссылка от корня домена к тому же шла мимо
-              подпути публикации — человек получал 404. Вернуть ссылку можно, когда
-              sitemap.xml начнёт собираться, через assetUrl('sitemap.xml').
+              Раньше ссылка вела на /sitemap.xml от корня домена — мимо подпути
+              публикации, да и файла в сборке не было. Теперь sitemap.xml кладёт
+              в сборку scripts/prerender.cjs, а адрес собирается с учётом подпути.
+              Это файл, а не страница приложения, поэтому обычная ссылка, а не
+              <Link>. В режиме разработки (без пререндера) файла нет.
             */}
+            <p className="mt-8 text-sm text-muted-foreground">
+              Для поисковых систем есть{' '}
+              <a href={assetUrl('sitemap.xml')} className="text-primary hover:underline">
+                карта сайта в формате XML
+              </a>
+              .
+            </p>
           </div>
         </div>
       </div>

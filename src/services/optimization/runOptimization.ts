@@ -31,6 +31,12 @@ export interface OptimizationProgress {
   status: string;
   processed: number;
   total: number;
+  /**
+   * Сколько страниц обработчик возьмёт за этот запуск — число из ответа
+   * optimization-start. null — сервер ограничения не назвал (администратор
+   * или старая версия функции).
+   */
+  pageLimit?: number | null;
 }
 
 export interface OptimizedPage {
@@ -49,6 +55,8 @@ export interface OptimizationOutcome {
   failures: Array<{ url: string; error: string }>;
   totalTokens: number;
   cost: number;
+  /** Предел страниц за запуск из ответа optimization-start; null — без предела. */
+  pageLimit: number | null;
   error?: string;
 }
 
@@ -85,7 +93,10 @@ export async function runOptimization(
   }
 
   const optimizationId: string = data.optimization_id;
-  onProgress?.({ status: 'queued', processed: 0, total: 0 });
+  // Предохранитель ограничивает число страниц за запуск; сервер сообщает его
+  // в ответе, чтобы человек не ждал обработки всего сайта.
+  const pageLimit = typeof data.page_limit === 'number' && data.page_limit > 0 ? data.page_limit : null;
+  onProgress?.({ status: 'queued', processed: 0, total: 0, pageLimit });
 
   const startedAt = Date.now();
   while (Date.now() - startedAt < MAX_WAIT_MS) {
@@ -105,10 +116,11 @@ export async function runOptimization(
       status: job.status,
       processed: Number(result.processed ?? result.optimized_pages ?? 0),
       total: Number(result.total ?? result.total_pages ?? 0),
+      pageLimit,
     });
 
     if (FINISHED.has(job.status)) {
-      return buildOutcome(optimizationId, job.status as OptimizationOutcome['status'], job.cost, result);
+      return buildOutcome(optimizationId, job.status as OptimizationOutcome['status'], job.cost, result, pageLimit);
     }
   }
 
@@ -120,6 +132,7 @@ function buildOutcome(
   status: OptimizationOutcome['status'],
   cost: number | null,
   result: Record<string, unknown>,
+  pageLimit: number | null,
 ): OptimizationOutcome {
   const improvements = Array.isArray(result.improvements) ? result.improvements : [];
 
@@ -144,6 +157,7 @@ function buildOutcome(
     failures: Array.isArray(result.failures) ? (result.failures as OptimizationOutcome['failures']) : [],
     totalTokens: Number(result.total_tokens ?? 0),
     cost: Number(cost ?? 0),
+    pageLimit,
     error: typeof result.error === 'string' ? result.error : undefined,
   };
 }

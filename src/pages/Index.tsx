@@ -15,7 +15,6 @@ import { VideoObjectSchema } from '@/components/seo/VideoObjectSchema';
 import { EventSchema } from '@/components/seo/EventSchema';
 import { SoftwareApplicationSchema } from '@/components/seo/SoftwareApplicationSchema';
 import { CourseSchema } from '@/components/seo/CourseSchema';
-import { JobPostingSchema } from '@/components/seo/JobPostingSchema';
 import PageSeo from '@/components/seo/PageSeo';
 
 const Index: React.FC = () => {
@@ -43,7 +42,6 @@ const Index: React.FC = () => {
       <EventSchema />
       <SoftwareApplicationSchema />
       <CourseSchema />
-      <JobPostingSchema />
       <HeroSection />
       <VideoSection />
       <CoreFeaturesSection />

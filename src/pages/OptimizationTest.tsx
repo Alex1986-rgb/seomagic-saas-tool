@@ -27,8 +27,9 @@ interface OptimizationResult {
     recommendations: string;
     timestamp: string;
   }>;
-  total_cost: number;
-  estimated_score_improvement: number;
+  // Расход у поставщика модели в долларах; у старых заданий поле называлось total_cost.
+  llm_cost_usd?: number;
+  total_cost?: number;
   completed_at: string;
 }
 
@@ -205,6 +206,9 @@ export default function OptimizationTest() {
   };
 
   const selectedAudit = audits.find(a => a.task_id === selectedTaskId);
+  // Без поля расхода карточку не рисуем: иначе вместо суммы было бы падение
+  // на undefined.toFixed.
+  const llmCostUsd = resultData?.llm_cost_usd ?? resultData?.total_cost;
 
   return (
     <div className="container mx-auto py-8 px-4 max-w-6xl">
@@ -367,7 +371,10 @@ export default function OptimizationTest() {
           </CardHeader>
           <CardContent className="space-y-6">
             {/* Summary Stats */}
-            <div className="grid gap-4 md:grid-cols-4">
+            {/* Карточки «Est. Score +» больше нет: прогноз роста оценки обработчик
+                выдумывал (по 2 балла за страницу), оценку после правок никто не
+                пересчитывает. */}
+            <div className="grid gap-4 md:grid-cols-3">
               <Card>
                 <CardContent className="p-4">
                   <p className="text-sm text-muted-foreground">Pages Optimized</p>
@@ -384,22 +391,16 @@ export default function OptimizationTest() {
                   </p>
                 </CardContent>
               </Card>
-              <Card>
-                <CardContent className="p-4">
-                  <p className="text-sm text-muted-foreground">Est. Score +</p>
-                  <p className="text-2xl font-bold text-green-600">
-                    +{resultData.estimated_score_improvement}
-                  </p>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardContent className="p-4">
-                  <p className="text-sm text-muted-foreground">Total Cost</p>
-                  <p className="text-2xl font-bold">
-                    ${resultData.total_cost.toFixed(2)}
-                  </p>
-                </CardContent>
-              </Card>
+              {typeof llmCostUsd === 'number' && (
+                <Card>
+                  <CardContent className="p-4">
+                    <p className="text-sm text-muted-foreground">LLM Cost</p>
+                    <p className="text-2xl font-bold">
+                      ${llmCostUsd.toFixed(2)}
+                    </p>
+                  </CardContent>
+                </Card>
+              )}
             </div>
 
             {/* AI Recommendations */}

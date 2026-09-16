@@ -29,7 +29,6 @@ const ProjectStructure: React.FC = () => {
 │   │   ├── 📂 audit/           # Компоненты SEO аудита
 │   │   │   ├── AuditMain.tsx             # Главный компонент аудита
 │   │   │   ├── AuditResultsContainer.tsx # Контейнер результатов
-│   │   │   ├── AuditOptimization.tsx     # Модуль расчёта сметы
 │   │   │   ├── IssuesSummary.tsx         # Сводка по ошибкам
 │   │   │   ├── 📂 results/              # Результаты аудита
 │   │   │   ├── 📂 deep-crawl/           # Глубокое сканирование
@@ -112,7 +111,6 @@ const ProjectStructure: React.FC = () => {
         <ul className="list-disc pl-6 space-y-2">
           <li><strong>AuditResultsContainer</strong> — Главный контейнер для отображения результатов аудита, обработки состояний загрузки, ошибок и формирования сметы</li>
           <li><strong>AuditMain</strong> — Компонент сводки общего результата аудита с основными метриками и рекомендациями</li>
-          <li><strong>AuditOptimization</strong> — Модуль расчёта стоимости оптимизации на основе найденных проблем</li>
           <li><strong>IssuesSummary</strong> — Компонент отображения количества и типов найденных ошибок (критичные, важные, возможности)</li>
           <li><strong>AuditIssuesAndEstimate</strong> — Объединенный компонент для показа детального списка проблем и итоговой сметы</li>
         </ul>

@@ -103,60 +103,73 @@ const ClientNotificationsTab: React.FC = () => {
         </div>
       )}
 
-      <div className="flex items-center justify-between">
-        <div>
-          <h3 className="text-lg font-medium">Email уведомления</h3>
-          <p className="text-sm text-muted-foreground">
-            Управляйте email-уведомлениями, которые вы получаете
-          </p>
-        </div>
-        <Switch 
-          checked={emailNotifications} 
-          onCheckedChange={setEmailNotifications} 
-        />
+      {/*
+        Раньше здесь были «Email уведомления», «уведомлять о готовности
+        оптимизированной версии сайта» и «маркетинговые рассылки». На деле писем
+        по уведомлениям сервис не отправляет, уведомлений об оптимизации никто не
+        создаёт, рассылок нет. Работает одно: запись о завершении аудита в разделе
+        «Уведомления» кабинета. Остальные переключатели недоступны для изменения —
+        их сохранённые значения при сохранении записываются обратно как были.
+      */}
+      <div>
+        <h3 className="text-lg font-medium">Уведомления в личном кабинете</h3>
+        <p className="text-sm text-muted-foreground">
+          Уведомления появляются во вкладке «Уведомления» личного кабинета. Писем на почту
+          по ним сервис пока не отправляет.
+        </p>
       </div>
-      
+
       <div className="space-y-4">
         <div className="flex items-center justify-between py-2 border-b">
           <div>
             <h4 className="font-medium">Завершение аудита</h4>
             <p className="text-sm text-muted-foreground">
-              Уведомлять о завершении SEO-аудита
+              Создавать уведомление в кабинете, когда SEO-аудит закончится
             </p>
           </div>
           <Switch 
             checked={auditCompletedNotification} 
             onCheckedChange={setAuditCompletedNotification}
-            disabled={!emailNotifications}
           />
+        </div>
+      </div>
+
+      <div className="space-y-4">
+        <div>
+          <h4 className="font-medium">Пока недоступно</h4>
+          <p className="text-sm text-muted-foreground">
+            Этого сервис сейчас не делает, поэтому переключатели ниже ни на что не влияют.
+          </p>
+        </div>
+
+        <div className="flex items-center justify-between py-2 border-b">
+          <div>
+            <h4 className="font-medium">Письма на почту</h4>
+            <p className="text-sm text-muted-foreground">
+              Письма по уведомлениям пока не отправляются
+            </p>
+          </div>
+          <Switch checked={emailNotifications} disabled />
         </div>
         
         <div className="flex items-center justify-between py-2 border-b">
           <div>
             <h4 className="font-medium">Оптимизация сайта</h4>
             <p className="text-sm text-muted-foreground">
-              Уведомлять о готовности оптимизированной версии сайта
+              Уведомления об окончании оптимизации пока не создаются
             </p>
           </div>
-          <Switch 
-            checked={optimizationNotification} 
-            onCheckedChange={setOptimizationNotification}
-            disabled={!emailNotifications}
-          />
+          <Switch checked={optimizationNotification} disabled />
         </div>
         
         <div className="flex items-center justify-between py-2 border-b">
           <div>
             <h4 className="font-medium">Маркетинговые рассылки</h4>
             <p className="text-sm text-muted-foreground">
-              Получать новости, советы и специальные предложения
+              Рассылок с новостями и предложениями сейчас нет
             </p>
           </div>
-          <Switch 
-            checked={marketingNotification} 
-            onCheckedChange={setMarketingNotification}
-            disabled={!emailNotifications}
-          />
+          <Switch checked={marketingNotification} disabled />
         </div>
       </div>
       

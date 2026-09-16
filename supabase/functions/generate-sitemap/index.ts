@@ -9,14 +9,15 @@ const corsHeaders = {
  * Карта нашего сайта.
  *
  * Опубликованный sitemap.xml на GitHub Pages собирает scripts/prerender.cjs по
- * пререндеренным страницам; эта функция нужна только хостингу с правилом из
- * public/_redirects. Правила у них общие:
+ * пререндеренным страницам. Правило в public/_redirects, которое вело сюда
+ * /sitemap.xml, убрано (на Pages оно не работает); функция пригодится только
+ * хостингу, где такое переписывание настроят заново. Правила у них общие:
  *   * адрес сайта — из секрета SITE_URL. Раньше он брался из адреса запроса, то
  *     есть в карту попадал домен Supabase, где страниц сайта нет;
  *   * сайт живёт на подпути, а GitHub Pages отдаёт «/pricing» переадресацией на
  *     «/pricing/», поэтому в карте — конечные адреса со слэшем;
  *   * в карте только открытые для индексации страницы. /channel, /webinars,
- *     /careers, /api-docs закрыты noindex, страницы кабинета и админки — вход
+ *     /careers, /api-docs, /team закрыты noindex, страницы кабинета и админки — вход
  *     по логину: такие адреса в карте дали бы поисковику противоречивый сигнал.
  */
 const DEFAULT_SITE_URL = 'https://alex1986-rgb.github.io/seomagic-saas-tool';
@@ -40,7 +41,7 @@ const pages: SitemapPage[] = [
 
 /** Закрытые от индексации и служебные адреса: в карту не попадают никогда. */
 const EXCLUDED_PREFIXES = [
-  '/channel', '/webinars', '/careers', '/api-docs',
+  '/channel', '/webinars', '/careers', '/api-docs', '/team',
   '/admin', '/dashboard', '/profile', '/client-profile', '/settings', '/reports',
   '/audit-history', '/audits', '/optimizations', '/auth', '/shared-estimate',
 ];
