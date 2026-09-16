@@ -100,14 +100,49 @@ serve(async (req) => {
     }
 
     // Get page analysis data
+    /**
+     * Страницы разбора лежат под идентификатором аудита, а не задачи: это
+     * разные значения. Раньше здесь сравнивали audit_id с task_id, поэтому
+     * оптимизация не находила ни одной страницы, но отчитывалась «выполнено»
+     * и списывала стоимость. Берём настоящий идентификатор у задачи.
+     */
+    const { data: task } = await supabase
+      .from('audit_tasks')
+      .select('audit_id')
+      .eq('id', task_id)
+      .maybeSingle();
+
+    const auditId = task?.audit_id ?? task_id;
+
     const { data: pages, error: pagesError } = await supabase
       .from('page_analysis')
       .select('id, url, title, meta_description, word_count, h1_count')
-      .eq('audit_id', task_id)
+      .eq('audit_id', auditId)
       .limit(PAGES_PER_RUN);
 
     if (pagesError) {
       throw new Error('Failed to fetch page analysis');
+    }
+
+    // Обрабатывать нечего — честно говорим об этом, а не рапортуем об успехе.
+    if (!pages || pages.length === 0) {
+      await supabase
+        .from('optimization_jobs')
+        .update({
+          status: 'failed',
+          result_data: {
+            error: 'Для этого аудита нет разобранных страниц — оптимизировать нечего',
+            optimized_pages: 0,
+            total_pages: 0,
+          },
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', optimization_id);
+
+      return new Response(
+        JSON.stringify({ success: false, error: 'Нет страниц для оптимизации' }),
+        { status: 422, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+      );
     }
 
     console.log(`Processing ${pages?.length || 0} pages for optimization`);
@@ -149,7 +184,7 @@ serve(async (req) => {
 
         // Пишем результат страницы сразу, а не копим до конца работы.
         await supabase.from('fixed_pages').insert({
-          audit_id: task_id,
+          audit_id: auditId,
           user_id: user.id,
           page_id: page.id ?? null,
           status: 'completed',
