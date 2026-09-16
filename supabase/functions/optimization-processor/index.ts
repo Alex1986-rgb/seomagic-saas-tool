@@ -1,6 +1,20 @@
+/**
+ * Переписывание страниц языковой моделью.
+ *
+ * Страницы обрабатываются параллельно: запрос к модели почти всё время ждёт
+ * ответа, поэтому по одному пришлось бы тратить минуты там, где хватает секунд.
+ * Результат каждой страницы сохраняется сразу — если обработчик оборвут, уже
+ * сделанное (и оплаченное) не пропадёт.
+ */
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { generateText } from "../_shared/llm.ts";
+import { concurrencyFromEnv, runPool } from "../_shared/pool.ts";
+
+/** Сколько страниц отдаём модели одновременно. */
+const CONCURRENCY = concurrencyFromEnv('LLM_CONCURRENCY', 8);
+/** За один заход берём столько, сколько успеваем до предела времени функции. */
+const PAGES_PER_RUN = 40;
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -23,6 +37,15 @@ interface PageContent {
   meta_description: string | null;
   word_count: number;
   h1_count: number;
+}
+
+/**
+ * Во что обошлась работа модели. Цена за миллион токенов задаётся переменной:
+ * у разных поставщиков она разная и со временем меняется.
+ */
+function estimateCost(totalTokens: number): number {
+  const perMillion = Number(Deno.env.get('LLM_PRICE_PER_MTOKENS') ?? '0.3');
+  return Number(((totalTokens / 1_000_000) * perMillion).toFixed(4));
 }
 
 serve(async (req) => {
@@ -79,9 +102,9 @@ serve(async (req) => {
     // Get page analysis data
     const { data: pages, error: pagesError } = await supabase
       .from('page_analysis')
-      .select('url, title, meta_description, word_count, h1_count')
+      .select('id, url, title, meta_description, word_count, h1_count')
       .eq('audit_id', task_id)
-      .limit(50); // Process up to 50 pages
+      .limit(PAGES_PER_RUN);
 
     if (pagesError) {
       throw new Error('Failed to fetch page analysis');
@@ -89,39 +112,88 @@ serve(async (req) => {
 
     console.log(`Processing ${pages?.length || 0} pages for optimization`);
 
-    const optimizedPages = [];
-    let totalCost = 0;
+    const optimizedPages: Array<Record<string, unknown>> = [];
+    const failures: Array<{ url: string; error: string }> = [];
+    let processed = 0;
 
-    // Process each page with AI
-    for (const page of pages || []) {
-      try {
+    // Страницы идут параллельно, но счётчик обновляем по ходу: пользователю
+    // видно движение, а обрыв не выглядит как «ничего не произошло».
+    await runPool(
+      pages ?? [],
+      async (page) => {
         const prompt = buildOptimizationPrompt(page, options);
-        
-        const { text: recommendations } = await generateText({
+        const startedAt = Date.now();
+
+        const { text: recommendations, provider, model, usage } = await generateText({
           system: 'You are an SEO expert specializing in content optimization. Provide clear, actionable recommendations.',
           prompt,
           maxTokens: 4096,
         });
 
-        optimizedPages.push({
+        const entry = {
           url: page.url,
           original: {
             title: page.title,
             meta_description: page.meta_description,
             word_count: page.word_count,
-            h1_count: page.h1_count
+            h1_count: page.h1_count,
           },
           recommendations,
-          timestamp: new Date().toISOString()
+          provider,
+          model,
+          tokens: usage ?? null,
+          processing_time_ms: Date.now() - startedAt,
+          timestamp: new Date().toISOString(),
+        };
+        optimizedPages.push(entry);
+
+        // Пишем результат страницы сразу, а не копим до конца работы.
+        await supabase.from('fixed_pages').insert({
+          audit_id: task_id,
+          user_id: user.id,
+          page_id: page.id ?? null,
+          status: 'completed',
+          fixes_applied: entry,
+          llm_provider_used: `${provider}:${model}`,
+          processing_time_ms: entry.processing_time_ms,
         });
 
-        // Estimate cost (approximate)
-        totalCost += 0.05; // $0.05 per page optimization
-
-      } catch (pageError) {
-        console.error(`Error optimizing page ${page.url}:`, pageError);
+        return entry;
+      },
+      {
+        concurrency: CONCURRENCY,
+        onSettled: async () => {
+          processed++;
+          // Каждые несколько страниц отмечаемся в задании: реже — чтобы не
+          // молотить базу, чаще — чтобы счётчик не стоял.
+          if (processed % 5 === 0 || processed === (pages?.length ?? 0)) {
+            await supabase
+              .from('optimization_jobs')
+              .update({
+                result_data: { processed, total: pages?.length ?? 0, stage: 'processing' },
+                updated_at: new Date().toISOString(),
+              })
+              .eq('id', optimization_id);
+          }
+        },
+      },
+    ).then((results) => {
+      for (const r of results) {
+        if (r.error) {
+          const message = r.error instanceof Error ? r.error.message : String(r.error);
+          console.error(`Страница не обработана (${(r.item as PageContent).url}):`, message);
+          failures.push({ url: (r.item as PageContent).url, error: message });
+        }
       }
-    }
+    });
+
+    // Расход считаем по токенам, которые вернула модель, а не по придуманной
+    // ставке за страницу: иначе в счёте клиенту будет неправда.
+    const totalTokens = optimizedPages.reduce(
+      (sum, page) => sum + Number((page.tokens as { total_tokens?: number } | null)?.total_tokens ?? 0),
+      0,
+    );
+    const totalCost = estimateCost(totalTokens);
 
     console.log(`Optimization complete: ${optimizedPages.length} pages processed`);
 
@@ -130,6 +202,8 @@ serve(async (req) => {
       optimized_pages: optimizedPages.length,
       total_pages: pages?.length || 0,
       improvements: optimizedPages,
+      failures,
+      total_tokens: totalTokens,
       total_cost: totalCost,
       estimated_score_improvement: calculateScoreImprovement(optimizedPages.length),
       completed_at: new Date().toISOString(),
@@ -140,7 +214,9 @@ serve(async (req) => {
     const { error: updateError } = await supabase
       .from('optimization_jobs')
       .update({
-        status: 'completed',
+        status: failures.length > 0
+          ? (optimizedPages.length > 0 ? 'partial' : 'failed')
+          : 'completed',
         result_data: resultData,
         cost: totalCost,
         updated_at: new Date().toISOString()

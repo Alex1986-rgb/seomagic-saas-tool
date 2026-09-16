@@ -12,6 +12,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
 import { assertServiceRole, AuthError } from "../_shared/auth.ts";
+import { concurrencyFromEnv, runPool } from "../_shared/pool.ts";
 import { fetchSerp, findDomainPosition, SearchEngine, SerpProviderError } from "../_shared/serp.ts";
 
 const corsHeaders = {
@@ -24,8 +25,16 @@ const corsHeaders = {
  * поэтому останавливаемся заметно раньше и передаём дело следующему заходу.
  */
 const BATCH_TIME_BUDGET_MS = 90_000;
-/** Пауза между обращениями к поставщику, чтобы не ловить его ограничения. */
-const REQUEST_DELAY_MS = 300;
+/**
+ * Сколько запросов к поставщику идёт одновременно. Запрос почти всё время ждёт
+ * ответа, поэтому по одному проверка растягивалась на десятки минут. Выше пяти
+ * поставщики обычно начинают отказывать — значение меняется переменной.
+ */
+const CONCURRENCY = concurrencyFromEnv('SERP_CONCURRENCY', 5);
+/** Небольшой разбег между стартами, чтобы не бить по поставщику залпом. */
+const STAGGER_MS = 150;
+/** Сколько запросов берём в одну пачку. */
+const BATCH_SIZE = 20;
 /** Сколько раз пробуем один запрос, прежде чем признать его неудачным. */
 const MAX_ATTEMPTS = 2;
 
@@ -72,6 +81,7 @@ serve(async (req) => {
     const previous = await loadPreviousPositions(client, check.user_id, check.domain);
 
     let processed = 0;
+
     while (Date.now() - startedAt < BATCH_TIME_BUDGET_MS) {
       const { data: batch } = await client
         .from('position_queue')
@@ -79,59 +89,67 @@ serve(async (req) => {
         .eq('check_id', checkId)
         .eq('status', 'pending')
         .order('created_at', { ascending: true })
-        .limit(1);
+        .limit(BATCH_SIZE);
 
-      const item = batch?.[0];
-      if (!item) break;
+      if (!batch || batch.length === 0) break;
 
-      // Помечаем сразу, чтобы параллельный заход не взял тот же запрос.
+      // Помечаем всю пачку разом, чтобы параллельный заход не взял те же запросы.
       await client
         .from('position_queue')
-        .update({ status: 'processing', attempts: item.attempts + 1, updated_at: new Date().toISOString() })
-        .eq('id', item.id);
+        .update({ status: 'processing', updated_at: new Date().toISOString() })
+        .in('id', batch.map((item) => item.id));
 
-      try {
-        const serp = await fetchSerp({
-          engine: item.search_engine as SearchEngine,
-          query: item.keyword,
-          region: check.region ?? undefined,
-          depth: check.depth ?? 100,
-        });
-        const { position, url } = findDomainPosition(serp.urls, check.domain);
+      await runPool(
+        batch,
+        async (item) => {
+          try {
+            const serp = await fetchSerp({
+              engine: item.search_engine as SearchEngine,
+              query: item.keyword,
+              region: check.region ?? undefined,
+              depth: check.depth ?? 100,
+            });
+            const { position, url } = findDomainPosition(serp.urls, check.domain);
 
-        await client.from('position_results').insert({
-          check_id: checkId,
-          keyword: item.keyword,
-          search_engine: item.search_engine,
-          position,
-          previous_position: previous.get(`${item.search_engine}:${item.keyword}`) ?? null,
-          url: url ?? null,
-          search_url: serp.searchUrl,
-        });
+            await client.from('position_results').insert({
+              check_id: checkId,
+              keyword: item.keyword,
+              search_engine: item.search_engine,
+              position,
+              previous_position: previous.get(`${item.search_engine}:${item.keyword}`) ?? null,
+              url: url ?? null,
+              search_url: serp.searchUrl,
+            });
 
-        await client.from('position_queue').update({ status: 'completed', updated_at: new Date().toISOString() })
-          .eq('id', item.id);
-      } catch (error) {
-        const message = error instanceof SerpProviderError
-          ? error.message
-          : `Сбой запроса к поставщику: ${error instanceof Error ? error.message : String(error)}`;
-        console.error(`Позиция не получена (${item.search_engine}, "${item.keyword}"):`, message);
+            await client
+              .from('position_queue')
+              .update({ status: 'completed', attempts: item.attempts + 1, updated_at: new Date().toISOString() })
+              .eq('id', item.id);
+          } catch (error) {
+            const message = error instanceof SerpProviderError
+              ? error.message
+              : `Сбой запроса к поставщику: ${error instanceof Error ? error.message : String(error)}`;
+            console.error(`Позиция не получена (${item.search_engine}, "${item.keyword}"):`, message);
 
-        // Даём второй шанс: у поставщика бывают временные отказы.
-        const exhausted = item.attempts + 1 >= MAX_ATTEMPTS;
-        await client
-          .from('position_queue')
-          .update({
-            status: exhausted ? 'failed' : 'pending',
-            error: message,
-            updated_at: new Date().toISOString(),
-          })
-          .eq('id', item.id);
-      }
+            // Даём второй шанс: у поставщика бывают временные отказы.
+            const exhausted = item.attempts + 1 >= MAX_ATTEMPTS;
+            await client
+              .from('position_queue')
+              .update({
+                status: exhausted ? 'failed' : 'pending',
+                attempts: item.attempts + 1,
+                error: message,
+                updated_at: new Date().toISOString(),
+              })
+              .eq('id', item.id);
+          }
+          processed++;
+        },
+        { concurrency: CONCURRENCY, staggerMs: STAGGER_MS },
+      );
 
-      processed++;
-
-      // Счётчик обновляем по ходу — иначе пользователь смотрит на неподвижный ноль.
+      // Счётчик обновляем после каждой пачки — иначе пользователь смотрит на
+      // неподвижный ноль и не понимает, идёт ли дело.
       const { count } = await client
         .from('position_results')
         .select('id', { count: 'exact', head: true })
@@ -141,8 +159,6 @@ serve(async (req) => {
         .from('position_checks')
         .update({ keywords_checked: count ?? 0, heartbeat_at: new Date().toISOString() })
         .eq('id', checkId);
-
-      await new Promise((resolve) => setTimeout(resolve, REQUEST_DELAY_MS));
     }
 
     // Что осталось в очереди.

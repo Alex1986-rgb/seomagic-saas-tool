@@ -24,10 +24,18 @@ export interface GenerateRequest {
   temperature?: number;
 }
 
+export interface TokenUsage {
+  prompt_tokens?: number;
+  completion_tokens?: number;
+  total_tokens?: number;
+}
+
 export interface GenerateResult {
   text: string;
   provider: LlmProvider;
   model: string;
+  /** Расход токенов, как его сообщила модель: по нему считается стоимость. */
+  usage?: TokenUsage;
 }
 
 /** Поставщик не настроен или ответил отказом — отличаем от прочих сбоев. */
@@ -108,7 +116,7 @@ async function callDeepSeek(
   const text = textFromOpenAiStyle(body);
   if (!text) throw new LlmError('DeepSeek вернул пустой ответ', 502);
 
-  return { text, provider: 'deepseek', model };
+  return { text, provider: 'deepseek', model, usage: usageFromOpenAiStyle(body) };
 }
 
 /**
@@ -170,7 +178,7 @@ async function callAnthropic(
   const text = textFromAnthropic(body);
   if (!text) throw new LlmError('Anthropic вернул пустой ответ', 502);
 
-  return { text, provider: 'anthropic', model };
+  return { text, provider: 'anthropic', model, usage: usageFromAnthropic(body) };
 }
 
 /** Текст из ответа Anthropic: блоки размышлений пропускаем, берём текстовые. */
@@ -183,4 +191,24 @@ export function textFromAnthropic(body: unknown): string {
     .map((block) => (block as { text?: string }).text ?? '')
     .join('')
     .trim();
+}
+
+/** Расход токенов из ответа в формате OpenAI. */
+export function usageFromOpenAiStyle(body: unknown): TokenUsage | undefined {
+  const usage = (body as { usage?: Record<string, unknown> })?.usage;
+  if (!usage) return undefined;
+  return {
+    prompt_tokens: Number(usage.prompt_tokens ?? 0),
+    completion_tokens: Number(usage.completion_tokens ?? 0),
+    total_tokens: Number(usage.total_tokens ?? 0),
+  };
+}
+
+/** Расход токенов из ответа Anthropic: там свои названия полей. */
+export function usageFromAnthropic(body: unknown): TokenUsage | undefined {
+  const usage = (body as { usage?: Record<string, unknown> })?.usage;
+  if (!usage) return undefined;
+  const prompt = Number(usage.input_tokens ?? 0);
+  const completion = Number(usage.output_tokens ?? 0);
+  return { prompt_tokens: prompt, completion_tokens: completion, total_tokens: prompt + completion };
 }
