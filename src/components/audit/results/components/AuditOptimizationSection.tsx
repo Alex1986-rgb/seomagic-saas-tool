@@ -123,6 +123,17 @@ const AuditOptimizationSection: React.FC<AuditOptimizationSectionProps> = ({
     void startOptimization();
   };
 
+  const handleSelectPrompt = (prompt: string) => {
+    if (setContentOptimizationPrompt) {
+      setContentOptimizationPrompt(prompt);
+    }
+
+    toast({
+      title: "Шаблон выбран",
+      description: "Параметры оптимизации установлены"
+    });
+  };
+
   if (!optimizationCost && !isOptimized && !showPrompt) {
     return (
       <Card className="mb-8">

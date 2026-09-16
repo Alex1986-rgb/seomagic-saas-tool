@@ -23,7 +23,8 @@ interface ScanContextType {
   sitemap: any;
   pageStats: any;
   scanLogs: ScanLogEntry[];
-  startScan: (deepScan?: boolean) => Promise<string | null>;
+  /** `maxPages` — сколько страниц обойти; без него берётся значение по умолчанию. */
+  startScan: (deepScan?: boolean, maxPages?: number) => Promise<string | null>;
   cancelScan: () => Promise<void>;
   downloadSitemap: () => Promise<void>;
   clearLogs: () => void;
