@@ -1,5 +1,5 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
-import { ANTHROPIC_MODEL, anthropicClient, textFromMessage } from '../_shared/anthropic.ts';
+import { generateText } from '../_shared/llm.ts';
 import { assertServiceRole, authErrorResponse } from '../_shared/auth.ts';
 
 const corsHeaders = {
@@ -18,6 +18,23 @@ interface NotificationRequest {
     pages_scanned?: number;
     issues_count?: number;
   };
+}
+
+/**
+ * JSON из ответа модели. Модели любят обрамлять ответ пояснениями или блоком
+ * ```json — вытаскиваем сам объект, чтобы уведомление не срывалось из-за оформления.
+ */
+export function parseNotificationJson(text: string): { title: string; message: string } {
+  const cleaned = text.trim().replace(/^```(?:json)?/i, '').replace(/```$/, '').trim();
+  const start = cleaned.indexOf('{');
+  const end = cleaned.lastIndexOf('}');
+  const candidate = start >= 0 && end > start ? cleaned.slice(start, end + 1) : cleaned;
+
+  const parsed = JSON.parse(candidate);
+  if (typeof parsed?.title !== 'string' || typeof parsed?.message !== 'string') {
+    throw new Error('в ответе модели нет полей title и message');
+  }
+  return { title: parsed.title, message: parsed.message };
 }
 
 Deno.serve(async (req) => {
@@ -104,29 +121,15 @@ Deno.serve(async (req) => {
 
     let notificationContent: { title: string; message: string };
     try {
-      const anthropic = anthropicClient();
-      const aiMessage = await anthropic.messages.create({
-        model: ANTHROPIC_MODEL,
-        max_tokens: 1024,
-        output_config: {
-          effort: 'low',
-          format: {
-            type: 'json_schema',
-            schema: {
-              type: 'object',
-              properties: {
-                title: { type: 'string' },
-                message: { type: 'string' },
-              },
-              required: ['title', 'message'],
-              additionalProperties: false,
-            },
-          },
-        },
-        system: 'Ты - помощник для создания SEO-уведомлений.',
-        messages: [{ role: 'user', content: aiPrompt }],
+      // Формат задаём словами: единого способа требовать JSON у разных
+      // поставщиков нет, а ответ всё равно разбирается ниже с запасом.
+      const { text } = await generateText({
+        system: 'Ты — помощник для создания SEO-уведомлений. Отвечай строго объектом JSON '
+          + 'с полями "title" и "message", без пояснений и без markdown.',
+        prompt: aiPrompt,
+        maxTokens: 1024,
       });
-      notificationContent = JSON.parse(textFromMessage(aiMessage));
+      notificationContent = parseNotificationJson(text);
     } catch (aiError) {
       // Notification delivery must not fail because of the AI call — fall back to a template.
       console.error('AI notification generation failed:', aiError);

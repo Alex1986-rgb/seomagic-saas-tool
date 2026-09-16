@@ -21,9 +21,12 @@ bun run lint       # eslint
   `position_results`. Ключи поставщика — в секретах Supabase, см. `docs/POSITION_TRACKING.md`.
   Без ключей раздел честно отказывается работать, чисел не выдумывает.
 - **ИИ-оптимизация — реальная** (сентябрь 2026): `seoOptimizationController` ведёт
-  цепочку `audit-start → audit-status → optimization-start → optimization-status`,
-  тексты переписывает Anthropic. Сборка исправленной копии сайта на сервере пока
-  не реализована — интерфейс об этом честно сообщает.
+  цепочку `audit-start → audit-status → optimization-start → optimization-status`.
+  Тексты пишет **DeepSeek** (`deepseek-flash`) через общий слой
+  `supabase/functions/_shared/llm.ts`; поставщик переключается переменной
+  `LLM_PROVIDER` (`deepseek` / `anthropic`), ход рассуждений модели в ответ не
+  попадает. Сборка исправленной копии сайта на сервере пока не реализована —
+  интерфейс об этом честно сообщает.
 - **Личный кабинет и админка — витрина**: данные берутся из `mock-data.ts`, обращений
   к базе нет (кроме `/audits`, `/optimizations` и админского раздела пользователей).
   Полный разбор — `docs/reports/2026-09-14-audit-gotovnosti-produkta.md`.
