@@ -1,6 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { ANTHROPIC_MODEL, anthropicClient, textFromMessage } from "../_shared/anthropic.ts";
+import { generateText } from "../_shared/llm.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -33,7 +33,6 @@ serve(async (req) => {
   try {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    const anthropic = anthropicClient();
 
     const supabase = createClient(supabaseUrl, supabaseKey);
 
@@ -98,14 +97,11 @@ serve(async (req) => {
       try {
         const prompt = buildOptimizationPrompt(page, options);
         
-        const message = await anthropic.messages.create({
-          model: ANTHROPIC_MODEL,
-          max_tokens: 4096,
-          thinking: { type: 'adaptive' },
+        const { text: recommendations } = await generateText({
           system: 'You are an SEO expert specializing in content optimization. Provide clear, actionable recommendations.',
-          messages: [{ role: 'user', content: prompt }],
+          prompt,
+          maxTokens: 4096,
         });
-        const recommendations = textFromMessage(message);
 
         optimizedPages.push({
           url: page.url,
@@ -185,7 +181,8 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({
         error: error instanceof Error ? error.message : 'Unknown error',
-        details: error instanceof Error ? error.stack : undefined
+        // Стек остаётся в логах функции: наружу его отдавать нельзя —
+        // он раскрывает устройство сервиса.
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },

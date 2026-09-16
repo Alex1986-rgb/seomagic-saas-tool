@@ -51,7 +51,7 @@ const PositionTrackerSection: React.FC = () => {
                 </div>
                 <div>
                   <h4 className="text-lg font-medium mb-1">Проверка в нескольких поисковых системах</h4>
-                  <p className="text-muted-foreground">Отслеживайте позиции в Яндекс, Google и Mail.ru одновременно</p>
+                  <p className="text-muted-foreground">Отслеживайте позиции в Яндексе и Google одновременно</p>
                 </div>
               </div>
 

@@ -60,7 +60,6 @@ export const DomainAndSearchSection: React.FC<DomainAndSearchSectionProps> = ({
                 <SelectContent>
                   <SelectItem value="google">Google</SelectItem>
                   <SelectItem value="yandex">Яндекс</SelectItem>
-                  <SelectItem value="mailru">Mail.ru</SelectItem>
                   <SelectItem value="all">Все системы</SelectItem>
                 </SelectContent>
               </Select>

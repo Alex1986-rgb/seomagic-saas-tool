@@ -1,6 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
-import { ANTHROPIC_MODEL, Anthropic, anthropicClient, textFromMessage } from "../_shared/anthropic.ts";
+import { generateText, LlmError } from "../_shared/llm.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -34,8 +34,6 @@ serve(async (req) => {
       throw new Error('task_id and prompt are required');
     }
 
-    const anthropic = anthropicClient();
-
     console.log(`Optimizing content for task: ${task_id}`);
 
     // Get audit results
@@ -52,24 +50,19 @@ serve(async (req) => {
     // Call the Anthropic API (Claude) for content optimization
     let optimizedContent: string;
     try {
-      const message = await anthropic.messages.create({
-        model: ANTHROPIC_MODEL,
-        max_tokens: 4096,
-        thinking: { type: 'adaptive' },
+      const result = await generateText({
         system: 'You are an SEO expert. Optimize the content for better search engine rankings while maintaining readability and user engagement.',
-        messages: [
-          {
-            role: 'user',
-            content: `${prompt}\n\nAudit data: ${JSON.stringify(auditResult.audit_data)}`,
-          },
-        ],
+        prompt: `${prompt}\n\nAudit data: ${JSON.stringify(auditResult.audit_data)}`,
+        maxTokens: 4096,
       });
-      optimizedContent = textFromMessage(message);
+      optimizedContent = result.text;
     } catch (aiError) {
-      if (aiError instanceof Anthropic.RateLimitError) {
-        throw new Error('Rate limits exceeded, please try again later.');
+      // Отсутствие ключа и отказ поставщика — разные вещи: первое чинится
+      // настройкой, второе повтором позже.
+      if (aiError instanceof LlmError) {
+        throw new Error(aiError.message);
       }
-      console.error('Anthropic API error:', aiError);
+      console.error('Ошибка обращения к языковой модели:', aiError);
       throw new Error('AI request failed');
     }
 

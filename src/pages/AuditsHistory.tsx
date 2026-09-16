@@ -33,6 +33,8 @@ export default function AuditsHistory() {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [resumingTaskId, setResumingTaskId] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [downloadingId, setDownloadingId] = useState<string | null>(null);
 
   const { audits, isLoading, error, refetch } = useAuditList();
 
@@ -70,19 +72,78 @@ export default function AuditsHistory() {
   };
 
   const handleDeleteAudit = async (auditId: string) => {
-    // TODO: Implement delete functionality
-    toast({
-      title: 'В разработке',
-      description: 'Функция удаления будет добавлена позже',
-    });
+    if (!window.confirm('Удалить этот аудит и все его результаты? Действие необратимо.')) {
+      return;
+    }
+    try {
+      setDeletingId(auditId);
+      await auditService.deleteAudit(auditId);
+      toast({
+        title: 'Аудит удалён',
+        description: 'Аудит и связанные данные удалены',
+      });
+      await refetch();
+    } catch (err: any) {
+      toast({
+        title: 'Ошибка удаления',
+        description: err?.message || 'Не удалось удалить аудит',
+        variant: 'destructive',
+      });
+    } finally {
+      setDeletingId(null);
+    }
   };
 
-  const handleDownloadReport = async (auditId: string) => {
-    // TODO: Implement download functionality
-    toast({
-      title: 'В разработке',
-      description: 'Функция экспорта будет добавлена позже',
-    });
+  const handleDownloadReport = async (auditId: string, url: string) => {
+    try {
+      setDownloadingId(auditId);
+      const results = await auditService.getAuditResults(auditId);
+      if (!results) {
+        toast({
+          title: 'Отчёт недоступен',
+          description: 'Для этого аудита ещё нет результатов. Дождитесь завершения сканирования.',
+          variant: 'destructive',
+        });
+        return;
+      }
+
+      const report = {
+        url,
+        generated_at: new Date().toISOString(),
+        results,
+      };
+      const blob = new Blob([JSON.stringify(report, null, 2)], {
+        type: 'application/json',
+      });
+      const objectUrl = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      let host = 'site';
+      try {
+        host = new URL(url).hostname.replace(/^www\./, '');
+      } catch {
+        /* keep default */
+      }
+      const date = new Date().toISOString().slice(0, 10);
+      link.href = objectUrl;
+      link.download = `seo-audit-${host}-${date}.json`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(objectUrl);
+
+      toast({
+        title: 'Отчёт выгружен',
+        description: 'JSON-файл с результатами аудита сохранён',
+      });
+    } catch (err: any) {
+      toast({
+        title: 'Ошибка экспорта',
+        description: err?.message || 'Не удалось сформировать отчёт',
+        variant: 'destructive',
+      });
+    } finally {
+      setDownloadingId(null);
+    }
   };
 
   const handleResumeAudit = async (auditId: string, url: string) => {
@@ -295,17 +356,27 @@ export default function AuditsHistory() {
                               Просмотр
                             </DropdownMenuItem>
                             <DropdownMenuItem
-                              onClick={() => handleDownloadReport(audit.id)}
+                              onClick={() => handleDownloadReport(audit.id, audit.url)}
+                              disabled={downloadingId === audit.id}
                             >
-                              <Download className="mr-2 h-4 w-4" />
+                              {downloadingId === audit.id ? (
+                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                              ) : (
+                                <Download className="mr-2 h-4 w-4" />
+                              )}
                               Скачать отчет
                             </DropdownMenuItem>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem
                               onClick={() => handleDeleteAudit(audit.id)}
+                              disabled={deletingId === audit.id}
                               className="text-destructive"
                             >
-                              <Trash2 className="mr-2 h-4 w-4" />
+                              {deletingId === audit.id ? (
+                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                              ) : (
+                                <Trash2 className="mr-2 h-4 w-4" />
+                              )}
                               Удалить
                             </DropdownMenuItem>
                           </DropdownMenuContent>

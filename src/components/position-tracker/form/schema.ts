@@ -3,7 +3,7 @@ import * as z from 'zod';
 
 export const positionTrackerFormSchema = z.object({
   domain: z.string().min(1, { message: 'Доменное имя обязательно' }),
-  searchEngine: z.enum(['google', 'yandex', 'mailru', 'all'], {
+  searchEngine: z.enum(['google', 'yandex', 'all'], {
     required_error: 'Выберите поисковую систему',
   }),
   region: z.string().optional(),

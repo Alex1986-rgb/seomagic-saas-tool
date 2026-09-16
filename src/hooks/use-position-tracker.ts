@@ -126,9 +126,15 @@ export function usePositionTracker({
       
       console.log(`Статистика позиций: TOP-10: ${inTop10}, TOP-30: ${inTop30}, не найдено: ${notFound}`);
       
+      // Показываем то, что реально проверено: при частичном сбое часть запросов
+      // до поисковика не дошла, и молчать об этом нельзя.
+      const failed = positionData.failures?.length ?? 0;
       toast({
-        title: "Готово",
-        description: `Проверено ${validKeywords.length} ключевых слов для ${domainForCheck}`,
+        title: failed > 0 ? "Проверено частично" : "Готово",
+        description: failed > 0
+          ? `Получены позиции по ${positionData.keywords.length} запросам, ${failed} не проверено`
+          : `Проверено ${positionData.keywords.length} запросов для ${domainForCheck}`,
+        variant: failed > 0 ? "destructive" : undefined,
       });
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Произошла ошибка при проверке позиций";
@@ -136,7 +142,7 @@ export function usePositionTracker({
       setError(errorMessage);
       toast({
         title: "Ошибка",
-        description: "Не удалось проверить позиции",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {

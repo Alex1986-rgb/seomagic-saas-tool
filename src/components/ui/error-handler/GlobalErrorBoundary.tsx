@@ -3,7 +3,6 @@ import React, { ErrorInfo, useState, useEffect } from 'react';
 import { AlertTriangle, Home, RefreshCw, XOctagon } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { useNavigate } from 'react-router-dom';
 import { Card } from '@/components/ui/card';
 
 interface GlobalErrorBoundaryProps {
@@ -86,7 +85,9 @@ interface ErrorFallbackProps {
 }
 
 export const ErrorFallback: React.FC<ErrorFallbackProps> = ({ error, resetError }) => {
-  const navigate = useNavigate();
+  // NB: this fallback is mounted outside <Router> (in AppProviders), so it must
+  // not use react-router hooks like useNavigate — doing so makes the error UI
+  // itself crash. Navigate via window.location instead.
   const { toast } = useToast();
   const [isAttemptingRecovery, setIsAttemptingRecovery] = useState(false);
 
@@ -117,7 +118,7 @@ export const ErrorFallback: React.FC<ErrorFallbackProps> = ({ error, resetError 
   const handleNavigateHome = () => {
     console.log("Navigating home from ErrorFallback");
     resetError();
-    navigate('/');
+    window.location.assign('/');
     toast({
       title: "Навигация на главную",
       description: "Возврат на главную страницу",
@@ -158,7 +159,6 @@ export const ErrorFallback: React.FC<ErrorFallbackProps> = ({ error, resetError 
 
 // More serious fallback for repeated errors
 const PermanentErrorFallback: React.FC<{error: Error | null}> = ({ error }) => {
-  const navigate = useNavigate();
   const { toast } = useToast();
   
   const handleReset = () => {

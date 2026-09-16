@@ -1066,9 +1066,9 @@ const ProjectExporter: React.FC = () => {
             }, 100);
         }
         
-        // Export to PDF functionality
+        // Export to PDF functionality — use the browser's print-to-PDF.
         function exportToPDF() {
-            alert('Функция экспорта в PDF будет доступна в полной версии приложения');
+            window.print();
         }
         
         // Print functionality
@@ -1145,7 +1145,8 @@ const ProjectExporter: React.FC = () => {
   };
 
   const exportPDF = () => {
-    alert('Функция экспорта в PDF будет доступна в полной версии приложения');
+    // Use the browser's native print-to-PDF for the project overview.
+    window.print();
   };
 
   return (

@@ -1,4 +1,4 @@
-project_id = "dllusofuxonaemrttmwl"
+project_id = "rbkwhejnhiwmktqwkakz"
 
 [functions.audit-start]
 verify_jwt = false
@@ -44,3 +44,6 @@ verify_jwt = false
 
 [functions.create-notification]
 verify_jwt = false
+
+[functions.positions-check]
+verify_jwt = true
