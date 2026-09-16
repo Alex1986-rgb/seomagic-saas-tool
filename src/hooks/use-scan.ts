@@ -79,7 +79,12 @@ export const useScan = (url: string, onPageCountUpdate?: (count: number) => void
   }, []);
 
   // Start scanning process
-  const startScan = useCallback(async (useSitemap: boolean = true) => {
+  /**
+   * Запуск сканирования. `maxPages` ограничивает обход: на большом сайте это
+   * разница между парой минут и получасом, а на платных проверках — между
+   * копейками и заметной суммой.
+   */
+  const startScan = useCallback(async (useSitemap: boolean = true, maxPages: number = 20) => {
     // Clear previous logs
     clearLogs();
     addLog('info', 'starting', `Запуск сканирования для ${url}`, `Режим: ${useSitemap ? 'с sitemap' : 'без sitemap'}`);
@@ -115,7 +120,7 @@ export const useScan = (url: string, onPageCountUpdate?: (count: number) => void
       setScanDetails({
         current_url: url,
         pages_scanned: 0,
-        estimated_pages: 500000,
+        estimated_pages: maxPages,
         stage: 'Подготовка к сканированию',
         progress: 0
       });
@@ -135,7 +140,7 @@ export const useScan = (url: string, onPageCountUpdate?: (count: number) => void
       
       const response = await auditService.startAudit(formattedUrl, {
         type: 'quick',
-        maxPages: 100
+        maxPages,
       });
       
       console.log('📥 audit-start response received:', response);

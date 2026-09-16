@@ -30,7 +30,7 @@ export const AuditWorkspace: React.FC<AuditWorkspaceProps> = ({
   } = useInterruptedAudit(url);
 
   // Handle starting audit using startScan from context
-  const handleStartAudit = useCallback(async (type: 'quick' | 'deep') => {
+  const handleStartAudit = useCallback(async (type: 'quick' | 'deep', maxPages: number = 20) => {
     setIsStartingAudit(true);
     try {
       console.log(`🚀 Starting ${type} audit for:`, url);
@@ -40,7 +40,7 @@ export const AuditWorkspace: React.FC<AuditWorkspaceProps> = ({
       // 2. Start polling for progress
       // 3. Set isScanning = true
       // 4. Update scanDetails automatically
-      const newTaskId = await startScan(type === 'deep');
+      const newTaskId = await startScan(type === 'deep', maxPages);
       
       if (newTaskId) {
         // Save task_id to localStorage for recovery

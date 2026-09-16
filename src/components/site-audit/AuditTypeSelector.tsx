@@ -3,14 +3,34 @@ import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Zap, Target, Lock, Check } from 'lucide-react';
+import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 
 interface AuditTypeSelectorProps {
-  onStartAudit: (type: 'quick' | 'deep') => void;
+  onStartAudit: (type: 'quick' | 'deep', maxPages: number) => void;
   isLoading: boolean;
   url: string;
 }
+
+/**
+ * Сколько страниц обходить. Число решает, сколько времени займёт проверка:
+ * двадцать страниц — минута, три сотни — заметно дольше.
+ */
+const PAGE_LIMITS = [
+  { value: '10', label: '10 страниц — быстрее всего' },
+  { value: '20', label: '20 страниц' },
+  { value: '50', label: '50 страниц' },
+  { value: '100', label: '100 страниц' },
+  { value: '300', label: '300 страниц — дольше' },
+];
 
 export const AuditTypeSelector: React.FC<AuditTypeSelectorProps> = ({
   onStartAudit,
@@ -19,13 +39,14 @@ export const AuditTypeSelector: React.FC<AuditTypeSelectorProps> = ({
 }) => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [maxPages, setMaxPages] = React.useState('20');
 
   const handleDeepAudit = () => {
     if (!user.isLoggedIn) {
       navigate(`/auth?redirect=${encodeURIComponent(`/site-audit?url=${encodeURIComponent(url)}`)}`);
       return;
     }
-    onStartAudit('deep');
+    onStartAudit('deep', Number(maxPages));
   };
 
   return (
@@ -48,14 +69,14 @@ export const AuditTypeSelector: React.FC<AuditTypeSelectorProps> = ({
               <CardTitle className="text-xl">Быстрый аудит</CardTitle>
             </div>
             <CardDescription>
-              Базовый анализ до 10 страниц без регистрации
+              Базовый анализ без регистрации — глубину выбираете сами
             </CardDescription>
           </CardHeader>
           <CardContent>
             <ul className="space-y-2 mb-6">
               <li className="flex items-start gap-2 text-sm">
                 <Check className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
-                <span>До 10 страниц сайта</span>
+                <span>Столько страниц, сколько укажете</span>
               </li>
               <li className="flex items-start gap-2 text-sm">
                 <Check className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
@@ -70,8 +91,23 @@ export const AuditTypeSelector: React.FC<AuditTypeSelectorProps> = ({
                 <span>Скачивание отчета PDF</span>
               </li>
             </ul>
+            <div className="mb-4 space-y-1.5">
+              <Label htmlFor="page-limit" className="text-xs text-muted-foreground">
+                Сколько страниц проверить
+              </Label>
+              <Select value={maxPages} onValueChange={setMaxPages}>
+                <SelectTrigger id="page-limit">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {PAGE_LIMITS.map((limit) => (
+                    <SelectItem key={limit.value} value={limit.value}>{limit.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
             <Button 
-              onClick={() => onStartAudit('quick')}
+              onClick={() => onStartAudit('quick', Number(maxPages))}
               disabled={isLoading}
               className="w-full"
               size="lg"

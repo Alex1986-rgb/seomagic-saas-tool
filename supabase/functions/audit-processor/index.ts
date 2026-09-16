@@ -57,11 +57,17 @@ function calculatePriority(url: string, depth: number, isFromSitemap: boolean = 
   return Math.max(0, priority);
 }
 
+/**
+ * Сколько страниц обходим.
+ *
+ * Раньше на большом сайте выбранный лимит не действовал: формула возвращала
+ * треть карты сайта, но не больше трёхсот, — и «быстрый аудит до 10 страниц»
+ * молча превращался в обход трёхсот. Лимит должен быть лимитом: обходим не
+ * больше, чем попросили, и не больше, чем есть на сайте.
+ */
 function calculateEstimatedPages(sitemapCount: number, maxPages: number = 100): number {
   if (sitemapCount === 0) return maxPages;
-  if (sitemapCount < 200) return Math.min(sitemapCount, maxPages);
-  if (sitemapCount < 1000) return Math.min(Math.ceil(sitemapCount * 0.3), 300);
-  return 300;
+  return Math.min(sitemapCount, maxPages);
 }
 
 // Follow redirects manually to track chain
