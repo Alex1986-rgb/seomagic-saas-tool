@@ -131,6 +131,8 @@ export const useAuditBase = (url: string) => {
     
     // Actions
     loadAuditData,
+    // Расчёт сметы: нужен кнопке «Рассчитать стоимость оптимизации».
+    loadOptimizationCost,
     setIsRefreshing: (value: boolean) => {}, // This would be implemented in the context
     downloadSitemapLocal,
     generatePdfReportFile,

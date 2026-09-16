@@ -91,6 +91,9 @@ export default function OptimizationsHistory() {
       queued: { variant: 'secondary', label: 'В очереди' },
       processing: { variant: 'default', label: 'Обработка' },
       completed: { variant: 'default', label: 'Завершено' },
+      partial: { variant: 'secondary', label: 'Частично' },
+      // Смета — это расчёт стоимости, а не выполненная работа.
+      estimated: { variant: 'outline', label: 'Смета' },
       failed: { variant: 'destructive', label: 'Ошибка' },
     };
 
@@ -128,7 +131,7 @@ export default function OptimizationsHistory() {
           <CardContent className="p-4">
             <p className="text-sm text-muted-foreground">Завершено</p>
             <p className="text-2xl font-bold text-green-600">
-              {optimizations.filter(o => o.status === 'completed').length}
+              {optimizations.filter(o => o.status === 'completed' || o.status === 'partial').length}
             </p>
           </CardContent>
         </Card>
@@ -212,7 +215,7 @@ export default function OptimizationsHistory() {
                         {opt.result_data?.optimized_pages || 0} / {opt.result_data?.total_pages || 0}
                       </TableCell>
                       <TableCell className="font-semibold">
-                        ${(opt.cost || 0).toFixed(2)}
+                        {Math.round(opt.cost || 0).toLocaleString('ru-RU')} ₽
                       </TableCell>
                       <TableCell className="text-sm text-muted-foreground">
                         {formatDistanceToNow(new Date(opt.created_at), {
@@ -225,7 +228,7 @@ export default function OptimizationsHistory() {
                           variant="ghost"
                           size="sm"
                           onClick={() => handleViewDetails(opt)}
-                          disabled={opt.status !== 'completed'}
+                          disabled={!['completed', 'partial'].includes(opt.status)}
                         >
                           <Eye className="h-4 w-4 mr-2" />
                           Детали

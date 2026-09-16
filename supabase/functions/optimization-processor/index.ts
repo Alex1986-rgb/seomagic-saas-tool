@@ -239,7 +239,9 @@ serve(async (req) => {
       improvements: optimizedPages,
       failures,
       total_tokens: totalTokens,
-      total_cost: totalCost,
+      // Расход у поставщика модели — в долларах; цена работ для клиента
+      // лежит в поле cost в рублях, их нельзя смешивать.
+      llm_cost_usd: totalCost,
       estimated_score_improvement: calculateScoreImprovement(optimizedPages.length),
       completed_at: new Date().toISOString(),
       options
@@ -253,7 +255,6 @@ serve(async (req) => {
           ? (optimizedPages.length > 0 ? 'partial' : 'failed')
           : 'completed',
         result_data: resultData,
-        cost: totalCost,
         updated_at: new Date().toISOString()
       })
       .eq('id', optimization_id);
@@ -267,7 +268,7 @@ serve(async (req) => {
       function_name: 'optimization-processor',
       user_id: user.id,
       request_data: { optimization_id, task_id, options },
-      response_data: { pages_processed: optimizedPages.length, total_cost: totalCost },
+      response_data: { pages_processed: optimizedPages.length, llm_cost_usd: totalCost },
       status_code: 200,
       duration_ms: 0
     });
@@ -277,7 +278,7 @@ serve(async (req) => {
         success: true,
         optimization_id,
         pages_optimized: optimizedPages.length,
-        total_cost: totalCost,
+        llm_cost_usd: totalCost,
         estimated_improvement: calculateScoreImprovement(optimizedPages.length)
       }),
       {

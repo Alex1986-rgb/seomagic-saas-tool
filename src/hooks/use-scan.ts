@@ -1,6 +1,8 @@
 
 import { useState, useCallback, useRef } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
+import { useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 import { useToast } from './use-toast';
 import { validationService } from '@/services/validation/validationService';
 import { reportingService } from '@/services/reporting/reportingService';
@@ -44,6 +46,38 @@ export const useScan = (url: string, onPageCountUpdate?: (count: number) => void
   });
   const [sitemap, setSitemap] = useState<string | null>(null);
   const [taskId, setTaskId] = useState<string | null>(null);
+
+  /**
+   * Подхватываем последний завершённый аудит этого сайта.
+   *
+   * Раньше связь с прошлым аудитом держалась только в памяти браузера: стоило
+   * открыть сайт в другом браузере или почистить хранилище — и результаты
+   * пропадали, хотя лежали в базе. Ищем последнюю завершённую проверку и
+   * показываем её, вместо того чтобы гонять сайт заново.
+   */
+  useEffect(() => {
+    if (!url || taskId) return;
+
+    let cancelled = false;
+    const domain = url.replace(/^https?:\/\//, '').replace(/\/.*$/, '');
+
+    (async () => {
+      const { data } = await supabase
+        .from('audit_tasks')
+        .select('id')
+        .ilike('url', `%${domain}%`)
+        .eq('status', 'completed')
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (!cancelled && data?.id) {
+        setTaskId(data.id);
+      }
+    })();
+
+    return () => { cancelled = true; };
+  }, [url, taskId]);
   const [scanLogs, setScanLogs] = useState<ScanLogEntry[]>([]);
   const { toast } = useToast();
   const queryClient = useQueryClient();

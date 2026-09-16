@@ -48,6 +48,8 @@ interface AuditContentProps {
   generatePdfReportFile: () => void;
   downloadOptimizedSite: () => Promise<void>;
   optimizeSiteContent: () => Promise<void>;
+  /** Расчёт сметы: до него кнопки запуска оптимизации не существует. */
+  loadOptimizationCost?: (taskId: string) => Promise<void>;
   setContentOptimizationPrompt: (prompt: string) => void;
   auditResults?: any;
   taskMetrics?: any;
@@ -83,6 +85,7 @@ const AuditContent: React.FC<AuditContentProps> = ({
   generatePdfReportFile,
   downloadOptimizedSite,
   optimizeSiteContent,
+  loadOptimizationCost,
   setContentOptimizationPrompt,
   auditResults,
   taskMetrics,
@@ -181,6 +184,7 @@ const AuditContent: React.FC<AuditContentProps> = ({
               
               {/* Optimization section */}
               <AuditOptimizationSection 
+                taskId={taskId}
                 optimizationCost={optimizationCost}
                 optimizationItems={optimizationItems}
                 isOptimized={isOptimized}
@@ -192,6 +196,7 @@ const AuditContent: React.FC<AuditContentProps> = ({
                 retryAttempt={retryAttempt}
                 onTogglePrompt={onTogglePrompt}
                 onOptimize={optimizeSiteContent}
+                onCalculateCost={taskId && loadOptimizationCost ? () => loadOptimizationCost(taskId) : undefined}
                 onDownloadOptimizedSite={downloadOptimizedSite}
                 onGeneratePdfReport={generatePdfReportFile}
                 setContentOptimizationPrompt={setContentOptimizationPrompt}

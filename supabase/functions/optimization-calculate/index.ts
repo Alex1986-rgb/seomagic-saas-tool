@@ -115,7 +115,10 @@ serve(async (req) => {
       .upsert({
         task_id: task_id,
         user_id: userId,
-        status: 'completed',
+        // Это смета, а не выполненная работа. Раньше здесь стояло «completed»,
+        // и в истории оптимизаций копились «выполненные» задания, по которым
+        // ни одна страница не была переписана.
+        status: 'estimated',
         cost: totalCost,
         result_data: { 
           estimate_id: estimate?.id || null,

@@ -7,13 +7,19 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import CostSummary from './optimization/CostSummary';
 import CostDetailsTable from './optimization/CostDetailsTable';
-import OptimizationProcessContainer from './optimization/process/OptimizationProcessContainer';
-import OptimizationResults from './optimization/OptimizationResults';
 import OptimizationActions from './optimization/OptimizationActions';
 import OptimizationLoadingStatus from './OptimizationLoadingStatus';
+import { Progress } from "@/components/ui/progress";
+import {
+  runOptimization,
+  type OptimizationOutcome,
+  type OptimizationProgress,
+} from '@/services/optimization/runOptimization';
 
 interface AuditOptimizationSectionProps {
   url: string;
+  /** Задача аудита: по ней сервер находит страницы для переписывания. */
+  taskId?: string | null;
   optimizationCost?: number;
   pageCount: number;
   optimizationItems?: any[];
@@ -21,6 +27,8 @@ interface AuditOptimizationSectionProps {
   showPrompt?: boolean;
   onTogglePrompt?: () => void;
   onOptimize?: () => void;
+  /** Посчитать смету: без неё запускать оптимизацию не из чего. */
+  onCalculateCost?: () => void;
   onDownloadOptimizedSite?: () => void;
   onGeneratePdfReport?: () => void;
   contentPrompt?: string;
@@ -31,6 +39,7 @@ interface AuditOptimizationSectionProps {
 
 const AuditOptimizationSection: React.FC<AuditOptimizationSectionProps> = ({
   url,
+  taskId,
   optimizationCost = 0,
   pageCount,
   optimizationItems = [],
@@ -38,6 +47,7 @@ const AuditOptimizationSection: React.FC<AuditOptimizationSectionProps> = ({
   showPrompt = false,
   onTogglePrompt,
   onOptimize,
+  onCalculateCost,
   onDownloadOptimizedSite,
   onGeneratePdfReport,
   contentPrompt = "",
@@ -47,60 +57,70 @@ const AuditOptimizationSection: React.FC<AuditOptimizationSectionProps> = ({
 }) => {
   const { toast } = useToast();
   const [isOptimizing, setIsOptimizing] = useState(false);
-  const [optimizationProgress, setOptimizationProgress] = useState(0);
   const [isPaymentComplete, setIsPaymentComplete] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [optimizationResult, setOptimizationResult] = useState<any>(null);
   const [localIsOptimized, setLocalIsOptimized] = useState(isOptimized);
 
-  const handlePayment = () => {
-    toast({
-      title: "Оплата успешно произведена",
-      description: "Теперь вы можете запустить процесс оптимизации"
-    });
-    setIsPaymentComplete(true);
-    setIsDialogOpen(false);
-  };
+  const [liveProgress, setLiveProgress] = useState<OptimizationProgress | null>(null);
+  const [outcome, setOutcome] = useState<OptimizationOutcome | null>(null);
+  const [runError, setRunError] = useState<string | null>(null);
 
-  const startOptimization = () => {
-    if (onOptimize) {
-      onOptimize();
-    }
-    
-    setIsOptimizing(true);
-    setOptimizationProgress(0);
-    
-    // Simulate optimization progress
-    const interval = setInterval(() => {
-      setOptimizationProgress(prev => {
-        if (prev >= 100) {
-          clearInterval(interval);
-          setLocalIsOptimized(true);
-          
-          // Set demo result after completion
-          setTimeout(() => {
-            setOptimizationResult({
-              beforeScore: 65,
-              afterScore: 92,
-            });
-          }, 1000);
-          
-          return 100;
-        }
-        return prev + Math.random() * 2;
+  /**
+   * Запуск настоящей оптимизации.
+   *
+   * Прежде здесь полоса двигалась случайными числами, а результат был вписан в
+   * код — «было 65 → стало 92» для любого сайта; на сервер не уходило ничего.
+   * Теперь страницы переписывает языковая модель, и мы показываем, что она
+   * сделала на самом деле.
+   */
+  const startOptimization = async () => {
+    if (!taskId) {
+      toast({
+        title: 'Нечего оптимизировать',
+        description: 'Не найден аудит, по которому можно переписать страницы',
+        variant: 'destructive',
       });
-    }, 200);
+      return;
+    }
+
+    setIsOptimizing(true);
+    setRunError(null);
+    setOutcome(null);
+    setLiveProgress({ status: 'queued', processed: 0, total: pageCount });
+
+    try {
+      const result = await runOptimization(
+        taskId,
+        { fixMetaTags: true, improveContent: true, language: 'ru' },
+        (progress) => setLiveProgress(progress),
+      );
+      setOutcome(result);
+      setLocalIsOptimized(result.status !== 'failed');
+
+      if (result.status === 'failed') {
+        setRunError(result.error ?? 'Оптимизация не удалась');
+      } else {
+        toast({
+          title: result.status === 'partial' ? 'Оптимизация завершена частично' : 'Оптимизация завершена',
+          description: `Переписано страниц: ${result.pages.length}`,
+        });
+      }
+    } catch (error) {
+      setRunError(error instanceof Error ? error.message : 'Оптимизация не удалась');
+    } finally {
+      setIsOptimizing(false);
+    }
   };
 
-  const handleSelectPrompt = (prompt: string) => {
-    if (setContentOptimizationPrompt) {
-      setContentOptimizationPrompt(prompt);
-    }
-    
-    toast({
-      title: "Шаблон выбран",
-      description: "Параметры оптимизации установлены"
-    });
+  /**
+   * Подтверждение в диалоге. Раньше оно сообщало «Оплата успешно произведена»,
+   * хотя приёма оплаты в продукте нет. Честнее сразу запускать работу:
+   * стоимость человек видел в диалоге и согласился с ней.
+   */
+  const handlePayment = () => {
+    setIsDialogOpen(false);
+    setIsPaymentComplete(true);
+    void startOptimization();
   };
 
   if (!optimizationCost && !isOptimized && !showPrompt) {
@@ -111,11 +131,21 @@ const AuditOptimizationSection: React.FC<AuditOptimizationSectionProps> = ({
         </CardHeader>
         <CardContent className="text-center py-8">
           <p className="text-muted-foreground mb-4">
-            Заказать оптимизацию сайта для улучшения его показателей в поисковых системах
+            {onCalculateCost
+              ? 'Посчитаем, во что обойдётся исправление найденных замечаний, и перепишем тексты страниц'
+              : 'Заказать оптимизацию сайта для улучшения его показателей в поисковых системах'}
           </p>
-          <div className="flex gap-3 justify-center">
+          <div className="flex gap-3 justify-center flex-wrap">
+            {/*
+              Прежде здесь был тупик: пока смета не посчитана, показывались
+              только демо и отчёт, а запустить оптимизацию было неоткуда —
+              расчёт срабатывал лишь в момент завершения аудита. Даём явный шаг.
+            */}
+            {onCalculateCost && (
+              <Button onClick={onCalculateCost}>Рассчитать стоимость оптимизации</Button>
+            )}
             <Link to="/optimization-demo">
-              <Button>Посмотреть демо-версию</Button>
+              <Button variant="outline">Посмотреть демо-версию</Button>
             </Link>
             {onGeneratePdfReport && (
               <Button onClick={onGeneratePdfReport} variant="outline">
@@ -169,22 +199,50 @@ const AuditOptimizationSection: React.FC<AuditOptimizationSectionProps> = ({
           <CostDetailsTable items={optimizationItems} />
         </div>
         
-        {isOptimizing && !localIsOptimized && (
-          <OptimizationProcessContainer 
-            url={url} 
-            progress={optimizationProgress} 
-            setOptimizationResult={setOptimizationResult}
-            setLocalIsOptimized={setLocalIsOptimized}
-          />
+        {/* Ход работы — по данным сервера, а не по таймеру. */}
+        {isOptimizing && liveProgress && (
+          <div className="my-4 space-y-2 rounded-lg border p-4">
+            <div className="flex justify-between text-sm">
+              <span>
+                {liveProgress.status === 'queued' ? 'Ставим в очередь…' : 'Переписываем страницы…'}
+              </span>
+              <span className="text-muted-foreground">
+                {liveProgress.total > 0 ? `${liveProgress.processed} из ${liveProgress.total}` : ''}
+              </span>
+            </div>
+            <Progress
+              value={liveProgress.total > 0 ? (liveProgress.processed / liveProgress.total) * 100 : 5}
+            />
+          </div>
         )}
-        
-        {optimizationResult && (
-          <OptimizationResults
-            url={url}
-            optimizationResult={optimizationResult}
-            onDownloadOptimized={onDownloadOptimizedSite}
-            onGeneratePdfReport={onGeneratePdfReport}
-          />
+
+        {runError && (
+          <div className="my-4 rounded-lg border border-destructive/40 bg-destructive/5 p-4 text-sm text-destructive">
+            {runError}
+          </div>
+        )}
+
+        {outcome && outcome.pages.length > 0 && (
+          <div className="my-4 space-y-3">
+            <div className="flex flex-wrap justify-between gap-2 text-sm">
+              <span className="font-medium">Переписано страниц: {outcome.pages.length}</span>
+              <span className="text-muted-foreground">
+                токенов: {outcome.totalTokens.toLocaleString('ru-RU')}
+                {outcome.failures.length > 0 && ` · не удалось: ${outcome.failures.length}`}
+              </span>
+            </div>
+            {outcome.pages.map((page) => (
+              <details key={page.url} className="rounded-lg border p-3">
+                <summary className="cursor-pointer text-sm font-medium break-all">{page.url}</summary>
+                {page.originalTitle && (
+                  <p className="mt-2 text-xs text-muted-foreground">
+                    Было: {page.originalTitle}
+                  </p>
+                )}
+                <div className="mt-2 whitespace-pre-wrap text-sm">{page.recommendations}</div>
+              </details>
+            ))}
+          </div>
         )}
         
         <div className="flex justify-end mt-4">

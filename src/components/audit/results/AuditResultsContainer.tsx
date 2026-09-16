@@ -34,6 +34,7 @@ const AuditResultsContainer: React.FC<AuditResultsContainerProps> = ({ url }) =>
     isOptimized,
     contentPrompt,
     taskId,
+    loadOptimizationCost,
     loadingStatus,
     retryAttempt,
     loadAuditData,
@@ -134,6 +135,7 @@ const AuditResultsContainer: React.FC<AuditResultsContainerProps> = ({ url }) =>
             generatePdfReportFile={generatePdfReportFile}
             downloadOptimizedSite={downloadOptimizedSite}
             optimizeSiteContent={optimizeSiteContent}
+            loadOptimizationCost={loadOptimizationCost}
             setContentOptimizationPrompt={setContentOptimizationPrompt}
           />
           </AuditContentErrorBoundary>
