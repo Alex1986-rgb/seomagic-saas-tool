@@ -1,19 +1,22 @@
 /**
- * Проверка позиций домена по ключевым словам в реальной поисковой выдаче.
+ * Постановка проверки позиций в работу.
  *
  * Функция серверная по необходимости: ключи поставщика выдачи нельзя отдавать
- * в браузер, а сами поисковики не отвечают на кросс-доменные запросы со страницы.
- * Если поставщик не настроен — возвращаем 503 с объяснением, а не выдуманные числа.
+ * в браузер, а поисковики не отвечают на кросс-доменные запросы со страницы.
+ *
+ * Сама выдача собирается не здесь. Тридцать запросов на глубину 100 — это триста
+ * обращений к поставщику и минут двадцать работы, а edge-функция живёт две с
+ * половиной минуты. Поэтому здесь запросы только становятся в очередь, а разбирает
+ * её `positions-processor` пачками, сохраняя результат по ходу. Ответ приходит
+ * сразу, состояние видно по `position_checks`.
  */
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
 import {
-  fetchSerp,
-  findDomainPosition,
   getConfiguredProvider,
+  PAGE_SIZE_HINT,
   PROVIDER_SETUP_HINT,
   SearchEngine,
-  SerpProviderError,
 } from "../_shared/serp.ts";
 
 const corsHeaders = {
@@ -21,10 +24,13 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-/** Потолок на один запрос: проверка идёт синхронно и должна уложиться в лимит функции. */
-const MAX_KEYWORDS = 50;
-/** Пауза между запросами к поставщику, чтобы не ловить его лимиты. */
-const REQUEST_DELAY_MS = 300;
+/**
+ * Потолок на одну проверку. Ограничение не техническое, а денежное: каждый
+ * запрос на каждой странице выдачи — платное обращение к поставщику.
+ */
+const MAX_KEYWORDS = 200;
+/** Дальше этого числа обращений проверку не пускаем без явного согласия. */
+const MAX_PROVIDER_REQUESTS = 1000;
 
 interface PositionsCheckRequest {
   domain: string;
@@ -99,6 +105,19 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
     );
 
+    // Считаем цену вопроса заранее: поставщик отдаёт выдачу постранично, и
+    // глубина 100 превращает один запрос в десяток платных обращений.
+    const pagesPerKeyword = Math.ceil(depth / PAGE_SIZE_HINT);
+    const providerRequests = keywords.length * engines.length * pagesPerKeyword;
+
+    if (providerRequests > MAX_PROVIDER_REQUESTS) {
+      return json({
+        error: `Такая проверка потребует ${providerRequests} обращений к поставщику выдачи — `
+          + `это дороже и дольше разумного. Уменьшите глубину или число запросов `
+          + `(сейчас ${keywords.length} запросов × ${pagesPerKeyword} страниц выдачи).`,
+      }, 400);
+    }
+
     const { data: check, error: checkError } = await adminClient
       .from('position_checks')
       .insert({
@@ -110,6 +129,8 @@ serve(async (req) => {
         provider,
         status: 'running',
         keywords_total: keywords.length * engines.length,
+        provider_requests: providerRequests,
+        heartbeat_at: new Date().toISOString(),
       })
       .select()
       .single();
@@ -119,61 +140,35 @@ serve(async (req) => {
       return json({ error: 'Не удалось создать проверку позиций' }, 500);
     }
 
-    const previous = await loadPreviousPositions(adminClient, user.id, domain);
-    const results: Array<Record<string, unknown>> = [];
-    const failures: string[] = [];
+    // Ставим в очередь каждую пару «запрос + поисковик».
+    const queue = engines.flatMap((engine) =>
+      keywords.map((keyword) => ({ check_id: check.id, keyword, search_engine: engine }))
+    );
 
-    for (const engine of engines) {
-      for (const keyword of keywords) {
-        try {
-          const serp = await fetchSerp({ engine, query: keyword, region, depth });
-          const { position, url } = findDomainPosition(serp.urls, domain);
-
-          results.push({
-            check_id: check.id,
-            keyword,
-            search_engine: engine,
-            position,
-            previous_position: previous.get(`${engine}:${keyword}`) ?? null,
-            url: url ?? null,
-            search_url: serp.searchUrl,
-          });
-        } catch (error) {
-          const message = error instanceof SerpProviderError
-            ? error.message
-            : `Сбой запроса к поставщику: ${error instanceof Error ? error.message : String(error)}`;
-          console.error(`Позиция не получена (${engine}, "${keyword}"):`, message);
-          failures.push(`${keyword} [${engine}]: ${message}`);
-        }
-        await new Promise((resolve) => setTimeout(resolve, REQUEST_DELAY_MS));
-      }
+    const { error: queueError } = await adminClient.from('position_queue').insert(queue);
+    if (queueError) {
+      console.error('Не удалось поставить запросы в очередь:', queueError);
+      await adminClient
+        .from('position_checks')
+        .update({ status: 'failed', error: 'Не удалось поставить запросы в очередь', completed_at: new Date().toISOString() })
+        .eq('id', check.id);
+      return json({ error: 'Не удалось поставить запросы в очередь' }, 500);
     }
 
-    if (results.length > 0) {
-      const { error: insertError } = await adminClient.from('position_results').insert(results);
-      if (insertError) {
-        console.error('Не удалось сохранить результаты:', insertError);
-        return json({ error: 'Результаты получены, но не сохранены' }, 500);
-      }
-    }
+    // Обработчик запускаем, не дожидаясь ответа: он работает дольше, чем
+    // клиент готов ждать, и сам вызывает себя, пока очередь не опустеет.
+    const processorUrl = `${Deno.env.get('SUPABASE_URL')}/functions/v1/positions-processor`;
+    fetch(processorUrl, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ check_id: check.id }),
+    }).catch((error) => console.error('Не удалось разбудить обработчик:', error));
 
-    // Частичный результат честно помечаем частичным: пользователь должен видеть,
-    // что часть запросов не проверена, а не считать нули реальными позициями.
-    const status = results.length === 0 ? 'failed' : (failures.length > 0 ? 'partial' : 'completed');
-
-    await adminClient
-      .from('position_checks')
-      .update({
-        status,
-        keywords_checked: results.length,
-        error: failures.length > 0 ? failures.slice(0, 10).join('; ') : null,
-        completed_at: new Date().toISOString(),
-      })
-      .eq('id', check.id);
-
-    if (results.length === 0) {
-      return json({ error: failures[0] ?? 'Ни один запрос не удалось проверить' }, 502);
-    }
+    // Оценка времени нужна человеку: иначе непонятно, ждать минуту или полчаса.
+    const estimatedSeconds = Math.round(providerRequests * 3.5);
 
     return json({
       scanId: check.id,
@@ -182,56 +177,16 @@ serve(async (req) => {
       region,
       depth,
       provider,
-      status,
+      status: 'running',
+      keywordsTotal: check.keywords_total,
+      providerRequests,
+      estimatedSeconds,
       timestamp: check.created_at,
-      failures,
-      keywords: results.map((r) => ({
-        keyword: r.keyword,
-        position: r.position,
-        previousPosition: r.previous_position ?? undefined,
-        url: r.url ?? undefined,
-        searchEngine: r.search_engine,
-        searchUrl: r.search_url,
-        lastChecked: new Date().toISOString(),
-      })),
+      message: `Проверка запущена: ${check.keywords_total} запросов, `
+        + `около ${Math.max(1, Math.round(estimatedSeconds / 60))} мин.`,
     });
   } catch (error) {
     console.error('positions-check упал:', error);
     return json({ error: error instanceof Error ? error.message : 'Внутренняя ошибка' }, 500);
   }
 });
-
-/**
- * Позиции прошлой проверки по этому домену — для колонки «было / стало».
- * Берём по ключу последнюю запись; отсутствие истории оставляем пустым,
- * а не заполняем произвольным числом.
- */
-async function loadPreviousPositions(
-  client: ReturnType<typeof createClient>,
-  userId: string,
-  domain: string,
-): Promise<Map<string, number>> {
-  const previous = new Map<string, number>();
-
-  const { data: lastCheck } = await client
-    .from('position_checks')
-    .select('id')
-    .eq('user_id', userId)
-    .eq('domain', domain)
-    .in('status', ['completed', 'partial'])
-    .order('created_at', { ascending: false })
-    .limit(1)
-    .maybeSingle();
-
-  if (!lastCheck) return previous;
-
-  const { data: rows } = await client
-    .from('position_results')
-    .select('keyword, search_engine, position')
-    .eq('check_id', lastCheck.id);
-
-  for (const row of rows ?? []) {
-    previous.set(`${row.search_engine}:${row.keyword}`, row.position);
-  }
-  return previous;
-}

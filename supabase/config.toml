@@ -47,3 +47,6 @@ verify_jwt = false
 
 [functions.positions-check]
 verify_jwt = true
+
+[functions.positions-processor]
+verify_jwt = false

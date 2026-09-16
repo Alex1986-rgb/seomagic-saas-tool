@@ -14,6 +14,13 @@
 
 export type SearchEngine = 'google' | 'yandex';
 
+/**
+ * Сколько органических результатов приходит за один платный запрос.
+ * Точное число задаётся в кабинете поставщика; для оценки стоимости и времени
+ * берём привычный размер страницы выдачи.
+ */
+export const PAGE_SIZE_HINT = 10;
+
 export interface SerpRequest {
   engine: SearchEngine;
   query: string;

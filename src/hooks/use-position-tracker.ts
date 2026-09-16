@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from 'react';
-import { checkPositions, KeywordPosition, PositionData } from '@/services/position/positionTracker';
+import { checkPositions, KeywordPosition, PositionData, PositionCheckProgress } from '@/services/position/positionTracker';
 import { useProxyManager } from './use-proxy-manager';
 import { useToast } from './use-toast';
 
@@ -26,6 +26,9 @@ export function usePositionTracker({
   
   const [isLoading, setIsLoading] = useState(false);
   const [results, setResults] = useState<PositionData | null>(null);
+  // Проверка идёт в фоне и занимает минуты — без этого пользователь смотрит
+  // на крутящийся индикатор, не понимая, движется ли дело.
+  const [progress, setProgress] = useState<PositionCheckProgress | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [historyUpdated, setHistoryUpdated] = useState(false);
   
@@ -115,7 +118,7 @@ export function usePositionTracker({
       
       // Запускаем проверку позиций с использованием актуальных данных
       console.log('Запуск проверки позиций с параметрами:', data);
-      const positionData = await checkPositions(data);
+      const positionData = await checkPositions(data, setProgress);
       console.log('Получены результаты проверки:', positionData);
       setResults(positionData);
       
@@ -176,6 +179,7 @@ export function usePositionTracker({
     scanFrequency,
     setScanFrequency,
     isLoading,
+    progress,
     results,
     error,
     trackPositions,

@@ -270,7 +270,7 @@ function buildEstimate(issues, priceRules) {
   return { groups, total, unpriced };
 }
 
-function buildDocument({ result, issues, priceRules, generatedAt }) {
+function buildDocument({ result, issues, priceRules, sections, worstPages, generatedAt }) {
   const doc = new jsPDF({ unit: 'mm', format: 'a4' });
   loadFont(doc);
 
@@ -536,6 +536,27 @@ const issues = await query(
     order by case severity when 'high' then 1 when 'medium' then 2 else 3 end, n desc`,
 );
 
+// Адрес страницы лежит в тексте замечания — вытаскиваем его, чтобы показать
+// разбивку по разделам сайта и страницы, где замечаний больше всего.
+const PAGE_URLS = `select substring(description from 'https?://[^ ]+') as url, issue_type, severity
+                     from issues where task_id = '${resultRows[0].task_id}'`;
+
+const sections = await query(
+  `with pages as (${PAGE_URLS})
+   select coalesce(nullif(split_part(regexp_replace(url, '^https?://[^/]+/?', ''), '/', 1), ''), 'Главная и корневые') as section,
+          count(*) as issues,
+          count(distinct url) as pages
+     from pages where url is not null
+    group by 1 order by issues desc limit 7`,
+);
+
+const worstPages = await query(
+  `with pages as (${PAGE_URLS})
+   select url, count(*) as issues, string_agg(distinct issue_type, ', ') as types
+     from pages where url is not null
+    group by url order by issues desc, url limit 8`,
+);
+
 const priceRules = await query(
   `select issue_type, rule_name, category, price_per_item
      from pricing_rules
@@ -547,6 +568,8 @@ const doc = buildDocument({
   result: resultRows[0],
   issues: Array.isArray(issues) ? issues : [],
   priceRules: Array.isArray(priceRules) ? priceRules : [],
+  sections: Array.isArray(sections) ? sections : [],
+  worstPages: Array.isArray(worstPages) ? worstPages : [],
   generatedAt: new Date(),
 });
 doc.save(out);
