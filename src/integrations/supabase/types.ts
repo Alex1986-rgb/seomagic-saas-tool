@@ -243,6 +243,9 @@ export type Database = {
       }
       audit_tasks: {
         Row: {
+          site_compression_type: string | null
+          site_is_compressed: boolean | null
+          site_origin: string | null
           audit_id: string | null
           avg_load_time_ms: number | null
           batch_count: number | null
@@ -269,6 +272,9 @@ export type Database = {
           user_id: string | null
         }
         Insert: {
+          site_compression_type?: string | null
+          site_is_compressed?: boolean | null
+          site_origin?: string | null
           audit_id?: string | null
           avg_load_time_ms?: number | null
           batch_count?: number | null
@@ -295,6 +301,9 @@ export type Database = {
           user_id?: string | null
         }
         Update: {
+          site_compression_type?: string | null
+          site_is_compressed?: boolean | null
+          site_origin?: string | null
           audit_id?: string | null
           avg_load_time_ms?: number | null
           batch_count?: number | null

@@ -48,19 +48,13 @@ const Sitemap = () => {
               </ul>
             </nav>
 
-            <div className="mt-12 pt-8 border-t border-border">
-              <p className="text-sm text-muted-foreground">
-                Для поисковых систем доступен{' '}
-                <a 
-                  href="/sitemap.xml" 
-                  className="text-primary hover:underline"
-                  target="_blank"
-                  rel="noopener"
-                >
-                  XML sitemap
-                </a>
-              </p>
-            </div>
+            {/*
+              Здесь была ссылка «Для поисковых систем доступен XML sitemap» на
+              /sitemap.xml. Такого файла сайт не публикует (в public его нет, при
+              сборке он не создаётся), а ссылка от корня домена к тому же шла мимо
+              подпути публикации — человек получал 404. Вернуть ссылку можно, когда
+              sitemap.xml начнёт собираться, через assetUrl('sitemap.xml').
+            */}
           </div>
         </div>
       </div>

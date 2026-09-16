@@ -52,11 +52,17 @@ serve(async (req) => {
       throw new Error(`Failed to fetch audit results: ${auditError?.message}`);
     }
 
-    // Получаем данные оптимизации
+    // Получаем смету оптимизации. У задачи теперь несколько строк в
+    // optimization_jobs: смета и запуски оптимизации. Выборка без условия
+    // падала на «несколько строк», и отчёт собирался без сметы. Смета одна
+    // (уникальный индекс по task_id для status = 'estimated').
     const { data: optimizationJob, error: optError } = await supabaseClient
       .from('optimization_jobs')
       .select('*')
       .eq('task_id', task_id)
+      .eq('status', 'estimated')
+      .order('created_at', { ascending: false })
+      .limit(1)
       .maybeSingle();
 
     if (optError) {
@@ -71,6 +77,18 @@ serve(async (req) => {
       .single();
 
     const url = task?.url || 'Неизвестный URL';
+
+    // Адрес сайта и строки сметы вводятся пользователем — в HTML отчёта они
+    // идут как текст, не как разметка.
+    const escapeHtml = (value: unknown): string =>
+      String(value ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    // Цены в прайсе — в рублях. Раньше отчёт подписывал их долларами.
+    const rub = (value: unknown): string => `${(Number(value) || 0).toLocaleString('ru-RU', { maximumFractionDigits: 2 })} ₽`;
     const userId = task?.user_id || null;
 
     console.log('[PDF-GENERATE] Creating PDF report data...');
@@ -100,7 +118,7 @@ serve(async (req) => {
 </head>
 <body>
   <h1>SEO Audit Report</h1>
-  <p class="date">Website: ${url}</p>
+  <p class="date">Website: ${escapeHtml(url)}</p>
   <p class="date">Date: ${new Date().toLocaleDateString('ru-RU')}</p>
   
   <div class="score-card">
@@ -147,11 +165,7 @@ serve(async (req) => {
   <div class="score-card">
     <div class="score-item">
       <span><strong>Total Cost</strong></span>
-      <span class="score-value">$${(optimizationJob.cost || 0).toFixed(2)}</span>
-    </div>
-    <div class="score-item">
-      <span>Pages to optimize</span>
-      <span>${(optimizationJob.result_data as any)?.pageCount || 0}</span>
+      <span class="score-value">${rub(optimizationJob.cost)}</span>
     </div>
   </div>
   
@@ -159,10 +173,10 @@ serve(async (req) => {
   <h3>Optimization Items:</h3>
   ${((optimizationJob.result_data as any).items as any[]).map((item: any) => `
     <div class="opt-item">
-      <strong>${item.issue_type || 'Unknown'}</strong> 
-      <span style="color: #666;">(${item.category || 'general'})</span><br/>
-      ${item.count || 0} items × $${(item.unit_price || 0).toFixed(2)} = 
-      <strong>$${(item.total_price || 0).toFixed(2)}</strong>
+      <strong>${escapeHtml(item.issue_type || 'Unknown')}</strong> 
+      <span style="color: #666;">(${escapeHtml(item.category || 'general')})</span><br/>
+      ${Number(item.count) || 0} items × ${rub(item.unit_price)} = 
+      <strong>${rub(item.total_price)}</strong>
     </div>
   `).join('')}
   ` : ''}
@@ -175,7 +189,7 @@ serve(async (req) => {
     <h3>Pages by Type:</h3>
     <ul>
       ${Object.entries(auditResult.pages_by_type as any).map(([type, count]) => `
-        <li>${type}: ${count}</li>
+        <li>${escapeHtml(type)}: ${escapeHtml(count)}</li>
       `).join('')}
     </ul>
     ` : ''}

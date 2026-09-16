@@ -1,99 +1,71 @@
-
 import React from 'react';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Shield, Lock, CheckCircle, TrendingUp, Eye, Server, Key } from 'lucide-react';
+import { ArrowLeft, Shield, Lock, CheckCircle, Server, Key, Info } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import Layout from '@/components/Layout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { SITE_CONTACTS } from '@/config/site-contacts';
 import PageSeo from '@/components/seo/PageSeo';
 
+/**
+ * Безопасность данных.
+ *
+ * Страница заявляла сертификаты, которых у сервиса нет: GDPR, ISO 27001,
+ * SOC 2 Type II и 152-ФЗ со значками «Сертифицирован» и «Действующий
+ * сертификат». Ещё обещались шифрование AES-256, многофакторная
+ * аутентификация, изолированные серверы, сроки хранения («1 год», «2 года»),
+ * которые нигде не заданы, «время ответа в течение 24 часов» и «данные не
+ * передаются внешним организациям» — хотя для подготовки текстов данные
+ * страниц уходят языковой модели, а для проверки позиций запросы уходят
+ * поставщику поисковой выдачи. Ложное заявление о сертификации и о
+ * непередаче данных — прямой юридический риск.
+ *
+ * Теперь на странице только то, что проверяется по коду: HTTPS, ключи
+ * поставщиков на сервере, правила доступа в базе, и честный список внешних
+ * сервисов, которым передаются данные.
+ */
 const DataSecurity: React.FC = () => {
   const securityFeatures = [
     {
-      title: 'Шифрование данных',
-      description: 'Все данные шифруются с использованием AES-256',
-      icon: Lock,
-      status: 'active'
+      title: 'Защищённое соединение',
+      description: 'Сайт и сервер обмениваются данными только по HTTPS',
+      icon: Lock
     },
     {
-      title: 'Безопасная передача',
-      description: 'Использование HTTPS/TLS 1.3 для всех соединений',
-      icon: Shield,
-      status: 'active'
+      title: 'Ключи на сервере',
+      description: 'Ключи языковой модели и поставщика выдачи хранятся в секретах сервера и в браузер не попадают',
+      icon: Key
     },
     {
-      title: 'Контроль доступа',
-      description: 'Многофакторная аутентификация и управление правами',
-      icon: Key,
-      status: 'active'
+      title: 'Правила доступа в базе',
+      description: 'Аудиты, запущенные после входа, привязаны к учётной записи; доступ к записям ограничен правилами базы данных',
+      icon: Shield
     },
     {
-      title: 'Изолированные серверы',
-      description: 'Данные хранятся на изолированных серверах',
-      icon: Server,
-      status: 'active'
+      title: 'Запись результатов на сервере',
+      description: 'Результаты проверок сохраняет сервер — вписать себе произвольные данные из браузера нельзя',
+      icon: Server
     }
   ];
 
-  const compliance = [
+  const thirdParties = [
     {
-      standard: 'GDPR',
-      description: 'Соответствие Европейскому регламенту защиты данных',
-      status: 'certified'
+      name: 'Языковая модель',
+      description: 'Для ИИ-оптимизации ей передаются адрес страницы, title, description и сведения о тексте'
     },
     {
-      standard: 'ISO 27001',
-      description: 'Стандарт информационной безопасности',
-      status: 'certified'
-    },
-    {
-      standard: 'SOC 2 Type II',
-      description: 'Аудит безопасности и доступности',
-      status: 'certified'
-    },
-    {
-      standard: 'РФ 152-ФЗ',
-      description: 'Российский закон о персональных данных',
-      status: 'certified'
-    }
-  ];
-
-  const dataProcessing = [
-    {
-      type: 'URL и домены',
-      description: 'Анализируемые веб-адреса',
-      retention: '30 дней',
-      encryption: true
-    },
-    {
-      type: 'Результаты аудита',
-      description: 'Отчеты и рекомендации',
-      retention: '1 год',
-      encryption: true
-    },
-    {
-      type: 'Метаданные',
-      description: 'Техническая информация о проверках',
-      retention: '90 дней',
-      encryption: true
-    },
-    {
-      type: 'Аналитика',
-      description: 'Обезличенные данные использования',
-      retention: '2 года',
-      encryption: true
+      name: 'Поставщик поисковой выдачи',
+      description: 'Для проверки позиций ему передаются поисковые запросы, регион и глубина проверки'
     }
   ];
 
   return (
     <Layout>
       <PageSeo
-        title="Безопасность данных: шифрование, доступы и хранение"
-        description="Как сервис хранит результаты аудитов и учётные данные: шифрование канала, разграничение доступа и регулярные резервные копии."
+        title="Безопасность данных: соединение, доступы и внешние сервисы"
+        description="Как сервис обращается с результатами аудитов: HTTPS, ключи на сервере, правила доступа в базе и какие данные передаются внешним сервисам."
       />
       <div className="container mx-auto px-4 py-16 md:py-24">
         {/* Навигация */}
@@ -105,7 +77,7 @@ const DataSecurity: React.FC = () => {
         </div>
 
         {/* Шапка */}
-        <motion.div 
+        <motion.div
           className="mb-16"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -119,15 +91,15 @@ const DataSecurity: React.FC = () => {
               Безопасность
             </Badge>
           </div>
-          
+
           <h1 className="text-4xl md:text-5xl font-bold mb-6">Безопасность данных</h1>
           <p className="text-xl text-muted-foreground max-w-3xl">
-            Полная конфиденциальность и безопасность ваших данных с соблюдением международных стандартов и GDPR.
+            Как сервис обращается с данными ваших проверок и какие внешние сервисы в этом участвуют.
           </p>
         </motion.div>
 
         {/* Меры безопасности */}
-        <motion.div 
+        <motion.div
           className="mb-16"
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
@@ -154,10 +126,7 @@ const DataSecurity: React.FC = () => {
                       <feature.icon className="h-6 w-6 text-green-600" />
                     </div>
                     <div className="flex-1">
-                      <div className="flex items-center justify-between mb-2">
-                        <h4 className="font-semibold">{feature.title}</h4>
-                        <Badge variant="default">Активно</Badge>
-                      </div>
+                      <h4 className="font-semibold mb-2">{feature.title}</h4>
                       <p className="text-sm text-muted-foreground">{feature.description}</p>
                     </div>
                   </motion.div>
@@ -167,213 +136,86 @@ const DataSecurity: React.FC = () => {
           </Card>
         </motion.div>
 
-        {/* Основной контент */}
-        <motion.div 
+        {/* Внешние сервисы */}
+        <motion.div
           className="mb-16"
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.5, delay: 0.3 }}
         >
-          <Tabs defaultValue="compliance" className="w-full">
-            <TabsList className="grid w-full grid-cols-4">
-              <TabsTrigger value="compliance">Соответствие</TabsTrigger>
-              <TabsTrigger value="data-processing">Обработка данных</TabsTrigger>
-              <TabsTrigger value="privacy">Конфиденциальность</TabsTrigger>
-              <TabsTrigger value="transparency">Прозрачность</TabsTrigger>
-            </TabsList>
-            
-            <TabsContent value="compliance" className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Сертификации и соответствие стандартам</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {compliance.map((item, index) => (
-                      <motion.div
-                        key={index}
-                        className="p-4 border rounded-lg"
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: index * 0.1 }}
-                      >
-                        <div className="flex items-center justify-between mb-2">
-                          <h4 className="font-semibold">{item.standard}</h4>
-                          <Badge variant="default">Сертифицирован</Badge>
-                        </div>
-                        <p className="text-sm text-muted-foreground">{item.description}</p>
-                        <div className="mt-2 flex items-center gap-2 text-xs text-green-600">
-                          <CheckCircle className="h-3 w-3" />
-                          <span>Действующий сертификат</span>
-                        </div>
-                      </motion.div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
-            
-            <TabsContent value="data-processing" className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Типы обрабатываемых данных</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    {dataProcessing.map((data, index) => (
-                      <motion.div
-                        key={index}
-                        className="p-4 border rounded-lg"
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: index * 0.1 }}
-                      >
-                        <div className="flex items-start justify-between">
-                          <div className="flex-1">
-                            <h4 className="font-semibold mb-1">{data.type}</h4>
-                            <p className="text-sm text-muted-foreground mb-2">{data.description}</p>
-                            <div className="flex items-center gap-4 text-xs">
-                              <span className="text-muted-foreground">Хранение: {data.retention}</span>
-                              {data.encryption && (
-                                <div className="flex items-center gap-1 text-green-600">
-                                  <Lock className="h-3 w-3" />
-                                  <span>Зашифровано</span>
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                      </motion.div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
-            
-            <TabsContent value="privacy" className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Принципы конфиденциальности</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    <div className="flex items-start space-x-3">
-                      <CheckCircle className="h-5 w-5 text-green-500 mt-0.5" />
-                      <div>
-                        <h4 className="font-semibold">Минимизация данных</h4>
-                        <p className="text-sm text-muted-foreground">Собираем только необходимые для анализа данные</p>
-                      </div>
-                    </div>
-                    
-                    <div className="flex items-start space-x-3">
-                      <CheckCircle className="h-5 w-5 text-green-500 mt-0.5" />
-                      <div>
-                        <h4 className="font-semibold">Ограниченное хранение</h4>
-                        <p className="text-sm text-muted-foreground">Данные удаляются согласно политике хранения</p>
-                      </div>
-                    </div>
-                    
-                    <div className="flex items-start space-x-3">
-                      <CheckCircle className="h-5 w-5 text-green-500 mt-0.5" />
-                      <div>
-                        <h4 className="font-semibold">Право на удаление</h4>
-                        <p className="text-sm text-muted-foreground">Возможность удалить все данные по запросу</p>
-                      </div>
-                    </div>
-                    
-                    <div className="flex items-start space-x-3">
-                      <CheckCircle className="h-5 w-5 text-green-500 mt-0.5" />
-                      <div>
-                        <h4 className="font-semibold">Согласие пользователя</h4>
-                        <p className="text-sm text-muted-foreground">Явное согласие на обработку данных</p>
-                      </div>
-                    </div>
-                    
-                    <div className="flex items-start space-x-3">
-                      <CheckCircle className="h-5 w-5 text-green-500 mt-0.5" />
-                      <div>
-                        <h4 className="font-semibold">Отсутствие передачи третьим лицам</h4>
-                        <p className="text-sm text-muted-foreground">Данные не передаются внешним организациям</p>
-                      </div>
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Info className="h-5 w-5" />
+                Какие данные передаются внешним сервисам
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {thirdParties.map((item) => (
+                  <div key={item.name} className="flex items-start space-x-3">
+                    <CheckCircle className="h-5 w-5 text-primary mt-0.5 shrink-0" />
+                    <div>
+                      <h4 className="font-semibold">{item.name}</h4>
+                      <p className="text-sm text-muted-foreground">{item.description}</p>
                     </div>
                   </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
-            
-            <TabsContent value="transparency" className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Прозрачность процессов</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-6">
-                    <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                      <h4 className="font-semibold text-blue-800 mb-2">Что мы делаем с вашими данными</h4>
-                      <ul className="text-sm text-blue-700 space-y-1">
-                        <li>• Анализируем техническое состояние сайта</li>
-                        <li>• Проверяем SEO-оптимизацию страниц</li>
-                        <li>• Генерируем отчеты и рекомендации</li>
-                        <li>• Предоставляем статистику использования</li>
-                      </ul>
-                    </div>
-                    
-                    <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
-                      <h4 className="font-semibold text-green-800 mb-2">Чего мы НЕ делаем</h4>
-                      <ul className="text-sm text-green-700 space-y-1">
-                        <li>• Не продаем данные третьим лицам</li>
-                        <li>• Не используем для рекламы</li>
-                        <li>• Не передаем конкурентам</li>
-                        <li>• Не храним дольше необходимого</li>
-                      </ul>
-                    </div>
-                    
-                    {/*
-                      Здесь были придуманные контакты: почта
-                      security@seomarket.com и «горячая линия»
-                      +7 (495) 123-45-67. Вопрос о защите данных уходил в
-                      пустоту. Теперь контакты берутся из SITE_CONTACTS, а если
-                      их нет — предлагаем форму обратной связи, которая работает.
-                    */}
-                    <div className="p-4 border rounded-lg">
-                      <h4 className="font-semibold mb-2">Контакты по вопросам безопасности</h4>
-                      <div className="text-sm text-muted-foreground">
-                        {SITE_CONTACTS.email && (
-                          <p>
-                            Ответственный за защиту данных:{' '}
-                            <a href={`mailto:${SITE_CONTACTS.email}`} className="text-primary underline">
-                              {SITE_CONTACTS.email}
-                            </a>
-                          </p>
-                        )}
-                        {SITE_CONTACTS.telephone && (
-                          <p>
-                            Телефон:{' '}
-                            <a
-                              href={`tel:${SITE_CONTACTS.telephone.replace(/[^+\d]/g, '')}`}
-                              className="text-primary underline"
-                            >
-                              {SITE_CONTACTS.telephone}
-                            </a>
-                          </p>
-                        )}
-                        {!SITE_CONTACTS.email && !SITE_CONTACTS.telephone && (
-                          <p>
-                            Напишите нам через{' '}
-                            <Link to="/contact" className="text-primary underline">
-                              форму обратной связи
-                            </Link>
-                            .
-                          </p>
-                        )}
-                        <p>Время ответа: в течение 24 часов</p>
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
-          </Tabs>
+                ))}
+                <p className="text-sm text-muted-foreground">
+                  Сертификатов ISO 27001, SOC 2 и аналогичных у сервиса нет.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
+
+        {/*
+          Здесь были придуманные контакты: почта security@seomarket.com и
+          «горячая линия» +7 (495) 123-45-67. Вопрос о защите данных уходил в
+          пустоту. Теперь контакты берутся из SITE_CONTACTS, а если их нет —
+          предлагаем форму обратной связи, которая работает.
+        */}
+        <motion.div
+          className="mb-16"
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.5, delay: 0.4 }}
+        >
+          <Card>
+            <CardContent className="p-6">
+              <h4 className="font-semibold mb-2">Вопросы о данных и их удалении</h4>
+              <div className="text-sm text-muted-foreground space-y-1">
+                {SITE_CONTACTS.email && (
+                  <p>
+                    Почта:{' '}
+                    <a href={`mailto:${SITE_CONTACTS.email}`} className="text-primary underline">
+                      {SITE_CONTACTS.email}
+                    </a>
+                  </p>
+                )}
+                {SITE_CONTACTS.telephone && (
+                  <p>
+                    Телефон:{' '}
+                    <a
+                      href={`tel:${SITE_CONTACTS.telephone.replace(/[^+\d]/g, '')}`}
+                      className="text-primary underline"
+                    >
+                      {SITE_CONTACTS.telephone}
+                    </a>
+                  </p>
+                )}
+                {!SITE_CONTACTS.email && !SITE_CONTACTS.telephone && (
+                  <p>
+                    Напишите нам через{' '}
+                    <Link to="/contact" className="text-primary underline">
+                      форму обратной связи
+                    </Link>
+                    .
+                  </p>
+                )}
+              </div>
+            </CardContent>
+          </Card>
         </motion.div>
 
         {/* CTA */}
@@ -385,18 +227,17 @@ const DataSecurity: React.FC = () => {
         >
           <Card className="bg-gradient-to-r from-primary/10 via-secondary/10 to-primary/10">
             <CardContent className="p-8">
-              <h3 className="text-2xl font-bold mb-4">Ваши данные в безопасности</h3>
+              <h3 className="text-2xl font-bold mb-4">Остались вопросы о данных?</h3>
               <p className="text-muted-foreground mb-6 max-w-2xl mx-auto">
-                Мы используем лучшие практики безопасности и соблюдаем все международные 
-                стандарты защиты данных. Доверьте нам анализ вашего сайта.
+                Подробнее о том, какие данные мы обрабатываем, — в политике конфиденциальности.
               </p>
-              
+
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Button asChild size="lg">
-                  <Link to="/audit">Безопасный аудит</Link>
+                  <Link to="/privacy">Политика конфиденциальности</Link>
                 </Button>
                 <Button variant="outline" size="lg" asChild>
-                  <Link to="/privacy">Политика конфиденциальности</Link>
+                  <Link to="/audit">Проверить сайт</Link>
                 </Button>
               </div>
             </CardContent>

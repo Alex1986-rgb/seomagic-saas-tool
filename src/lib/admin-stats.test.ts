@@ -1,9 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import {
   buildApiActivity,
-  buildMonthlyCounts,
+  buildMonthWindows,
   buildRoleDistribution,
-  countSince,
   formatDateTime,
   isErrorStatus,
   type ApiLogRow,
@@ -49,6 +48,17 @@ describe('buildApiActivity', () => {
     expect(stats.averageDuration).toBeNull();
   });
 
+  it('нулевую длительность за замер не принимает', () => {
+    expect(buildApiActivity([log({ duration_ms: 0 })], NOW).averageDuration).toBeNull();
+    expect(buildApiActivity([log({ duration_ms: 0 }), log({ duration_ms: 300 })], NOW).averageDuration).toBe(300);
+    expect(buildApiActivity([log({ duration_ms: 0 })], NOW).byFunction[0].averageDuration).toBeNull();
+  });
+
+  it('помнит, по скольким записям построены разбивки', () => {
+    expect(buildApiActivity([log({}), log({})], NOW).sampleSize).toBe(2);
+    expect(buildApiActivity([], NOW).sampleSize).toBe(0);
+  });
+
   it('раскладывает вызовы по 24 часовым корзинам', () => {
     const stats = buildApiActivity([log({}), log({ created_at: new Date(NOW - 3 * 60 * 60 * 1000).toISOString() })], NOW);
     expect(stats.byHour).toHaveLength(24);
@@ -75,33 +85,36 @@ describe('buildApiActivity', () => {
   });
 });
 
-describe('buildMonthlyCounts', () => {
-  it('отдаёт ровно 12 месяцев и считает попадания', () => {
-    const buckets = buildMonthlyCounts([new Date(NOW).toISOString(), new Date(NOW).toISOString()], NOW);
-    expect(buckets).toHaveLength(12);
-    expect(buckets[buckets.length - 1].count).toBe(2);
+describe('buildMonthWindows', () => {
+  it('отдаёт 12 месяцев подряд без дыр и перекрытий', () => {
+    const windows = buildMonthWindows(NOW);
+    expect(windows).toHaveLength(12);
+    for (let i = 1; i < windows.length; i += 1) {
+      expect(windows[i].from).toBe(windows[i - 1].to);
+    }
   });
 
-  it('не падает на пустых и битых датах', () => {
-    const buckets = buildMonthlyCounts([null, 'не дата'], NOW);
-    expect(buckets.reduce((sum, bucket) => sum + bucket.count, 0)).toBe(0);
+  it('последнее окно содержит текущий момент', () => {
+    const windows = buildMonthWindows(NOW);
+    const last = windows[windows.length - 1];
+    expect(new Date(last.from).getTime()).toBeLessThanOrEqual(NOW);
+    expect(new Date(last.to).getTime()).toBeGreaterThan(NOW);
   });
 });
 
 describe('buildRoleDistribution', () => {
-  it('добавляет группу без роли только когда такие профили есть', () => {
-    expect(buildRoleDistribution(['admin', 'admin', 'user'], 3).map((b) => b.name)).not.toContain(
+  it('добавляет группу без роли только когда её удалось посчитать и она не пустая', () => {
+    expect(buildRoleDistribution({ admin: 1, user: 2 }, 0).map((b) => b.name)).not.toContain(
       'Без назначенной роли',
     );
-    expect(buildRoleDistribution(['admin'], 5)).toContainEqual({ name: 'Без назначенной роли', value: 4 });
+    expect(buildRoleDistribution({ admin: 1 }, null).map((b) => b.name)).not.toContain(
+      'Без назначенной роли',
+    );
+    expect(buildRoleDistribution({ admin: 1 }, 4)).toContainEqual({ name: 'Без назначенной роли', value: 4 });
   });
-});
 
-describe('countSince', () => {
-  it('считает только даты внутри окна', () => {
-    const inside = new Date(NOW - 5 * 24 * 60 * 60 * 1000).toISOString();
-    const outside = new Date(NOW - 40 * 24 * 60 * 60 * 1000).toISOString();
-    expect(countSince([inside, outside, null], 30, NOW)).toBe(1);
+  it('пустые роли не рисует', () => {
+    expect(buildRoleDistribution({ admin: 0, user: 3 }, null)).toEqual([{ name: 'Пользователи', value: 3 }]);
   });
 });
 

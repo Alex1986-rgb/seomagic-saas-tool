@@ -2,6 +2,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Button } from "@/components/ui/button";
+import { Link } from 'react-router-dom';
 import Layout from '@/components/Layout';
 import { BreadcrumbSchema } from '@/components/seo/BreadcrumbSchema';
 import { SITE_CONTACTS } from '@/config/site-contacts';
@@ -103,7 +104,7 @@ const Terms: React.FC = () => {
             ) : (
               <p>
                 Если у вас есть вопросы или предложения относительно наших Условий использования,
-                напишите нам через <a href="/contact" className="text-primary underline">форму обратной связи</a>.
+                напишите нам через <Link to="/contact" className="text-primary underline">форму обратной связи</Link>.
               </p>
             )}
           </div>

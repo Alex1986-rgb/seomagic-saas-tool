@@ -109,43 +109,7 @@ export function addTableOfContents(
   return currentY + 10;
 }
 
-/**
- * Автоматически генерирует оглавление на основе структуры отчета
- */
-export function generateTocSections(): TocSection[] {
-  return [
-    { title: 'Исполнительное резюме', pageNumber: 3, level: 1 },
-    { title: 'Общая оценка', pageNumber: 3, level: 2 },
-    { title: 'Ключевые находки', pageNumber: 4, level: 2 },
-    
-    { title: 'Детальный анализ оценок', pageNumber: 5, level: 1 },
-    { title: 'SEO', pageNumber: 5, level: 2 },
-    { title: 'Производительность', pageNumber: 6, level: 2 },
-    { title: 'Контент', pageNumber: 7, level: 2 },
-    { title: 'Технические аспекты', pageNumber: 8, level: 2 },
-    { title: 'Мобильная оптимизация', pageNumber: 9, level: 2 },
-    
-    { title: 'SEO Анализ', pageNumber: 10, level: 1 },
-    { title: 'Meta теги', pageNumber: 10, level: 2 },
-    { title: 'Заголовки', pageNumber: 11, level: 2 },
-    { title: 'URL структура', pageNumber: 12, level: 2 },
-    
-    { title: 'Технический анализ', pageNumber: 13, level: 1 },
-    { title: 'HTTPS и безопасность', pageNumber: 13, level: 2 },
-    { title: 'Статус-коды', pageNumber: 14, level: 2 },
-    { title: 'Битые ссылки', pageNumber: 15, level: 2 },
-    
-    { title: 'Выявленные проблемы', pageNumber: 16, level: 1 },
-    { title: 'Критические', pageNumber: 16, level: 2 },
-    { title: 'Важные', pageNumber: 17, level: 2 },
-    { title: 'Рекомендации', pageNumber: 18, level: 2 },
-    
-    { title: 'План действий и рекомендации', pageNumber: 19, level: 1 },
-    { title: 'Приоритетные исправления', pageNumber: 19, level: 2 },
-    { title: 'Долгосрочная стратегия', pageNumber: 20, level: 2 },
-    
-    { title: 'Смета оптимизации', pageNumber: 21, level: 1 },
-    { title: 'Детальная смета работ', pageNumber: 21, level: 2 },
-    { title: 'Варианты пакетов', pageNumber: 22, level: 2 },
-  ];
-}
+// Здесь была generateTocSections(): заготовленный список разделов с номерами
+// страниц 3–22 («Долгосрочная стратегия», «Варианты пакетов»…), не совпадавший
+// с настоящим отчётом. Оглавление теперь собирается по фактически добавленным
+// разделам — см. generateAuditPdf в ../auditPdf.ts.

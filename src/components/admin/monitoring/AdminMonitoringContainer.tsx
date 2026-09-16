@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from "react-router-dom";
 import { Loader2, Activity, AlertTriangle, Timer, Clock } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { AreaChart, Area, CartesianGrid, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer } from "recharts";
@@ -19,6 +20,11 @@ import { formatDateTime } from "@/lib/admin-stats";
  * компонентов и журнал придуманных событий. Ни одной из этих метрик проект
  * не собирает. Осталось то, что действительно пишется в базу, — вызовы
  * edge-функций из `api_logs` и счётчики работ платформы.
+ *
+ * Журнал api_logs неполный: пишут в него не все функции и не при каждой
+ * ошибке, а функции оптимизации вместо длительности ставят 0. Поэтому
+ * метрики подписаны как записи журнала, «0 мс» не показывается, и рядом
+ * стоит оговорка, что отсутствие ошибок в журнале не значит их отсутствия.
  */
 
 // Ссылки на разделы: навигация, а не показатели.
@@ -72,6 +78,29 @@ const AdminMonitoringContainer: React.FC = () => {
         ]}
       />
 
+      <NotCollectedNotice
+        className="mb-8 bg-white/80"
+        title="Журнал вызовов неполный"
+        description="Всё ниже построено по записям, которые функции сами оставили в api_logs. Судить по ним, были ли сбои, нельзя:"
+        items={[
+          "записи оставляют не все функции платформы и не на каждом шаге — часть обращений, в том числе неудачные, в журнал не попадает",
+          "длительность пишут не все функции; где время не замеряли, средняя не показывается",
+          "если записей с кодом ошибки нет, это не значит, что ошибок не было",
+        ]}
+      />
+
+      <p className="mb-8 text-sm text-muted-foreground">
+        Упавшие аудиты и оптимизации видны по их статусам в разделах{" "}
+        <Link to="/admin/audits" className="text-primary underline-offset-2 hover:underline">
+          «Аудиты»
+        </Link>{" "}
+        и{" "}
+        <Link to="/admin/sites" className="text-primary underline-offset-2 hover:underline">
+          «Оптимизация сайтов»
+        </Link>
+        .
+      </p>
+
       {error && (
         <div className="mb-6 rounded-lg border border-red-300 bg-red-50 p-4 text-sm text-red-700">
           Не удалось прочитать журнал вызовов: {error}
@@ -81,30 +110,30 @@ const AdminMonitoringContainer: React.FC = () => {
       {isLoading ? (
         <div className="flex items-center gap-2 py-8 text-muted-foreground">
           <Loader2 className="h-4 w-4 animate-spin" />
-          Считаем вызовы функций за сутки...
+          Читаем журнал вызовов за сутки...
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
           <Metric
-            title="Вызовов функций за 24 часа"
-            value={hasCalls ? String(stats.total) : "нет данных"}
-            description="Строки в журнале api_logs"
+            title="Записей в журнале за 24 часа"
+            value={hasCalls ? String(stats.total) : "нет записей"}
+            description="Пишут не все функции — это не число всех вызовов"
             icon={<Activity className="h-5 w-5 text-emerald-600" />}
           />
           <Metric
-            title="Из них с ошибкой"
-            value={hasCalls ? String(stats.errors) : "нет данных"}
-            description="Ответы с кодом 4xx и 5xx"
+            title="Записей с кодом ошибки"
+            value={hasCalls ? String(stats.errors) : "нет записей"}
+            description="Коды 4xx и 5xx; неудачные вызовы попадают в журнал не всегда"
             icon={<AlertTriangle className="h-5 w-5 text-orange-500" />}
           />
           <Metric
             title="Средняя длительность"
-            value={stats.averageDuration !== null ? `${stats.averageDuration} мс` : "нет данных"}
-            description="По вызовам, где время замерено"
+            value={stats.averageDuration !== null ? `${stats.averageDuration} мс` : "не замерялась"}
+            description="Только по записям, где функция замерила время"
             icon={<Timer className="h-5 w-5 text-blue-500" />}
           />
           <Metric
-            title="Последний вызов"
+            title="Последняя запись"
             value={stats.lastCallAt ? formatDateTime(stats.lastCallAt) : "нет данных"}
             description="Свежая запись в журнале"
             icon={<Clock className="h-5 w-5 text-purple-500" />}
@@ -114,7 +143,12 @@ const AdminMonitoringContainer: React.FC = () => {
 
       <Card className="mb-8 shadow">
         <CardContent className="p-6">
-          <h2 className="text-lg font-medium mb-4">Вызовы функций по часам</h2>
+          <h2 className="text-lg font-medium mb-1">Записи журнала по часам</h2>
+          {stats.sampleSize > 0 && stats.sampleSize < stats.total && (
+            <p className="text-xs text-muted-foreground mb-3">
+              График построен по последним {stats.sampleSize} записям из {stats.total}.
+            </p>
+          )}
           {hasCalls ? (
             <div className="h-[280px]">
               <ResponsiveContainer width="100%" height="100%">
@@ -124,14 +158,14 @@ const AdminMonitoringContainer: React.FC = () => {
                   <YAxis allowDecimals={false} />
                   <Tooltip />
                   <Legend />
-                  <Area type="monotone" dataKey="calls" name="Вызовы" stroke="#3b82f6" fill="#3b82f6" fillOpacity={0.25} />
-                  <Area type="monotone" dataKey="errors" name="Ошибки" stroke="#ef4444" fill="#ef4444" fillOpacity={0.3} />
+                  <Area type="monotone" dataKey="calls" name="Записи" stroke="#3b82f6" fill="#3b82f6" fillOpacity={0.25} />
+                  <Area type="monotone" dataKey="errors" name="С кодом ошибки" stroke="#ef4444" fill="#ef4444" fillOpacity={0.3} />
                 </AreaChart>
               </ResponsiveContainer>
             </div>
           ) : (
             <p className="text-sm text-muted-foreground py-8">
-              За последние сутки функции платформы не вызывались — рисовать нечего.
+              За последние сутки в журнал ничего не записано — рисовать нечего. Это не значит, что платформой не пользовались.
             </p>
           )}
         </CardContent>

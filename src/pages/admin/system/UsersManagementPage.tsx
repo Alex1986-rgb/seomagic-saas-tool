@@ -17,8 +17,8 @@ import PageSeo from '@/components/seo/PageSeo';
 const UsersManagementPage = () => (
   <div className="container mx-auto px-4 py-8 max-w-6xl">
     <PageSeo
-      title="Пользователи системы: роли, активность и статистика"
-      description="Учётные записи сотрудников и клиентов: роли и права доступа, история входов, блокировки и статистика новых регистраций за месяц."
+      title="Пользователи системы: роли и статистика регистраций"
+      description="Учётные записи с назначенными ролями и статистика регистраций по данным базы. Входы и сессии платформа не записывает."
       noindex
     />
     <h2 className="text-2xl font-bold mb-3">Пользователи системы</h2>

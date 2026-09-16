@@ -1,50 +1,47 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Award, Search, FileText, TrendingUp, Globe, Sparkles, Gauge, Zap } from 'lucide-react';
+import { Award, Search, FileText, TrendingUp, Sparkles, Gauge, History } from 'lucide-react';
 import FeatureCard from './FeatureCard';
 
+/*
+ * Здесь обещались «проверка более 100 параметров», «моментальный анализ»,
+ * «помощь экспертов по SEO», «международный сервис» и «высокий уровень
+ * обслуживания». Параметров столько аудит не проверяет, анализ сайта занимает
+ * время, штата экспертов и отдельной поддержки для разных стран нет. Теперь
+ * перечислено то, что сервис действительно делает.
+ */
 const FeaturesSection = () => {
   const features = [
     {
-      title: "Глубокий анализ", 
-      description: "Комплексная проверка более 100 параметров SEO-оптимизации вашего сайта",
+      title: "Аудит страниц", 
+      description: "Ответ сервера, индексация, метатеги, заголовки, контент и ссылки — по каждой проверенной странице",
       icon: <Search className="w-6 h-6" />
     },
     {
-      title: "Умные рекомендации", 
-      description: "Автоматически генерируемые рекомендации на основе анализа вашего сайта",
+      title: "Рекомендации ИИ", 
+      description: "По результатам аудита языковая модель предлагает title, description, структуру заголовков и правки текста",
       icon: <Sparkles className="w-6 h-6" />
     },
     {
-      title: "Отслеживание прогресса", 
-      description: "Мониторинг изменений и эффективности внедренных оптимизаций",
+      title: "Позиции в поиске", 
+      description: "Проверка мест сайта в выдаче Яндекса и Google по вашему списку запросов",
       icon: <TrendingUp className="w-6 h-6" />
     },
     {
-      title: "Высокая скорость", 
-      description: "Моментальный анализ и предоставление результатов без долгого ожидания",
-      icon: <Zap className="w-6 h-6" />
-    },
-    {
-      title: "Международный сервис", 
-      description: "Анализ сайтов на различных языках с учетом региональных особенностей",
-      icon: <Globe className="w-6 h-6" />
-    },
-    {
-      title: "Производительность", 
-      description: "Оценка скорости загрузки страниц и рекомендации по улучшению",
+      title: "Скорость ответа", 
+      description: "Время ответа сервера, время загрузки и сжатие страниц",
       icon: <Gauge className="w-6 h-6" />
     },
     {
-      title: "Экспертная поддержка", 
-      description: "Помощь экспертов по SEO для решения сложных проблем оптимизации",
+      title: "Отчёты", 
+      description: "Результаты аудита выгружаются в PDF и JSON",
       icon: <FileText className="w-6 h-6" />
     },
     {
-      title: "Качество сервиса", 
-      description: "Высокий уровень обслуживания и постоянное улучшение функциональности",
-      icon: <Award className="w-6 h-6" />
+      title: "История проверок", 
+      description: "Аудиты и оптимизации, запущенные после входа, сохраняются в личном кабинете",
+      icon: <History className="w-6 h-6" />
     }
   ];
 
@@ -60,12 +57,12 @@ const FeaturesSection = () => {
           <Award className="w-4 h-4 mr-2" />
           Преимущества
         </div>
-        <h2 className="font-playfair text-4xl font-bold mb-6">Почему выбирают нас</h2>
+        <h2 className="font-playfair text-4xl font-bold mb-6">Что умеет сервис</h2>
         <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-          Наш сервис предоставляет комплексное решение для SEO-оптимизации
+          Аудит, ИИ-оптимизация и проверка позиций в одном кабинете
         </p>
       </div>
-      <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
         {features.map((feature, index) => (
           <FeatureCard 
             key={index}

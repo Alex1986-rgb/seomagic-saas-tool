@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
+import { Link } from 'react-router-dom';
 import { Check } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -9,6 +10,12 @@ interface FeatureSidebarProps {
   benefits: string[];
 }
 
+/**
+ * Кнопка «Попробовать бесплатно» ничего не делала, а в «Характеристиках»
+ * значились «мгновенная» скорость, «ежедневные» проверки, данные «в реальном
+ * времени» и экспорт в PDF, HTML, CSV. Проверок по расписанию нет, выгрузка —
+ * только PDF и JSON. Характеристики убраны, кнопка ведёт на аудит.
+ */
 const FeatureSidebar = ({ benefits }: FeatureSidebarProps) => {
   return (
     <motion.div
@@ -28,32 +35,9 @@ const FeatureSidebar = ({ benefits }: FeatureSidebarProps) => {
             ))}
           </ul>
           
-          <Button className="w-full mt-8">Попробовать бесплатно</Button>
-        </CardContent>
-      </Card>
-      
-      <Card className="mt-6">
-        <CardContent className="p-6">
-          <h3 className="text-xl font-semibold mb-4">Характеристики</h3>
-          
-          <div className="space-y-3">
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Скорость работы</span>
-              <span className="font-medium">Мгновенно</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Частота проверок</span>
-              <span className="font-medium">Ежедневно</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Доступ к данным</span>
-              <span className="font-medium">В реальном времени</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Экспорт отчетов</span>
-              <span className="font-medium">PDF, HTML, CSV</span>
-            </div>
-          </div>
+          <Button className="w-full mt-8" asChild>
+            <Link to="/audit">Проверить сайт</Link>
+          </Button>
         </CardContent>
       </Card>
     </motion.div>

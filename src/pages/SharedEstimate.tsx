@@ -141,9 +141,22 @@ const SharedEstimate: React.FC = () => {
     }
   };
 
+  // noindex нужен в каждом состоянии страницы. Раньше PageSeo стоял только
+  // в итоговой разметке сметы, а загрузка, форма пароля и «Ссылка больше не
+  // активна» уходили без запрета индексации и с общим заголовком сайта —
+  // поисковик мог проиндексировать /shared-estimate/<token>.
+  const seo = (
+    <PageSeo
+      title="Смета на SEO-оптимизацию сайта по защищённой ссылке"
+      description="Расчёт стоимости работ по конкретному сайту: перечень страниц, объём правок и итоговая сумма. Ссылка действует ограниченное время."
+      noindex
+    />
+  );
+
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
+        {seo}
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
@@ -152,6 +165,7 @@ const SharedEstimate: React.FC = () => {
   if (error) {
     return (
       <div className="min-h-screen flex items-center justify-center p-4">
+        {seo}
         <Card className="max-w-md w-full p-6 text-center space-y-4">
           <AlertCircle className="h-12 w-12 text-destructive mx-auto" />
           <h2 className="text-xl font-semibold">Ошибка доступа</h2>
@@ -167,6 +181,7 @@ const SharedEstimate: React.FC = () => {
   if (requiresPassword) {
     return (
       <div className="min-h-screen flex items-center justify-center p-4">
+        {seo}
         <Card className="max-w-md w-full p-6">
           <form onSubmit={handlePasswordSubmit} className="space-y-4">
             <div className="text-center space-y-2 mb-6">
@@ -199,7 +214,7 @@ const SharedEstimate: React.FC = () => {
     );
   }
 
-  if (!data) return null;
+  if (!data) return seo;
 
   const categoryTotals = data.estimate_data.reduce((acc, item) => {
     if (!acc[item.category]) {
@@ -212,11 +227,7 @@ const SharedEstimate: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-background py-8 px-4">
-      <PageSeo
-        title="Смета на SEO-оптимизацию сайта по защищённой ссылке"
-        description="Расчёт стоимости работ по конкретному сайту: перечень страниц, объём правок и итоговая сумма. Ссылка действует ограниченное время."
-        noindex
-      />
+      {seo}
       <div className="max-w-4xl mx-auto space-y-6">
         {/* Header */}
         <Card className="p-6">

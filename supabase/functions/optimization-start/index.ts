@@ -1,6 +1,12 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { assertTaskAccess, authErrorResponse } from "../_shared/auth.ts";
+import { assertTaskAccess, AuthError, isAdminUser } from "../_shared/auth.ts";
+import { writeApiLog } from "../_shared/api-log.ts";
+import {
+  assertOptimizationQuota,
+  OptimizationLimitError,
+  optimizationMaxPages,
+} from "../_shared/optimization-limits.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -15,12 +21,47 @@ interface OptimizationOptions {
   optimizeSpeed?: boolean;
   contentQuality?: 'standard' | 'premium' | 'ultimate';
   language?: string;
+  instructions?: string;
+}
+
+/** Ошибка запроса с кодом ответа. */
+class RequestError extends Error {
+  status: number;
+  constructor(message: string, status: number) {
+    super(message);
+    this.status = status;
+  }
 }
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
+
+  const startedAt = Date.now();
+  let userId: string | null = null;
+  let requestLog: Record<string, unknown> | null = null;
+
+  // Каждый ответ, в том числе с ошибкой, оставляет запись в журнале вызовов с
+  // настоящей длительностью: раньше писался только успех и с duration_ms: 0.
+  const reply = async (
+    status: number,
+    body: Record<string, unknown>,
+    logResponse?: Record<string, unknown>,
+  ): Promise<Response> => {
+    await writeApiLog({
+      functionName: 'optimization-start',
+      userId,
+      statusCode: status,
+      startedAt,
+      requestData: requestLog,
+      responseData: logResponse ?? body,
+    });
+    return new Response(JSON.stringify(body), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      status,
+    });
+  };
 
   try {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
@@ -29,30 +70,36 @@ serve(async (req) => {
 
     const authHeader = req.headers.get('Authorization');
     if (!authHeader) {
-      throw new Error('Missing authorization header');
+      throw new RequestError('Missing authorization header', 401);
     }
 
     const token = authHeader.replace('Bearer ', '');
     const { data: { user }, error: authError } = await supabase.auth.getUser(token);
-    
-    if (authError || !user) {
-      throw new Error('Unauthorized');
-    }
 
-    const { task_id, options = {} } = await req.json();
+    if (authError || !user) {
+      throw new RequestError('Unauthorized', 401);
+    }
+    userId = user.id;
+
+    const { task_id, options = {} } = await req.json() as {
+      task_id?: string;
+      options?: OptimizationOptions;
+    };
+    requestLog = { task_id: task_id ?? null, options };
 
     if (!task_id) {
-      throw new Error('task_id is required');
+      throw new RequestError('task_id is required', 400);
     }
 
     // Оптимизация тратит деньги на модель — по чужой задаче её не запустить.
-    try {
-      await assertTaskAccess(req, task_id);
-    } catch (err) {
-      const denied = authErrorResponse(err, corsHeaders);
-      if (denied) return denied;
-      throw err;
-    }
+    await assertTaskAccess(req, task_id);
+
+    // Оплата не подключена, поэтому запуски ограничены предохранителем:
+    // не больше OPTIMIZATION_DAILY_LIMIT за сутки на пользователя. Число
+    // страниц за запуск (OPTIMIZATION_MAX_PAGES) ограничивает обработчик —
+    // здесь его только сообщаем в ответе. Администратора лимиты не касаются.
+    const isAdmin = await isAdminUser(user.id);
+    await assertOptimizationQuota(user.id, isAdmin);
 
     console.log('Starting optimization for task:', task_id);
 
@@ -64,7 +111,7 @@ serve(async (req) => {
       .single();
 
     if (auditError || !auditResult) {
-      throw new Error('Audit not found or not completed');
+      throw new RequestError('Аудит не найден или ещё не завершён', 404);
     }
 
     // Create optimization job
@@ -88,7 +135,7 @@ serve(async (req) => {
 
     // Invoke optimization processor asynchronously
     const processorUrl = `${supabaseUrl}/functions/v1/optimization-processor`;
-    
+
     fetch(processorUrl, {
       method: 'POST',
       headers: {
@@ -104,39 +151,29 @@ serve(async (req) => {
       console.error('Failed to invoke optimization processor:', error);
     });
 
-    // Log API usage
-    await supabase.from('api_logs').insert({
-      function_name: 'optimization-start',
-      user_id: user.id,
-      request_data: { task_id, options },
-      response_data: { optimization_id: optimizationJob.id },
-      status_code: 200,
-      duration_ms: 0
-    });
-
-    return new Response(
-      JSON.stringify({
+    return await reply(
+      200,
+      {
         success: true,
         optimization_id: optimizationJob.id,
         status: 'queued',
+        // Сколько страниц обработчик возьмёт за этот запуск; null — без
+        // пользовательского ограничения (администратор).
+        page_limit: isAdmin ? null : optimizationMaxPages(),
         message: 'Optimization started'
-      }),
-      {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 200,
-      }
+      },
+      { optimization_id: optimizationJob.id },
     );
   } catch (error) {
+    if (error instanceof AuthError || error instanceof OptimizationLimitError || error instanceof RequestError) {
+      return await reply(error.status, { success: false, error: error.message });
+    }
+
     console.error('Optimization start error:', error);
-    
-    return new Response(
-      JSON.stringify({
-        error: error instanceof Error ? error.message : 'Unknown error'
-      }),
-      {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 500,
-      }
-    );
+
+    return await reply(500, {
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error'
+    });
   }
 });

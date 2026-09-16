@@ -28,21 +28,35 @@ command -v gh >/dev/null || die "gh CLI не найден"
 gh auth status >/dev/null 2>&1 || die "gh не авторизован (gh auth login)"
 
 if [[ "${1:-}" != "--skip-build" ]]; then
-  log "Сборка прод-бандла (GITHUB_PAGES=true)…"
-  GITHUB_PAGES=true npm run build
+  log "Сборка прод-бандла под подпуть /seomagic-saas-tool/…"
+  VITE_BASE_PATH=/seomagic-saas-tool/ npm run build
 fi
 
 [[ -f dist/index.html ]] || die "dist/index.html не найден — сначала собери проект"
 
 log "Подготовка SPA-fallback (404.html) и .nojekyll…"
-cp dist/index.html dist/404.html   # 404.html = generic SPA-оболочка (до пререндера)
+cp dist/index.html dist/404.html   # запасная оболочка для адресов без пререндера
 touch dist/.nojekyll
 
-# Статический пререндер мета/H1/canonical/JSON-LD по ключевым маршрутам (SEO)
-if [[ -f scripts/prerender.cjs ]]; then
-  log "Пререндер SEO-метаданных по маршрутам…"
-  node scripts/prerender.cjs || log "⚠ пререндер пропущен (ошибка), продолжаю"
-fi
+# Пререндер обязателен. Без него GitHub Pages отдаёт каждый адрес, кроме
+# корня, из 404.html с кодом 404: людям страница видна, а поисковики выкидывают
+# из индекса всё, кроме главной. Раньше шаг молча пропускался, если файла не
+# было, — и выкладка шла без него.
+[[ -f scripts/prerender.cjs ]] || die "нет scripts/prerender.cjs — без пререндера внутренние страницы отдаются с кодом 404"
+log "Пререндер страниц…"
+node scripts/prerender.cjs || die "пререндер упал — выкладка остановлена"
+
+# На gh-pages, кроме самого сайта, живут демо-клоны чужих сайтов. В dist их нет,
+# а публикация пересоздаёт ветку целиком — без этого шага они бы стёрлись.
+log "Переношу демо-клоны из текущей ветки gh-pages…"
+git fetch -q origin gh-pages || die "не удалось получить текущую ветку gh-pages"
+for keep in myarredo-by rimmebel; do
+  if git cat-file -e "origin/gh-pages:${keep}" 2>/dev/null; then
+    [[ -e "dist/${keep}" ]] && die "dist/${keep} уже существует — конфликт с демо-клоном"
+    git archive origin/gh-pages "${keep}" | tar -x -C dist
+    log "  сохранён ${keep}/ ($(find "dist/${keep}" -type f | wc -l | tr -d ' ') файлов)"
+  fi
+done
 
 JS_FILE="$(grep -oE 'assets/index-[^\"]+\.js' dist/index.html | head -1)"
 [[ -n "$JS_FILE" ]] || die "не удалось определить главный JS-бандл в dist/index.html"

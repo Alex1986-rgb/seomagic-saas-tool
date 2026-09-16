@@ -7,13 +7,25 @@ import SocialLinks from '@/components/contact/SocialLinks';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { MapPin, Clock, Phone, Mail, MessageCircle, Headphones, Calendar } from 'lucide-react';
+import { MapPin, Phone, Mail, MessageCircle, Calendar } from 'lucide-react';
 import { BreadcrumbSchema } from '@/components/seo/BreadcrumbSchema';
 import { LocalBusinessSchema } from '@/components/seo/LocalBusinessSchema';
 import { OrganizationSchema } from '@/components/seo/OrganizationSchema';
 import { SITE_CONTACTS, hasPostalAddress } from '@/config/site-contacts';
 import PageSeo from '@/components/seo/PageSeo';
 
+/**
+ * Страница контактов.
+ *
+ * Здесь были три карточки «Онлайн чат — Онлайн», «Техническая поддержка — 24/7»
+ * и «Консультация — Бесплатно» с кнопками без обработчиков, кнопка «Открыть
+ * чат», часы работы с субботними сменами и FAQ про круглосуточную поддержку и
+ * главный офис в Москве. Чата нет, поддержки 24/7 нет, офиса нет, часы никто
+ * не утверждал. Человек нажимал кнопки — и ничего не происходило.
+ *
+ * Теперь рабочий способ связи один — форма: обращение сохраняется в базе.
+ * Телефон, почта и адрес появятся сами, когда их впишут в SITE_CONTACTS.
+ */
 const Contact: React.FC = () => {
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -30,44 +42,32 @@ const Contact: React.FC = () => {
     visible: { opacity: 1, y: 0 }
   };
 
-  const supportOptions = [
-    {
-      icon: MessageCircle,
-      title: "Онлайн чат",
-      description: "Мгновенная поддержка в реальном времени",
-      action: "Начать чат",
-      badge: "Онлайн",
-      badgeColor: "bg-green-100 text-green-800"
-    },
-    {
-      icon: Headphones,
-      title: "Техническая поддержка",
-      description: "Помощь с настройкой и использованием",
-      action: "Связаться",
-      badge: "24/7",
-      badgeColor: "bg-blue-100 text-blue-800"
-    },
-    {
-      icon: Calendar,
-      title: "Консультация",
-      description: "Персональная встреча с экспертом",
-      action: "Записаться",
-      badge: "Бесплатно",
-      badgeColor: "bg-purple-100 text-purple-800"
-    }
-  ];
+  const hasDirectContacts = Boolean(SITE_CONTACTS.telephone || SITE_CONTACTS.email);
 
-  const officeHours = [
-    { day: "Понедельник - Пятница", time: "9:00 - 18:00 (МСК)" },
-    { day: "Суббота", time: "10:00 - 16:00 (МСК)" },
-    { day: "Воскресенье", time: "Выходной" }
+  const faqs = [
+    {
+      question: "Куда придёт ответ на обращение?",
+      answer: "На адрес электронной почты, который вы укажете в форме. Если вопрос срочный, напишите об этом в теме сообщения."
+    },
+    {
+      question: "Помогаете ли вы разобраться с сервисом?",
+      answer: "Да. Вопросы по аудиту, отчётам, оптимизации и проверке позиций присылайте через форму на этой странице."
+    },
+    {
+      question: "Как проверить сайт до обращения?",
+      answer: "Запустите аудит на странице «Аудит сайта» — отчёт по страницам покажет, какие ошибки нашлись. Ссылку на него можно приложить к сообщению."
+    },
+    {
+      question: "Нужно ли куда-то приезжать?",
+      answer: "Нет. Сервис работает онлайн: аудит, оптимизация и проверка позиций запускаются из браузера."
+    }
   ];
 
   return (
     <Layout>
       <PageSeo
-        title="Контакты: телефон, почта и форма связи с поддержкой"
-        description="Телефон, электронная почта и адрес офиса. Напишите через форму — ответим на вопросы об аудите, тарифах и подключении сервиса."
+        title="Контакты: форма связи с командой SeoMarket"
+        description="Напишите через форму — ответим на вопросы об аудите сайта, оптимизации, проверке позиций и стоимости работ. Обращение сохраняется и не теряется."
       />
       <BreadcrumbSchema items={[
         { name: 'Главная', url: '/' },
@@ -79,7 +79,7 @@ const Contact: React.FC = () => {
         <div className="container mx-auto px-4 py-32">
           <div className="max-w-7xl mx-auto">
             {/* Hero Section */}
-            <motion.div 
+            <motion.div
               className="text-center mb-20"
               variants={containerVariants}
               initial="hidden"
@@ -88,60 +88,32 @@ const Contact: React.FC = () => {
               <motion.div variants={itemVariants} className="mb-6">
                 <Badge className="mb-4 bg-primary/10 text-primary border-primary/20">
                   <MessageCircle className="w-3 h-3 mr-1" />
-                  Мы всегда на связи
+                  Обратная связь
                 </Badge>
               </motion.div>
-              
-              <motion.h1 
+
+              <motion.h1
                 variants={itemVariants}
                 className="text-5xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-primary via-primary/80 to-secondary bg-clip-text text-transparent"
               >
                 Свяжитесь с нами
               </motion.h1>
-              
-              <motion.p 
+
+              <motion.p
                 variants={itemVariants}
                 className="text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed"
               >
-                Готовы помочь вам в достижении SEO-целей. Выберите удобный способ связи 
-                или заполните форму ниже для получения персональной консультации
+                Расскажите, что нужно сделать с сайтом, или задайте вопрос о сервисе.
+                Обращение из формы сохраняется у нас, ответ придёт на указанную почту
               </motion.p>
             </motion.div>
 
-            {/* Support Options */}
-            <motion.div
-              variants={containerVariants}
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true }}
-              className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-16"
-            >
-              {supportOptions.map((option, index) => (
-                <motion.div key={index} variants={itemVariants}>
-                  <Card className="neo-card h-full hover:shadow-xl transition-all duration-300 group">
-                    <CardContent className="p-8 text-center">
-                      <div className="mb-6">
-                        <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-primary/20 transition-colors">
-                          <option.icon className="w-8 h-8 text-primary" />
-                        </div>
-                        <Badge className={`${option.badgeColor} text-xs`}>
-                          {option.badge}
-                        </Badge>
-                      </div>
-                      <h3 className="text-xl font-semibold mb-3">{option.title}</h3>
-                      <p className="text-muted-foreground mb-6">{option.description}</p>
-                      <Button className="w-full">{option.action}</Button>
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              ))}
-            </motion.div>
-            
             {/* Main Content Grid */}
             <div className="grid grid-cols-1 xl:grid-cols-5 gap-12">
               {/* Contact Form - Takes more space */}
-              <motion.div 
-                className="xl:col-span-3"
+              <motion.div
+                id="contact-form"
+                className={hasDirectContacts ? 'xl:col-span-3' : 'xl:col-span-5 max-w-3xl mx-auto w-full'}
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.5, delay: 0.2 }}
@@ -149,14 +121,19 @@ const Contact: React.FC = () => {
                 <div className="mb-8">
                   <h2 className="text-3xl font-bold mb-4">Отправить сообщение</h2>
                   <p className="text-muted-foreground">
-                    Заполните форму ниже, и наша команда свяжется с вами в течение 24 часов
+                    Заполните форму ниже — мы ответим на email, который вы укажете
                   </p>
                 </div>
                 <ContactForm />
               </motion.div>
-              
-              {/* Contact Info Sidebar */}
-              <motion.div 
+
+              {/*
+                Боковая колонка: карточки телефона и почты, а также «Быстрая
+                связь». Пока в SITE_CONTACTS пусто, колонки нет — иначе
+                оставался пустой заголовок без единого способа связи.
+              */}
+              {hasDirectContacts && (
+              <motion.div
                 className="xl:col-span-2"
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
@@ -164,24 +141,6 @@ const Contact: React.FC = () => {
               >
                 <div className="space-y-8">
                   <ContactInfo />
-                  
-                  {/* Working Hours */}
-                  <Card className="neo-card">
-                    <CardContent className="p-6">
-                      <div className="flex items-center mb-4">
-                        <Clock className="w-5 h-5 text-primary mr-2" />
-                        <h3 className="font-semibold">Часы работы</h3>
-                      </div>
-                      <div className="space-y-3">
-                        {officeHours.map((hours, index) => (
-                          <div key={index} className="flex justify-between items-center py-2 border-b border-border/50 last:border-0">
-                            <span className="text-sm text-muted-foreground">{hours.day}</span>
-                            <span className="text-sm font-medium">{hours.time}</span>
-                          </div>
-                        ))}
-                      </div>
-                    </CardContent>
-                  </Card>
 
                   {/* Quick Contact */}
                   <Card className="neo-card bg-gradient-to-br from-primary/5 to-secondary/5">
@@ -192,6 +151,7 @@ const Contact: React.FC = () => {
                           Кнопки «Позвонить» и «Написать email» никуда не вели.
                           Теперь это настоящие ссылки на контакты из
                           SITE_CONTACTS, и без контакта кнопки просто нет.
+                          Кнопку «Открыть чат» убрали: чата у сервиса нет.
                         */}
                         {SITE_CONTACTS.telephone && (
                           <Button variant="outline" className="w-full justify-start" asChild>
@@ -209,23 +169,21 @@ const Contact: React.FC = () => {
                             </a>
                           </Button>
                         )}
-                        <Button variant="outline" className="w-full justify-start">
-                          <MessageCircle className="w-4 h-4 mr-2" />
-                          Открыть чат
-                        </Button>
                       </div>
                     </CardContent>
                   </Card>
                 </div>
               </motion.div>
+              )}
             </div>
-            
+
             {/*
               Раздел «Наше местоположение» описывал офис, которого нет:
               «Москва, ул. Примерная, д. 123, БЦ "Технополис", офис 456» и
               станцию метро «Примерная». Людей звали приехать в никуда.
               Теперь весь блок показывается, только если в SITE_CONTACTS
-              заполнен настоящий адрес.
+              заполнен настоящий адрес. Заглушку «Интерактивная карта —
+              Загружается...» убрали: карта там никогда не загружалась.
             */}
             {hasPostalAddress() && (
             <motion.div
@@ -238,48 +196,36 @@ const Contact: React.FC = () => {
               <div className="text-center mb-12">
                 <h2 className="text-3xl font-bold mb-4">Наше местоположение</h2>
                 <p className="text-muted-foreground">
-                  Приходите к нам в офис для личной встречи
+                  О личной встрече договоримся заранее — напишите через форму
                 </p>
               </div>
-              
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                {/* Map */}
-                <Card className="neo-card overflow-hidden">
-                  <div className="h-80 bg-gradient-to-br from-primary/10 to-secondary/10 flex items-center justify-center relative">
-                    <div className="text-center">
-                      <MapPin className="w-12 h-12 text-primary mx-auto mb-4" />
-                      <p className="text-muted-foreground">Интерактивная карта</p>
-                      <p className="text-sm text-primary mt-2">Загружается...</p>
-                    </div>
-                    <div className="absolute inset-0 bg-gradient-to-t from-background/20 to-transparent" />
-                  </div>
-                </Card>
-                
-                {/* Location Details */}
-                <div className="space-y-6">
-                  <Card className="neo-card">
-                    <CardContent className="p-6">
-                      <div className="flex items-start">
-                        <MapPin className="w-6 h-6 text-primary mr-3 mt-1" />
-                        <div>
-                          <h3 className="font-semibold mb-2">Офис</h3>
-                          <address className="not-italic text-muted-foreground leading-relaxed">
-                            {SITE_CONTACTS.addressLocality}, {SITE_CONTACTS.streetAddress}
-                          </address>
-                        </div>
+
+              <div className="max-w-xl mx-auto space-y-6">
+                <Card className="neo-card">
+                  <CardContent className="p-6">
+                    <div className="flex items-start">
+                      <MapPin className="w-6 h-6 text-primary mr-3 mt-1" />
+                      <div>
+                        <h3 className="font-semibold mb-2">Офис</h3>
+                        <address className="not-italic text-muted-foreground leading-relaxed">
+                          {SITE_CONTACTS.addressLocality}, {SITE_CONTACTS.streetAddress}
+                        </address>
                       </div>
-                    </CardContent>
-                  </Card>
-                  
-                  <Button size="lg" className="w-full">
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Кнопка «Записаться на встречу» ничего не делала — теперь ведёт к форме. */}
+                <Button size="lg" className="w-full" asChild>
+                  <a href="#contact-form">
                     <Calendar className="w-4 h-4 mr-2" />
-                    Записаться на встречу
-                  </Button>
-                </div>
+                    Договориться о встрече
+                  </a>
+                </Button>
               </div>
             </motion.div>
             )}
-            
+
             {/* Social Links */}
             <SocialLinks />
 
@@ -294,29 +240,12 @@ const Contact: React.FC = () => {
               <div className="text-center mb-12">
                 <h2 className="text-3xl font-bold mb-4">Часто задаваемые вопросы</h2>
                 <p className="text-muted-foreground">
-                  Ответы на популярные вопросы о наших услугах
+                  Коротко о том, как с нами связаться
                 </p>
               </div>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {[
-                  {
-                    question: "Как быстро вы отвечаете на обращения?",
-                    answer: "Мы отвечаем на все обращения в течение 2-4 часов в рабочее время."
-                  },
-                  {
-                    question: "Предоставляете ли вы техническую поддержку?",
-                    answer: "Да, у нас есть круглосуточная техническая поддержка для всех клиентов."
-                  },
-                  {
-                    question: "Можно ли получить консультацию бесплатно?",
-                    answer: "Первичная консультация по SEO-стратегии предоставляется бесплатно."
-                  },
-                  {
-                    question: "В каких городах вы работаете?",
-                    answer: "Мы работаем удаленно по всей России, главный офис находится в Москве."
-                  }
-                ].map((faq, index) => (
+                {faqs.map((faq, index) => (
                   <Card key={index} className="neo-card">
                     <CardContent className="p-6">
                       <h3 className="font-semibold mb-3">{faq.question}</h3>

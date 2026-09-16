@@ -1,11 +1,21 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
-import { assertPublicUrl, UnsafeUrlError } from "../_shared/url-guard.ts";
+import { assertPublicUrlResolved, UnsafeUrlError } from "../_shared/url-guard.ts";
+import { writeApiLog } from "../_shared/api-log.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
+
+/** Ошибка запроса с кодом ответа. */
+class RequestError extends Error {
+  status: number;
+  constructor(message: string, status: number) {
+    super(message);
+    this.status = status;
+  }
+}
 
 interface AuditStartRequest {
   url: string;
@@ -24,7 +34,38 @@ serve(async (req) => {
   }
 
   const startTime = Date.now();
-  
+  let userId: string | null = null;
+  let requestLog: Record<string, unknown> | null = null;
+
+  // Журнал вызовов пишется служебным ключом и на каждом ответе, включая
+  // ошибки: клиентом на anon-ключе RLS молча отклонял запись, и в журнале не
+  // было ни одного запуска аудита. Гостевые запуски тоже пишутся — с user_id null.
+  const reply = async (
+    status: number,
+    body: Record<string, unknown>,
+    logResponse?: Record<string, unknown>,
+  ): Promise<Response> => {
+    await writeApiLog({
+      functionName: 'audit-start',
+      userId,
+      statusCode: status,
+      startedAt: startTime,
+      requestData: requestLog,
+      responseData: logResponse ?? body,
+    });
+    return new Response(JSON.stringify(body), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      status,
+    });
+  };
+
+  // Служебный клиент: запуск обработчика и отметка о сбое. Гостевую задачу
+  // клиент пользователя пометить упавшей не может — менять её RLS не даёт.
+  const serviceClient = createClient(
+    Deno.env.get('SUPABASE_URL') ?? '',
+    Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
+  );
+
   try {
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
@@ -38,20 +79,19 @@ serve(async (req) => {
 
     const { url, options }: AuditStartRequest = await req.json();
     console.log('Request body:', { url, options });
+    requestLog = { url: url ?? null, options: options ?? null };
 
     // Проверять можно только настоящий сайт в интернете. Раньше сюда проходил
     // любой адрес, и нашим сервером можно было постучаться во внутреннюю сеть.
+    // Имя сайта резолвится: 127.0.0.1.nip.io и подобные тоже ведут внутрь.
     if (!url) {
-      throw new Error('Invalid URL provided');
+      throw new RequestError('Invalid URL provided', 400);
     }
     try {
-      assertPublicUrl(url);
+      await assertPublicUrlResolved(url);
     } catch (err) {
       if (err instanceof UnsafeUrlError) {
-        return new Response(
-          JSON.stringify({ success: false, error: err.message }),
-          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
-        );
+        throw new RequestError(err.message, 400);
       }
       throw err;
     }
@@ -67,10 +107,10 @@ serve(async (req) => {
     
     // For deep audit, require authentication
     if (taskType === 'deep' && !user) {
-      throw new Error('Authentication required for deep audit');
+      throw new RequestError('Authentication required for deep audit', 401);
     }
     
-    const userId = user?.id || null;
+    userId = user?.id || null;
 
     console.log(`Starting ${taskType} audit for ${url}, max pages: ${maxPages}`);
 
@@ -127,7 +167,9 @@ serve(async (req) => {
     // Trigger audit processor with error handling
     try {
       console.log('🚀 Triggering audit processor...');
-      const processorResponse = await supabaseClient.functions.invoke('audit-processor', {
+      // Обработчик принимает только служебный ключ: иначе его мог дёрнуть
+      // кто угодно по чужому task_id. Задачу выше создал этот же запрос.
+      const processorResponse = await serviceClient.functions.invoke('audit-processor', {
         body: { task_id: task.id }
       });
       
@@ -141,7 +183,7 @@ serve(async (req) => {
       console.error('❌ Exception triggering processor:', procError);
       
       // Update task to failed state
-      await supabaseClient
+      await serviceClient
         .from('audit_tasks')
         .update({ 
           status: 'failed', 
@@ -150,7 +192,7 @@ serve(async (req) => {
         .eq('id', task.id);
       
       // Update audit to failed as well
-      await supabaseClient
+      await serviceClient
         .from('audits')
         .update({ 
           status: 'failed', 
@@ -161,42 +203,27 @@ serve(async (req) => {
       throw new Error(`Failed to start audit processor: ${procError.message}`);
     }
 
-    // Log API call (only if user is authenticated)
-    if (userId) {
-      await supabaseClient.from('api_logs').insert({
-        user_id: userId,
-        function_name: 'audit-start',
-        request_data: { url, options },
-        response_data: { task_id: task.id },
-        status_code: 200,
-        duration_ms: Date.now() - startTime,
-      });
-    }
-
-    return new Response(
-      JSON.stringify({
+    return await reply(
+      200,
+      {
         success: true,
         task_id: task.id,
         status: task.status,
         message: 'Audit started successfully',
-      }),
-      {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 200,
-      }
+      },
+      { task_id: task.id },
     );
   } catch (error) {
+    if (error instanceof RequestError) {
+      return await reply(error.status, { success: false, error: error.message });
+    }
+
     console.error('Error in audit-start:', error);
-    
-    return new Response(
-      JSON.stringify({
-        success: false,
-        error: error.message,
-      }),
-      {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: error.message === 'Unauthorized' ? 401 : 500,
-      }
-    );
+    const message = error instanceof Error ? error.message : String((error as { message?: unknown })?.message ?? error);
+
+    return await reply(message === 'Unauthorized' ? 401 : 500, {
+      success: false,
+      error: message,
+    });
   }
 });

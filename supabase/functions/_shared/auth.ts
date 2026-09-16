@@ -103,6 +103,28 @@ export async function resolveCaller(
 }
 
 /**
+ * Есть ли у пользователя роль администратора. Роль читается служебным ключом:
+ * функции, которые её спрашивают, сами решают, что разрешить администратору.
+ */
+export async function isAdminUser(userId: string | null): Promise<boolean> {
+  if (!userId) return false;
+
+  const admin = createClient(
+    Deno.env.get('SUPABASE_URL') ?? '',
+    Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
+  );
+
+  const { data: role } = await admin
+    .from('user_roles')
+    .select('role')
+    .eq('user_id', userId)
+    .eq('role', 'admin')
+    .maybeSingle();
+
+  return !!role;
+}
+
+/**
  * Доступ к задаче аудита.
  *
  * Задача без хозяина — гостевой аудит: её идентификатор знает только тот, кто

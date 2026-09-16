@@ -2,7 +2,6 @@
 import React from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
-  LayoutTemplate, 
   Type, 
   Link, 
   User, 
@@ -10,9 +9,6 @@ import {
   Tag, 
   Bell,
   Home,
-  FileText,
-  MapPin,
-  HelpCircle,
   Settings
 } from 'lucide-react';
 import { 
@@ -26,13 +22,26 @@ import {
   NotificationSettings
 } from './content';
 import { useContentSettings } from '@/hooks/useContentSettings';
-import SaveContentButton from './content/SaveContentButton';
+import NotCollectedNotice from '@/components/admin/NotCollectedNotice';
 
+/**
+ * Контент страниц.
+ *
+ * Внизу стояла кнопка «Сохранить настройки контента», которая через 0,8 секунды
+ * таймера показывала «Изменения содержимого сайта успешно сохранены». Правки
+ * живут только в памяти вкладки (useContentSettings ничего не пишет), а тексты
+ * страниц сайта заданы в коде. Кнопка убрана, вместо неё — предупреждение.
+ */
 const ContentManagementSettings: React.FC = () => {
   const contentSettings = useContentSettings();
   
   return (
     <div className="space-y-6">
+      <NotCollectedNotice
+        title="Редактор контента не сохраняет изменения"
+        description="Тексты страниц, цены на витрине, навигация и шаблоны уведомлений задаются в коде сайта. Правки на этих вкладках никуда не записываются и пропадут после перезагрузки."
+      />
+
       <Tabs defaultValue="homePage">
         <TabsList className="mb-6 flex flex-wrap">
           <TabsTrigger value="homePage" className="flex items-center gap-2">
@@ -146,10 +155,6 @@ const ContentManagementSettings: React.FC = () => {
           />
         </TabsContent>
       </Tabs>
-      
-      <div className="flex justify-end">
-        <SaveContentButton />
-      </div>
     </div>
   );
 };

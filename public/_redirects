@@ -1,7 +1,7 @@
 
-# Dynamic sitemap generation
-/sitemap.xml /.netlify/functions/generate-sitemap 200
-/blog-sitemap.xml /.netlify/functions/blog-sitemap 200
+# Здесь были переписывания /sitemap.xml и /blog-sitemap.xml на Netlify-функции
+# generate-sitemap и blog-sitemap. Таких функций на хостинге нет (сайт живёт на
+# GitHub Pages), а карту сайта при выкладке кладёт scripts/prerender.cjs.
 
 # Netlify/Vercel redirects for SPA routing
 /*    /index.html   200

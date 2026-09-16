@@ -9,6 +9,24 @@ export interface Audit {
   created_at: string;
   completed_at?: string;
   error_message?: string;
+  /**
+   * Последняя задача этого аудита. Страница результатов открывает проверку по
+   * задаче (`audit_tasks.id`), а не по id записи в `audits`.
+   */
+  task_id?: string | null;
+}
+
+/** Состояние задачи, прочитанное из базы, — чтобы открыть уже запущенную проверку. */
+export interface AuditTaskSnapshot {
+  id: string;
+  url: string;
+  status: string;
+  stage: string | null;
+  progress: number | null;
+  pages_scanned: number | null;
+  estimated_pages: number | null;
+  current_url: string | null;
+  error_message: string | null;
 }
 
 export interface AuditTask {

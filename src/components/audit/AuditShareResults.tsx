@@ -4,24 +4,30 @@ import { motion } from 'framer-motion';
 import { ChevronDown, ChevronUp, Share2 } from 'lucide-react';
 import { CopyLinkButton, EmailShareButton, ExportDropdown, SocialShareButtons } from './share';
 import { AuditData, AuditHistoryItem } from '@/types/audit';
+import { absoluteAuditPageUrl } from '@/modules/audit/utils/auditLinks';
 
 interface AuditShareResultsProps {
   auditId: string;
   auditData?: AuditData;
   url: string;
   historyItems?: AuditHistoryItem[];
+  /** Задача аудита (`audit_tasks.id`): ссылка откроет именно эту проверку. */
+  taskId?: string | null;
 }
 
 const AuditShareResults: React.FC<AuditShareResultsProps> = ({ 
   auditId, 
   auditData, 
   url,
-  historyItems
+  historyItems,
+  taskId
 }) => {
   const [expanded, setExpanded] = useState(false);
   
-  // Создание полного URL для шеринга
-  const shareUrl = `${window.location.origin}/audit?url=${encodeURIComponent(url)}`;
+  // Ссылка на результаты. Раньше собиралась как `${origin}/audit?url=...`:
+  // без адреса сборки (сайт живёт в подпапке — ссылка вела в 404) и без номера
+  // задачи, то есть не на эту проверку, а на «последнюю по домену».
+  const shareUrl = absoluteAuditPageUrl(url, taskId);
   
   // Заголовок для шеринга
   const shareTitle = `Результаты SEO аудита для ${url}`;

@@ -1,6 +1,8 @@
 import { BlogPost } from '@/types/blog';
 
 // Mock blog posts data
+// Даты — в формате ISO (ГГГГ-ММ-ДД). Строку «15 мая 2025» new Date не разбирает,
+// разметка статьи падала на toISOString и ни одна статья блога не открывалась.
 export const mockBlogPosts: BlogPost[] = [
   {
     id: 1,
@@ -35,7 +37,7 @@ export const mockBlogPosts: BlogPost[] = [
         <li>Чистый и валидный код</li>
       </ul>
     `,
-    date: '15 мая 2025',
+    date: '2025-05-15',
     author: 'Алексей Петров',
     category: 'SEO Оптимизация',
     image: 'https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?ixid=MnwxMjA3fDB8MHxzZWFyY2h8MXx8YmxvZ3xlbnwwfHwwfHw%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=60',
@@ -73,7 +75,7 @@ export const mockBlogPosts: BlogPost[] = [
         <li>Разработайте стратегию линкбилдинга</li>
       </ul>
     `,
-    date: '10 мая 2025',
+    date: '2025-05-10',
     author: 'Мария Иванова',
     category: 'Аналитика',
     image: 'https://images.unsplash.com/photo-1504868584819-f8e8b4b6d7e3?ixid=MnwxMjA3fDB8MHxzZWFyY2h8Mnx8YW5hbHl0aWNzfGVufDB8fDB8fA%3D%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=60',
@@ -116,7 +118,7 @@ export const mockBlogPosts: BlogPost[] = [
         <li>Применяйте серверное кэширование</li>
       </ul>
     `,
-    date: '5 мая 2025',
+    date: '2025-05-05',
     author: 'Дмитрий Соколов',
     category: 'Техническая оптимизация',
     image: 'https://images.unsplash.com/photo-1558655146-d09347e92766?ixid=MnwxMjA3fDB8MHxzZWFyY2h8NXx8d2ViJTIwcGVyZm9ybWFuY2V8ZW58MHx8MHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=60',
@@ -159,7 +161,7 @@ export const mockBlogPosts: BlogPost[] = [
         <li>Спонсируйте местные организации</li>
       </ul>
     `,
-    date: '1 мая 2025',
+    date: '2025-05-01',
     author: 'Анна Смирнова',
     category: 'Локальное SEO',
     image: 'https://images.unsplash.com/photo-1515187029135-18ee286d815b?ixid=MnwxMjA3fDB8MHxzZWFyY2h8MTB8fGxvY2FsJTIwYnVzaW5lc3N8ZW58MHx8MHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=60',
@@ -199,7 +201,7 @@ export const mockBlogPosts: BlogPost[] = [
         <li>Развивайте E-E-A-T (Experience, Expertise, Authoritativeness, Trustworthiness)</li>
       </ul>
     `,
-    date: '25 апреля 2025',
+    date: '2025-04-25',
     author: 'Максим Кузнецов',
     category: 'Тренды',
     image: 'https://images.unsplash.com/photo-1485827404703-89b55fcc595e?ixid=MnwxMjA3fDB8MHxzZWFyY2h8OHx8YXJ0aWZpY2lhbCUyMGludGVsbGlnZW5jZXxlbnwwfHwwfHw%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=60',
@@ -249,7 +251,7 @@ export const mockBlogPosts: BlogPost[] = [
         <li>Удобные элементы управления</li>
       </ul>
     `,
-    date: '20 апреля 2025',
+    date: '2025-04-20',
     author: 'Елена Козлова',
     category: 'E-commerce',
     image: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?ixid=MnwxMjA3fDB8MHxzZWFyY2h8Nnx8ZWNvbW1lcmNlfGVufDB8fDB8fA%3D%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=60',

@@ -1,5 +1,7 @@
 import React from 'react';
 import { Helmet } from 'react-helmet-async';
+import { SITE_CONTACTS, hasPostalAddress } from '@/config/site-contacts';
+import { absolutePageUrl } from '@/lib/asset-url';
 
 interface JobPostingSchemaProps {
   jobs?: Array<{
@@ -22,96 +24,64 @@ export const JobPostingSchema: React.FC<JobPostingSchemaProps> = ({ jobs = [] })
   // данных не выводим ничего.
   if (jobs.length === 0) return null;
 
-  const siteUrl = typeof window !== 'undefined' ? window.location.origin : 'https://seomarket.app';
-  
-  const jobSchemas = jobs.map((job, index) => ({
-    '@context': 'https://schema.org',
-    '@type': 'JobPosting',
-    '@id': `${siteUrl}/careers#job-${index + 1}`,
-    title: job.title,
-    description: job.description,
-    datePosted: job.datePosted,
-    validThrough: job.validThrough,
-    employmentType: job.employmentType || 'FULL_TIME',
-    hiringOrganization: {
-      '@type': 'Organization',
-      name: 'SeoMarket',
-      // Логотипа /images/logo.png в проекте нет — поле убрано.
-      sameAs: siteUrl
-    },
-    jobLocation: job.workLocation === 'remote' ? {
-      '@type': 'Place',
-      address: {
-        '@type': 'PostalAddress',
-        addressLocality: 'Удаленная работа',
-        addressCountry: 'RU'
+  const siteUrl = absolutePageUrl('/');
+
+  // К любой вакансии дописывались офис «ул. Примерная, д. 123, БЦ "Технополис"»,
+  // почта hr@seomarket.ru, телефон +7 800 123-45-67, часы работы, ДМС, навыки
+  // и опыт, угаданные по словам в названии. Ничего из этого не существует —
+  // убрано. Офисный адрес берётся из SITE_CONTACTS, а если его нет, вакансия
+  // размечается как удалённая.
+  const officeLocation = hasPostalAddress()
+    ? {
+        '@type': 'Place',
+        address: {
+          '@type': 'PostalAddress',
+          streetAddress: SITE_CONTACTS.streetAddress,
+          addressLocality: SITE_CONTACTS.addressLocality,
+          addressCountry: SITE_CONTACTS.addressCountry
+        }
       }
-    } : job.workLocation === 'hybrid' ? {
-      '@type': 'Place',
-      address: {
-        '@type': 'PostalAddress',
-        streetAddress: 'ул. Примерная, д. 123, БЦ "Технополис"',
-        addressLocality: 'Москва',
-        addressCountry: 'RU'
+    : null;
+
+  const jobSchemas = jobs.map((job, index) => {
+    const isRemote = job.workLocation === 'remote' || !officeLocation;
+
+    return {
+      '@context': 'https://schema.org',
+      '@type': 'JobPosting',
+      '@id': absolutePageUrl(`/careers#job-${index + 1}`),
+      title: job.title,
+      description: job.description,
+      datePosted: job.datePosted,
+      validThrough: job.validThrough,
+      employmentType: job.employmentType || 'FULL_TIME',
+      hiringOrganization: {
+        '@type': 'Organization',
+        name: 'SeoMarket',
+        // Логотипа /images/logo.png в проекте нет — поле убрано.
+        sameAs: siteUrl
+      },
+      ...(isRemote
+        ? {
+            jobLocationType: 'TELECOMMUTE',
+            applicantLocationRequirements: {
+              '@type': 'Country',
+              name: SITE_CONTACTS.addressCountry
+            }
+          }
+        : { jobLocation: officeLocation }),
+      baseSalary: {
+        '@type': 'MonetaryAmount',
+        currency: job.salaryCurrency || 'RUB',
+        value: {
+          '@type': 'QuantitativeValue',
+          minValue: job.salaryMin,
+          maxValue: job.salaryMax,
+          unitText: 'MONTH'
+        }
       }
-    } : {
-      '@type': 'Place',
-      address: {
-        '@type': 'PostalAddress',
-        streetAddress: 'ул. Примерная, д. 123, БЦ "Технополис"',
-        addressLocality: 'Москва',
-        postalCode: '123456',
-        addressCountry: 'RU'
-      }
-    },
-    baseSalary: {
-      '@type': 'MonetaryAmount',
-      currency: job.salaryCurrency || 'RUB',
-      value: {
-        '@type': 'QuantitativeValue',
-        minValue: job.salaryMin,
-        maxValue: job.salaryMax,
-        unitText: 'MONTH'
-      }
-    },
-    workHours: '9:00-18:00',
-    jobBenefits: [
-      'Гибкий график работы',
-      'Удаленная работа',
-      'Обучение и развитие',
-      'ДМС после испытательного срока',
-      'Корпоративные мероприятия',
-      'Современное оборудование'
-    ],
-    skills: job.title.includes('Senior') || job.title.includes('Team Lead') 
-      ? 'SEO, Google Analytics, Управление командой, Стратегическое планирование'
-      : job.title.includes('Технический')
-      ? 'Технический SEO, Python, JavaScript, SQL, Системное администрирование'
-      : job.title.includes('Контент')
-      ? 'Контент-маркетинг, SEO копирайтинг, Работа с CMS'
-      : 'SEO, Google Analytics, Техническая оптимизация',
-    experienceRequirements: {
-      '@type': 'OccupationalExperienceRequirements',
-      monthsOfExperience: job.title.includes('Senior') ? 60 
-        : job.title.includes('Middle') ? 24 
-        : job.title.includes('Технический') ? 36 
-        : 0
-    },
-    qualifications: 'Высшее образование приветствуется',
-    responsibilities: job.title.includes('Senior') || job.title.includes('Team Lead')
-      ? 'Разработка SEO стратегий, Управление командой, Работа с клиентами, Контроль качества'
-      : job.title.includes('Технический')
-      ? 'Технический аудит сайтов, Оптимизация производительности, Работа с разработчиками'
-      : 'Создание контента, Оптимизация текстов, Анализ конкурентов',
-    applicationContact: {
-      '@type': 'ContactPoint',
-      email: 'hr@seomarket.ru',
-      telephone: '+78001234567',
-      contactType: 'HR Department'
-    },
-    industry: 'Internet',
-    occupationalCategory: 'Marketing and Communications'
-  }));
+    };
+  });
 
   return (
     <Helmet>

@@ -2,6 +2,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { ArrowRight } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 const CTASection: React.FC = () => (
   <section className="py-20 relative overflow-hidden">
@@ -52,13 +53,14 @@ const CTASection: React.FC = () => (
             Получить бесплатный SEO-аудит
             <ArrowRight className="w-4 h-4" />
           </a>
-          <a 
-            href="/pricing" 
+          {/* Ссылка роутера, а не <a href="/pricing">: иначе на подпути публикации переход шёл мимо сайта в 404. */}
+          <Link
+            to="/pricing"
             className="bg-transparent border border-primary/40 hover:border-primary/80 text-foreground font-medium px-8 py-4 rounded-md inline-block transition-colors relative overflow-hidden group"
           >
             <span className="absolute inset-0 w-full h-full bg-gradient-to-r from-primary/0 via-primary/10 to-primary/0 group-hover:translate-x-full transition-transform duration-700 ease-in-out -z-10"></span>
             Узнать о тарифах
-          </a>
+          </Link>
         </motion.div>
       </div>
     </div>

@@ -4,7 +4,6 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { motion } from 'framer-motion';
 import {
-  MessageCircle,
   Send,
   Youtube,
   Linkedin,
@@ -24,6 +23,10 @@ import { SITE_CONTACTS } from '@/config/site-contacts';
  * «500+ публикаций». Ни одной такой страницы и ни одной такой цифры не
  * существовало. Теперь список строится из SITE_CONTACTS.social, счётчики
  * убраны, а пока ссылок нет — раздела соцсетей нет вовсе.
+ *
+ * Ниже была форма «Подпишитесь на рассылку»: поле email без состояния и
+ * кнопка «Подписаться» без обработчика. Адрес никуда не уходил, рассылки
+ * не существует, а человек думал, что подписался. Форму убрали.
  */
 const PLATFORMS: Array<{ match: string[]; name: string; icon: typeof Send; gradient: string }> = [
   { match: ['t.me', 'telegram.'], name: 'Telegram', icon: Send, gradient: 'from-blue-500 to-blue-600' },
@@ -52,6 +55,7 @@ const describeLink = (url: string) => {
 
 const SocialLinks = () => {
   const links = SITE_CONTACTS.social;
+  if (links.length === 0) return null;
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -76,76 +80,46 @@ const SocialLinks = () => {
       whileInView="visible"
       viewport={{ once: true }}
     >
-      {links.length > 0 && (
-        <>
-          <motion.div variants={itemVariants} className="text-center mb-12">
-            <h2 className="text-3xl font-bold mb-4">Мы в социальных сетях</h2>
-            <p className="text-muted-foreground max-w-2xl mx-auto">
-              Следите за нашими обновлениями, получайте полезные советы по SEO 
-              и будьте в курсе последних трендов цифрового маркетинга
-            </p>
-          </motion.div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
-            {links.map((url) => {
-              const platform = describeLink(url);
-              const Icon = platform.icon;
-
-              return (
-                <motion.div key={url} variants={itemVariants}>
-                  <Card className="neo-card h-full hover:shadow-xl transition-all duration-300 group">
-                    <CardContent className="p-6 text-center">
-                      <div className={`w-16 h-16 bg-gradient-to-br ${platform.gradient} rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300`}>
-                        <Icon className="w-8 h-8 text-white" />
-                      </div>
-
-                      <h3 className="font-semibold text-lg mb-4">{platform.name}</h3>
-
-                      <Button 
-                        variant="outline" 
-                        size="sm" 
-                        className="w-full group-hover:bg-primary group-hover:text-primary-foreground transition-colors"
-                        asChild
-                      >
-                        <a href={url} target="_blank" rel="noopener noreferrer">
-                          Подписаться
-                          <ExternalLink className="w-3 h-3 ml-2" />
-                        </a>
-                      </Button>
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              );
-            })}
-          </div>
-        </>
-      )}
-
-      {/* Newsletter Signup */}
-      <motion.div variants={itemVariants}>
-        <Card className="neo-card">
-          <CardContent className="p-8 text-center">
-            <div className="max-w-md mx-auto">
-              <MessageCircle className="w-12 h-12 text-primary mx-auto mb-4" />
-              <h3 className="text-xl font-semibold mb-3">Подпишитесь на рассылку</h3>
-              <p className="text-muted-foreground mb-6">
-                Получайте еженедельные советы по SEO и эксклюзивные материалы
-              </p>
-              <div className="flex gap-3">
-                <input 
-                  type="email" 
-                  placeholder="Ваш email" 
-                  className="flex-1 px-4 py-2 border border-input rounded-md bg-background"
-                />
-                <Button>Подписаться</Button>
-              </div>
-              <p className="text-xs text-muted-foreground mt-3">
-                Мы не спамим. Отписаться можно в любой момент.
-              </p>
-            </div>
-          </CardContent>
-        </Card>
+      <motion.div variants={itemVariants} className="text-center mb-12">
+        <h2 className="text-3xl font-bold mb-4">Мы в социальных сетях</h2>
+        <p className="text-muted-foreground max-w-2xl mx-auto">
+          Следите за нашими обновлениями, получайте полезные советы по SEO 
+          и будьте в курсе последних трендов цифрового маркетинга
+        </p>
       </motion.div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+        {links.map((url) => {
+          const platform = describeLink(url);
+          const Icon = platform.icon;
+
+          return (
+            <motion.div key={url} variants={itemVariants}>
+              <Card className="neo-card h-full hover:shadow-xl transition-all duration-300 group">
+                <CardContent className="p-6 text-center">
+                  <div className={`w-16 h-16 bg-gradient-to-br ${platform.gradient} rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300`}>
+                    <Icon className="w-8 h-8 text-white" />
+                  </div>
+
+                  <h3 className="font-semibold text-lg mb-4">{platform.name}</h3>
+
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="w-full group-hover:bg-primary group-hover:text-primary-foreground transition-colors"
+                    asChild
+                  >
+                    <a href={url} target="_blank" rel="noopener noreferrer">
+                      Подписаться
+                      <ExternalLink className="w-3 h-3 ml-2" />
+                    </a>
+                  </Button>
+                </CardContent>
+              </Card>
+            </motion.div>
+          );
+        })}
+      </div>
     </motion.div>
   );
 };

@@ -4,23 +4,23 @@ import { pdfColors } from '../styles/colors';
 import { pdfFonts } from '../styles/fonts';
 import { OptimizationItem } from '@/features/audit/types/optimization-types';
 
+/**
+ * Данные сметы. Срок действия и скидка — только если они действительно заданы.
+ *
+ * Раньше отчёт сам дописывал «Действительно: 30 дней» и скидку 10 %, а под
+ * итогом рисовал пакеты «Базовый / Стандартный / Премиум» (40 %, 70 % и 100 %
+ * суммы, «1 месяц поддержки», «Еженедельные консультации»). Таких условий и
+ * пакетов у сервиса нет — это были выдуманные цены и обещания, их убрали.
+ */
 export interface PricingData {
   url: string;
   date: string;
   validUntil?: string;
   items: OptimizationItem[];
+  /** Скидка в процентах, если она действительно назначена. */
   discount?: number;
-  recommendedPackage?: 'basic' | 'standard' | 'premium';
   isPartial?: boolean;
   completionPercentage?: number;
-}
-
-interface WorkPackage {
-  name: string;
-  description: string;
-  includes: string[];
-  price: number;
-  recommended?: boolean;
 }
 
 /**
@@ -79,8 +79,6 @@ export function addPricingSection(
   
   if (data.validUntil) {
     doc.text(`Действительно до: ${new Date(data.validUntil).toLocaleDateString('ru-RU')}`, margin + 5, currentY + 16);
-  } else {
-    doc.text('Действительно: 30 дней', margin + 5, currentY + 16);
   }
 
   currentY += 28;
@@ -218,7 +216,7 @@ export function addPricingSection(
 
   currentY += 6;
 
-  // ИТОГО К ОПЛАТЕ
+  // ИТОГО ПО СМЕТЕ (это оценка, а не выставленный счёт)
   const finalTotal = data.discount 
     ? subtotal * (1 - data.discount / 100)
     : subtotal;
@@ -226,159 +224,10 @@ export function addPricingSection(
   doc.setFontSize(14);
   doc.setFont(pdfFonts.primary, pdfFonts.bold);
   doc.setTextColor(...pdfColors.success);
-  doc.text('ИТОГО К ОПЛАТЕ:', margin + 5, currentY);
+  doc.text('ИТОГО ПО СМЕТЕ:', margin + 5, currentY);
   doc.text(`${finalTotal.toLocaleString('ru-RU')} ₽`, margin + contentWidth - 5, currentY, { align: 'right' });
 
   currentY += totalBlockHeight - 14;
-
-  // === ВАРИАНТЫ ПАКЕТОВ ===
-  if (currentY > 200) {
-    doc.addPage();
-    currentY = 20;
-  } else {
-    currentY += 10;
-  }
-
-  currentY = addWorkPackages(doc, data, finalTotal, currentY, margin, contentWidth);
-
-  return currentY;
-}
-
-/**
- * Добавляет варианты пакетов работ
- */
-function addWorkPackages(
-  doc: jsPDF,
-  data: PricingData,
-  currentTotal: number,
-  startY: number,
-  margin: number,
-  width: number
-): number {
-  let currentY = startY;
-
-  // Заголовок
-  doc.setFontSize(12);
-  doc.setFont(pdfFonts.primary, pdfFonts.bold);
-  doc.setTextColor(...pdfColors.dark);
-  doc.text('Варианты пакетов работ', margin, currentY);
-  currentY += 8;
-
-  // Определяем пакеты
-  const packages: WorkPackage[] = [
-    {
-      name: 'Базовый',
-      description: 'Исправление критических проблем',
-      includes: [
-        'Исправление критических ошибок SEO',
-        'Базовая оптимизация meta-тегов',
-        'Устранение битых ссылок',
-        '1 месяц поддержки'
-      ],
-      price: Math.round(currentTotal * 0.4),
-      recommended: data.recommendedPackage === 'basic'
-    },
-    {
-      name: 'Стандартный',
-      description: 'Критические + важные улучшения',
-      includes: [
-        'Все из базового пакета',
-        'Оптимизация структуры сайта',
-        'Улучшение контента',
-        'Техническая оптимизация',
-        '3 месяца поддержки',
-        'Ежемесячные отчеты'
-      ],
-      price: Math.round(currentTotal * 0.7),
-      recommended: data.recommendedPackage === 'standard' || !data.recommendedPackage
-    },
-    {
-      name: 'Премиум',
-      description: 'Полная оптимизация + рост',
-      includes: [
-        'Все из стандартного пакета',
-        'Продвинутая аналитика',
-        'Контент-маркетинг',
-        'Конкурентный анализ',
-        'Стратегия продвижения',
-        '6 месяцев поддержки',
-        'Еженедельные консультации'
-      ],
-      price: currentTotal,
-      recommended: data.recommendedPackage === 'premium'
-    }
-  ];
-
-  const cardWidth = (width - 10) / 3;
-  const cardHeight = 70;
-
-  packages.forEach((pkg, index) => {
-    const x = margin + (cardWidth + 5) * index;
-    
-    // Рамка карточки
-    const cardColor = pkg.recommended ? pdfColors.success : pdfColors.gray;
-    doc.setDrawColor(...cardColor);
-    doc.setLineWidth(pkg.recommended ? 1 : 0.5);
-    doc.roundedRect(x, currentY, cardWidth, cardHeight, 3, 3, 'S');
-
-    // Бейдж "Рекомендуем"
-    if (pkg.recommended) {
-      doc.setFillColor(...pdfColors.success);
-      doc.roundedRect(x + 2, currentY + 2, cardWidth - 4, 6, 2, 2, 'F');
-      doc.setFontSize(7);
-      doc.setFont(pdfFonts.primary, pdfFonts.bold);
-      doc.setTextColor(255, 255, 255);
-      doc.text('★ РЕКОМЕНДУЕМ', x + cardWidth / 2, currentY + 5.5, { align: 'center' });
-    }
-
-    let cardY = pkg.recommended ? currentY + 10 : currentY + 4;
-
-    // Название пакета
-    doc.setFontSize(11);
-    doc.setFont(pdfFonts.primary, pdfFonts.bold);
-    doc.setTextColor(...pdfColors.dark);
-    doc.text(pkg.name, x + cardWidth / 2, cardY, { align: 'center' });
-    cardY += 5;
-
-    // Описание
-    doc.setFontSize(7);
-    doc.setFont(pdfFonts.primary, pdfFonts.normalStyle);
-    doc.setTextColor(100, 100, 100);
-    const descLines = doc.splitTextToSize(pkg.description, cardWidth - 8);
-    descLines.forEach((line: string) => {
-      doc.text(line, x + cardWidth / 2, cardY, { align: 'center' });
-      cardY += 3;
-    });
-
-    cardY += 2;
-
-    // Цена
-    doc.setFontSize(14);
-    doc.setFont(pdfFonts.primary, pdfFonts.bold);
-    doc.setTextColor(...cardColor);
-    doc.text(`${pkg.price.toLocaleString('ru-RU')} ₽`, x + cardWidth / 2, cardY, { align: 'center' });
-
-    cardY += 6;
-
-    // Что входит (первые 3 пункта)
-    doc.setFontSize(6);
-    doc.setFont(pdfFonts.primary, pdfFonts.normalStyle);
-    doc.setTextColor(80, 80, 80);
-    pkg.includes.slice(0, 3).forEach(item => {
-      const itemLines = doc.splitTextToSize(`✓ ${item}`, cardWidth - 8);
-      itemLines.forEach((line: string) => {
-        doc.text(line, x + 4, cardY);
-        cardY += 3;
-      });
-    });
-
-    if (pkg.includes.length > 3) {
-      doc.setTextColor(100, 100, 100);
-      doc.text(`+ еще ${pkg.includes.length - 3}...`, x + 4, cardY);
-    }
-  });
-
-  currentY += cardHeight + 10;
 
   return currentY;
 }

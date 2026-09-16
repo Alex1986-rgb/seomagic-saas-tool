@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import { OptimizationItem } from '@/features/audit/types/optimization-types';
-import { AlertCircle, ExternalLink, RefreshCw } from 'lucide-react';
+import { AlertCircle, Bot, Calculator, CheckCircle, ExternalLink, Receipt } from 'lucide-react';
 import EstimateSelectors from './EstimateSelectors';
 import CostSummary from './CostSummary';
 import CostDetailsTable from './CostDetailsTable';
@@ -13,7 +13,6 @@ import EstimateComparison from './EstimateComparison';
 import OptimizationResults from './OptimizationResults';
 import OptimizationProcessContainer from './process/OptimizationProcessContainer';
 import {
-  mapAuditItemsToSelectable,
   generateGroupsFromAuditData,
   generateKeyFromName,
   createSelectedItems,
@@ -33,6 +32,8 @@ interface InteractiveOptimizationPanelProps {
   optimizationItems?: OptimizationItem[];
   pageCount?: number;
   isOptimized?: boolean;
+  /** Посчитать смету, если её ещё нет. */
+  onCalculateCost?: () => void;
   onDownloadOptimizedSite?: () => void;
   onGeneratePdfReport?: () => void;
 }
@@ -43,10 +44,10 @@ const InteractiveOptimizationPanel: React.FC<InteractiveOptimizationPanelProps> 
   url,
   taskId,
   currentScore = 0,
-  optimizationCost = 0,
-  optimizationItems = [],
+  optimizationItems,
   pageCount = 0,
   isOptimized = false,
+  onCalculateCost,
   onDownloadOptimizedSite,
   onGeneratePdfReport,
 }) => {
@@ -54,68 +55,46 @@ const InteractiveOptimizationPanel: React.FC<InteractiveOptimizationPanelProps> 
   const [viewMode, setViewMode] = useState<ViewMode>('audit-results');
   const [selectedKeys, setSelectedKeys] = useState<Set<string>>(new Set());
   const [isPaymentDialogOpen, setIsPaymentDialogOpen] = useState(false);
-  const [isPaymentComplete, setIsPaymentComplete] = useState(false);
+  const [isInvoiceRequested, setIsInvoiceRequested] = useState(false);
   const [isOptimizing, setIsOptimizing] = useState(false);
   const [optimizationProgress, setOptimizationProgress] = useState(0);
   const [optimizationResult, setOptimizationResult] = useState<any>(null);
   const [localIsOptimized, setLocalIsOptimized] = useState(isOptimized);
 
-  // Fallback if no optimization items available
-  if (!optimizationItems || optimizationItems.length === 0) {
-    return (
-      <Card className="p-6 bg-card/90 backdrop-blur-sm">
-        <div className="text-center space-y-4">
-          <AlertCircle className="mx-auto h-12 w-12 text-warning" />
-          <h3 className="text-xl font-semibold">
-            Расчет сметы оптимизации
-          </h3>
-          <p className="text-muted-foreground max-w-md mx-auto">
-            Идет расчет стоимости оптимизации на основе результатов аудита.
-            Если это сообщение долго не исчезает, попробуйте обновить страницу.
-          </p>
-          <div className="flex gap-4 justify-center pt-4">
-            <Button onClick={() => window.location.reload()}>
-              <RefreshCw className="mr-2 h-4 w-4" />
-              Обновить страницу
-            </Button>
-            <Button 
-              variant="outline"
-              onClick={() => window.location.href = '/optimization-demo'}
-            >
-              <ExternalLink className="mr-2 h-4 w-4" />
-              Посмотреть демо
-            </Button>
-          </div>
-        </div>
-      </Card>
-    );
-  }
+  // Пустой список держим одним и тем же массивом: новый `[]` на каждой
+  // отрисовке заново запускал бы эффекты и пересчёты ниже.
+  const items = useMemo(() => optimizationItems ?? [], [optimizationItems]);
 
-  // Initialize selected keys with all high-priority items
+  // Все хуки идут до любых ранних выходов. Раньше заглушка «нет сметы»
+  // возвращалась раньше них, и как только смета приходила, React падал с
+  // «Rendered more hooks than during the previous render».
+
+  // По умолчанию выбраны все работы высокой важности.
   useEffect(() => {
-    if (optimizationItems.length > 0 && selectedKeys.size === 0) {
+    if (items.length > 0 && selectedKeys.size === 0) {
       const initialKeys = new Set<string>();
-      optimizationItems.forEach((item) => {
+      items.forEach((item) => {
         if (item.priority === 'high') {
           initialKeys.add(generateKeyFromName(item.name));
         }
       });
-      setSelectedKeys(initialKeys);
+      if (initialKeys.size > 0) {
+        setSelectedKeys(initialKeys);
+      }
     }
-  }, [optimizationItems]);
+  }, [items]);
 
-  // Calculate totals based on selection
   const selectedItems = useMemo(() => {
-    return createSelectedItems(optimizationItems, selectedKeys);
-  }, [optimizationItems, selectedKeys]);
+    return createSelectedItems(items, selectedKeys);
+  }, [items, selectedKeys]);
 
   const selectedTotalCost = useMemo(() => {
     return selectedItems.reduce((sum, item) => sum + item.totalPrice, 0);
   }, [selectedItems]);
 
   const recommendedItems = useMemo(() => {
-    return optimizationItems.filter(i => i.priority === 'high');
-  }, [optimizationItems]);
+    return items.filter(i => i.priority === 'high');
+  }, [items]);
 
   const recommendedTotalCost = useMemo(() => {
     return recommendedItems.reduce((sum, item) => sum + item.totalPrice, 0);
@@ -127,18 +106,13 @@ const InteractiveOptimizationPanel: React.FC<InteractiveOptimizationPanelProps> 
     ).length;
   }, [recommendedItems, selectedKeys]);
 
-  const estimatedScoreChange = useMemo(() => {
-    const maxScore = 100;
-    const currentScore = 65; // можно получить из auditData
-    const potentialGain = maxScore - currentScore;
-    const efficiency = 1 - (removedHighPriority / Math.max(recommendedItems.length, 1)) * 0.4;
-    return Math.round(potentialGain * efficiency);
-  }, [removedHighPriority, recommendedItems]);
+  // Здесь считался «ожидаемый рост скора»: от вписанной в код оценки 65 и
+  // придуманного коэффициента — «+35 баллов» любому сайту. Прогноза роста у нас
+  // нет: новую оценку даёт только повторный аудит, поэтому число не показываем.
 
-  // Generate groups for EstimateSelectors
   const groups = useMemo(() => {
-    return generateGroupsFromAuditData(optimizationItems, selectedKeys);
-  }, [optimizationItems, selectedKeys]);
+    return generateGroupsFromAuditData(items, selectedKeys);
+  }, [items, selectedKeys]);
 
   const handleToggle = (key: string, selected: boolean) => {
     setSelectedKeys((prev) => {
@@ -153,43 +127,22 @@ const InteractiveOptimizationPanel: React.FC<InteractiveOptimizationPanelProps> 
   };
 
   // Раньше здесь объявлялось «Оплата успешно произведена» — при неподключённом
-  // приёме платежей. Теперь это заявка на счёт, и говорим мы именно о ней.
+  // приёме платежей, а потом окно закрывалось раньше, чем человек видел
+  // подтверждение. Теперь это заявка на счёт: окно само показывает «Заявка
+  // принята», а оптимизацию заявка не запускает.
   const handleInvoiceRequested = () => {
-    toast({
-      title: 'Заявка на счёт принята',
-      description: 'Пришлём счёт на почту и согласуем состав работ.',
-    });
-    setIsPaymentComplete(true);
-    setIsPaymentDialogOpen(false);
+    setIsInvoiceRequested(true);
   };
 
   /**
    * Запуск оптимизации.
    *
-   * Раньше полоса двигалась случайными числами, а «результат» был вписан в код:
-   * было 65, стало 92 — одинаково для любого сайта, при том что на сервер не
-   * уходило ничего. Теперь запускается настоящая работа, а полоса показывает,
-   * сколько страниц переписано.
+   * Функция была написана, но ни одна кнопка её не вызывала: «Оплатить и
+   * оптимизировать» только оформляла заявку на счёт. Теперь у запуска своя
+   * кнопка. Выбор работ в смете на запуск не влияет — модель переписывает
+   * мета-теги и тексты страниц аудита, и интерфейс говорит об этом прямо.
    */
   const startOptimization = async () => {
-    const validation = validateSelection(optimizationItems, selectedKeys);
-
-    if (!validation.valid) {
-      toast({
-        title: 'Ошибка',
-        description: validation.warning,
-        variant: 'destructive',
-      });
-      return;
-    }
-
-    if (validation.warning) {
-      toast({
-        title: 'Предупреждение',
-        description: validation.warning,
-      });
-    }
-
     if (!taskId) {
       toast({
         title: 'Оптимизация недоступна',
@@ -245,8 +198,8 @@ const InteractiveOptimizationPanel: React.FC<InteractiveOptimizationPanelProps> 
   };
 
   const handleOpenPaymentDialog = () => {
-    const validation = validateSelection(optimizationItems, selectedKeys);
-    
+    const validation = validateSelection(items, selectedKeys);
+
     if (!validation.valid) {
       toast({
         title: 'Ошибка',
@@ -265,25 +218,6 @@ const InteractiveOptimizationPanel: React.FC<InteractiveOptimizationPanelProps> 
 
     setIsPaymentDialogOpen(true);
   };
-
-  // Fallback if no items
-  if (optimizationItems.length === 0) {
-    return (
-      <Card className="mb-8">
-        <CardHeader>
-          <CardTitle>Оптимизация сайта</CardTitle>
-        </CardHeader>
-        <CardContent className="text-center py-8">
-          <p className="text-muted-foreground mb-4">
-            Данные оптимизации еще не сформированы. Попробуйте демо-версию.
-          </p>
-          <Link to="/optimization-demo">
-            <Button>Посмотреть демо-версию</Button>
-          </Link>
-        </CardContent>
-      </Card>
-    );
-  }
 
   // Show optimization results if optimized
   if (localIsOptimized && optimizationResult) {
@@ -307,7 +241,75 @@ const InteractiveOptimizationPanel: React.FC<InteractiveOptimizationPanelProps> 
     );
   }
 
-  const priorityStats = getPriorityStats(optimizationItems);
+  const startBlock = taskId ? (
+    <div className="rounded-lg border p-4 space-y-3">
+      <p className="text-sm text-muted-foreground">
+        Языковая модель пройдёт по страницам этого аудита и предложит новые title,
+        description и правки текстов. Выбор работ в смете на запуск не влияет.
+      </p>
+      <Button onClick={() => void startOptimization()} className="gap-2">
+        <Bot className="h-4 w-4" />
+        Запустить оптимизацию текстов
+      </Button>
+    </div>
+  ) : null;
+
+  // Сметы нет. Раньше здесь было «Идет расчет сметы… попробуйте обновить
+  // страницу», хотя на этой странице смету никто не считал и обновление ничего
+  // не меняло.
+  if (items.length === 0) {
+    return (
+      <Card className="p-6 bg-card/90 backdrop-blur-sm">
+        <div className="text-center space-y-4">
+          <AlertCircle className="mx-auto h-12 w-12 text-warning" />
+          <h3 className="text-xl font-semibold">
+            Смета оптимизации ещё не рассчитана
+          </h3>
+          <p className="text-muted-foreground max-w-md mx-auto">
+            {onCalculateCost
+              ? 'Посчитаем, во что обойдётся исправление замечаний этого аудита.'
+              : 'Для этого аудита смета пока не сформирована.'}
+          </p>
+          <div className="flex flex-wrap gap-4 justify-center pt-4">
+            {onCalculateCost && (
+              <Button onClick={onCalculateCost}>
+                <Calculator className="mr-2 h-4 w-4" />
+                Рассчитать смету
+              </Button>
+            )}
+            <Link to="/optimization-demo">
+              <Button variant="outline">
+                <ExternalLink className="mr-2 h-4 w-4" />
+                Посмотреть демо
+              </Button>
+            </Link>
+          </div>
+        </div>
+        {startBlock && <div className="mt-6 text-left">{startBlock}</div>}
+      </Card>
+    );
+  }
+
+  const priorityStats = getPriorityStats(items);
+
+  const invoiceButton = (label: string) => (
+    isInvoiceRequested ? (
+      <Button size="lg" variant="outline" disabled className="gap-2">
+        <CheckCircle className="h-4 w-4" />
+        Счёт запрошен
+      </Button>
+    ) : (
+      <Button
+        onClick={handleOpenPaymentDialog}
+        disabled={selectedItems.length === 0}
+        size="lg"
+        className="gap-2"
+      >
+        <Receipt className="h-4 w-4" />
+        {label} ({selectedTotalCost.toLocaleString('ru-RU')} ₽)
+      </Button>
+    )
+  );
 
   return (
     <section id="optimization-section" className="mb-12 scroll-mt-20">
@@ -325,17 +327,16 @@ const InteractiveOptimizationPanel: React.FC<InteractiveOptimizationPanelProps> 
             <TabsContent value="audit-results">
               <div className="mb-6">
                 <p className="text-muted-foreground mb-4">
-                  На основе результатов аудита мы рекомендуем выполнить следующие работы. 
+                  На основе результатов аудита мы рекомендуем выполнить следующие работы.
                   По умолчанию выбраны все критические элементы ({priorityStats.high} работ).
                 </p>
-                
+
                 <EstimateComparison
                   recommendedCost={recommendedTotalCost}
                   recommendedCount={recommendedItems.length}
                   selectedCost={selectedTotalCost}
                   selectedCount={selectedItems.length}
                   removedHighPriority={removedHighPriority}
-                  estimatedScoreChange={estimatedScoreChange}
                 />
 
                 <CostSummary
@@ -346,15 +347,9 @@ const InteractiveOptimizationPanel: React.FC<InteractiveOptimizationPanelProps> 
 
                 <CostDetailsTable items={selectedItems} />
 
-                <div className="flex gap-3 mt-6">
-                  <Button
-                    onClick={handleOpenPaymentDialog}
-                    disabled={selectedItems.length === 0}
-                    size="lg"
-                  >
-                    Оплатить и оптимизировать ({selectedTotalCost.toLocaleString('ru-RU')} ₽)
-                  </Button>
-                  
+                <div className="flex flex-wrap gap-3 mt-6">
+                  {invoiceButton('Запросить счёт')}
+
                   {onGeneratePdfReport && (
                     <Button onClick={onGeneratePdfReport} variant="outline" size="lg">
                       Скачать PDF отчёт
@@ -382,7 +377,6 @@ const InteractiveOptimizationPanel: React.FC<InteractiveOptimizationPanelProps> 
                   selectedCost={selectedTotalCost}
                   selectedCount={selectedItems.length}
                   removedHighPriority={removedHighPriority}
-                  estimatedScoreChange={estimatedScoreChange}
                 />
 
                 <CostSummary
@@ -393,15 +387,9 @@ const InteractiveOptimizationPanel: React.FC<InteractiveOptimizationPanelProps> 
 
                 <CostDetailsTable items={selectedItems} />
 
-                <div className="flex gap-3 mt-6">
-                  <Button
-                    onClick={handleOpenPaymentDialog}
-                    disabled={selectedItems.length === 0}
-                    size="lg"
-                  >
-                    Оплатить выбранное ({selectedTotalCost.toLocaleString('ru-RU')} ₽)
-                  </Button>
-                  
+                <div className="flex flex-wrap gap-3 mt-6">
+                  {invoiceButton('Запросить счёт на выбранное')}
+
                   <Button
                     onClick={() => setViewMode('audit-results')}
                     variant="outline"
@@ -413,11 +401,14 @@ const InteractiveOptimizationPanel: React.FC<InteractiveOptimizationPanelProps> 
               </div>
             </TabsContent>
           </Tabs>
+
+          {startBlock && <div className="mt-2">{startBlock}</div>}
         </CardContent>
       </Card>
 
       <PaymentDialog
         url={url}
+        taskId={taskId}
         optimizationCost={selectedTotalCost}
         onPayment={handleInvoiceRequested}
         isDialogOpen={isPaymentDialogOpen}

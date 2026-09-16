@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Helmet } from 'react-helmet-async';
-import { absoluteAssetUrl } from '@/lib/asset-url';
+import { absoluteAssetUrl, absolutePageUrl, currentPageUrl } from '@/lib/asset-url';
 
 interface SEOProps {
   title?: string;
@@ -27,12 +27,11 @@ export const SEO: React.FC<SEOProps> = ({
   locale = 'ru_RU',
   alternateLocales = ['en_US']
 }) => {
-  // Use document properties directly to avoid window reference in SSR
-  const siteUrl = typeof window !== 'undefined' ? window.location.origin : '';
   const ogImageUrl = absoluteAssetUrl(ogImage);
-  const fullCanonicalUrl = canonicalUrl 
-    ? `${siteUrl}${canonicalUrl}` 
-    : typeof window !== 'undefined' ? window.location.href : '';
+  // Канонический адрес — с подпутём публикации и без query-параметров и якоря:
+  // раньше `${origin}${canonicalUrl}` терял подпуть, а location.href тянул
+  // в canonical метки вроде ?utm_source=.
+  const fullCanonicalUrl = canonicalUrl ? absolutePageUrl(canonicalUrl) : currentPageUrl();
   
   return (
     <Helmet>

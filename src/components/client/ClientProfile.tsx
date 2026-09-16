@@ -26,19 +26,14 @@ const ClientProfile: React.FC = () => {
                 onTabChange={setActiveTab} 
               />
               
+              {/* Содержимое вкладок рисовалось дважды (отдельно для телефона и
+                  для компьютера, разметка при этом одинаковая): каждая вкладка
+                  ходила в базу по два раза, а у формы настроек было две копии. */}
               <div className="md:col-span-3">
-                <div className="md:hidden mb-4">
-                  <ProfileContent 
-                    activeTab={activeTab} 
-                    onTabChange={setActiveTab} 
-                  />
-                </div>
-                <div className="hidden md:block">
-                  <ProfileContent 
-                    activeTab={activeTab} 
-                    onTabChange={setActiveTab} 
-                  />
-                </div>
+                <ProfileContent
+                  activeTab={activeTab}
+                  onTabChange={setActiveTab}
+                />
               </div>
             </div>
           </motion.div>

@@ -10,6 +10,7 @@ import { mockBlogPosts } from '@/data/mockData';
 import { LazyImage } from '@/components/LazyImage';
 import { BreadcrumbSchema } from '@/components/seo/BreadcrumbSchema';
 import PageSeo from '@/components/seo/PageSeo';
+import { formatPostDate } from '@/components/blog/formatPostDate';
 
 const Blog: React.FC = () => {
   return (
@@ -72,7 +73,9 @@ const Blog: React.FC = () => {
                       <Book className="mr-2 h-4 w-4" />
                       Читать статью
                     </Link>
-                    <span className="text-xs text-muted-foreground">{post.date}</span>
+                    <time dateTime={post.date} className="text-xs text-muted-foreground">
+                      {formatPostDate(post.date)}
+                    </time>
                   </div>
                 </CardContent>
               </Card>

@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { canonicalizeUrl, isSameSite, normalizeUrl, parseSiteOrigin } from './crawl-url.ts';
+import {
+  canonicalizeUrl,
+  formatSiteOrigin,
+  isSameSite,
+  normalizeUrl,
+  parseSiteOrigin,
+  siteOriginAfterRedirects,
+} from './crawl-url.ts';
 
 const origin = parseSiteOrigin('https://www.example.ru/');
 
@@ -53,5 +60,31 @@ describe('приведение адресов обхода к одному ви�
   it('мусор возвращает без падения', () => {
     expect(normalizeUrl('не адрес')).toBe('не адрес');
     expect(canonicalizeUrl('не адрес', origin)).toBe('не адрес');
+  });
+});
+
+describe('вид адресов по стартовой странице после переадресаций', () => {
+  it('берёт вид, на котором сайт открылся, а не введённый', () => {
+    const fromWww = siteOriginAfterRedirects('https://www.example.ru/', 'https://example.ru/');
+    expect(fromWww).toEqual({ protocol: 'https:', hostname: 'example.ru' });
+    expect(canonicalizeUrl('https://www.example.ru/catalog/', fromWww)).toBe('https://example.ru/catalog');
+
+    const fromHttp = siteOriginAfterRedirects('http://example.ru', 'https://example.ru/ru/');
+    expect(fromHttp).toEqual({ protocol: 'https:', hostname: 'example.ru' });
+    expect(canonicalizeUrl('http://example.ru/about', fromHttp)).toBe('https://example.ru/about');
+  });
+
+  it('переадресация на чужой сайт вид не меняет', () => {
+    expect(siteOriginAfterRedirects('https://example.ru/', 'https://other-site.com/')).toEqual({
+      protocol: 'https:',
+      hostname: 'example.ru',
+    });
+  });
+
+  it('хранится строкой и читается обратно', () => {
+    const stored = formatSiteOrigin({ protocol: 'https:', hostname: 'www.example.ru' });
+    expect(stored).toBe('https://www.example.ru');
+    expect(parseSiteOrigin(stored!)).toEqual({ protocol: 'https:', hostname: 'www.example.ru' });
+    expect(formatSiteOrigin(null)).toBeNull();
   });
 });

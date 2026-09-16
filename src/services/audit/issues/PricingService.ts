@@ -26,6 +26,17 @@ export class PricingService {
   private static pricingRules: PricingRule[] | null = null;
 
   /**
+   * Сбрасывает закешированный прайс.
+   *
+   * Правила кешируются на всё время жизни вкладки. После того как
+   * администратор поменял цены в настройках, без сброса смета в этой же
+   * вкладке считалась бы по старому прайсу до перезагрузки страницы.
+   */
+  static clearCache(): void {
+    this.pricingRules = null;
+  }
+
+  /**
    * Загружает правила ценообразования из базы данных
    */
   static async loadPricingRules(): Promise<PricingRule[]> {

@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { ExternalLink, Loader2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAuditList } from '@/modules/audit/hooks/useAuditList';
+import { auditPagePath } from '@/modules/audit/utils/auditLinks';
 
 /**
  * История аудитов пользователя.
@@ -12,7 +13,12 @@ import { useAuditList } from '@/modules/audit/hooks/useAuditList';
  * Раньше здесь был вписанный в код список: example.com — 87 баллов и 12 ошибок,
  * shop.example.com — 72, blog.example.com — 94. Человек открывал свой кабинет и
  * видел три чужих сайта, выданных за свои проверки. Теперь список берётся из
- * таблицы `audits`, а когда проверок нет — так и написано.
+ * таблицы `audits` — только записи текущего пользователя (фильтр в
+ * auditService.getUserAudits), а когда проверок нет — так и написано.
+ *
+ * «Открыть» ведёт на конкретную задачу аудита. Раньше ссылка была
+ * `/audit?url=...` без номера: открывалась последняя проверка сайта или экран
+ * запуска, а нужный аудит, если он был не последним, показать было нельзя.
  */
 
 const STATUS_LABELS: Record<string, { text: string; className: string }> = {
@@ -92,7 +98,7 @@ const ClientAudits: React.FC = () => {
                     </div>
                     <div className="flex items-end">
                       <Button asChild size="sm" variant="outline" className="w-full text-xs md:text-sm">
-                        <Link to={`/audit?url=${encodeURIComponent(audit.url)}`}>
+                        <Link to={auditPagePath(audit.url, audit.task_id)}>
                           <ExternalLink className="h-3 w-3 md:h-4 md:w-4 mr-1" />
                           Открыть
                         </Link>

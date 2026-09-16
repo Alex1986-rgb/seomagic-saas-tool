@@ -1,7 +1,7 @@
 import React from 'react';
 import { Helmet } from 'react-helmet-async';
 import { SITE_CONTACTS, hasPostalAddress, withoutEmpty } from '@/config/site-contacts';
-import { absoluteAssetUrl } from '@/lib/asset-url';
+import { absoluteAssetUrl, absolutePageUrl } from '@/lib/asset-url';
 
 /**
  * Разметка организации для поисковых систем.
@@ -15,12 +15,13 @@ import { absoluteAssetUrl } from '@/lib/asset-url';
  * Теперь выводится только то, что заполнено в `src/config/site-contacts.ts`.
  */
 export const OrganizationSchema: React.FC = () => {
-  const siteUrl = typeof window !== 'undefined' ? window.location.origin : 'https://seomarket.app';
+  // С подпутём публикации: голый origin указывал на корень github.io.
+  const siteUrl = absolutePageUrl('/');
 
   const organizationSchema = {
     '@context': 'https://schema.org',
     '@type': 'Organization',
-    '@id': `${siteUrl}/#organization`,
+    '@id': absolutePageUrl('/#organization'),
     name: 'SeoMarket',
     url: siteUrl,
     // Логотипа /images/logo.png в проекте нет — поле убрано. Картинка лежит

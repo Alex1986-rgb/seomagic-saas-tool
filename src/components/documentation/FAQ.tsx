@@ -1,5 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
+import { Link } from 'react-router-dom';
 import { Accordion } from "@/components/ui/accordion";
 import GeneralQuestions, { generalQuestionsData } from './sections/faq/GeneralQuestions';
 import TechnicalQuestions, { technicalQuestionsData } from './sections/faq/TechnicalQuestions';
@@ -38,11 +39,11 @@ const FAQ: React.FC = () => {
                 <a href={`mailto:${SITE_CONTACTS.email}`} className="text-primary underline">
                   {SITE_CONTACTS.email}
                 </a>{' '}
-                или воспользуйтесь <a href="/contact" className="text-primary underline">формой обратной связи</a>.
+                или воспользуйтесь <Link to="/contact" className="text-primary underline">формой обратной связи</Link>.
               </>
             ) : (
               <>
-                Воспользуйтесь <a href="/contact" className="text-primary underline">формой обратной связи</a> — мы ответим.
+                Воспользуйтесь <Link to="/contact" className="text-primary underline">формой обратной связи</Link> — мы ответим.
               </>
             )}
           </p>

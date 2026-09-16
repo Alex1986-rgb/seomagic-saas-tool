@@ -6,13 +6,9 @@ import {
   UserCheck, 
   Globe, 
   Shield, 
-  BellRing, 
-  Gauge, 
   BarChart2, 
   Monitor, 
   LayoutDashboard,
-  FileText,
-  Palette,
   Layout,
   User,
   Home,
@@ -26,11 +22,16 @@ import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import PageSeo from '@/components/seo/PageSeo';
 
-const recentChanges = [
-  { action: "Изменены настройки SMTP", user: "Анна С.", time: "20 мин назад" },
-  { action: "Обновлены параметры кеширования", user: "Василий П.", time: "2 ч назад" },
-  { action: "Добавлен новый тариф", user: "Максим К.", time: "вчера, 15:42" },
-];
+/*
+ * С этой страницы убраны:
+ * - блок «Недавние изменения» с правками от «Анны С.», «Василия П.» и «Максима К.»
+ *   и кнопкой «Просмотреть историю изменений» — истории правок платформа не
+ *   ведёт, а ссылка /admin/history вела на 404;
+ * - плашки «CPU 32%, RAM 68%» и «Трафик: 72 тыс/мес» — ни загрузку сервера, ни
+ *   посещаемость сервис не измеряет (см. /admin/monitoring);
+ * - список «Возможности» с автоматическим логированием, регулярными бэкапами и
+ *   восстановлением из копии — ничего из этого в админке нет.
+ */
 
 const navSettings = [
   {
@@ -149,19 +150,6 @@ const AdminSettingsPage: React.FC = () => {
               ))}
             </div>
           </div>
-          <div className="flex flex-col gap-3 mt-6 md:mt-0 w-full md:w-auto">
-            <div className="flex items-center gap-3 bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl shadow-sm px-5 py-3">
-              <Gauge className="h-5 w-5 mr-1 text-primary" />
-              <div className="text-sm">
-                <div className="font-medium text-white">Мониторинг сервера</div>
-                <div className="text-xs text-gray-400">CPU 32%, RAM 68%</div>
-              </div>
-            </div>
-            <div className="flex items-center gap-3 bg-white/5 backdrop-blur-sm rounded-xl border border-white/10 shadow-sm px-4 py-2">
-              <BarChart2 className="h-5 w-5 mr-1 text-primary" />
-              <span className="text-gray-300">Трафик: 72 тыс/мес</span>
-            </div>
-          </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
@@ -196,34 +184,6 @@ const AdminSettingsPage: React.FC = () => {
             <Card className="bg-gradient-to-br from-[#222222] to-[#1a1a1a] border border-white/10 shadow-lg text-white">
               <CardContent className="p-6">
                 <div className="flex items-center gap-2 mb-4">
-                  <BellRing className="h-5 w-5 text-primary" />
-                  <h3 className="font-semibold">Недавние изменения</h3>
-                </div>
-                <div className="space-y-4">
-                  {recentChanges.map((change, index) => (
-                    <div key={index} className="flex items-start gap-3 py-2 border-b last:border-0 border-white/10">
-                      <div className="h-2 w-2 rounded-full bg-primary mt-1.5" />
-                      <div className="flex-1">
-                        <p className="text-sm font-medium text-gray-200">{change.action}</p>
-                        <div className="flex items-center text-xs text-gray-400 mt-1 gap-1">
-                          <span>{change.user}</span>
-                          <span>•</span>
-                          <span>{change.time}</span>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-                <Link to="/admin/history">
-                  <Button variant="outline" className="w-full mt-4 border-white/10 text-white hover:bg-white/5" size="sm">
-                    Просмотреть историю изменений
-                  </Button>
-                </Link>
-              </CardContent>
-            </Card>
-            <Card className="bg-gradient-to-br from-[#222222] to-[#1a1a1a] border border-white/10 shadow-lg text-white">
-              <CardContent className="p-6">
-                <div className="flex items-center gap-2 mb-4">
                   <Shield className="h-5 w-5 text-primary" />
                   <h3 className="font-semibold">Важные настройки</h3>
                 </div>
@@ -246,14 +206,13 @@ const AdminSettingsPage: React.FC = () => {
         <div className="mt-10 text-sm text-gray-400 space-y-3 max-w-3xl">
           <p className="flex items-center gap-2">
             <Settings className="h-4 w-4 text-primary" />
-            <b>Возможности:</b> расширенное управление платформой, пользователи, интеграции, безопасность, уведомления.
+            <b>Что здесь сохраняется на самом деле:</b> только цены оптимизации.
           </p>
-          <ul className="list-disc pl-6 space-y-1">
-            <li>Автоматическое логирование изменений</li>
-            <li>Подтверждение для критичных операций</li>
-            <li>Регулярное резервное копирование</li>
-            <li>Гибкое восстановление из бэкапа для администраторов</li>
-          </ul>
+          <p>
+            Они пишутся в прайс в базе, по нему считаются сметы, и менять его может только
+            пользователь с ролью администратора. Остальные вкладки и редакторы страниц к хранилищу
+            не подключены. Истории изменений, журнала правок и резервного копирования из админки нет.
+          </p>
         </div>
       </div>
     </>

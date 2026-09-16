@@ -1,47 +1,54 @@
 import { supabase } from '@/integrations/supabase/client';
 import { OptimizationItem } from '@/services/audit/optimization/types';
 
+/** Текст ошибки из ответа функции полезнее общего «Edge Function returned a non-2xx». */
+async function readFunctionError(error: unknown): Promise<string | null> {
+  const context = (error as { context?: Response } | null)?.context;
+  if (!context || typeof context.json !== 'function') return null;
+  try {
+    const body = await context.json();
+    return typeof body?.error === 'string' ? body.error : null;
+  } catch {
+    return null;
+  }
+}
+
 /**
  * Service for handling optimization-related API calls using Supabase Edge Functions
  */
 class OptimizationService {
   /**
    * Get optimization cost for a task
+   *
+   * Функция сметы проверяет доступ к задаче. Раньше сюда шёл голый fetch без
+   * токена: для задачи вошедшего пользователя функция отвечала 403, ошибка
+   * глоталась, и человек видел «Расчетная стоимость оптимизации: 0 ₽».
+   * `functions.invoke` передаёт токен сессии (у гостя — ключ anon). Ошибка
+   * теперь пробрасывается: вызывающий хук повторяет запрос, пока результаты
+   * аудита готовятся, а не показывает выдуманный ноль.
    */
   async getOptimizationCost(taskId: string): Promise<{
     totalCost: number;
     items: OptimizationItem[];
   }> {
-    try {
-      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-      const response = await fetch(`${supabaseUrl}/functions/v1/optimization-calculate`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ task_id: taskId })
-      });
+    const { data, error } = await supabase.functions.invoke('optimization-calculate', {
+      body: { task_id: taskId }
+    });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || `HTTP error ${response.status}`);
-      }
-
-      const data = await response.json();
-
-      return {
-        totalCost: data.totalCost || 0,
-        items: data.items || []
-      };
-    } catch (error) {
-      console.error('Error getting optimization cost:', error);
-      
-      // Return fallback data
-      return {
-        totalCost: 0,
-        items: []
-      };
+    if (error) {
+      const message = await readFunctionError(error);
+      console.error('Error getting optimization cost:', message ?? error);
+      throw new Error(message ?? error.message ?? 'Не удалось рассчитать стоимость оптимизации');
     }
+
+    if (!data?.success) {
+      throw new Error(data?.error || 'Не удалось рассчитать стоимость оптимизации');
+    }
+
+    return {
+      totalCost: Number(data.totalCost) || 0,
+      items: data.items || []
+    };
   }
 
   /**

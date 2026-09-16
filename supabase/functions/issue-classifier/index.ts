@@ -517,6 +517,29 @@ serve(async (req) => {
 
     console.log(`[ISSUE-CLASSIFIER] Found ${allIssues.length} total issues`);
 
+    // Классификация пересчитывает замечания задачи целиком. Раньше она только
+    // добавляла: повторная оценка (возобновление аудита, повтор после сбоя
+    // вызова) удваивала замечания в отчёте и плодила сметы. Старые замечания и
+    // черновые сметы снимаем; отправленные и принятые сметы не трогаем.
+    const { error: clearIssuesError } = await supabase
+      .from('issues')
+      .delete()
+      .eq('task_id', task_id);
+
+    if (clearIssuesError) {
+      throw new Error(`Failed to clear previous issues: ${clearIssuesError.message}`);
+    }
+
+    const { error: clearEstimatesError } = await supabase
+      .from('job_estimates')
+      .delete()
+      .eq('task_id', task_id)
+      .eq('status', 'draft');
+
+    if (clearEstimatesError) {
+      console.error('[ISSUE-CLASSIFIER] Failed to clear previous draft estimates:', clearEstimatesError);
+    }
+
     // Save issues to database
     if (allIssues.length > 0) {
       const issuesForDb = allIssues.map(issue => ({

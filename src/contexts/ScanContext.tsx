@@ -1,5 +1,6 @@
 
-import React, { createContext, useContext, useState, useCallback, useMemo, ReactNode } from 'react';
+import React, { createContext, useContext, useCallback, useMemo, ReactNode } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useScan } from '@/hooks/use-scan';
 import { ScanLogEntry } from '@/types/scan-logs';
 
@@ -25,6 +26,8 @@ interface ScanContextType {
   scanLogs: ScanLogEntry[];
   /** `maxPages` — сколько страниц обойти; без него берётся значение по умолчанию. */
   startScan: (deepScan?: boolean, maxPages?: number) => Promise<string | null>;
+  /** Открыть существующую задачу: показать результаты или продолжить следить за ходом. */
+  openTask: (taskId: string) => Promise<void>;
   cancelScan: () => Promise<void>;
   downloadSitemap: () => Promise<void>;
   clearLogs: () => void;
@@ -46,6 +49,7 @@ const ScanContext = createContext<ScanContextType>({
   pageStats: null,
   scanLogs: [],
   startScan: async () => null,
+  openTask: async () => {},
   cancelScan: async () => {},
   downloadSitemap: async () => {},
   clearLogs: () => {}
@@ -63,6 +67,16 @@ export const ScanProvider: React.FC<{ children: ReactNode; url: string }> = ({
     console.log('🔧 ScanProvider: url changed to:', url);
   }, [url]);
   
+  /**
+   * Какую проверку показать, говорит адрес страницы (`?task_id=`). Раньше
+   * параметр только складывался в localStorage, сюда не доходил, и по ссылке
+   * «Просмотр» из истории открывалась не выбранная проверка, а последняя по
+   * домену. Провайдер живёт внутри страниц под роутером, поэтому читаем адрес
+   * здесь, не заставляя каждую страницу пробрасывать параметр.
+   */
+  const [searchParams] = useSearchParams();
+  const requestedTaskId = searchParams.get('task_id');
+
   const {
     isScanning,
     scanDetails,
@@ -71,10 +85,11 @@ export const ScanProvider: React.FC<{ children: ReactNode; url: string }> = ({
     pageStats,
     scanLogs,
     startScan,
+    openTask,
     cancelScan,
     downloadSitemap: downloadSitemapFn,
     clearLogs
-  } = useScan(url);
+  } = useScan(url, undefined, { taskId: requestedTaskId, restoreLatest: true });
   
   // Ensure scanDetails has all required properties with default values
   // Memoize to prevent creating new object on every render
@@ -106,10 +121,11 @@ export const ScanProvider: React.FC<{ children: ReactNode; url: string }> = ({
     pageStats,
     scanLogs,
     startScan,
+    openTask,
     cancelScan,
     downloadSitemap,
     clearLogs
-  }), [url, isScanning, scanDetailsWithDefaults, taskId, sitemap, pageStats, scanLogs, startScan, cancelScan, downloadSitemap, clearLogs]);
+  }), [url, isScanning, scanDetailsWithDefaults, taskId, sitemap, pageStats, scanLogs, startScan, openTask, cancelScan, downloadSitemap, clearLogs]);
   
   return (
     <ScanContext.Provider value={contextValue}>

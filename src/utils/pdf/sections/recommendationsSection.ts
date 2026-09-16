@@ -11,7 +11,13 @@ export interface Recommendation {
   impact: string;
   solution: string;
   expectedResult: string;
-  timeframe: string;
+  /**
+   * Срок и стоимость — только настоящие. Раньше каждой рекомендации
+   * приписывались «1-2 недели / 15 000 ₽», «2-4 недели / 8 000 ₽» и
+   * «1-2 месяца / 5 000 ₽» по одной лишь важности замечания. Нет значения —
+   * строка не печатается.
+   */
+  timeframe?: string;
   cost?: number;
   urls?: string[];
 }
@@ -44,7 +50,7 @@ export function addRecommendationsSection(
   doc.setTextColor(255, 255, 255);
   doc.setFontSize(16);
   doc.setFont(pdfFonts.primary, pdfFonts.bold);
-  doc.text('Рекомендации и план действий', margin + 12, currentY - 2);
+  doc.text('Рекомендации', margin + 12, currentY - 2);
 
   currentY += 15;
 
@@ -95,13 +101,9 @@ export function addRecommendationsSection(
     );
   }
 
-  // === TIMELINE ВЫПОЛНЕНИЯ РАБОТ ===
-  if (currentY > 200) {
-    doc.addPage();
-    currentY = 20;
-  }
-
-  currentY = addTimeline(doc, data, currentY, margin, contentWidth);
+  // Здесь печатался «Timeline выполнения работ»: фазы «1-2 недели»,
+  // «3-4 недели», «5-8 недель» и вехи «Неделя 2 / 4 / 8». Сроки нигде не
+  // рассчитываются — это был шаблон для любого сайта, поэтому блок убран.
 
   return currentY;
 }
@@ -261,20 +263,25 @@ function addRecommendationCard(
 
   currentY += 3;
 
-  // === НИЖНЯЯ ПАНЕЛЬ С СРОКОМ И СТОИМОСТЬЮ ===
-  doc.setFillColor(245, 247, 250);
-  doc.rect(innerMargin, currentY, innerWidth, 8, 'F');
+  // === НИЖНЯЯ ПАНЕЛЬ С СРОКОМ И СТОИМОСТЬЮ (только если они известны) ===
+  if (rec.timeframe || rec.cost) {
+    doc.setFillColor(245, 247, 250);
+    doc.rect(innerMargin, currentY, innerWidth, 8, 'F');
 
-  doc.setFontSize(8);
-  doc.setFont(pdfFonts.primary, pdfFonts.bold);
-  doc.setTextColor(80, 80, 80);
-  doc.text(`Срок: ${rec.timeframe}`, innerMargin + 3, currentY + 5);
+    doc.setFontSize(8);
+    doc.setFont(pdfFonts.primary, pdfFonts.bold);
+    doc.setTextColor(80, 80, 80);
 
-  if (rec.cost) {
-    doc.text(`Стоимость: ${rec.cost.toLocaleString('ru-RU')} ₽`, innerMargin + innerWidth / 2, currentY + 5);
+    if (rec.timeframe) {
+      doc.text(`Срок: ${rec.timeframe}`, innerMargin + 3, currentY + 5);
+    }
+
+    if (rec.cost) {
+      doc.text(`Стоимость: ${rec.cost.toLocaleString('ru-RU')} ₽`, innerMargin + innerWidth / 2, currentY + 5);
+    }
+
+    currentY += 10;
   }
-
-  currentY += 10;
 
   // URLs (если есть)
   if (rec.urls && rec.urls.length > 0) {
@@ -293,92 +300,6 @@ function addRecommendationCard(
   doc.roundedRect(margin, cardStartY, width, cardHeight, 2, 2, 'S');
 
   return currentY;
-}
-
-/**
- * Добавляет timeline выполнения работ
- */
-function addTimeline(
-  doc: jsPDF,
-  data: RecommendationsData,
-  startY: number,
-  margin: number,
-  width: number
-): number {
-  let currentY = startY;
-
-  // Заголовок
-  doc.setFontSize(14);
-  doc.setFont(pdfFonts.primary, pdfFonts.bold);
-  doc.setTextColor(...pdfColors.dark);
-  doc.text('Timeline выполнения работ', margin, currentY);
-  currentY += 10;
-
-  // Фазы работ
-  const phases = [
-    {
-      name: 'Фаза 1: Критические исправления',
-      duration: '1-2 недели',
-      items: data.critical.length,
-      color: pdfColors.danger
-    },
-    {
-      name: 'Фаза 2: Важные улучшения',
-      duration: '3-4 недели',
-      items: data.important.length,
-      color: pdfColors.warning
-    },
-    {
-      name: 'Фаза 3: Оптимизация и рост',
-      duration: '5-8 недель',
-      items: data.opportunities.length,
-      color: pdfColors.info
-    }
-  ];
-
-  const barWidth = width;
-  const barHeight = 15;
-  const barSpacing = 3;
-
-  phases.forEach((phase, index) => {
-    // Полоса фазы
-    doc.setFillColor(...phase.color);
-    doc.roundedRect(margin, currentY, barWidth, barHeight, 2, 2, 'F');
-
-    // Текст фазы
-    doc.setFontSize(10);
-    doc.setFont(pdfFonts.primary, pdfFonts.bold);
-    doc.setTextColor(255, 255, 255);
-    doc.text(phase.name, margin + 5, currentY + 6);
-
-    doc.setFontSize(8);
-    doc.setFont(pdfFonts.primary, pdfFonts.normalStyle);
-    doc.text(`${phase.duration} • ${phase.items} задач`, margin + 5, currentY + 11);
-
-    currentY += barHeight + barSpacing;
-  });
-
-  currentY += 5;
-
-  // Milestone маркеры
-  doc.setFontSize(8);
-  doc.setTextColor(100, 100, 100);
-  doc.text('🎯 Ключевые точки:', margin, currentY);
-  currentY += 5;
-
-  const milestones = [
-    'Неделя 2: Исправление критических ошибок',
-    'Неделя 4: Завершение важных улучшений',
-    'Неделя 8: Финальная оптимизация и отчет'
-  ];
-
-  milestones.forEach(milestone => {
-    doc.setFontSize(8);
-    doc.text(`  • ${milestone}`, margin + 5, currentY);
-    currentY += 4;
-  });
-
-  return currentY + 10;
 }
 
 /**

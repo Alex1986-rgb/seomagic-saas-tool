@@ -6,9 +6,11 @@
  * метками, по http и https, с «www» и без. Отчёт показывал «300 страниц» там,
  * где их было шестьдесят, а доли и оценки считались от раздутого знаменателя.
  *
- * Здесь адрес приводится к одному виду. Вид задаёт начальный адрес сайта:
- * протокол и имя хоста берутся у него, чтобы ссылки внутри сайта не плодили
- * второй его «облик».
+ * Здесь адрес приводится к одному виду. Вид задаёт стартовая страница сайта
+ * (адрес, на котором она открылась после переадресаций): протокол и имя хоста
+ * берутся у неё, чтобы ссылки внутри сайта не плодили второй его «облик».
+ * Вид передаётся параметром и хранится в задаче — общей переменной модуля
+ * быть не может: один воркер ведёт аудиты разных сайтов одновременно.
  */
 
 /** Метки рекламы и обсуждений: на содержимое страницы они не влияют. */
@@ -25,7 +27,7 @@ export interface SiteOrigin {
 export function parseSiteOrigin(url: string): SiteOrigin | null {
   try {
     const parsed = new URL(url);
-    return { protocol: parsed.protocol, hostname: parsed.hostname.toLowerCase() };
+    return { protocol: parsed.protocol, hostname: parsed.hostname.toLowerCase().replace(/\.+$/, '') };
   } catch {
     return null;
   }
@@ -34,8 +36,33 @@ export function parseSiteOrigin(url: string): SiteOrigin | null {
 /** Тот же сайт с точностью до «www». */
 export function isSameSite(hostname: string, origin: SiteOrigin | null): boolean {
   if (!origin) return true;
-  const bare = (host: string) => host.toLowerCase().replace(/^www\./, '');
+  const bare = (host: string) => host.toLowerCase().replace(/\.+$/, '').replace(/^www\./, '');
   return bare(hostname) === bare(origin.hostname);
+}
+
+/**
+ * Вид адресов сайта — по адресу, на котором стартовая страница открылась
+ * после переадресаций.
+ *
+ * Раньше вид брался из введённого адреса. Ввели «www.site.ru», а сайт живёт
+ * без www (или ввели http у сайта на https) — и все ссылки переписывались в
+ * неканонический вид: каждая страница уходила в переадресацию, техническая
+ * оценка теряла до 30 баллов, в отчёте были адреса, которых на сайте нет.
+ *
+ * Если переадресация увела на другой сайт, остаёмся при введённом: проверяем
+ * тот сайт, который просили.
+ */
+export function siteOriginAfterRedirects(enteredUrl: string, finalUrl: string): SiteOrigin | null {
+  const entered = parseSiteOrigin(enteredUrl);
+  const final = parseSiteOrigin(finalUrl);
+  if (!final || !entered) return entered ?? final;
+  if (final.protocol !== 'http:' && final.protocol !== 'https:') return entered;
+  return isSameSite(final.hostname, entered) ? final : entered;
+}
+
+/** Вид адресов в строку для хранения в задаче: «https://www.site.ru». */
+export function formatSiteOrigin(origin: SiteOrigin | null): string | null {
+  return origin ? `${origin.protocol}//${origin.hostname}` : null;
 }
 
 export function normalizeUrl(url: string): string {

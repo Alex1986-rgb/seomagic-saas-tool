@@ -1,5 +1,6 @@
 import React from 'react';
 import { Helmet } from 'react-helmet-async';
+import { absolutePageUrl } from '@/lib/asset-url';
 
 /**
  * Разметка отзывов для поисковых систем.
@@ -25,8 +26,6 @@ interface ReviewSchemaProps {
 }
 
 export const ReviewSchema: React.FC<ReviewSchemaProps> = ({ reviews = [] }) => {
-  const siteUrl = typeof window !== 'undefined' ? window.location.origin : 'https://seomarket.app';
-
   if (reviews.length === 0) return null;
 
   const ratingSum = reviews.reduce((sum, review) => sum + review.rating, 0);
@@ -40,7 +39,7 @@ export const ReviewSchema: React.FC<ReviewSchemaProps> = ({ reviews = [] }) => {
   const reviewSchema = {
     '@context': 'https://schema.org',
     '@type': 'Organization',
-    '@id': `${siteUrl}/#organization`,
+    '@id': absolutePageUrl('/#organization'),
     name: 'SeoMarket',
     aggregateRating: {
       '@type': 'AggregateRating',

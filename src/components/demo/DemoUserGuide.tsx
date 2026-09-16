@@ -1,14 +1,21 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
+import { Link } from 'react-router-dom';
 import { 
   Search, FileText, BarChart2, Settings, 
-  Download, PenTool, Share2, Users, Bell, 
-  CreditCard, HelpCircle, BookOpen
+  PenTool, Share2, HelpCircle, BookOpen
 } from 'lucide-react';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import { Button } from '@/components/ui/button';
 
+/**
+ * Кнопка «Скачать полное руководство (PDF)» и ссылки «Подробнее» под каждым
+ * пунктом ничего не делали: PDF-руководства нет, отдельных статей под пункты
+ * тоже. Плитки внизу выглядели кликабельными, но никуда не вели, а среди них
+ * были «Вебинары», которых нет. Кнопку и «Подробнее» убрали, плитки стали
+ * ссылками на существующие разделы. Пункты про сравнение с конкурентами и
+ * оповещения об изменении позиций заменены: таких функций в трекере нет.
+ */
 const DemoUserGuide: React.FC = () => {
   const guideCategories = [
     {
@@ -37,8 +44,8 @@ const DemoUserGuide: React.FC = () => {
       items: [
         { title: "Настройка отслеживания ключевых слов", content: "Как добавить и настроить отслеживание позиций по важным для вас ключевым словам." },
         { title: "Анализ динамики позиций", content: "Интерпретация графиков и данных по изменению позиций сайта в поисковых системах." },
-        { title: "Сравнение с конкурентами", content: "Как сравнивать позиции вашего сайта с конкурентами в одной нише." },
-        { title: "Настройка оповещений", content: "Настройка автоматических уведомлений при изменении позиций или появлении новых возможностей." }
+        { title: "Яндекс и Google", content: "Как проверить позиции в одной поисковой системе или сразу в обеих." },
+        { title: "Регион и глубина проверки", content: "Как выбрать регион выдачи и на какую глубину искать сайт в результатах поиска." }
       ]
     },
     {
@@ -60,9 +67,6 @@ const DemoUserGuide: React.FC = () => {
         <p className="text-lg text-muted-foreground max-w-2xl mx-auto mb-6">
           Подробные инструкции по использованию всех возможностей платформы SeoMarket
         </p>
-        <Button className="gap-2 mb-8">
-          <Download className="w-4 h-4" /> Скачать полное руководство (PDF)
-        </Button>
       </div>
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
@@ -85,7 +89,6 @@ const DemoUserGuide: React.FC = () => {
                   <AccordionTrigger className="text-left">{item.title}</AccordionTrigger>
                   <AccordionContent>
                     <p className="text-muted-foreground">{item.content}</p>
-                    <Button variant="link" className="p-0 mt-2">Подробнее</Button>
                   </AccordionContent>
                 </AccordionItem>
               ))}
@@ -94,22 +97,24 @@ const DemoUserGuide: React.FC = () => {
         ))}
       </div>
       
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-4 mt-10">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-10">
         {[
-          { icon: <PenTool className="w-5 h-5" />, label: "Руководства" },
-          { icon: <BookOpen className="w-5 h-5" />, label: "Обучение" },
-          { icon: <HelpCircle className="w-5 h-5" />, label: "FAQ" },
-          { icon: <Users className="w-5 h-5" />, label: "Вебинары" },
-          { icon: <Bell className="w-5 h-5" />, label: "Обновления" },
-          { icon: <Share2 className="w-5 h-5" />, label: "Поддержка" }
-        ].map((item, index) => (
+          { icon: <PenTool className="w-5 h-5" />, label: "Руководства", to: "/guides" },
+          { icon: <BookOpen className="w-5 h-5" />, label: "Документация", to: "/documentation" },
+          { icon: <HelpCircle className="w-5 h-5" />, label: "FAQ", to: "/faq" },
+          { icon: <Share2 className="w-5 h-5" />, label: "Поддержка", to: "/support" }
+        ].map((item) => (
           <motion.div
-            key={index}
+            key={item.to}
             whileHover={{ y: -5 }}
-            className="flex flex-col items-center gap-2 p-4 border rounded-lg text-center cursor-pointer hover:border-primary/50 transition-colors"
           >
-            <div className="p-3 rounded-full bg-primary/10">{item.icon}</div>
-            <span className="text-sm font-medium">{item.label}</span>
+            <Link
+              to={item.to}
+              className="flex flex-col items-center gap-2 p-4 border rounded-lg text-center hover:border-primary/50 transition-colors"
+            >
+              <div className="p-3 rounded-full bg-primary/10">{item.icon}</div>
+              <span className="text-sm font-medium">{item.label}</span>
+            </Link>
           </motion.div>
         ))}
       </div>

@@ -6,7 +6,6 @@ import { validationService } from '@/services/validation/validationService';
 
 /**
  * Hook for optimization functionality
- * This is a placeholder that will be implemented later
  */
 export const useOptimization = (url: string) => {
   const { toast } = useToast();
@@ -15,9 +14,16 @@ export const useOptimization = (url: string) => {
   const [isOptimized, setIsOptimized] = useState<boolean>(false);
   const [pagesContent, setPagesContent] = useState<any[]>([]);
 
+  /**
+   * Раньше — console.log без результата: кнопка «Скачать оптимизированный сайт»
+   * молча ничего не делала. Сборка исправленной копии на сервере не
+   * реализована — так и сообщаем.
+   */
   const downloadOptimizedSite = async (): Promise<void> => {
-    console.log(`Downloading optimized site from optimization hook for ${url}`);
-    return Promise.resolve();
+    toast({
+      title: "Скачивание пока недоступно",
+      description: "Сборка исправленной копии сайта на сервере ещё не реализована.",
+    });
   };
 
   const generatePdfReportFile = async (taskId?: string) => {

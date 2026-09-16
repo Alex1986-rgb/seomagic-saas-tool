@@ -1,7 +1,6 @@
 
 import { useState, useEffect } from 'react';
 import { checkPositions, KeywordPosition, PositionData, PositionCheckProgress } from '@/services/position/positionTracker';
-import { useProxyManager } from './use-proxy-manager';
 import { useToast } from './use-toast';
 
 interface UsePositionTrackerProps {
@@ -22,7 +21,8 @@ export function usePositionTracker({
   const [searchEngine, setSearchEngine] = useState(defaultSearchEngine);
   const [region, setRegion] = useState(defaultRegion);
   const [depth, setDepth] = useState(100);
-  const [scanFrequency, setScanFrequency] = useState('daily');
+  // Проверок по расписанию нет: каждая проверка разовая.
+  const [scanFrequency, setScanFrequency] = useState('once');
   
   const [isLoading, setIsLoading] = useState(false);
   const [results, setResults] = useState<PositionData | null>(null);
@@ -33,7 +33,6 @@ export function usePositionTracker({
   const [historyUpdated, setHistoryUpdated] = useState(false);
   
   const { toast } = useToast();
-  const { getRandomActiveProxy, activeProxies } = useProxyManager();
   
   // Слушаем события обновления истории
   useEffect(() => {
@@ -72,19 +71,10 @@ export function usePositionTracker({
     setError(null);
     
     try {
-      // Проверяем наличие прокси
-      const hasActiveProxies = activeProxies && activeProxies.length > 0;
-      
-      if (!hasActiveProxies) {
-        toast({
-          title: "Внимание",
-          description: "Нет активных прокси. Проверка может быть менее точной.",
-          variant: "default",
-        });
-      } else {
-        console.log(`Доступно ${activeProxies.length} активных прокси для проверки позиций`);
-      }
-      
+      // Раньше здесь поднимался список прокси из браузера и без них выводилось
+      // «Нет активных прокси. Проверка может быть менее точной». Позиции
+      // проверяет сервер через поставщика выдачи — прокси на точность не влияют.
+
       // Форматируем домен для проверки
       let formattedDomain = domain.trim();
       
@@ -112,8 +102,7 @@ export function usePositionTracker({
         searchEngine,
         region,
         depth,
-        scanFrequency,
-        useProxy: hasActiveProxies // Используем прокси только если они есть
+        scanFrequency
       };
       
       // Запускаем проверку позиций с использованием актуальных данных
@@ -183,7 +172,6 @@ export function usePositionTracker({
     results,
     error,
     trackPositions,
-    historyUpdated,
-    hasActiveProxies: activeProxies && activeProxies.length > 0
+    historyUpdated
   };
 }

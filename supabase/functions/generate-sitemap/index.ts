@@ -5,6 +5,22 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
+/**
+ * Карта нашего сайта.
+ *
+ * Опубликованный sitemap.xml на GitHub Pages собирает scripts/prerender.cjs по
+ * пререндеренным страницам; эта функция нужна только хостингу с правилом из
+ * public/_redirects. Правила у них общие:
+ *   * адрес сайта — из секрета SITE_URL. Раньше он брался из адреса запроса, то
+ *     есть в карту попадал домен Supabase, где страниц сайта нет;
+ *   * сайт живёт на подпути, а GitHub Pages отдаёт «/pricing» переадресацией на
+ *     «/pricing/», поэтому в карте — конечные адреса со слэшем;
+ *   * в карте только открытые для индексации страницы. /channel, /webinars,
+ *     /careers, /api-docs закрыты noindex, страницы кабинета и админки — вход
+ *     по логину: такие адреса в карте дали бы поисковику противоречивый сигнал.
+ */
+const DEFAULT_SITE_URL = 'https://alex1986-rgb.github.io/seomagic-saas-tool';
+
 interface SitemapPage {
   url: string;
   priority: number;
@@ -22,12 +38,41 @@ const pages: SitemapPage[] = [
   { url: '/sitemap', priority: 0.5, changefreq: 'monthly' },
 ];
 
+/** Закрытые от индексации и служебные адреса: в карту не попадают никогда. */
+const EXCLUDED_PREFIXES = [
+  '/channel', '/webinars', '/careers', '/api-docs',
+  '/admin', '/dashboard', '/profile', '/client-profile', '/settings', '/reports',
+  '/audit-history', '/audits', '/optimizations', '/auth', '/shared-estimate',
+];
+
+const isExcluded = (path: string): boolean =>
+  EXCLUDED_PREFIXES.some((prefix) => path === prefix || path.startsWith(`${prefix}/`));
+
+function siteBaseUrl(): string {
+  const raw = (Deno.env.get('SITE_URL') ?? '').trim() || DEFAULT_SITE_URL;
+  return raw.replace(/\/+$/, '');
+}
+
+const escapeXml = (value: string): string =>
+  value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&apos;');
+
+/** Конечный адрес страницы — со слэшем на конце, как его отдаёт хостинг. */
+const pageUrl = (baseUrl: string, path: string): string =>
+  path === '/' ? `${baseUrl}/` : `${baseUrl}${encodeURI(path.replace(/\/+$/, ''))}/`;
+
 const generateSitemap = (baseUrl: string): string => {
   const lastmod = new Date().toISOString().split('T')[0];
-  
-  const urlEntries = pages.map(page => `
+
+  const urlEntries = pages
+    .filter((page) => !isExcluded(page.url))
+    .map(page => `
   <url>
-    <loc>${baseUrl}${page.url}</loc>
+    <loc>${escapeXml(pageUrl(baseUrl, page.url))}</loc>
     <lastmod>${lastmod}</lastmod>
     <changefreq>${page.changefreq}</changefreq>
     <priority>${page.priority}</priority>
@@ -46,11 +91,8 @@ serve(async (req) => {
   }
 
   try {
-    const url = new URL(req.url);
-    const baseUrl = `${url.protocol}//${url.host}`;
-    
-    const sitemap = generateSitemap(baseUrl);
-    
+    const sitemap = generateSitemap(siteBaseUrl());
+
     return new Response(sitemap, {
       headers: {
         ...corsHeaders,

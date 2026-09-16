@@ -57,7 +57,7 @@ const AuditOptimizationSection: React.FC<AuditOptimizationSectionProps> = ({
 }) => {
   const { toast } = useToast();
   const [isOptimizing, setIsOptimizing] = useState(false);
-  const [isPaymentComplete, setIsPaymentComplete] = useState(false);
+  const [isInvoiceRequested, setIsInvoiceRequested] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [localIsOptimized, setLocalIsOptimized] = useState(isOptimized);
 
@@ -91,7 +91,13 @@ const AuditOptimizationSection: React.FC<AuditOptimizationSectionProps> = ({
     try {
       const result = await runOptimization(
         taskId,
-        { fixMetaTags: true, improveContent: true, language: 'ru' },
+        {
+          fixMetaTags: true,
+          improveContent: true,
+          language: 'ru',
+          // Пожелания из поля «инструкции» раньше на сервер не уходили.
+          instructions: contentPrompt,
+        },
         (progress) => setLiveProgress(progress),
       );
       setOutcome(result);
@@ -113,24 +119,27 @@ const AuditOptimizationSection: React.FC<AuditOptimizationSectionProps> = ({
   };
 
   /**
-   * Подтверждение в диалоге. Раньше оно сообщало «Оплата успешно произведена»,
-   * хотя приёма оплаты в продукте нет. Честнее сразу запускать работу:
-   * стоимость человек видел в диалоге и согласился с ней.
+   * Заявка на счёт принята.
+   *
+   * Раньше отсюда сразу запускалась оптимизация, а окно закрывалось: человек
+   * просил прислать счёт, а модель уже переписывала страницы — без счёта и без
+   * оплаты, и экран «Заявка принята» никто не видел. Теперь заявка остаётся
+   * заявкой: окно показывает подтверждение, запуск — отдельной кнопкой.
    */
-  const handlePayment = () => {
-    setIsDialogOpen(false);
-    setIsPaymentComplete(true);
-    void startOptimization();
+  const handleInvoiceRequested = () => {
+    setIsInvoiceRequested(true);
   };
 
   const handleSelectPrompt = (prompt: string) => {
-    if (setContentOptimizationPrompt) {
-      setContentOptimizationPrompt(prompt);
-    }
+    if (!setContentOptimizationPrompt) return;
+    setContentOptimizationPrompt(prompt);
 
+    // Здесь было «Параметры оптимизации установлены», хотя шаблон никуда не
+    // уходил. Говорим только то, что действительно произошло: текст лёг в
+    // пожелания, которые уйдут на сервер вместе с запуском.
     toast({
       title: "Шаблон выбран",
-      description: "Параметры оптимизации установлены"
+      description: "Текст шаблона добавлен в пожелания к оптимизации"
     });
   };
 
@@ -196,7 +205,7 @@ const AuditOptimizationSection: React.FC<AuditOptimizationSectionProps> = ({
               value={contentPrompt}
               onChange={(e) => setContentOptimizationPrompt(e.target.value)}
               className="w-full h-32 p-3 border rounded-md mb-3"
-              placeholder="Введите инструкции для оптимизации контента..."
+              placeholder="Пожелания к оптимизации: например, не трогать цены, писать для B2B"
             />
           </motion.div>
         )}
@@ -259,13 +268,15 @@ const AuditOptimizationSection: React.FC<AuditOptimizationSectionProps> = ({
         <div className="flex justify-end mt-4">
           <OptimizationActions
             url={url}
+            taskId={taskId}
             optimizationCost={optimizationCost}
             isOptimized={localIsOptimized || isOptimized}
-            isPaymentComplete={isPaymentComplete}
+            isInvoiceRequested={isInvoiceRequested}
+            isOptimizing={isOptimizing}
             onDownloadOptimized={onDownloadOptimizedSite}
             onGeneratePdfReport={onGeneratePdfReport}
-            onStartOptimization={startOptimization}
-            onPayment={handlePayment}
+            onStartOptimization={() => void startOptimization()}
+            onInvoiceRequested={handleInvoiceRequested}
             isDialogOpen={isDialogOpen}
             setIsDialogOpen={setIsDialogOpen}
             onSelectPrompt={handleSelectPrompt}

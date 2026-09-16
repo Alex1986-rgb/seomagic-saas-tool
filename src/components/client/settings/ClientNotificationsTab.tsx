@@ -13,6 +13,10 @@ const ClientNotificationsTab: React.FC = () => {
   const [auditCompletedNotification, setAuditCompletedNotification] = useState(true);
   const [optimizationNotification, setOptimizationNotification] = useState(true);
   const [marketingNotification, setMarketingNotification] = useState(false);
+  // Если настройки не прочитались, переключатели показывают значения по
+  // умолчанию, а не сохранённые. Сохранять их в таком виде нельзя — затрём
+  // настоящие настройки, поэтому говорим об ошибке и блокируем кнопку.
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   // Load settings from database
   useEffect(() => {
@@ -25,7 +29,7 @@ const ClientNotificationsTab: React.FC = () => {
           .from('profiles')
           .select('email_notifications, notify_audit_completed, notify_optimization, notify_marketing')
           .eq('id', user.id)
-          .single();
+          .maybeSingle();
 
         if (error) throw error;
 
@@ -37,6 +41,7 @@ const ClientNotificationsTab: React.FC = () => {
         }
       } catch (error) {
         console.error('Error loading notification settings:', error);
+        setLoadError(error instanceof Error ? error.message : 'неизвестная ошибка');
       } finally {
         setLoading(false);
       }
@@ -51,7 +56,7 @@ const ClientNotificationsTab: React.FC = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Not authenticated');
 
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('profiles')
         .update({
           email_notifications: emailNotifications,
@@ -59,9 +64,12 @@ const ClientNotificationsTab: React.FC = () => {
           notify_optimization: optimizationNotification,
           notify_marketing: marketingNotification,
         })
-        .eq('id', user.id);
+        .eq('id', user.id)
+        .select('id');
 
       if (error) throw error;
+      // Без строки профиля update ничего не меняет и ошибки не возвращает.
+      if (!data || data.length === 0) throw new Error('Профиль не найден');
 
       toast({
         title: "Настройки сохранены",
@@ -89,6 +97,12 @@ const ClientNotificationsTab: React.FC = () => {
   
   return (
     <div className="space-y-6">
+      {loadError && (
+        <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-3 text-sm">
+          Не удалось загрузить настройки уведомлений: {loadError}
+        </div>
+      )}
+
       <div className="flex items-center justify-between">
         <div>
           <h3 className="text-lg font-medium">Email уведомления</h3>
@@ -147,7 +161,7 @@ const ClientNotificationsTab: React.FC = () => {
       </div>
       
       <div className="flex justify-end">
-        <Button onClick={handleSave} disabled={saving} className="gap-2">
+        <Button onClick={handleSave} disabled={saving || !!loadError} className="gap-2">
           {saving ? (
             <>
               <Loader2 className="h-4 w-4 animate-spin" />

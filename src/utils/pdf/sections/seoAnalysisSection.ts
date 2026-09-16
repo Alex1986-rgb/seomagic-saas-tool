@@ -5,13 +5,18 @@ import { pdfFonts } from '../styles/fonts';
 import { drawCheckIcon, drawErrorIcon, drawWarningIcon, drawSeoIcon } from '../helpers/icons';
 import { formatUrlForDisplay, createLinkCellHandler } from '../helpers/links';
 
-interface SeoAnalysisData {
+/**
+ * Показатели раздела. Необязательные числа печатаются, только если они
+ * измерены: раньше отчёт передавал сюда нули на месте неизмеренного, и в PDF
+ * стояло «Отсутствуют: 0», «Неправильная структура: 0» у любого сайта.
+ */
+export interface SeoAnalysisData {
   metaTags?: {
     checked: number;
-    missing: number;
-    duplicate: number;
-    tooLong: number;
-    tooShort: number;
+    missing?: number;
+    duplicate?: number;
+    tooLong?: number;
+    tooShort?: number;
     issues?: Array<{
       url: string;
       issue: string;
@@ -20,9 +25,9 @@ interface SeoAnalysisData {
   };
   headings?: {
     checked: number;
-    missingH1: number;
-    duplicateH1: number;
-    brokenStructure: number;
+    missingH1?: number;
+    duplicateH1?: number;
+    brokenStructure?: number;
     issues?: Array<{
       url: string;
       issue: string;
@@ -135,15 +140,15 @@ function addMetaTagsAnalysis(
   doc.text('Meta теги (Title & Description)', margin, currentY);
   currentY += 8;
 
-  // Статистические карточки
+  // Статистические карточки — только измеренные показатели
   const stats = [
-    { label: 'Проверено', value: data?.checked || 0, color: pdfColors.info },
-    { label: 'Отсутствуют', value: data?.missing || 0, color: pdfColors.danger },
-    { label: 'Дубликаты', value: data?.duplicate || 0, color: pdfColors.warning },
-    { label: 'Слишком длинные', value: data?.tooLong || 0, color: pdfColors.warning },
-  ];
+    { label: 'Проверено', value: data?.checked, color: pdfColors.info },
+    { label: 'Отсутствуют', value: data?.missing, color: pdfColors.danger },
+    { label: 'Дубликаты', value: data?.duplicate, color: pdfColors.warning },
+    { label: 'Слишком длинные', value: data?.tooLong, color: pdfColors.warning },
+  ].filter((stat) => stat.value !== undefined && stat.value !== null);
 
-  const cardWidth = (width - 15) / 4;
+  const cardWidth = (width - 5 * (stats.length - 1)) / Math.max(stats.length, 1);
   stats.forEach((stat, index) => {
     const x = margin + (cardWidth + 5) * index;
     drawStatCard(doc, x, currentY, cardWidth, 18, stat.value.toString(), stat.label, stat.color);
@@ -226,15 +231,15 @@ function addHeadingsAnalysis(
   doc.text('Структура заголовков (H1-H6)', margin, currentY);
   currentY += 8;
 
-  // Статистика
+  // Статистика — только измеренные показатели
   const stats = [
-    { label: 'Проверено страниц', value: data?.checked || 0, color: pdfColors.info },
-    { label: 'Без H1', value: data?.missingH1 || 0, color: pdfColors.danger },
-    { label: 'Дублирующиеся H1', value: data?.duplicateH1 || 0, color: pdfColors.warning },
-    { label: 'Неправильная структура', value: data?.brokenStructure || 0, color: pdfColors.warning },
-  ];
+    { label: 'Проверено страниц', value: data?.checked, color: pdfColors.info },
+    { label: 'Без H1', value: data?.missingH1, color: pdfColors.danger },
+    { label: 'Несколько H1', value: data?.duplicateH1, color: pdfColors.warning },
+    { label: 'Неправильная структура', value: data?.brokenStructure, color: pdfColors.warning },
+  ].filter((stat) => stat.value !== undefined && stat.value !== null);
 
-  const cardWidth = (width - 15) / 4;
+  const cardWidth = (width - 5 * (stats.length - 1)) / Math.max(stats.length, 1);
   stats.forEach((stat, index) => {
     const x = margin + (cardWidth + 5) * index;
     drawStatCard(doc, x, currentY, cardWidth, 18, stat.value.toString(), stat.label, stat.color);

@@ -88,8 +88,10 @@ const LocalSetup: React.FC = () => {
                 VITE_SUPABASE_URL=https://your-project-ref.supabase.co<br />
                 VITE_SUPABASE_PUBLISHABLE_KEY=your-publishable-key<br /><br />
 
-                # Подпуть публикации (для своего домена поставьте "/")<br />
-                VITE_BASE_PATH=/seomagic-saas-tool/
+                # Подпуть публикации. Прод-сборка по умолчанию идёт под /seomagic-saas-tool/,<br />
+                # dev-сервер — под «/». Для своего домена раскомментируйте строку.<br />
+                # Переменная из .env действует и на dev-сервер, и на сборку.<br />
+                # VITE_BASE_PATH=/
               </code>
             </div>
             <div className="bg-yellow-50 dark:bg-yellow-900/20 p-3 rounded-md text-sm">

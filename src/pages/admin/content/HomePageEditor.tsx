@@ -7,11 +7,9 @@ import { Switch } from '@/components/ui/switch';
 import { Card, CardContent } from '@/components/ui/card';
 import PageSeo from '@/components/seo/PageSeo';
 
+// Кнопка «Сохранить» и onSave, печатавший пустой объект в консоль, убраны:
+// хранилища контента нет, предупреждение показывает BaseContentEditor.
 const HomePageEditor: React.FC = () => {
-  const handleSave = (data: any) => {
-    console.log('Saving home page data:', data);
-  };
-
   return (
     <>
       <PageSeo
@@ -23,7 +21,6 @@ const HomePageEditor: React.FC = () => {
       <BaseContentEditor
         title="Редактирование главной страницы"
         description="Управление контентом, SEO-параметрами и настройками главной страницы"
-        onSave={handleSave}
       >
         <div className="space-y-6">
           <Card className="bg-black/20 border-white/10">

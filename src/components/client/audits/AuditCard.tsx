@@ -1,8 +1,10 @@
 
 import React from 'react';
-import { Search, Calendar, Link, ExternalLink, Download } from 'lucide-react';
+import { Link as RouterLink } from 'react-router-dom';
+import { Link, ExternalLink, Download } from 'lucide-react';
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { auditPagePath } from '@/modules/audit/utils/auditLinks';
 
 interface AuditCardProps {
   audit: {
@@ -17,10 +19,14 @@ interface AuditCardProps {
       opportunities: number;
     };
     optimized?: boolean;
+    /** Задача аудита (`audit_tasks.id`): по ней открывается именно эта проверка. */
+    taskId?: string | null;
   };
+  /** Скачать PDF этой проверки. Без обработчика кнопки нет — раньше она ничего не делала. */
+  onDownloadPdf?: () => void;
 }
 
-export const AuditCard: React.FC<AuditCardProps> = ({ audit }) => {
+export const AuditCard: React.FC<AuditCardProps> = ({ audit, onDownloadPdf }) => {
   const getScoreColor = (score: number | null) => {
     if (score === null) return 'text-muted-foreground';
     if (score >= 80) return 'text-green-500';
@@ -64,7 +70,7 @@ export const AuditCard: React.FC<AuditCardProps> = ({ audit }) => {
               <div>
                 <div className="text-sm text-muted-foreground mb-1">SEO оценка</div>
                 <div className={`text-xl font-semibold ${getScoreColor(audit.score)}`}>
-                  {audit.score}/100
+                  {audit.score ?? '—'}/100
                 </div>
               </div>
               
@@ -73,16 +79,22 @@ export const AuditCard: React.FC<AuditCardProps> = ({ audit }) => {
               )}
               
               <div className="flex gap-2">
+                {/*
+                  Раньше: <a href="/audit?url=..."> — без номера задачи и мимо
+                  адреса сборки (на подпути сайта — 404).
+                */}
                 <Button variant="outline" size="sm" asChild>
-                  <a href={`/audit?url=${encodeURIComponent(audit.url)}`}>
+                  <RouterLink to={auditPagePath(audit.url, audit.taskId)}>
                     <ExternalLink className="h-4 w-4 mr-2" />
                     Детали
-                  </a>
+                  </RouterLink>
                 </Button>
-                <Button variant="outline" size="sm">
-                  <Download className="h-4 w-4 mr-2" />
-                  PDF
-                </Button>
+                {onDownloadPdf && (
+                  <Button variant="outline" size="sm" onClick={onDownloadPdf}>
+                    <Download className="h-4 w-4 mr-2" />
+                    PDF
+                  </Button>
+                )}
               </div>
             </div>
           )}

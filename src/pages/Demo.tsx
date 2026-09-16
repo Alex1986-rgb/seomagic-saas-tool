@@ -2,9 +2,10 @@
 import React from 'react';
 import Layout from '@/components/Layout';
 import { motion } from 'framer-motion';
+import { Link } from 'react-router-dom';
 import { 
-  Play, Laptop, BarChart2, PenTool, 
-  Eye, Download, CheckCircle
+  Search, Laptop, BarChart2, PenTool, 
+  Eye, BookOpen, CheckCircle
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -15,8 +16,6 @@ import DemoInteractiveExample from '@/components/demo/DemoInteractiveExample';
 import PageSeo from '@/components/seo/PageSeo';
 
 const Demo: React.FC = () => {
-  console.log("Demo page rendering");
-  
   return (
     <Layout>
       <PageSeo
@@ -48,12 +47,22 @@ const Demo: React.FC = () => {
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto mb-8">
               Ознакомьтесь с работой платформы, интерактивными примерами и пошаговым руководством пользователя
             </p>
+            {/*
+              Здесь были кнопки «Посмотреть видеодемонстрацию» и «Скачать
+              руководство пользователя» без обработчиков: ни видео, ни файла
+              руководства не существует. Теперь кнопки ведут туда, где можно
+              действительно попробовать сервис и почитать инструкции.
+            */}
             <div className="flex flex-wrap justify-center gap-4">
-              <Button size="lg" className="gap-2">
-                <Play className="w-4 h-4" /> Посмотреть видеодемонстрацию
+              <Button size="lg" className="gap-2" asChild>
+                <Link to="/audit">
+                  <Search className="w-4 h-4" /> Проверить свой сайт
+                </Link>
               </Button>
-              <Button variant="outline" size="lg" className="gap-2">
-                <Download className="w-4 h-4" /> Скачать руководство пользователя
+              <Button variant="outline" size="lg" className="gap-2" asChild>
+                <Link to="/guides">
+                  <BookOpen className="w-4 h-4" /> Руководства
+                </Link>
               </Button>
             </div>
           </motion.div>

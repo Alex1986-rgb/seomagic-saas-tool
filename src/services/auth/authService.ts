@@ -8,6 +8,12 @@ export interface AuthUser {
   isAdmin: boolean;
   user?: User;
   profile?: UserProfile;
+  /**
+   * Профиль или роль не удалось прочитать. Сессия при этом действительна:
+   * человек вошёл, но имя и права могут быть неполными — интерфейс должен
+   * сказать об этом, а не показывать пустые поля как настоящие.
+   */
+  loadError?: string;
 }
 
 export interface UserProfile {
@@ -15,8 +21,27 @@ export interface UserProfile {
   email: string;
   full_name?: string;
   avatar_url?: string;
+  created_at?: string;
   role?: 'admin' | 'user';
 }
+
+/** Поля профиля, которые пользователь меняет сам. Роль сюда не входит. */
+export interface ProfileUpdate {
+  full_name?: string | null;
+  avatar_url?: string | null;
+}
+
+/**
+ * Адрес главной страницы сайта с учётом подпути публикации.
+ *
+ * Сайт живёт в подпапке (/seomagic-saas-tool/), а после подтверждения почты и
+ * входа через Google Supabase возвращал человека на `origin/` — на корень
+ * github.io, где его встречала 404. BASE_URL у Vite всегда оканчивается «/».
+ */
+const appHomeUrl = (): string => {
+  const base = import.meta.env.BASE_URL || '/';
+  return `${window.location.origin}${base.endsWith('/') ? base : `${base}/`}`;
+};
 
 /**
  * Get current authenticated user and their profile
@@ -29,35 +54,58 @@ export const getCurrentUser = async (): Promise<AuthUser> => {
       return { isLoggedIn: false, isAdmin: false };
     }
 
-    // Get user profile and role
-    const { data: profile, error: profileError } = await supabase
-      .from('profiles')
-      .select(`
-        *,
-        user_roles: user_roles(role)
-      `)
-      .eq('id', session.user.id)
-      .maybeSingle(); // avoid .single() to prevent errors
+    const userId = session.user.id;
 
-    // Get user_roles row for this user
-    let isAdmin = false;
-    let role: 'admin' | 'user' | undefined = undefined;
-    if (profile && (profile as any).user_roles && Array.isArray((profile as any).user_roles) && (profile as any).user_roles[0]) {
-      role = (profile as any).user_roles[0].role as 'admin' | 'user';
-      isAdmin = role === 'admin';
+    // Профиль и роли читаем двумя отдельными запросами. Раньше роль вкладывали
+    // в запрос профиля (`user_roles(role)`), но связи profiles↔user_roles в базе
+    // нет: PostgREST отвечал ошибкой PGRST200, ошибку никто не читал, профиль
+    // становился пустым, а администратор — обычным пользователем без доступа
+    // в /admin.
+    const [profileResult, rolesResult] = await Promise.all([
+      supabase
+        .from('profiles')
+        .select('full_name, avatar_url, created_at')
+        .eq('id', userId)
+        .maybeSingle(),
+      supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', userId),
+    ]);
+
+    const problems: string[] = [];
+    if (profileResult.error) {
+      console.error('Не удалось загрузить профиль:', profileResult.error);
+      problems.push(`профиль: ${profileResult.error.message}`);
     }
+    if (rolesResult.error) {
+      console.error('Не удалось загрузить роль пользователя:', rolesResult.error);
+      problems.push(`роль: ${rolesResult.error.message}`);
+    }
+
+    const roles = (rolesResult.data ?? []).map((row) => row.role);
+    const isAdmin = roles.includes('admin');
+    const role: 'admin' | 'user' | undefined = isAdmin
+      ? 'admin'
+      : roles.includes('user')
+        ? 'user'
+        : undefined;
+
+    const profile = profileResult.data;
 
     return {
       isLoggedIn: true,
       isAdmin,
       user: session.user,
       profile: {
-        id: session.user.id,
+        id: userId,
         email: session.user.email || '',
-        full_name: profile?.full_name,
-        avatar_url: profile?.avatar_url,
+        full_name: profile?.full_name ?? undefined,
+        avatar_url: profile?.avatar_url ?? undefined,
+        created_at: profile?.created_at ?? session.user.created_at ?? undefined,
         role
-      }
+      },
+      loadError: problems.length > 0 ? `Не удалось загрузить ${problems.join('; ')}` : undefined,
     };
   } catch (error) {
     console.error('Error getting current user:', error);
@@ -74,7 +122,7 @@ export const signUpUser = async (email: string, password: string, fullName?: str
       email,
       password,
       options: {
-        emailRedirectTo: `${window.location.origin}/`,
+        emailRedirectTo: appHomeUrl(),
         data: {
           full_name: fullName || ''
         }
@@ -115,7 +163,7 @@ export const signInWithGoogle = async () => {
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: `${window.location.origin}/`
+        redirectTo: appHomeUrl()
       }
     });
 
@@ -144,15 +192,16 @@ export const signOut = async () => {
 /**
  * Update user profile
  */
-export const updateProfile = async (updates: Partial<UserProfile>) => {
+export const updateProfile = async (updates: ProfileUpdate) => {
   try {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error('Not authenticated');
 
+    // upsert, а не update: если строки профиля почему-то нет (аккаунт старше
+    // триггера создания профиля), update молча менял ноль строк и падал на .single().
     const { data, error } = await supabase
       .from('profiles')
-      .update(updates)
-      .eq('id', user.id)
+      .upsert({ id: user.id, ...updates }, { onConflict: 'id' })
       .select()
       .single();
 
@@ -172,13 +221,15 @@ export const checkAdminRole = async (): Promise<boolean> => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return false;
 
-    const { data } = await supabase
+    // maybeSingle: у обычного пользователя строки с ролью admin нет, и это не ошибка.
+    const { data, error } = await supabase
       .from('user_roles')
       .select('role')
       .eq('user_id', user.id)
       .eq('role', 'admin')
-      .single();
+      .maybeSingle();
 
+    if (error) throw error;
     return !!data;
   } catch (error) {
     console.error('Error checking admin role:', error);

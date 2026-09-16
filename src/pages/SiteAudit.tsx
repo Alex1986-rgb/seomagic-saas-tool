@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useToast } from "@/hooks/use-toast";
 import Layout from '@/components/Layout';
@@ -11,6 +11,7 @@ import { Input } from '@/components/ui/input';
 import { motion } from 'framer-motion';
 import { Search, ExternalLink, RefreshCw } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
+import { auditPagePath } from '@/modules/audit/utils/auditLinks';
 
 const SiteAudit: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -20,6 +21,10 @@ const SiteAudit: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
   const navigate = useNavigate();
+  // Адрес, уже подставленный в поле ввода. Номер задачи в адресе страницы
+  // теперь обновляется сам (новая или открытая проверка), и без этой проверки
+  // каждое такое обновление стирало бы то, что человек успел набрать в поле.
+  const syncedUrlParamRef = useRef<string | null>(null);
 
   console.log("SiteAudit page rendering with params:", searchParams.toString());
 
@@ -35,7 +40,10 @@ const SiteAudit: React.FC = () => {
         const formattedUrl = urlParam.startsWith('http') ? urlParam : `https://${urlParam}`;
         new URL(formattedUrl);
         setUrl(urlParam);
-        setInputUrl(urlParam);
+        if (syncedUrlParamRef.current !== urlParam) {
+          syncedUrlParamRef.current = urlParam;
+          setInputUrl(urlParam);
+        }
         setError(null);
         
         // If task_id is present, store it in localStorage for this url
@@ -47,7 +55,7 @@ const SiteAudit: React.FC = () => {
           const savedTaskId = localStorage.getItem(`task_id_${urlParam}`);
           if (savedTaskId) {
             console.log('[SITE AUDIT] 🔄 Recovering task_id from localStorage:', savedTaskId);
-            navigate(`/site-audit?url=${encodeURIComponent(urlParam)}&task_id=${savedTaskId}`, { replace: true });
+            navigate(auditPagePath(urlParam, savedTaskId), { replace: true });
             return; // Exit early, will re-run with task_id
           }
         }
@@ -174,7 +182,12 @@ const SiteAudit: React.FC = () => {
               {error}
             </div>
           ) : url && isValidUrl(url) && (
-            <AuditProvider initialUrl={url}>
+            /*
+              key={url}: при вводе другого сайта в форму страница не
+              перемонтировалась, и под новым адресом оставалась задача
+              (и результаты) предыдущего сайта.
+            */
+            <AuditProvider key={url} initialUrl={url}>
               <AuditWorkspace url={url}>
                 <AuditResultsContainer url={url} />
               </AuditWorkspace>

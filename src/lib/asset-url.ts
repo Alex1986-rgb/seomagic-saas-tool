@@ -36,3 +36,32 @@ export function absoluteAssetUrl(path: string): string {
   const origin = typeof window !== 'undefined' ? window.location.origin : '';
   return `${origin}${assetUrl(path)}`;
 }
+
+/**
+ * Полный адрес страницы сайта вместе с доменом и подпутём публикации.
+ *
+ * Разметка schema.org собирала адреса как `${window.location.origin}/pricing`
+ * и теряла подпуть: на github.io/seomagic-saas-tool/ хлебные крошки, адреса
+ * статей, услуг и организации вели на корень github.io, где этих страниц нет.
+ * `path` — путь маршрута, как в <Link to>: «/pricing», «/#organization».
+ */
+export function absolutePageUrl(path = '/'): string {
+  if (isExternal(path)) return path;
+
+  const origin = typeof window !== 'undefined' ? window.location.origin : '';
+  const base = (import.meta.env.BASE_URL || '/').replace(/\/+$/, '');
+  return `${origin}${base}/${path.replace(/^\/+/, '')}`;
+}
+
+/**
+ * Адрес открытой страницы для canonical и og:url — без query-параметров и якоря.
+ *
+ * Раньше брался window.location.href целиком, и /pricing?utm_source=tg или
+ * /audit?url=site.ru объявляли каноничными сами себя: каждая метка и каждый
+ * проверенный адрес становились отдельной страницей-дублем. pathname уже
+ * содержит подпуть публикации, поэтому BASE_URL здесь не добавляется.
+ */
+export function currentPageUrl(): string {
+  if (typeof window === 'undefined') return '';
+  return `${window.location.origin}${window.location.pathname}`;
+}

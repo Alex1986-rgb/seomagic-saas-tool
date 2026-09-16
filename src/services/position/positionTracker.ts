@@ -22,8 +22,8 @@ export interface PositionData {
   depth: number;
   scanFrequency: string;
   previousResults?: PositionData[];
-  useProxy?: boolean;
-  proxyUsed?: string;
+  // Поля useProxy и proxyUsed убраны: выдачу запрашивает сервер через
+  // поставщика, прокси из браузера в проверке не участвуют.
   scanId?: string;
   /** Поставщик выдачи, откуда взяты данные. */
   provider?: string;
@@ -40,7 +40,6 @@ export interface PositionCheckParams {
   region?: string;
   depth: number;
   scanFrequency: string;
-  useProxy?: boolean;
   timestamp?: string;
 }
 

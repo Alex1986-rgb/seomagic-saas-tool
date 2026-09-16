@@ -7,22 +7,32 @@ import AuditTimeoutMessage from "@/components/audit/AuditTimeoutMessage";
 import AuditLoaderSection from "@/components/audit/AuditLoaderSection";
 import { AuditProvider } from '@/contexts/AuditContext';
 import PageSeo from '@/components/seo/PageSeo';
+import { auditPagePath } from '@/modules/audit/utils/auditLinks';
 
+/**
+ * Аудит по адресу сайта запускается и показывается на `/site-audit` — там живёт
+ * рабочая цепочка обхода. Сюда же вели и главная форма, и ссылки из писем, а
+ * страница умела только показывать готовые результаты: человек видел заголовок
+ * «Результаты SEO аудита» и пустоту под ним. Старые ссылки переводим на рабочую
+ * страницу, сохраняя номер задачи, если он был: тогда откроется именно она.
+ *
+ * Переадресация вынесена в обёртку. Раньше `return <Navigate/>` стоял до
+ * useState/useEffect: при смене параметров на той же странице число хуков
+ * менялось, и React падал с «Rendered fewer hooks than expected».
+ */
 const Audit: React.FC = () => {
   const [searchParams] = useSearchParams();
-
-  /**
-   * Аудит по адресу сайта запускается на `/site-audit` — там живёт рабочая
-   * цепочка обхода. Сюда же вели и главная форма, и ссылки из писем, а страница
-   * умела только показывать готовые результаты: человек видел заголовок
-   * «Результаты SEO аудита» и пустоту под ним. Старые ссылки переводим на
-   * рабочую страницу, чтобы проверка действительно началась.
-   */
   const requestedUrl = searchParams.get('url');
-  if (requestedUrl && !searchParams.get('task_id')) {
-    return <Navigate to={`/site-audit?url=${encodeURIComponent(requestedUrl)}`} replace />;
+
+  if (requestedUrl) {
+    return <Navigate to={auditPagePath(requestedUrl, searchParams.get('task_id'))} replace />;
   }
 
+  return <AuditPageContent />;
+};
+
+const AuditPageContent: React.FC = () => {
+  const [searchParams] = useSearchParams();
   const [url, setUrl] = useState<string>('');
   const [error, setError] = useState<string | null>(null);
   const [showAdvancedTools, setShowAdvancedTools] = useState(false);

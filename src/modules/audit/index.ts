@@ -12,5 +12,10 @@ export type {
   AuditTask,
   AuditResult,
   StartAuditOptions,
-  AuditStatusResponse
+  AuditStatusResponse,
+  AuditTaskSnapshot
 } from './types';
+
+// Ссылки на страницу аудита
+export { auditPagePath, absoluteAuditPageUrl, normalizeHost, isSameSite } from './utils/auditLinks';
+export { getBrowserTaskIdsForSite } from './utils/guestTasks';

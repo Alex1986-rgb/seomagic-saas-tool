@@ -14,7 +14,18 @@ export interface OptimizationOptions {
   fixMetaTags?: boolean;
   improveContent?: boolean;
   language?: string;
+  /**
+   * Пожелания человека к оптимизации (текст из поля «инструкции» или шаблона).
+   * Раньше поле заполнялось, интерфейс отвечал «параметры установлены», а на
+   * сервер уходили только флаги — пожелания терялись. Теперь они едут вместе с
+   * запуском и сохраняются в задании (optimization_jobs.options); вставлять их
+   * в запрос к модели — дело обработчика optimization-processor.
+   */
+  instructions?: string;
 }
+
+/** Длиннее незачем: это пожелания к модели, а не текст страницы. */
+const MAX_INSTRUCTIONS_LENGTH = 2000;
 
 export interface OptimizationProgress {
   status: string;
@@ -53,9 +64,20 @@ export async function runOptimization(
   options: OptimizationOptions = { fixMetaTags: true, improveContent: true, language: 'ru' },
   onProgress?: (progress: OptimizationProgress) => void,
 ): Promise<OptimizationOutcome> {
-  const { data, error } = await supabase.functions.invoke('optimization-start', {
-    body: { task_id: taskId, options },
-  });
+  // Функция запуска пускает только вошедших. Без этой проверки гость получал
+  // невнятное «Unauthorized» от сервера.
+  const { data: sessionData } = await supabase.auth.getSession();
+  if (!sessionData?.session) {
+    throw new Error('Оптимизация доступна после входа в аккаунт');
+  }
+
+  const instructions = options.instructions?.trim().slice(0, MAX_INSTRUCTIONS_LENGTH);
+  const body = {
+    task_id: taskId,
+    options: { ...options, instructions: instructions || undefined },
+  };
+
+  const { data, error } = await supabase.functions.invoke('optimization-start', { body });
 
   if (error || !data?.optimization_id) {
     const message = await readError(error) ?? data?.error ?? 'Не удалось запустить оптимизацию';

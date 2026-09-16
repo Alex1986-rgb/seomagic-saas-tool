@@ -3,6 +3,12 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Check } from 'lucide-react';
 
+/**
+ * Плавающие плашки на главной показывали «PageSpeed 98/100», «SEO Score +45%»
+ * и «Конверсия +22%» — выглядело как результаты клиентов, но это просто числа
+ * из вёрстки. Теперь на плашках то, что аудит действительно проверяет, без
+ * выдуманных цифр.
+ */
 const FloatingIndicators: React.FC = () => {
   return (
     <div className="hidden md:block">
@@ -20,7 +26,7 @@ const FloatingIndicators: React.FC = () => {
       >
         <div className="flex items-center gap-2 glass-panel px-2 py-1 rounded-full">
           <Check size={12} className="text-primary" />
-          <span className="text-xs">PageSpeed 98/100</span>
+          <span className="text-xs">Скорость ответа</span>
         </div>
       </motion.div>
       
@@ -39,7 +45,7 @@ const FloatingIndicators: React.FC = () => {
       >
         <div className="flex items-center gap-2 glass-panel px-2 py-1 rounded-full">
           <Check size={12} className="text-primary" />
-          <span className="text-xs">SEO Score +45%</span>
+          <span className="text-xs">Мета-теги</span>
         </div>
       </motion.div>
       
@@ -59,7 +65,7 @@ const FloatingIndicators: React.FC = () => {
       >
         <div className="flex items-center gap-2 glass-panel px-2 py-1 rounded-full">
           <Check size={12} className="text-primary" />
-          <span className="text-xs">Конверсия +22%</span>
+          <span className="text-xs">Индексируемость</span>
         </div>
       </motion.div>
     </div>

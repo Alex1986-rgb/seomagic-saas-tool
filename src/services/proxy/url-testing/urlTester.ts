@@ -73,12 +73,13 @@ export async function testUrls(
           result.direct = true;
         }
         
-        // Report progress
+        // Report progress. Запрос из браузера всегда прямой (см. makeRequest),
+        // поэтому прокси в отчёт не приписываем.
         if (onProgress) {
           onProgress(
             url, 
             result.status, 
-            currentProxy ? `${currentProxy.ip}:${currentProxy.port}` : undefined,
+            undefined,
             result.errorDetails
           );
         }

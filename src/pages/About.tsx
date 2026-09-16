@@ -4,14 +4,10 @@ import Layout from '@/components/Layout';
 import AboutHero from '@/components/about/AboutHero';
 import MissionSection from '@/components/about/MissionSection';
 import FeaturesSection from '@/components/about/FeaturesSection';
-import TeamSection from '@/components/about/TeamSection';
-import TestimonialsSection from '@/components/about/TestimonialsSection';
 import CtaSection from '@/components/about/CtaSection';
-import { Separator } from '@/components/ui/separator';
 import { BreadcrumbSchema } from '@/components/seo/BreadcrumbSchema';
 import { LocalBusinessSchema } from '@/components/seo/LocalBusinessSchema';
 import { OrganizationSchema } from '@/components/seo/OrganizationSchema';
-import { ReviewSchema } from '@/components/seo/ReviewSchema';
 import PageSeo from '@/components/seo/PageSeo';
 
 const About = () => {
@@ -19,7 +15,7 @@ const About = () => {
     <Layout>
       <PageSeo
         title="О сервисе: как устроены наш SEO-аудит и оптимизация"
-        description="Чем занимается платформа, как работает автоматический аудит сайта, кто в команде и почему сервису можно доверить проверку проекта."
+        description="Чем занимается платформа, как устроены автоматический аудит сайта, ИИ-оптимизация и проверка позиций в поиске."
       />
       <BreadcrumbSchema items={[
         { name: 'Главная', url: '/' },
@@ -27,7 +23,13 @@ const About = () => {
       ]} />
       <LocalBusinessSchema />
       <OrganizationSchema />
-      <ReviewSchema />
+      {/*
+        Блоки «Наша команда» и «Отзывы» (TeamSection, TestimonialsSection) и
+        разметка ReviewSchema убраны со страницы: люди и отзывы в них были
+        выдуманы, сами компоненты уже ничего не выводили, а разделители вокруг
+        них давали двойные линии. Вернуть — когда появятся настоящие состав
+        команды и отзывы с согласием авторов.
+      */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
@@ -40,10 +42,6 @@ const About = () => {
         <MissionSection />
         <div className="elegant-divider-alt" />
         <FeaturesSection />
-        <div className="elegant-divider" />
-        <TeamSection />
-        <div className="elegant-divider-alt" />
-        <TestimonialsSection />
         <CtaSection />
       </motion.div>
     </Layout>

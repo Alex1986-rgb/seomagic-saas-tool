@@ -1,8 +1,8 @@
 import React from 'react';
-import { useParams, Navigate } from 'react-router-dom';
+import { useParams, Navigate, Link } from 'react-router-dom';
 import Layout from '@/components/Layout';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import UserGuide from '@/components/documentation/UserGuide';
@@ -16,17 +16,20 @@ import {
   Code, 
   Shield, 
   HelpCircle, 
-  Search,
-  Download,
-  Star,
-  Users,
-  Clock,
   ArrowRight
 } from 'lucide-react';
 import PageSeo from '@/components/seo/PageSeo';
 
 type DocumentationTab = 'user-guide' | 'developer-guide' | 'security' | 'faq';
 
+/**
+ * В шапке были счётчики «4.9/5 — рейтинг документации», «50K+ активных
+ * пользователей» и «24/7 поддержка»: рейтинг никто не собирал, пятидесяти
+ * тысяч пользователей нет, круглосуточной поддержки тоже. Кнопки «Поиск в
+ * документации», «Скачать PDF» и «Сообщество пользователей» ничего не делали —
+ * ни поиска, ни PDF, ни сообщества нет. Выдуманное убрано, «Связаться с
+ * поддержкой» ведёт на форму связи.
+ */
 const Documentation: React.FC = () => {
   const { tab } = useParams<{ tab?: string }>();
   const defaultTab: DocumentationTab = (tab as DocumentationTab) || 'user-guide';
@@ -49,7 +52,7 @@ const Documentation: React.FC = () => {
       value: 'developer-guide',
       label: 'Для разработчиков',
       icon: Code,
-      description: 'API документация и техническая информация',
+      description: 'Устройство проекта и техническая информация',
       color: 'from-green-500 to-green-600'
     },
     {
@@ -87,7 +90,7 @@ const Documentation: React.FC = () => {
     <Layout>
       <PageSeo
         title="Документация сервиса: инструкции и ответы на вопросы"
-        description="Разделы справки: как запустить аудит, прочитать отчёт, настроить проекты, отслеживать позиции и подключиться к API платформы."
+        description="Разделы справки: как запустить аудит, прочитать отчёт, отслеживать позиции и что делать с найденными ошибками."
       />
       <BreadcrumbSchema items={[
         { name: 'Главная', url: '/' },
@@ -116,44 +119,6 @@ const Documentation: React.FC = () => {
               Исчерпывающее руководство по использованию всех возможностей платформы SeoMarket. 
               От базовых функций до продвинутых техник оптимизации.
             </motion.p>
-
-            <motion.div variants={itemVariants} className="flex flex-wrap justify-center gap-4 mb-12">
-              <Button variant="outline" className="gap-2 hover:scale-105 transition-transform">
-                <Search className="w-4 h-4" />
-                Поиск в документации
-              </Button>
-              <Button variant="outline" className="gap-2 hover:scale-105 transition-transform">
-                <Download className="w-4 h-4" />
-                Скачать PDF
-              </Button>
-            </motion.div>
-
-            {/* Stats */}
-            <motion.div variants={itemVariants} className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-2xl mx-auto">
-              <Card className="neo-card text-center hover:shadow-lg transition-all duration-300">
-                <CardContent className="p-4">
-                  <Star className="w-8 h-8 text-primary mx-auto mb-2" />
-                  <div className="text-2xl font-bold">4.9/5</div>
-                  <div className="text-sm text-muted-foreground">Рейтинг документации</div>
-                </CardContent>
-              </Card>
-              
-              <Card className="neo-card text-center hover:shadow-lg transition-all duration-300">
-                <CardContent className="p-4">
-                  <Users className="w-8 h-8 text-primary mx-auto mb-2" />
-                  <div className="text-2xl font-bold">50K+</div>
-                  <div className="text-sm text-muted-foreground">Активных пользователей</div>
-                </CardContent>
-              </Card>
-              
-              <Card className="neo-card text-center hover:shadow-lg transition-all duration-300">
-                <CardContent className="p-4">
-                  <Clock className="w-8 h-8 text-primary mx-auto mb-2" />
-                  <div className="text-2xl font-bold">24/7</div>
-                  <div className="text-sm text-muted-foreground">Поддержка</div>
-                </CardContent>
-              </Card>
-            </motion.div>
           </motion.div>
 
           <motion.div 
@@ -218,17 +183,19 @@ const Documentation: React.FC = () => {
               <CardContent className="p-8">
                 <h3 className="text-2xl font-bold mb-4">Нужна дополнительная помощь?</h3>
                 <p className="text-muted-foreground mb-6 max-w-2xl mx-auto">
-                  Наша команда поддержки готова помочь вам в любое время. 
-                  Свяжитесь с нами, если у вас остались вопросы.
+                  Если ответа не нашлось, напишите нам через форму связи — 
+                  обращение сохранится, и мы ответим на указанную почту.
                 </p>
                 
                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                  <Button size="lg" className="gap-2 hover:scale-105 transition-transform">
-                    Связаться с поддержкой
-                    <ArrowRight className="w-4 h-4" />
+                  <Button size="lg" className="gap-2 hover:scale-105 transition-transform" asChild>
+                    <Link to="/contact">
+                      Связаться с поддержкой
+                      <ArrowRight className="w-4 h-4" />
+                    </Link>
                   </Button>
-                  <Button variant="outline" size="lg" className="hover:scale-105 transition-transform">
-                    Сообщество пользователей
+                  <Button variant="outline" size="lg" className="hover:scale-105 transition-transform" asChild>
+                    <Link to="/faq">Частые вопросы</Link>
                   </Button>
                 </div>
               </CardContent>

@@ -17,16 +17,51 @@ import PageSeo from '@/components/seo/PageSeo';
  * клиенту за работу, которой не было.
  *
  * Теперь показываем настоящие задания оптимизации из базы.
+ *
+ * Из result_data берём только нужные ключи. Раньше выбирался весь объект, а
+ * в нём у выполненного задания лежит `improvements` — ответы модели по
+ * каждой странице, так что сотня заданий тянула мегабайты текста ради двух
+ * чисел.
+ *
+ * Колонка «Расход» раньше выводила `cost` в рублях, но у запущенных
+ * оптимизаций это поле всегда 0: optimization-start создаёт задание с
+ * cost: 0, а optimization-processor кладёт расход модели в
+ * result_data.llm_cost_usd — в долларах, оценкой по токенам. В рублях в
+ * cost лежит только смета (status = 'estimated'). Показываем каждое число
+ * там, где оно действительно записано.
  */
+
+type JsonScalar = string | number | boolean | null;
 
 interface JobRow {
   id: string;
   status: string;
   cost: number | null;
-  created_at: string;
-  result_data: Record<string, unknown> | null;
+  created_at: string | null;
+  /** result_data->processed — счётчик по ходу обработки. */
+  processed: JsonScalar;
+  /** result_data->optimized_pages — итог выполненного задания. */
+  optimized_pages: JsonScalar;
+  /** result_data->llm_cost_usd — оценка расхода модели по токенам, USD. */
+  llm_cost_usd: JsonScalar;
+  /** result_data->total_tokens — сколько токенов вернула модель. */
+  total_tokens: JsonScalar;
   audit_tasks: { url: string } | null;
 }
+
+/** Число из JSON-поля или null, если значения нет. */
+function jsonNumber(value: JsonScalar): number | null {
+  if (value === null || value === undefined || value === '') return null;
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
+const usdFormatter = new Intl.NumberFormat('ru-RU', {
+  style: 'currency',
+  currency: 'USD',
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 4,
+});
 
 const STATUS_LABELS: Record<string, { text: string; className: string }> = {
   completed: { text: 'Выполнено', className: 'bg-green-500/10 text-green-600' },
@@ -37,6 +72,14 @@ const STATUS_LABELS: Record<string, { text: string; className: string }> = {
   failed: { text: 'Ошибка', className: 'bg-red-500/10 text-red-600' },
 };
 
+/**
+ * Из result_data берём только четыре числа, а не весь объект с текстами
+ * переписанных страниц. Строка объявлена как string: разбирать JSON-пути в
+ * типах postgrest-js не умеет и уходит в бесконечную глубину.
+ */
+const JOB_COLUMNS: string =
+  'id, status, cost, created_at, processed:result_data->processed, optimized_pages:result_data->optimized_pages, llm_cost_usd:result_data->llm_cost_usd, total_tokens:result_data->total_tokens, audit_tasks!inner(url)';
+
 const SitesPage: React.FC = () => {
   const [jobs, setJobs] = useState<JobRow[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -45,7 +88,7 @@ const SitesPage: React.FC = () => {
   useEffect(() => {
     supabase
       .from('optimization_jobs')
-      .select('id, status, cost, created_at, result_data, audit_tasks!inner(url)')
+      .select(JOB_COLUMNS)
       .order('created_at', { ascending: false })
       .limit(100)
       .then(({ data, error: queryError }) => {
@@ -55,10 +98,8 @@ const SitesPage: React.FC = () => {
       });
   }, []);
 
-  const pagesOf = (job: JobRow): number => {
-    const result = job.result_data ?? {};
-    return Number(result.processed ?? result.optimized_pages ?? 0);
-  };
+  const pagesOf = (job: JobRow): number =>
+    jsonNumber(job.processed) ?? jsonNumber(job.optimized_pages) ?? 0;
 
   return (
     <>
@@ -97,6 +138,8 @@ const SitesPage: React.FC = () => {
                 text: job.status,
                 className: 'bg-muted text-muted-foreground',
               };
+              const llmCost = jsonNumber(job.llm_cost_usd);
+              const tokens = jsonNumber(job.total_tokens);
 
               return (
                 <Card key={job.id}>
@@ -113,21 +156,33 @@ const SitesPage: React.FC = () => {
                       <div>
                         <p className="text-muted-foreground">Дата</p>
                         <p className="font-medium">
-                          {new Date(job.created_at).toLocaleDateString('ru-RU')}
+                          {job.created_at ? new Date(job.created_at).toLocaleDateString('ru-RU') : '—'}
                         </p>
                       </div>
                       <div>
                         <p className="text-muted-foreground">Страниц переписано</p>
                         <p className="font-medium">{pagesOf(job)}</p>
                       </div>
-                      <div>
-                        <p className="text-muted-foreground">
-                          {job.status === 'estimated' ? 'Смета' : 'Расход'}
-                        </p>
-                        <p className="font-medium">
-                          {Number(job.cost ?? 0).toLocaleString('ru-RU')} ₽
-                        </p>
-                      </div>
+                      {job.status === 'estimated' ? (
+                        <div>
+                          <p className="text-muted-foreground">Смета</p>
+                          <p className="font-medium">
+                            {job.cost !== null ? `${Number(job.cost).toLocaleString('ru-RU')} ₽` : 'не посчитана'}
+                          </p>
+                        </div>
+                      ) : (
+                        <div>
+                          <p className="text-muted-foreground">Расход модели (оценка по токенам)</p>
+                          <p className="font-medium">
+                            {llmCost !== null ? usdFormatter.format(llmCost) : 'не посчитан'}
+                          </p>
+                          {llmCost !== null && tokens !== null && (
+                            <p className="text-xs text-muted-foreground">
+                              {tokens.toLocaleString('ru-RU')} токенов
+                            </p>
+                          )}
+                        </div>
+                      )}
                     </div>
                   </CardContent>
                 </Card>

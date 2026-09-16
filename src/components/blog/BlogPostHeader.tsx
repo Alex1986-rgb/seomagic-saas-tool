@@ -5,6 +5,7 @@ import { ArrowLeft } from 'lucide-react';
 import { OptimizedImage } from '@/components/ui/OptimizedImage';
 import { Clock, User } from 'lucide-react';
 import { BlogPost } from '@/types/blog';
+import { formatPostDate } from './formatPostDate';
 
 interface BlogPostHeaderProps {
   post: BlogPost;
@@ -34,7 +35,7 @@ export const BlogPostHeader: React.FC<BlogPostHeaderProps> = ({ post }) => {
           <div className="flex flex-wrap items-center text-sm gap-x-4 gap-y-2">
             <div className="flex items-center">
               <Clock className="mr-1 h-4 w-4" />
-              <span>{post.date}</span>
+              <time dateTime={post.date}>{formatPostDate(post.date)}</time>
             </div>
             <div className="flex items-center">
               <User className="mr-1 h-4 w-4" />

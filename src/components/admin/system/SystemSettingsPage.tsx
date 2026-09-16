@@ -4,21 +4,20 @@ import { Database, Shield, Users, Bell, BarChart2, Activity } from 'lucide-react
 import SystemInfo from './SystemInfo';
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 
 // Список разделов системных настроек
 const TILES = [
   {
     icon: <Database className="h-5 w-5 text-primary" />,
     label: "База данных",
-    desc: "Параметры подключения, мониторинг и оптимизация работы БД.",
+    desc: "Где смотреть подключения, нагрузку и структуру базы.",
     to: "/admin/system/database",
     badge: undefined,
   },
   {
     icon: <Shield className="h-5 w-5 text-primary" />,
     label: "Безопасность",
-    desc: "Двухфакторная аутентификация, политики и аудит.",
+    desc: "Кто отвечает за защиту входа и где она настраивается.",
     to: "/admin/system/security",
     badge: undefined,
   },
@@ -32,21 +31,21 @@ const TILES = [
   {
     icon: <Bell className="h-5 w-5 text-primary" />,
     label: "Уведомления",
-    desc: "Системные email и SMS-оповещения, интеграция со Slack.",
+    desc: "Каналы оповещений администратору (пока не подключены).",
     to: "/admin/system/notifications",
     badge: undefined,
   },
   {
     icon: <BarChart2 className="h-5 w-5 text-primary" />,
     label: "Аналитика",
-    desc: "Google Analytics, сбор пользовательских событий.",
+    desc: "Счётчики работ платформы; посещаемость не измеряется.",
     to: "/admin/system/analytics",
     badge: undefined,
   },
   {
     icon: <Activity className="h-5 w-5 text-primary" />,
     label: "Производительность",
-    desc: "Мониторинг ресурсов и автоматизация оповещений.",
+    desc: "Метрики сервера не собираются; вызовы функций — в мониторинге.",
     to: "/admin/system/performance",
     badge: undefined,
   }
@@ -63,7 +62,7 @@ const SystemSettingsPage: React.FC = () => {
     <div className="p-4 md:p-8 space-y-8 max-w-4xl mx-auto">
       <h1 className="text-2xl font-bold mb-2">Системные настройки</h1>
       <p className="text-muted-foreground mb-3 max-w-2xl">
-        Управление инфраструктурой платформы: база данных, безопасность, пользователи, аналитика и мониторинг. Используйте быстрые переходы для настройки модулей — доступ к каждому разделу можно получить ниже.
+        Разделы об инфраструктуре платформы: база данных, безопасность, пользователи, уведомления, аналитика и производительность.
       </p>
 
       <SystemInfo />
@@ -97,14 +96,15 @@ const SystemSettingsPage: React.FC = () => {
         ))}
       </div>
 
+      {/*
+        Здесь был список «Возможности»: история изменений, резервное копирование,
+        детальное логирование, пороговые оповещения. Ничего из этого в админке нет.
+      */}
       <div className="mt-10 text-sm text-muted-foreground space-y-2">
-        <div><b>Возможности:</b> гибкая настройка платформы, мониторинг состояния модулей, расширенные интеграции, история изменений.</div>
-        <ul className="list-disc pl-5">
-          <li>Безопасное хранение данных и резервное копирование</li>
-          <li>Детальное логирование действий</li>
-          <li>Пороговые оповещения и автоматизация событий</li>
-        </ul>
-        <div>Для критических изменений система может потребовать подтверждение администратора.</div>
+        <div>
+          Большинство разделов только объясняют, где настраивается та или иная часть платформы
+          (Supabase, секреты проекта, сборка сайта): из админки эти параметры не меняются.
+        </div>
       </div>
     </div>
   );

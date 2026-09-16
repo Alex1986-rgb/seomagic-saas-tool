@@ -1,6 +1,6 @@
 import React from 'react';
 import { Helmet } from 'react-helmet-async';
-import { absoluteAssetUrl } from '@/lib/asset-url';
+import { absoluteAssetUrl, absolutePageUrl } from '@/lib/asset-url';
 
 interface HowToSchemaProps {
   name?: string;
@@ -23,8 +23,6 @@ export const HowToSchema: React.FC<HowToSchemaProps> = ({
   // Без переданных шагов разметку не выводим.
   if (steps.length === 0) return null;
 
-  const siteUrl = typeof window !== 'undefined' ? window.location.origin : 'https://seomarket.app';
-  
   const howToSchema = {
     '@context': 'https://schema.org',
     '@type': 'HowTo',
@@ -68,7 +66,7 @@ export const HowToSchema: React.FC<HowToSchemaProps> = ({
         width: 800,
         height: 450
       } : undefined,
-      url: step.url || `${siteUrl}/features`
+      url: absolutePageUrl(step.url || '/features')
     }))
     // Блок video описывал ролик seo-audit-guide.mp4 с превью
     // /images/video-thumbnail.jpg: ни файла, ни страницы /embed/... не

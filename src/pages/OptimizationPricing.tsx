@@ -1,26 +1,30 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import Layout from '@/components/Layout';
 import { OptimizationPlans } from '@/features/audit/components/results/components/optimization';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import PageSeo from '@/components/seo/PageSeo';
 
 const OptimizationPricing: React.FC = () => {
   const { toast } = useToast();
-  
-  const handleSelectPlan = (plan: string) => {
+  const navigate = useNavigate();
+
+  /**
+   * Раньше кнопка показывала «Тариф выбран», хотя выбор нигде не сохранялся,
+   * а через секунду делала window.location.href = `/audit?plan=…`: адрес мимо
+   * подпути публикации давал 404, да и страница аудита параметр plan не читает.
+   * Настоящий путь к оптимизации — проверка сайта: по её итогам считается смета
+   * и оставляется заявка на счёт. Туда и ведём, без обещания «выбранного» тарифа.
+   */
+  const handleSelectPlan = () => {
     toast({
-      title: "Тариф выбран",
-      description: `Вы выбрали тариф "${plan}". Перенаправление на страницу аудита.`,
+      title: "Сначала проверим сайт",
+      description: "Стоимость оптимизации считается по результатам аудита: введите адрес сайта, после проверки появятся смета и заявка на счёт.",
     });
-    
-    // In a real implementation, you would redirect or perform some action
-    setTimeout(() => {
-      window.location.href = `/audit?plan=${plan}`;
-    }, 1000);
+    navigate('/site-audit');
   };
   
   return (

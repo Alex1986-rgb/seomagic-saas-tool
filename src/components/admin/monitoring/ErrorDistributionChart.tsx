@@ -4,6 +4,12 @@ import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from "recha
 import { AlertCircle } from "lucide-react";
 import type { StatusGroup } from "@/lib/admin-stats";
 
+/**
+ * Коды ответов из записей api_logs.
+ *
+ * Неудачные вызовы в журнал попадают не всегда, поэтому «Успешные 100 %»
+ * здесь не означает, что сбоев не было, — об этом сказано прямо под диаграммой.
+ */
 interface Props {
   /** Группы кодов ответа, посчитанные по `api_logs`. */
   statusGroups: StatusGroup[];
@@ -18,13 +24,13 @@ const ErrorDistributionChart: React.FC<Props> = ({ statusGroups }) => {
         <AlertCircle className="text-[#F97316] rounded-lg p-2 h-8 w-8 bg-orange-900/20 mr-1" />
         <div>
           <CardTitle className="text-lg font-medium">Коды ответов функций</CardTitle>
-          <CardDescription>За последние 24 часа</CardDescription>
+          <CardDescription>По записям журнала за 24 часа</CardDescription>
         </div>
       </CardHeader>
       <CardContent className="pt-4">
         {total === 0 ? (
           <p className="py-10 text-sm text-muted-foreground text-center">
-            За сутки функции не вызывались — распределять нечего.
+            За сутки в журнале нет записей — распределять нечего.
           </p>
         ) : (
           <>
@@ -57,8 +63,11 @@ const ErrorDistributionChart: React.FC<Props> = ({ statusGroups }) => {
               </ResponsiveContainer>
             </div>
             <div className="text-center text-sm text-muted-foreground mt-4">
-              <span className="font-medium text-white/90">Всего вызовов:</span> {total}
+              <span className="font-medium text-white/90">Записей:</span> {total}
             </div>
+            <p className="text-center text-xs text-muted-foreground mt-2">
+              Журнал ведут не все функции, и неудачные вызовы попадают в него не всегда.
+            </p>
           </>
         )}
       </CardContent>

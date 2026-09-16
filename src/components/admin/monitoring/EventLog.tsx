@@ -13,6 +13,9 @@ interface Props {
  * Раньше здесь был придуманный список системных событий («резервное
  * копирование», «вход администратора admin»). Ничего подобного платформа не
  * логирует — показываем то, что реально пишется в `api_logs`.
+ *
+ * Журнал неполный: пишут его не все функции, а функции оптимизации ставят
+ * в duration_ms заглушку 0 — такую «длительность» не выводим.
  */
 const EventLog: React.FC<Props> = ({ rows }) => (
   <Card className="shadow lg:col-span-2 border-0 bg-gradient-to-br from-[#191b2a]/80 via-[#23263b]/80 to-[#403E43]/80 glass-morphism">
@@ -20,13 +23,13 @@ const EventLog: React.FC<Props> = ({ rows }) => (
       <Activity className="text-[#14CC8C] rounded-lg p-2 h-8 w-8 bg-emerald-900/20 mr-1" />
       <div>
         <CardTitle className="text-lg font-medium font-playfair">Журнал вызовов</CardTitle>
-        <CardDescription>Последние обращения к функциям платформы</CardDescription>
+        <CardDescription>Последние записи api_logs — только от функций, которые ведут журнал</CardDescription>
       </div>
     </CardHeader>
     <CardContent>
       {rows.length === 0 ? (
         <p className="py-6 text-sm text-muted-foreground">
-          За последние сутки вызовов не было — журнал пуст.
+          За последние сутки в журнал ничего не записано.
         </p>
       ) : (
         <div className="divide-y divide-border/30">
@@ -46,7 +49,7 @@ const EventLog: React.FC<Props> = ({ rows }) => (
                   <div className="text-xs text-muted-foreground">
                     {formatDateTime(row.created_at)}
                     {row.status_code !== null && ` · код ${row.status_code}`}
-                    {row.duration_ms !== null && ` · ${row.duration_ms} мс`}
+                    {typeof row.duration_ms === "number" && row.duration_ms > 0 && ` · ${row.duration_ms} мс`}
                   </div>
                 </div>
               </div>

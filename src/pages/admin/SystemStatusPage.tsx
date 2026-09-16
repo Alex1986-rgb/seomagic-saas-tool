@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { Card, CardContent } from "@/components/ui/card";
 import SystemSettingsPage from '@/components/admin/system/SystemSettingsPage';
 import { Server, Database, Loader2 } from 'lucide-react';
@@ -18,6 +19,11 @@ import { formatDateTime } from '@/lib/admin-stats';
  * вписано в код и ничему не соответствовало. Ни одной такой метрики
  * платформа не снимает. Ниже — только то, что есть в базе: журнал вызовов
  * функций и объём накопленных данных.
+ *
+ * Журнал api_logs неполный: пишут в него не все функции и не при каждой
+ * ошибке. Поэтому страница больше не выносит вердикт «ошибок в журнале нет»
+ * и не показывает «0 мс» там, где время не мерили, — только число записей
+ * и оговорку, откуда оно.
  */
 
 const Row: React.FC<{ label: string; value: string }> = ({ label, value }) => (
@@ -32,17 +38,16 @@ const SystemStatusPage: React.FC = () => {
   const { usage, isLoading: usageLoading, error: usageError } = usePlatformUsage();
 
   const hasCalls = stats.total > 0;
-  const statusText = !hasCalls
-    ? 'За сутки вызовов не было'
-    : stats.errors > 0
-      ? `За сутки ошибок: ${stats.errors}`
-      : 'За сутки ошибок в журнале нет';
+  const statusText = hasCalls
+    ? `Записей в журнале за сутки: ${stats.total}`
+    : 'За сутки в журнал ничего не записано';
+  const loggedFunctions = stats.byFunction.map((fn) => fn.name).join(', ');
 
   return (
     <>
       <PageSeo
-        title="Состояние системы: работа сервисов, очередей и хранилищ"
-        description="Текущий статус компонентов платформы: база данных, очереди фоновых задач, внешние API и последние зафиксированные ошибки."
+        title="Состояние системы: журнал вызовов и объём данных"
+        description="Записи журнала вызовов функций платформы за сутки и число накопленных в базе аудитов, оптимизаций, проверок позиций и заявок."
         noindex
       />
 
@@ -65,7 +70,7 @@ const SystemStatusPage: React.FC = () => {
             <div className="text-sm">
               <div className="font-medium">{isLoading ? 'Читаем журнал...' : statusText}</div>
               <div className="text-xs text-muted-foreground">
-                Последний вызов: {stats.lastCallAt ? formatDateTime(stats.lastCallAt) : 'нет данных'}
+                Последняя запись: {stats.lastCallAt ? formatDateTime(stats.lastCallAt) : 'нет данных'}
               </div>
             </div>
           </div>
@@ -83,7 +88,7 @@ const SystemStatusPage: React.FC = () => {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Server className="h-5 w-5 text-primary" />
-                  <h3 className="font-medium">Функции платформы за 24 часа</h3>
+                  <h3 className="font-medium">Журнал вызовов за 24 часа</h3>
                 </div>
                 <Badge variant="outline">api_logs</Badge>
               </div>
@@ -95,20 +100,22 @@ const SystemStatusPage: React.FC = () => {
                 </div>
               ) : hasCalls ? (
                 <div className="space-y-2 text-sm">
-                  <Row label="Всего вызовов" value={String(stats.total)} />
-                  <Row label="С ошибкой (4xx/5xx)" value={String(stats.errors)} />
-                  <Row
-                    label="Средняя длительность"
-                    value={stats.averageDuration !== null ? `${stats.averageDuration} мс` : 'не замерялась'}
-                  />
-                  <Row
-                    label="Чаще всего вызывалась"
-                    value={stats.byFunction[0] ? `${stats.byFunction[0].name} (${stats.byFunction[0].calls})` : '—'}
-                  />
+                  <Row label="Записей в журнале" value={String(stats.total)} />
+                  <Row label="С кодом ошибки (4xx/5xx)" value={String(stats.errors)} />
+                  {stats.averageDuration !== null && (
+                    <Row label="Средняя длительность" value={`${stats.averageDuration} мс`} />
+                  )}
+                  <Row label="Записи оставили" value={loggedFunctions || '—'} />
+                  {stats.sampleSize < stats.total && (
+                    <p className="text-xs text-muted-foreground">
+                      Список функций построен по последним {stats.sampleSize} записям.
+                    </p>
+                  )}
                 </div>
               ) : (
                 <p className="text-sm text-muted-foreground">
-                  За последние сутки функции не вызывались — журнал пуст.
+                  За последние сутки в журнал ничего не записано. Это не значит,
+                  что платформой не пользовались: журнал ведут не все функции.
                 </p>
               )}
             </CardContent>
@@ -143,6 +150,29 @@ const SystemStatusPage: React.FC = () => {
             </CardContent>
           </Card>
         </div>
+
+        <NotCollectedNotice
+          className="mb-6"
+          title="Журнал вызовов неполный"
+          description="Числа выше — только то, что функции сами записали в api_logs. Судить по ним, были ли сбои, нельзя:"
+          items={[
+            'записи оставляют не все функции платформы и не на каждом шаге — часть обращений, в том числе неудачные, в журнал не попадает',
+            'длительность пишут не все функции; где время не замеряли, средняя не показывается',
+            'если записей с кодом ошибки нет, это не значит, что ошибок не было',
+          ]}
+        />
+
+        <p className="mb-6 text-sm text-muted-foreground">
+          Упавшие аудиты и оптимизации видны по их статусам в разделах{' '}
+          <Link to="/admin/audits" className="text-primary underline-offset-2 hover:underline">
+            «Аудиты»
+          </Link>{' '}
+          и{' '}
+          <Link to="/admin/sites" className="text-primary underline-offset-2 hover:underline">
+            «Оптимизация сайтов»
+          </Link>
+          .
+        </p>
 
         <NotCollectedNotice
           className="mb-6"

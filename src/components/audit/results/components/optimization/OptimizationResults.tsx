@@ -174,20 +174,31 @@ const OptimizationResults: React.FC<OptimizationResultsProps> = ({
         </div>
       )}
       
-      <div className="flex flex-wrap gap-2 mt-4">
-        <button 
-          onClick={onDownloadOptimized}
-          className="bg-primary text-white px-4 py-2 rounded hover:bg-primary/90"
-        >
-          Скачать оптимизированный сайт
-        </button>
-        <button 
-          onClick={onGeneratePdfReport}
-          className="border border-primary px-4 py-2 rounded hover:bg-primary/10"
-        >
-          Скачать PDF-отчет
-        </button>
-      </div>
+      {/*
+        Кнопки — только с настоящим обработчиком. Раньше «Скачать
+        оптимизированный сайт» рисовалась всегда и без обработчика ничего не
+        делала: сборки исправленной копии сайта на сервере пока нет.
+      */}
+      {(onDownloadOptimized || onGeneratePdfReport) && (
+        <div className="flex flex-wrap gap-2 mt-4">
+          {onDownloadOptimized && (
+            <button 
+              onClick={onDownloadOptimized}
+              className="bg-primary text-white px-4 py-2 rounded hover:bg-primary/90"
+            >
+              Скачать оптимизированный сайт
+            </button>
+          )}
+          {onGeneratePdfReport && (
+            <button 
+              onClick={onGeneratePdfReport}
+              className="border border-primary px-4 py-2 rounded hover:bg-primary/10"
+            >
+              Скачать PDF-отчет
+            </button>
+          )}
+        </div>
+      )}
     </div>
   );
 };

@@ -5,6 +5,7 @@ import { FileText, Download, Loader2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/contexts/AuthContext';
 
 /**
  * Готовые отчёты пользователя.
@@ -13,6 +14,12 @@ import { useToast } from '@/hooks/use-toast';
  * «Анализ позиций - Декабрь 2024, 1.8 MB», — а кнопка «Скачать» ничего не
  * делала. Теперь список берётся из таблицы `pdf_reports`, а кнопка отдаёт файл
  * из хранилища.
+ *
+ * Список фильтруем по user_id явно: политика чтения пропускает и записи без
+ * владельца (гостевые аудиты), и без фильтра любой вошедший видел чужие отчёты.
+ * Скачивание идёт через edge-функцию `report-download`: бакет с отчётами
+ * закрытый, подписанную ссылку из браузера он не выдаёт — раньше кнопка всегда
+ * заканчивалась ошибкой.
  */
 
 interface ReportRow {
@@ -24,6 +31,41 @@ interface ReportRow {
   created_at: string;
 }
 
+const CONTENT_TYPES: Record<string, string> = {
+  json: 'application/json',
+  xml: 'application/xml',
+  html: 'text/html',
+  pdf: 'application/pdf',
+};
+
+const extensionOf = (filePath: string): string =>
+  (filePath.split('.').pop() || 'html').toLowerCase();
+
+/**
+ * supabase.functions.invoke сам разбирает ответ по Content-Type: PDF приходит
+ * Blob-ом, HTML и XML — строкой, JSON — уже разобранным объектом. Собираем из
+ * любого варианта файл для скачивания.
+ */
+const toBlob = (data: unknown, extension: string): Blob | null => {
+  const type = CONTENT_TYPES[extension] ?? 'application/octet-stream';
+  if (data instanceof Blob) return data;
+  if (typeof data === 'string') return new Blob([data], { type });
+  if (data && typeof data === 'object') return new Blob([JSON.stringify(data, null, 2)], { type });
+  return null;
+};
+
+/** Текст ошибки функции полезнее общего «Edge Function returned a non-2xx». */
+const readFunctionError = async (err: unknown): Promise<string | null> => {
+  const context = (err as { context?: Response } | null)?.context;
+  if (!context || typeof context.json !== 'function') return null;
+  try {
+    const body = await context.json();
+    return typeof body?.error === 'string' ? body.error : null;
+  } catch {
+    return null;
+  }
+};
+
 const formatSize = (bytes: number | null): string => {
   if (!bytes) return '';
   const mb = bytes / (1024 * 1024);
@@ -34,14 +76,19 @@ const ClientReports: React.FC = () => {
   const [reports, setReports] = useState<ReportRow[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [downloadingId, setDownloadingId] = useState<string | null>(null);
   const { toast } = useToast();
+  const { user } = useAuth();
+  const userId = user.user?.id;
 
   useEffect(() => {
+    if (!userId) return;
     let cancelled = false;
 
     supabase
       .from('pdf_reports')
       .select('id, report_title, url, file_path, file_size, created_at')
+      .eq('user_id', userId)
       .order('created_at', { ascending: false })
       .limit(50)
       .then(({ data, error: queryError }) => {
@@ -52,7 +99,7 @@ const ClientReports: React.FC = () => {
       });
 
     return () => { cancelled = true; };
-  }, []);
+  }, [userId]);
 
   const handleDownload = async (report: ReportRow) => {
     if (!report.file_path) {
@@ -64,20 +111,38 @@ const ClientReports: React.FC = () => {
       return;
     }
 
-    const { data, error: downloadError } = await supabase.storage
-      .from('reports')
-      .createSignedUrl(report.file_path, 60);
+    setDownloadingId(report.id);
+    try {
+      const { data, error: invokeError } = await supabase.functions.invoke('report-download', {
+        body: { report_id: report.id },
+      });
 
-    if (downloadError || !data?.signedUrl) {
+      if (invokeError) {
+        throw new Error((await readFunctionError(invokeError)) ?? invokeError.message);
+      }
+
+      const extension = extensionOf(report.file_path);
+      const blob = toBlob(data, extension);
+      if (!blob) throw new Error('Сервер вернул пустой файл.');
+
+      const objectUrl = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = objectUrl;
+      link.download = `seo-report-${report.id}.${extension}`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      // Сразу отзывать ссылку нельзя: часть браузеров ещё не начала скачивание.
+      setTimeout(() => URL.revokeObjectURL(objectUrl), 1000);
+    } catch (err) {
       toast({
         title: 'Не удалось скачать отчёт',
-        description: downloadError?.message ?? 'Файл не найден в хранилище.',
+        description: err instanceof Error ? err.message : 'Файл не найден в хранилище.',
         variant: 'destructive',
       });
-      return;
+    } finally {
+      setDownloadingId(null);
     }
-
-    window.open(data.signedUrl, '_blank', 'noopener');
   };
 
   return (
@@ -118,8 +183,17 @@ const ClientReports: React.FC = () => {
                       </p>
                     </div>
                   </div>
-                  <Button size="sm" variant="outline" onClick={() => handleDownload(report)}>
-                    <Download className="h-4 w-4 mr-2" />
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => handleDownload(report)}
+                    disabled={downloadingId === report.id}
+                  >
+                    {downloadingId === report.id ? (
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    ) : (
+                      <Download className="h-4 w-4 mr-2" />
+                    )}
                     Скачать
                   </Button>
                 </div>

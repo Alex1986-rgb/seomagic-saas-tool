@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { 
   Search, ArrowRight, CheckCircle, 
@@ -70,16 +70,12 @@ const DemoInteractiveExample: React.FC = () => {
     navigate(`/site-audit?url=${encodeURIComponent(formattedUrl)}`);
   };
 
-  const resetDemo = () => {
-    setUrl('');
-  };
-
   return (
     <div className="max-w-4xl mx-auto">
       <div className="text-center mb-10">
         <h2 className="text-3xl font-bold mb-4">Интерактивный пример</h2>
         <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-          Попробуйте демонстрационную версию аудита сайта прямо сейчас. Введите URL любого сайта для анализа.
+          Введите адрес сайта — запустится настоящая проверка. Ниже показано, как выглядит отчёт.
         </p>
       </div>
       
@@ -196,11 +192,15 @@ const DemoInteractiveExample: React.FC = () => {
             </div>
           </div>
           
-          <div className="flex justify-between items-center">
-            <Button variant="outline" onClick={resetDemo}>Начать заново</Button>
-            <Button className="gap-2">
-              <Settings className="w-4 h-4" />
-              Оптимизировать сайт
+          {/* Здесь всегда висели две мёртвые кнопки: «Начать заново» только
+              очищала поле адреса, а «Оптимизировать сайт» не была ни к чему
+              подключена. Осталась одна — она ведёт на настоящую оптимизацию. */}
+          <div className="flex justify-end items-center">
+            <Button asChild className="gap-2">
+              <Link to="/seo-optimization">
+                <Settings className="w-4 h-4" />
+                Оптимизировать сайт
+              </Link>
             </Button>
           </div>
         </motion.div>

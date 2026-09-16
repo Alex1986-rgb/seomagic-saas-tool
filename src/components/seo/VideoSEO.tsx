@@ -1,6 +1,6 @@
 import React from 'react';
 import { Helmet } from 'react-helmet-async';
-import { absoluteAssetUrl } from '@/lib/asset-url';
+import { absoluteAssetUrl, absolutePageUrl } from '@/lib/asset-url';
 
 interface VideoSEOProps {
   title: string;
@@ -25,9 +25,10 @@ export const VideoSEO: React.FC<VideoSEOProps> = ({
   width = 1920,
   height = 1080
 }) => {
-  const siteUrl = typeof window !== 'undefined' ? window.location.origin : 'https://seomarket.app';
-  const fullCanonicalUrl = `${siteUrl}${canonicalUrl}`;
-  const fullVideoUrl = videoUrl.startsWith('http') ? videoUrl : `${siteUrl}${videoUrl}`;
+  // Адреса страницы и ролика — с подпутём публикации: `${origin}${path}`
+  // уводил на корень домена, где сайта нет.
+  const fullCanonicalUrl = absolutePageUrl(canonicalUrl);
+  const fullVideoUrl = absoluteAssetUrl(videoUrl);
   // Путь к файлу из public надо считать от адреса публикации: сайт лежит
   // в подпапке, и `${siteUrl}/img/...` уводил на корень домена.
   const fullThumbnailUrl = absoluteAssetUrl(thumbnailUrl);

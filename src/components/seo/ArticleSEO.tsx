@@ -1,16 +1,29 @@
 import React from 'react';
 import { Helmet } from 'react-helmet-async';
 import { BlogPost } from '@/types/blog';
-import { absoluteAssetUrl } from '@/lib/asset-url';
+import { absoluteAssetUrl, absolutePageUrl } from '@/lib/asset-url';
 
 interface ArticleSEOProps {
   post: BlogPost;
 }
 
+/**
+ * Дата публикации в формате ISO или null, если строку разобрать нельзя.
+ *
+ * Раньше здесь стоял new Date(post.date).toISOString() без проверки. Даты
+ * постов были записаны как «15 мая 2025», new Date такую строку не понимает,
+ * а toISOString у невалидной даты бросает RangeError — ни одна статья блога
+ * не открывалась, вместо неё показывался экран ошибки.
+ */
+const toIsoDate = (value: string): string | null => {
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? null : date.toISOString();
+};
+
 export const ArticleSEO: React.FC<ArticleSEOProps> = ({ post }) => {
-  const siteUrl = typeof window !== 'undefined' ? window.location.origin : 'https://seomarket.app';
-  const articleUrl = `${siteUrl}/blog/${post.id}`;
-  
+  const articleUrl = absolutePageUrl(`/blog/${post.id}`);
+  const publishedAt = toIsoDate(post.date);
+
   // Картинки статей — ссылки на чужие домены; строка `${siteUrl}${post.image}`
   // склеивала адрес сайта с готовым https-адресом и отдавала поисковикам
   // мусор вида «https://seomarket.apphttps://images.unsplash.com/...».
@@ -31,16 +44,16 @@ export const ArticleSEO: React.FC<ArticleSEOProps> = ({ post }) => {
           }
         }
       : {}),
-    datePublished: new Date(post.date).toISOString(),
-    dateModified: new Date(post.date).toISOString(),
+    // Неразобранную дату в разметку не выводим, чтобы не ронять страницу.
+    ...(publishedAt ? { datePublished: publishedAt, dateModified: publishedAt } : {}),
     author: {
       '@type': 'Person',
-      name: post.author,
-      url: `${siteUrl}/about#team`
+      // Ссылка на /about#team убрана: такого блока на странице «О нас» нет.
+      name: post.author
     },
     publisher: {
       '@type': 'Organization',
-      '@id': `${siteUrl}/#organization`,
+      '@id': absolutePageUrl('/#organization'),
       // Логотипа /images/logo.png в проекте нет — поле убрано, чтобы не
       // отдавать поисковикам ссылку на несуществующий файл.
       name: 'SeoMarket'
@@ -57,7 +70,7 @@ export const ArticleSEO: React.FC<ArticleSEOProps> = ({ post }) => {
     articleBody: post.excerpt,
     isPartOf: {
       '@type': 'Blog',
-      '@id': `${siteUrl}/blog#blog`,
+      '@id': absolutePageUrl('/blog#blog'),
       name: 'Блог SeoMarket'
     }
   };

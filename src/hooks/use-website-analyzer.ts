@@ -3,8 +3,12 @@ import { useState, useCallback, useEffect, useRef } from 'react';
 import { useToast } from './use-toast';
 import { useScan } from './use-scan';
 import { validationService } from '@/services/validation/validationService';
-import { fetchIssueSummary } from '@/services/audit/fetchIssueSummary';
+import { fetchIssueSummary, type IssueSummary } from '@/services/audit/fetchIssueSummary';
 import { fetchPageAnalysis } from '@/services/audit/fetchPageAnalysis';
+
+/** Замечания дописывает классификатор после завершения обхода — ждём их немного. */
+const ISSUES_REREAD_DELAY_MS = 4000;
+const ISSUES_REREAD_ATTEMPTS = 5;
 
 export interface WebsiteAnalyzerResults {
   totalPages: number;
@@ -30,39 +34,76 @@ export const useWebsiteAnalyzer = () => {
   
   const { toast } = useToast();
   
-  // Initialize scan functionality
-  // Идентификатор задачи нужен в обработчике завершения: он вызывается позже,
-  // когда обход уже закончился, и значение из замыкания было бы устаревшим.
-  const taskIdRef = useRef<string | null>(null);
-
   const {
     isScanning,
     scanDetails,
     taskId,
     startScan,
     cancelScan
-  } = useScan(url, async (pagesCount) => {
+  } = useScan(url, (pagesCount) => {
+    // На каждом тике опроса — только счётчик страниц. Итоги обхода грузятся
+    // один раз, когда он закончится (эффект ниже).
     setScanResults(prev => ({ ...prev, totalPages: pagesCount }));
-
-    // Обход закончился — забираем настоящие страницы и замечания.
-    const finishedTaskId = taskIdRef.current;
-    const [pages, summary] = await Promise.all([
-      fetchPageAnalysis(finishedTaskId),
-      fetchIssueSummary(finishedTaskId),
-    ]);
-
-    setScannedUrls(pages.map((page) => page.url));
-    setScanResults({
-      totalPages: pages.length || pagesCount,
-      brokenLinks: summary.brokenLinks,
-      duplicateContent: summary.duplicateContent,
-      missingMetadata: summary.missingMetadata,
-    });
   });
 
+  /**
+   * Итоги обхода забираем один раз — на переходе «идёт → завершён».
+   *
+   * Раньше загрузка висела на счётчике страниц, а useScan вызывает его на каждом
+   * тике опроса: каждые 2 секунды уходило по два запроса (до 200 строк страниц и
+   * все замечания), ответы могли прийти не по порядку, а последний срабатывал
+   * раньше, чем классификатор допишет замечания, — и сводка оставалась нулевой.
+   * Замечания поэтому перечитываем ещё несколько раз, пока они не появятся.
+   */
+  const wasScanningRef = useRef(false);
   useEffect(() => {
-    taskIdRef.current = taskId ?? null;
-  }, [taskId]);
+    const justFinished = wasScanningRef.current && !isScanning;
+    wasScanningRef.current = isScanning;
+    if (!justFinished || scanDetails.status !== 'completed' || !taskId) return;
+
+    const finishedTaskId = taskId;
+    let cancelled = false;
+    let attempts = 0;
+    let retryTimer: ReturnType<typeof setTimeout> | null = null;
+
+    const applyIssues = (summary: IssueSummary) => {
+      setScanResults(prev => ({
+        ...prev,
+        brokenLinks: summary.brokenLinks,
+        duplicateContent: summary.duplicateContent,
+        missingMetadata: summary.missingMetadata,
+      }));
+    };
+
+    const scheduleIssuesReread = () => {
+      if (attempts >= ISSUES_REREAD_ATTEMPTS) return;
+      retryTimer = setTimeout(async () => {
+        attempts += 1;
+        const summary = await fetchIssueSummary(finishedTaskId);
+        if (cancelled) return;
+        applyIssues(summary);
+        if (summary.total === 0) scheduleIssuesReread();
+      }, ISSUES_REREAD_DELAY_MS);
+    };
+
+    (async () => {
+      const [pages, summary] = await Promise.all([
+        fetchPageAnalysis(finishedTaskId),
+        fetchIssueSummary(finishedTaskId),
+      ]);
+      if (cancelled) return;
+
+      setScannedUrls(pages.map((page) => page.url));
+      setScanResults(prev => ({ ...prev, totalPages: pages.length || prev.totalPages }));
+      applyIssues(summary);
+      if (summary.total === 0) scheduleIssuesReread();
+    })();
+
+    return () => {
+      cancelled = true;
+      if (retryTimer) clearTimeout(retryTimer);
+    };
+  }, [isScanning, scanDetails.status, taskId]);
   
   // Handle URL change
   const handleUrlChange = useCallback((newUrl: string) => {
@@ -96,8 +137,7 @@ export const useWebsiteAnalyzer = () => {
       setScannedUrls([]);
       setScanResults({ totalPages: 0, brokenLinks: 0, duplicateContent: 0, missingMetadata: 0 });
 
-      const startedTaskId = await startScan();
-      if (startedTaskId) taskIdRef.current = startedTaskId;
+      await startScan();
     } catch (error) {
       console.error('Error starting scan:', error);
       toast({
@@ -106,7 +146,7 @@ export const useWebsiteAnalyzer = () => {
         variant: "destructive",
       });
     }
-  }, [url, isError, toast, startScan, taskId]);
+  }, [url, isError, toast, startScan]);
   
   return {
     url,

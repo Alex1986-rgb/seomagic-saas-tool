@@ -2,7 +2,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { RESOURCE_ITEMS, COMPANY_ITEMS, FEATURES_ITEMS, SUPPORT_ITEMS } from './navbar/navConstants';
-import { Mail, Phone, Facebook, Twitter, Instagram, Linkedin, Github, Send, Youtube, Globe, FileText, Settings } from 'lucide-react';
+import { Mail, Phone, Facebook, Twitter, Instagram, Linkedin, Github, Send, Youtube, Globe, FileText } from 'lucide-react';
 import { SITE_CONTACTS } from '@/config/site-contacts';
 
 /** Подбирает иконку по адресу страницы в соцсети. */
@@ -107,10 +107,8 @@ const Footer: React.FC = () => {
                 <FileText className="h-3.5 w-3.5" />
                 <span>Все страницы</span>
               </FooterLink>
-              <FooterLink to="/project-details" className="flex items-center gap-1">
-                <Settings className="h-3.5 w-3.5" />
-                <span>Детали проекта</span>
-              </FooterLink>
+              {/* Ссылка «Детали проекта» (/project-details) убрана: это внутренняя
+                  страница владельца, теперь она открыта только администратору. */}
             </ul>
           </div>
           

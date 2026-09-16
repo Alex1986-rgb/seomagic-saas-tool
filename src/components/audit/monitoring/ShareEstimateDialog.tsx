@@ -84,8 +84,11 @@ const ShareEstimateDialog: React.FC<ShareEstimateDialogProps> = ({
 
       if (error) throw error;
 
-      const baseUrl = window.location.origin;
-      const generatedUrl = `${baseUrl}/shared-estimate/${data.share_token}`;
+      // Раньше адрес собирался как origin + «/shared-estimate/…» и терял подпуть
+      // публикации (/seomagic-saas-tool/): клиент по ссылке попадал на корень
+      // github.io и видел 404. BASE_URL оканчивается слэшем, поэтому путь без ведущего.
+      const baseUrl = `${window.location.origin}${import.meta.env.BASE_URL || '/'}`;
+      const generatedUrl = `${baseUrl}shared-estimate/${data.share_token}`;
       setShareUrl(generatedUrl);
 
       toast({

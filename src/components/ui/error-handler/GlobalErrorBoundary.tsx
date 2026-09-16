@@ -20,6 +20,16 @@ interface ErrorBoundaryState {
 
 const ERROR_RESET_TIMEOUT = 10000; // 10 seconds
 
+/**
+ * Адрес главной с учётом подпути публикации.
+ *
+ * Экран ошибки стоит вне <Router>, поэтому переход идёт через window.location.
+ * Раньше туда передавался «/», и на опубликованном сайте (/seomagic-saas-tool/)
+ * кнопка уводила на корень github.io с ошибкой 404. BASE_URL уже оканчивается
+ * слэшем: «/» локально и «/seomagic-saas-tool/» в сборке.
+ */
+const HOME_URL = import.meta.env.BASE_URL || '/';
+
 export class GlobalErrorBoundary extends React.Component<GlobalErrorBoundaryProps, ErrorBoundaryState> {
   constructor(props: GlobalErrorBoundaryProps) {
     super(props);
@@ -118,7 +128,7 @@ export const ErrorFallback: React.FC<ErrorFallbackProps> = ({ error, resetError 
   const handleNavigateHome = () => {
     console.log("Navigating home from ErrorFallback");
     resetError();
-    window.location.assign('/');
+    window.location.assign(HOME_URL);
     toast({
       title: "Навигация на главную",
       description: "Возврат на главную страницу",
@@ -164,7 +174,7 @@ const PermanentErrorFallback: React.FC<{error: Error | null}> = ({ error }) => {
   const handleReset = () => {
     // Perform a full page refresh to reset all state
     console.log("Performing full page refresh in PermanentErrorFallback");
-    window.location.href = '/';
+    window.location.href = HOME_URL;
     
     toast({
       title: "Полный сброс",

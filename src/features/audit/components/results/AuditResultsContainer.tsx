@@ -1,5 +1,6 @@
 
 import React, { useCallback, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuditContext } from '@/contexts/AuditContext';
 import { useAuditDataContext } from '@/contexts/AuditDataContext';
 import { useScanContext } from '@/contexts/ScanContext';
@@ -8,6 +9,9 @@ import { useAuditInitialization } from '../../hooks/useAuditInitialization';
 import { usePromptToggle } from '../../hooks/usePromptToggle';
 import AuditStateHandler from './components/AuditStateHandler';
 import AuditContent from './AuditContent';
+import { auditService } from '@/modules/audit/services/auditService';
+import { auditPagePath } from '@/modules/audit/utils/auditLinks';
+import { useToast } from '@/hooks/use-toast';
 
 interface AuditResultsContainerProps {
   url: string;
@@ -46,7 +50,7 @@ const AuditResultsContainer: React.FC<AuditResultsContainerProps> = ({ url }) =>
     contentPrompt,
     setContentOptimizationPrompt,
     optimizeSiteContent,
-    downloadOptimizedSite
+    loadOptimizationCost
   } = useOptimizationContext();
   
   // Make sure URL is up to date
@@ -73,10 +77,25 @@ const AuditResultsContainer: React.FC<AuditResultsContainerProps> = ({ url }) =>
     setIsLoading(isAuditLoading);
   }, [isAuditLoading, setIsLoading]);
 
-  // Handler for selecting historical audit
-  const handleSelectHistoricalAudit = useCallback((auditId: string) => {
-    console.log("Selected historical audit:", auditId);
-  }, []);
+  const navigate = useNavigate();
+  const { toast } = useToast();
+
+  /**
+   * Выбор аудита в «Истории аудита». Раньше — только console.log. В истории
+   * записи `audits`, а страница результатов открывает задачу: находим её.
+   */
+  const handleSelectHistoricalAudit = useCallback(async (auditId: string) => {
+    const historicalTaskId = await auditService.getTaskIdForAudit(auditId);
+    if (!historicalTaskId) {
+      toast({
+        title: 'Аудит не открывается',
+        description: 'У этой записи не найдена задача с результатами.',
+        variant: 'destructive',
+      });
+      return;
+    }
+    navigate(auditPagePath(url, historicalTaskId));
+  }, [navigate, toast, url]);
 
   // Ensure historyData has the correct type - memoize transformation
   const typedHistoryData = useMemo(() => 
@@ -96,14 +115,14 @@ const AuditResultsContainer: React.FC<AuditResultsContainerProps> = ({ url }) =>
     return Promise.resolve(null);
   }, [taskId, contentPrompt, optimizeSiteContent]);
 
-  // Wrap downloadOptimizedSite to match the expected function signature (no arguments)
-  const handleDownloadOptimizedSite = useCallback(() => {
-    if (taskId) {
-      return downloadOptimizedSite(taskId);
-    }
-    return Promise.resolve();
-  }, [taskId, downloadOptimizedSite]);
-  
+  // «Скачать оптимизированный сайт» не передаём: обработчик из контекста только
+  // ждал секунду и ничего не скачивал, а сборки исправленной копии сайта на
+  // сервере нет. Без обработчика кнопка не показывается.
+  //
+  // loadOptimizationCost, наоборот, передаём: без него панель оптимизации
+  // оставалась пустой и без кнопки «Рассчитать смету». Смету считает функция
+  // optimization-calculate по замечаниям этого аудита (hooks/use-optimization-api.ts).
+
   return (
     <AuditStateHandler
       isLoading={isLoading}
@@ -137,9 +156,9 @@ const AuditResultsContainer: React.FC<AuditResultsContainerProps> = ({ url }) =>
         downloadSitemap={sitemap ? downloadSitemap : undefined}
         exportJSONData={exportJSONData}
         generatePdfReportFile={generatePdfReportFile}
-        downloadOptimizedSite={handleDownloadOptimizedSite}
         optimizeSiteContent={handleOptimizeSiteContent}
         setContentOptimizationPrompt={setContentOptimizationPrompt}
+        loadOptimizationCost={loadOptimizationCost}
       />
     </AuditStateHandler>
   );

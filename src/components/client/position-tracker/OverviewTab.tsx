@@ -1,5 +1,6 @@
 
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { RefreshCw, BarChart2, ArrowUpRight } from 'lucide-react';
 import { PositionData } from '@/services/position/positionTracker';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
@@ -96,9 +97,14 @@ const OverviewTab: React.FC<OverviewTabProps> = ({ history, isLoading, onRefresh
       <div>
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-semibold">Топ ключевые слова</h3>
-          <Button variant="link" size="sm" className="gap-1" onClick={() => window.location.href = "/position-analytics"}>
-            Подробная аналитика
-            <ArrowUpRight className="h-4 w-4" />
+          {/* Раньше здесь был window.location.href = "/position-analytics": адрес
+              шёл мимо подпути сайта, а такой страницы нет вовсе. Ведём на
+              существующую страницу проверок через роутер. */}
+          <Button asChild variant="link" size="sm" className="gap-1">
+            <Link to="/position-tracker">
+              Все проверки
+              <ArrowUpRight className="h-4 w-4" />
+            </Link>
           </Button>
         </div>
         <TopKeywordsTable history={history} limit={5} />

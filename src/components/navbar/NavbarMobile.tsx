@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import ThemeSwitcher from '../ThemeSwitcher';
-import { ShieldCheck, ChevronDown, ChevronUp, LogIn, FileText } from 'lucide-react';
+import { ShieldCheck, ChevronDown, ChevronUp, LogIn, FileText, LayoutDashboard, User, BarChart } from 'lucide-react';
 import { Badge } from "@/components/ui/badge";
 import { NAV_ITEMS } from './navConstants';
 
@@ -129,6 +129,35 @@ const NavbarMobile: React.FC<NavbarMobileProps> = ({
             Все страницы
           </Link>
           
+          {/* Разделы кабинета. На телефоне меню пользователя из шапки скрыто
+              (оно только для широкого экрана), а здесь была одна кнопка
+              «Выйти» — вошедший человек не мог попасть в свой кабинет. */}
+          {isLoggedIn && (
+            <div className="pt-2 mt-2 border-t border-border/50 space-y-1">
+              <Link
+                to="/dashboard"
+                className="flex items-center gap-2 px-4 py-3 hover:bg-accent/20 rounded-md transition-colors font-medium"
+              >
+                <LayoutDashboard className="h-4 w-4 text-primary" />
+                Кабинет
+              </Link>
+              <Link
+                to="/profile"
+                className="flex items-center gap-2 px-4 py-3 hover:bg-accent/20 rounded-md transition-colors font-medium"
+              >
+                <User className="h-4 w-4 text-primary" />
+                Профиль
+              </Link>
+              <Link
+                to="/audit-history"
+                className="flex items-center gap-2 px-4 py-3 hover:bg-accent/20 rounded-md transition-colors font-medium"
+              >
+                <BarChart className="h-4 w-4 text-primary" />
+                История аудитов
+              </Link>
+            </div>
+          )}
+
           {/* Ссылка в админку — только администратору. Раньше её видел каждый
               посетитель: раздел закрыт проверкой прав, но кнопка в чужой
               кабинет в меню смущала людей. */}

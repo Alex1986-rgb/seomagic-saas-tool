@@ -1,5 +1,6 @@
 import React from 'react';
 import { Helmet } from 'react-helmet-async';
+import { absolutePageUrl } from '@/lib/asset-url';
 
 interface CourseSchemaProps {
   courses?: Array<{
@@ -22,12 +23,12 @@ export const CourseSchema: React.FC<CourseSchemaProps> = ({
   // разметку не отдаём.
   if (courses.length === 0) return null;
 
-  const siteUrl = typeof window !== 'undefined' ? window.location.origin : 'https://seomarket.app';
+  const siteUrl = absolutePageUrl('/');
   
   const courseSchemas = courses.map((course, index) => ({
     '@context': 'https://schema.org',
     '@type': 'Course',
-    '@id': `${siteUrl}/courses#course-${index + 1}`,
+    '@id': absolutePageUrl(`/courses#course-${index + 1}`),
     name: course.name,
     description: course.description,
     provider: {
@@ -47,7 +48,7 @@ export const CourseSchema: React.FC<CourseSchemaProps> = ({
       price: course.price,
       priceCurrency: course.priceCurrency || 'RUB',
       availability: 'https://schema.org/InStock',
-      url: `${siteUrl}/courses`,
+      url: absolutePageUrl('/courses'),
       validFrom: new Date().toISOString()
     },
     hasCourseInstance: [
@@ -63,28 +64,8 @@ export const CourseSchema: React.FC<CourseSchemaProps> = ({
         } : undefined
       }
     ],
-    aggregateRating: {
-      '@type': 'AggregateRating',
-      ratingValue: '4.9',
-      ratingCount: '156',
-      bestRating: '5',
-      worstRating: '1'
-    },
-    review: [
-      {
-        '@type': 'Review',
-        author: {
-          '@type': 'Person',
-          name: 'Анна Козлова'
-        },
-        datePublished: '2024-12-15',
-        reviewBody: 'Отличный курс! Структурированная подача материала, много практики. Преподаватель всегда отвечает на вопросы.',
-        reviewRating: {
-          '@type': 'Rating',
-          ratingValue: '5'
-        }
-      }
-    ],
+    // Оценка 4,9 по 156 отзывам и отзыв «Анны Козловой» были вписаны в код и
+    // подставлялись к любому курсу — убраны. Настоящие отзывы передавать явно.
     educationalLevel: 'Beginner to Advanced',
     inLanguage: 'ru-RU',
     availableLanguage: ['Russian'],

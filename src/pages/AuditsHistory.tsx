@@ -23,6 +23,8 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { useAuditList } from '@/modules/audit/hooks/useAuditList';
 import { auditService } from '@/modules/audit/services/auditService';
+import { auditPagePath } from '@/modules/audit/utils/auditLinks';
+import type { Audit } from '@/modules/audit/types';
 import { Loader2, Search, MoreVertical, Eye, Trash2, Download, RefreshCw, PlayCircle } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { ru } from 'date-fns/locale';
@@ -68,8 +70,14 @@ export default function AuditsHistory() {
     return <Badge variant={config.variant}>{config.label}</Badge>;
   };
 
-  const handleViewAudit = (auditId: string, url: string) => {
-    navigate(`/audit?url=${encodeURIComponent(url)}`);
+  /**
+   * Открыть выбранный аудит. Раньше id отбрасывался и ссылка вела на
+   * `/audit?url=...`: страница показывала последнюю проверку по домену (или
+   * экран запуска), а не ту, по которой нажали «Просмотр».
+   */
+  const handleViewAudit = async (audit: Audit) => {
+    const taskId = audit.task_id ?? (await auditService.getTaskIdForAudit(audit.id));
+    navigate(auditPagePath(audit.url, taskId));
   };
 
   const handleDeleteAudit = async (auditId: string) => {
@@ -153,16 +161,9 @@ export default function AuditsHistory() {
       setResumingTaskId(auditId);
       
       // Get the task for this audit
-      const { data: tasks } = await import('@/integrations/supabase/client').then(m => 
-        m.supabase
-          .from('audit_tasks')
-          .select('id')
-          .eq('audit_id', auditId)
-          .order('created_at', { ascending: false })
-          .limit(1)
-      );
+      const taskId = await auditService.getTaskIdForAudit(auditId);
 
-      if (!tasks || tasks.length === 0) {
+      if (!taskId) {
         toast({
           title: 'Ошибка',
           description: 'Задача аудита не найдена',
@@ -171,15 +172,15 @@ export default function AuditsHistory() {
         return;
       }
 
-      const result = await auditService.resumeAudit(tasks[0].id);
+      const result = await auditService.resumeAudit(taskId);
       
       if (result.success) {
         toast({
           title: 'Аудит возобновлен',
           description: 'Сканирование продолжается с места остановки',
         });
-        // Navigate to the audit page
-        navigate(`/audit?url=${encodeURIComponent(url)}`);
+        // Сразу на возобновлённую задачу: страница подхватит её и будет следить за ходом.
+        navigate(auditPagePath(url, taskId));
       } else {
         toast({
           title: 'Ошибка возобновления',
@@ -209,7 +210,7 @@ export default function AuditsHistory() {
       <div className="mb-8">
         <h1 className="text-3xl font-bold mb-2">История аудитов</h1>
         <p className="text-muted-foreground">
-          Просмотр и управление всеми выполненными аудитами
+          Просмотр и управление вашими аудитами
         </p>
       </div>
 
@@ -271,7 +272,7 @@ export default function AuditsHistory() {
         <CardHeader>
           <CardTitle>Аудиты ({filteredAudits?.length || 0})</CardTitle>
           <CardDescription>
-            Список всех выполненных аудитов с результатами
+            Список ваших аудитов с результатами
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -356,7 +357,7 @@ export default function AuditsHistory() {
                             <DropdownMenuLabel>Действия</DropdownMenuLabel>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem
-                              onClick={() => handleViewAudit(audit.id, audit.url)}
+                              onClick={() => handleViewAudit(audit)}
                             >
                               <Eye className="mr-2 h-4 w-4" />
                               Просмотр

@@ -7,6 +7,7 @@ import { useToast } from '@/hooks/use-toast';
 import { validationService } from '@/services/validation/validationService';
 import { issueRecommendation } from '@/lib/issue-labels';
 import { normalizeAuditData, summarizeIssues } from '@/lib/audit-data';
+import { isSameSite, normalizeHost } from '@/modules/audit/utils/auditLinks';
 
 // Define the provider props
 interface AuditDataProviderProps {
@@ -115,20 +116,34 @@ export const AuditDataProvider: React.FC<AuditDataProviderProps> = ({
     staleTime: 30000, // Cache for 30 seconds
   });
   
-  // Fetch audit history for this URL
+  /**
+   * История проверок этого сайта — только свои.
+   *
+   * Раньше: `.eq('url', url)` без владельца. Политика чтения отдаёт гостевые
+   * записи всем, поэтому в «Истории аудита» могли оказаться чужие проверки;
+   * а адрес из строки браузера («shop.ru») не совпадал с сохранённым
+   * («https://shop.ru»), и своя история чаще была пустой. Теперь сравниваем
+   * хост целиком и берём записи текущего пользователя; у гостя истории нет.
+   */
   const { 
     data: historyData = { url, items: [] } 
   } = useQuery({
     queryKey: ['auditHistory', url],
     queryFn: async () => {
       if (!url) return { url, items: [] };
+
+      const { data: sessionData } = await supabase.auth.getSession();
+      const userId = sessionData.session?.user?.id;
+      const host = normalizeHost(url);
+      if (!userId || !host) return { url, items: [] };
       
       const { data, error } = await supabase
         .from('audits')
         .select('id, created_at, seo_score, pages_scanned, status, url')
-        .eq('url', url)
+        .eq('user_id', userId)
+        .ilike('url', `%${host}%`)
         .order('created_at', { ascending: false })
-        .limit(10);
+        .limit(50);
       
       if (error) {
         console.error('Error fetching audit history:', error);
@@ -136,7 +151,7 @@ export const AuditDataProvider: React.FC<AuditDataProviderProps> = ({
       }
       
       // Map database fields to AuditHistoryItem format
-      const items = (data || []).map(item => ({
+      const items = (data || []).filter(item => isSameSite(item.url, host)).slice(0, 10).map(item => ({
         id: item.id,
         url: item.url,
         date: item.created_at,

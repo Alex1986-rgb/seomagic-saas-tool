@@ -1,6 +1,6 @@
 import React from 'react';
 import { Helmet } from 'react-helmet-async';
-import { absoluteAssetUrl } from '@/lib/asset-url';
+import { absoluteAssetUrl, absolutePageUrl } from '@/lib/asset-url';
 
 interface VideoObjectSchemaProps {
   videos?: Array<{
@@ -21,12 +21,12 @@ export const VideoObjectSchema: React.FC<VideoObjectSchemaProps> = ({
   // Поисковики показывали их в выдаче как ролики с превью.
   if (videos.length === 0) return null;
 
-  const siteUrl = typeof window !== 'undefined' ? window.location.origin : 'https://seomarket.app';
+  const siteUrl = absolutePageUrl('/');
   
   const videoSchemas = videos.map((video, index) => ({
     '@context': 'https://schema.org',
     '@type': 'VideoObject',
-    '@id': `${siteUrl}/#video-${index + 1}`,
+    '@id': absolutePageUrl(`/#video-${index + 1}`),
     name: video.name,
     description: video.description,
     thumbnailUrl: [absoluteAssetUrl(video.thumbnailUrl)],
@@ -44,11 +44,8 @@ export const VideoObjectSchema: React.FC<VideoObjectSchemaProps> = ({
       name: 'SeoMarket',
       url: siteUrl
     },
-    interactionStatistic: {
-      '@type': 'InteractionCounter',
-      interactionType: { '@type': 'WatchAction' },
-      userInteractionCount: Math.floor(Math.random() * 5000) + 1000
-    },
+    // Число просмотров здесь бралось из Math.random() — от 1000 до 6000 при
+    // каждой загрузке страницы. Выдуманная статистика убрана.
     inLanguage: 'ru-RU',
     isFamilyFriendly: true,
     potentialAction: {

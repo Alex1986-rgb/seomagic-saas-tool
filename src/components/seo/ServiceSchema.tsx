@@ -1,145 +1,80 @@
 import React from 'react';
 import { Helmet } from 'react-helmet-async';
 import { SITE_CONTACTS } from '@/config/site-contacts';
+import { absolutePageUrl } from '@/lib/asset-url';
 
 /**
  * В разметке услуг пятью строками был прописан телефон +7 800 123-45-67,
  * которого не существует: поисковики показывали его рядом с каждой услугой.
  * Номер берётся из SITE_CONTACTS, и пока его нет, поле servicePhone в разметку
  * просто не попадает.
+ *
+ * Цены здесь тоже были свои: аудит за 15 000 ₽, «Стартовый план, до 100
+ * запросов» за 5 000 ₽, анализ конкурентов, техоптимизация и контент за
+ * 20 000 / 25 000 / 18 000 ₽. На страницах тарифов суммы другие, и разметка,
+ * не подтверждённая содержимым страницы, считается недостоверной. Блок offers
+ * убран: цены показывают страницы тарифов. Услуги оставлены те, что сервис
+ * действительно выполняет и что показаны на главной: аудит, ИИ-оптимизация
+ * текстов и отслеживание позиций.
  */
 export const ServiceSchema: React.FC = () => {
-  const siteUrl = typeof window !== 'undefined' ? window.location.origin : 'https://seomarket.app';
   const servicePhone = SITE_CONTACTS.telephone ? { servicePhone: SITE_CONTACTS.telephone } : {};
-  
+  const organizationId = absolutePageUrl('/#organization');
+
   const services = [
     {
       '@type': 'Service',
-      '@id': `${siteUrl}/features#seo-audit`,
+      '@id': absolutePageUrl('/features/seo-audit#service'),
       serviceType: 'SEO Аудит',
-      name: 'Комплексный SEO аудит сайта',
-      description: 'Глубокий анализ технического состояния сайта, контента, структуры и выявление проблем, мешающих продвижению в поисковых системах.',
+      name: 'SEO-аудит сайта',
+      description: 'Проверка сайта на технические и контентные ошибки: мета-теги, заголовки, скорость загрузки страниц. Итог — список найденных проблем и рекомендации по правкам.',
       provider: {
-        '@id': `${siteUrl}/#organization`
+        '@id': organizationId
       },
       areaServed: 'RU',
       availableChannel: {
         '@type': 'ServiceChannel',
-        serviceUrl: `${siteUrl}/features`,
+        serviceUrl: absolutePageUrl('/features/seo-audit'),
         ...servicePhone,
         availableLanguage: 'Russian'
       },
-      category: 'SEO Services',
-      offers: {
-        '@type': 'Offer',
-        price: '15000',
-        priceCurrency: 'RUB',
-        priceSpecification: {
-          '@type': 'UnitPriceSpecification',
-          price: '15000',
-          priceCurrency: 'RUB',
-          name: 'Базовый тариф'
-        }
-      }
+      category: 'SEO Services'
     },
     {
       '@type': 'Service',
-      '@id': `${siteUrl}/features#position-monitoring`,
+      '@id': absolutePageUrl('/features/ai-optimization#service'),
+      serviceType: 'Оптимизация контента',
+      name: 'ИИ-оптимизация текстов страниц',
+      description: 'Новые варианты заголовков, мета-описаний и текстов страниц по результатам аудита: их пишет нейросеть.',
+      provider: {
+        '@id': organizationId
+      },
+      areaServed: 'RU',
+      availableChannel: {
+        '@type': 'ServiceChannel',
+        serviceUrl: absolutePageUrl('/features/ai-optimization'),
+        ...servicePhone,
+        availableLanguage: 'Russian'
+      },
+      category: 'SEO Services'
+    },
+    {
+      '@type': 'Service',
+      '@id': absolutePageUrl('/position-tracking#service'),
       serviceType: 'Мониторинг позиций',
       name: 'Отслеживание позиций в поисковых системах',
-      description: 'Автоматический мониторинг позиций сайта по ключевым запросам в Яндекс и Google с ежедневной проверкой и детальной аналитикой.',
+      description: 'Проверка мест сайта в выдаче Яндекса и Google по списку запросов.',
       provider: {
-        '@id': `${siteUrl}/#organization`
+        '@id': organizationId
       },
       areaServed: 'RU',
       availableChannel: {
         '@type': 'ServiceChannel',
-        serviceUrl: `${siteUrl}/position-pricing`,
+        serviceUrl: absolutePageUrl('/position-tracking'),
         ...servicePhone,
         availableLanguage: 'Russian'
       },
-      category: 'SEO Services',
-      offers: {
-        '@type': 'Offer',
-        price: '5000',
-        priceCurrency: 'RUB',
-        priceSpecification: {
-          '@type': 'UnitPriceSpecification',
-          price: '5000',
-          priceCurrency: 'RUB',
-          name: 'Стартовый план',
-          description: 'До 100 запросов'
-        }
-      }
-    },
-    {
-      '@type': 'Service',
-      '@id': `${siteUrl}/features#competitor-analysis`,
-      serviceType: 'Анализ конкурентов',
-      name: 'Конкурентный анализ в SEO',
-      description: 'Подробное исследование стратегий продвижения конкурентов, анализ их сильных и слабых сторон для разработки эффективной SEO-стратегии.',
-      provider: {
-        '@id': `${siteUrl}/#organization`
-      },
-      areaServed: 'RU',
-      availableChannel: {
-        '@type': 'ServiceChannel',
-        serviceUrl: `${siteUrl}/features`,
-        ...servicePhone,
-        availableLanguage: 'Russian'
-      },
-      category: 'SEO Services',
-      offers: {
-        '@type': 'Offer',
-        price: '20000',
-        priceCurrency: 'RUB'
-      }
-    },
-    {
-      '@type': 'Service',
-      '@id': `${siteUrl}/features#technical-optimization`,
-      serviceType: 'Техническая оптимизация',
-      name: 'Техническая оптимизация сайта',
-      description: 'Улучшение технических характеристик сайта: скорость загрузки, мобильная версия, исправление ошибок, оптимизация кода и структуры.',
-      provider: {
-        '@id': `${siteUrl}/#organization`
-      },
-      areaServed: 'RU',
-      availableChannel: {
-        '@type': 'ServiceChannel',
-        serviceUrl: `${siteUrl}/features`,
-        ...servicePhone,
-        availableLanguage: 'Russian'
-      },
-      category: 'SEO Services',
-      offers: {
-        '@type': 'Offer',
-        price: '25000',
-        priceCurrency: 'RUB'
-      }
-    },
-    {
-      '@type': 'Service',
-      '@id': `${siteUrl}/features#content-optimization`,
-      serviceType: 'Контент-оптимизация',
-      name: 'Оптимизация контента для SEO',
-      description: 'Анализ и улучшение контента сайта: оптимизация заголовков, мета-тегов, текстов, изображений для повышения релевантности поисковым запросам.',
-      provider: {
-        '@id': `${siteUrl}/#organization`
-      },
-      areaServed: 'RU',
-      availableChannel: {
-        '@type': 'ServiceChannel',
-        serviceUrl: `${siteUrl}/features`,
-        ...servicePhone,
-        availableLanguage: 'Russian'
-      },
-      category: 'SEO Services',
-      offers: {
-        '@type': 'Offer',
-        price: '18000',
-        priceCurrency: 'RUB'
-      }
+      category: 'SEO Services'
     }
   ];
 

@@ -1,7 +1,22 @@
 import { supabase } from '@/integrations/supabase/client';
-import type { Audit, AuditTask, AuditResult, StartAuditOptions, AuditStatusResponse } from '../types';
+import type {
+  Audit,
+  AuditTask,
+  AuditResult,
+  StartAuditOptions,
+  AuditStatusResponse,
+  AuditTaskSnapshot,
+} from '../types';
+import { isSameSite, normalizeHost } from '../utils/auditLinks';
+import { getBrowserTaskIdsForSite } from '../utils/guestTasks';
 
 export class AuditService {
+  /** id вошедшего пользователя; без входа — null. */
+  private async getCurrentUserId(): Promise<string | null> {
+    const { data } = await supabase.auth.getSession();
+    return data.session?.user?.id ?? null;
+  }
+
   /**
    * Запускает новый аудит через Edge Function
    */
@@ -67,20 +82,136 @@ export class AuditService {
   }
 
   /**
-   * Получает список аудитов пользователя
+   * Список аудитов текущего пользователя.
+   *
+   * Политика чтения `audits` пропускает гостевые записи (user_id IS NULL) всем,
+   * а администратору — вообще всё. Запрос без фильтра поэтому показывал в «моей
+   * истории» проверки чужих посетителей с их адресами и оценками. Теперь берём
+   * только записи владельца; без входа своей истории нет.
+   *
+   * К каждому аудиту прикладываем id его последней задачи: страница результатов
+   * открывает конкретную проверку по задаче, а не «последнюю по домену».
    */
   async getUserAudits(): Promise<Audit[]> {
     try {
+      const userId = await this.getCurrentUserId();
+      if (!userId) return [];
+
       const { data, error } = await supabase
         .from('audits')
         .select('*')
+        .eq('user_id', userId)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      return (data || []) as unknown as Audit[];
+      const audits = (data || []) as unknown as Audit[];
+      if (audits.length === 0) return audits;
+
+      const { data: tasks, error: tasksError } = await supabase
+        .from('audit_tasks')
+        .select('id, audit_id, created_at')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false });
+
+      if (tasksError) {
+        // Без задач список всё равно полезен: ссылка откроет последнюю проверку сайта.
+        console.error('Error fetching audit tasks:', tasksError);
+        return audits;
+      }
+
+      const latestTaskByAudit = new Map<string, string>();
+      for (const task of tasks ?? []) {
+        if (task.audit_id && !latestTaskByAudit.has(task.audit_id)) {
+          latestTaskByAudit.set(task.audit_id, task.id);
+        }
+      }
+
+      return audits.map((audit) => ({
+        ...audit,
+        task_id: latestTaskByAudit.get(audit.id) ?? null,
+      }));
     } catch (error) {
       console.error('Error fetching user audits:', error);
       throw error;
+    }
+  }
+
+  /** id последней задачи аудита (`audit_tasks.audit_id` → `audits.id`). */
+  async getTaskIdForAudit(auditId: string): Promise<string | null> {
+    const { data, error } = await supabase
+      .from('audit_tasks')
+      .select('id')
+      .eq('audit_id', auditId)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (error) {
+      console.error('Error fetching task for audit:', error);
+      return null;
+    }
+    return data?.id ?? null;
+  }
+
+  /**
+   * Состояние задачи прямо из базы. Нужно, чтобы открыть проверку по ссылке:
+   * понять, показывать ли готовые результаты или продолжать следить за ходом.
+   */
+  async getTaskSnapshot(taskId: string): Promise<AuditTaskSnapshot | null> {
+    const { data, error } = await supabase
+      .from('audit_tasks')
+      .select('id, url, status, stage, progress, pages_scanned, estimated_pages, current_url, error_message')
+      .eq('id', taskId)
+      .maybeSingle();
+
+    if (error) throw error;
+    return (data ?? null) as AuditTaskSnapshot | null;
+  }
+
+  /**
+   * Последняя завершённая проверка этого сайта.
+   *
+   * Раньше искали `ilike('%домен%')` среди всех видимых задач без владельца:
+   * shop.ru совпадал с myshop.ru, а гостевые задачи политика отдаёт всем —
+   * под заголовком одного сайта показывались результаты чужого. Теперь сайт
+   * сравнивается по хосту целиком, вошедшему пользователю подбираются только
+   * его задачи.
+   *
+   * Гостю — только проверки, запущенные из его браузера (их номера лежат в
+   * localStorage). Любая гостевая задача видна всем, и «последняя гостевая
+   * проверка shop.ru» могла быть запущена другим посетителем. Своих номеров
+   * нет — гость видит экран запуска, а не чужой отчёт.
+   */
+  async findLatestCompletedTaskId(url: string): Promise<string | null> {
+    const host = normalizeHost(url);
+    if (!host) return null;
+
+    try {
+      const userId = await this.getCurrentUserId();
+      const guestTaskIds = userId ? [] : getBrowserTaskIdsForSite(host);
+      if (!userId && guestTaskIds.length === 0) return null;
+
+      // ilike лишь сужает выборку; точное сравнение хоста — ниже.
+      let query = supabase
+        .from('audit_tasks')
+        .select('id, url')
+        .eq('status', 'completed')
+        .ilike('url', `%${host}%`);
+
+      query = userId
+        ? query.eq('user_id', userId)
+        : query.is('user_id', null).in('id', guestTaskIds);
+
+      const { data, error } = await query
+        .order('created_at', { ascending: false })
+        .limit(50);
+
+      if (error) throw error;
+      const match = (data ?? []).find((task) => isSameSite(task.url, host));
+      return match?.id ?? null;
+    } catch (error) {
+      console.error('Error looking up latest audit task:', error);
+      return null;
     }
   }
 

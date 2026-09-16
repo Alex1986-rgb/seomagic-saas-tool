@@ -1,6 +1,6 @@
 import React from 'react';
 import { Helmet } from 'react-helmet-async';
-import { absoluteAssetUrl } from '@/lib/asset-url';
+import { absoluteAssetUrl, absolutePageUrl } from '@/lib/asset-url';
 
 interface EventSchemaProps {
   events?: Array<{
@@ -30,12 +30,12 @@ export const EventSchema: React.FC<EventSchemaProps> = ({ events = [] }) => {
   // мероприятий разметки нет.
   if (events.length === 0) return null;
 
-  const siteUrl = typeof window !== 'undefined' ? window.location.origin : 'https://seomarket.app';
+  const siteUrl = absolutePageUrl('/');
   
   const eventSchemas = events.map((event, index) => ({
     '@context': 'https://schema.org',
     '@type': 'Event',
-    '@id': `${siteUrl}/#event-${index + 1}`,
+    '@id': absolutePageUrl(`/#event-${index + 1}`),
     name: event.name,
     description: event.description,
     startDate: event.startDate,
@@ -52,8 +52,9 @@ export const EventSchema: React.FC<EventSchemaProps> = ({ events = [] }) => {
       name: event.location?.name,
       address: {
         '@type': 'PostalAddress',
+        // Город «Москва» подставлялся к любому очному мероприятию — убран:
+        // адрес берётся только из переданных данных.
         streetAddress: event.location?.address,
-        addressLocality: 'Москва',
         addressCountry: 'RU'
       }
     },
@@ -69,7 +70,7 @@ export const EventSchema: React.FC<EventSchemaProps> = ({ events = [] }) => {
     } : undefined,
     offers: {
       '@type': 'Offer',
-      url: `${siteUrl}/events`,
+      url: absolutePageUrl('/events'),
       price: event.price,
       priceCurrency: event.priceCurrency || 'RUB',
       availability: event.availability || 'https://schema.org/InStock',

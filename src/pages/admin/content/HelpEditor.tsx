@@ -5,14 +5,13 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { PlusCircle, Trash2, ChevronDown, ChevronUp } from 'lucide-react';
+import { PlusCircle, Trash2 } from 'lucide-react';
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { useToast } from '@/hooks/use-toast';
 import PageSeo from '@/components/seo/PageSeo';
 
 interface FAQ {
@@ -29,8 +28,6 @@ interface HelpCategory {
 }
 
 const HelpEditor: React.FC = () => {
-  const { toast } = useToast();
-  
   const [faqs, setFaqs] = useState<FAQ[]>([
     {
       id: '1',
@@ -59,14 +56,8 @@ const HelpEditor: React.FC = () => {
     }
   ]);
   
-  const handleSave = (data: any) => {
-    console.log('Saving help data:', data);
-    toast({
-      title: "Изменения сохранены",
-      description: "Справочные материалы успешно обновлены"
-    });
-  };
-  
+  // Тосты «Изменения сохранены», «успешно добавлен/удалён» убраны: вопросы и
+  // категории живут только в этой форме, хранилища контента нет.
   const addFaq = () => {
     const newFaq: FAQ = {
       id: Date.now().toString(),
@@ -75,20 +66,10 @@ const HelpEditor: React.FC = () => {
     };
     
     setFaqs([...faqs, newFaq]);
-    
-    toast({
-      title: "FAQ добавлен",
-      description: "Новый вопрос успешно добавлен"
-    });
   };
   
   const removeFaq = (id: string) => {
     setFaqs(faqs.filter(faq => faq.id !== id));
-    
-    toast({
-      title: "FAQ удален",
-      description: "Вопрос успешно удален"
-    });
   };
   
   const updateFaq = (id: string, field: string, value: string) => {
@@ -106,20 +87,10 @@ const HelpEditor: React.FC = () => {
     };
     
     setCategories([...categories, newCategory]);
-    
-    toast({
-      title: "Категория добавлена",
-      description: "Новая категория справки создана"
-    });
   };
   
   const removeCategory = (id: string) => {
     setCategories(categories.filter(category => category.id !== id));
-    
-    toast({
-      title: "Категория удалена",
-      description: "Категория справки успешно удалена"
-    });
   };
 
   return (
@@ -133,7 +104,6 @@ const HelpEditor: React.FC = () => {
       <BaseContentEditor
         title="Редактирование справки"
         description="Управление справочными материалами, FAQ и инструкциями"
-        onSave={handleSave}
       >
         <div className="space-y-6">
           <Card className="bg-black/20 border-white/10">

@@ -37,7 +37,7 @@ const PricingPlans: React.FC = () => {
         { name: 'Оптимизация контента', price: 500, unit: 'страница' },
       ],
       recommended: false,
-      buttonText: 'Заказать аудит',
+      buttonText: 'Оставить заявку',
       buttonVariant: 'outline' as const,
     },
     {
@@ -63,7 +63,7 @@ const PricingPlans: React.FC = () => {
         { name: 'Улучшение контента', price: 400, unit: 'страница' }, // 20% скидка
       ],
       recommended: false,
-      buttonText: 'Выбрать тариф',
+      buttonText: 'Оставить заявку',
       buttonVariant: 'default' as const,
     },
     {
@@ -91,7 +91,7 @@ const PricingPlans: React.FC = () => {
         { name: 'Внедрение микроразметки', price: 150, unit: 'шаблон' }, // 50% скидка
       ],
       recommended: true,
-      buttonText: 'Выбрать тариф',
+      buttonText: 'Оставить заявку',
       buttonVariant: 'default' as const,
     },
     {
@@ -109,7 +109,7 @@ const PricingPlans: React.FC = () => {
         'Еженедельные отчеты',
         'Расширенная аналитика',
         'Оптимизация конверсий',
-        'API доступ',
+        // «API доступ» убран: публичного API у сервиса нет.
       ],
       workItems: [
         { name: 'Технический аудит', price: 5000, unit: 'проект' },
@@ -155,6 +155,16 @@ const PricingPlans: React.FC = () => {
           <Link to="/optimization-pricing" className="text-primary hover:underline ml-1">
             Также доступны индивидуальные расчеты.
           </Link>
+        </p>
+        {/*
+          Оплаты на сайте нет: ни списаний, ни подписок. Раньше кнопки тарифов
+          вели на «/audit?plan={plan.name}» — фигурные скобки попадали в адрес
+          буквально, а человек думал, что выбрал тариф. Теперь честно говорим,
+          как подключить работы, и ведём на заявку.
+        */}
+        <p className="text-sm text-muted-foreground max-w-3xl mx-auto mt-4">
+          Оплата на сайте пока не подключена. Оставьте заявку — согласуем объём работ
+          по результатам аудита и выставим счёт.
         </p>
       </div>
       
@@ -231,7 +241,7 @@ const PricingPlans: React.FC = () => {
               className="w-full"
               asChild
             >
-              <Link to="/audit?plan={plan.name}">{plan.buttonText}</Link>
+              <Link to="/contact">{plan.buttonText}</Link>
             </Button>
           </div>
         ))}

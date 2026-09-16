@@ -1,6 +1,6 @@
 import jsPDF from 'jspdf';
 import { pdfColors } from '../styles/colors';
-import { addQRCodeToPage } from './qrcode';
+import { addQRCodeImage } from './qrcode';
 
 interface CoverPageOptions {
   title: string;
@@ -13,7 +13,16 @@ interface CoverPageOptions {
     issuesFound?: number;
     criticalIssues?: number;
   };
-  qrCodeUrl?: string;
+  /**
+   * Готовый QR-код: картинка (data URL PNG, см. generateQRCodeDataUrl) и
+   * подпись — что именно откроется по коду. Раньше здесь передавался адрес, а
+   * на обложке рисовался случайный узор с подписью «Онлайн-версия»: код не
+   * считывался, и онлайн-версии за ним не было.
+   */
+  qrCode?: {
+    dataUrl: string;
+    label: string;
+  };
   companyLogo?: string; // base64
   companyInfo?: {
     name?: string;
@@ -37,7 +46,7 @@ export function addCoverPage(
     date,
     overallScore,
     statistics = {},
-    qrCodeUrl,
+    qrCode,
     companyLogo,
     companyInfo = {}
   } = options;
@@ -162,12 +171,11 @@ export function addCoverPage(
   doc.setTextColor(100, 100, 100);
   doc.text(`Дата создания отчета: ${formattedDate}`, pageWidth / 2, 230, { align: 'center' });
 
-  // === QR КОД (если есть URL) ===
-  if (qrCodeUrl) {
-    addQRCodeToPage(doc, qrCodeUrl, pageWidth - 50, 240, 25);
+  // === QR КОД (если его удалось построить) ===
+  if (qrCode && addQRCodeImage(doc, qrCode.dataUrl, pageWidth - 50, 240, 25)) {
     doc.setFontSize(8);
     doc.setTextColor(100, 100, 100);
-    doc.text('Онлайн-версия', pageWidth - 37.5, 272, { align: 'center' });
+    doc.text(qrCode.label, pageWidth - 37.5, 272, { align: 'center' });
   }
 
   // === НИЖНИЙ БЛОК ===

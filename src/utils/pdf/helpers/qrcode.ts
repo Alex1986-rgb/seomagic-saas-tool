@@ -26,8 +26,12 @@ export async function generateQRCodeDataUrl(
 }
 
 /**
- * Adds a QR code image to the PDF document
- * The QR code should be pre-generated as a data URL
+ * Кладёт готовый QR-код (data URL PNG) в документ.
+ *
+ * Возвращает false, если картинку вставить не удалось. Раньше на этот случай
+ * рисовалась серая заглушка с надписью «QR Code» — в отчёте она выглядела как
+ * код, который не сканируется. Теперь не рисуем ничего, а вызывающий не
+ * печатает подпись.
  */
 export function addQRCodeImage(
   doc: jsPDF,
@@ -35,82 +39,20 @@ export function addQRCodeImage(
   x: number = 170,
   y: number = 20,
   size: number = 30
-): void {
+): boolean {
   try {
-    // Draw white background
+    // Белая подложка, чтобы код читался на любом фоне.
     doc.setFillColor(255, 255, 255);
     doc.roundedRect(x - 2, y - 2, size + 4, size + 4, 2, 2, 'F');
-    
-    // Add QR code image to PDF
+
     doc.addImage(qrCodeDataUrl, 'PNG', x, y, size, size);
+    return true;
   } catch (error) {
-    console.error('Error adding QR code to PDF:', error);
-    
-    // Fallback: draw a simple placeholder
-    doc.setDrawColor(200, 200, 200);
-    doc.setFillColor(245, 245, 245);
-    doc.roundedRect(x, y, size, size, 2, 2, 'FD');
-    
-    doc.setFontSize(8);
-    doc.setTextColor(150, 150, 150);
-    doc.text('QR Code', x + size / 2, y + size / 2, { align: 'center' });
+    console.error('Не удалось вставить QR-код в PDF:', error);
+    return false;
   }
 }
 
-/**
- * Legacy function that draws a placeholder QR code
- * Use generateQRCodeDataUrl + addQRCodeImage for real QR codes
- */
-export function addQRCodeToPage(
-  doc: jsPDF, 
-  data: string, 
-  x: number = 170, 
-  y: number = 20, 
-  size: number = 30
-): void {
-  // Draw a placeholder box for the QR code
-  doc.setDrawColor(0, 0, 0);
-  doc.setFillColor(255, 255, 255);
-  doc.roundedRect(x - 5, y - 5, size + 10, size + 10, 3, 3, 'FD');
-  
-  // Draw a fake QR code (grid)
-  doc.setDrawColor(0, 0, 0);
-  doc.setFillColor(0, 0, 0);
-
-  const cellSize = size / 10;
-  
-  // Create a simple pattern to mimic a QR code
-  for (let i = 0; i < 10; i++) {
-    for (let j = 0; j < 10; j++) {
-      // Random fill to simulate QR code pattern
-      if (Math.random() > 0.5) {
-        doc.rect(x + i * cellSize, y + j * cellSize, cellSize, cellSize, 'F');
-      }
-    }
-  }
-  
-  // Add corners (typical QR code markers)
-  doc.setFillColor(0, 0, 0);
-  // Top left
-  doc.rect(x, y, cellSize * 3, cellSize * 3, 'F');
-  doc.setFillColor(255, 255, 255);
-  doc.rect(x + cellSize, y + cellSize, cellSize, cellSize, 'F');
-  
-  // Top right
-  doc.setFillColor(0, 0, 0);
-  doc.rect(x + size - cellSize * 3, y, cellSize * 3, cellSize * 3, 'F');
-  doc.setFillColor(255, 255, 255);
-  doc.rect(x + size - cellSize * 2, y + cellSize, cellSize, cellSize, 'F');
-  
-  // Bottom left
-  doc.setFillColor(0, 0, 0);
-  doc.rect(x, y + size - cellSize * 3, cellSize * 3, cellSize * 3, 'F');
-  doc.setFillColor(255, 255, 255);
-  doc.rect(x + cellSize, y + size - cellSize * 2, cellSize, cellSize, 'F');
-  
-  // Add small label
-  doc.setFontSize(7);
-  doc.setTextColor(100, 100, 100);
-  doc.text('Scan for report', x + size / 2, y + size + 8, { align: 'center' });
-}
-
+// Здесь была функция addQRCodeToPage: она рисовала «QR-код» из случайно
+// закрашенных клеток (Math.random) с подписью «Scan for report». Камера такой
+// узор не считывала. Настоящий код строят generateQRCodeDataUrl + addQRCodeImage.

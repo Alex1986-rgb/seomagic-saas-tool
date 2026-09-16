@@ -100,15 +100,31 @@ serve(async (req) => {
       items = estimate.cost_breakdown || [];
       totalCost = estimate.final_cost || 0;
     } else {
-      console.log('[OPTIMIZATION-CALCULATE] No estimate found, using fallback');
-      totalCost = 1000;
-      items = [{
-        name: 'SEO Optimization Package',
-        description: 'Complete SEO optimization',
-        count: 1,
-        pricePerUnit: totalCost,
-        totalPrice: totalCost
-      }];
+      // Раньше здесь подставлялся выдуманный «пакет» за 1000 ₽, и он же
+      // сохранялся как смета задачи. Сметы нет в двух случаях: замечаний нет
+      // вовсе (тогда и платить не за что — 0) или замечания уже есть, а смета
+      // ещё не записана (тогда честно отвечаем «не готово», фронтенд повторит).
+      const { count: issuesCount } = await supabaseClient
+        .from('issues')
+        .select('id', { count: 'exact', head: true })
+        .eq('task_id', task_id);
+
+      if (issuesCount && issuesCount > 0) {
+        console.warn('[OPTIMIZATION-CALCULATE] Issues exist but estimate is missing for task:', task_id);
+        return new Response(
+          JSON.stringify({
+            success: false,
+            error: 'Estimate not found yet. Please retry once issue classification has finished.',
+            task_id: task_id
+          }),
+          {
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            status: 404,
+          }
+        );
+      }
+
+      console.log('[OPTIMIZATION-CALCULATE] No estimate and no issues: nothing to charge for');
     }
 
     // Get user_id from auth header if available

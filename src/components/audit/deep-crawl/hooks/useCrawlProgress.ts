@@ -100,7 +100,16 @@ export const useCrawlProgress = (baseUrl: string) => {
   const [domain, setDomain] = useState<string>(() => extractDomain(baseUrl));
   const [taskId, setTaskId] = useState<string | null>(null);
 
-  const cancelledRef = useRef(false);
+  /**
+   * Номер текущего запуска. Раньше отмену отмечал общий флаг cancelledRef:
+   * «Отменить» ставил его, а новый запуск тут же сбрасывал. Старый цикл
+   * опроса, проснувшись после паузы, видел сброшенный флаг и продолжал —
+   * получал статус 'cancelled' своей задачи и помечал ошибкой уже новый
+   * запуск, а его адреса дописывались в список нового. Теперь каждый запуск
+   * помнит свой номер и молча выходит, как только номер сменился (новый запуск,
+   * отмена или закрытие экрана).
+   */
+  const runIdRef = useRef(0);
   const runningRef = useRef(false);
   const taskIdRef = useRef<string | null>(null);
   const urlsRef = useRef<string[]>([]);
@@ -110,7 +119,7 @@ export const useCrawlProgress = (baseUrl: string) => {
   }, [baseUrl]);
 
   // Экран закрыли — опрос сервера прекращаем, задача на сервере живёт своей жизнью.
-  useEffect(() => () => { cancelledRef.current = true; }, []);
+  useEffect(() => () => { runIdRef.current += 1; }, []);
 
   const failWith = useCallback((message: string) => {
     setError(message);
@@ -120,8 +129,9 @@ export const useCrawlProgress = (baseUrl: string) => {
   }, []);
 
   /** Дочитывает порциями адреса, которые обход успел сохранить в `page_analysis`. */
-  const loadDiscoveredUrls = useCallback(async (task: string) => {
+  const loadDiscoveredUrls = useCallback(async (task: string, isCurrent: () => boolean) => {
     for (;;) {
+      if (!isCurrent()) return;
       const from = urlsRef.current.length;
       const { data, error: dbError } = await supabase
         .from('page_analysis')
@@ -130,6 +140,8 @@ export const useCrawlProgress = (baseUrl: string) => {
         .order('created_at', { ascending: true })
         .range(from, from + URL_PAGE_SIZE - 1);
 
+      // Пока ждали ответ, мог начаться другой запуск: чужие адреса не дописываем.
+      if (!isCurrent()) return;
       if (dbError || !data || data.length === 0) return;
 
       const fresh = data.map((row) => row.url).filter(Boolean);
@@ -162,6 +174,12 @@ export const useCrawlProgress = (baseUrl: string) => {
     };
   }, []);
 
+  const cancelTaskOnServer = useCallback((task: string) => {
+    supabase.functions
+      .invoke('audit-cancel', { body: { task_id: task } })
+      .catch((err) => console.error('Не удалось отменить задачу на сервере:', err));
+  }, []);
+
   const startCrawl = useCallback(async (): Promise<{ urls: string[] }> => {
     if (runningRef.current) return { urls: urlsRef.current };
 
@@ -171,8 +189,11 @@ export const useCrawlProgress = (baseUrl: string) => {
       return { urls: [] };
     }
 
+    const runId = runIdRef.current + 1;
+    runIdRef.current = runId;
+    const isCurrent = () => runIdRef.current === runId;
+
     runningRef.current = true;
-    cancelledRef.current = false;
     urlsRef.current = [];
     taskIdRef.current = null;
 
@@ -191,6 +212,7 @@ export const useCrawlProgress = (baseUrl: string) => {
     // Глубокий обход сервер выполняет только для вошедшего пользователя,
     // поэтому проверяем сессию заранее, а не ловим отказ после запуска.
     const { data: { session } } = await supabase.auth.getSession();
+    if (!isCurrent()) return { urls: [] };
     if (!session) {
       failWith('Войдите, чтобы запустить глубокое сканирование');
       return { urls: [] };
@@ -210,7 +232,14 @@ export const useCrawlProgress = (baseUrl: string) => {
 
       task = String(data.task_id);
     } catch (err) {
-      failWith(`Не удалось запустить сканирование: ${describeError(err)}`);
+      if (isCurrent()) failWith(`Не удалось запустить сканирование: ${describeError(err)}`);
+      return { urls: [] };
+    }
+
+    // Отменили, пока сервер создавал задачу: номер задачи отмена ещё не знала,
+    // поэтому снимаем задачу здесь, иначе обход шёл бы впустую.
+    if (!isCurrent()) {
+      cancelTaskOnServer(task);
       return { urls: [] };
     }
 
@@ -222,15 +251,16 @@ export const useCrawlProgress = (baseUrl: string) => {
     let lastChangeAt = Date.now();
     let statusErrors = 0;
 
-    while (!cancelledRef.current) {
+    while (isCurrent()) {
       await wait(POLL_INTERVAL_MS);
-      if (cancelledRef.current) break;
+      if (!isCurrent()) break;
 
       let status: AuditStatus;
       try {
         status = await fetchStatus(task);
         statusErrors = 0;
       } catch (err) {
+        if (!isCurrent()) break;
         // Сеть могла моргнуть — обход на сервере идёт дальше, пробуем ещё раз.
         statusErrors += 1;
         if (statusErrors >= 5) {
@@ -240,7 +270,8 @@ export const useCrawlProgress = (baseUrl: string) => {
         continue;
       }
 
-      await loadDiscoveredUrls(task);
+      await loadDiscoveredUrls(task, isCurrent);
+      if (!isCurrent()) break;
 
       const estimated = status.estimatedPages || 0;
       const computed = estimated > 0
@@ -253,7 +284,8 @@ export const useCrawlProgress = (baseUrl: string) => {
       setCrawlStage(mapStage(status.status, status.stage));
 
       if (status.status === 'completed') {
-        await loadDiscoveredUrls(task);
+        await loadDiscoveredUrls(task, isCurrent);
+        if (!isCurrent()) break;
         setProgress(100);
         setCrawlStage('completed');
         setIsComplete(true);
@@ -280,25 +312,22 @@ export const useCrawlProgress = (baseUrl: string) => {
       }
     }
 
-    runningRef.current = false;
-    setIsLoading(false);
-    return { urls: urlsRef.current };
-  }, [baseUrl, failWith, fetchStatus, loadDiscoveredUrls]);
+    // Сюда попадаем, только если запуск устарел (отмена, новый запуск, закрытие
+    // экрана). Состояние теперь принадлежит другому запуску — не трогаем его.
+    return { urls: [] };
+  }, [baseUrl, failWith, fetchStatus, loadDiscoveredUrls, cancelTaskOnServer]);
 
   const cancelCrawl = useCallback(() => {
-    cancelledRef.current = true;
+    runIdRef.current += 1;
     runningRef.current = false;
     setIsLoading(false);
     setCrawlStage('idle');
     setProgress(0);
 
     const task = taskIdRef.current;
-    if (task) {
-      supabase.functions
-        .invoke('audit-cancel', { body: { task_id: task } })
-        .catch((err) => console.error('Не удалось отменить задачу на сервере:', err));
-    }
-  }, []);
+    taskIdRef.current = null;
+    if (task) cancelTaskOnServer(task);
+  }, [cancelTaskOnServer]);
 
   return {
     isLoading,

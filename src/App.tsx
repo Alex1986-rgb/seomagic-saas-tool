@@ -1,81 +1,137 @@
-import React from 'react';
+import React, { Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from './components/ui/sonner';
 import { ThemeProvider } from './contexts/ThemeContext';
 import DefaultSEO from './components/seo/DefaultSEO';
 import SkipLink from './components/accessibility/SkipLink';
 import { PerformanceDebugger } from './components/debug';
+import { LoadingSpinner } from './components/ui/loading';
 
-// Pages
+// Главная — первая страница для большинства посетителей, её грузим сразу.
 import Index from './pages/Index';
-import About from './pages/About';
-import Channel from './pages/Channel';
-import Audit from './pages/Audit';
-import Features from './pages/Features';
-import Pricing from './pages/Pricing';
-import PositionPricing from './pages/PositionPricing';
-import Contact from './pages/Contact';
-import Privacy from './pages/Privacy';
-import Terms from './pages/Terms';
-import Dashboard from './pages/Dashboard';
-import Profile from './pages/Profile';
-import Auth from './pages/Auth';
-import Blog from './pages/Blog';
-import BlogPost from './pages/BlogPost';
-import Documentation from './pages/Documentation';
-import PositionTracker from './pages/PositionTracker';
-import SiteAudit from './pages/SiteAudit';
-import ProjectDetails from './pages/ProjectDetails';
-import Support from './pages/Support';
-import Team from './pages/Team';
-import Guides from './pages/Guides';
-import Webinars from './pages/Webinars';
-import Careers from './pages/Careers';
-import Reports from './pages/Reports';
-import Settings from './pages/Settings';
-import AuditHistory from './pages/AuditHistory';
-import ApiDocs from './pages/ApiDocs';
-import Faq from './pages/Faq';
-import Partners from './pages/Partners';
-import IPInfo from './pages/IPInfo';
-import NotFound from './pages/NotFound';
-import Demo from './pages/Demo';
-import Partnership from './pages/Partnership';
-import GuidePost from './pages/GuidePost';
-import OptimizationPricing from './pages/OptimizationPricing';
-import ClientProfile from './pages/ClientProfile';
-
-// Feature pages
-import SiteScanning from './pages/features/SiteScanning';
-import MetadataAnalysis from './pages/features/MetadataAnalysis';
-import AutoFix from './pages/features/AutoFix';
-import PositionTrackingFeature from './pages/features/PositionTrackingFeature';
-import CompetitorAnalysis from './pages/features/CompetitorAnalysis';
-import PerformanceReports from './pages/features/PerformanceReports';
-import DataSecurity from './pages/features/DataSecurity';
-import CMSIntegration from './pages/features/CMSIntegration';
-import SeoAudit from './pages/features/SeoAudit';
-import AIOptimization from './pages/features/AIOptimization';
-import PositionTracking from './pages/features/PositionTracking';
-import SpeedAnalysis from './pages/features/SpeedAnalysis';
-import MobileOptimization from './pages/features/MobileOptimization';
-import OptimizationDemo from './pages/OptimizationDemo';
-import AllPages from './pages/AllPages';
-import SeoOptimizationPage from './pages/SeoOptimizationPage';
-import OptimizationTest from './pages/OptimizationTest';
-import AuditsHistory from './pages/AuditsHistory';
-import OptimizationsHistory from './pages/OptimizationsHistory';
-import SharedEstimate from './pages/SharedEstimate';
-import Sitemap from './pages/Sitemap';
-
-// Admin Routes
-import AdminRoutes from './routes/AdminRoutes';
 
 // Auth guards
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import AdminRouteGuard from './components/admin/AdminRouteGuard';
 
+/**
+ * Разбиение сайта на части по страницам.
+ *
+ * Все ~60 страниц, кабинет и админка импортировались сразу, и главная
+ * загружала и разбирала один файл почти в 4 МБ — вместе с графиками, генерацией
+ * PDF и админкой, которые на главной не нужны. Теперь сразу грузится только
+ * главная, остальные страницы подтягиваются при переходе на них.
+ *
+ * Форма записи «const Имя = lazy(() => import('./pages/…'))» важна: по ней
+ * scripts/prerender.cjs находит файл страницы для пререндера. Функция lazy
+ * ниже — обёртка над React.lazy, а не импорт из React.
+ *
+ * Выкладка на GitHub Pages пересоздаёт сайт целиком, и файлы частей прежней
+ * сборки исчезают. У того, кто открыл сайт до выкладки, переход на новую
+ * страницу падал бы с ошибкой загрузки. Поэтому при такой ошибке страница один
+ * раз перезагружается и получает свежую сборку; если и после этого часть не
+ * загрузилась, ошибка показывается как есть, без бесконечных перезагрузок.
+ */
+const CHUNK_RELOAD_KEY = 'seo-market-chunk-reload';
 
+function lazy(factory: () => Promise<{ default: React.ComponentType }>) {
+  return React.lazy(() =>
+    factory()
+      .then((module) => {
+        try {
+          sessionStorage.removeItem(CHUNK_RELOAD_KEY);
+        } catch {
+          // Хранилище недоступно (приватный режим) — отметку просто не ведём.
+        }
+        return module;
+      })
+      .catch((error: unknown) => {
+        let canReload = false;
+        try {
+          canReload = sessionStorage.getItem(CHUNK_RELOAD_KEY) !== '1';
+          if (canReload) sessionStorage.setItem(CHUNK_RELOAD_KEY, '1');
+        } catch {
+          // Без хранилища не перезагружаем: иначе можно уйти в бесконечный цикл.
+          canReload = false;
+        }
+        if (canReload) {
+          window.location.reload();
+          return new Promise<never>(() => {});
+        }
+        throw error;
+      })
+  );
+}
+
+// Pages
+const About = lazy(() => import('./pages/About'));
+const Channel = lazy(() => import('./pages/Channel'));
+const Audit = lazy(() => import('./pages/Audit'));
+const Features = lazy(() => import('./pages/Features'));
+const Pricing = lazy(() => import('./pages/Pricing'));
+const PositionPricing = lazy(() => import('./pages/PositionPricing'));
+const Contact = lazy(() => import('./pages/Contact'));
+const Privacy = lazy(() => import('./pages/Privacy'));
+const Terms = lazy(() => import('./pages/Terms'));
+const Dashboard = lazy(() => import('./pages/Dashboard'));
+const Profile = lazy(() => import('./pages/Profile'));
+const Auth = lazy(() => import('./pages/Auth'));
+const Blog = lazy(() => import('./pages/Blog'));
+const BlogPost = lazy(() => import('./pages/BlogPost'));
+const Documentation = lazy(() => import('./pages/Documentation'));
+const PositionTracker = lazy(() => import('./pages/PositionTracker'));
+const SiteAudit = lazy(() => import('./pages/SiteAudit'));
+const ProjectDetails = lazy(() => import('./pages/ProjectDetails'));
+const Support = lazy(() => import('./pages/Support'));
+const Team = lazy(() => import('./pages/Team'));
+const Guides = lazy(() => import('./pages/Guides'));
+const Webinars = lazy(() => import('./pages/Webinars'));
+const Careers = lazy(() => import('./pages/Careers'));
+const Reports = lazy(() => import('./pages/Reports'));
+const Settings = lazy(() => import('./pages/Settings'));
+const AuditHistory = lazy(() => import('./pages/AuditHistory'));
+const ApiDocs = lazy(() => import('./pages/ApiDocs'));
+const Faq = lazy(() => import('./pages/Faq'));
+const Partners = lazy(() => import('./pages/Partners'));
+const IPInfo = lazy(() => import('./pages/IPInfo'));
+const NotFound = lazy(() => import('./pages/NotFound'));
+const Demo = lazy(() => import('./pages/Demo'));
+const Partnership = lazy(() => import('./pages/Partnership'));
+const GuidePost = lazy(() => import('./pages/GuidePost'));
+const OptimizationPricing = lazy(() => import('./pages/OptimizationPricing'));
+const ClientProfile = lazy(() => import('./pages/ClientProfile'));
+
+// Feature pages
+const SiteScanning = lazy(() => import('./pages/features/SiteScanning'));
+const MetadataAnalysis = lazy(() => import('./pages/features/MetadataAnalysis'));
+const AutoFix = lazy(() => import('./pages/features/AutoFix'));
+const CompetitorAnalysis = lazy(() => import('./pages/features/CompetitorAnalysis'));
+const PerformanceReports = lazy(() => import('./pages/features/PerformanceReports'));
+const DataSecurity = lazy(() => import('./pages/features/DataSecurity'));
+const CMSIntegration = lazy(() => import('./pages/features/CMSIntegration'));
+const SeoAudit = lazy(() => import('./pages/features/SeoAudit'));
+const AIOptimization = lazy(() => import('./pages/features/AIOptimization'));
+const PositionTracking = lazy(() => import('./pages/features/PositionTracking'));
+const SpeedAnalysis = lazy(() => import('./pages/features/SpeedAnalysis'));
+const MobileOptimization = lazy(() => import('./pages/features/MobileOptimization'));
+const OptimizationDemo = lazy(() => import('./pages/OptimizationDemo'));
+const AllPages = lazy(() => import('./pages/AllPages'));
+const SeoOptimizationPage = lazy(() => import('./pages/SeoOptimizationPage'));
+const OptimizationTest = lazy(() => import('./pages/OptimizationTest'));
+const AuditsHistory = lazy(() => import('./pages/AuditsHistory'));
+const OptimizationsHistory = lazy(() => import('./pages/OptimizationsHistory'));
+const SharedEstimate = lazy(() => import('./pages/SharedEstimate'));
+const Sitemap = lazy(() => import('./pages/Sitemap'));
+
+// Admin Routes: страницы внутри и так грузятся по требованию, а сам раздел
+// посетителям сайта не нужен вовсе.
+const AdminRoutes = lazy(() => import('./routes/AdminRoutes'));
+
+const PageFallback: React.FC = () => (
+  <div className="min-h-screen flex items-center justify-center" role="status" aria-label="Загрузка страницы">
+    <LoadingSpinner size="lg" />
+  </div>
+);
 
 function App() {
   return (
@@ -87,6 +143,16 @@ function App() {
         <div className="App min-h-screen bg-background text-foreground" data-app="true">
           <DefaultSEO />
           <main id="main-content" role="main">
+            <Suspense fallback={<PageFallback />}>
+            {/*
+              У одной страницы должен быть один адрес. Пары /docs и
+              /documentation, /all-pages и /pages, русские и английские адреса
+              /features/*, /position-tracking, /features/position-tracking и
+              /features/отслеживание-позиций отдавали одно и то же, и каждая
+              копия ставила canonical на себя — поисковик видел дубли title и
+              description. Основной адрес — тот,
+              на который ведут ссылки сайта, остальные переадресуют на него.
+            */}
             <Routes>
                     <Route path="/" element={<Index />} />
                     <Route path="/home" element={<Navigate to="/" replace />} />
@@ -110,47 +176,51 @@ function App() {
                     <Route path="/auth" element={<Auth />} />
                     <Route path="/blog" element={<Blog />} />
                     <Route path="/blog/:id" element={<BlogPost />} />
-                    <Route path="/docs" element={<Documentation />} />
                     <Route path="/documentation" element={<Documentation />} />
+                    <Route path="/docs" element={<Navigate to="/documentation" replace />} />
                     <Route path="/position-tracker" element={<PositionTracker />} />
                     <Route path="/site-audit" element={<SiteAudit />} />
-                    <Route path="/project-details" element={<ProjectDetails />} />
-                    
-                    {/* Feature pages - Russian URLs */}
-                    <Route path="/features/полное-сканирование-сайта" element={<SiteScanning />} />
+                    {/* Внутренняя страница о состоянии проекта: посетителям сайта не нужна,
+                        открыта только администратору. */}
+                    <Route path="/project-details" element={<AdminRouteGuard><ProjectDetails /></AdminRouteGuard>} />
+
+                    {/* Feature pages: основные адреса английские, русские переадресуют */}
                     <Route path="/features/site-scanning" element={<SiteScanning />} />
+                    <Route path="/features/полное-сканирование-сайта" element={<Navigate to="/features/site-scanning" replace />} />
                     <Route path="/features/metadata-analysis" element={<MetadataAnalysis />} />
-                    <Route path="/features/автоматическое-исправление" element={<AutoFix />} />
                     <Route path="/features/auto-fix" element={<AutoFix />} />
-                    <Route path="/features/отслеживание-позиций" element={<PositionTrackingFeature />} />
-                    <Route path="/features/анализ-конкурентов" element={<CompetitorAnalysis />} />
+                    <Route path="/features/автоматическое-исправление" element={<Navigate to="/features/auto-fix" replace />} />
+                    {/* Отдельная страница по этому адресу дублировала /position-tracking */}
+                    <Route path="/features/отслеживание-позиций" element={<Navigate to="/position-tracking" replace />} />
                     <Route path="/features/competitor-analysis" element={<CompetitorAnalysis />} />
-                    <Route path="/features/отчеты-производительности" element={<PerformanceReports />} />
+                    <Route path="/features/анализ-конкурентов" element={<Navigate to="/features/competitor-analysis" replace />} />
                     <Route path="/features/performance-reports" element={<PerformanceReports />} />
-                    <Route path="/features/безопасность-данных" element={<DataSecurity />} />
+                    <Route path="/features/отчеты-производительности" element={<Navigate to="/features/performance-reports" replace />} />
                     <Route path="/features/data-security" element={<DataSecurity />} />
-                    <Route path="/features/интеграция-cms" element={<CMSIntegration />} />
+                    <Route path="/features/безопасность-данных" element={<Navigate to="/features/data-security" replace />} />
                     <Route path="/features/cms-integration" element={<CMSIntegration />} />
-                    
+                    <Route path="/features/интеграция-cms" element={<Navigate to="/features/cms-integration" replace />} />
+
                     {/* New feature pages - English URLs */}
                     <Route path="/features/seo-audit" element={<SeoAudit />} />
                     <Route path="/features/ai-optimization" element={<AIOptimization />} />
-                    <Route path="/features/position-tracking" element={<PositionTracking />} />
+                    {/* Основной адрес — /position-tracking: на него ведёт пункт «Позиции» в меню */}
                     <Route path="/position-tracking" element={<PositionTracking />} />
-                    
+                    <Route path="/features/position-tracking" element={<Navigate to="/position-tracking" replace />} />
+
                     {/* Speed and Mobile optimization routes */}
                     <Route path="/features/speed-analysis" element={<SpeedAnalysis />} />
                     <Route path="/features/mobile-optimization" element={<MobileOptimization />} />
-                    
+
                     {/* Shared estimate page */}
                     <Route path="/shared-estimate/:token" element={<SharedEstimate />} />
-                    
+
                     {/* Additional pages */}
                     <Route path="/optimization-demo" element={<OptimizationDemo />} />
                     <Route path="/optimization-test" element={<OptimizationTest />} />
                     <Route path="/optimizations" element={<ProtectedRoute><OptimizationsHistory /></ProtectedRoute>} />
-                    <Route path="/all-pages" element={<AllPages />} />
                     <Route path="/pages" element={<AllPages />} />
+                    <Route path="/all-pages" element={<Navigate to="/pages" replace />} />
                     <Route path="/seo-optimization" element={<SeoOptimizationPage />} />
                     <Route path="/api-docs" element={<ApiDocs />} />
                     <Route path="/faq" element={<Faq />} />
@@ -174,10 +244,11 @@ function App() {
 
                     {/* Admin Routes (require admin role) */}
                     <Route path="/admin/*" element={<AdminRouteGuard><AdminRoutes /></AdminRouteGuard>} />
-                    
+
                     {/* 404 - Must be last */}
                     <Route path="*" element={<NotFound />} />
             </Routes>
+            </Suspense>
           </main>
           <Toaster />
           <PerformanceDebugger />

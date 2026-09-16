@@ -69,16 +69,14 @@ export class ProxyCollector {
       
       while (retries < maxRetries && !responseData) {
         try {
+          // Сбор идёт из браузера: User-Agent, Accept-Encoding и Connection
+          // браузер подставлять не даёт, а Cache-Control и Pragma заставляют
+          // делать предварительный CORS-запрос, на котором источники вроде
+          // raw.githubusercontent.com отказывают. Оставляем только Accept.
           const response = await axios.get(sourceConfig.url, {
             timeout: 40000, // Increased timeout for slower sources (40 seconds)
             headers: {
-              'User-Agent': this.getRandomUserAgent(),
-              'Accept': 'text/html,application/xhtml+xml,application/xml,application/json;q=0.9,image/webp,*/*;q=0.8',
-              'Accept-Language': 'en-US,en;q=0.5',
-              'Accept-Encoding': 'gzip, deflate, br',
-              'Connection': 'keep-alive',
-              'Cache-Control': 'no-cache',
-              'Pragma': 'no-cache'
+              'Accept': 'text/html,application/xhtml+xml,application/xml,application/json;q=0.9,*/*;q=0.8',
             },
             validateStatus: status => (status >= 200 && status < 300) || status === 403 || status === 404,
             maxRedirects: 5
@@ -151,26 +149,6 @@ export class ProxyCollector {
       chunks.push(array.slice(i, i + chunkSize));
     }
     return chunks;
-  }
-
-  // Generate random user agents to avoid blocking
-  private getRandomUserAgent(): string {
-    const userAgents = [
-      'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-      'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-      'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:122.0) Gecko/20100101 Firefox/122.0',
-      'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-      'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:122.0) Gecko/20100101 Firefox/122.0',
-      'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36 Edg/121.0.2277.106',
-      'Mozilla/5.0 (iPhone; CPU iPhone OS 16_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.6 Mobile/15E148 Safari/604.1',
-      'Mozilla/5.0 (iPad; CPU OS 16_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.6 Mobile/15E148 Safari/604.1',
-      // Добавим больше разнообразных User-Agent
-      'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36',
-      'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:121.0) Gecko/20100101 Firefox/121.0',
-      'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 OPR/106.0.0.0',
-      'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Safari/605.1.15'
-    ];
-    return userAgents[Math.floor(Math.random() * userAgents.length)];
   }
 
   // Улучшенный и более агрессивный fallback parser для извлечения прокси

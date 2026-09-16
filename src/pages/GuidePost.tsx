@@ -19,6 +19,13 @@ const GuidePost: React.FC = () => {
   if (!guide) {
     return (
       <Layout>
+        {/* Без своего PageSeo адрес несуществующего руководства получал общие
+            заголовок и canonical от DefaultSEO и мог попасть в поиск. */}
+        <PageSeo
+          title="Руководство не найдено"
+          description="Запрашиваемое руководство не существует или было удалено."
+          noindex
+        />
         <BreadcrumbSchema items={[
           { name: 'Главная', url: '/' },
           { name: 'Руководства', url: '/guides' }

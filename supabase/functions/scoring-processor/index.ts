@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
+import { assertServiceRole, authErrorResponse } from "../_shared/auth.ts";
 
 /**
  * WEIGHTED SCORING ALGORITHM - Sprint 2
@@ -346,6 +347,18 @@ function calculateWeightedScores(pages: PageAnalysis[]): ScoreBreakdown {
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
+  }
+
+  // Оценка пишет результаты служебным ключом и запускает классификатор, смету и
+  // уведомления. Открытая всем, она позволяла по известному task_id задваивать
+  // замечания в чужом отчёте и слать хозяину повторные уведомления. Зовёт её
+  // только audit-processor — служебным ключом.
+  try {
+    assertServiceRole(req);
+  } catch (err) {
+    const denied = authErrorResponse(err, corsHeaders);
+    if (denied) return denied;
+    throw err;
   }
 
   try {

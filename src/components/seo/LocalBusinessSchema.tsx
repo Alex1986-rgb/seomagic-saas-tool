@@ -1,7 +1,7 @@
 import React from 'react';
 import { Helmet } from 'react-helmet-async';
 import { SITE_CONTACTS, hasPostalAddress, withoutEmpty } from '@/config/site-contacts';
-import { absoluteAssetUrl } from '@/lib/asset-url';
+import { absoluteAssetUrl, absolutePageUrl } from '@/lib/asset-url';
 
 /**
  * Разметка организации с адресом.
@@ -15,14 +15,14 @@ import { absoluteAssetUrl } from '@/lib/asset-url';
  * вписываются в `src/config/site-contacts.ts`.
  */
 export const LocalBusinessSchema: React.FC = () => {
-  const siteUrl = typeof window !== 'undefined' ? window.location.origin : 'https://seomarket.app';
+  const siteUrl = absolutePageUrl('/');
 
   if (!hasPostalAddress()) return null;
 
   const localBusinessSchema = {
     '@context': 'https://schema.org',
     '@type': 'LocalBusiness',
-    '@id': `${siteUrl}/#localbusiness`,
+    '@id': absolutePageUrl('/#localbusiness'),
     name: 'SeoMarket',
     description: 'SEO-аудит и оптимизация сайтов, отслеживание позиций в поиске.',
     url: siteUrl,

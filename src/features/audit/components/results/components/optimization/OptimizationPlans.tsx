@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import { Check, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import {
   Accordion,
   AccordionContent,
@@ -94,7 +94,8 @@ const OptimizationPlan: React.FC<OptimizationPlanProps> = ({
         className="mt-auto w-full"
         onClick={onClick}
       >
-        Выбрать тариф
+        {/* Было «Выбрать тариф»: выбор нигде не сохраняется, кнопка ведёт на аудит, где считается смета. */}
+        Рассчитать по своему сайту
         <ArrowRight className="ml-2 h-4 w-4" />
       </Button>
     </motion.div>
@@ -106,13 +107,16 @@ interface OptimizationPlansProps {
 }
 
 const OptimizationPlans: React.FC<OptimizationPlansProps> = ({ onSelectPlan }) => {
-  // Handle plan selection
+  const navigate = useNavigate();
+
   const handleSelectPlan = (planTitle: string) => {
     if (onSelectPlan) {
       onSelectPlan(planTitle);
     } else {
-      // Default behavior if no handler is provided
-      window.location.href = `/audit?plan=${planTitle}`;
+      // Раньше здесь был window.location.href = `/audit?plan=…`: адрес от корня
+      // домена терял подпуть публикации (404), а параметр plan никто не читал.
+      // Смета считается по итогам проверки сайта — ведём на аудит через роутер.
+      navigate('/site-audit');
     }
   };
 

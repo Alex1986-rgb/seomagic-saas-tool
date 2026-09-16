@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
+import { Link } from 'react-router-dom';
 import { Shield, Lock, Key, AlertTriangle, Eye } from 'lucide-react';
 import { SITE_CONTACTS } from '@/config/site-contacts';
 
@@ -83,7 +84,7 @@ const SecurityDocs: React.FC = () => {
                 </>
               ) : (
                 <>
-                  Напишите нам через <a href="/contact" className="text-primary underline">форму обратной связи</a>
+                  Напишите нам через <Link to="/contact" className="text-primary underline">форму обратной связи</Link>
                 </>
               )}
             </p>

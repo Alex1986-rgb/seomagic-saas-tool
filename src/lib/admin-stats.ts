@@ -33,9 +33,14 @@ export interface StatusGroup {
 }
 
 export interface ApiActivityStats {
-  /** Сколько строк реально пришло из api_logs за окно расчёта. */
+  /** Сколько записей в api_logs за окно расчёта. */
   total: number;
   errors: number;
+  /**
+   * По скольким последним записям построены разбивки по часам и функциям.
+   * Выборка ограничена, поэтому итоги считаются отдельно, счётчиками базы.
+   */
+  sampleSize: number;
   averageDuration: number | null;
   byHour: HourBucket[];
   byFunction: FunctionBucket[];
@@ -47,6 +52,7 @@ export interface ApiActivityStats {
 export const EMPTY_API_ACTIVITY: ApiActivityStats = {
   total: 0,
   errors: 0,
+  sampleSize: 0,
   averageDuration: null,
   byHour: [],
   byFunction: [],
@@ -62,6 +68,15 @@ export function isErrorStatus(status: number | null): boolean {
   return typeof status === 'number' && status >= 400;
 }
 
+/**
+ * Длительность считаем замером, только если она больше нуля. Функции
+ * оптимизации пишут в duration_ms заглушку 0 — раньше из неё выходила
+ * «средняя длительность 0 мс», хотя время никто не мерил.
+ */
+function isMeasuredDuration(value: number | null): value is number {
+  return typeof value === 'number' && value > 0;
+}
+
 function hourLabel(date: Date): string {
   return `${String(date.getHours()).padStart(2, '0')}:00`;
 }
@@ -75,9 +90,7 @@ function hourLabel(date: Date): string {
 export function buildApiActivity(rows: ApiLogRow[], now = Date.now()): ApiActivityStats {
   if (rows.length === 0) return EMPTY_API_ACTIVITY;
 
-  const durations = rows
-    .map((row) => row.duration_ms)
-    .filter((value): value is number => typeof value === 'number');
+  const durations = rows.map((row) => row.duration_ms).filter(isMeasuredDuration);
 
   const buckets = new Map<number, HourBucket>();
   const currentHourStart = Math.floor(now / HOUR_MS) * HOUR_MS;
@@ -109,7 +122,7 @@ export function buildApiActivity(rows: ApiLogRow[], now = Date.now()): ApiActivi
     const fn = functions.get(row.function_name) ?? { calls: 0, errors: 0, durations: [] };
     fn.calls += 1;
     if (failed) fn.errors += 1;
-    if (typeof row.duration_ms === 'number') fn.durations.push(row.duration_ms);
+    if (isMeasuredDuration(row.duration_ms)) fn.durations.push(row.duration_ms);
     functions.set(row.function_name, fn);
   }
 
@@ -130,6 +143,7 @@ export function buildApiActivity(rows: ApiLogRow[], now = Date.now()): ApiActivi
   return {
     total: rows.length,
     errors,
+    sampleSize: rows.length,
     averageDuration: durations.length
       ? Math.round(durations.reduce((sum, value) => sum + value, 0) / durations.length)
       : null,
@@ -156,28 +170,36 @@ export interface MonthBucket {
   count: number;
 }
 
-/** Регистрации по месяцам за последний год — из дат создания профилей. */
-export function buildMonthlyCounts(dates: (string | null)[], now = Date.now(), months = 12): MonthBucket[] {
+export interface MonthWindow {
+  month: string;
+  /** Начало месяца (включительно), ISO. */
+  from: string;
+  /** Начало следующего месяца (не включая), ISO. */
+  to: string;
+}
+
+/**
+ * Границы последних `months` календарных месяцев по местному времени.
+ *
+ * Регистрации по месяцам считаются точными счётчиками базы на каждый месяц.
+ * Раньше их раскладывали по выборке из 2000 профилей, и при большем числе
+ * пользователей ранние месяцы тихо обнулялись.
+ */
+export function buildMonthWindows(now = Date.now(), months = 12): MonthWindow[] {
   const reference = new Date(now);
-  const buckets = new Map<string, MonthBucket>();
+  const windows: MonthWindow[] = [];
 
   for (let i = months - 1; i >= 0; i -= 1) {
-    const point = new Date(reference.getFullYear(), reference.getMonth() - i, 1);
-    buckets.set(`${point.getFullYear()}-${point.getMonth()}`, {
-      month: MONTH_NAMES[point.getMonth()],
-      count: 0,
+    const start = new Date(reference.getFullYear(), reference.getMonth() - i, 1);
+    const end = new Date(reference.getFullYear(), reference.getMonth() - i + 1, 1);
+    windows.push({
+      month: MONTH_NAMES[start.getMonth()],
+      from: start.toISOString(),
+      to: end.toISOString(),
     });
   }
 
-  for (const value of dates) {
-    if (!value) continue;
-    const date = new Date(value);
-    if (Number.isNaN(date.getTime())) continue;
-    const bucket = buckets.get(`${date.getFullYear()}-${date.getMonth()}`);
-    if (bucket) bucket.count += 1;
-  }
-
-  return [...buckets.values()];
+  return windows;
 }
 
 export const ROLE_LABELS: Record<string, string> = {
@@ -186,6 +208,7 @@ export const ROLE_LABELS: Record<string, string> = {
   support: 'Поддержка',
   editor: 'Редакторы',
   user: 'Пользователи',
+  other: 'Другие роли',
 };
 
 export function roleLabel(role: string): string {
@@ -198,32 +221,24 @@ export interface RoleBucket {
 }
 
 /**
- * Распределение по ролям. Профили без записи в user_roles — обычные клиенты,
- * поэтому они попадают в отдельную группу, а не растворяются в статистике.
+ * Распределение по ролям из точных счётчиков базы.
+ *
+ * `withoutRole` — профили без записи в user_roles. Когда их число посчитать
+ * нельзя, передаётся null и такой группы нет: раньше остаток вычисляли как
+ * «профилей минус строк ролей», а у одного человека может быть две роли.
  */
-export function buildRoleDistribution(roles: string[], totalProfiles: number): RoleBucket[] {
-  const counts = new Map<string, number>();
-  for (const role of roles) {
-    counts.set(role, (counts.get(role) ?? 0) + 1);
+export function buildRoleDistribution(
+  roleCounts: Record<string, number>,
+  withoutRole: number | null,
+): RoleBucket[] {
+  const buckets = Object.entries(roleCounts)
+    .filter(([, value]) => value > 0)
+    .map(([role, value]) => ({ name: roleLabel(role), value }));
+  if (withoutRole !== null && withoutRole > 0) {
+    buckets.push({ name: 'Без назначенной роли', value: withoutRole });
   }
 
-  const buckets = [...counts.entries()].map(([role, value]) => ({ name: roleLabel(role), value }));
-  const withoutRole = totalProfiles - roles.length;
-  if (withoutRole > 0) buckets.push({ name: 'Без назначенной роли', value: withoutRole });
-
   return buckets.sort((a, b) => b.value - a.value);
-}
-
-const DAY_MS = 24 * 60 * 60 * 1000;
-
-/** Сколько дат попало в последние `days` суток. */
-export function countSince(dates: (string | null)[], days: number, now = Date.now()): number {
-  const from = now - days * DAY_MS;
-  return dates.filter((value) => {
-    if (!value) return false;
-    const time = new Date(value).getTime();
-    return !Number.isNaN(time) && time >= from;
-  }).length;
 }
 
 /** Дата-время по-русски; пустое значение не превращаем в «сегодня». */

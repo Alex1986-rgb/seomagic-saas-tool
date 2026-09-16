@@ -29,61 +29,25 @@ Deno.serve(async (req) => {
 
     console.log('🧹 Starting cleanup of stuck tasks...');
 
-    // Find and update stuck tasks (processing for more than 1 hour)
-    const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
-    
-    const { data: stuckTasks, error: findError } = await supabase
-      .from('audit_tasks')
-      .select('id, url, created_at')
-      .eq('status', 'processing')
-      .lt('updated_at', oneHourAgo);
+    // Логика уборки живёт в базе (функция fail_stuck_audit_tasks, её же зовёт
+    // расписание). Здесь раньше была своя копия: она видела только статус
+    // 'processing' и не трогала запись в audits — возобновлённый и снова
+    // зависший аудит навсегда оставался «сканируется».
+    const { data: cleaned, error: cleanupError } = await supabase.rpc('fail_stuck_audit_tasks');
 
-    if (findError) {
-      console.error('❌ Error finding stuck tasks:', findError);
-      throw findError;
+    if (cleanupError) {
+      console.error('❌ Error cleaning up stuck tasks:', cleanupError);
+      throw cleanupError;
     }
 
-    if (!stuckTasks || stuckTasks.length === 0) {
-      console.log('✅ No stuck tasks found');
-      return new Response(
-        JSON.stringify({ 
-          success: true, 
-          message: 'No stuck tasks found',
-          cleaned: 0 
-        }),
-        { 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          status: 200 
-        }
-      );
-    }
-
-    console.log(`⚠️  Found ${stuckTasks.length} stuck tasks`);
-
-    // Update stuck tasks to failed status
-    const { error: updateError } = await supabase
-      .from('audit_tasks')
-      .update({
-        status: 'failed',
-        error_message: 'Task automatically cleaned up - stuck in processing for over 1 hour',
-        updated_at: new Date().toISOString()
-      })
-      .eq('status', 'processing')
-      .lt('updated_at', oneHourAgo);
-
-    if (updateError) {
-      console.error('❌ Error updating stuck tasks:', updateError);
-      throw updateError;
-    }
-
-    console.log(`✅ Successfully cleaned up ${stuckTasks.length} stuck tasks`);
+    const count = typeof cleaned === 'number' ? cleaned : 0;
+    console.log(`✅ Cleaned up ${count} stuck tasks`);
 
     return new Response(
       JSON.stringify({ 
         success: true, 
-        message: `Cleaned up ${stuckTasks.length} stuck tasks`,
-        cleaned: stuckTasks.length,
-        tasks: stuckTasks.map(t => ({ id: t.id, url: t.url, created_at: t.created_at }))
+        message: count > 0 ? `Cleaned up ${count} stuck tasks` : 'No stuck tasks found',
+        cleaned: count
       }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },

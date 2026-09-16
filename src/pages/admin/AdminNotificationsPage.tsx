@@ -2,7 +2,6 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Bell, Info, Loader2 } from 'lucide-react';
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Link } from 'react-router-dom';
 import PageSeo from '@/components/seo/PageSeo';
 import NotCollectedNotice from '@/components/admin/NotCollectedNotice';
@@ -18,6 +17,21 @@ import { formatDateTime } from '@/lib/admin-stats';
  * SMS) с придуманными статусами. Ни планировщика обновлений, ни интеграций
  * со Slack и SMS в проекте нет. Показываем строки из таблицы
  * `notifications` — то, что платформа действительно создала.
+ *
+ * Видны только уведомления, адресованные самому администратору: уведомления
+ * клиентов ему не открыты (правило доступа к таблице пускает каждого только к
+ * своим записям, а расширять его — вопрос приватности, который решает
+ * владелец). Страница говорит об этом прямо и не выдаёт пустой список за
+ * «событий не было».
+ *
+ * Убраны обещания, за которыми ничего нет: кнопка «Настройки уведомлений»
+ * вела на страницу, где никаких настроек нет, а в списке значилось, что
+ * «отправку писем и правила оповещений настраивают в разделе настроек» —
+ * правил оповещений в проекте нет, а писем по уведомлениям платформа не
+ * отправляет (create-notification записывает строку с email_sent = false и
+ * больше ничего). Также неверно было, что уведомления приходят об оптимизации
+ * и проверке позиций: create-notification вызывает только scoring-processor
+ * по завершении аудита.
  */
 
 const typeStyles: Record<string, string> = {
@@ -32,31 +46,23 @@ const AdminNotificationsPage: React.FC = () => {
   return (
     <>
       <PageSeo
-        title="Уведомления администратора: события и каналы связи"
-        description="Центр оповещений администратора: последние системные события, запланированные работы и настройка каналов доставки уведомлений."
+        title="Уведомления администратора: только ваши записи"
+        description="Уведомления, адресованные учётной записи администратора. Уведомления клиентов на этой странице не показываются."
         noindex
       />
 
       <div className="container mx-auto px-6 py-10 max-w-6xl">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
-          <div>
-            <div className="flex items-center gap-2 mb-2">
-              <div className="bg-primary/10 text-primary p-1.5 rounded">
-                <Bell className="h-5 w-5" />
-              </div>
-              <h1 className="text-3xl font-bold">Уведомления администратора</h1>
+        <div className="mb-6">
+          <div className="flex items-center gap-2 mb-2">
+            <div className="bg-primary/10 text-primary p-1.5 rounded">
+              <Bell className="h-5 w-5" />
             </div>
-            <p className="text-muted-foreground">
-              Записи из таблицы уведомлений: что платформа сообщила пользователям
-            </p>
+            <h1 className="text-3xl font-bold">Уведомления администратора</h1>
           </div>
-
-          <Link to="/admin/system/notifications">
-            <Button className="flex items-center gap-2">
-              <Bell className="h-4 w-4" />
-              Настройки уведомлений
-            </Button>
-          </Link>
+          <p className="text-muted-foreground">
+            Только уведомления, адресованные вашей учётной записи. Уведомления клиентов здесь
+            не показываются.
+          </p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -66,9 +72,9 @@ const AdminNotificationsPage: React.FC = () => {
                 <div className="flex justify-between items-center">
                   <CardTitle className="flex items-center gap-2">
                     <Bell className="h-5 w-5" />
-                    Последние уведомления
+                    Ваши уведомления
                   </CardTitle>
-                  {!isLoading && (
+                  {!isLoading && !error && (
                     <Badge variant="outline" className="bg-primary/10">
                       {unread > 0 ? `${unread} непрочитанных` : 'все прочитаны'}
                     </Badge>
@@ -77,9 +83,11 @@ const AdminNotificationsPage: React.FC = () => {
                 <CardDescription>
                   {isLoading
                     ? 'Загружаем...'
-                    : total === 0
-                      ? 'Пока ни одного уведомления не создано'
-                      : `Всего записей: ${total}, показаны последние ${notifications.length}`}
+                    : error
+                      ? 'Список не загрузился'
+                      : total === 0
+                        ? 'На вашу учётную запись уведомлений нет'
+                        : `Ваших уведомлений: ${total}, показаны последние ${notifications.length}`}
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -94,10 +102,10 @@ const AdminNotificationsPage: React.FC = () => {
                     <Loader2 className="h-4 w-4 animate-spin" />
                     Читаем таблицу уведомлений...
                   </div>
-                ) : notifications.length === 0 ? (
+                ) : error ? null : notifications.length === 0 ? (
                   <p className="py-6 text-sm text-muted-foreground">
-                    Уведомлений пока нет. Они появляются, когда платформа завершает
-                    аудит, проверку позиций или оптимизацию.
+                    На вашу учётную запись уведомлений нет. О том, получали ли уведомления
+                    клиенты, эта страница не говорит: их записи сюда не попадают.
                   </p>
                 ) : (
                   <div className="space-y-4">
@@ -114,7 +122,7 @@ const AdminNotificationsPage: React.FC = () => {
                           </div>
                           <div className="flex-1 min-w-0">
                             <div className="flex justify-between items-start gap-3">
-                              <h3 className="font-medium">{notification.title}</h3>
+                              <h3 className="font-medium min-w-0">{notification.title}</h3>
                               <span className="text-xs text-muted-foreground whitespace-nowrap">
                                 {formatDateTime(notification.createdAt)}
                               </span>
@@ -132,11 +140,17 @@ const AdminNotificationsPage: React.FC = () => {
 
           <div className="space-y-6">
             <NotCollectedNotice
-              title="Каналов доставки пока нет"
+              title="Уведомления клиентов не показываются"
+              description="Правило доступа к таблице notifications разрешает каждому, в том числе администратору, читать только свои записи, и страница запрашивает только уведомления вашей учётной записи. Сколько уведомлений получили клиенты, отсюда не узнать."
+            />
+
+            <NotCollectedNotice
+              title="Каналов оповещений нет"
               description="Здесь значились активные Email, Slack и SMS. Ни одна из этих интеграций не подключена, статусы были нарисованы. Что есть на самом деле:"
               items={[
-                'уведомления складываются в базу и видны в интерфейсе',
-                'отправку писем и правила оповещений настраивают в разделе настроек',
+                'уведомления записываются в базу и видны в интерфейсе',
+                'писем по уведомлениям платформа не отправляет; рассылки администратору по почте, SMS или в Slack нет',
+                'правил оповещений, которые можно было бы настроить, в админке нет',
                 'расписание плановых работ платформа не ведёт',
               ]}
             />
@@ -150,12 +164,23 @@ const AdminNotificationsPage: React.FC = () => {
               </CardHeader>
               <CardContent className="text-sm text-muted-foreground space-y-2">
                 <p>
-                  Записи создаёт сама платформа по ходу работы: завершился аудит,
-                  закончилась оптимизация, пришёл результат проверки позиций.
+                  Сейчас платформа создаёт уведомление в одном случае: когда аудит завершён и
+                  посчитаны баллы. Об оптимизации и проверке позиций уведомлений нет.
                 </p>
                 <p>
-                  Если список пустой — значит, событий ещё не было, а не значит,
-                  что что-то сломалось.
+                  Запись появляется, только если у получателя в{' '}
+                  <Link to="/settings" className="text-primary hover:underline">
+                    личных настройках
+                  </Link>{' '}
+                  включены «Email уведомления» и «Завершение аудита». Письмо при этом не
+                  уходит: переключатели решают лишь, создавать ли запись.
+                </p>
+                <p>
+                  Работает ли отправка писем в принципе, можно проверить в разделе{' '}
+                  <Link to="/admin/system/email" className="text-primary hover:underline">
+                    «Настройки почты»
+                  </Link>
+                  .
                 </p>
               </CardContent>
             </Card>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -34,11 +34,22 @@ export const MassiveSiteCrawlDialog: React.FC<MassiveSiteCrawlDialogProps> = ({
     downloadReport
   } = useMassiveSiteCrawl();
 
+  // Обход запускаем один раз на открытие окна. Раньше эффект срабатывал всякий
+  // раз, когда обход не шёл и результата не было: «Отменить сканирование» тут
+  // же запускал его заново, а любая ошибка старта уводила в бесконечные
+  // перезапуски, пока окно открыто.
+  const hasStartedRef = useRef(false);
+
   useEffect(() => {
-    if (open && url && !isScanning && !result) {
-      startCrawl(url, 15000000); // Увеличиваем лимит до 15 миллионов страниц
+    if (!open) {
+      hasStartedRef.current = false;
+      return;
     }
-  }, [open, url, isScanning, result, startCrawl]);
+    if (url && !hasStartedRef.current && !result) {
+      hasStartedRef.current = true;
+      void startCrawl(url);
+    }
+  }, [open, url, result, startCrawl]);
   
   useEffect(() => {
     if (crawlProgress.processingStage === 'completed' && activeTab === 'progress') {
@@ -46,6 +57,11 @@ export const MassiveSiteCrawlDialog: React.FC<MassiveSiteCrawlDialogProps> = ({
     }
   }, [crawlProgress.processingStage, activeTab]);
   
+  const handleCancel = () => {
+    cancelCrawl();
+    onClose();
+  };
+
   const handleClose = () => {
     if (isScanning) {
       if (window.confirm('Вы уверены, что хотите прервать профессиональный аудит? Это может привести к потере данных.')) {
@@ -72,7 +88,7 @@ export const MassiveSiteCrawlDialog: React.FC<MassiveSiteCrawlDialogProps> = ({
             </Badge>
           </DialogTitle>
           <DialogDescription>
-            {url} <span className="text-xs opacity-70">| Поддержка до 15,000,000 страниц</span>
+            {url}
           </DialogDescription>
         </DialogHeader>
 
@@ -143,7 +159,7 @@ export const MassiveSiteCrawlDialog: React.FC<MassiveSiteCrawlDialogProps> = ({
             <Button 
               variant="outline" 
               size="sm" 
-              onClick={cancelCrawl}
+              onClick={handleCancel}
               className="flex items-center gap-1"
             >
               <X className="h-4 w-4" />

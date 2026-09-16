@@ -20,7 +20,6 @@ export const usePositionTrackerForm = (onSearchComplete?: Function) => {
       region: 'Москва',
       depth: 100,
       scanFrequency: 'once',
-      useProxy: true,
     },
   });
 

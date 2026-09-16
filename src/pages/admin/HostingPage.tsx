@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Info } from 'lucide-react';
 import PageSeo from '@/components/seo/PageSeo';
@@ -17,7 +17,23 @@ import PageSeo from '@/components/seo/PageSeo';
  * реализована. Раздел оставлен пустым намеренно, чтобы никто не вводил сюда
  * настоящие доступы.
  */
+
+/** Ключ, под которым старая версия раздела хранила доступы к хостингам. */
+const LEGACY_HOSTINGS_KEY = 'admin_saved_hostings';
+
 const HostingPage: React.FC = () => {
+  // Новая страница ничего не пишет, но у тех, кто вводил доступы в старой
+  // версии, пароли так и остались в браузере открытым текстом. Стираем их при
+  // первом же заходе. Хранилище может быть недоступно (приватный режим,
+  // запрет сайта) — тогда стирать нечего, ошибку глушим.
+  useEffect(() => {
+    try {
+      window.localStorage.removeItem(LEGACY_HOSTINGS_KEY);
+    } catch {
+      /* хранилище недоступно — в нём и нечего удалять */
+    }
+  }, []);
+
   return (
     <div className="container mx-auto px-6 py-10 max-w-3xl">
       <PageSeo

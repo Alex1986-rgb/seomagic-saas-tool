@@ -6,23 +6,15 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { PlusCircle, Trash2 } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
 import PageSeo from '@/components/seo/PageSeo';
 
 const AboutPageEditor: React.FC = () => {
-  const { toast } = useToast();
-  const [teamMembers, setTeamMembers] = useState([
-    { name: 'Алексей Петров', position: 'CEO', photo: 'alex.jpg', bio: 'Эксперт в SEO с опытом более 10 лет.' },
-    { name: 'Мария Смирнова', position: 'CTO', photo: 'maria.jpg', bio: 'Разработчик алгоритмов оптимизации.' }
-  ]);
-
-  const handleSave = (data: any) => {
-    console.log('Saving about page data:', data);
-    toast({
-      title: "Изменения сохранены",
-      description: "Контент страницы о нас обновлен",
-    });
-  };
+  // В команде по умолчанию стояли выдуманные «Алексей Петров, CEO, эксперт в SEO
+  // с опытом более 10 лет» и «Мария Смирнова, CTO». Таких сотрудников нет —
+  // список начинается пустым. Тост «Изменения сохранены» убран: ничего не сохранялось.
+  const [teamMembers, setTeamMembers] = useState<
+    { name: string; position: string; photo: string; bio: string }[]
+  >([]);
 
   const addTeamMember = () => {
     setTeamMembers([...teamMembers, {
@@ -50,7 +42,6 @@ const AboutPageEditor: React.FC = () => {
       <BaseContentEditor
         title='Редактирование страницы "О нас"'
         description="Управление контентом, SEO-параметрами и настройками страницы о компании"
-        onSave={handleSave}
       >
         <div className="space-y-6">
           <Card className="bg-black/20 border-white/10">
@@ -128,6 +119,11 @@ const AboutPageEditor: React.FC = () => {
               </div>
 
               <div className="space-y-4 mt-6">
+                {teamMembers.length === 0 && (
+                  <div className="p-8 text-center border border-dashed border-white/10 rounded-md bg-black/10">
+                    <p className="text-gray-400">Сотрудники не добавлены.</p>
+                  </div>
+                )}
                 {teamMembers.map((member, index) => (
                   <Card key={index} className="border-white/10 bg-black/30">
                     <CardContent className="p-4">

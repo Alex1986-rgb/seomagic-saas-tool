@@ -24,25 +24,96 @@ interface AuditResultsDashboardProps {
   onShare: () => void;
 }
 
-// Helper function to calculate issues per page
-const calculatePageIssues = (page: any): number => {
-  let count = 0;
-  if (!page.title) count++;
-  if (page.h1_count === 0) count++;
-  if (!page.meta_description) count++;
-  if (!page.has_canonical) count++;
-  if (!page.is_indexable) count++;
-  if (page.has_thin_content) count++;
-  if ((page.load_time || 0) > 3) count++;
-  if (page.redirect_chain_length > 0) count++;
-  if (page.missing_alt_images_count > 0) count++;
-  return count;
+/**
+ * Замечания по одной странице — по тем же полям `page_analysis`, по которым
+ * считается число проблем в таблице.
+ *
+ * Раньше таблица показывала «Проблемы: 4», а в карточке страницы список был
+ * всегда пустым (`issues: []`) и крупно писалось «Проблем не обнаружено!».
+ * Теперь число и список берутся из одной функции и не могут разойтись.
+ * Флаг, который краулер не записал (null у canonical, noindex, «мало текста»),
+ * считаем «не измерено», а не проблемой: придумывать замечание нельзя.
+ */
+const collectPageIssues = (page: any): IssueItem[] => {
+  const issues: IssueItem[] = [];
+  const add = (
+    key: string,
+    severity: IssueItem['severity'],
+    category: string,
+    title: string,
+    description: string,
+    solution?: string,
+  ) => {
+    issues.push({
+      id: `${page.url}-${key}`,
+      title,
+      description,
+      severity,
+      category,
+      affectedPages: [page.url],
+      solution,
+    });
+  };
+
+  const statusCode = Number(page.status_code ?? 0);
+  if (statusCode >= 400) {
+    add('status', 'error', 'technical', `Страница отвечает ошибкой ${statusCode}`,
+      'Поисковик не сможет проиндексировать страницу, которая отвечает ошибкой.',
+      'Исправьте страницу или настройте редирект на рабочий адрес.');
+  }
+  if (!page.title) {
+    add('title', 'error', 'seo', 'Нет заголовка title',
+      'Title — главный текст сниппета в поиске.',
+      'Добавьте уникальный title длиной 50–60 символов.');
+  }
+  if (page.h1_count === 0) {
+    add('h1', 'warning', 'seo', 'Нет заголовка H1',
+      'На странице не найден ни один заголовок первого уровня.',
+      'Добавьте один H1, описывающий содержание страницы.');
+  }
+  if (!page.meta_description) {
+    add('description', 'warning', 'seo', 'Нет meta description',
+      'Без описания поисковик сам соберёт сниппет из текста страницы.',
+      'Добавьте описание длиной 150–160 символов.');
+  }
+  if (page.has_canonical === false) {
+    add('canonical', 'warning', 'technical', 'Нет canonical',
+      'Не указан канонический адрес страницы.',
+      'Добавьте <link rel="canonical"> с основным адресом страницы.');
+  }
+  if (page.is_indexable === false) {
+    add('noindex', 'error', 'technical', 'Страница закрыта от индексации',
+      'В meta robots стоит noindex — страница не попадёт в поиск.',
+      'Уберите noindex, если страница должна быть в поиске.');
+  }
+  if (page.has_thin_content === true) {
+    add('thin', 'warning', 'content', 'Мало текста',
+      'На странице меньше 150 слов.',
+      'Расширьте текст полезным содержанием.');
+  }
+  // load_time хранится в секундах.
+  if (Number(page.load_time ?? 0) > 3) {
+    add('slow', 'warning', 'performance', 'Медленная загрузка',
+      `Страница загружалась ${Number(page.load_time).toFixed(2)} с.`,
+      'Сократите вес страницы и время ответа сервера.');
+  }
+  if (Number(page.redirect_chain_length ?? 0) > 0) {
+    add('redirects', 'warning', 'technical', 'Страница открывается через редирект',
+      `Редиректов по пути: ${page.redirect_chain_length}.`,
+      'Ведите ссылки сразу на конечный адрес.');
+  }
+  if (Number(page.missing_alt_images_count ?? 0) > 0) {
+    add('alt', 'warning', 'content', 'Картинки без alt',
+      `Изображений без атрибута alt: ${page.missing_alt_images_count}.`,
+      'Добавьте картинкам осмысленный alt.');
+  }
+
+  return issues;
 };
 
-// Helper function to calculate page score
-const calculatePageScore = (page: any): number => {
-  const issuesCount = calculatePageIssues(page);
-  return Math.max(0, 100 - issuesCount * 10);
+// Оценка страницы — от числа найденных замечаний.
+const calculatePageScore = (issues: IssueItem[]): number => {
+  return Math.max(0, 100 - issues.length * 10);
 };
 
 const AuditResultsDashboard: React.FC<AuditResultsDashboardProps> = ({
@@ -135,18 +206,21 @@ const AuditResultsDashboard: React.FC<AuditResultsDashboardProps> = ({
   const pageAnalysis: PageAnalysisRow[] = useMemo(() => {
     // Use real page analysis data if available
     if (pageAnalysisData && pageAnalysisData.length > 0) {
-      return pageAnalysisData.map(page => ({
-        url: page.url,
-        title: page.title || 'Без заголовка',
-        statusCode: page.status_code || 0,
-        loadTime: page.load_time || 0,
-        wordCount: page.word_count || 0,
-        imageCount: page.image_count || 0,
-        h1Count: page.h1_count || 0,
-        issuesCount: calculatePageIssues(page),
-        issues: [], // Would need to map specific issues from page data
-        score: calculatePageScore(page)
-      }));
+      return pageAnalysisData.map(page => {
+        const issues = collectPageIssues(page);
+        return {
+          url: page.url,
+          title: page.title || 'Без заголовка',
+          statusCode: page.status_code || 0,
+          loadTime: page.load_time || 0,
+          wordCount: page.word_count || 0,
+          imageCount: page.image_count || 0,
+          h1Count: page.h1_count || 0,
+          issuesCount: issues.length,
+          issues,
+          score: calculatePageScore(issues)
+        };
+      });
     }
     
     // Разбора страниц нет — показываем пустую таблицу с объяснением.

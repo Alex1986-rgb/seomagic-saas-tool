@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import { seoOptimizationController } from "@/services/api/seoOptimizationController";
-import { openaiService } from "@/services/api/openaiService";
 
 export interface AdvancedOptions {
   maxPages: number;
@@ -70,8 +69,10 @@ export const useSeoOptimization = () => {
     try {
       setIsLoading(true);
 
-      const aiSettings = openaiService.getSettings();
-
+      // Модель, температуру и длину ответа выбирает сервер (общий слой
+      // supabase/functions/_shared/llm.ts, переменная LLM_PROVIDER). Раньше сюда
+      // подставлялись настройки OpenAI из localStorage и «gpt-4o» по умолчанию —
+      // контроллер их не читал, и выбор модели в браузере ни на что не влиял.
       const newTaskId = await seoOptimizationController.startOptimization(
         formattedUrl,
         {
@@ -88,11 +89,7 @@ export const useSeoOptimization = () => {
           optimizeHeadings: advancedOptions.optimizeHeadings,
           optimizeContent: advancedOptions.optimizeContent,
           optimizeImages: advancedOptions.optimizeImages,
-          temperature: aiSettings.temperature,
-          max_tokens: aiSettings.max_tokens,
-          contentQuality: aiSettings.content_quality,
           language: 'ru',
-          model: openaiService.getModel() || 'gpt-4o'
         }
       );
 
@@ -128,9 +125,12 @@ export const useSeoOptimization = () => {
             clearInterval(interval);
             
             if (taskStatus.status === 'completed') {
+              // Раньше здесь было «Сайт успешно оптимизирован и готов к
+              // публикации», хотя сборки и выкладки исправленной копии сайта нет:
+              // оптимизация готовит новые тексты и мета-теги страниц.
               toast({
                 title: "Оптимизация завершена",
-                description: "Сайт успешно оптимизирован и готов к публикации",
+                description: "Новые тексты и мета-теги страниц готовы. Выгрузки исправленной копии сайта пока нет.",
               });
             } else {
               toast({

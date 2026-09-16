@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Check, ChevronDown, Edit, Trash, UserRound, Search } from 'lucide-react';
+import { Check, ChevronDown, Edit, UserRound, Search } from 'lucide-react';
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -8,19 +8,48 @@ import { Badge } from "@/components/ui/badge";
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from "@/hooks/use-toast";
 
+type RoleName = 'admin' | 'user';
+
 interface User {
   id: string;
   email: string;
   full_name?: string;
   avatar_url?: string;
-  created_at: string;
-  role: 'admin' | 'user';
-  projects_count?: number;
+  created_at: string | null;
+  /** Итоговая роль: admin, если среди ролей есть admin; null — записи в user_roles нет. */
+  role: RoleName | null;
+  /** Все роли из user_roles — нужны, чтобы менять их без конфликта UNIQUE(user_id, role). */
+  roles: string[];
 }
 
+/** Сколько профилей показываем за раз. */
+const PROFILES_LIMIT = 1000;
+/** Сколько идентификаторов кладём в один запрос ролей, чтобы не упереться в длину адреса. */
+const ROLE_CHUNK = 100;
+
+function errorMessage(error: unknown): string {
+  if (error instanceof Error) return error.message;
+  if (error && typeof error === 'object' && 'message' in error) {
+    return String((error as { message: unknown }).message);
+  }
+  return 'Неизвестная ошибка';
+}
+
+/**
+ * Пользователи и смена ролей.
+ *
+ * Раньше список запрашивался одним запросом `profiles` со встроенными
+ * `user_roles(role)` и `projects(count)`. Таблицы projects в базе нет, а
+ * связи profiles ↔ user_roles PostgREST не видит (user_roles ссылается на
+ * auth.users), поэтому весь запрос падал: админ видел тост «Ошибка загрузки
+ * пользователей» и пустую таблицу, роль поменять было негде. Колонка
+ * «Проектов» при этом всегда показывала 0. Теперь профили и роли читаются
+ * двумя запросами, а колонки проектов нет — проектов в модели данных нет.
+ */
 const AdminUsers: React.FC = () => {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
+  const [truncated, setTruncated] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterRole, setFilterRole] = useState('all');
   const { toast } = useToast();
@@ -32,47 +61,60 @@ const AdminUsers: React.FC = () => {
   const fetchUsers = async () => {
     try {
       setLoading(true);
-      const { data, error } = await supabase
+      const { data: profiles, error } = await supabase
         .from('profiles')
-        .select(`
-          id,
-          email,
-          full_name,
-          avatar_url,
-          created_at,
-          user_roles: user_roles(role),
-          projects(count)
-        `);
+        .select('id, email, full_name, avatar_url, created_at')
+        .order('created_at', { ascending: false })
+        .limit(PROFILES_LIMIT);
 
       if (error) throw error;
 
-      const formattedUsers = (data || []).map(user => {
-        let role: 'user' | 'admin' = 'user';
-        if (user.user_roles && Array.isArray(user.user_roles) && user.user_roles[0]) {
-          const userRole = user.user_roles[0].role;
-          role = userRole === 'admin' ? 'admin' : 'user';
+      const rows = profiles ?? [];
+      const ids = rows.map((profile) => profile.id);
+      const rolesByUser = new Map<string, string[]>();
+
+      for (let i = 0; i < ids.length; i += ROLE_CHUNK) {
+        const chunk = ids.slice(i, i + ROLE_CHUNK);
+        const { data: roleRows, error: rolesError } = await supabase
+          .from('user_roles')
+          .select('user_id, role')
+          .in('user_id', chunk);
+
+        if (rolesError) throw rolesError;
+
+        for (const row of roleRows ?? []) {
+          if (!row.user_id) continue;
+          const list = rolesByUser.get(row.user_id) ?? [];
+          list.push(row.role);
+          rolesByUser.set(row.user_id, list);
         }
-        // If projects returns an object { count: X }, use that; else fallback to 0
-        let projects_count = 0;
-        if (user.projects && Array.isArray(user.projects) && user.projects[0] && user.projects[0].count !== undefined) {
-          projects_count = user.projects[0].count;
-        }
-        return {
-          id: user.id,
-          email: user.email || '',
-          full_name: user.full_name,
-          avatar_url: user.avatar_url,
-          created_at: user.created_at,
-          role, // now 'admin' | 'user'
-          projects_count
-        };
-      });
-      setUsers(formattedUsers);
-    } catch (error: any) {
+      }
+
+      setUsers(
+        rows.map((profile) => {
+          const roles = rolesByUser.get(profile.id) ?? [];
+          const role: RoleName | null = roles.includes('admin')
+            ? 'admin'
+            : roles.includes('user')
+              ? 'user'
+              : null;
+          return {
+            id: profile.id,
+            email: profile.email || '',
+            full_name: profile.full_name ?? undefined,
+            avatar_url: profile.avatar_url ?? undefined,
+            created_at: profile.created_at,
+            role,
+            roles,
+          };
+        }),
+      );
+      setTruncated(rows.length === PROFILES_LIMIT);
+    } catch (error) {
       console.error('Error fetching users:', error);
       toast({
         title: "Ошибка загрузки пользователей",
-        description: error.message,
+        description: errorMessage(error),
         variant: "destructive",
       });
     } finally {
@@ -80,47 +122,90 @@ const AdminUsers: React.FC = () => {
     }
   };
 
-  const updateUserRole = async (userId: string, newRole: 'admin' | 'user') => {
-    try {
-      const { error } = await supabase
-        .from('user_roles')
-        .update({ role: newRole })
-        .eq('user_id', userId);
+  /**
+   * Смена роли admin ↔ user.
+   *
+   * Раньше здесь был update по user_id без проверки результата: если записи
+   * роли не было или политика доступа не пропускала изменение, база меняла
+   * ноль строк, а админ всё равно видел «Роль пользователя обновлена».
+   * Теперь проверяем, что строка действительно изменилась.
+   */
+  const updateUserRole = async (user: User, newRole: RoleName) => {
+    const previousRole: RoleName = newRole === 'admin' ? 'user' : 'admin';
 
-      if (error) throw error;
+    try {
+      let changed = 0;
+
+      if (user.roles.includes(newRole)) {
+        // Нужная роль уже есть — достаточно снять лишнюю.
+        const { data, error } = await supabase
+          .from('user_roles')
+          .delete()
+          .eq('user_id', user.id)
+          .eq('role', previousRole)
+          .select('id');
+        if (error) throw error;
+        changed = data?.length ?? 0;
+      } else if (user.roles.includes(previousRole)) {
+        const { data, error } = await supabase
+          .from('user_roles')
+          .update({ role: newRole })
+          .eq('user_id', user.id)
+          .eq('role', previousRole)
+          .select('id');
+        if (error) throw error;
+        changed = data?.length ?? 0;
+      } else {
+        const { data, error } = await supabase
+          .from('user_roles')
+          .insert({ user_id: user.id, role: newRole })
+          .select('id');
+        if (error) throw error;
+        changed = data?.length ?? 0;
+      }
+
+      if (changed === 0) {
+        throw new Error('База не изменила ни одной записи — вероятно, у вашей учётной записи нет прав администратора.');
+      }
 
       toast({
         title: "Роль пользователя обновлена",
-        description: `Пользователь теперь имеет роль: ${newRole}`,
+        description: `Теперь: ${newRole === 'admin' ? 'администратор' : 'пользователь'}`,
       });
 
-      fetchUsers(); // Refresh the list
-    } catch (error: any) {
+      fetchUsers();
+    } catch (error) {
       console.error('Error updating user role:', error);
       toast({
         title: "Ошибка обновления роли",
-        description: error.message,
+        description: errorMessage(error),
         variant: "destructive",
       });
     }
   };
 
   const filteredUsers = users.filter(user => {
-    const matchesSearch = 
-      user.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) || 
+    const matchesSearch =
+      user.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       user.email.toLowerCase().includes(searchTerm.toLowerCase());
-    
+
     const matchesRole = filterRole === 'all' || user.role === filterRole;
-    
+
     return matchesSearch && matchesRole;
   });
 
-  const getPlanColor = (role: string) => {
+  const getPlanColor = (role: RoleName | null) => {
     switch(role) {
       case 'admin': return 'bg-[#FF3355]/80 text-white border-none';
       case 'user': return 'bg-[#191B22]/80 text-[#36CFFF] border border-[#36CFFF]/20';
       default: return 'bg-[#23263B]/70 text-white border border-[#483194]/10';
     }
+  };
+
+  const roleText = (role: RoleName | null) => {
+    if (role === 'admin') return 'Администратор';
+    if (role === 'user') return 'Пользователь';
+    return 'Без роли';
   };
 
   if (loading) {
@@ -148,15 +233,15 @@ const AdminUsers: React.FC = () => {
             />
           </div>
         </div>
-        
+
         <div className="flex gap-3 flex-wrap">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 className="flex items-center bg-[#23263B] text-[#b2b6cf] border-none hover:bg-[#28213a] hover:text-[#36CFFF] transition-all rounded-lg px-4 py-2"
               >
-                Роль: {filterRole === 'all' ? 'Все' : filterRole}
+                Роль: {filterRole === 'all' ? 'Все' : filterRole === 'admin' ? 'Администратор' : 'Пользователь'}
                 <ChevronDown className="h-4 w-4 ml-2" />
               </Button>
             </DropdownMenuTrigger>
@@ -177,14 +262,19 @@ const AdminUsers: React.FC = () => {
           </DropdownMenu>
         </div>
       </div>
-      
+
+      {truncated && (
+        <p className="mb-4 text-sm text-[#b2b6cf]">
+          Показаны последние {PROFILES_LIMIT} зарегистрированных профилей — поиск идёт только по ним.
+        </p>
+      )}
+
       <div className="overflow-x-auto rounded-2xl bg-[#191B22] border border-[#23263B]/40 shadow-xl">
         <table className="w-full rounded-2xl overflow-hidden">
           <thead>
             <tr className="border-b border-[#28213a] bg-gradient-to-r from-[#23263B]/90 to-[#1A1F2C]/95">
               <th className="text-left py-4 px-5 font-bold text-lg text-gradient bg-gradient-to-r from-[#9b87f5] via-[#8B5CF6] to-[#0EA5E9] bg-clip-text text-transparent">Пользователь</th>
               <th className="text-left py-4 px-5 font-bold text-lg text-[#FF81C0]">Роль</th>
-              <th className="text-left py-4 px-5 font-bold text-lg text-[#F6C778]">Проектов</th>
               <th className="text-left py-4 px-5 font-bold text-lg text-[#82FFD7]">Дата регистрации</th>
               <th className="text-left py-4 px-5 font-bold text-lg text-white">Действия</th>
             </tr>
@@ -208,12 +298,11 @@ const AdminUsers: React.FC = () => {
                 </td>
                 <td className="py-5 px-5">
                   <Badge className={getPlanColor(user.role) + " rounded text-xs px-2 py-1"}>
-                    {user.role === 'admin' ? 'Администратор' : 'Пользователь'}
+                    {roleText(user.role)}
                   </Badge>
                 </td>
-                <td className="py-5 px-5 text-[#DED6F6] text-base">{user.projects_count || 0}</td>
                 <td className="py-5 px-5 text-[#bddfff] text-base">
-                  {new Date(user.created_at).toLocaleDateString('ru-RU')}
+                  {user.created_at ? new Date(user.created_at).toLocaleDateString('ru-RU') : '—'}
                 </td>
                 <td className="py-5 px-5">
                   <div className="flex gap-2">
@@ -224,8 +313,8 @@ const AdminUsers: React.FC = () => {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent className="bg-[#23263B] border-[#483194]/25 shadow-xl text-white">
-                        <DropdownMenuItem 
-                          onClick={() => updateUserRole(user.id, user.role === 'admin' ? 'user' : 'admin')}
+                        <DropdownMenuItem
+                          onClick={() => updateUserRole(user, user.role === 'admin' ? 'user' : 'admin')}
                         >
                           {user.role === 'admin' ? 'Убрать админа' : 'Сделать админом'}
                         </DropdownMenuItem>
@@ -237,7 +326,7 @@ const AdminUsers: React.FC = () => {
             ))}
           </tbody>
         </table>
-        
+
         {filteredUsers.length === 0 && (
           <div className="p-8 text-center text-[#b2b6cf]">
             {users.length === 0 ? 'Пользователи не найдены' : 'Нет пользователей, соответствующих фильтрам'}

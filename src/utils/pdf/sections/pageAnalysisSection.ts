@@ -7,15 +7,19 @@ import { formatUrlForDisplay } from '../helpers/links';
 
 export interface PageAnalysisItem {
   url: string;
-  statusCode: number;
-  loadTime: number;
+  /** null — страница не ответила или код не записан. */
+  statusCode: number | null;
+  /** Миллисекунды; null — время не измерено. */
+  loadTime: number | null;
   pageSize?: number;
-  seoScore: number;
+  /** null — замечания по странице неизвестны, оценку не ставим. */
+  seoScore: number | null;
+  /** null — замечания по странице узнать не удалось. */
   issues: {
     critical: number;
     warning: number;
     info: number;
-  };
+  } | null;
   metaTitle?: string;
   metaDescription?: string;
   h1Count?: number;
@@ -25,14 +29,22 @@ interface PageAnalysisData {
   pages: PageAnalysisItem[];
   summary: {
     totalPages: number;
-    avgLoadTime: number;
-    avgSeoScore: number;
-    totalIssues: number;
+    avgLoadTime: number | null;
+    avgSeoScore: number | null;
+    totalIssues: number | null;
   };
 }
 
+const issueTotal = (page: PageAnalysisItem): number =>
+  page.issues ? page.issues.critical + page.issues.warning + page.issues.info : 0;
+
 /**
- * Добавляет раздел анализа страниц
+ * Добавляет раздел анализа страниц.
+ *
+ * Оценку страниц и число проблем печатаем, только когда замечания известны.
+ * Раньше при их отсутствии раздел показывал «Средний SEO балл 100», «Всего
+ * проблем 0» зелёным и галочку у каждой страницы — клиент читал это как
+ * «сайт в порядке».
  */
 export function addPageAnalysisSection(
   doc: jsPDF,
@@ -57,21 +69,52 @@ export function addPageAnalysisSection(
 
   currentY += 15;
 
-  // === СВОДНАЯ СТАТИСТИКА ===
-  const stats = [
-    { label: 'Всего страниц', value: data.summary.totalPages.toString(), color: pdfColors.info },
-    { label: 'Средний SEO балл', value: data.summary.avgSeoScore.toString(), color: getScoreColor(data.summary.avgSeoScore) },
-    { label: 'Среднее время загрузки', value: `${data.summary.avgLoadTime}мс`, color: getLoadTimeColor(data.summary.avgLoadTime) },
-    { label: 'Всего проблем', value: data.summary.totalIssues.toString(), color: data.summary.totalIssues > 0 ? pdfColors.danger : pdfColors.success },
-  ];
+  const issuesKnown = data.summary.totalIssues !== null && data.summary.avgSeoScore !== null;
 
-  const cardWidth = (contentWidth - 15) / 4;
+  // === СВОДНАЯ СТАТИСТИКА ===
+  const stats: Array<{ label: string; value: string; color: [number, number, number] }> = [
+    { label: 'Всего страниц', value: data.summary.totalPages.toString(), color: pdfColors.info },
+  ];
+  if (issuesKnown) {
+    stats.push({
+      label: 'Средний SEO балл',
+      value: String(data.summary.avgSeoScore),
+      color: getScoreColor(data.summary.avgSeoScore as number),
+    });
+  }
+  stats.push(
+    data.summary.avgLoadTime !== null
+      ? { label: 'Среднее время загрузки', value: `${data.summary.avgLoadTime}мс`, color: getLoadTimeColor(data.summary.avgLoadTime) }
+      : { label: 'Среднее время загрузки', value: '—', color: pdfColors.gray },
+  );
+  if (issuesKnown) {
+    const total = data.summary.totalIssues as number;
+    stats.push({
+      label: 'Всего проблем',
+      value: total.toString(),
+      color: total > 0 ? pdfColors.danger : pdfColors.success,
+    });
+  }
+
+  const cardWidth = (contentWidth - 5 * (stats.length - 1)) / stats.length;
   stats.forEach((stat, index) => {
     const x = margin + (cardWidth + 5) * index;
     drawStatCard(doc, x, currentY, cardWidth, 18, stat.value, stat.label, stat.color);
   });
 
   currentY += 25;
+
+  if (!issuesKnown) {
+    doc.setFontSize(9);
+    doc.setFont(pdfFonts.primary, pdfFonts.normalStyle);
+    doc.setTextColor(100, 100, 100);
+    const note = doc.splitTextToSize(
+      'Замечания по отдельным страницам ещё не посчитаны, поэтому оценки страниц и число проблем здесь не приводятся.',
+      contentWidth,
+    );
+    doc.text(note, margin, currentY);
+    currentY += note.length * 4 + 4;
+  }
 
   // === ТАБЛИЦА СТРАНИЦ ===
   doc.setFontSize(12);
@@ -80,12 +123,11 @@ export function addPageAnalysisSection(
   doc.text('Детальная информация по страницам', margin, currentY);
   currentY += 8;
 
-  // Сортируем страницы по проблемности (больше проблем = выше)
-  const sortedPages = [...data.pages].sort((a, b) => {
-    const totalA = a.issues.critical + a.issues.warning + a.issues.info;
-    const totalB = b.issues.critical + b.issues.warning + b.issues.info;
-    return totalB - totalA;
-  });
+  // Сортируем страницы по проблемности (больше проблем = выше). Если замечания
+  // неизвестны, оставляем исходный порядок.
+  const sortedPages = issuesKnown
+    ? [...data.pages].sort((a, b) => issueTotal(b) - issueTotal(a))
+    : [...data.pages];
 
   // Разбиваем на страницы по 10-15 записей
   const pageSize = 12;
@@ -112,25 +154,47 @@ export function addPageAnalysisSection(
     const linkMap = new Map<string, string>();
     
     const tableData = chunkPages.map(page => {
-      const totalIssues = page.issues.critical + page.issues.warning + page.issues.info;
-      const statusIcon = getStatusCodeIcon(page.statusCode);
-      const seoScoreColor = getScoreColor(page.seoScore);
       const displayUrl = shortenUrl(page.url);
+      const status = page.statusCode === null
+        ? '—'
+        : `${getStatusCodeIcon(page.statusCode)} ${page.statusCode}`;
+      const time = page.loadTime === null ? '—' : `${page.loadTime}ms`;
       
       linkMap.set(displayUrl, page.url);
-      
+
+      if (!issuesKnown || !page.issues) {
+        return [displayUrl, status, time];
+      }
+
+      const totalIssues = issueTotal(page);
       return [
         displayUrl,
-        `${statusIcon} ${page.statusCode}`,
-        page.seoScore.toString(),
-        `${page.loadTime}ms`,
+        status,
+        page.seoScore === null ? '—' : page.seoScore.toString(),
+        time,
         totalIssues > 0 ? formatIssues(page.issues) : '✓'
       ];
     });
 
+    const columnStyles = issuesKnown
+      ? {
+          0: { cellWidth: 90, halign: 'left' as const, textColor: pdfColors.primary },
+          1: { cellWidth: 22, halign: 'center' as const },
+          2: { cellWidth: 18, halign: 'center' as const },
+          3: { cellWidth: 22, halign: 'center' as const },
+          4: { cellWidth: 28, halign: 'center' as const }
+        }
+      : {
+          0: { cellWidth: 120, halign: 'left' as const, textColor: pdfColors.primary },
+          1: { cellWidth: 30, halign: 'center' as const },
+          2: { cellWidth: 30, halign: 'center' as const }
+        };
+
     autoTable(doc, {
       startY: currentY,
-      head: [['URL страницы', 'Статус', 'SEO', 'Время', 'Проблемы']],
+      head: issuesKnown
+        ? [['URL страницы', 'Статус', 'SEO', 'Время', 'Проблемы']]
+        : [['URL страницы', 'Статус', 'Время']],
       body: tableData,
       margin: { left: margin, right: margin },
       theme: 'striped',
@@ -148,13 +212,7 @@ export function addPageAnalysisSection(
       alternateRowStyles: {
         fillColor: [245, 247, 250]
       },
-      columnStyles: {
-        0: { cellWidth: 90, halign: 'left' as const, textColor: pdfColors.primary },
-        1: { cellWidth: 22, halign: 'center' as const },
-        2: { cellWidth: 18, halign: 'center' as const },
-        3: { cellWidth: 22, halign: 'center' as const },
-        4: { cellWidth: 28, halign: 'center' as const }
-      },
+      columnStyles,
       didDrawCell: (data: any) => {
         // Добавляем ссылки только для первой колонки (URL)
         if (data.column.index === 0 && data.section === 'body') {
@@ -178,7 +236,8 @@ export function addPageAnalysisSection(
   }
 
   // === ГРУППИРОВКА ПО РАЗДЕЛАМ САЙТА ===
-  if (sortedPages.length > 20) {
+  // Средний балл и число проблем по разделам — только при известных замечаниях.
+  if (sortedPages.length > 20 && issuesKnown) {
     if (currentY > 230) {
       doc.addPage();
       currentY = 20;
@@ -195,10 +254,8 @@ export function addPageAnalysisSection(
     const sections = groupPagesBySection(sortedPages);
     
     const sectionData = Object.entries(sections).map(([section, pages]) => {
-      const avgScore = pages.reduce((sum, p) => sum + p.seoScore, 0) / pages.length;
-      const totalIssues = pages.reduce((sum, p) => 
-        sum + p.issues.critical + p.issues.warning + p.issues.info, 0
-      );
+      const avgScore = pages.reduce((sum, p) => sum + (p.seoScore ?? 0), 0) / pages.length;
+      const totalIssues = pages.reduce((sum, p) => sum + issueTotal(p), 0);
       
       return [
         section,

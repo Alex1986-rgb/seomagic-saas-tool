@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import { firecrawlService } from '@/services/api/firecrawl';
 import type { CrawlTask } from '@/services/api/firecrawl/types';
@@ -35,9 +35,15 @@ export const useMassiveSiteCrawl = () => {
   const { toast } = useToast();
   const [isScanning, setIsScanning] = useState(false);
   const [taskId, setTaskId] = useState<string | null>(null);
-  // Отмену держим в ref: опрос статуса читал устаревшее значение состояния и
-  // продолжал крутиться после нажатия «Отменить».
-  const cancelledRef = useRef(false);
+  // Таймер опроса и номер задачи держим в ref. Раньше отмену отмечал флаг,
+  // который новый запуск тут же сбрасывал, — старый setInterval оживал и
+  // опрашивал старую задачу параллельно с новой, а при закрытии окна таймер
+  // вообще не останавливался. Теперь отмена, новый запуск и размонтирование
+  // останавливают таймер напрямую.
+  const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const taskIdRef = useRef<string | null>(null);
+  // Номер запуска: отмена во время старта обхода не должна запускать опрос.
+  const runRef = useRef(0);
   const [crawlProgress, setCrawlProgress] = useState<MassiveCrawlProgress>({
     pagesScanned: 0,
     totalEstimated: 0,
@@ -49,6 +55,18 @@ export const useMassiveSiteCrawl = () => {
   });
   const [result, setResult] = useState<CrawlResult | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  const stopPolling = useCallback(() => {
+    if (pollingRef.current !== null) {
+      clearInterval(pollingRef.current);
+      pollingRef.current = null;
+    }
+  }, []);
+
+  useEffect(() => () => {
+    runRef.current += 1;
+    stopPolling();
+  }, [stopPolling]);
   
   const startCrawl = useCallback(async (url: string, maxPages: number = 15000000) => {
     if (!url) {
@@ -59,8 +77,9 @@ export const useMassiveSiteCrawl = () => {
     try {
       const normalizedUrl = url.startsWith('http') ? url : `https://${url}`;
       
+      stopPolling();
+      const runId = ++runRef.current;
       setIsScanning(true);
-      cancelledRef.current = false;
       setError(null);
       setCrawlProgress({
         pagesScanned: 0,
@@ -74,23 +93,30 @@ export const useMassiveSiteCrawl = () => {
       
       console.log(`Starting massive crawl for: ${normalizedUrl} with max pages: ${maxPages}`);
       
-      try {
-        await fetch(normalizedUrl, { method: 'HEAD' });
-      } catch (error) {
-        throw new Error('Сайт недоступен. Проверьте URL и попробуйте снова.');
-      }
-      
+      // Здесь была проверка «доступен ли сайт» HEAD-запросом из браузера. Чужой
+      // домен такой запрос почти всегда режет по CORS, и любой сайт объявлялся
+      // недоступным. Доступность выяснит сам обход.
       const crawlTask = await firecrawlService.startCrawl(normalizedUrl);
+      if (runRef.current !== runId) {
+        // Отменили, пока обход запускался: останавливаем его и опрос не начинаем.
+        firecrawlService.cancelCrawl(crawlTask.id).catch(() => undefined);
+        return null;
+      }
+      taskIdRef.current = crawlTask.id;
       setTaskId(crawlTask.id);
       
       const pollingInterval = setInterval(async () => {
-        if (cancelledRef.current) {
+        // Таймер уже заменён новым запуском или остановлен отменой.
+        if (pollingRef.current !== pollingInterval) {
           clearInterval(pollingInterval);
           return;
         }
         
         try {
           const taskStatus = await firecrawlService.getStatus(crawlTask.id);
+
+          // Пока ждали ответ, запуск могли отменить или заменить.
+          if (pollingRef.current !== pollingInterval) return;
           
           setCrawlProgress({
             pagesScanned: taskStatus.pages_scanned || 0,
@@ -101,9 +127,10 @@ export const useMassiveSiteCrawl = () => {
             batchNumber: Math.ceil((taskStatus.pages_scanned || 0) / BATCH_SIZE),
             totalBatches: Math.ceil((taskStatus.estimated_total_pages || maxPages) / BATCH_SIZE)
           });
-          
+
+
           if (taskStatus.status === 'completed') {
-            clearInterval(pollingInterval);
+            stopPolling();
             
             const urls = taskStatus.urls || (taskStatus.results ? taskStatus.results.urls : []);
 
@@ -140,7 +167,7 @@ export const useMassiveSiteCrawl = () => {
           }
           
           if (taskStatus.status === 'failed') {
-            clearInterval(pollingInterval);
+            stopPolling();
             setError(taskStatus.error || 'Произошла ошибка при сканировании сайта');
             setCrawlProgress(prev => ({
               ...prev,
@@ -154,6 +181,7 @@ export const useMassiveSiteCrawl = () => {
           console.error('Error checking task status:', error);
         }
       }, 3000);
+      pollingRef.current = pollingInterval;
       
       return true;
     } catch (error) {
@@ -162,16 +190,24 @@ export const useMassiveSiteCrawl = () => {
       setIsScanning(false);
       return null;
     }
-  }, [toast]);
+  }, [toast, stopPolling]);
   
   const cancelCrawl = useCallback(() => {
-    cancelledRef.current = true;
+    runRef.current += 1;
+    stopPolling();
+    const task = taskIdRef.current;
+    taskIdRef.current = null;
+    if (task) {
+      firecrawlService.cancelCrawl(task).catch((err) =>
+        console.error('Не удалось остановить обход:', err),
+      );
+    }
     setIsScanning(false);
     toast({
       title: "Сканирование отменено",
       description: "Процесс сканирования был прерван пользователем"
     });
-  }, [toast]);
+  }, [toast, stopPolling]);
   
   const downloadSitemap = useCallback(() => {
     if (!result?.sitemapXml) {

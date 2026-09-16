@@ -21,11 +21,16 @@ import { submitContactRequest, SUPPORT_EMAIL } from '@/services/contact/submitRe
 interface PaymentDialogProps {
   url: string;
   optimizationCost: number;
-  /** Вызывается после того, как заявка на счёт принята. */
+  /**
+   * Вызывается после того, как заявка на счёт принята. Это не оплата: окно
+   * остаётся открытым с экраном «Заявка принята», а запускать по этому
+   * событию оптимизацию нельзя — счёт ещё даже не выставлен.
+   */
   onPayment: () => void;
   isDialogOpen: boolean;
   setIsDialogOpen: (open: boolean) => void;
   onSelectPrompt?: (prompt: string) => void;
+  /** Аудит, по которому считалась смета: без него администратор не свяжет заявку с аудитом. */
   taskId?: string | null;
 }
 
@@ -45,6 +50,7 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
   const [sent, setSent] = useState(false);
   const [error, setError] = useState('');
   const [showPromptTemplates, setShowPromptTemplates] = useState(false);
+  const [selectedPrompt, setSelectedPrompt] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -55,6 +61,13 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
       return;
     }
 
+    // Выбранный шаблон — это пожелание к составу работ, поэтому он уходит в
+    // заявку вместе с комментарием: иначе администратор его не увидит.
+    const message = [
+      comment.trim(),
+      selectedPrompt ? `Пожелания к оптимизации: ${selectedPrompt}` : '',
+    ].filter(Boolean).join('\n\n');
+
     setSending(true);
     try {
       await submitContactRequest({
@@ -62,10 +75,10 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
         name: name || undefined,
         email,
         subject: `Счёт на оптимизацию ${url}`,
-        message: comment || undefined,
+        message: message || undefined,
         siteUrl: url,
         amount: optimizationCost,
-        taskId,
+        taskId: taskId ?? null,
       });
       setSent(true);
       onPayment();
@@ -77,6 +90,7 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
   };
 
   const handleSelectPrompt = (prompt: string) => {
+    setSelectedPrompt(prompt);
     if (onSelectPrompt) {
       onSelectPrompt(prompt);
     }
@@ -113,7 +127,7 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
             {onSelectPrompt && (
               <div className="mb-2">
                 <div className="flex items-center justify-between mb-2">
-                  <h3 className="text-sm font-medium">Параметры оптимизации</h3>
+                  <h3 className="text-sm font-medium">Пожелания к оптимизации</h3>
                   <Button
                     variant="ghost"
                     size="sm"

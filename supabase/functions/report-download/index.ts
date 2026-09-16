@@ -6,6 +6,22 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+/**
+ * Бакеты, где лежат отчёты, в порядке проверки.
+ *
+ * Отчёты пишут две функции, и в разные места:
+ *   * pdf-report-generate — в бакет 'pdf-reports', путь 'reports/audit-<задача>-<время>.html';
+ *   * report-generate — в бакет 'reports', путь 'seo-report-<задача>.json|xml' без папки.
+ * Раньше файл всегда искали в 'reports', и HTML-отчёты из pdf-report-generate
+ * не скачивались. Бакет выбираем по пути, а если там файла нет — пробуем второй:
+ * так скачаются и записи, сделанные до разделения.
+ */
+function bucketsForPath(filePath: string): string[] {
+  return filePath.startsWith('reports/')
+    ? ['pdf-reports', 'reports']
+    : ['reports', 'pdf-reports'];
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -58,17 +74,25 @@ serve(async (req) => {
       throw new Error('Report not found');
     }
 
-    // Fetch the file with the service role (the `reports` bucket is private).
+    // Fetch the file with the service role (the report buckets are private).
     const serviceClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    const { data: fileData, error: downloadError } = await serviceClient.storage
-      .from('reports')
-      .download(report.file_path);
+    let fileData: Blob | null = null;
+    for (const bucket of bucketsForPath(report.file_path)) {
+      const { data, error: downloadError } = await serviceClient.storage
+        .from(bucket)
+        .download(report.file_path);
+      if (!downloadError && data) {
+        fileData = data;
+        break;
+      }
+      console.warn(`Report ${report.id}: нет файла в бакете ${bucket}:`, downloadError?.message);
+    }
 
-    if (downloadError || !fileData) {
+    if (!fileData) {
       throw new Error('Failed to download report');
     }
 

@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useCallback, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import AuditStatus from './AuditStatus';
 import AuditResultHeader from './AuditResultHeader';
 import AuditRecommendationsSection from './AuditRecommendationsSection';
@@ -10,6 +11,18 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { LayoutDashboard, List } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/contexts/AuthContext';
+import { useScanContext } from '@/contexts/ScanContext';
+import { auditService } from '@/modules/audit/services/auditService';
+import { absoluteAuditPageUrl, auditPagePath } from '@/modules/audit/utils/auditLinks';
+
+/**
+ * Сколько страниц обходить при «глубоком сканировании» с экрана результатов.
+ * Это значение, которое audit-start сам берёт для глубокого аудита, если
+ * число страниц не передано; меньше, чем в текущей проверке, не берём.
+ */
+const DEEP_SCAN_PAGES = 100;
 
 interface AuditContentProps {
   url: string;
@@ -42,11 +55,12 @@ interface AuditContentProps {
   onRetry: () => void;
   onDownloadSitemap?: () => void;
   loadAuditData: (refresh?: boolean, deepScan?: boolean) => Promise<void>;
-  handleSelectHistoricalAudit: (auditId: string) => void;
+  // Выбор аудита из истории обрабатывается здесь же (переход на его задачу).
+  // Обработчика «Скачать оптимизированный сайт» нет: сборка исправленной копии
+  // сайта на сервере не реализована, кнопка ничего не скачивала.
   downloadSitemap?: () => void;
   exportJSONData: () => void;
   generatePdfReportFile: () => void;
-  downloadOptimizedSite: () => Promise<void>;
   optimizeSiteContent: () => Promise<void>;
   /** Расчёт сметы: до него кнопки запуска оптимизации не существует. */
   loadOptimizationCost?: (taskId: string) => Promise<void>;
@@ -79,11 +93,9 @@ const AuditContent: React.FC<AuditContentProps> = ({
   onRetry,
   onDownloadSitemap,
   loadAuditData,
-  handleSelectHistoricalAudit,
   downloadSitemap,
   exportJSONData,
   generatePdfReportFile,
-  downloadOptimizedSite,
   optimizeSiteContent,
   loadOptimizationCost,
   setContentOptimizationPrompt,
@@ -92,6 +104,70 @@ const AuditContent: React.FC<AuditContentProps> = ({
   pageAnalysis
 }) => {
   const [viewMode, setViewMode] = useState<'dashboard' | 'classic'>('dashboard');
+  const navigate = useNavigate();
+  const { toast } = useToast();
+  const { user } = useAuth();
+  const { startScan } = useScanContext();
+
+  /**
+   * «Поделиться» — ссылка на эти результаты в буфер обмена. Раньше обработчик
+   * был пустым `() => {}`: пункт меню ничего не делал.
+   */
+  const handleShare = useCallback(async () => {
+    if (!taskId) {
+      toast({
+        title: 'Ссылка пока недоступна',
+        description: 'Дождитесь, пока аудит будет создан.',
+      });
+      return;
+    }
+
+    const link = absoluteAuditPageUrl(url, taskId);
+    try {
+      await navigator.clipboard.writeText(link);
+      toast({
+        title: 'Ссылка скопирована',
+        description: 'По ней откроются эти результаты. Проверку, запущенную из аккаунта, откроет только её владелец.',
+      });
+    } catch {
+      toast({
+        title: 'Не удалось скопировать ссылку',
+        description: link,
+      });
+    }
+  }, [taskId, url, toast]);
+
+  /**
+   * Кнопки дат в «Истории аудита». Раньше выбор уходил в console.log и ничего
+   * не открывал. В истории лежат записи `audits`, а страница открывает задачу —
+   * находим задачу аудита и переходим на неё.
+   */
+  const openHistoricalAudit = useCallback(async (auditId: string) => {
+    const historicalTaskId = await auditService.getTaskIdForAudit(auditId);
+    if (!historicalTaskId) {
+      toast({
+        title: 'Аудит не открывается',
+        description: 'У этой записи не найдена задача с результатами.',
+        variant: 'destructive',
+      });
+      return;
+    }
+    navigate(auditPagePath(url, historicalTaskId));
+  }, [navigate, toast, url]);
+
+  /**
+   * «Запустить глубокое сканирование». Раньше вызывался refetch старых данных
+   * (второй аргумент loadAuditData игнорировался) — новый обход не начинался,
+   * а человек ждал результатов, которые не придут. Теперь запускаем настоящую
+   * проверку; глубокий аудит, как и на вкладке запуска, — только после входа.
+   */
+  const handleDeepScan = useCallback(async () => {
+    if (!user.isLoggedIn) {
+      navigate(`/auth?redirect=${encodeURIComponent(auditPagePath(url, taskId))}`);
+      return;
+    }
+    await startScan(true, Math.max(DEEP_SCAN_PAGES, scanDetails?.estimated_pages || 0));
+  }, [user.isLoggedIn, navigate, url, taskId, startScan, scanDetails?.estimated_pages]);
 
   return (
     <>
@@ -149,7 +225,7 @@ const AuditContent: React.FC<AuditContentProps> = ({
                 taskId={taskId || undefined}
                 onExportPDF={generatePdfReportFile}
                 onExportJSON={exportJSONData}
-                onShare={() => {}}
+                onShare={handleShare}
               />
             </TabsContent>
 
@@ -162,12 +238,12 @@ const AuditContent: React.FC<AuditContentProps> = ({
                 historyData={historyData}
                 taskId={taskId || ""}
                 onRefresh={() => loadAuditData(true)}
-                onDeepScan={() => loadAuditData(false, true)}
+                onDeepScan={() => void handleDeepScan()}
                 isRefreshing={isRefreshing}
                 onDownloadSitemap={downloadSitemap}
                 onTogglePrompt={onTogglePrompt}
                 onExportJSON={exportJSONData}
-                onSelectAudit={handleSelectHistoricalAudit}
+                onSelectAudit={(auditId) => void openHistoricalAudit(auditId)}
                 showPrompt={showPrompt}
               />
               
@@ -197,7 +273,6 @@ const AuditContent: React.FC<AuditContentProps> = ({
                 onTogglePrompt={onTogglePrompt}
                 onOptimize={optimizeSiteContent}
                 onCalculateCost={taskId && loadOptimizationCost ? () => loadOptimizationCost(taskId) : undefined}
-                onDownloadOptimizedSite={downloadOptimizedSite}
                 onGeneratePdfReport={generatePdfReportFile}
                 setContentOptimizationPrompt={setContentOptimizationPrompt}
               />

@@ -14,7 +14,10 @@ export type { DashboardAudit, DashboardSummary };
  *
  * До сентября 2026 кабинет показывал одинаковые у всех выдуманные цифры и
  * чужие сайты (example.com, mysite.ru). Здесь видно только то, что принадлежит
- * пользователю: RLS отдаёт лишь его записи.
+ * пользователю. Полагаться на RLS нельзя: политика чтения `audits` отдаёт
+ * гостевые записи (user_id IS NULL) всем, а администратору — всё подряд, и в
+ * «свою» сводку попадали чужие проверки. Поэтому каждый запрос явно
+ * ограничен текущим пользователем; без входа сводка пустая.
  */
 export function useDashboardSummary() {
   const [summary, setSummary] = useState<DashboardSummary>(EMPTY_SUMMARY);
@@ -25,14 +28,22 @@ export function useDashboardSummary() {
     setIsLoading(true);
     setError(null);
     try {
+      const { data: sessionData } = await supabase.auth.getSession();
+      const userId = sessionData.session?.user?.id;
+      if (!userId) {
+        setSummary(EMPTY_SUMMARY);
+        return;
+      }
+
       const [auditsResult, positionsResult, optimizationsResult] = await Promise.all([
         supabase
           .from('audits')
           .select('id, url, seo_score, status, created_at, completed_at, pages_scanned')
+          .eq('user_id', userId)
           .order('created_at', { ascending: false })
           .limit(100),
-        supabase.from('position_checks').select('created_at'),
-        supabase.from('optimization_jobs').select('created_at'),
+        supabase.from('position_checks').select('created_at').eq('user_id', userId),
+        supabase.from('optimization_jobs').select('created_at').eq('user_id', userId),
       ]);
 
       if (auditsResult.error) throw auditsResult.error;

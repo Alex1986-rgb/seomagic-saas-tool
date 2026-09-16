@@ -10,8 +10,8 @@ import PageSeo from '@/components/seo/PageSeo';
 const AdminMonitoringPage: React.FC = () => (
   <>
     <PageSeo
-      title="Мониторинг платформы: нагрузка и состояние сервисов"
-      description="Показатели работы платформы в реальном времени: нагрузка на API, состояние серверов, журнал событий и предупреждения о сбоях."
+      title="Мониторинг платформы: журнал вызовов и счётчики работ"
+      description="Записи журнала вызовов функций платформы за сутки и число выполненных аудитов, оптимизаций, проверок позиций и заявок."
       noindex
     />
     <div className="w-full min-h-screen flex flex-col items-center justify-start bg-gradient-to-bl from-[#1A1F2C] via-[#191B22] to-[#403E43]">
@@ -24,7 +24,7 @@ const AdminMonitoringPage: React.FC = () => (
           <div className="flex-1 min-w-[210px]">
             <h1 className="text-4xl font-extrabold mb-2 tracking-tight text-gradient-primary">Мониторинг платформы</h1>
             <p className="text-muted-foreground text-lg">
-              Вызовы функций платформы за последние сутки и счётчики выполненных работ.
+              Записи журнала вызовов функций за последние сутки и счётчики выполненных работ.
             </p>
             <div className="flex flex-wrap gap-3 mt-6">
               <Link to="/admin">
@@ -61,8 +61,8 @@ const AdminMonitoringPage: React.FC = () => (
           <b>Что показывает раздел:</b> данные из журнала <code>api_logs</code> и счётчики работ платформы.
         </p>
         <ul className="list-disc pl-6 space-y-1">
-          <li>Вызовы edge-функций за сутки и доля ошибок</li>
-          <li>Средняя длительность вызова там, где время замерено</li>
+          <li>Записи журнала вызовов за сутки — журнал ведут не все функции, так что это не все вызовы и не все ошибки</li>
+          <li>Средняя длительность вызова там, где функция замерила время</li>
           <li>Сколько аудитов, оптимизаций, проверок позиций и заявок в базе</li>
           <li>Нагрузка сервера, память и диск не отслеживаются</li>
         </ul>

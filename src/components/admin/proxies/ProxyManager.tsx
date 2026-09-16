@@ -260,18 +260,16 @@ const ProxyManager: React.FC = () => {
                 </div>
               )}
               
-              {activeProxies.length === 0 && !isLoading && (
-                <Alert variant="destructive" className="mt-2">
+              {/* Раньше здесь требовали «собрать и проверить прокси для корректной
+                  работы сервиса» и «собрать больше для производительности». Сервис
+                  от этого списка не зависит: позиции проверяются на сервере, а
+                  проверить прокси из браузера нельзя. */}
+              {!isLoading && (
+                <Alert className="mt-2">
                   <AlertDescription>
-                    Нет активных прокси. Рекомендуется собрать и проверить прокси для корректной работы сервиса.
-                  </AlertDescription>
-                </Alert>
-              )}
-              
-              {activeProxies.length > 0 && activeProxies.length < 100 && !isLoading && (
-                <Alert className="mt-2 border-yellow-200 bg-yellow-50 text-yellow-800">
-                  <AlertDescription>
-                    Рекомендуется собрать больше прокси для лучшей производительности. Текущее количество ({activeProxies.length}) может быть недостаточным.
+                    Работа сервиса от этого списка не зависит: позиции проверяются на сервере.
+                    Проверка прокси из браузера невозможна, поэтому собранные адреса остаются
+                    непроверенными.
                   </AlertDescription>
                 </Alert>
               )}

@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { AuditTypeSelector } from '@/components/site-audit/AuditTypeSelector';
 import { Card } from '@/components/ui/card';
@@ -18,8 +19,32 @@ export const AuditWorkspace: React.FC<AuditWorkspaceProps> = ({
   url,
   children
 }) => {
-  const { taskId, isScanning, scanDetails, startScan } = useScanContext();
+  const { taskId, isScanning, scanDetails, startScan, openTask } = useScanContext();
   const [isStartingAudit, setIsStartingAudit] = useState(false);
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  /**
+   * Текущая задача записывается в адрес страницы (`?task_id=`).
+   *
+   * Раньше новая проверка жила только в localStorage, а в адресе оставался
+   * номер прежней: после перезагрузки или по скопированной ссылке открывались
+   * старые результаты. Сравниваем со значениями из ref, а не из зависимостей
+   * эффекта: иначе при переходе на другую задачу из истории эффект успевал бы
+   * вернуть в адрес предыдущую, пока новая ещё загружается.
+   */
+  const urlTaskIdRef = useRef<string | null>(searchParams.get('task_id'));
+  urlTaskIdRef.current = searchParams.get('task_id');
+  const setSearchParamsRef = useRef(setSearchParams);
+  setSearchParamsRef.current = setSearchParams;
+
+  useEffect(() => {
+    if (!taskId || urlTaskIdRef.current === taskId) return;
+    setSearchParamsRef.current((prev) => {
+      const next = new URLSearchParams(prev);
+      next.set('task_id', taskId);
+      return next;
+    }, { replace: true });
+  }, [taskId]);
   
   // Check for interrupted audits
   const { 
@@ -63,42 +88,48 @@ export const AuditWorkspace: React.FC<AuditWorkspaceProps> = ({
     }
   }, [url]);
 
-  // Auto-switch tabs based on audit state
+  /**
+   * Автопереключение вкладок — один раз на событие, а не на каждую перерисовку.
+   *
+   * Раньше эффект зависел от активной вкладки и возвращал «Результаты», стоило
+   * нажать «Запуск аудита»: у сайта с готовой проверкой новую запустить было
+   * нельзя. Теперь переключаем только когда появилась новая задача в работе или
+   * у задачи впервые появились результаты; дальше вкладку выбирает человек.
+   */
+  const autoSwitchKeyRef = useRef<string | null>(null);
   useEffect(() => {
-    console.log('[AUDIT WORKSPACE] Tab switching logic:', {
-      isScanning,
-      taskId,
-      status: scanDetails?.status,
-      hasAuditData: !!scanDetails?.audit_data,
-      activeTab,
-      shouldSwitchToResults: !isScanning && taskId && (scanDetails?.status === 'completed' || scanDetails?.audit_data)
-    });
+    const hasResults = scanDetails?.status === 'completed' || !!scanDetails?.audit_data;
 
-    if (isScanning && activeTab !== 'progress') {
+    if (isScanning) {
+      const key = `${taskId ?? 'new'}:progress`;
+      if (autoSwitchKeyRef.current === key) return;
+      autoSwitchKeyRef.current = key;
       setActiveTab('progress');
       localStorage.setItem(`audit_tab_${url}`, 'progress');
-    } else if (
-      !isScanning && 
-      taskId && 
-      (scanDetails?.status === 'completed' || scanDetails?.audit_data) && 
-      activeTab !== 'results'
-    ) {
-      console.log('[AUDIT WORKSPACE] ✅ Switching to results tab');
-      setActiveTab('results');
-      localStorage.setItem(`audit_tab_${url}`, 'results');
-      
-      // Show toast notification
-      if (scanDetails?.audit_data) {
-        setTimeout(() => {
-          const toast = document.createElement('div');
-          toast.textContent = '✅ Результаты аудита готовы!';
-          toast.className = 'fixed top-4 right-4 bg-green-500 text-white px-4 py-2 rounded-md shadow-lg z-50';
-          document.body.appendChild(toast);
-          setTimeout(() => toast.remove(), 3000);
-        }, 100);
-      }
+      return;
     }
-  }, [isScanning, taskId, scanDetails?.status, scanDetails?.audit_data, url, activeTab]);
+
+    if (!taskId || !hasResults) return;
+
+    const key = `${taskId}:results`;
+    if (autoSwitchKeyRef.current === key) return;
+    autoSwitchKeyRef.current = key;
+
+    console.log('[AUDIT WORKSPACE] ✅ Switching to results tab');
+    setActiveTab('results');
+    localStorage.setItem(`audit_tab_${url}`, 'results');
+
+    // Show toast notification
+    if (scanDetails?.audit_data) {
+      setTimeout(() => {
+        const toast = document.createElement('div');
+        toast.textContent = '✅ Результаты аудита готовы!';
+        toast.className = 'fixed top-4 right-4 bg-green-500 text-white px-4 py-2 rounded-md shadow-lg z-50';
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 3000);
+      }, 100);
+    }
+  }, [isScanning, taskId, scanDetails?.status, scanDetails?.audit_data, url]);
 
   const handleTabChange = (value: string) => {
     setActiveTab(value as TabValue);
@@ -191,6 +222,9 @@ export const AuditWorkspace: React.FC<AuditWorkspaceProps> = ({
                     localStorage.setItem(`task_id_${url}`, resumedTaskId);
                     setActiveTab('progress');
                     localStorage.setItem(`audit_tab_${url}`, 'progress');
+                    // Возобновлённую задачу нужно опрашивать: раньше страница
+                    // переключала вкладку, но хода проверки не видела.
+                    await openTask(resumedTaskId);
                   }
                 }}
                 onStartFresh={() => {

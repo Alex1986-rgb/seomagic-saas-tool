@@ -3,12 +3,16 @@ import autoTable from 'jspdf-autotable';
 import { AuditData } from '@/types/audit';
 import { OptimizationItem } from '@/features/audit/types/optimization-types';
 import { PdfCustomizationOptions } from '@/components/audit/share/pdf-customization';
-import { addPaginationFooters, addTimestamp, extendJsPDF, addCoverPage, addTableOfContents, generateTocSections } from './helpers/index';
+import { addPaginationFooters, addTimestamp, extendJsPDF, addCoverPage, addTableOfContents } from './helpers/index';
+import type { TocSection } from './helpers/index';
+import { generateQRCodeDataUrl } from './helpers/qrcode';
 import { pdfColors, getScoreColorRGB } from './styles/colors';
 import { generatePieChart, generateBarChart, generateScoreGauge, generateRadarChart } from './helpers/charts';
 import { createCategoryScoresFromAudit, drawAllCategoryScores } from './helpers/detailedScores';
 import { addSeoAnalysisSection } from './sections/seoAnalysisSection';
+import type { SeoAnalysisData } from './sections/seoAnalysisSection';
 import { addTechnicalAnalysisSection } from './sections/technicalAnalysisSection';
+import type { TechnicalAnalysisData } from './sections/technicalAnalysisSection';
 import { addRecommendationsSection, Recommendation } from './sections/recommendationsSection';
 import { addPricingSection } from './sections/pricingSection';
 import { addPageAnalysisSection, PageAnalysisItem } from './sections/pageAnalysisSection';
@@ -110,12 +114,46 @@ export const generateAuditPdf = async (options: GenerateAuditPdfOptions): Promis
     day: 'numeric'
   });
   
+  // Первая страница у jsPDF уже есть. Её занимает обложка; без обложки первый
+  // раздел ложится на неё, а не оставляет пустой лист в начале отчёта.
+  let firstPageFree = true;
+  const nextPage = () => {
+    if (firstPageFree) {
+      firstPageFree = false;
+      return;
+    }
+    doc.addPage();
+  };
+
+  /**
+   * Оглавление собирается из разделов, которые действительно попали в отчёт.
+   * Раньше печатался заготовленный список с номерами страниц 3–22 — с
+   * «Долгосрочной стратегией» и «Вариантами пакетов», которых в документе нет,
+   * и номерами, не совпадающими с настоящими страницами.
+   */
+  const tocSections: TocSection[] = [];
+  const startSection = (title: string) => {
+    nextPage();
+    tocSections.push({ title, pageNumber: doc.getNumberOfPages(), level: 1 });
+  };
+
   // === ОБЛОЖКА ===
   const totalIssues = (auditData.issues.critical?.length || 0) + 
                      (auditData.issues.important?.length || 0) + 
                      (auditData.issues.opportunities?.length || 0);
   
   if (opts.includeCoverPage) {
+    firstPageFree = false;
+
+    // Настоящий QR-код с адресом проверенного сайта. Раньше на обложке был
+    // случайный узор с подписью «Онлайн-версия» — он не считывался, а
+    // онлайн-версии отчёта по такой ссылке и не было. Не удалось построить
+    // код — блок просто не печатается.
+    const siteHref = /^https?:\/\//i.test(url) ? url : `https://${url}`;
+    const qrDataUrl = url
+      ? await generateQRCodeDataUrl(siteHref).catch(() => null)
+      : null;
+
     addCoverPage(doc, {
       title: opts.reportTitle || 'SEO АУДИТ САЙТА',
       subtitle: opts.companyName ? opts.companyName : 'Полный анализ и рекомендации по оптимизации',
@@ -123,34 +161,35 @@ export const generateAuditPdf = async (options: GenerateAuditPdfOptions): Promis
       date: date,
       overallScore: auditData.score,
       statistics: {
-        pagesScanned: auditData.pageCount || 1,
+        // Число страниц — только известное. Раньше при неизвестном числе на
+        // обложке печаталось «Страниц проверено: 1».
+        pagesScanned: auditData.pageCount > 0 ? auditData.pageCount : undefined,
         issuesFound: totalIssues,
         criticalIssues: auditData.issues.critical?.length || 0
       },
-      qrCodeUrl: url,
+      qrCode: qrDataUrl ? { dataUrl: qrDataUrl, label: 'Адрес сайта' } : undefined,
+      // Здесь печатался сайт seomarket.com — это не адрес сервиса. Пока
+      // настоящего адреса нет, не печатаем никакого.
       companyInfo: opts.companyName ? {
         name: opts.companyName,
         website: ''
       } : {
         name: 'SEO Market',
-        website: 'seomarket.com'
+        website: ''
       }
     });
   }
 
-  // === ОГЛАВЛЕНИЕ ===
+  // === ОГЛАВЛЕНИЕ (страницу резервируем, заполняем в конце) ===
+  let tocPage: number | null = null;
   if (opts.includeTableOfContents) {
-    doc.addPage();
-    const tocSections = generateTocSections();
-    addTableOfContents(doc, {
-      title: 'Оглавление',
-      sections: tocSections
-    });
+    nextPage();
+    tocPage = doc.getNumberOfPages();
   }
 
   // === ИСПОЛНИТЕЛЬНОЕ РЕЗЮМЕ ===
   if (opts.includeSummary) {
-    doc.addPage();
+    startSection('Исполнительное резюме');
   
   doc.setFillColor(...pdfColors.dark);
   doc.rect(0, 0, 210, 20, 'F');
@@ -185,7 +224,7 @@ export const generateAuditPdf = async (options: GenerateAuditPdfOptions): Promis
   });
 
   // === ДЕТАЛЬНЫЕ ШКАЛЫ КАТЕГОРИЙ ===
-  doc.addPage();
+  startSection('Детальный анализ оценок');
   
   doc.setFillColor(...pdfColors.primary);
   doc.rect(0, 10, 210, 12, 'F');
@@ -198,135 +237,79 @@ export const generateAuditPdf = async (options: GenerateAuditPdfOptions): Promis
   drawAllCategoryScores(doc, categoryScoresDetailed, 30);
   }
 
+  /**
+   * SEO- и технический разделы — только по разобранным страницам.
+   *
+   * Раньше сюда передавались заготовки: «HTTPS активен», «среднее время
+   * отклика 500 мс», все страницы с ответом 200, ноль отсутствующих
+   * мета-тегов, битых ссылок и редиректов — одинаково для любого сайта.
+   * Теперь цифры считаются по строкам `page_analysis`; чего краулер не
+   * измеряет (редиректы, битые ссылки, индексируемость, структура URL), того
+   * в отчёте нет. Нет разобранных страниц — нет и этих разделов.
+   */
+  const pageRows = options.pageAnalysis ?? [];
+
   // === SEO АНАЛИЗ ===
-  if (opts.includeSeoAnalysis) {
-    doc.addPage();
-  
-  // Подготовка данных для SEO анализа из auditData
-  const seoAnalysisData = {
-    metaTags: {
-      checked: auditData.pageCount || 0,
-      missing: 0,
-      duplicate: 0,
-      tooLong: 0,
-      tooShort: 0,
-      issues: []
-    },
-    headings: {
-      checked: auditData.pageCount || 0,
-      missingH1: 0,
-      duplicateH1: 0,
-      brokenStructure: 0,
-      issues: []
-    },
-    urlStructure: {
-      checked: auditData.pageCount || 0,
-      tooLong: 0,
-      withParameters: 0,
-      nonSeoFriendly: 0,
-      issues: []
-    },
-    internalLinks: {
-      total: 0,
-      broken: 0,
-      noFollow: 0,
-      issues: []
+  if (opts.includeSeoAnalysis && pageRows.length > 0) {
+    const seoAnalysisData = prepareSeoAnalysisData(pageRows);
+    if (seoAnalysisData.metaTags || seoAnalysisData.headings) {
+      startSection('SEO-анализ');
+      addSeoAnalysisSection(doc, seoAnalysisData, 20);
     }
-  };
-  
-  addSeoAnalysisSection(doc, seoAnalysisData, 20);
   }
 
   // === ТЕХНИЧЕСКИЙ АНАЛИЗ ===
-  if (opts.includeTechnicalAnalysis) {
-    doc.addPage();
-  
-  // Подготовка данных для технического анализа
-  const technicalAnalysisData = {
-    https: {
-      enabled: true,
-      mixedContent: 0,
-      issues: []
-    },
-    statusCodes: {
-      total: auditData.pageCount || 0,
-      success: auditData.pageCount || 0,
-      redirects: 0,
-      clientErrors: 0,
-      serverErrors: 0
-    },
-    redirects: {
-      total: 0,
-      permanent: 0,
-      temporary: 0,
-      chains: 0,
-      issues: []
-    },
-    brokenLinks: {
-      total: 0,
-      notFound: 0,
-      serverError: 0,
-      issues: []
-    },
-    performance: {
-      avgResponseTime: 500,
-      slowPages: 0,
-      fastPages: auditData.pageCount || 0,
-      issues: []
-    },
-    indexability: {
-      indexable: auditData.pageCount || 0,
-      noindex: 0,
-      robotsBlocked: 0,
-      issues: []
+  if (opts.includeTechnicalAnalysis && pageRows.length > 0) {
+    const technicalAnalysisData = prepareTechnicalAnalysisData(pageRows);
+    if (technicalAnalysisData.https || technicalAnalysisData.statusCodes || technicalAnalysisData.performance) {
+      startSection('Технический анализ');
+      addTechnicalAnalysisSection(doc, technicalAnalysisData, 20);
     }
-  };
-  
-  addTechnicalAnalysisSection(doc, technicalAnalysisData, 20);
   }
 
-  // === РЕКОМЕНДАЦИИ И ПЛАН ДЕЙСТВИЙ ===
+  // === РЕКОМЕНДАЦИИ ===
   if (opts.includeRecommendations) {
-    doc.addPage();
-  
-  // Подготовка рекомендаций из данных аудита
-  const recommendationsData = {
-    critical: prepareCriticalRecommendations(auditData),
-    important: prepareImportantRecommendations(auditData),
-    opportunities: prepareOpportunitiesRecommendations(auditData)
-  };
-  
-  addRecommendationsSection(doc, recommendationsData, 20);
+    const recommendationsData = {
+      critical: prepareCriticalRecommendations(auditData),
+      important: prepareImportantRecommendations(auditData),
+      opportunities: prepareOpportunitiesRecommendations(auditData)
+    };
+
+    const hasRecommendations = recommendationsData.critical.length > 0 ||
+      recommendationsData.important.length > 0 ||
+      recommendationsData.opportunities.length > 0;
+
+    if (hasRecommendations) {
+      startSection('Рекомендации');
+      addRecommendationsSection(doc, recommendationsData, 20);
+    }
   }
 
   // === СМЕТА ОПТИМИЗАЦИИ ===
+  // Без выдуманных условий: раньше сюда подставлялись скидка 10 %, срок
+  // действия «30 дней» и рекомендуемый пакет. Смета — только работы и суммы.
   if (opts.includeOptimizations && optimizationItems && optimizationItems.length > 0) {
-    doc.addPage();
+    startSection('Смета оптимизации');
     
-    const pricingData = {
+    addPricingSection(doc, {
       url: url,
       date: date,
-      validUntil: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
-      items: optimizationItems,
-      discount: 10, // 10% скидка
-      recommendedPackage: 'standard' as const
-    };
-    
-    addPricingSection(doc, pricingData, 20);
+      items: optimizationItems
+    }, 20);
   }
 
   // === АНАЛИЗ СТРАНИЦ ===
   // Печатаем, только когда есть разобранные страницы. Пустой раздел честнее
   // раздела с выдуманными адресами.
-  if (opts.includePageAnalysis && options.pageAnalysis && options.pageAnalysis.length > 0) {
-    doc.addPage();
+  if (opts.includePageAnalysis && pageRows.length > 0) {
+    startSection('Анализ страниц');
 
-    const pageAnalysisData = preparePageAnalysisData(options.pageAnalysis);
+    const pageAnalysisData = preparePageAnalysisData(pageRows);
     addPageAnalysisSection(doc, pageAnalysisData, 20);
   }
 
   // === ДЕТАЛЬНЫЙ АНАЛИЗ ПРОБЛЕМ (старая версия - оставим для совместимости) ===
-  doc.addPage();
+  startSection('Детальный анализ проблем');
   
   doc.setFillColor(...pdfColors.dark);
   doc.rect(0, 0, 210, 20, 'F');
@@ -492,8 +475,8 @@ export const generateAuditPdf = async (options: GenerateAuditPdfOptions): Promis
     doc.text('Рекомендаций не обнаружено', 20, currentY + 10);
   }
   
-  if (optimizationCost && optimizationItems) {
-    doc.addPage();
+  if (opts.includeOptimizations && optimizationCost && optimizationItems && optimizationItems.length > 0) {
+    startSection('Стоимость оптимизации');
     
     doc.setFillColor(...pdfColors.dark);
     doc.rect(0, 0, 210, 20, 'F');
@@ -505,12 +488,20 @@ export const generateAuditPdf = async (options: GenerateAuditPdfOptions): Promis
     doc.setTextColor(...pdfColors.dark);
     doc.setFontSize(12);
     doc.text(`Общая стоимость: ${new Intl.NumberFormat('ru-RU').format(optimizationCost)} ₽`, 20, 30);
-    doc.text(`Количество страниц: ${auditData.pageCount}`, 20, 40);
+    // Число страниц — только известное: раньше здесь печаталось «undefined» или 0.
+    if (auditData.pageCount > 0) {
+      doc.text(`Количество страниц: ${auditData.pageCount}`, 20, 40);
+    }
     
+    // Название работы: у строк сметы тип бывает пустым, тогда берём название.
+    // Раньше одинаковые типы перезаписывали друг друга, а пустой становился
+    // подписью «undefined».
+    const workLabel = (item: OptimizationItem) => item.type || item.name;
     const costDistribution: Record<string, number> = {};
     
     optimizationItems.forEach(item => {
-      costDistribution[item.type] = item.totalPrice;
+      const label = workLabel(item);
+      costDistribution[label] = (costDistribution[label] ?? 0) + (Number(item.totalPrice) || 0);
     });
     
     generatePieChart(doc, costDistribution, 105, 80, 40, {
@@ -530,10 +521,10 @@ export const generateAuditPdf = async (options: GenerateAuditPdfOptions): Promis
     doc.text('Детализация стоимости:', 20, 130);
     
     const costDetailsData = optimizationItems.map(item => [
-      item.type,
-      item.count.toString(),
-      `${new Intl.NumberFormat('ru-RU').format(item.pricePerUnit)} ₽`,
-      `${new Intl.NumberFormat('ru-RU').format(item.totalPrice)} ₽`
+      workLabel(item),
+      String(item.count ?? ''),
+      `${new Intl.NumberFormat('ru-RU').format(Number(item.pricePerUnit ?? item.price) || 0)} ₽`,
+      `${new Intl.NumberFormat('ru-RU').format(Number(item.totalPrice) || 0)} ₽`
     ]);
     
     autoTable(doc, {
@@ -551,22 +542,18 @@ export const generateAuditPdf = async (options: GenerateAuditPdfOptions): Promis
       }
     });
     
-    doc.setFontSize(14);
-    doc.text('Оптимизация включает:', 20, (doc as any).lastAutoTable.finalY + 15);
-    
-    const includedItems = [
-      'Оптими��ация всех мета-те��ов',
-      'Исправление проблем с изображениями',
-      'Улучшение скорости загрузки',
-      'Исправление технических проблем',
-      'Оптимизация контента для SEO'
-    ];
-    
-    let yPos = (doc as any).lastAutoTable.finalY + 20;
-    includedItems.forEach(item => {
-      doc.setFontSize(12);
-      doc.text(`• ${item}`, 30, yPos);
-      yPos += 8;
+    // Здесь был список «Оптимизация включает»: мета-теги, изображения,
+    // скорость загрузки, технические проблемы — одинаковый для любой сметы.
+    // Скорость и изображения оптимизация не трогает, а состав работ уже есть в
+    // таблице выше, поэтому список убран.
+  }
+
+  // === ОГЛАВЛЕНИЕ: заполняем зарезервированную страницу ===
+  if (tocPage !== null) {
+    doc.setPage(tocPage);
+    addTableOfContents(doc, {
+      title: 'Оглавление',
+      sections: tocSections
     });
   }
   
@@ -612,8 +599,6 @@ function prepareCriticalRecommendations(auditData: AuditData): Recommendation[] 
         impact: impact,
         solution: solution,
         expectedResult: 'Значительное улучшение SEO показателей и видимости в поисковых системах',
-        timeframe: '1-2 недели',
-        cost: 15000,
         urls: affectedUrls.slice(0, 5)
       });
     });
@@ -637,7 +622,8 @@ function prepareImportantRecommendations(auditData: AuditData): Recommendation[]
       
       let affectedUrls: string[] = [];
       let impact = 'Среднее влияние на ранжирование и пользовательский опыт';
-      let solution = 'Рекомендуется исправить в течение месяца';
+      // Срок «в течение месяца» не из данных — не обещаем.
+      let solution = 'Рекомендуется исправить';
       
       if (typeof issue === 'object') {
         affectedUrls = issue.affectedUrls || [];
@@ -652,8 +638,6 @@ function prepareImportantRecommendations(auditData: AuditData): Recommendation[]
         impact: impact,
         solution: solution,
         expectedResult: 'Повышение общего качества сайта и улучшение пользовательских метрик',
-        timeframe: '2-4 недели',
-        cost: 8000,
         urls: affectedUrls.slice(0, 5)
       });
     });
@@ -692,14 +676,143 @@ function prepareOpportunitiesRecommendations(auditData: AuditData): Recommendati
         impact: impact,
         solution: solution,
         expectedResult: 'Дополнительное увеличение трафика и улучшение конверсии',
-        timeframe: '1-2 месяца',
-        cost: 5000,
         urls: affectedUrls.slice(0, 5)
       });
     });
   }
   
   return recommendations;
+}
+
+/**
+ * Пороги длины title — те же, что у классификатора замечаний
+ * (supabase/functions/issue-classifier: short_title < 30, long_title > 60),
+ * чтобы отчёт не расходился с найденными замечаниями.
+ */
+const TITLE_MIN_LENGTH = 30;
+const TITLE_MAX_LENGTH = 60;
+/** Медленная страница — дольше 3 с, как slow_page у классификатора. */
+const SLOW_PAGE_MS = 3000;
+const FAST_PAGE_MS = 500;
+
+/**
+ * SEO-показатели по разобранным страницам: title, description и H1.
+ * Структуру URL и внутренние ссылки краулер не разбирает — их не печатаем.
+ */
+function prepareSeoAnalysisData(rows: AuditPageRow[]): SeoAnalysisData {
+  const titleUsage = new Map<string, number>();
+  for (const row of rows) {
+    const title = (row.title ?? '').trim();
+    if (title) titleUsage.set(title, (titleUsage.get(title) ?? 0) + 1);
+  }
+
+  const metaIssues: Array<{ url: string; issue: string; type: 'title' | 'description' }> = [];
+  let missing = 0;
+  let duplicate = 0;
+  let tooLong = 0;
+  let tooShort = 0;
+
+  for (const row of rows) {
+    const title = (row.title ?? '').trim();
+    const description = (row.description ?? '').trim();
+
+    if (!title || !description) missing += 1;
+    if (!title) metaIssues.push({ url: row.url, type: 'title', issue: 'Нет title' });
+    if (!description) metaIssues.push({ url: row.url, type: 'description', issue: 'Нет meta description' });
+
+    if (title && (titleUsage.get(title) ?? 0) > 1) {
+      duplicate += 1;
+      metaIssues.push({ url: row.url, type: 'title', issue: 'Такой же title есть на другой странице' });
+    }
+
+    if (title.length > TITLE_MAX_LENGTH) {
+      tooLong += 1;
+      metaIssues.push({ url: row.url, type: 'title', issue: `Title длиннее ${TITLE_MAX_LENGTH} символов (${title.length})` });
+    } else if (title && title.length < TITLE_MIN_LENGTH) {
+      tooShort += 1;
+    }
+  }
+
+  // H1 считаем только там, где краулер его посчитал: пустое поле — не ноль.
+  const h1Rows = rows.filter((row) => row.h1_count !== null && row.h1_count !== undefined);
+  const headingIssues: Array<{ url: string; issue: string }> = [];
+  let missingH1 = 0;
+  let multipleH1 = 0;
+
+  for (const row of h1Rows) {
+    const h1Count = Number(row.h1_count);
+    if (h1Count === 0) {
+      missingH1 += 1;
+      headingIssues.push({ url: row.url, issue: 'Нет заголовка H1' });
+    } else if (h1Count > 1) {
+      multipleH1 += 1;
+      headingIssues.push({ url: row.url, issue: `Несколько H1 (${h1Count})` });
+    }
+  }
+
+  return {
+    metaTags: {
+      checked: rows.length,
+      missing,
+      duplicate,
+      tooLong,
+      tooShort,
+      issues: metaIssues,
+    },
+    headings: h1Rows.length > 0
+      ? {
+          checked: h1Rows.length,
+          missingH1,
+          duplicateH1: multipleH1,
+          issues: headingIssues,
+        }
+      : undefined,
+  };
+}
+
+/**
+ * Технические показатели по разобранным страницам: схема адресов, коды ответа
+ * и время загрузки. Редиректы, битые ссылки и индексируемость краулер здесь не
+ * отдаёт — эти подразделы не печатаем вовсе.
+ */
+function prepareTechnicalAnalysisData(rows: AuditPageRow[]): TechnicalAnalysisData {
+  // HTTPS — только если у всех адресов явно указана схема.
+  const schemes = rows.map((row) => /^(https?):\/\//i.exec(row.url)?.[1]?.toLowerCase());
+  const https = schemes.length > 0 && schemes.every(Boolean)
+    ? { enabled: schemes.every((scheme) => scheme === 'https') }
+    : undefined;
+
+  // Код 0 или пусто — страница не ответила, такой код не считаем.
+  const codes = rows
+    .map((row) => Number(row.status_code ?? 0))
+    .filter((code) => code > 0);
+  const statusCodes = codes.length > 0
+    ? {
+        total: codes.length,
+        success: codes.filter((code) => code >= 200 && code < 300).length,
+        redirects: codes.filter((code) => code >= 300 && code < 400).length,
+        clientErrors: codes.filter((code) => code >= 400 && code < 500).length,
+        serverErrors: codes.filter((code) => code >= 500).length,
+      }
+    : undefined;
+
+  // В базе время хранится в секундах, в отчёте — миллисекунды.
+  const timed = rows
+    .filter((row) => row.load_time !== null && row.load_time !== undefined)
+    .map((row) => ({ url: row.url, ms: Math.round(Number(row.load_time) * 1000) }));
+  const slow = timed
+    .filter((page) => page.ms > SLOW_PAGE_MS)
+    .sort((a, b) => b.ms - a.ms);
+  const performance = timed.length > 0
+    ? {
+        avgResponseTime: Math.round(timed.reduce((sum, page) => sum + page.ms, 0) / timed.length),
+        fastPages: timed.filter((page) => page.ms < FAST_PAGE_MS).length,
+        slowPages: slow.length,
+        issues: slow.map((page) => ({ url: page.url, responseTime: page.ms })),
+      }
+    : undefined;
+
+  return { https, statusCodes, performance };
 }
 
 /**
@@ -710,46 +823,72 @@ function prepareOpportunitiesRecommendations(auditData: AuditData): Recommendati
  * 60–95, случайное время загрузки и иногда — ответ 404. В отчёте, который
  * показывают клиенту, это выглядело как результат обхода сайта.
  *
- * Теперь берём то, что измерено краулером.
+ * Потом страницы стали настоящими, но замечаний в строках не было, и каждая
+ * получала «100 баллов, 0 проблем», а неответившая страница — код 200.
+ *
+ * Теперь берём то, что измерено: замечания — из таблицы `issues`. Если их
+ * узнать не удалось (поля пустые), оценка и сумма проблем не считаются вовсе,
+ * пустой код ответа печатается прочерком, а не «200».
  */
 function preparePageAnalysisData(rows: AuditPageRow[]): {
   pages: PageAnalysisItem[];
   summary: {
     totalPages: number;
-    avgLoadTime: number;
-    avgSeoScore: number;
-    totalIssues: number;
+    avgLoadTime: number | null;
+    avgSeoScore: number | null;
+    totalIssues: number | null;
   };
 } {
+  const issuesKnown = rows.length > 0 && rows.every((row) =>
+    row.issues_critical != null && row.issues_warning != null && row.issues_info != null,
+  );
+
   const pages: PageAnalysisItem[] = rows.map((row) => {
-    const critical = Number(row.issues_critical ?? 0);
-    const warning = Number(row.issues_warning ?? 0);
-    const info = Number(row.issues_info ?? 0);
+    const issues = issuesKnown
+      ? {
+          critical: Number(row.issues_critical),
+          warning: Number(row.issues_warning),
+          info: Number(row.issues_info),
+        }
+      : null;
 
     // Оценку страницы не выдумываем: считаем от числа найденных замечаний.
-    const seoScore = Math.max(0, 100 - critical * 15 - warning * 5 - info * 2);
+    const seoScore = issues
+      ? Math.max(0, 100 - issues.critical * 15 - issues.warning * 5 - issues.info * 2)
+      : null;
+
+    const statusCode = Number(row.status_code ?? 0);
 
     return {
       url: row.url,
-      statusCode: Number(row.status_code ?? 200),
+      // Код 0 или пусто — страница не ответила, код неизвестен.
+      statusCode: statusCode > 0 ? statusCode : null,
       // В базе время хранится в секундах, в отчёте показываем миллисекунды.
-      loadTime: Math.round(Number(row.load_time ?? 0) * 1000),
+      loadTime: row.load_time == null ? null : Math.round(Number(row.load_time) * 1000),
       pageSize: Math.round(Number(row.content_length ?? 0) / 1024),
       seoScore,
-      issues: { critical, warning, info },
+      issues,
       metaTitle: row.title ?? '',
       metaDescription: row.description ?? '',
       h1Count: Number(row.h1_count ?? 0),
     };
   });
 
-  const count = pages.length || 1;
-  const avgLoadTime = Math.round(pages.reduce((sum, p) => sum + p.loadTime, 0) / count);
-  const avgSeoScore = Math.round(pages.reduce((sum, p) => sum + p.seoScore, 0) / count);
-  const totalIssues = pages.reduce(
-    (sum, p) => sum + p.issues.critical + p.issues.warning + p.issues.info,
-    0,
-  );
+  const timedPages = pages.filter((p) => p.loadTime !== null);
+  const avgLoadTime = timedPages.length > 0
+    ? Math.round(timedPages.reduce((sum, p) => sum + (p.loadTime ?? 0), 0) / timedPages.length)
+    : null;
+
+  const avgSeoScore = issuesKnown && pages.length > 0
+    ? Math.round(pages.reduce((sum, p) => sum + (p.seoScore ?? 0), 0) / pages.length)
+    : null;
+
+  const totalIssues = issuesKnown
+    ? pages.reduce(
+        (sum, p) => sum + (p.issues ? p.issues.critical + p.issues.warning + p.issues.info : 0),
+        0,
+      )
+    : null;
 
   return {
     pages,

@@ -143,7 +143,10 @@ const FeaturePageTemplate: React.FC = () => {
                 </li>
               </ul>
               
-              <Button className="w-full mt-6">Попробовать бесплатно</Button>
+              {/* Кнопка «Попробовать бесплатно» не имела обработчика — теперь ведёт на аудит. */}
+              <Button className="w-full mt-6" asChild>
+                <Link to="/audit">Проверить сайт</Link>
+              </Button>
             </CardContent>
           </Card>
         </motion.div>

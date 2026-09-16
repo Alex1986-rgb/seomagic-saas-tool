@@ -14,16 +14,24 @@ const path = require('path');
 const http = require('http');
 
 const BASE_PATH = '/seomagic-saas-tool';
-const SITE = `https://alex1986-rgb.github.io${BASE_PATH}`;
+const SITE_ORIGIN = 'https://alex1986-rgb.github.io';
+const SITE = `${SITE_ORIGIN}${BASE_PATH}`;
 const DIST = path.resolve(__dirname, '..', 'dist');
 const PORT = 8079;
 
+// Только страницы, открытые для индексации. /channel, /webinars, /careers,
+// /api-docs и /team — заглушки с noindex: класть их в статику и одновременно
+// запрещать индексацию значило давать поисковикам противоречивый сигнал.
+// Страница, которая всё же окажется закрытой, пропускается и при рендере
+// (см. проверку meta robots ниже).
+// Корень — последним: его index.html служит оболочкой для остальных адресов,
+// и отрендеренная главная не должна подмешиваться в каждую следующую страницу.
 const ROUTES = [
-  '/', '/about', '/features', '/pricing', '/position-pricing', '/optimization-pricing',
+  '/about', '/features', '/pricing', '/position-pricing', '/optimization-pricing',
   '/contact', '/audit', '/blog', '/faq', '/guides', '/support', '/privacy', '/terms',
-  '/partners', '/partnership', '/team', '/webinars', '/careers', '/documentation',
-  '/api-docs', '/demo', '/seo-optimization', '/site-audit', '/sitemap',
-  '/position-tracker', '/channel',
+  '/partners', '/partnership', '/documentation', '/demo', '/seo-optimization', '/site-audit',
+  '/sitemap', '/position-tracker', '/position-tracking',
+  '/',
 ];
 
 const MIME = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.svg': 'image/svg+xml', '.png': 'image/png', '.jpg': 'image/jpeg', '.ico': 'image/x-icon', '.webmanifest': 'application/manifest+json', '.txt': 'text/plain', '.xml': 'application/xml', '.woff2': 'font/woff2' };
@@ -63,15 +71,29 @@ function serve() {
     try {
       await page.goto(url, { waitUntil: 'networkidle0', timeout: 30000 });
       await page.waitForSelector('#root *', { timeout: 15000 }).catch(() => {});
-      const canonical = `${SITE}${route === '/' ? '/' : route + '/'}`;
-      // Гарантируем canonical
+      const closed = await page.evaluate(() => {
+        const robots = document.querySelector('meta[name="robots"]');
+        return !!robots && /noindex/i.test(robots.getAttribute('content') || '');
+      });
+      if (closed) { console.log(`SKIP ${route} (закрыта от индексации)`); continue; }
+
+      const canonical = `${SITE}${route === '/' ? '/' : encodeURI(route) + '/'}`;
+      // canonical и og:url перезаписываются всегда. Раньше тег добавлялся только
+      // при отсутствии, а PageSeo уже ставил свой — с адресом локального
+      // сервера, и в статику попадал http://localhost:8079/...
       await page.evaluate((c) => {
-        if (!document.querySelector('link[rel="canonical"]')) {
-          const l = document.createElement('link'); l.rel = 'canonical'; l.href = c;
-          document.head.appendChild(l);
-        }
+        let link = document.querySelector('link[rel="canonical"]');
+        if (!link) { link = document.createElement('link'); link.rel = 'canonical'; document.head.appendChild(link); }
+        link.setAttribute('href', c);
+        let og = document.querySelector('meta[property="og:url"]');
+        if (!og) { og = document.createElement('meta'); og.setAttribute('property', 'og:url'); document.head.appendChild(og); }
+        og.setAttribute('content', c);
       }, canonical);
-      const html = '<!doctype html>\n' + await page.evaluate(() => document.documentElement.outerHTML);
+      // Остальные полные адреса (og:image, JSON-LD) страница тоже собирает от
+      // window.location.origin — меняем адрес локального сервера на боевой.
+      const localOrigin = `http://localhost:${PORT}`;
+      const html = ('<!doctype html>\n' + await page.evaluate(() => document.documentElement.outerHTML))
+        .split(localOrigin).join(SITE_ORIGIN);
       if (html.length > 8000) {
         const outDir = route === '/' ? DIST : path.join(DIST, route);
         fs.mkdirSync(outDir, { recursive: true });
