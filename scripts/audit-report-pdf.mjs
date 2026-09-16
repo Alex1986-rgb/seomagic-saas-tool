@@ -71,6 +71,39 @@ const ISSUE_ADVICE = {
   long_title: 'Сократить заголовок до 50–60 знаков, иначе обрежется в выдаче.',
 };
 
+/**
+ * Краулер и прайс называют одну и ту же беду по-разному: в замечаниях
+ * `missing_alt_text`, в расценках `missing_image_alt`. Без этой сверки работы
+ * молча выпадали бы из сметы.
+ */
+const PRICE_ALIASES = {
+  missing_alt_text: 'missing_image_alt',
+  empty_alt_text: 'empty_image_alt',
+  broken_links: 'broken_link',
+  page_not_indexable: 'not_indexable',
+};
+
+const CATEGORY_TITLES = {
+  performance: 'Скорость и сервер',
+  seo: 'Поисковая оптимизация',
+  content: 'Содержание страниц',
+  technical: 'Техническая часть',
+  other: 'Прочие работы',
+};
+
+/** Кто исполнитель — это то, что клиент планирует в первую очередь. */
+const CATEGORY_OWNERS = {
+  performance: 'разработчик, системный администратор',
+  seo: 'SEO-специалист',
+  content: 'редактор, контент-менеджер',
+  technical: 'разработчик',
+  other: 'SEO-специалист',
+};
+
+// Знака рубля в системном Arial нет, поэтому пишем словом — иначе сумма
+// выглядит просто числом.
+const money = (value) => `${Math.round(value).toLocaleString('ru-RU')} руб.`;
+
 function arg(name, fallback = null) {
   const i = process.argv.indexOf(`--${name}`);
   return i > -1 && process.argv[i + 1] ? process.argv[i + 1] : fallback;
@@ -197,10 +230,51 @@ function footer(doc, page, total) {
   text(doc, `${page} / ${total}`, W - M, H - 10, { size: 8, color: COLOR.muted, align: 'right' });
 }
 
-function buildDocument({ result, issues, generatedAt }) {
+/**
+ * Смета из расценок проекта: сколько стоит закрыть каждую группу замечаний.
+ * Работы, которых нет в прайсе, не выкидываем, а выносим отдельно — иначе
+ * итог выглядел бы меньше, чем он есть.
+ */
+function buildEstimate(issues, priceRules) {
+  const byType = new Map(priceRules.map((rule) => [rule.issue_type, rule]));
+  const lines = [];
+  const unpriced = [];
+
+  for (const issue of issues) {
+    const key = PRICE_ALIASES[issue.issue_type] ?? issue.issue_type;
+    const rule = byType.get(key);
+    const count = Number(issue.n);
+    if (!rule) {
+      unpriced.push({ ...issue, count });
+      continue;
+    }
+    const unit = Number(rule.price_per_item);
+    lines.push({
+      category: rule.category ?? 'other',
+      title: ISSUE_TITLES[issue.issue_type] ?? rule.rule_name ?? issue.issue_type,
+      severity: issue.severity,
+      count,
+      unit,
+      sum: unit * count,
+    });
+  }
+
+  const groups = new Map();
+  for (const line of lines) {
+    if (!groups.has(line.category)) groups.set(line.category, []);
+    groups.get(line.category).push(line);
+  }
+  for (const list of groups.values()) list.sort((a, b) => b.sum - a.sum);
+
+  const total = lines.reduce((sum, line) => sum + line.sum, 0);
+  return { groups, total, unpriced };
+}
+
+function buildDocument({ result, issues, priceRules, generatedAt }) {
   const doc = new jsPDF({ unit: 'mm', format: 'a4' });
   loadFont(doc);
 
+  const estimate = buildEstimate(issues, priceRules);
   const site = String(result.url).replace(/^https?:\/\//, '').replace(/\/$/, '');
   const dateLabel = generatedAt.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' });
   const global = Number(result.global_score ?? 0);
@@ -239,6 +313,7 @@ function buildDocument({ result, issues, generatedAt }) {
   const high = issues.filter((i) => i.severity === 'high').reduce((s, i) => s + Number(i.n), 0);
   text(doc, high > 0 ? `Из них критичных: ${high}` : 'Критичных замечаний нет', M + 55, 64,
     { size: 9, color: high > 0 ? COLOR.bad : COLOR.good });
+  text(doc, `Стоимость работ: ${money(estimate.total)}`, M + 55, 70, { size: 9, bold: true, color: COLOR.accent });
 
   // Оценки по направлениям.
   card(doc, M, 82, W - 2 * M, 50);
@@ -288,7 +363,7 @@ function buildDocument({ result, issues, generatedAt }) {
     y += 15;
   });
 
-  footer(doc, 1, 2);
+  footer(doc, 1, 3);
 
   // ---------- Страница 2: полный список ----------
   doc.addPage();
@@ -324,7 +399,113 @@ function buildDocument({ result, issues, generatedAt }) {
     { size: 8.5, color: COLOR.muted, maxWidth: W - 2 * M - 12 },
   );
 
-  footer(doc, 2, 2);
+  footer(doc, 2, 3);
+
+  // ---------- Страница 3: смета и план ----------
+  doc.addPage();
+  paintBackground(doc);
+  header(doc, site, dateLabel);
+
+  const groupCount = estimate.groups.size;
+  const lineCount = [...estimate.groups.values()].reduce((n, list) => n + list.length, 0);
+  const estimateHeight = 26 + groupCount * 9 + lineCount * 6 + 24;
+
+  card(doc, M, 30, W - 2 * M, estimateHeight);
+  text(doc, 'Смета работ', M + 6, 40, { size: 11, bold: true });
+  text(doc, 'Расчёт по расценкам за исправление одной страницы', M + 6, 45.5, { size: 8, color: COLOR.muted });
+
+  // Шапка таблицы.
+  let ey = 54;
+  text(doc, 'Работа', M + 6, ey, { size: 7.5, color: COLOR.muted });
+  text(doc, 'Объём', W - M - 62, ey, { size: 7.5, color: COLOR.muted, align: 'right' });
+  text(doc, 'Цена', W - M - 34, ey, { size: 7.5, color: COLOR.muted, align: 'right' });
+  text(doc, 'Сумма', W - M - 6, ey, { size: 7.5, color: COLOR.muted, align: 'right' });
+  doc.setDrawColor(COLOR.cardEdge);
+  doc.setLineWidth(0.3);
+  doc.line(M + 6, ey + 2, W - M - 6, ey + 2);
+  ey += 8;
+
+  for (const [category, lines] of estimate.groups) {
+    const groupSum = lines.reduce((sum, line) => sum + line.sum, 0);
+    text(doc, CATEGORY_TITLES[category] ?? category, M + 6, ey, { size: 9, bold: true, color: COLOR.accent });
+    text(doc, money(groupSum), W - M - 6, ey, { size: 9, bold: true, color: COLOR.accent, align: 'right' });
+    text(doc, CATEGORY_OWNERS[category] ?? '', M + 6, ey + 4, { size: 7, color: COLOR.muted });
+    ey += 9;
+
+    for (const line of lines) {
+      text(doc, line.title, M + 10, ey, { size: 8.5 });
+      text(doc, String(line.count), W - M - 62, ey, { size: 8.5, color: COLOR.muted, align: 'right' });
+      text(doc, money(line.unit), W - M - 34, ey, { size: 8.5, color: COLOR.muted, align: 'right' });
+      text(doc, money(line.sum), W - M - 6, ey, { size: 8.5, align: 'right' });
+      ey += 6;
+    }
+    ey += 2;
+  }
+
+  doc.setDrawColor(COLOR.cardEdge);
+  doc.line(M + 6, ey - 2, W - M - 6, ey - 2);
+  text(doc, 'Итого', M + 6, ey + 5, { size: 11, bold: true });
+  text(doc, money(estimate.total), W - M - 6, ey + 5, { size: 13, bold: true, color: COLOR.accent, align: 'right' });
+
+  let py = 30 + estimateHeight + 8;
+
+  // Работы без расценки — показываем честно, а не прячем.
+  if (estimate.unpriced.length > 0) {
+    const h = 14 + estimate.unpriced.length * 5;
+    card(doc, M, py, W - 2 * M, h);
+    text(doc, 'Считается отдельно', M + 6, py + 8, { size: 9, bold: true });
+    let uy = py + 14;
+    for (const item of estimate.unpriced) {
+      text(doc, `${ISSUE_TITLES[item.issue_type] ?? item.issue_type} — ${pages(item.count)}`, M + 6, uy,
+        { size: 8, color: COLOR.muted });
+      uy += 5;
+    }
+    py += h + 8;
+  }
+
+  // Порядок работ: от того, что мешает сильнее, к тому, что накапливается.
+  const roadmapHeight = 42;
+  card(doc, M, py, W - 2 * M, roadmapHeight);
+  text(doc, 'Порядок работ', M + 6, py + 9, { size: 11, bold: true });
+  const stages = [
+    ['Первый месяц', 'Скорость и ответ сервера: сжатие, кеш, тяжёлые страницы'],
+    ['Второй-третий', 'Заголовки, описания, подписи к картинкам'],
+    ['Далее', 'Повторная проверка и наблюдение за позициями'],
+  ];
+  stages.forEach(([when, what], i) => {
+    const sy = py + 18 + i * 8;
+    doc.setFillColor(COLOR.accent);
+    doc.circle(M + 9, sy - 1.2, 1.4, 'F');
+    text(doc, when, M + 14, sy, { size: 8.5, bold: true });
+    text(doc, what, M + 45, sy, { size: 8.5, color: COLOR.muted, maxWidth: W - 2 * M - 52 });
+  });
+  py += roadmapHeight + 8;
+
+  // По чему судить о результате.
+  card(doc, M, py, W - 2 * M, 34);
+  text(doc, 'По чему проверять результат', M + 6, py + 9, { size: 11, bold: true });
+  const metrics = [
+    'Время ответа сервера и скорость загрузки',
+    'Доля страниц со сжатием ответа',
+    'Позиции по ключевым запросам',
+    'Органический трафик и страницы входа',
+  ];
+  metrics.forEach((metric, i) => {
+    const mx = M + 6 + (i % 2) * 88;
+    const my = py + 18 + Math.floor(i / 2) * 7;
+    text(doc, `— ${metric}`, mx, my, { size: 8.5, color: COLOR.muted });
+  });
+
+  text(
+    doc,
+    `Источник данных: обход ${pages(result.page_count)} сайта ${site} собственным краулером, `
+      + `${dateLabel} Цены — из справочника работ проекта.`,
+    M,
+    H - 18,
+    { size: 7.5, color: COLOR.muted, maxWidth: W - 2 * M },
+  );
+
+  footer(doc, 3, 3);
   return doc;
 }
 
@@ -352,9 +533,17 @@ const issues = await query(
     order by case severity when 'high' then 1 when 'medium' then 2 else 3 end, n desc`,
 );
 
+const priceRules = await query(
+  `select issue_type, rule_name, category, price_per_item
+     from pricing_rules
+    where is_active and not is_bundle
+    order by category, sort_order`,
+);
+
 const doc = buildDocument({
   result: resultRows[0],
   issues: Array.isArray(issues) ? issues : [],
+  priceRules: Array.isArray(priceRules) ? priceRules : [],
   generatedAt: new Date(),
 });
 doc.save(out);
