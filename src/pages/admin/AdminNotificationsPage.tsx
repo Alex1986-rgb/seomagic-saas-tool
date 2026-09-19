@@ -1,55 +1,58 @@
-
 import React from 'react';
-import { Helmet } from 'react-helmet-async';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Bell, Mail, MessageSquare, ArrowRight, MailCheck, Calendar, Info } from 'lucide-react';
+import { Bell, Info, Loader2 } from 'lucide-react';
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Link } from 'react-router-dom';
+import PageSeo from '@/components/seo/PageSeo';
+import NotCollectedNotice from '@/components/admin/NotCollectedNotice';
+import { useAdminNotifications } from '@/hooks/use-admin-notifications';
+import { formatDateTime } from '@/lib/admin-stats';
 
-// Notification data
-const notifications = [
-  {
-    id: 1,
-    title: 'Обновление системы',
-    message: 'Запланировано обновление системы до версии 2.8.2 на 25 апреля в 03:00 МСК',
-    time: '20 мин назад',
-    type: 'system',
-    read: false
-  },
-  {
-    id: 2,
-    title: 'Высокая нагрузка на сервер',
-    message: 'Зафиксирована высокая нагрузка на API. Текущее значение: 543 запросов в минуту',
-    time: '1 час назад',
-    type: 'warning',
-    read: true
-  },
-  {
-    id: 3,
-    title: 'Новый пользователь',
-    message: 'Зарегистрирован новый пользователь: Алексей Смирнов (alexey@example.com)',
-    time: '5 часов назад',
-    type: 'user',
-    read: true
-  },
-];
+/**
+ * Уведомления администратора.
+ *
+ * Раньше страница показывала три выдуманных события — «запланировано
+ * обновление до версии 2.8.2», «543 запроса в минуту», регистрация
+ * несуществующего Алексея Смирнова — и три канала доставки (Email, Slack,
+ * SMS) с придуманными статусами. Ни планировщика обновлений, ни интеграций
+ * со Slack и SMS в проекте нет. Показываем строки из таблицы
+ * `notifications` — то, что платформа действительно создала.
+ *
+ * Видны только уведомления, адресованные самому администратору: уведомления
+ * клиентов ему не открыты (правило доступа к таблице пускает каждого только к
+ * своим записям, а расширять его — вопрос приватности, который решает
+ * владелец). Страница говорит об этом прямо и не выдаёт пустой список за
+ * «событий не было».
+ *
+ * Убраны обещания, за которыми ничего нет: кнопка «Настройки уведомлений»
+ * вела на страницу, где никаких настроек нет, а в списке значилось, что
+ * «отправку писем и правила оповещений настраивают в разделе настроек» —
+ * правил оповещений в проекте нет, а писем по уведомлениям платформа не
+ * отправляет (create-notification записывает строку с email_sent = false и
+ * больше ничего). Также неверно было, что уведомления приходят об оптимизации
+ * и проверке позиций: create-notification вызывает только scoring-processor
+ * по завершении аудита.
+ */
 
-// Channel settings
-const channels = [
-  { name: 'Email', icon: <Mail className="h-5 w-5" />, enabled: true },
-  { name: 'Slack', icon: <MessageSquare className="h-5 w-5" />, enabled: true },
-  { name: 'SMS', icon: <MailCheck className="h-5 w-5" />, enabled: false },
-];
+const typeStyles: Record<string, string> = {
+  error: 'bg-red-500/10 text-red-500',
+  warning: 'bg-amber-500/10 text-amber-500',
+  success: 'bg-green-500/10 text-green-500',
+};
 
-const AdminNotificationsPage: React.FC = () => (
-  <>
-    <Helmet>
-      <title>Уведомления | Админ панель</title>
-    </Helmet>
-    
-    <div className="container mx-auto px-6 py-10 max-w-6xl">
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
-        <div>
+const AdminNotificationsPage: React.FC = () => {
+  const { notifications, unread, total, isLoading, error } = useAdminNotifications();
+
+  return (
+    <>
+      <PageSeo
+        title="Уведомления администратора: только ваши записи"
+        description="Уведомления, адресованные учётной записи администратора. Уведомления клиентов на этой странице не показываются."
+        noindex
+      />
+
+      <div className="container mx-auto px-6 py-10 max-w-6xl">
+        <div className="mb-6">
           <div className="flex items-center gap-2 mb-2">
             <div className="bg-primary/10 text-primary p-1.5 rounded">
               <Bell className="h-5 w-5" />
@@ -57,183 +60,135 @@ const AdminNotificationsPage: React.FC = () => (
             <h1 className="text-3xl font-bold">Уведомления администратора</h1>
           </div>
           <p className="text-muted-foreground">
-            Центр управления уведомлениями и оповещениями системы
+            Только уведомления, адресованные вашей учётной записи. Уведомления клиентов здесь
+            не показываются.
           </p>
         </div>
-        
-        <div>
-          <Button className="flex items-center gap-2">
-            <Bell className="h-4 w-4" />
-            Настройки уведомлений
-          </Button>
-        </div>
-      </div>
-      
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 space-y-6">
-          <Card className="backdrop-blur-sm bg-card/80 border shadow-sm">
-            <CardHeader>
-              <div className="flex justify-between items-center">
-                <CardTitle className="flex items-center gap-2">
-                  <Bell className="h-5 w-5" />
-                  Последние уведомления
-                </CardTitle>
-                <Badge variant="outline" className="bg-primary/10">
-                  1 новое
-                </Badge>
-              </div>
-              <CardDescription>
-                Оповещения о системных событиях и активности пользователей
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {notifications.map(notification => (
-                  <div 
-                    key={notification.id} 
-                    className={`border rounded-lg p-4 ${
-                      notification.read ? 'bg-card' : 'bg-primary/5 border-primary/20'
-                    }`}
-                  >
-                    <div className="flex items-start gap-3">
-                      <div className={`p-2 rounded-full ${
-                        notification.type === 'system' ? 'bg-blue-500/10 text-blue-500' :
-                        notification.type === 'warning' ? 'bg-amber-500/10 text-amber-500' :
-                        'bg-green-500/10 text-green-500'
-                      }`}>
-                        {notification.type === 'system' ? <Info className="h-5 w-5" /> :
-                         notification.type === 'warning' ? <Bell className="h-5 w-5" /> :
-                         <Mail className="h-5 w-5" />}
-                      </div>
-                      <div className="flex-1">
-                        <div className="flex justify-between items-start">
-                          <h3 className="font-medium">{notification.title}</h3>
-                          <span className="text-xs text-muted-foreground">{notification.time}</span>
-                        </div>
-                        <p className="text-sm mt-1 text-muted-foreground">
-                          {notification.message}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-                
-                <div className="flex justify-center mt-4">
-                  <Button variant="outline" className="w-full" size="sm">
-                    Показать все уведомления
-                  </Button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          
-          <Card className="backdrop-blur-sm bg-card/80 border shadow-sm">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Calendar className="h-5 w-5" />
-                Запланированные оповещения
-              </CardTitle>
-              <CardDescription>
-                Предстоящие системные обновления и задачи
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="border rounded-lg p-4 bg-blue-500/5 border-blue-500/20">
-                <div className="flex items-center gap-2 mb-2">
-                  <Badge className="bg-blue-500 text-white">25 апреля</Badge>
-                  <span className="text-sm font-medium">03:00 - 05:00 МСК</span>
-                </div>
-                <h3 className="font-medium mb-1">Плановое обновление системы</h3>
-                <p className="text-sm text-muted-foreground">
-                  Обновление платформы до версии 2.8.2. Ожидаемое время простоя: до 30 минут.
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-        
-        <div className="space-y-6">
-          <Card className="backdrop-blur-sm bg-card/80 border shadow-sm">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <MessageSquare className="h-5 w-5" />
-                Каналы уведомлений
-              </CardTitle>
-              <CardDescription>
-                Активные способы доставки уведомлений
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {channels.map((channel, index) => (
-                  <div key={index} className="flex items-center justify-between py-2 border-b last:border-0">
-                    <div className="flex items-center gap-3">
-                      <div className="p-2 rounded-full bg-muted">
-                        {channel.icon}
-                      </div>
-                      <span className="font-medium">{channel.name}</span>
-                    </div>
-                    <Badge variant={channel.enabled ? "default" : "secondary"}>
-                      {channel.enabled ? "Активно" : "Отключено"}
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-2 space-y-6">
+            <Card className="backdrop-blur-sm bg-card/80 border shadow-sm">
+              <CardHeader>
+                <div className="flex justify-between items-center">
+                  <CardTitle className="flex items-center gap-2">
+                    <Bell className="h-5 w-5" />
+                    Ваши уведомления
+                  </CardTitle>
+                  {!isLoading && !error && (
+                    <Badge variant="outline" className="bg-primary/10">
+                      {unread > 0 ? `${unread} непрочитанных` : 'все прочитаны'}
                     </Badge>
+                  )}
+                </div>
+                <CardDescription>
+                  {isLoading
+                    ? 'Загружаем...'
+                    : error
+                      ? 'Список не загрузился'
+                      : total === 0
+                        ? 'На вашу учётную запись уведомлений нет'
+                        : `Ваших уведомлений: ${total}, показаны последние ${notifications.length}`}
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {error && (
+                  <div className="rounded-lg border border-destructive/30 bg-destructive/10 p-4 text-sm text-destructive">
+                    Не удалось загрузить уведомления: {error}
                   </div>
-                ))}
-                
-                <Button className="w-full mt-2">
-                  Настроить каналы
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-          
-          <Card className="backdrop-blur-sm bg-card/80 border shadow-sm">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Info className="h-5 w-5" />
-                Мгновенные оповещения
-              </CardTitle>
-              <CardDescription>
-                Получайте оповещения о критических событиях
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-2 text-sm">
-                <div className="flex items-center justify-between py-2 border-b">
-                  <span>Ошибки сервера</span>
-                  <Badge className="bg-green-500">Включено</Badge>
-                </div>
-                <div className="flex items-center justify-between py-2 border-b">
-                  <span>Попытки взлома</span>
-                  <Badge className="bg-green-500">Включено</Badge>
-                </div>
-                <div className="flex items-center justify-between py-2 border-b">
-                  <span>Высокая нагрузка</span>
-                  <Badge className="bg-green-500">Включено</Badge>
-                </div>
-                <div className="flex items-center justify-between py-2">
-                  <span>Новые пользователи</span>
-                  <Badge variant="secondary">Отключено</Badge>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+                )}
+
+                {isLoading ? (
+                  <div className="flex items-center gap-2 py-6 text-sm text-muted-foreground">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Читаем таблицу уведомлений...
+                  </div>
+                ) : error ? null : notifications.length === 0 ? (
+                  <p className="py-6 text-sm text-muted-foreground">
+                    На вашу учётную запись уведомлений нет. О том, получали ли уведомления
+                    клиенты, эта страница не говорит: их записи сюда не попадают.
+                  </p>
+                ) : (
+                  <div className="space-y-4">
+                    {notifications.map((notification) => (
+                      <div
+                        key={notification.id}
+                        className={`border rounded-lg p-4 ${
+                          notification.read ? 'bg-card' : 'bg-primary/5 border-primary/20'
+                        }`}
+                      >
+                        <div className="flex items-start gap-3">
+                          <div className={`p-2 rounded-full ${typeStyles[notification.type] ?? 'bg-blue-500/10 text-blue-500'}`}>
+                            <Bell className="h-5 w-5" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex justify-between items-start gap-3">
+                              <h3 className="font-medium min-w-0">{notification.title}</h3>
+                              <span className="text-xs text-muted-foreground whitespace-nowrap">
+                                {formatDateTime(notification.createdAt)}
+                              </span>
+                            </div>
+                            <p className="text-sm mt-1 text-muted-foreground">{notification.message}</p>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+
+          <div className="space-y-6">
+            <NotCollectedNotice
+              title="Уведомления клиентов не показываются"
+              description="Правило доступа к таблице notifications разрешает каждому, в том числе администратору, читать только свои записи, и страница запрашивает только уведомления вашей учётной записи. Сколько уведомлений получили клиенты, отсюда не узнать."
+            />
+
+            <NotCollectedNotice
+              title="Каналов оповещений нет"
+              description="Здесь значились активные Email, Slack и SMS. Ни одна из этих интеграций не подключена, статусы были нарисованы. Что есть на самом деле:"
+              items={[
+                'уведомления записываются в базу и видны в интерфейсе',
+                'писем по уведомлениям платформа не отправляет; рассылки администратору по почте, SMS или в Slack нет',
+                'правил оповещений, которые можно было бы настроить, в админке нет',
+                'расписание плановых работ платформа не ведёт',
+              ]}
+            />
+
+            <Card className="backdrop-blur-sm bg-card/80 border shadow-sm">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Info className="h-5 w-5" />
+                  Откуда берутся уведомления
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="text-sm text-muted-foreground space-y-2">
+                <p>
+                  Сейчас платформа создаёт уведомление в одном случае: когда аудит завершён и
+                  посчитаны баллы. Об оптимизации и проверке позиций уведомлений нет.
+                </p>
+                <p>
+                  Запись появляется, только если у получателя в{' '}
+                  <Link to="/settings" className="text-primary hover:underline">
+                    личных настройках
+                  </Link>{' '}
+                  включены «Email уведомления» и «Завершение аудита». Письмо при этом не
+                  уходит: переключатели решают лишь, создавать ли запись.
+                </p>
+                <p>
+                  Работает ли отправка писем в принципе, можно проверить в разделе{' '}
+                  <Link to="/admin/system/email" className="text-primary hover:underline">
+                    «Настройки почты»
+                  </Link>
+                  .
+                </p>
+              </CardContent>
+            </Card>
+          </div>
         </div>
       </div>
-      
-      <div className="mt-10 text-sm text-muted-foreground space-y-3 max-w-3xl">
-        <p className="flex items-center gap-2">
-          <Bell className="h-4 w-4 text-primary" />
-          <b>Возможности:</b> настройка типов уведомлений, резервные контакты, история рассылок.
-        </p>
-        <ul className="list-disc pl-6 space-y-1">
-          <li>Мониторинг email, SMS и Slack</li>
-          <li>Просмотр истории</li>
-          <li>Оповещения о важных событиях</li>
-          <li>Персонализация правил и фильтров оповещений</li>
-        </ul>
-      </div>
-    </div>
-  </>
-);
+    </>
+  );
+};
 
 export default AdminNotificationsPage;

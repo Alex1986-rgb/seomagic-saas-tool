@@ -1,7 +1,6 @@
 
 import { useState, useEffect } from 'react';
-import { checkPositions, KeywordPosition, PositionData } from '@/services/position/positionTracker';
-import { useProxyManager } from './use-proxy-manager';
+import { checkPositions, KeywordPosition, PositionData, PositionCheckProgress } from '@/services/position/positionTracker';
 import { useToast } from './use-toast';
 
 interface UsePositionTrackerProps {
@@ -22,15 +21,18 @@ export function usePositionTracker({
   const [searchEngine, setSearchEngine] = useState(defaultSearchEngine);
   const [region, setRegion] = useState(defaultRegion);
   const [depth, setDepth] = useState(100);
-  const [scanFrequency, setScanFrequency] = useState('daily');
+  // Проверок по расписанию нет: каждая проверка разовая.
+  const [scanFrequency, setScanFrequency] = useState('once');
   
   const [isLoading, setIsLoading] = useState(false);
   const [results, setResults] = useState<PositionData | null>(null);
+  // Проверка идёт в фоне и занимает минуты — без этого пользователь смотрит
+  // на крутящийся индикатор, не понимая, движется ли дело.
+  const [progress, setProgress] = useState<PositionCheckProgress | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [historyUpdated, setHistoryUpdated] = useState(false);
   
   const { toast } = useToast();
-  const { getRandomActiveProxy, activeProxies } = useProxyManager();
   
   // Слушаем события обновления истории
   useEffect(() => {
@@ -69,19 +71,10 @@ export function usePositionTracker({
     setError(null);
     
     try {
-      // Проверяем наличие прокси
-      const hasActiveProxies = activeProxies && activeProxies.length > 0;
-      
-      if (!hasActiveProxies) {
-        toast({
-          title: "Внимание",
-          description: "Нет активных прокси. Проверка может быть менее точной.",
-          variant: "default",
-        });
-      } else {
-        console.log(`Доступно ${activeProxies.length} активных прокси для проверки позиций`);
-      }
-      
+      // Раньше здесь поднимался список прокси из браузера и без них выводилось
+      // «Нет активных прокси. Проверка может быть менее точной». Позиции
+      // проверяет сервер через поставщика выдачи — прокси на точность не влияют.
+
       // Форматируем домен для проверки
       let formattedDomain = domain.trim();
       
@@ -109,13 +102,12 @@ export function usePositionTracker({
         searchEngine,
         region,
         depth,
-        scanFrequency,
-        useProxy: hasActiveProxies // Используем прокси только если они есть
+        scanFrequency
       };
       
       // Запускаем проверку позиций с использованием актуальных данных
       console.log('Запуск проверки позиций с параметрами:', data);
-      const positionData = await checkPositions(data);
+      const positionData = await checkPositions(data, setProgress);
       console.log('Получены результаты проверки:', positionData);
       setResults(positionData);
       
@@ -126,9 +118,15 @@ export function usePositionTracker({
       
       console.log(`Статистика позиций: TOP-10: ${inTop10}, TOP-30: ${inTop30}, не найдено: ${notFound}`);
       
+      // Показываем то, что реально проверено: при частичном сбое часть запросов
+      // до поисковика не дошла, и молчать об этом нельзя.
+      const failed = positionData.failures?.length ?? 0;
       toast({
-        title: "Готово",
-        description: `Проверено ${validKeywords.length} ключевых слов для ${domainForCheck}`,
+        title: failed > 0 ? "Проверено частично" : "Готово",
+        description: failed > 0
+          ? `Получены позиции по ${positionData.keywords.length} запросам, ${failed} не проверено`
+          : `Проверено ${positionData.keywords.length} запросов для ${domainForCheck}`,
+        variant: failed > 0 ? "destructive" : undefined,
       });
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Произошла ошибка при проверке позиций";
@@ -136,7 +134,7 @@ export function usePositionTracker({
       setError(errorMessage);
       toast({
         title: "Ошибка",
-        description: "Не удалось проверить позиции",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
@@ -170,10 +168,10 @@ export function usePositionTracker({
     scanFrequency,
     setScanFrequency,
     isLoading,
+    progress,
     results,
     error,
     trackPositions,
-    historyUpdated,
-    hasActiveProxies: activeProxies && activeProxies.length > 0
+    historyUpdated
   };
 }

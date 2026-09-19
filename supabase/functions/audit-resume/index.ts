@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
+import { assertTaskAccess, authErrorResponse } from "../_shared/auth.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -27,6 +28,16 @@ serve(async (req) => {
         JSON.stringify({ success: false, message: 'task_id is required' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
+    }
+
+    // Функция работает служебным ключом: без этой проверки любой желающий
+    // мог возобновить чужой аудит и списать чужие страницы.
+    try {
+      await assertTaskAccess(req, task_id);
+    } catch (err) {
+      const denied = authErrorResponse(err, corsHeaders);
+      if (denied) return denied;
+      throw err;
     }
 
     console.log(`[RESUME] Resuming audit task: ${task_id}`);
@@ -67,22 +78,25 @@ serve(async (req) => {
 
     const pendingCount = queueStats?.filter(q => q.status === 'pending').length || 0;
     const processingCount = queueStats?.filter(q => q.status === 'processing').length || 0;
+    const failedCount = queueStats?.filter(q => q.status === 'failed').length || 0;
     const completedCount = queueStats?.filter(q => q.status === 'completed').length || 0;
 
-    console.log(`[RESUME] Queue stats - Pending: ${pendingCount}, Processing: ${processingCount}, Completed: ${completedCount}`);
+    console.log(`[RESUME] Queue stats - Pending: ${pendingCount}, Processing: ${processingCount}, Failed: ${failedCount}, Completed: ${completedCount}`);
 
-    // 3. Reset any 'processing' URLs back to 'pending' (these were stuck)
-    if (processingCount > 0) {
+    // 3. Reset stuck 'processing' URLs back to 'pending'. Страницы, которые не
+    // открылись в прошлый раз (обработчик теперь помечает их 'failed', а не
+    // роняет весь аудит), при возобновлении пробуем ещё раз.
+    if (processingCount + failedCount > 0) {
       const { error: resetError } = await supabase
         .from('url_queue')
-        .update({ status: 'pending', retry_count: 0 })
+        .update({ status: 'pending', retry_count: 0, error_message: null })
         .eq('task_id', task_id)
-        .eq('status', 'processing');
+        .in('status', ['processing', 'failed']);
 
       if (resetError) {
         console.error('[RESUME] Failed to reset processing URLs:', resetError);
       } else {
-        console.log(`[RESUME] Reset ${processingCount} processing URLs to pending`);
+        console.log(`[RESUME] Reset ${processingCount + failedCount} processing/failed URLs to pending`);
       }
     }
 
@@ -146,7 +160,7 @@ serve(async (req) => {
         task_id,
         message: 'Audit resumed successfully',
         stats: {
-          pending_urls: pendingCount + processingCount,
+          pending_urls: pendingCount + processingCount + failedCount,
           completed_urls: completedCount,
           progress: task.progress || 0
         }

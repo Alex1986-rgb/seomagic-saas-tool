@@ -1,0 +1,382 @@
+/*
+ * Дизайн-система Industry для кабинета SeoMarket 2.0.
+ *
+ * Источник — design/seomarket-v2/_ds/…/styles.css и блок <style> макета «SeoMarket v2».
+ * Всё ограничено классом html.ds-industry: его ставит оболочка кабинета при монтировании и
+ * снимает при уходе. Подключить исходный styles.css целиком нельзя — он задаёт body, h1–h6,
+ * p, a и классы .card/.btn/.table глобально и перекрасил бы публичный сайт (тёмная тема,
+ * shadcn), который ещё не переведён. Класс именно на <html>, а не на обёртке: диалоги и
+ * тосты рендерятся порталом в body, вне дерева кабинета, и без этого остались бы в старой теме.
+ *
+ * Файл не в @layer: слой base сайта (src/styles/base.css) задаёт h1 font-playfair, p text-lg,
+ * backdrop-filter у main/header — незаслоенные правила здесь перебивают их без !important.
+ */
+
+/* Шрифты — семейство Fira (решение 16.09.2026). У Barlow нет кириллицы вовсе, у IBM Plex Sans Condensed —
+   только расширенная (U+0460+), и русский текст падал на системный шрифт: узкие заголовки выходили
+   широкими. Fira Sans Condensed / Fira Sans / Fira Code — одно семейство с полной кириллицей.
+   Подключаем общие файлы начертаний (400.css и т.д.), а не cyrillic-400.css + latin-400.css: в файлах
+   отдельных подмножеств нет unicode-range, и второй @font-face перекрыл бы первый целиком. Браузер
+   скачивает только нужные подмножества. Шрифты свои, без Google Fonts: из РФ он грузится нестабильно. */
+@import '@fontsource/fira-sans/400.css';
+@import '@fontsource/fira-sans/500.css';
+@import '@fontsource/fira-sans/600.css';
+@import '@fontsource/fira-sans-condensed/400.css';
+@import '@fontsource/fira-sans-condensed/500.css';
+@import '@fontsource/fira-sans-condensed/600.css';
+@import '@fontsource/fira-code/400.css';
+
+html.ds-industry {
+  --color-bg: #f2f2f3;
+  --color-surface: #e9e9ea;
+  --color-text: #1d1f20;
+  --color-accent: #5980a6;
+  --color-accent-2: #728fab;
+  --color-divider: color-mix(in srgb, #1d1f20 16%, transparent);
+
+  --color-neutral-100: #f5f5f8;
+  --color-neutral-200: #e7e7ea;
+  --color-neutral-300: #d4d4d7;
+  --color-neutral-400: #b7b7ba;
+  --color-neutral-500: #98989b;
+  --color-neutral-600: #7a7a7d;
+  --color-neutral-700: #5d5d60;
+  --color-neutral-800: #424244;
+  --color-neutral-900: #2b2b2d;
+
+  --color-accent-100: #eef6ff;
+  --color-accent-200: #d6ebff;
+  --color-accent-300: #b5d9fd;
+  --color-accent-400: #94bce3;
+  --color-accent-500: #749dc4;
+  --color-accent-600: #597ea3;
+  --color-accent-700: #416180;
+  --color-accent-800: #2c455d;
+  --color-accent-900: #1d2d3d;
+
+  --color-accent-2-100: #eef6ff;
+  --color-accent-2-800: #314457;
+
+  /* Критичное — единственный цвет кроме акцента (правило проекта: красный только для
+     критичного, предупреждения стальные). */
+  --color-critical: #8a2f28;
+  --color-critical-bar: #a83d34;
+  --color-critical-ink: #fff2f0;
+
+  /* Приглушённый текст не светлее 68 % от основного: 50–60 % из макета не проходят по контрасту. */
+  --color-muted: color-mix(in srgb, var(--color-text) 68%, transparent);
+
+  --font-heading: "Fira Sans Condensed", "Arial Narrow", system-ui, sans-serif;
+  --font-heading-weight: 600;
+  --font-body: "Fira Sans", system-ui, sans-serif;
+  --font-mono: "Fira Code", ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  --space-1: 3.4px;
+  --space-2: 6.8px;
+  --space-3: 10.2px;
+  --space-4: 13.6px;
+  --space-6: 20.4px;
+  --space-8: 27.2px;
+
+  --radius-sm: 2px;
+  --radius-md: 4px;
+  --radius-lg: 7px;
+
+  --shadow-sm: 0 1px 2px color-mix(in srgb, #2b2b2d 14%, transparent);
+  --shadow-md: 0 3px 10px color-mix(in srgb, #2b2b2d 16%, transparent);
+  --shadow-lg: 0 12px 32px color-mix(in srgb, #2b2b2d 22%, transparent);
+
+  /* Токены shadcn (HSL-тройки) — чтобы переиспользованные компоненты src/components/ui
+     (тосты, выпадающие списки) выглядели как кабинет, а не как тёмный сайт. */
+  --background: 240 4% 95%;
+  --foreground: 200 5% 12%;
+  --card: 240 4% 95%;
+  --card-foreground: 200 5% 12%;
+  --popover: 240 4% 95%;
+  --popover-foreground: 200 5% 12%;
+  --primary: 210 30% 50%;
+  --primary-foreground: 240 4% 95%;
+  --secondary: 240 2% 92%;
+  --secondary-foreground: 200 5% 12%;
+  --muted: 240 2% 92%;
+  --muted-foreground: 200 2% 39%;
+  --accent: 212 100% 97%;
+  --accent-foreground: 209 36% 27%;
+  --destructive: 4 55% 35%;
+  --destructive-foreground: 0 100% 97%;
+  --border: 240 1% 82%;
+  --input: 240 1% 82%;
+  --ring: 210 30% 50%;
+  --radius: 0px;
+
+  color-scheme: light;
+}
+
+/* Тёмная тема: перекрываем токены, компоненты не трогаем. Акцент осветлён — стальной #5980a6
+   на тёмном фоне не даёт контраста. */
+html.ds-industry[data-theme="dark"] {
+  --color-bg: #15181b;
+  --color-surface: #1c2025;
+  --color-text: #e9ebed;
+  --color-accent: #8fb4d8;
+  --color-accent-2: #8fb4d8;
+  --color-divider: color-mix(in srgb, #e9ebed 18%, transparent);
+  --color-accent-100: #233340;
+  --color-accent-200: #2c455d;
+  --color-accent-300: #416180;
+  --color-accent-600: #a8c7e4;
+  --color-accent-700: #c2d8ee;
+  --color-accent-800: #d4e6f7;
+  --color-accent-900: #e2eefb;
+  --color-accent-2-100: #233340;
+  --color-accent-2-800: #d4e6f7;
+  --color-neutral-100: #24282c;
+  --color-neutral-200: #2e3338;
+  --color-neutral-800: #d3d6d9;
+  --color-neutral-900: #eceef0;
+  --color-critical: #c9534a;
+  --color-critical-bar: #c9534a;
+  --color-critical-ink: #1a0f0e;
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, .5);
+  --shadow-md: 0 3px 10px rgba(0, 0, 0, .55);
+  --shadow-lg: 0 12px 32px rgba(0, 0, 0, .6);
+
+  --background: 210 13% 9%;
+  --foreground: 210 10% 92%;
+  --card: 210 13% 9%;
+  --card-foreground: 210 10% 92%;
+  --popover: 213 14% 13%;
+  --popover-foreground: 210 10% 92%;
+  --primary: 210 48% 70%;
+  --primary-foreground: 210 13% 9%;
+  --secondary: 213 14% 13%;
+  --secondary-foreground: 210 10% 92%;
+  --muted: 213 14% 13%;
+  --muted-foreground: 216 3% 66%;
+  --accent: 207 29% 19%;
+  --accent-foreground: 209 69% 90%;
+  --destructive: 4 54% 54%;
+  --destructive-foreground: 4 30% 8%;
+  --border: 210 5% 24%;
+  --input: 210 5% 24%;
+  --ring: 210 48% 70%;
+
+  color-scheme: dark;
+}
+
+/* ── База ─────────────────────────────────────────────────────────────── */
+
+html.ds-industry,
+html.ds-industry body {
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-body);
+}
+html.ds-industry body { margin: 0; font-size: 15px; line-height: 1.55; font-weight: 400; }
+
+/* Сайт вешает на main/header/footer backdrop-filter и z-index «поверх звёзд». В кабинете
+   backdrop-filter ломает position: sticky у сайдбара и шапки — снимаем. */
+html.ds-industry main,
+html.ds-industry header,
+html.ds-industry footer { backdrop-filter: none; z-index: auto; }
+html.ds-industry main { min-height: 0; }
+
+.ds-industry h1, .ds-industry h2, .ds-industry h3, .ds-industry h4, .ds-industry h5, .ds-industry h6 {
+  font-family: var(--font-heading); font-weight: var(--font-heading-weight);
+  line-height: 1.12; letter-spacing: -0.015em; margin: 0 0 var(--space-2);
+}
+.ds-industry h1 { font-size: 42px; }
+.ds-industry h2 { font-size: 32px; }
+.ds-industry h3 { font-size: 25px; }
+.ds-industry h4 { font-size: 20px; }
+.ds-industry h5 { font-size: 16px; }
+.ds-industry h6 { font-size: 13px; letter-spacing: 0.08em; text-transform: uppercase; }
+.ds-industry p { margin: 0 0 var(--space-3); font-size: inherit; line-height: inherit; font-family: inherit; }
+.ds-industry a { color: var(--color-accent); text-underline-offset: 3px; }
+.ds-industry :focus { outline: none; }
+.ds-industry :focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; box-shadow: none; }
+.ds-industry ::selection { background: color-mix(in srgb, var(--color-accent) 30%, transparent); }
+.ds-industry svg.lucide { stroke-width: 1.5; }
+
+/* ── Рамка-чертёж и дуотон ────────────────────────────────────────────── */
+
+.ds-industry .blueprint { position: relative; border: 1px solid var(--color-divider); border-radius: 0; }
+.ds-industry .blueprint.duotone { overflow: visible; }
+.ds-industry .blueprint > .corner {
+  position: absolute; width: 11px; height: 11px;
+  color: color-mix(in srgb, var(--color-text) 55%, transparent);
+}
+.ds-industry .blueprint > .corner::before,
+.ds-industry .blueprint > .corner::after { content: ""; position: absolute; background: currentColor; }
+.ds-industry .blueprint > .corner::before { left: 5px; top: 0; width: 1px; height: 100%; }
+.ds-industry .blueprint > .corner::after { top: 5px; left: 0; width: 100%; height: 1px; }
+.ds-industry .blueprint > .corner.tl { top: -6px; left: -6px; }
+.ds-industry .blueprint > .corner.tr { top: -6px; right: -6px; }
+.ds-industry .blueprint > .corner.bl { bottom: -6px; left: -6px; }
+.ds-industry .blueprint > .corner.br { bottom: -6px; right: -6px; }
+
+.ds-industry .duotone { position: relative; overflow: hidden; }
+.ds-industry .duotone::after {
+  content: ""; position: absolute; inset: 0; pointer-events: none;
+  background: var(--color-accent); mix-blend-mode: color;
+}
+
+/* ── Кнопки ───────────────────────────────────────────────────────────── */
+
+.ds-industry .btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  cursor: pointer; text-decoration: none;
+  font-family: var(--font-heading); font-weight: var(--font-heading-weight);
+  font-size: 14px; line-height: 1.2; color: var(--color-text);
+  background: transparent; border: 1px solid var(--color-divider);
+  padding: var(--space-2) calc(var(--space-3) * 1.2);
+  border-radius: 0;
+}
+.ds-industry .btn svg { display: block; }
+.ds-industry .btn:disabled { opacity: 0.45; cursor: not-allowed; }
+.ds-industry .btn-primary { background: var(--color-accent); color: var(--color-bg); border-color: var(--color-accent); }
+.ds-industry .btn-primary:hover:not(:disabled) { background: var(--color-accent-600); }
+.ds-industry .btn-primary:active:not(:disabled) { background: var(--color-accent-700); }
+.ds-industry .btn-secondary:hover:not(:disabled) { background: color-mix(in srgb, var(--color-text) 7%, transparent); }
+.ds-industry .btn-secondary:active:not(:disabled) { background: color-mix(in srgb, var(--color-text) 14%, transparent); }
+.ds-industry .btn-ghost { color: var(--color-accent); padding-inline: var(--space-1); border-color: transparent; }
+.ds-industry .btn-ghost:hover:not(:disabled) { background: color-mix(in srgb, var(--color-accent) 10%, transparent); }
+.ds-industry .btn-ghost:active:not(:disabled) { background: color-mix(in srgb, var(--color-accent) 18%, transparent); }
+.ds-industry .btn-icon { width: 36px; height: 36px; padding: 0; }
+.ds-industry .btn-block { width: 100%; margin-top: var(--space-2); }
+
+/* ── Формы ────────────────────────────────────────────────────────────── */
+
+.ds-industry .field > label {
+  display: block; font-size: 12px; margin-bottom: 5px;
+  color: color-mix(in srgb, var(--color-text) 70%, transparent);
+}
+.ds-industry .input {
+  width: 100%; min-height: 36px; padding: 6px 10px; font: inherit;
+  font-size: 14px; color: var(--color-text); caret-color: var(--color-accent);
+  background: var(--color-surface);
+  border: 1px solid var(--color-divider); border-radius: 0;
+}
+.ds-industry .input:hover { border-color: color-mix(in srgb, var(--color-text) 45%, transparent); }
+.ds-industry .input:focus-visible { border-color: var(--color-accent); outline-offset: 0; }
+.ds-industry textarea.input { min-height: 90px; resize: vertical; }
+.ds-industry select.input { appearance: auto; }
+.ds-industry .radio { display: inline-flex; align-items: center; gap: 8px; cursor: pointer; font-size: 14px; }
+.ds-industry .radio input,
+.ds-industry .seg-opt input { position: absolute; opacity: 0; width: 0; height: 0; pointer-events: none; }
+.ds-industry .radio .dot { width: 16px; height: 16px; flex: none; border-radius: 50%; border: 1.5px solid var(--color-divider); }
+.ds-industry .radio:hover .dot { border-color: var(--color-accent); }
+.ds-industry .radio input:checked + .dot {
+  border-color: var(--color-accent); background: var(--color-accent);
+  box-shadow: inset 0 0 0 4px var(--color-bg);
+}
+.ds-industry .radio input:focus-visible + .dot { outline: 2px solid var(--color-accent); outline-offset: 2px; }
+.ds-industry .seg { display: inline-flex; overflow: hidden; border: 1px solid var(--color-divider); border-radius: 0; }
+.ds-industry .seg-opt { display: inline-flex; align-items: center; gap: 6px; padding: 7px 12px; font-size: 13px; cursor: pointer; position: relative; }
+.ds-industry .seg-opt + .seg-opt { border-left: 1px solid var(--color-divider); }
+.ds-industry .seg-opt:has(input:checked) { background: var(--color-accent); color: var(--color-bg); }
+.ds-industry .seg-opt:not(:has(input:checked)):hover { background: color-mix(in srgb, var(--color-text) 7%, transparent); }
+.ds-industry .seg-opt:has(input:focus-visible) { outline: 2px solid var(--color-accent); outline-offset: -2px; }
+
+/* ── Навигация (шапка публичного сайта) ──────────────────────────────── */
+
+.ds-industry .nav { display: flex; align-items: center; gap: var(--space-4); padding: var(--space-3) var(--space-4); }
+.ds-industry .nav-brand { font-family: var(--font-heading); font-weight: var(--font-heading-weight); font-size: 18px; margin-right: auto; }
+.ds-industry .nav a:not(.btn) { color: inherit; text-decoration: none; font-size: 14px; }
+.ds-industry .nav a:not(.btn):hover, .ds-industry .nav a[aria-current='page'] { color: var(--color-accent); }
+
+/* ── Карточки, метки, таблицы, диалог ─────────────────────────────────── */
+
+.ds-industry .card {
+  display: flex; flex-direction: column; gap: var(--space-2);
+  padding: var(--space-3); border-radius: 0; background: transparent;
+  border: 1px solid var(--color-divider); backdrop-filter: none;
+}
+.ds-industry .card:hover { transform: none; box-shadow: none; }
+.ds-industry .card-kicker { font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--color-accent); }
+.ds-industry .card-title { font-family: var(--font-heading); font-weight: var(--font-heading-weight); font-size: 17px; line-height: 1.2; }
+.ds-industry .card-body { margin: 0; font-size: 13px; opacity: 0.8; flex: 1; }
+.ds-industry .card-meta { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--color-muted); }
+.ds-industry .elev-sm { box-shadow: var(--shadow-sm); }
+.ds-industry .elev-md { box-shadow: var(--shadow-md); }
+.ds-industry .elev-lg { box-shadow: var(--shadow-lg); }
+
+.ds-industry .tag { display: inline-flex; align-items: center; font-size: 11px; letter-spacing: 0.02em; padding: 3px 10px; border-radius: 0; }
+.ds-industry .tag-accent { background: var(--color-accent-100); color: var(--color-accent-800); }
+.ds-industry .tag-neutral { background: var(--color-neutral-100); color: var(--color-neutral-800); }
+.ds-industry .tag-outline { border: 1px solid var(--color-accent); color: var(--color-accent); }
+
+.ds-industry .table { width: 100%; border-collapse: collapse; font-size: 14px; }
+.ds-industry .table th {
+  text-align: left; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; font-weight: 400;
+  color: var(--color-muted);
+  padding: var(--space-2); border-bottom: 1px solid var(--color-divider);
+}
+.ds-industry .table td { padding: var(--space-2); border-bottom: 1px solid color-mix(in srgb, var(--color-text) 8%, transparent); }
+.ds-industry .table tbody tr:hover { background: color-mix(in srgb, var(--color-text) 4%, transparent); }
+
+.ds-industry .dialog-backdrop {
+  position: fixed; inset: 0; display: grid; place-items: center; z-index: 50;
+  padding: var(--space-4);
+  background: color-mix(in srgb, var(--color-neutral-900) 50%, transparent);
+}
+.ds-industry .dialog {
+  width: min(440px, 100%); display: flex; flex-direction: column; gap: var(--space-3);
+  padding: var(--space-4); border-radius: 0;
+  background: var(--color-bg); border: 1px solid var(--color-divider); box-shadow: var(--shadow-lg);
+}
+.ds-industry .dialog-title { font-family: var(--font-heading); font-weight: var(--font-heading-weight); font-size: 20px; }
+.ds-industry .dialog-body { font-size: 14px; opacity: 0.85; }
+.ds-industry .dialog-actions { display: flex; justify-content: flex-end; gap: var(--space-2); margin-top: var(--space-2); }
+
+/* ── Состояния из макета (всё, что нельзя задать инлайном) ───────────── */
+
+.ds-industry [data-nav] { transition: background .12s ease, color .12s ease; }
+.ds-industry [data-nav]:hover { background: color-mix(in srgb, var(--color-text) 7%, transparent); }
+.ds-industry [data-nav][data-active="1"] { background: color-mix(in srgb, var(--color-accent) 16%, transparent); color: var(--color-accent); }
+.ds-industry [data-nav][data-active="1"] span[data-bar] { background: var(--color-accent); }
+.ds-industry [data-tab] {
+  transition: color .12s ease, border-color .12s ease;
+  border-bottom: 2px solid transparent; color: var(--color-muted); text-decoration: none; cursor: pointer;
+  background: transparent;
+}
+.ds-industry [data-tab]:hover { color: var(--color-text); }
+.ds-industry [data-tab][data-active="1"] { color: var(--color-text) !important; border-bottom-color: var(--color-accent) !important; }
+.ds-industry [data-row] { transition: background .1s ease; }
+.ds-industry [data-row]:hover { background: color-mix(in srgb, var(--color-text) 4%, transparent); }
+.ds-industry [data-row][data-clickable] { cursor: pointer; }
+.ds-industry [data-detail][data-open="0"] { display: none; }
+.ds-industry [data-detail] > td { background: color-mix(in srgb, var(--color-text) 4%, transparent); }
+.ds-industry [data-caret] { transition: transform .15s ease; display: inline-block; }
+.ds-industry [data-row][data-open="1"] [data-caret] { transform: rotate(90deg); }
+.ds-industry [data-hover-accent] { transition: border-color .12s ease; }
+.ds-industry [data-hover-accent]:hover { border-color: var(--color-accent) !important; }
+
+/* Критичность: чип, полоса и точка. Цвет — только у критичного. */
+.ds-industry [data-chip="critical"] { background: var(--color-critical); color: var(--color-critical-ink); border-color: var(--color-critical); }
+.ds-industry [data-bar-critical],
+.ds-industry [data-dot-critical] { background: var(--color-critical-bar); }
+
+@keyframes ds-blink { 0%, 100% { opacity: 1 } 50% { opacity: .2 } }
+@keyframes ds-risein { from { opacity: 0; transform: translateY(6px) } to { opacity: 1; transform: none } }
+.ds-industry [data-screen] { animation: ds-risein .18s ease both; }
+.ds-industry [data-blink] { animation: ds-blink 1s steps(2, start) infinite; }
+@media (prefers-reduced-motion: reduce) {
+  .ds-industry [data-screen], .ds-industry [data-blink] { animation: none; }
+}
+
+/* Ниже 860px сайдбар превращается в горизонтальную прокручиваемую рельсу:
+   подписи групп и карточка проекта скрываются, остаются только пункты навигации. */
+@media (max-width: 860px) {
+  .ds-industry [data-shell] { grid-template-columns: 1fr !important; }
+  .ds-industry [data-rail] {
+    position: static !important; height: auto !important; flex-direction: row !important;
+    overflow-x: auto; border-right: 0 !important; border-bottom: 1px solid var(--color-divider); align-items: center;
+  }
+  .ds-industry [data-rail] [data-railhide] { display: none !important; }
+  .ds-industry [data-rail] nav { flex-direction: row !important; padding: 0 !important; }
+  .ds-industry [data-rail] [data-nav] { white-space: nowrap; }
+  .ds-industry [data-main] { padding: 20px 16px 56px !important; }
+  .ds-industry [data-topbar] { padding: 10px 16px !important; flex-wrap: wrap; }
+  .ds-industry [data-hide-mobile] { display: none !important; }
+}

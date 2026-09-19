@@ -1,121 +1,226 @@
-
+import { supabase } from '@/integrations/supabase/client';
 import { CrawlOptions, OptimizationOptions } from '@/types/audit/crawl-options';
-import { openaiService } from './openaiService';
+import { optimizationService } from '@/api/services/optimizationService';
+
+/**
+ * Запуск и отслеживание оптимизации сайта.
+ *
+ * Раньше контроллер делал вид, что работает: заводил задачу в localStorage и
+ * объявлял её выполненной через десять секунд. Теперь он ведёт настоящую цепочку
+ * серверных шагов:
+ *
+ *   audit-start(url) → audit-status(task_id) → optimization-start(task_id)
+ *                                            → optimization-status(optimization_id)
+ *
+ * В localStorage остаётся только клиентский кеш: выбранные пользователем опции и
+ * идентификатор запущенной оптимизации, чтобы опрос переживал перезагрузку страницы.
+ */
+
+interface OptimizationTaskState {
+  url: string;
+  options: OptimizationStartOptions;
+  optimizationId?: string;
+}
+
+interface OptimizationStartOptions {
+  fixMeta: boolean;
+  fixHeadings: boolean;
+  fixImages: boolean;
+  generateSitemap: boolean;
+  optimizeContentSeo: boolean;
+}
+
+export interface OptimizationTaskStatus {
+  id: string;
+  url: string;
+  /** scanning | optimizing | completed | failed */
+  status: string;
+  stage?: string;
+  progress: number;
+  error?: string;
+  result?: unknown;
+}
+
+const STATE_PREFIX = 'optimization_task_';
 
 class SeoOptimizationController {
+  /** Запускает аудит сайта — первый шаг оптимизации — и возвращает id задачи. */
   async startOptimization(
     url: string,
     crawlOptions: CrawlOptions,
-    optimizationOptions: OptimizationOptions
-  ) {
-    try {
-      // Validate crawl options
-      if (!crawlOptions.maxDepth) {
-        crawlOptions.maxDepth = 5; // Default depth
-      }
-      
-      // Add the checkPerformance property if it doesn't exist
-      const updatedCrawlOptions = {
-        ...crawlOptions,
-        checkPerformance: crawlOptions.checkPerformance !== undefined ? 
-          crawlOptions.checkPerformance : true // Default to true
-      };
-
-      // Start the optimization process
-      const taskId = `task_${Date.now()}`;
-      
-      // Store task info
-      localStorage.setItem(`task_${url}`, JSON.stringify({
-        id: taskId,
+    optimizationOptions: OptimizationOptions,
+  ): Promise<string> {
+    const { data, error } = await supabase.functions.invoke('audit-start', {
+      body: {
         url,
-        crawlOptions: updatedCrawlOptions,
-        optimizationOptions,
-        status: 'started',
-        startTime: new Date().toISOString()
-      }));
+        options: {
+          maxPages: crawlOptions.maxPages ?? 100,
+          type: 'deep',
+        },
+      },
+    });
 
-      return taskId;
-    } catch (error) {
-      console.error('Error starting optimization:', error);
-      throw new Error('Failed to start optimization');
+    if (error) throw new Error(error.message || 'Не удалось запустить аудит сайта');
+    if (!data?.success || !data.task_id) {
+      throw new Error(data?.error || 'Сервис аудита не вернул идентификатор задачи');
     }
+
+    this.saveState(data.task_id, {
+      url,
+      options: {
+        fixMeta: optimizationOptions.optimizeMetaTags ?? true,
+        fixHeadings: optimizationOptions.optimizeHeadings ?? true,
+        fixImages: optimizationOptions.optimizeImages ?? true,
+        generateSitemap: true,
+        optimizeContentSeo: optimizationOptions.optimizeContent ?? true,
+      },
+    });
+
+    return data.task_id;
   }
 
-  getTaskStatus(taskId: string) {
+  /**
+   * Состояние задачи. Пока идёт аудит — отдаём его прогресс; как только аудит
+   * закончен, запускаем оптимизацию и дальше следим уже за ней.
+   */
+  async getTaskStatus(taskId: string): Promise<OptimizationTaskStatus> {
+    const state = this.loadState(taskId);
+
     try {
-      const taskJson = localStorage.getItem(`task_${taskId}`);
-      if (!taskJson) {
-        throw new Error('Task not found');
+      if (state?.optimizationId) {
+        return await this.optimizationStatus(taskId, state);
       }
-      
-      const task = JSON.parse(taskJson);
-      
-      // Simulate task completion after some time
-      if (task.status === 'started') {
-        const startTime = new Date(task.startTime).getTime();
-        const now = Date.now();
-        const elapsedTime = now - startTime;
-        
-        if (elapsedTime > 10000) { // Simulate completion after 10 seconds
-          task.status = 'completed';
-          task.endTime = new Date().toISOString();
-          localStorage.setItem(`task_${taskId}`, JSON.stringify(task));
-        }
+
+      const { data, error } = await supabase.functions.invoke('audit-status', {
+        body: { task_id: taskId },
+      });
+      if (error) throw new Error(error.message);
+
+      const auditStatus = data?.status ?? 'unknown';
+
+      if (auditStatus === 'failed') {
+        return {
+          id: taskId,
+          url: state?.url ?? '',
+          status: 'failed',
+          progress: data?.progress ?? 0,
+          error: data?.error || 'Аудит сайта завершился ошибкой',
+        };
       }
-      
-      return task;
+
+      if (auditStatus !== 'completed') {
+        return {
+          id: taskId,
+          url: state?.url ?? '',
+          status: 'scanning',
+          stage: data?.stage ?? 'scanning',
+          // Аудит — первая половина работы, оптимизация — вторая.
+          progress: Math.round((data?.progress ?? 0) / 2),
+        };
+      }
+
+      // Аудит закончен — запускаем оптимизацию (один раз на задачу).
+      const started = await optimizationService.startOptimization(
+        taskId,
+        state?.options ?? {
+          fixMeta: true,
+          fixHeadings: true,
+          fixImages: true,
+          generateSitemap: true,
+          optimizeContentSeo: true,
+        },
+      );
+
+      if (!started.success || !started.optimizationId) {
+        return {
+          id: taskId,
+          url: state?.url ?? '',
+          status: 'failed',
+          progress: 50,
+          error: started.message || 'Не удалось запустить оптимизацию',
+        };
+      }
+
+      const updated: OptimizationTaskState = {
+        url: state?.url ?? '',
+        options: state?.options ?? {
+          fixMeta: true,
+          fixHeadings: true,
+          fixImages: true,
+          generateSitemap: true,
+          optimizeContentSeo: true,
+        },
+        optimizationId: started.optimizationId,
+      };
+      this.saveState(taskId, updated);
+
+      return await this.optimizationStatus(taskId, updated);
     } catch (error) {
-      console.error('Error getting task status:', error);
       return {
         id: taskId,
-        url: '',
+        url: state?.url ?? '',
         status: 'failed',
-        error: error instanceof Error ? error.message : 'Unknown error'
+        progress: 0,
+        error: error instanceof Error ? error.message : 'Не удалось получить состояние задачи',
       };
     }
   }
 
-  // Add missing methods used in DeploymentPanel.tsx
-  async downloadOptimizedSite(taskId: string) {
+  private async optimizationStatus(
+    taskId: string,
+    state: OptimizationTaskState,
+  ): Promise<OptimizationTaskStatus> {
+    const status = await optimizationService.getOptimizationStatus(state.optimizationId!);
+
+    const failed = status.status === 'failed' || status.status === 'error';
+    return {
+      id: taskId,
+      url: state.url,
+      status: status.status === 'completed' ? 'completed' : (failed ? 'failed' : 'optimizing'),
+      stage: status.message,
+      progress: 50 + Math.round((status.progress ?? 0) / 2),
+      error: failed ? (status.message || 'Оптимизация завершилась ошибкой') : undefined,
+      result: status.result_data,
+    };
+  }
+
+  /**
+   * Выгрузка оптимизированной копии сайта.
+   * Серверной сборки архива пока нет — молча отдавать заглушку нельзя.
+   */
+  async downloadOptimizedSite(_taskId: string): Promise<never> {
+    throw new Error(
+      'Выгрузка оптимизированной копии из интерфейса пока не реализована. ' +
+      'Собрать копию можно скриптом scripts/pipeline.cjs (шаг clone + optimize).',
+    );
+  }
+
+  /**
+   * Публикация на хостинг клиента.
+   * Бэкенда для этого нет: раньше метод возвращал выдуманный адрес и «успех»,
+   * хотя никуда ничего не выкладывал. Публикация делается скриптом вручную.
+   */
+  async deploySite(_taskId: string, _deployOptions: unknown): Promise<never> {
+    throw new Error(
+      'Публикация на хостинг из интерфейса пока не реализована. ' +
+      'Используйте scripts/publish-subdomain.sh — он выкладывает готовую копию по SSH.',
+    );
+  }
+
+  private saveState(taskId: string, state: OptimizationTaskState): void {
     try {
-      console.log('Downloading optimized site for task:', taskId);
-      
-      // Simulate download process
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      // Return mock download URL (in a real implementation, this would be a blob URL)
-      return {
-        success: true,
-        downloadUrl: '#'
-      };
+      localStorage.setItem(`${STATE_PREFIX}${taskId}`, JSON.stringify(state));
     } catch (error) {
-      console.error('Error downloading optimized site:', error);
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : 'Unknown error'
-      };
+      console.warn('Не удалось сохранить параметры задачи оптимизации:', error);
     }
   }
 
-  async deploySite(taskId: string, deployOptions: any) {
+  private loadState(taskId: string): OptimizationTaskState | null {
     try {
-      console.log('Deploying site for task:', taskId, 'with options:', deployOptions);
-      
-      // Simulate deployment process
-      await new Promise(resolve => setTimeout(resolve, 3000));
-      
-      // Return mock result with url property
-      return {
-        success: true,
-        message: 'Site deployed successfully',
-        url: `https://optimized-${Date.now()}.example.com`
-      };
-    } catch (error) {
-      console.error('Error deploying site:', error);
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : 'Unknown error'
-      };
+      const raw = localStorage.getItem(`${STATE_PREFIX}${taskId}`);
+      return raw ? JSON.parse(raw) as OptimizationTaskState : null;
+    } catch {
+      return null;
     }
   }
 }

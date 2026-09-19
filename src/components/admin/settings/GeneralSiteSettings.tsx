@@ -1,82 +1,61 @@
-
 import React from 'react';
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { SITE_CONTACTS } from '@/config/site-contacts';
+
+/**
+ * Общие настройки сайта.
+ *
+ * Здесь были поля названия, описания, ключевых слов, контактов и соцсетей и
+ * переключатель режима обслуживания. Введённое никуда не уходило: контакты —
+ * это константа SITE_CONTACTS в коде, а хранилища настроек сайта нет. Админ
+ * вписывал настоящий email и телефон, получал «Настройки сохранены», а страница
+ * контактов оставалась пустой.
+ *
+ * Теперь раздел показывает, что сейчас указано, и где это менять.
+ */
+const valueOrEmpty = (value: string): string => value || 'не указан';
 
 const GeneralSiteSettings: React.FC = () => {
+  const address = [SITE_CONTACTS.streetAddress, SITE_CONTACTS.addressLocality]
+    .filter(Boolean)
+    .join(', ');
+
   return (
     <div className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle>Основные настройки сайта</CardTitle>
-          <CardDescription>Настройте общую информацию о вашем сайте</CardDescription>
+          <CardTitle>Контакты на сайте</CardTitle>
+          <CardDescription>
+            Задаются в файле src/config/site-contacts.ts. Пустое поле на сайте и в разметке для
+            поисковиков не выводится. После правки сайт нужно пересобрать и опубликовать.
+          </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="site-name">Название сайта</Label>
-            <Input id="site-name" defaultValue="SEO Market" />
-          </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="site-description">Описание сайта</Label>
-            <Textarea 
-              id="site-description" 
-              rows={3}
-              defaultValue="Оптимизируйте ваш сайт с помощью искусственного интеллекта" 
-            />
-          </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="site-keywords">Ключевые слова (через запятую)</Label>
-            <Input 
-              id="site-keywords" 
-              defaultValue="SEO, оптимизация, поисковые системы, аудит сайта" 
-            />
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="contact-email">Контактный email</Label>
-              <Input id="contact-email" type="email" defaultValue="info@seomarket.ru" />
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="contact-phone">Контактный телефон</Label>
-              <Input id="contact-phone" defaultValue="+7 (999) 123-45-67" />
-            </div>
-          </div>
-          
-          <div className="flex items-center space-x-2 pt-2">
-            <Switch id="maintenance-mode" />
-            <Label htmlFor="maintenance-mode">Режим обслуживания</Label>
-          </div>
+        <CardContent>
+          <dl className="grid grid-cols-1 sm:grid-cols-[max-content_1fr] gap-x-6 gap-y-2 text-sm">
+            <dt className="text-muted-foreground">Email</dt>
+            <dd className="break-words">{valueOrEmpty(SITE_CONTACTS.email)}</dd>
+            <dt className="text-muted-foreground">Email отдела продаж</dt>
+            <dd className="break-words">{valueOrEmpty(SITE_CONTACTS.salesEmail)}</dd>
+            <dt className="text-muted-foreground">Телефон</dt>
+            <dd className="break-words">{valueOrEmpty(SITE_CONTACTS.telephone)}</dd>
+            <dt className="text-muted-foreground">Адрес</dt>
+            <dd className="break-words">{valueOrEmpty(address)}</dd>
+            <dt className="text-muted-foreground">Соцсети</dt>
+            <dd className="break-words">
+              {SITE_CONTACTS.social.length > 0 ? SITE_CONTACTS.social.join(', ') : 'не указаны'}
+            </dd>
+          </dl>
         </CardContent>
       </Card>
-      
+
       <Card>
         <CardHeader>
-          <CardTitle>Социальные сети</CardTitle>
-          <CardDescription>Настройте ссылки на ваши социальные сети</CardDescription>
+          <CardTitle>Название, описание и режим обслуживания</CardTitle>
+          <CardDescription>
+            Заголовки и описания страниц задаются на самих страницах через компонент PageSeo.
+            Общих ключевых слов сайта и режима технического обслуживания в сервисе нет.
+          </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="social-vk">ВКонтакте</Label>
-            <Input id="social-vk" defaultValue="https://vk.com/seomarket" />
-          </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="social-telegram">Telegram</Label>
-            <Input id="social-telegram" defaultValue="https://t.me/seomarket" />
-          </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="social-youtube">YouTube</Label>
-            <Input id="social-youtube" defaultValue="https://youtube.com/c/seomarket" />
-          </div>
-        </CardContent>
       </Card>
     </div>
   );

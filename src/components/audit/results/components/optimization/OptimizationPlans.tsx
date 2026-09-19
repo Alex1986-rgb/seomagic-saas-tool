@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import { Check, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import {
   Accordion,
   AccordionContent,
@@ -94,7 +94,8 @@ const OptimizationPlan: React.FC<OptimizationPlanProps> = ({
         className="mt-auto w-full"
         onClick={onClick}
       >
-        Выбрать тариф
+        {/* Было «Выбрать тариф»: выбор нигде не сохраняется, кнопка ведёт на аудит, где считается смета. */}
+        Рассчитать по своему сайту
         <ArrowRight className="ml-2 h-4 w-4" />
       </Button>
     </motion.div>
@@ -102,6 +103,7 @@ const OptimizationPlan: React.FC<OptimizationPlanProps> = ({
 };
 
 const OptimizationPlans: React.FC = () => {
+  const navigate = useNavigate();
   // Список тарифных планов с обновленной логикой
   const plans = [
     {
@@ -221,6 +223,11 @@ const OptimizationPlans: React.FC = () => {
         </p>
       </div>
       
+      {/*
+        Кнопки тарифов делали window.location.href = `/audit?plan=…`: адрес мимо
+        подпути публикации давал 404, а параметр plan никто не читал. Смета
+        считается по итогам аудита, поэтому ведём на проверку сайта через роутер.
+      */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
         {plans.map((plan, index) => (
           <OptimizationPlan
@@ -232,7 +239,7 @@ const OptimizationPlans: React.FC = () => {
             features={plan.features}
             workItems={plan.workItems}
             popular={plan.popular}
-            onClick={() => window.location.href = `/audit?plan=${plan.title}`}
+            onClick={() => navigate('/site-audit')}
           />
         ))}
       </div>

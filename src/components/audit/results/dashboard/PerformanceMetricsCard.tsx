@@ -2,6 +2,7 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Activity, Clock, CheckCircle, XCircle, Repeat } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { toNumber } from '@/lib/numbers';
 
 interface PerformanceMetricsCardProps {
   avgLoadTimeMs?: number;
@@ -12,12 +13,18 @@ interface PerformanceMetricsCardProps {
 }
 
 const PerformanceMetricsCard: React.FC<PerformanceMetricsCardProps> = ({
-  avgLoadTimeMs = 0,
-  successRate = 0,
-  redirectPagesCount = 0,
-  errorPagesCount = 0,
-  totalPages = 0
+  avgLoadTimeMs: avgLoadTimeMsRaw = 0,
+  successRate: successRateRaw = 0,
+  redirectPagesCount: redirectPagesCountRaw = 0,
+  errorPagesCount: errorPagesCountRaw = 0,
+  totalPages: totalPagesRaw = 0
 }) => {
+  const avgLoadTimeMs = toNumber(avgLoadTimeMsRaw);
+  const successRate = toNumber(successRateRaw);
+  const redirectPagesCount = toNumber(redirectPagesCountRaw);
+  const errorPagesCount = toNumber(errorPagesCountRaw);
+  const totalPages = toNumber(totalPagesRaw);
+
   const metrics = [
     {
       label: 'Средняя загрузка',

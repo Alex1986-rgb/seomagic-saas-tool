@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { getHistoricalData, clearHistory } from '@/services/position/positionHistory';
 import { PositionData } from '@/services/position/positionTracker';
 import { PositionTrackerResults } from './PositionTrackerResults';
-import { History, Search, Trash2, RefreshCcw } from 'lucide-react';
+import { History, Search, Trash2, RefreshCcw, AlertCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 
@@ -16,12 +16,24 @@ export function PositionTrackerHistory() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedItem, setSelectedItem] = useState<PositionData | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  // Ошибку чтения показываем как ошибку. Раньше сбой запроса выглядел как
+  // «История проверок позиций пуста».
+  const [loadError, setLoadError] = useState<string | null>(null);
   const { toast } = useToast();
 
   const loadHistory = async () => {
-    const data = await getHistoricalData();
-    setHistory(data);
-    setFilteredHistory(data);
+    setIsLoading(true);
+    try {
+      const data = await getHistoricalData();
+      setHistory(data);
+      setFilteredHistory(data);
+      setLoadError(null);
+    } catch (error) {
+      setLoadError(error instanceof Error ? error.message : 'Не удалось загрузить историю проверок');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -53,13 +65,21 @@ export function PositionTrackerHistory() {
 
   const handleClear = async () => {
     if (window.confirm('Вы уверены, что хотите очистить всю историю проверок?')) {
-      await clearHistory();
-      setHistory([]);
-      setFilteredHistory([]);
-      toast({
-        title: "История очищена",
-        description: "Вся история проверок позиций была удалена"
-      });
+      try {
+        await clearHistory();
+        setHistory([]);
+        setFilteredHistory([]);
+        toast({
+          title: "История очищена",
+          description: "Вся история проверок позиций была удалена"
+        });
+      } catch (error) {
+        toast({
+          title: "Не удалось очистить историю",
+          description: error instanceof Error ? error.message : "Неизвестная ошибка",
+          variant: "destructive",
+        });
+      }
     }
   };
 
@@ -87,10 +107,10 @@ export function PositionTrackerHistory() {
           <h2 className="text-xl font-bold">История проверок позиций</h2>
         </div>
         <div className="flex gap-2">
-          <Button variant="ghost" size="icon" onClick={loadHistory} title="Обновить">
-            <RefreshCcw className="h-4 w-4" />
+          <Button variant="ghost" size="icon" onClick={loadHistory} disabled={isLoading} title="Обновить">
+            <RefreshCcw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
           </Button>
-          <Button variant="ghost" size="icon" onClick={handleClear} title="Очистить историю">
+          <Button variant="ghost" size="icon" onClick={handleClear} disabled={isLoading || !!loadError} title="Очистить историю">
             <Trash2 className="h-4 w-4" />
           </Button>
         </div>
@@ -108,7 +128,23 @@ export function PositionTrackerHistory() {
         </div>
       </div>
 
-      {filteredHistory.length === 0 ? (
+      {loadError ? (
+        <Card>
+          <CardContent className="py-10 text-center">
+            <AlertCircle className="mx-auto h-12 w-12 text-destructive mb-4" />
+            <p className="text-destructive">{loadError}</p>
+            <Button variant="outline" size="sm" className="mt-4" onClick={loadHistory} disabled={isLoading}>
+              Повторить
+            </Button>
+          </CardContent>
+        </Card>
+      ) : isLoading && history.length === 0 ? (
+        <Card>
+          <CardContent className="py-10 text-center text-muted-foreground">
+            Загрузка истории проверок...
+          </CardContent>
+        </Card>
+      ) : filteredHistory.length === 0 ? (
         <Card>
           <CardContent className="py-10 text-center">
             <History className="mx-auto h-12 w-12 text-muted-foreground mb-4" />

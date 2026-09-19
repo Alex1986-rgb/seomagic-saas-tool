@@ -10,6 +10,7 @@ import FeatureHeader from './components/FeatureHeader';
 import FeatureContent from './components/FeatureContent';
 import FeatureSidebar from './components/FeatureSidebar';
 import RelatedFeatures from './components/RelatedFeatures';
+import PageSeo from '@/components/seo/PageSeo';
 
 const defaultBenefits = [
   'Повышение позиций в поисковых системах',
@@ -60,7 +61,7 @@ ${featureData.description}
 
 ### Преимущества ${featureData.title}
 
-Использование этой функции поможет вам значительно улучшить SEO-показатели вашего сайта, увеличить органический трафик и обойти конкурентов. Наши клиенты отмечают в среднем рост позиций на 37% после внедрения рекомендаций системы.
+Функция показывает, какие ошибки мешают сайту в поиске, и помогает их исправить. Результат зависит от сайта и конкуренции в нише, поэтому конкретный рост позиций мы не обещаем.
 
 ### Кому это подходит?
 
@@ -75,6 +76,10 @@ ${featureData.description}
 
   return (
     <Layout>
+      <PageSeo
+        title={featureData.title}
+        description={featureData.description}
+      />
       <div className="container mx-auto px-4 py-16 md:py-24">
         <FeatureHeader 
           icon={featureData.icon}

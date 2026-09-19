@@ -3,6 +3,7 @@ import { SitemapExtractor } from '../services/audit/crawler/sitemapExtractor';
 import { firecrawlService } from '../services/api/firecrawl/index';
 import { CrawlTask } from '../services/api/firecrawl/types';
 import { supabase } from '@/integrations/supabase/client';
+import { absoluteAuditPageUrl } from '@/modules/audit/utils/auditLinks';
 
 export type ScanDetails = {
   current_url: string;
@@ -132,25 +133,28 @@ class SeoApiService {
     return firecrawlService.getTaskIdForUrl(url);
   }
 
-  async generateShareLink(taskId: string): Promise<string> {
-    try {
-      const baseUrl = window.location.origin;
-      return `${baseUrl}/audit?task_id=${taskId}`;
-    } catch (error) {
-      console.error('Error generating share link:', error);
-      throw error;
-    }
+  /**
+   * Ссылка на результаты аудита.
+   *
+   * Раньше ссылка собиралась от корня домена (`origin/audit?task_id=…`): сайт
+   * опубликован в подпапке, и получатель попадал на 404. Кроме того, страница
+   * /audit без параметра url результатов не показывает. Теперь ссылку строит
+   * общий помощник: с адресом публикации (BASE_URL), сайтом и задачей.
+   */
+  async generateShareLink(taskId: string, siteUrl: string): Promise<string> {
+    return absoluteAuditPageUrl(siteUrl, taskId);
   }
 
+  /**
+   * Отправка отчёта по почте.
+   *
+   * Здесь была имитация: запись в консоль, секунда ожидания и `true` — экран
+   * писал «Отчёт успешно отправлен», а письмо никуда не уходило. Функции,
+   * которая отправляет отчёт, у сервиса пока нет, поэтому честно отказываем:
+   * вызывающий покажет ошибку, а не ложный успех.
+   */
   async sendEmailReport(taskId: string, email: string): Promise<boolean> {
-    try {
-      console.log(`Sending report for task ${taskId} to ${email}`);
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      return true;
-    } catch (error) {
-      console.error('Error sending email report:', error);
-      throw error;
-    }
+    throw new Error('Отправка отчёта по почте пока не подключена');
   }
 
   async exportJSON(taskId: string): Promise<Blob> {

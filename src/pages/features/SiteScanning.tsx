@@ -1,12 +1,12 @@
 
 import React from 'react';
-import { Helmet } from 'react-helmet-async';
 import Layout from '@/components/Layout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { CheckCircle, Globe, Search, FileText, ArrowRight, Zap } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import PageSeo from '@/components/seo/PageSeo';
 
 const SiteScanning: React.FC = () => {
   const features = [
@@ -20,10 +20,10 @@ const SiteScanning: React.FC = () => {
 
   return (
     <Layout>
-      <Helmet>
-        <title>Полное сканирование сайта | SEO Market</title>
-        <meta name="description" content="Глубокий анализ всех страниц вашего сайта для обнаружения SEO проблем и возможностей для улучшения" />
-      </Helmet>
+      <PageSeo
+        title="Полное сканирование сайта: обход всех страниц и ссылок"
+        description="Краулер обходит сайт целиком, собирает адреса страниц, находит битые ссылки и цепочки редиректов и строит карту вашего сайта."
+      />
       
       <div className="min-h-screen bg-gradient-to-br from-background via-background/95 to-muted/30">
         <div className="container mx-auto px-4 py-16 md:py-24">

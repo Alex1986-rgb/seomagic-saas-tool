@@ -2,7 +2,34 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { RESOURCE_ITEMS, COMPANY_ITEMS, FEATURES_ITEMS, SUPPORT_ITEMS } from './navbar/navConstants';
-import { Mail, Phone, MapPin, Facebook, Twitter, Instagram, Linkedin, Github, FileText, Settings } from 'lucide-react';
+import { Mail, Phone, Facebook, Twitter, Instagram, Linkedin, Github, Send, Youtube, Globe, FileText } from 'lucide-react';
+import { SITE_CONTACTS } from '@/config/site-contacts';
+
+/** Домен ссылки без www; для кривого адреса — пустая строка (иконка по умолчанию). */
+const hostOf = (url: string): string => {
+  try {
+    return new URL(url).hostname.toLowerCase().replace(/^www\./, '');
+  } catch {
+    return '';
+  }
+};
+
+/** Совпадение с доменом или его поддоменом — не подстрока: «evil.com/?x.com» не должен считаться x.com. */
+const isHost = (host: string, ...domains: string[]) =>
+  domains.some((d) => host === d || host.endsWith(`.${d}`));
+
+/** Подбирает иконку по адресу страницы в соцсети. */
+const socialIconFor = (url: string) => {
+  const host = hostOf(url);
+  if (isHost(host, 'facebook.com', 'fb.com')) return <Facebook size={16} />;
+  if (isHost(host, 'twitter.com', 'x.com')) return <Twitter size={16} />;
+  if (isHost(host, 'instagram.com')) return <Instagram size={16} />;
+  if (isHost(host, 'linkedin.com')) return <Linkedin size={16} />;
+  if (isHost(host, 'github.com')) return <Github size={16} />;
+  if (isHost(host, 't.me', 'telegram.me', 'telegram.org')) return <Send size={16} />;
+  if (isHost(host, 'youtube.com', 'youtu.be')) return <Youtube size={16} />;
+  return <Globe size={16} />;
+};
 
 const Footer: React.FC = () => {
   console.log("Footer rendering");
@@ -22,24 +49,47 @@ const Footer: React.FC = () => {
               Комплексное решение для профессионального SEO аудита и оптимизации.
             </p>
             
-            <div className="mt-4 flex flex-col space-y-1">
-              <div className="flex items-center gap-2 text-muted-foreground text-sm">
-                <Mail className="h-3.5 w-3.5" />
-                <span>info@seomarket.ru</span>
+            {/*
+              Тут в подвале каждой страницы висели выдуманные контакты:
+              почта info@seomarket.ru и телефон +7 (999) 123-45-67. По номеру
+              звонили живые люди. Теперь строки берутся из SITE_CONTACTS и
+              показываются только тогда, когда контакт реально есть.
+            */}
+            {(SITE_CONTACTS.email || SITE_CONTACTS.telephone) && (
+              <div className="mt-4 flex flex-col space-y-1">
+                {SITE_CONTACTS.email && (
+                  <a
+                    href={`mailto:${SITE_CONTACTS.email}`}
+                    className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors text-sm"
+                  >
+                    <Mail className="h-3.5 w-3.5" />
+                    <span>{SITE_CONTACTS.email}</span>
+                  </a>
+                )}
+                {SITE_CONTACTS.telephone && (
+                  <a
+                    href={`tel:${SITE_CONTACTS.telephone.replace(/[^+\d]/g, '')}`}
+                    className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors text-sm"
+                  >
+                    <Phone className="h-3.5 w-3.5" />
+                    <span>{SITE_CONTACTS.telephone}</span>
+                  </a>
+                )}
               </div>
-              <div className="flex items-center gap-2 text-muted-foreground text-sm">
-                <Phone className="h-3.5 w-3.5" />
-                <span>+7 (999) 123-45-67</span>
-              </div>
-            </div>
+            )}
 
-            <div className="mt-4 flex space-x-3">
-              <SocialIcon href="https://facebook.com" icon={<Facebook size={16} />} />
-              <SocialIcon href="https://twitter.com" icon={<Twitter size={16} />} />
-              <SocialIcon href="https://instagram.com" icon={<Instagram size={16} />} />
-              <SocialIcon href="https://linkedin.com" icon={<Linkedin size={16} />} />
-              <SocialIcon href="https://github.com" icon={<Github size={16} />} />
-            </div>
+            {/*
+              Иконки соцсетей вели на голые facebook.com, twitter.com и прочие
+              главные страницы — у сервиса этих аккаунтов нет. Выводим только
+              те ссылки, которые указаны в SITE_CONTACTS.social.
+            */}
+            {SITE_CONTACTS.social.length > 0 && (
+              <div className="mt-4 flex space-x-3">
+                {SITE_CONTACTS.social.map((url) => (
+                  <SocialIcon key={url} href={url} icon={socialIconFor(url)} />
+                ))}
+              </div>
+            )}
           </div>
           
           <div>
@@ -70,10 +120,8 @@ const Footer: React.FC = () => {
                 <FileText className="h-3.5 w-3.5" />
                 <span>Все страницы</span>
               </FooterLink>
-              <FooterLink to="/project-details" className="flex items-center gap-1">
-                <Settings className="h-3.5 w-3.5" />
-                <span>Детали проекта</span>
-              </FooterLink>
+              {/* Ссылка «Детали проекта» (/project-details) убрана: это внутренняя
+                  страница владельца, теперь она открыта только администратору. */}
             </ul>
           </div>
           

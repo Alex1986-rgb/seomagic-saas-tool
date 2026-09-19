@@ -6,28 +6,19 @@ export class CaptchaService {
   private botableApiKey: string = '';
 
   constructor(captchaApiKey?: string, botableApiKey?: string) {
-    if (captchaApiKey) this.captchaApiKey = captchaApiKey;
-    if (botableApiKey) this.botableApiKey = botableApiKey;
-    
-    this.loadApiKeysFromStorage();
-  }
-
-  private loadApiKeysFromStorage() {
-    const storedCaptchaKey = localStorage.getItem('captchaApiKey');
-    const storedBotableKey = localStorage.getItem('botableApiKey');
-    
-    if (storedCaptchaKey) this.captchaApiKey = storedCaptchaKey;
-    if (storedBotableKey) this.botableApiKey = storedBotableKey;
+    // Ключи только в памяти сессии — не пишем в localStorage (clear-text storage).
+    // Ключи задаются на время работы: VITE-переменные попадают в собранный
+    // файл, то есть ключ увидел бы каждый посетитель сайта.
+    this.captchaApiKey = captchaApiKey || '';
+    this.botableApiKey = botableApiKey || '';
   }
 
   setCaptchaApiKey(apiKey: string): void {
     this.captchaApiKey = apiKey;
-    localStorage.setItem('captchaApiKey', apiKey);
   }
-  
+
   setBotableApiKey(apiKey: string): void {
     this.botableApiKey = apiKey;
-    localStorage.setItem('botableApiKey', apiKey);
   }
   
   getCaptchaApiKey(): string {

@@ -1,5 +1,6 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
-import { ANTHROPIC_MODEL, anthropicClient, textFromMessage } from '../_shared/anthropic.ts';
+import { generateText } from '../_shared/llm.ts';
+import { assertServiceRole, authErrorResponse } from '../_shared/auth.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -19,9 +20,37 @@ interface NotificationRequest {
   };
 }
 
+/**
+ * JSON из ответа модели. Модели любят обрамлять ответ пояснениями или блоком
+ * ```json — вытаскиваем сам объект, чтобы уведомление не срывалось из-за оформления.
+ */
+export function parseNotificationJson(text: string): { title: string; message: string } {
+  const cleaned = text.trim().replace(/^```(?:json)?/i, '').replace(/```$/, '').trim();
+  const start = cleaned.indexOf('{');
+  const end = cleaned.lastIndexOf('}');
+  const candidate = start >= 0 && end > start ? cleaned.slice(start, end + 1) : cleaned;
+
+  const parsed = JSON.parse(candidate);
+  if (typeof parsed?.title !== 'string' || typeof parsed?.message !== 'string') {
+    throw new Error('в ответе модели нет полей title и message');
+  }
+  return { title: parsed.title, message: parsed.message };
+}
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
+  }
+
+  // Called server-to-server by scoring-processor; also uses the AI gateway.
+  // Restrict to service-role callers so it can't be abused to spam users or
+  // burn AI credits.
+  try {
+    assertServiceRole(req);
+  } catch (err) {
+    const resp = authErrorResponse(err, corsHeaders);
+    if (resp) return resp;
+    throw err;
   }
 
   try {
@@ -42,10 +71,10 @@ Deno.serve(async (req) => {
       }
     );
 
-    // Check user notification preferences
+    // Настройки уведомлений пользователя
     const { data: profile, error: profileError } = await supabaseClient
       .from('profiles')
-      .select('email, email_notifications, notify_audit_completed, notify_optimization, notify_marketing')
+      .select('notify_audit_completed, notify_optimization, notify_marketing')
       .eq('id', user_id)
       .single();
 
@@ -54,13 +83,17 @@ Deno.serve(async (req) => {
       throw profileError;
     }
 
-    // Check if notifications are enabled for this type
-    const notificationEnabled = profile?.email_notifications && (
-      (type === 'audit_completed' && profile.notify_audit_completed) ||
-      (type === 'optimization_completed' && profile.notify_optimization) ||
-      (type === 'marketing' && profile.notify_marketing) ||
-      (type === 'system')
-    );
+    // Запись в кабинете решают только флаги по типу события. Раньше её ещё
+    // отключал флаг email_notifications, хотя писем функция не отправляет
+    // (email_sent: false): человек выключал «письма» и терял уведомления в
+    // кабинете. Пока письма не отправляются, флаг писем в решении не участвует.
+    // Пустое значение флага считаем включённым — как значение по умолчанию в
+    // таблице и в настройках кабинета.
+    const notificationEnabled =
+      (type === 'audit_completed' && profile?.notify_audit_completed !== false) ||
+      (type === 'optimization_completed' && profile?.notify_optimization !== false) ||
+      (type === 'marketing' && profile?.notify_marketing === true) ||
+      (type === 'system');
 
     if (!notificationEnabled) {
       console.log(`Notifications disabled for user ${user_id}, type ${type}`);
@@ -92,29 +125,15 @@ Deno.serve(async (req) => {
 
     let notificationContent: { title: string; message: string };
     try {
-      const anthropic = anthropicClient();
-      const aiMessage = await anthropic.messages.create({
-        model: ANTHROPIC_MODEL,
-        max_tokens: 1024,
-        output_config: {
-          effort: 'low',
-          format: {
-            type: 'json_schema',
-            schema: {
-              type: 'object',
-              properties: {
-                title: { type: 'string' },
-                message: { type: 'string' },
-              },
-              required: ['title', 'message'],
-              additionalProperties: false,
-            },
-          },
-        },
-        system: 'Ты - помощник для создания SEO-уведомлений.',
-        messages: [{ role: 'user', content: aiPrompt }],
+      // Формат задаём словами: единого способа требовать JSON у разных
+      // поставщиков нет, а ответ всё равно разбирается ниже с запасом.
+      const { text } = await generateText({
+        system: 'Ты — помощник для создания SEO-уведомлений. Отвечай строго объектом JSON '
+          + 'с полями "title" и "message", без пояснений и без markdown.',
+        prompt: aiPrompt,
+        maxTokens: 1024,
       });
-      notificationContent = JSON.parse(textFromMessage(aiMessage));
+      notificationContent = parseNotificationJson(text);
     } catch (aiError) {
       // Notification delivery must not fail because of the AI call — fall back to a template.
       console.error('AI notification generation failed:', aiError);

@@ -1,24 +1,23 @@
 
 import React from 'react';
-import { Database, Shield, Users, Bell, BarChart2, Activity, Info } from 'lucide-react';
+import { Database, Shield, Users, Bell, BarChart2, Activity } from 'lucide-react';
+import SystemInfo from './SystemInfo';
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 
 // Список разделов системных настроек
 const TILES = [
   {
     icon: <Database className="h-5 w-5 text-primary" />,
     label: "База данных",
-    desc: "Параметры подключения, мониторинг и оптимизация работы БД.",
+    desc: "Где смотреть подключения, нагрузку и структуру базы.",
     to: "/admin/system/database",
-    badge: <Badge variant="outline" className="ml-2">В работе</Badge>,
+    badge: undefined,
   },
   {
     icon: <Shield className="h-5 w-5 text-primary" />,
     label: "Безопасность",
-    desc: "Двухфакторная аутентификация, политики и аудит.",
+    desc: "Кто отвечает за защиту входа и где она настраивается.",
     to: "/admin/system/security",
     badge: undefined,
   },
@@ -32,41 +31,25 @@ const TILES = [
   {
     icon: <Bell className="h-5 w-5 text-primary" />,
     label: "Уведомления",
-    desc: "Системные email и SMS-оповещения, интеграция со Slack.",
+    desc: "Каналы оповещений администратору (пока не подключены).",
     to: "/admin/system/notifications",
     badge: undefined,
   },
   {
     icon: <BarChart2 className="h-5 w-5 text-primary" />,
     label: "Аналитика",
-    desc: "Google Analytics, сбор пользовательских событий.",
+    desc: "Счётчики работ платформы; посещаемость не измеряется.",
     to: "/admin/system/analytics",
     badge: undefined,
   },
   {
     icon: <Activity className="h-5 w-5 text-primary" />,
     label: "Производительность",
-    desc: "Мониторинг ресурсов и автоматизация оповещений.",
+    desc: "Метрики сервера не собираются; вызовы функций — в мониторинге.",
     to: "/admin/system/performance",
-    badge: <Badge variant="destructive" className="ml-2">ALERT</Badge>,
+    badge: undefined,
   }
 ];
-
-// Компонент актуальной информации о системе
-const SystemInfo = () => (
-  <div className="bg-gradient-to-br from-blue-600/5 to-indigo-600/5 border rounded-md p-4 flex flex-col md:flex-row md:items-center gap-4 mb-6">
-    <Info className="h-6 w-6 text-primary" />
-    <div>
-      <div className="text-md font-medium mb-1">Краткая информация о системе:</div>
-      <ul className="list-disc pl-6 text-muted-foreground space-y-1 text-sm">
-        <li>Последний аудит безопасности: <span className="text-foreground font-medium">19.04.2025</span></li>
-        <li>Текущий релиз: <span className="text-primary font-bold">v2.8.1</span></li>
-        <li>Интеграции активны (Slack, Analytica)</li>
-        <li>Зарегистрировано пользователей: <span className="text-foreground font-medium">13</span>, администраторов: <span className="font-medium">3</span></li>
-      </ul>
-    </div>
-  </div>
-);
 
 const SystemSettingsPage: React.FC = () => {
   const navigate = useNavigate();
@@ -79,7 +62,7 @@ const SystemSettingsPage: React.FC = () => {
     <div className="p-4 md:p-8 space-y-8 max-w-4xl mx-auto">
       <h1 className="text-2xl font-bold mb-2">Системные настройки</h1>
       <p className="text-muted-foreground mb-3 max-w-2xl">
-        Управление инфраструктурой платформы: база данных, безопасность, пользователи, аналитика и мониторинг. Используйте быстрые переходы для настройки модулей — доступ к каждому разделу можно получить ниже.
+        Разделы об инфраструктуре платформы: база данных, безопасность, пользователи, уведомления, аналитика и производительность.
       </p>
 
       <SystemInfo />
@@ -113,14 +96,15 @@ const SystemSettingsPage: React.FC = () => {
         ))}
       </div>
 
+      {/*
+        Здесь был список «Возможности»: история изменений, резервное копирование,
+        детальное логирование, пороговые оповещения. Ничего из этого в админке нет.
+      */}
       <div className="mt-10 text-sm text-muted-foreground space-y-2">
-        <div><b>Возможности:</b> гибкая настройка платформы, мониторинг состояния модулей, расширенные интеграции, история изменений.</div>
-        <ul className="list-disc pl-5">
-          <li>Безопасное хранение данных и резервное копирование</li>
-          <li>Детальное логирование действий</li>
-          <li>Пороговые оповещения и автоматизация событий</li>
-        </ul>
-        <div>Для критических изменений система может потребовать подтверждение администратора.</div>
+        <div>
+          Большинство разделов только объясняют, где настраивается та или иная часть платформы
+          (Supabase, секреты проекта, сборка сайта): из админки эти параметры не меняются.
+        </div>
       </div>
     </div>
   );

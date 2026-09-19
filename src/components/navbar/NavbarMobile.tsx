@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import ThemeSwitcher from '../ThemeSwitcher';
-import { ShieldCheck, ChevronDown, ChevronUp, LogIn, FileText } from 'lucide-react';
+import { ShieldCheck, ChevronDown, ChevronUp, LogIn, FileText, LayoutDashboard, User, BarChart } from 'lucide-react';
 import { Badge } from "@/components/ui/badge";
 import { NAV_ITEMS } from './navConstants';
 
@@ -129,19 +129,49 @@ const NavbarMobile: React.FC<NavbarMobileProps> = ({
             Все страницы
           </Link>
           
-          {/* Admin link - always visible in mobile menu */}
-          <Link 
-            to="/admin"
-            className="flex items-center justify-between px-4 py-3 bg-purple-500/10 hover:bg-purple-500/20 rounded-md transition-colors"
-          >
-            <div className="flex items-center gap-2">
-              <ShieldCheck className="h-4 w-4 text-purple-500" />
-              <span className="font-medium">Админ-панель</span>
+          {/* Разделы кабинета. На телефоне меню пользователя из шапки скрыто
+              (оно только для широкого экрана), а здесь была одна кнопка
+              «Выйти» — вошедший человек не мог попасть в свой кабинет. */}
+          {isLoggedIn && (
+            <div className="pt-2 mt-2 border-t border-border/50 space-y-1">
+              <Link
+                to="/dashboard"
+                className="flex items-center gap-2 px-4 py-3 hover:bg-accent/20 rounded-md transition-colors font-medium"
+              >
+                <LayoutDashboard className="h-4 w-4 text-primary" />
+                Кабинет
+              </Link>
+              <Link
+                to="/profile"
+                className="flex items-center gap-2 px-4 py-3 hover:bg-accent/20 rounded-md transition-colors font-medium"
+              >
+                <User className="h-4 w-4 text-primary" />
+                Профиль
+              </Link>
+              <Link
+                to="/audit-history"
+                className="flex items-center gap-2 px-4 py-3 hover:bg-accent/20 rounded-md transition-colors font-medium"
+              >
+                <BarChart className="h-4 w-4 text-primary" />
+                История аудитов
+              </Link>
             </div>
-            <Badge variant="default" className="bg-purple-500">
-              ADMIN
-            </Badge>
-          </Link>
+          )}
+
+          {/* Ссылка в админку — только администратору. Раньше её видел каждый
+              посетитель: раздел закрыт проверкой прав, но кнопка в чужой
+              кабинет в меню смущала людей. */}
+          {isAdmin && (
+            <Link
+              to="/admin"
+              className="flex items-center justify-between px-4 py-3 bg-purple-500/10 hover:bg-purple-500/20 rounded-md transition-colors"
+            >
+              <div className="flex items-center gap-2">
+                <ShieldCheck className="h-4 w-4 text-purple-500" />
+                <span className="font-medium">Админ-панель</span>
+              </div>
+            </Link>
+          )}
         </nav>
         
         <div className="flex items-center gap-3 pt-4 border-t border-border/50">

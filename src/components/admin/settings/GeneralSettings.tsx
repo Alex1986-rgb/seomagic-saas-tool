@@ -1,122 +1,52 @@
-import React, { useState } from 'react';
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge"; // Added missing Badge import
-import { Save, Check } from 'lucide-react';
-import { useToast } from "@/hooks/use-toast";
+import React from 'react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Info } from 'lucide-react';
+import { SITE_CONTACTS } from '@/config/site-contacts';
 
-const GeneralSettings: React.FC = () => {
-  const [siteName, setSiteName] = useState("SeoMarket");
-  const [siteUrl, setSiteUrl] = useState("https://seomarket.ru");
-  const [adminEmail, setAdminEmail] = useState("admin@seomarket.ru");
-  const [contactEmail, setContactEmail] = useState("support@seomarket.ru");
-  const [description, setDescription] = useState("SeoMarket - платформа для SEO-аудита и автоматической оптимизации сайтов.");
-  const [maintenanceMode, setMaintenanceMode] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
-  const { toast } = useToast();
+/**
+ * Общие настройки.
+ *
+ * Здесь были поля «Название сайта», «URL сайта» (с несуществующим
+ * https://seomarket.ru), «Email администратора», «Контактный Email», «Описание
+ * сайта», переключатель «Режим технического обслуживания» и кнопка, которая
+ * через 0,8 секунды таймера отвечала «Настройки сохранены». Ничего не
+ * записывалось: хранилища настроек сайта нет, а режима обслуживания в сервисе
+ * не существует.
+ *
+ * Эти значения живут в коде, поэтому показываем, что там сейчас, и где их менять.
+ */
+const valueOrEmpty = (value: string): string => value || 'не указан';
 
-  const handleSave = () => {
-    setIsSaving(true);
-    
-    // Имитация сохранения на сервере
-    setTimeout(() => {
-      setIsSaving(false);
-      toast({
-        title: "Настройки сохранены",
-        description: "Изменения общих настроек успешно сохранены.",
-        variant: "default",
-      });
-    }, 800);
-  };
-  
-  return (
-    <div className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="space-y-2">
-          <Label htmlFor="site-name">Название сайта</Label>
-          <Input 
-            id="site-name" 
-            value={siteName}
-            onChange={(e) => setSiteName(e.target.value)} 
-          />
-        </div>
-        
-        <div className="space-y-2">
-          <Label htmlFor="site-url">URL сайта</Label>
-          <Input 
-            id="site-url" 
-            value={siteUrl}
-            onChange={(e) => setSiteUrl(e.target.value)} 
-          />
-        </div>
-        
-        <div className="space-y-2">
-          <Label htmlFor="admin-email">Email администратора</Label>
-          <Input 
-            id="admin-email" 
-            value={adminEmail}
-            onChange={(e) => setAdminEmail(e.target.value)} 
-            type="email" 
-          />
-        </div>
-        
-        <div className="space-y-2">
-          <Label htmlFor="contact-email">Контактный Email</Label>
-          <Input 
-            id="contact-email"
-            value={contactEmail}
-            onChange={(e) => setContactEmail(e.target.value)}
-            type="email" 
-          />
-        </div>
-      </div>
-      
-      <div className="space-y-2">
-        <Label htmlFor="site-description">Описание сайта</Label>
-        <Textarea 
-          id="site-description" 
-          rows={4}
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-        />
-      </div>
-      
-      <div className="flex items-center space-x-2">
-        <Switch 
-          id="maintenance-mode" 
-          checked={maintenanceMode}
-          onCheckedChange={setMaintenanceMode}
-        />
-        <Label htmlFor="maintenance-mode">
-          Режим технического обслуживания
-          {maintenanceMode && (
-            <Badge variant="outline" className="ml-2 text-yellow-500 border-yellow-500">
-              Активен
-            </Badge>
-          )}
-        </Label>
-      </div>
-      
-      <div className="flex justify-end">
-        <Button onClick={handleSave} className="gap-2" disabled={isSaving}>
-          {isSaving ? (
-            <>
-              <span className="animate-spin h-4 w-4 border-2 border-current border-t-transparent rounded-full"></span>
-              <span>Сохранение...</span>
-            </>
-          ) : (
-            <>
-              <Save className="h-4 w-4" />
-              <span>Сохранить настройки</span>
-            </>
-          )}
-        </Button>
-      </div>
-    </div>
-  );
-};
+const GeneralSettings: React.FC = () => (
+  <Card>
+    <CardHeader>
+      <CardTitle className="flex items-center gap-2">
+        <Info className="h-5 w-5 text-muted-foreground" />
+        Общие настройки задаются в коде сайта
+      </CardTitle>
+      <CardDescription>
+        Сохранять их из админки некуда, поэтому формы здесь нет — только текущие значения.
+      </CardDescription>
+    </CardHeader>
+    <CardContent className="space-y-4 text-sm">
+      <dl className="grid grid-cols-1 sm:grid-cols-[max-content_1fr] gap-x-6 gap-y-2">
+        <dt className="text-muted-foreground">Контактный email</dt>
+        <dd className="break-words">{valueOrEmpty(SITE_CONTACTS.email)}</dd>
+        <dt className="text-muted-foreground">Email отдела продаж</dt>
+        <dd className="break-words">{valueOrEmpty(SITE_CONTACTS.salesEmail)}</dd>
+        <dt className="text-muted-foreground">Телефон</dt>
+        <dd className="break-words">{valueOrEmpty(SITE_CONTACTS.telephone)}</dd>
+      </dl>
+      <ul className="list-disc pl-5 space-y-1 text-muted-foreground">
+        <li>контакты, адрес и соцсети — в файле src/config/site-contacts.ts;</li>
+        <li>название сервиса в заголовках страниц — в src/components/seo/PageSeo.tsx;</li>
+        <li>режима технического обслуживания в сервисе нет.</li>
+      </ul>
+      <p className="text-muted-foreground">
+        После правки файлов сайт нужно пересобрать и опубликовать заново.
+      </p>
+    </CardContent>
+  </Card>
+);
 
 export default GeneralSettings;

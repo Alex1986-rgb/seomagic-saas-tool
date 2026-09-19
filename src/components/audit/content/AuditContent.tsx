@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import { motion } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 import AuditStatus from '@/components/audit/results/components/AuditStatus';
 import AuditResultHeader from '@/components/audit/results/components/AuditResultHeader';
 import AuditReportActions from '@/components/audit/results/components/AuditReportActions';
@@ -10,12 +11,22 @@ import InteractiveOptimizationPanel from '@/components/audit/results/components/
 import AuditTabs from '@/components/audit/AuditTabs';
 import AuditRecommendations from '@/components/audit/AuditRecommendations';
 import AuditShareResults from '@/components/audit/share/AuditShareResults';
-import AuditComments from '@/components/audit/comments/AuditComments';
 import AuditHistory from '@/components/audit/AuditHistory';
 import AuditDataVisualizer from '@/components/audit/data-visualization/AuditDataVisualizer';
 import AuditComparison from '@/components/audit/comparison/AuditComparison';
 import GrowthVisualization from '@/components/audit/data-visualization/GrowthVisualization';
 import { AuditData, RecommendationData, AuditHistoryData } from '@/types/audit';
+import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/contexts/AuthContext';
+import { useScanContext } from '@/contexts/ScanContext';
+import { auditService } from '@/modules/audit/services/auditService';
+import { auditPagePath } from '@/modules/audit/utils/auditLinks';
+
+/**
+ * Сколько страниц обходить при «глубоком сканировании» с экрана результатов —
+ * то же значение, что audit-start берёт для глубокого аудита по умолчанию.
+ */
+const DEEP_SCAN_PAGES = 100;
 
 export interface AuditContentProps {
   // Core props
@@ -49,12 +60,19 @@ export interface AuditContentProps {
   onRetry?: () => void;
   onDownloadSitemap?: () => void;
   loadAuditData?: (refresh?: boolean, deepScan?: boolean) => Promise<void> | void;
+  /** Открыть аудит из истории. Не передан — открываем его задачу сами. */
   handleSelectHistoricalAudit?: (auditId: string) => void;
   exportJSONData?: () => void;
   generatePdfReportFile?: () => void;
+  /**
+   * Скачать исправленную копию сайта. Без обработчика кнопки нет: сборка копии
+   * на сервере пока не реализована.
+   */
   downloadOptimizedSite?: () => Promise<void>;
   optimizeSiteContent?: () => Promise<void>;
   setContentOptimizationPrompt?: (prompt: string) => void;
+  /** Посчитать смету по задаче аудита — без неё панель оптимизации пустая. */
+  loadOptimizationCost?: (taskId: string) => Promise<void>;
   
   // Optional variant props
   variant?: 'full' | 'minimal';
@@ -92,32 +110,63 @@ const AuditContent: React.FC<AuditContentProps> = ({
   onRetry = () => {},
   onDownloadSitemap,
   loadAuditData = () => {},
-  handleSelectHistoricalAudit = () => {},
+  handleSelectHistoricalAudit,
   exportJSONData = () => {},
   generatePdfReportFile = () => {},
-  downloadOptimizedSite = () => {},
+  downloadOptimizedSite,
   optimizeSiteContent = () => {},
   setContentOptimizationPrompt = () => {},
+  loadOptimizationCost,
   
   // Display variant
   variant = 'full',
   urls,
 }) => {
-  // Helper function to ensure proper Promise handling
-  const safeOptimizeSiteContent = async (): Promise<void> => {
-    if (optimizeSiteContent) {
-      return optimizeSiteContent();
-    }
-    return Promise.resolve();
-  };
+  const navigate = useNavigate();
+  const { toast } = useToast();
+  const { user } = useAuth();
+  const { startScan } = useScanContext();
 
-  const safeDownloadOptimizedSite = async (): Promise<void> => {
-    if (downloadOptimizedSite) {
-      return downloadOptimizedSite();
+  /**
+   * Выбор даты в «Истории аудита». Раньше по умолчанию стояла пустая функция:
+   * кнопка ничего не открывала. В истории лежат записи `audits`, а страница
+   * результатов открывает задачу — находим её и переходим.
+   */
+  const openHistoricalAudit = useCallback(async (auditId: string) => {
+    const historicalTaskId = await auditService.getTaskIdForAudit(auditId);
+    if (!historicalTaskId) {
+      toast({
+        title: 'Аудит не открывается',
+        description: 'У этой записи не найдена задача с результатами.',
+        variant: 'destructive',
+      });
+      return;
     }
-    return Promise.resolve();
-  };
-  
+    navigate(auditPagePath(url, historicalTaskId));
+  }, [navigate, toast, url]);
+
+  const selectHistoricalAudit = useCallback((auditId: string) => {
+    if (handleSelectHistoricalAudit) {
+      handleSelectHistoricalAudit(auditId);
+      return;
+    }
+    void openHistoricalAudit(auditId);
+  }, [handleSelectHistoricalAudit, openHistoricalAudit]);
+
+  /**
+   * «Запустить глубокое сканирование». Раньше здесь был `loadAuditData(false, true)`:
+   * второй аргумент нигде не читался, перечитывались старые данные, а новый
+   * обход не начинался. Теперь запускаем настоящую проверку; глубокий аудит,
+   * как и на вкладке запуска, — только после входа.
+   */
+  const handleDeepScan = useCallback(async () => {
+    if (!user.isLoggedIn) {
+      navigate(`/auth?redirect=${encodeURIComponent(auditPagePath(url, taskId))}`);
+      return;
+    }
+    await startScan(true, Math.max(DEEP_SCAN_PAGES, scanDetails?.estimated_pages || 0));
+  }, [user.isLoggedIn, navigate, url, taskId, startScan, scanDetails?.estimated_pages]);
+
   // If minimal version is requested, show simplified version
   if (variant === 'minimal' && auditData) {
     return renderMinimalVersion();
@@ -141,8 +190,12 @@ const AuditContent: React.FC<AuditContentProps> = ({
         />
       )}
       
-      {/* Display results after audit completion */}
-      {!isLoading && !isScanning && !auditError && auditData && recommendations && variant === 'full' && (
+      {/*
+        Результаты — как только есть данные аудита. Раньше требовались ещё и
+        рекомендации, а их нет у сайта без замечаний: экран оставался пустым,
+        хотя аудит завершён. Блок рекомендаций сам не рисуется, если их нет.
+      */}
+      {!isLoading && !isScanning && !auditError && auditData && variant === 'full' && (
         <>
           {/* Header and main audit data */}
           <AuditResultHeader 
@@ -152,12 +205,12 @@ const AuditContent: React.FC<AuditContentProps> = ({
             historyData={historyData}
             taskId={taskId || ""}
             onRefresh={() => loadAuditData(true)}
-            onDeepScan={() => loadAuditData(false, true)}
+            onDeepScan={() => void handleDeepScan()}
             isRefreshing={isRefreshing}
             onDownloadSitemap={onDownloadSitemap}
             onTogglePrompt={onTogglePrompt}
             onExportJSON={exportJSONData}
-            onSelectAudit={handleSelectHistoricalAudit}
+            onSelectAudit={selectHistoricalAudit}
             showPrompt={showPrompt}
           />
 
@@ -187,11 +240,18 @@ const AuditContent: React.FC<AuditContentProps> = ({
           <div id="optimization-section">
             <InteractiveOptimizationPanel
               url={url}
+              taskId={taskId || auditData.id}
+              currentScore={auditData.score}
               optimizationCost={optimizationCost}
               optimizationItems={optimizationItems}
               pageCount={auditData.pageCount || 0}
               isOptimized={isOptimized}
-              onDownloadOptimizedSite={safeDownloadOptimizedSite}
+              onCalculateCost={
+                loadOptimizationCost && (taskId || auditData.id)
+                  ? () => { void loadOptimizationCost(taskId || auditData.id); }
+                  : undefined
+              }
+              onDownloadOptimizedSite={downloadOptimizedSite ? () => { void downloadOptimizedSite(); } : undefined}
               onGeneratePdfReport={generatePdfReportFile}
             />
           </div>
@@ -217,33 +277,40 @@ const AuditContent: React.FC<AuditContentProps> = ({
       </motion.div>
     );
 
-    const showGrowthVisualization = auditData.previousScore !== undefined || 
-      (historyData && historyData.items?.length > 1);
+    /**
+     * Сравнение «было → стало».
+     *
+     * Здесь лежал заготовленный набор: разделы «SEO» и «Производительность»
+     * были вписаны в код целиком (Meta-теги 55→85, Core Web Vitals 40→70) и
+     * показывались любому сайту одинаково, а в общем разделе вместо
+     * отсутствующей прошлой оценки подставлялись числа 65, 60, 55, 70 и 45 —
+     * то есть «рост» рисовался даже там, где сравнивать было не с чем.
+     *
+     * Теперь сравнение строится только по настоящей прошлой оценке. Нет
+     * второго аудита — блок не показывается.
+     */
+    const previousScore = auditData.previousScore;
+    const showGrowthVisualization = previousScore !== undefined;
 
-    // Sample data for growth visualization (would typically come from props)
-    const growthData = {
-      overview: [
-        { category: 'Общий балл', before: auditData.previousScore || 65, after: auditData.score },
-        { category: 'SEO', before: auditData.details?.seo?.previousScore || 60, after: auditData.details?.seo?.score },
-        { category: 'Производительность', before: auditData.details?.performance?.previousScore || 55, after: auditData.details?.performance?.score },
-        { category: 'Контент', before: auditData.details?.content?.previousScore || 70, after: auditData.details?.content?.score },
-        { category: 'Технические аспекты', before: auditData.details?.technical?.previousScore || 45, after: auditData.details?.technical?.score },
-      ],
-      seo: [
-        { category: 'Meta-теги', before: 55, after: 85 },
-        { category: 'Ключевые слова', before: 60, after: 80 },
-        { category: 'С��руктура URL', before: 70, after: 90 },
-        { category: 'Внутренние ссылки', before: 50, after: 75 },
-        { category: 'Внешние ссылки', before: 65, after: 85 },
-      ],
-      performance: [
-        { category: 'Время загрузки', before: 45, after: 75 },
-        { category: 'Размер страницы', before: 50, after: 80 },
-        { category: 'Кеширование', before: 60, after: 90 },
-        { category: 'Мобильная оптимизация', before: 55, after: 85 },
-        { category: 'Core Web Vitals', before: 40, after: 70 },
-      ]
-    };
+    const growthData = showGrowthVisualization
+      ? {
+          overview: [
+            { category: 'Общий балл', before: previousScore as number, after: auditData.score },
+            ...(['seo', 'content', 'performance', 'technical'] as const).flatMap((key) => {
+              const section = auditData.details?.[key];
+              const before = section?.previousScore;
+              if (before === undefined || section?.score === undefined) return [];
+              const titles: Record<typeof key, string> = {
+                seo: 'SEO',
+                content: 'Контент',
+                performance: 'Производительность',
+                technical: 'Технические аспекты',
+              };
+              return [{ category: titles[key], before, after: section.score }];
+            }),
+          ],
+        }
+      : null;
 
     return (
       <>
@@ -251,7 +318,7 @@ const AuditContent: React.FC<AuditContentProps> = ({
           renderWithAnimation(
             <AuditHistory 
               historyItems={historyData.items} 
-              onSelectAudit={handleSelectHistoricalAudit}
+              onSelectAudit={selectHistoricalAudit}
             />, 
             0.1
           )
@@ -262,7 +329,7 @@ const AuditContent: React.FC<AuditContentProps> = ({
           0.15
         )}
         
-        {showGrowthVisualization && 
+        {showGrowthVisualization && growthData && 
           renderWithAnimation(
             <GrowthVisualization beforeAfterData={growthData} />,
             0.2
@@ -289,11 +356,12 @@ const AuditContent: React.FC<AuditContentProps> = ({
           0.35
         )}
         
-        {renderWithAnimation(
-          <AuditComments auditId={auditData.id} />, 
-          0.4
-        )}
-        
+        {/*
+          Здесь был блок «Комментарии к аудиту» с чужим комментарием «Иван
+          Петров» и ответами «Комментарий добавлен к аудиту». Комментарии
+          нигде не сохранялись и пропадали при обновлении страницы, таблицы для
+          них в базе нет. Блок убран, пока не появится настоящее хранение.
+        */}
         {renderWithAnimation(
           <AuditShareResults 
             auditId={auditData.id} 

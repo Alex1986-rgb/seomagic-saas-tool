@@ -3,10 +3,15 @@ import React from 'react';
 import Layout from '@/components/Layout';
 import { motion } from 'framer-motion';
 import { Button } from "@/components/ui/button";
+import PageSeo from '@/components/seo/PageSeo';
 
 const IPInfo: React.FC = () => {
   return (
     <Layout>
+      <PageSeo
+        title="Узнать свой IP-адрес и данные о подключении онлайн"
+        description="Сервис показывает ваш текущий IP-адрес и сведения о нём. Здесь же — что такое IP, какие бывают типы адресов и зачем их знать."
+      />
       <div className="container mx-auto px-4 py-32">
         <motion.div 
           initial={{ opacity: 0, y: 20 }}

@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useMemo } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Button } from "@/components/ui/button";
@@ -8,81 +8,44 @@ import { BlogPostHeader } from '@/components/blog/BlogPostHeader';
 import BlogPostContent from '@/components/blog/BlogPostContent';
 import { RelatedPosts } from '@/components/blog/RelatedPosts';
 import { BlogPost as BlogPostType } from '@/types/blog';
-import { SEO } from '@/components/SEO';
+import PageSeo from '@/components/seo/PageSeo';
 import { ArticleSEO } from '@/components/seo/ArticleSEO';
 import { BreadcrumbSchema } from '@/components/seo/BreadcrumbSchema';
 
 const BlogPost: React.FC = () => {
   const { id } = useParams<{ id: string }>();
-  const [post, setPost] = useState<BlogPostType | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [relatedPosts, setRelatedPosts] = useState<BlogPostType[]>([]);
 
-  const postData = useMemo(() => {
-    if (!id) return { post: null, related: [] };
+  /*
+   * Статьи лежат в коде и находятся сразу, без обращения к серверу. Раньше
+   * страница всё равно держала состояние «загрузка» и копировала статью в
+   * useState из эффекта: первый кадр был заглушкой без заголовка и canonical
+   * (их подставлял общий DefaultSEO), а при переходе со статьи на
+   * несуществующий адрес оставалась показанной прежняя статья — эффект не
+   * сбрасывал её. Теперь статья вычисляется прямо из адреса.
+   */
+  const { post, relatedPosts } = useMemo((): { post: BlogPostType | null; relatedPosts: BlogPostType[] } => {
+    const foundPost = id ? mockBlogPosts.find(p => p.id.toString() === id) : undefined;
+    if (!foundPost) return { post: null, relatedPosts: [] };
 
-    const foundPost = mockBlogPosts.find(p => p.id.toString() === id) as any;
-    
-    if (!foundPost) return { post: null, related: [] };
-
-    if (!('date' in foundPost && 
-        'author' in foundPost && 
-        'category' in foundPost && 
-        'image' in foundPost && 
-        'tags' in foundPost)) {
-      return { post: null, related: [] };
-    }
-
-    const validPost = foundPost as BlogPostType;
-    
     const related = mockBlogPosts
-      .filter(p => 
-        p.id.toString() !== id && 
-        'tags' in p && 
-        p.tags && 
-        p.tags.some(tag => validPost.tags.includes(tag))
+      .filter(p =>
+        p.id !== foundPost.id &&
+        p.tags.some(tag => foundPost.tags.includes(tag))
       )
-      .filter(p => 
-        'date' in p && 
-        'author' in p && 
-        'category' in p && 
-        'image' in p && 
-        'tags' in p
-      )
-      .slice(0, 3) as BlogPostType[];
-    
-    return { post: validPost, related };
+      .slice(0, 3);
+
+    return { post: foundPost, relatedPosts: related };
   }, [id]);
-
-  useEffect(() => {
-    if (postData.post) {
-      setPost(postData.post);
-      setRelatedPosts(postData.related);
-    }
-    setLoading(false);
-  }, [postData]);
-
-  if (loading) {
-    return (
-      <Layout>
-        <div className="container mx-auto px-4 py-20">
-          <div className="max-w-4xl mx-auto">
-            <div className="h-[400px] bg-gray-200 animate-pulse rounded-lg mb-8"></div>
-            <div className="space-y-4">
-              <div className="h-8 bg-gray-200 animate-pulse rounded w-3/4"></div>
-              <div className="h-4 bg-gray-200 animate-pulse rounded"></div>
-              <div className="h-4 bg-gray-200 animate-pulse rounded"></div>
-              <div className="h-4 bg-gray-200 animate-pulse rounded w-4/5"></div>
-            </div>
-          </div>
-        </div>
-      </Layout>
-    );
-  }
 
   if (!post) {
     return (
       <Layout>
+        {/* Адрес без статьи в поиск попадать не должен. */}
+        <PageSeo
+          title="Статья не найдена"
+          description="Запрашиваемая статья не существует или была удалена."
+          noindex
+        />
         <div className="container mx-auto px-4 py-32">
           <div className="max-w-3xl mx-auto text-center">
             <h1 className="text-3xl font-bold mb-6">Статья не найдена</h1>
@@ -98,12 +61,10 @@ const BlogPost: React.FC = () => {
 
   return (
     <Layout>
-      <SEO
-        title={`${post.title} | Блог SeoMarket`}
+      <PageSeo
+        title={post.title}
         description={post.excerpt}
-        canonicalUrl={`/blog/${post.id}`}
-        ogImage={post.image}
-        keywords={post.tags.join(', ')}
+        image={post.image}
       />
       <ArticleSEO post={post} />
       <BreadcrumbSchema items={[

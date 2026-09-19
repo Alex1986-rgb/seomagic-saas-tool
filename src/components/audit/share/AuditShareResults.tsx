@@ -12,6 +12,7 @@ import CopyLinkButton from './CopyLinkButton';
 import EmailShareButton from './EmailShareButton';
 import ExportDropdown from './ExportDropdown';
 import { seoApiService } from '@/api/seoApiService';
+import { absoluteAuditPageUrl } from '@/modules/audit/utils/auditLinks';
 
 interface AuditShareResultsProps {
   auditId: string;
@@ -38,26 +39,32 @@ const AuditShareResults: React.FC<AuditShareResultsProps> = ({
 }) => {
   const [shareUrl, setShareUrl] = useState<string>('');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [emailInput, setEmailInput] = useState('');
-  const [isEmailDialogOpen, setIsEmailDialogOpen] = useState(false);
   const [isGeneratingLink, setIsGeneratingLink] = useState(false);
-  const [isSendingEmail, setIsSendingEmail] = useState(false);
   const { toast } = useToast();
+
+  /**
+   * Без задачи аудита ссылку дать не на что. Раньше в этом случае собиралась
+   * ссылка от корня домена (на подпути сайта — 404), а если бы и открылась,
+   * страница по ней запускала новую проверку вместо показа результатов.
+   */
+  const buildShareLink = async (): Promise<string | null> => {
+    if (!taskId) {
+      toast({
+        title: "Ссылка пока недоступна",
+        description: "Дождитесь окончания аудита — тогда появится ссылка на результаты.",
+        variant: "destructive",
+      });
+      return null;
+    }
+    return seoApiService.generateShareLink(taskId, url);
+  };
 
   const handleGenerateShareLink = async () => {
     setIsGeneratingLink(true);
     try {
-      let generatedLink;
-      
-      if (taskId) {
-        // Use backend API to generate share link
-        generatedLink = await seoApiService.generateShareLink(taskId);
-      } else {
-        // Fallback to frontend implementation
-        const baseUrl = window.location.origin;
-        generatedLink = `${baseUrl}/audit?url=${encodeURIComponent(url)}&share=${auditId}`;
-      }
-      
+      const generatedLink = await buildShareLink();
+      if (!generatedLink) return;
+
       setShareUrl(generatedLink);
       setIsDialogOpen(true);
     } catch (error) {
@@ -80,41 +87,29 @@ const AuditShareResults: React.FC<AuditShareResultsProps> = ({
     });
   };
 
-  const handleSendEmail = async () => {
-    if (!emailInput.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
-      toast({
-        title: "Некорректный email",
-        description: "Пожалуйста, введите корректный email адрес",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setIsSendingEmail(true);
+  /**
+   * Ссылка на результаты — в письме из почтовой программы человека.
+   *
+   * Раньше здесь было окно «Отправить отчёт по email»: сервис ждал секунду и
+   * писал «Отчёт успешно отправлен», а письмо никуда не уходило — отправки
+   * отчётов у сервиса нет. Теперь письмо пишет и отправляет сам человек,
+   * а мы только подставляем в него ссылку.
+   */
+  const handleEmailLink = async () => {
     try {
-      if (taskId) {
-        // Use backend API to send email
-        await seoApiService.sendEmailReport(taskId, emailInput);
-      } else {
-        // Fallback to frontend implementation (simulated)
-        await new Promise(resolve => setTimeout(resolve, 1000));
-      }
-      
-      setIsEmailDialogOpen(false);
-      toast({
-        title: "Отчет отправлен",
-        description: `Отчет успешно отправлен на ${emailInput}`,
-      });
-      setEmailInput('');
+      const link = await buildShareLink();
+      if (!link) return;
+
+      const subject = `SEO-аудит сайта ${url}`;
+      const body = `Результаты SEO-аудита сайта ${url}:\n${link}`;
+      window.location.href = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
     } catch (error) {
-      console.error('Error sending email:', error);
+      console.error('Error preparing email link:', error);
       toast({
-        title: "Ошибка отправки",
-        description: "Не удалось отправить отчет по email",
+        title: "Не удалось подготовить письмо",
+        description: "Скопируйте ссылку через «Создать ссылку» и отправьте её сами",
         variant: "destructive",
       });
-    } finally {
-      setIsSendingEmail(false);
     }
   };
 
@@ -137,10 +132,10 @@ const AuditShareResults: React.FC<AuditShareResultsProps> = ({
         <Button
           variant="outline"
           className="gap-2"
-          onClick={() => setIsEmailDialogOpen(true)}
+          onClick={handleEmailLink}
         >
           <Mail className="h-4 w-4" />
-          Отправить по email
+          Отправить ссылку по почте
         </Button>
         
         <ExportDropdown 
@@ -156,7 +151,13 @@ const AuditShareResults: React.FC<AuditShareResultsProps> = ({
         />
       </div>
       
-      <SocialShareButtons auditId={auditId} url={url} />
+      {/*
+        Без shareUrl кнопки соцсетей делились адресом самого сайта, а не
+        результатами. Ссылка на результаты есть только у проверки с задачей.
+      */}
+      {taskId && (
+        <SocialShareButtons auditId={auditId} url={url} shareUrl={absoluteAuditPageUrl(url, taskId)} />
+      )}
       
       {/* Share Link Dialog */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
@@ -164,7 +165,8 @@ const AuditShareResults: React.FC<AuditShareResultsProps> = ({
           <DialogHeader>
             <DialogTitle>Поделиться аудитом</DialogTitle>
             <DialogDescription>
-              Используйте ссылку ниже, чтобы поделиться результатами аудита
+              Ссылка ведёт на результаты этого аудита. Если аудит запускался из
+              аккаунта, открыть результаты сможет только владелец аккаунта.
             </DialogDescription>
           </DialogHeader>
           
@@ -185,34 +187,6 @@ const AuditShareResults: React.FC<AuditShareResultsProps> = ({
           
           <div className="mt-4">
             <SocialShareButtons auditId={auditId} url={url} shareUrl={shareUrl} />
-          </div>
-        </DialogContent>
-      </Dialog>
-      
-      {/* Email Dialog */}
-      <Dialog open={isEmailDialogOpen} onOpenChange={setIsEmailDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Отправить отчет по email</DialogTitle>
-            <DialogDescription>
-              Введите email адрес для отправки отчета
-            </DialogDescription>
-          </DialogHeader>
-          
-          <div className="flex flex-col space-y-4 mt-4">
-            <Input 
-              value={emailInput} 
-              onChange={(e) => setEmailInput(e.target.value)}
-              placeholder="email@example.com"
-              type="email"
-            />
-            <Button 
-              onClick={handleSendEmail}
-              disabled={isSendingEmail}
-              className="w-full"
-            >
-              {isSendingEmail ? 'Отправка...' : 'Отправить отчет'}
-            </Button>
           </div>
         </DialogContent>
       </Dialog>

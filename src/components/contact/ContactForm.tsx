@@ -9,6 +9,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
+import { submitContactRequest, supportEmailHint } from "@/services/contact/submitRequest";
 
 const formSchema = z.object({
   name: z.string().min(2, {
@@ -37,14 +38,39 @@ const ContactForm = () => {
     },
   });
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log(values);
-    toast({
-      title: "Сообщение отправлено",
-      description: "Мы свяжемся с вами в ближайшее время.",
-      duration: 5000,
-    });
-    form.reset();
+  /**
+   * Раньше форма писала обращение в консоль браузера и отвечала «Сообщение
+   * отправлено» — до нас не доходило ничего, все заявки терялись. Теперь
+   * обращение сохраняется, а при сбое человек видит настоящую ошибку и адрес почты, а не
+   * ложное подтверждение.
+   */
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    try {
+      await submitContactRequest({
+        kind: "contact",
+        name: values.name,
+        email: values.email,
+        subject: values.subject,
+        message: values.message,
+      });
+
+      toast({
+        title: "Сообщение отправлено",
+        description: "Мы свяжемся с вами в ближайшее время.",
+        duration: 5000,
+      });
+      form.reset();
+    } catch (error) {
+      toast({
+        title: "Сообщение не отправлено",
+        description:
+          error instanceof Error
+            ? error.message
+            : `Попробуйте ещё раз.${supportEmailHint()}`,
+        variant: "destructive",
+        duration: 8000,
+      });
+    }
   }
 
   return (
@@ -110,8 +136,13 @@ const ContactForm = () => {
                 </FormItem>
               )}
             />
-            <Button type="submit" size="lg" className="w-full md:w-auto">
-              Отправить сообщение
+            <Button
+              type="submit"
+              size="lg"
+              className="w-full md:w-auto"
+              disabled={form.formState.isSubmitting}
+            >
+              {form.formState.isSubmitting ? "Отправляем..." : "Отправить сообщение"}
             </Button>
           </form>
         </Form>

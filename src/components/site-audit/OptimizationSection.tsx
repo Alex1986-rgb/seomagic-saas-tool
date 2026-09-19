@@ -145,23 +145,12 @@ const OptimizationSection: React.FC<OptimizationSectionProps> = ({
           )}
 
           {optimizationResult && (
+            // Обработчики скачивания и PDF-отчёта здесь показывали тосты
+            // «Загрузка начата» и «Отчет создается», хотя ничего не происходило.
+            // Без обработчиков OptimizationResults эти кнопки не рисует.
             <OptimizationResults
               url={url}
               optimizationResult={optimizationResult}
-              onDownloadOptimized={() => {
-                toast({
-                  title: "Загрузка начата",
-                  description: "Оптимизированный сайт будет загружен",
-                  variant: "default"
-                });
-              }}
-              onGeneratePdfReport={() => {
-                toast({
-                  title: "Отчет создается",
-                  description: "PDF отчет будет сгенерирован",
-                  variant: "default"
-                });
-              }}
             />
           )}
         </CardContent>

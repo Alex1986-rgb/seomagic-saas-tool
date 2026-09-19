@@ -21,8 +21,14 @@ interface OptimizationResultsProps {
   url?: string;
   optimizationResult?: {
     beforeScore: number;
-    afterScore: number;
+    /** Пусто, пока не сделан повторный аудит: новую оценку даёт он, а не мы. */
+    afterScore?: number | null;
     demoPage?: DemoPage;
+    /** Что на самом деле переписано. */
+    pages?: Array<{ url: string; recommendations: string }>;
+    failures?: Array<{ url: string; error: string }>;
+    cost?: number;
+    status?: 'completed' | 'partial' | 'failed';
   } | null;
   onDownloadOptimized?: () => void;
   onGeneratePdfReport?: () => void;
@@ -76,32 +82,81 @@ const OptimizationResults: React.FC<OptimizationResultsProps> = ({
 
   if (!finalOptimizationResult) return null;
 
-  const { beforeScore: finalBeforeScore, afterScore: finalAfterScore, demoPage } = finalOptimizationResult;
-  const scoreIncrease = finalAfterScore - finalBeforeScore;
-  
+  const {
+    beforeScore: finalBeforeScore,
+    afterScore: finalAfterScore,
+    demoPage,
+    pages,
+    failures,
+    cost,
+    status,
+  } = finalOptimizationResult;
+
+  // Новую оценку показываем, только если она измерена повторным аудитом.
+  // Раньше здесь всегда стояло «стало 92» и «+27 баллов» — цифры из кода, а не
+  // с сайта.
+  const hasMeasuredAfter = typeof finalAfterScore === 'number';
+
   return (
     <div className={`border border-green-500/20 rounded-lg p-4 bg-green-50/10 ${className || ''}`}>
-      <h4 className="font-semibold text-green-700 mb-2">Оптимизация завершена!</h4>
-      
-      <div className="flex gap-8 mb-4">
+      <h4 className="font-semibold text-green-700 mb-2">
+        {status === 'partial' ? 'Оптимизация прошла частично' : 'Оптимизация завершена'}
+      </h4>
+
+      <div className="flex flex-wrap gap-8 mb-4">
         <div>
-          <p className="text-sm text-muted-foreground">Было</p>
+          <p className="text-sm text-muted-foreground">Оценка по аудиту</p>
           <p className="text-xl font-semibold">{finalBeforeScore}/100</p>
         </div>
-        <div className="flex items-center">
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M5 12h14"></path>
-            <path d="m12 5 7 7-7 7"></path>
-          </svg>
-        </div>
-        <div>
-          <p className="text-sm text-muted-foreground">Стало</p>
-          <p className="text-xl font-semibold text-green-600">{finalAfterScore}/100</p>
-        </div>
-        <div className="flex items-center">
-          <p className="text-sm text-green-600">+{scoreIncrease} баллов</p>
-        </div>
+        {hasMeasuredAfter ? (
+          <div>
+            <p className="text-sm text-muted-foreground">После повторного аудита</p>
+            <p className="text-xl font-semibold text-green-600">{finalAfterScore}/100</p>
+          </div>
+        ) : (
+          <div className="max-w-sm">
+            <p className="text-sm text-muted-foreground">Новая оценка</p>
+            <p className="text-sm">Появится после повторного аудита — он измерит сайт заново.</p>
+          </div>
+        )}
+        {typeof pages?.length === 'number' && (
+          <div>
+            <p className="text-sm text-muted-foreground">Переписано страниц</p>
+            <p className="text-xl font-semibold">{pages.length}</p>
+          </div>
+        )}
+        {typeof cost === 'number' && cost > 0 && (
+          <div>
+            <p className="text-sm text-muted-foreground">Расход на модель</p>
+            <p className="text-xl font-semibold">{cost.toFixed(2)} ₽</p>
+          </div>
+        )}
       </div>
+
+      {failures && failures.length > 0 && (
+        <div className="mb-4 rounded-md border border-amber-300 bg-amber-50 p-3 text-sm dark:border-amber-900 dark:bg-amber-950/40">
+          <p className="font-medium">Не удалось переписать: {failures.length}</p>
+          <ul className="mt-1 list-disc pl-5 text-muted-foreground">
+            {failures.slice(0, 5).map((failure) => (
+              <li key={failure.url}>{failure.url} — {failure.error}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {pages && pages.length > 0 && (
+        <div className="mb-4 max-h-64 overflow-auto rounded-md border bg-background p-3 text-sm">
+          <p className="mb-2 font-semibold">Что переписано</p>
+          <ul className="space-y-2">
+            {pages.slice(0, 20).map((page) => (
+              <li key={page.url}>
+                <p className="font-medium break-all">{page.url}</p>
+                <p className="line-clamp-2 text-muted-foreground">{page.recommendations}</p>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
       
       {demoPage && (
         <div className="mb-4 p-3 bg-background border rounded-md text-sm">
@@ -119,20 +174,31 @@ const OptimizationResults: React.FC<OptimizationResultsProps> = ({
         </div>
       )}
       
-      <div className="flex flex-wrap gap-2 mt-4">
-        <button 
-          onClick={onDownloadOptimized}
-          className="bg-primary text-white px-4 py-2 rounded hover:bg-primary/90"
-        >
-          Скачать оптимизированный сайт
-        </button>
-        <button 
-          onClick={onGeneratePdfReport}
-          className="border border-primary px-4 py-2 rounded hover:bg-primary/10"
-        >
-          Скачать PDF-отчет
-        </button>
-      </div>
+      {/*
+        Кнопки — только с настоящим обработчиком. Раньше «Скачать
+        оптимизированный сайт» рисовалась всегда и без обработчика ничего не
+        делала: сборки исправленной копии сайта на сервере пока нет.
+      */}
+      {(onDownloadOptimized || onGeneratePdfReport) && (
+        <div className="flex flex-wrap gap-2 mt-4">
+          {onDownloadOptimized && (
+            <button 
+              onClick={onDownloadOptimized}
+              className="bg-primary text-white px-4 py-2 rounded hover:bg-primary/90"
+            >
+              Скачать оптимизированный сайт
+            </button>
+          )}
+          {onGeneratePdfReport && (
+            <button 
+              onClick={onGeneratePdfReport}
+              className="border border-primary px-4 py-2 rounded hover:bg-primary/10"
+            >
+              Скачать PDF-отчет
+            </button>
+          )}
+        </div>
+      )}
     </div>
   );
 };

@@ -3,6 +3,12 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Search, TrendingUp, LineChart } from 'lucide-react';
 
+/**
+ * Плашки обещали «Точность данных 99.8%», «Историю изменений до 90 дней» и
+ * поддержку Bing. Точность никто не измерял, срок хранения истории нигде не
+ * задан, а поставщики выдачи отдают только Яндекс и Google. Оставлены факты,
+ * которые проверяются по коду проверки позиций.
+ */
 const PositionPricingHero: React.FC = () => {
   return (
     <div className="text-center mb-16">
@@ -33,8 +39,8 @@ const PositionPricingHero: React.FC = () => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, delay: 0.3 }}
       >
-        Ежедневный мониторинг позиций, детальная статистика и уведомления об изменениях. 
-        Следите за эффективностью SEO-оптимизации в режиме реального времени.
+        Места сайта в выдаче Яндекса и Google по вашему списку запросов — с учётом региона 
+        и глубины проверки. Следите, как меняются позиции после оптимизации.
       </motion.p>
       
       <motion.div
@@ -45,15 +51,15 @@ const PositionPricingHero: React.FC = () => {
       >
         <div className="flex items-center gap-2 px-4 py-2 bg-muted rounded-full">
           <TrendingUp className="h-4 w-4 text-green-500" />
-          <span>Точность данных 99.8%</span>
+          <span>Данные из поисковой выдачи</span>
         </div>
         <div className="flex items-center gap-2 px-4 py-2 bg-muted rounded-full">
           <LineChart className="h-4 w-4 text-blue-500" />
-          <span>История изменений до 90 дней</span>
+          <span>Глубина проверки до 100 позиций</span>
         </div>
         <div className="flex items-center gap-2 px-4 py-2 bg-muted rounded-full">
           <Search className="h-4 w-4 text-purple-500" />
-          <span>Яндекс, Google, Bing</span>
+          <span>Яндекс и Google</span>
         </div>
       </motion.div>
     </div>

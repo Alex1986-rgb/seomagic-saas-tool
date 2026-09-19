@@ -2,10 +2,31 @@
 import type { Proxy } from '../types';
 import axios from 'axios';
 
+/**
+ * Проверка одного прокси.
+ *
+ * Параметр `proxy` у axios работает только в Node. В браузере он молча
+ * игнорируется, и запрос уходит напрямую. Раньше из-за этого любой прокси
+ * из списка помечался «active», как только тестовый адрес отвечал браузеру
+ * напрямую, а в «скорость» записывалось время прямого запроса. Из админки
+ * (браузер) проверить прокси нельзя, поэтому статус не меняем и объясняем
+ * причину в lastError.
+ */
+export const BROWSER_PROXY_CHECK_UNAVAILABLE =
+  'Не проверен: браузер не умеет отправить запрос через указанный прокси, а прямой ответ тестового адреса ничего не говорит о самом прокси.';
+
 export async function testProxy(proxy: Proxy, testUrl: string = 'https://api.ipify.org/'): Promise<Proxy> {
   const updatedProxy = { ...proxy };
+
+  if (typeof window !== 'undefined') {
+    updatedProxy.status = 'testing';
+    updatedProxy.speed = undefined;
+    updatedProxy.lastError = BROWSER_PROXY_CHECK_UNAVAILABLE;
+    return updatedProxy;
+  }
+
   const startTime = Date.now();
-  
+
   try {
     // Create a proxy configuration for Axios
     const proxyConfig = {
@@ -13,55 +34,34 @@ export async function testProxy(proxy: Proxy, testUrl: string = 'https://api.ipi
       port: proxy.port,
       protocol: proxy.protocol || 'http'
     };
-    
+
     // Make request with timeout
     const response = await axios.get(testUrl, {
       proxy: proxyConfig,
       timeout: 15000,
-      headers: {
-        'User-Agent': getRandomUserAgent()
-      }
     });
-    
+
     const endTime = Date.now();
     const responseTime = endTime - startTime;
-    
+
     if (response.status >= 200 && response.status < 400) {
       updatedProxy.status = 'active';
       updatedProxy.speed = responseTime;
       updatedProxy.lastSeen = new Date();
       updatedProxy.lastError = undefined;
       updatedProxy.checkedUrl = testUrl;
-      console.log(`Proxy ${proxy.ip}:${proxy.port} is active. Speed: ${responseTime}ms`);
     } else {
       updatedProxy.status = 'inactive';
       updatedProxy.lastError = `Unexpected response: ${response.status}`;
       updatedProxy.checkedUrl = testUrl;
-      console.log(`Proxy ${proxy.ip}:${proxy.port} returned status ${response.status}`);
     }
   } catch (error) {
     updatedProxy.status = 'inactive';
-    updatedProxy.lastError = error.message || 'Unknown error';
+    updatedProxy.lastError = error instanceof Error ? error.message : 'Unknown error';
     updatedProxy.checkedUrl = testUrl;
-    console.log(`Proxy ${proxy.ip}:${proxy.port} failed: ${updatedProxy.lastError}`);
   }
-  
-  updatedProxy.lastChecked = new Date();
-  
-  return updatedProxy;
-}
 
-// Helper function to get random user agent
-function getRandomUserAgent(): string {
-  const userAgents = [
-    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-    'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-    'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:122.0) Gecko/20100101 Firefox/122.0',
-    'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-    'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:122.0) Gecko/20100101 Firefox/122.0',
-    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36 Edg/121.0.2277.106',
-    'Mozilla/5.0 (iPhone; CPU iPhone OS 16_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.6 Mobile/15E148 Safari/604.1',
-    'Mozilla/5.0 (iPad; CPU OS 16_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.6 Mobile/15E148 Safari/604.1'
-  ];
-  return userAgents[Math.floor(Math.random() * userAgents.length)];
+  updatedProxy.lastChecked = new Date();
+
+  return updatedProxy;
 }

@@ -1,5 +1,5 @@
 
-import React, { useCallback, useMemo } from 'react';
+import React, { useMemo } from 'react';
 import { AnimatePresence } from 'framer-motion';
 import { useAuditData, useAuditInitialization, usePromptToggle } from '@/features/audit/hooks';
 import { usePartialResults } from '@/hooks/audit/usePartialResults';
@@ -34,11 +34,11 @@ const AuditResultsContainer: React.FC<AuditResultsContainerProps> = ({ url }) =>
     isOptimized,
     contentPrompt,
     taskId,
+    loadOptimizationCost,
     loadingStatus,
     retryAttempt,
     loadAuditData,
     downloadSitemap,
-    downloadOptimizedSite,
     generatePdfReportFile,
     exportJSONData,
     optimizeSiteContent,
@@ -65,10 +65,10 @@ const AuditResultsContainer: React.FC<AuditResultsContainerProps> = ({ url }) =>
     setIsLoading(isAuditLoading);
   }, [isAuditLoading, setIsLoading]);
 
-  // Handler for selecting historical audit
-  const handleSelectHistoricalAudit = useCallback((auditId: string) => {
-    console.log("Selected historical audit:", auditId);
-  }, []);
+  // Выбор аудита из истории и «Скачать оптимизированный сайт» сюда больше не
+  // передаются: историю AuditContent открывает сам (переходом на задачу), а
+  // сборки исправленной копии сайта на сервере нет. Раньше сюда шли заглушка
+  // с console.log и обработчик, который ничего не скачивал.
 
   // Ensure historyData has the correct type - memoize transformation
   const typedHistoryData = useMemo(() => 
@@ -128,12 +128,11 @@ const AuditResultsContainer: React.FC<AuditResultsContainerProps> = ({ url }) =>
             onRetry={() => loadAuditData(false)}
             onDownloadSitemap={sitemap ? downloadSitemap : undefined}
             loadAuditData={loadAuditData}
-            handleSelectHistoricalAudit={handleSelectHistoricalAudit}
             downloadSitemap={sitemap ? downloadSitemap : undefined}
             exportJSONData={exportJSONData}
             generatePdfReportFile={generatePdfReportFile}
-            downloadOptimizedSite={downloadOptimizedSite}
             optimizeSiteContent={optimizeSiteContent}
+            loadOptimizationCost={loadOptimizationCost}
             setContentOptimizationPrompt={setContentOptimizationPrompt}
           />
           </AuditContentErrorBoundary>

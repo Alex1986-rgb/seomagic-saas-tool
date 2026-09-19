@@ -4,7 +4,7 @@ import { Navigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 
 const AdminPanel: React.FC = () => {
-  // ⚠️ TESTING MODE - Allow access without authentication
+  // Страница-переадресация: сам раздел закрыт AdminRouteGuard в App.tsx.
   return <Navigate to="/admin/" replace />;
 };
 

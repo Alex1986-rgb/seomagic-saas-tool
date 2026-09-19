@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
+import { assertTaskAccess, authErrorResponse } from "../_shared/auth.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -33,6 +34,16 @@ serve(async (req) => {
     if (!task_id) {
       console.error('[OPTIMIZATION-CALCULATE] No task_id provided in request');
       throw new Error('task_id is required');
+    }
+
+    // Смета считается служебным ключом и стоит денег — чужую задачу считать
+    // нельзя.
+    try {
+      await assertTaskAccess(req, task_id);
+    } catch (err) {
+      const denied = authErrorResponse(err, corsHeaders);
+      if (denied) return denied;
+      throw err;
     }
 
     console.log('[OPTIMIZATION-CALCULATE] Processing task:', task_id);
@@ -89,15 +100,31 @@ serve(async (req) => {
       items = estimate.cost_breakdown || [];
       totalCost = estimate.final_cost || 0;
     } else {
-      console.log('[OPTIMIZATION-CALCULATE] No estimate found, using fallback');
-      totalCost = 1000;
-      items = [{
-        name: 'SEO Optimization Package',
-        description: 'Complete SEO optimization',
-        count: 1,
-        pricePerUnit: totalCost,
-        totalPrice: totalCost
-      }];
+      // Раньше здесь подставлялся выдуманный «пакет» за 1000 ₽, и он же
+      // сохранялся как смета задачи. Сметы нет в двух случаях: замечаний нет
+      // вовсе (тогда и платить не за что — 0) или замечания уже есть, а смета
+      // ещё не записана (тогда честно отвечаем «не готово», фронтенд повторит).
+      const { count: issuesCount } = await supabaseClient
+        .from('issues')
+        .select('id', { count: 'exact', head: true })
+        .eq('task_id', task_id);
+
+      if (issuesCount && issuesCount > 0) {
+        console.warn('[OPTIMIZATION-CALCULATE] Issues exist but estimate is missing for task:', task_id);
+        return new Response(
+          JSON.stringify({
+            success: false,
+            error: 'Estimate not found yet. Please retry once issue classification has finished.',
+            task_id: task_id
+          }),
+          {
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            status: 404,
+          }
+        );
+      }
+
+      console.log('[OPTIMIZATION-CALCULATE] No estimate and no issues: nothing to charge for');
     }
 
     // Get user_id from auth header if available
@@ -109,23 +136,36 @@ serve(async (req) => {
       userId = user?.id || null;
     }
 
-    // Save calculation results to optimization_jobs table
-    const { error: saveError } = await supabaseClient
+    // Смета по задаче одна: пересчёт обновляет её, а не плодит строки. Раньше
+    // здесь стоял upsert по task_id, из-за которого на task_id держали
+    // уникальный индекс, — и запуск оптимизации по посчитанной задаче падал,
+    // потому что строку уже занимала смета.
+    const estimateRow = {
+      task_id: task_id,
+      user_id: userId,
+      // Это смета, а не выполненная работа. Раньше здесь стояло «completed»,
+      // и в истории оптимизаций копились «выполненные» задания, по которым
+      // ни одна страница не была переписана.
+      status: 'estimated',
+      cost: totalCost,
+      result_data: {
+        estimate_id: estimate?.id || null,
+        items,
+        total: totalCost
+      },
+      options: null
+    };
+
+    const { data: existingEstimate } = await supabaseClient
       .from('optimization_jobs')
-      .upsert({
-        task_id: task_id,
-        user_id: userId,
-        status: 'completed',
-        cost: totalCost,
-        result_data: { 
-          estimate_id: estimate?.id || null,
-          items,
-          total: totalCost
-        },
-        options: null
-      }, {
-        onConflict: 'task_id'
-      });
+      .select('id')
+      .eq('task_id', task_id)
+      .eq('status', 'estimated')
+      .maybeSingle();
+
+    const { error: saveError } = existingEstimate
+      ? await supabaseClient.from('optimization_jobs').update(estimateRow).eq('id', existingEstimate.id)
+      : await supabaseClient.from('optimization_jobs').insert(estimateRow);
 
     if (saveError) {
       console.error('[OPTIMIZATION-CALCULATE] Failed to save results:', saveError);

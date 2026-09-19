@@ -1,0 +1,282 @@
+{
+  "rail-1": {
+    "src": "https://images.unsplash.com/photo-1679999466911-6e83bf4f076d?w=1600&q=80&auto=format&fit=crop",
+    "credit": "Photo by Gowtham AGM on Unsplash",
+    "creditHref": "https://unsplash.com/@gowthamagm",
+    "page": "https://unsplash.com/photos/an-old-door-with-a-rusty-lock-on-it-K6BI6syoqpM",
+    "note": "Старая дверь с ржавым замком/засовом; металлической таблички нет"
+  },
+  "rail-2": {
+    "src": "https://images.unsplash.com/photo-1729710877235-28d1e82d0442?w=1600&q=80&auto=format&fit=crop",
+    "credit": "Photo by Kelly Sikkema on Unsplash",
+    "creditHref": "https://unsplash.com/@kellysikkema",
+    "page": "https://unsplash.com/photos/a-black-table-topped-with-white-cards-and-a-pencil-WgWoDC1twsI",
+    "note": "Белые карточки-листы рядами на чёрном столе, карандаш"
+  },
+  "rail-3": {
+    "src": "https://images.unsplash.com/photo-1752578753798-ff3a23e16498?w=1600&q=80&auto=format&fit=crop",
+    "credit": "Photo by sara sanchez sabogal on Unsplash",
+    "creditHref": "https://unsplash.com/@sara_a_sanchez",
+    "page": "https://unsplash.com/photos/papers-pens-and-highlighters-are-laid-out-for-studying-h6pUcouJ9BA",
+    "note": "Распечатки, ручки и маркеры-текстовыделители"
+  },
+  "rail-4": {
+    "src": "https://images.unsplash.com/photo-1766801075422-f67a43944c26?w=1600&q=80&auto=format&fit=crop",
+    "credit": "Photo by Daniel Tasci on Unsplash",
+    "creditHref": "https://unsplash.com/@shotbydani",
+    "page": "https://unsplash.com/photos/map-of-the-united-states-with-pins-o2DAV3_w0Vo",
+    "note": "Карта с булавками; нитей между булавками нет"
+  },
+  "rail-5": {
+    "src": "https://images.unsplash.com/photo-1704265586142-db3e17d0dea0?w=1600&q=80&auto=format&fit=crop",
+    "credit": "Photo by William Warby on Unsplash",
+    "creditHref": "https://unsplash.com/@wwarby",
+    "page": "https://unsplash.com/photos/a-close-up-of-a-stopwatch-on-a-black-background-VwqMTcsb0Tg",
+    "note": "Механический секундомер крупно на чёрном фоне; клавиатуры в кадре нет"
+  },
+  "rail-6": {
+    "src": "https://images.unsplash.com/photo-1765917393220-78ed33e7e07b?w=1600&q=80&auto=format&fit=crop",
+    "credit": "Photo by Jess Bailey on Unsplash",
+    "creditHref": "https://unsplash.com/@jessbaileydesigns",
+    "page": "https://unsplash.com/photos/notebook-ruler-and-keyboard-on-white-surface-OXQVfxXORJ0",
+    "note": "Блокнот, линейка и клавиатура сверху на светлой поверхности"
+  },
+  "blog-hero-1a": {
+    "src": "https://images.unsplash.com/photo-1633304557382-979afee9f9a2?w=1600&q=80&auto=format&fit=crop",
+    "credit": "Photo by Justin Morgan on Unsplash",
+    "creditHref": "https://unsplash.com/@justin_morgan",
+    "page": "https://unsplash.com/photos/a-desk-with-a-notebook-pen-eyeglasses-and-a-laptop-tnrTsVU8YFc",
+    "note": "Флэтлей: ноутбук, блокнот, ручка, очки на тёмном столе"
+  },
+  "blog-hero-1b": {
+    "src": "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=1600&q=80&auto=format&fit=crop",
+    "credit": "Photo by Luke Chesser on Unsplash",
+    "creditHref": "https://unsplash.com/@lukechesser",
+    "page": "https://unsplash.com/photos/graphs-of-performance-analytics-on-a-laptop-screen-JKUTrJ4vK00",
+    "note": "Графики аналитики на экране ноутбука под углом"
+  },
+  "blog-2a": {
+    "src": "https://images.unsplash.com/photo-1582134534564-76ae09c71e3b?w=1600&q=80&auto=format&fit=crop",
+    "credit": "Photo by Kelly Sikkema on Unsplash",
+    "creditHref": "https://unsplash.com/@kellysikkema",
+    "page": "https://unsplash.com/photos/white-printer-paper-on-black-table-zN49qkBMmOA",
+    "note": "Белые листы бумаги на чёрном столе, ручки и телефон"
+  },
+  "blog-2b": {
+    "src": "https://images.unsplash.com/photo-1552120476-9ee56c8611f7?w=1600&q=80&auto=format&fit=crop",
+    "credit": "Photo by Markus Spiske on Unsplash",
+    "creditHref": "https://unsplash.com/@markusspiske",
+    "page": "https://unsplash.com/photos/a-close-up-of-a-computer-screen-with-a-lot-of-text-on-it-KeFyYzxqmH0",
+    "note": "Макро экрана с текстом/кодом; адресной строки нет"
+  },
+  "blog-3a": {
+    "src": "https://images.unsplash.com/photo-1693278617452-cfa5f34bc54b?w=1600&q=80&auto=format&fit=crop",
+    "credit": "Photo by Mick Haupt on Unsplash",
+    "creditHref": "https://unsplash.com/@rocinante_11",
+    "page": "https://unsplash.com/photos/a-close-up-of-a-text-on-a-piece-of-paper-3_VgV0SF5X8",
+    "note": "Словарная статья крупно (печатный текст); выделения маркером нет"
+  },
+  "blog-3b": {
+    "src": "https://images.unsplash.com/photo-1743715032626-69e4477acac0?w=1600&q=80&auto=format&fit=crop",
+    "credit": "Photo by Angelo Casto on Unsplash",
+    "creditHref": "https://unsplash.com/@jddartphotographer",
+    "page": "https://unsplash.com/photos/vegetables-are-displayed-with-an-antique-scale-ZDfKLn0qZec",
+    "note": "Старинные весы с овощами (натюрморт); не аптечные"
+  },
+  "blog-4a": {
+    "src": "https://images.unsplash.com/photo-1553864250-05b20249ee0c?w=1600&q=80&auto=format&fit=crop",
+    "credit": "Photo by T.H. Chia on Unsplash",
+    "creditHref": "https://unsplash.com/@teckhonc",
+    "page": "https://unsplash.com/photos/selective-focus-photography-of-push-pin-in-map-tVZMk-cidEc",
+    "note": "Булавка в карте, малая глубина резкости; нитей нет"
+  },
+  "blog-4b": {
+    "src": "https://images.unsplash.com/photo-1764948620467-2b08f6843dd6?w=1600&q=80&auto=format&fit=crop",
+    "credit": "Photo by Andrey Soldatov on Unsplash",
+    "creditHref": "https://unsplash.com/@andrilliardbond",
+    "page": "https://unsplash.com/photos/close-up-of-a-vintage-drawing-compass-on-white-paper-aAoIy--0ZCk",
+    "note": "Старый чертёжный циркуль на белой бумаге, крупно"
+  },
+  "blog-5a": {
+    "src": "https://images.unsplash.com/photo-1758440519640-7234ba375d2e?w=1600&q=80&auto=format&fit=crop",
+    "credit": "Photo by Arya Arjun on Unsplash",
+    "creditHref": "https://unsplash.com/@aryaarjun",
+    "page": "https://unsplash.com/photos/close-up-of-metal-chains-and-rings-against-dark-background-EfBx2bYXDMo",
+    "note": "Металлические цепи и кольца на тёмном фоне; цепь не разорвана"
+  },
+  "blog-5b": {
+    "src": "https://images.unsplash.com/photo-1715078795172-c1636d5bc845?w=1600&q=80&auto=format&fit=crop",
+    "credit": "Photo by Decry.Yae on Unsplash",
+    "creditHref": "https://unsplash.com/@dayee",
+    "page": "https://unsplash.com/photos/a-computer-desk-with-a-monitor-and-keyboard-in-a-dark-room-ylKxh_Bw6KM",
+    "note": "Монитор и клавиатура в тёмной комнате при лампе; не макро"
+  },
+  "blog-6a": {
+    "src": "https://images.unsplash.com/photo-1764557380057-53ff582146b8?w=1600&q=80&auto=format&fit=crop",
+    "credit": "Photo by JJ ROCHA on Unsplash",
+    "creditHref": "https://unsplash.com/@that_person",
+    "page": "https://unsplash.com/photos/stationery-and-small-tool-arranged-on-wooden-surface-1pQJfz8lvD8",
+    "note": "Блокнот, ручка и мелкий инструмент на дереве; линейки может не быть"
+  },
+  "blog-6b": {
+    "src": "https://images.unsplash.com/photo-1771923082503-0a3381c46cef?w=1600&q=80&auto=format&fit=crop",
+    "credit": "Photo by Neil Fernandez on Unsplash",
+    "creditHref": "https://unsplash.com/@studiosphere",
+    "page": "https://unsplash.com/photos/a-modern-laptop-displaying-a-dark-themed-dashboard-6-0ajRI1cgs",
+    "note": "Ноутбук с тёмным дашбордом (таблицы/панели)"
+  },
+  "blog-7a": {
+    "src": "https://images.unsplash.com/photo-1767869168302-36138e59cc18?w=1600&q=80&auto=format&fit=crop",
+    "credit": "Photo by Tolga deniz Aran on Unsplash",
+    "creditHref": "https://unsplash.com/@sanlad",
+    "page": "https://unsplash.com/photos/envelope-with-united-nations-stamp-and-postmark-2sXIh35_95k",
+    "note": "Конверт с маркой и почтовым штемпелем; на марке мелкая надпись"
+  },
+  "blog-7b": {
+    "src": "https://images.unsplash.com/photo-1508317469940-e3de49ba902e?w=1600&q=80&auto=format&fit=crop",
+    "credit": "Photo by Branko Stancevic on Unsplash",
+    "creditHref": "https://unsplash.com/@landb",
+    "page": "https://unsplash.com/photos/programming-codes-GI1hwOGqGtE",
+    "note": "Код (HTML/CSS) на мониторе, макро"
+  },
+  "blog-8a": {
+    "src": "https://images.unsplash.com/photo-1777446695149-927b3aec69e1?w=1600&q=80&auto=format&fit=crop",
+    "credit": "Photo by Artem Korolev on Unsplash",
+    "creditHref": "https://unsplash.com/@artemisss666",
+    "page": "https://unsplash.com/photos/vintage-wooden-tray-with-metal-printing-type-77fAMTq3-ME",
+    "note": "Деревянная касса с металлическими литерами"
+  },
+  "blog-8b": {
+    "src": "https://images.unsplash.com/photo-1772618379791-4532fe76d050?w=1600&q=80&auto=format&fit=crop",
+    "credit": "Photo by Amanz on Unsplash",
+    "creditHref": "https://unsplash.com/@amanz",
+    "page": "https://unsplash.com/photos/close-up-side-view-of-a-smartphone-on-a-dark-surface-xDR2STDvTJY",
+    "note": "Смартфон сбоку крупно на тёмной поверхности; экран почти не виден"
+  },
+  "blog-9a": {
+    "src": "https://images.unsplash.com/photo-1758873263563-5ba4aa330799?w=1600&q=80&auto=format&fit=crop",
+    "credit": "Photo by Hans Westbeek on Unsplash",
+    "creditHref": "https://unsplash.com/@hanswestbeek",
+    "page": "https://unsplash.com/photos/hands-using-a-digital-caliper-to-measure-metal-part-_luiFaaZU6k",
+    "note": "Цифровой штангенциркуль на металлической детали; в кадре руки (без лица), угольника нет"
+  },
+  "blog-9b": {
+    "src": "https://images.unsplash.com/photo-1731686602391-7484df33a03c?w=1600&q=80&auto=format&fit=crop",
+    "credit": "Photo by Annie Spratt on Unsplash",
+    "creditHref": "https://unsplash.com/@anniespratt",
+    "page": "https://unsplash.com/photos/a-receipt-sitting-on-top-of-a-wooden-table-recgFWxDO1Y",
+    "note": "Чек с цифрами на деревянном столе"
+  },
+  "blog-10a": {
+    "src": "https://images.unsplash.com/photo-1744329629767-80ba7dc0cea6?w=1600&q=80&auto=format&fit=crop",
+    "credit": "Photo by Zoshua Colah on Unsplash",
+    "creditHref": "https://unsplash.com/@zoshuacolah",
+    "page": "https://unsplash.com/photos/a-door-secured-with-a-bolt-and-padlock-2QjkAa5QaqY",
+    "note": "Засов с навесным замком на стыке тёмных дверных створок"
+  },
+  "blog-10b": {
+    "src": "https://images.unsplash.com/photo-1742072593996-ebdc5d605a54?w=1600&q=80&auto=format&fit=crop",
+    "credit": "Photo by Peaky Frames on Unsplash",
+    "creditHref": "https://unsplash.com/@rashedpaykary",
+    "page": "https://unsplash.com/photos/colorful-code-scrolls-across-a-dark-background-Aowg76xooEY",
+    "note": "Код на тёмном экране, макро"
+  },
+  "blog-11a": {
+    "src": "https://images.unsplash.com/photo-1767514569487-f7244c002e3e?w=1600&q=80&auto=format&fit=crop",
+    "credit": "Photo by Valentin Zickner on Unsplash",
+    "creditHref": "https://unsplash.com/@vzickner",
+    "page": "https://unsplash.com/photos/pumpkin-seeds-piled-on-a-vintage-kitchen-scale-KRHF8mvq9yI",
+    "note": "Старые механические кухонные весы с семечками; не чашечные"
+  },
+  "blog-11b": {
+    "src": "https://images.unsplash.com/photo-1762427907123-c7ab022a5de7?w=1600&q=80&auto=format&fit=crop",
+    "credit": "Photo by Cht Gsml on Unsplash",
+    "creditHref": "https://unsplash.com/@karepesinde",
+    "page": "https://unsplash.com/photos/desk-with-papers-glasses-calculator-and-office-supplies-sW02MHv37yk",
+    "note": "Калькулятор, бумаги, очки, канцелярия на столе"
+  },
+  "rev-1a": {
+    "src": "https://images.unsplash.com/photo-1758025554726-50b7ed346394?w=1600&q=80&auto=format&fit=crop",
+    "credit": "Photo by rawkkim on Unsplash",
+    "creditHref": "https://unsplash.com/@rawkkim",
+    "page": "https://unsplash.com/photos/modern-luxury-store-interior-with-display-shelves-and-seating-8YDqTT5jNXI",
+    "note": "Интерьер магазина с витринами и мебелью для сидения; не мебельный шоурум"
+  },
+  "rev-1b": {
+    "src": "https://images.unsplash.com/photo-1563628631561-cc80533f6826?w=1600&q=80&auto=format&fit=crop",
+    "credit": "Photo by Matt Wojtaś on Unsplash",
+    "creditHref": "https://unsplash.com/@matt_wojtas",
+    "page": "https://unsplash.com/photos/flat-screen-monitor-turned-off-near-corded-keyboard-and-mouse-on-white-table-beside-black-and-white-rolling-chair-i69E6cGPLV0",
+    "note": "Выключенный монитор, клавиатура и кресло в светлом офисе"
+  },
+  "rev-2a": {
+    "src": "https://images.unsplash.com/photo-1698919585695-546e4a31fc8f?w=1600&q=80&auto=format&fit=crop",
+    "credit": "Photo by Boitumelo on Unsplash",
+    "creditHref": "https://unsplash.com/@writecodenow",
+    "page": "https://unsplash.com/photos/a-computer-desk-with-two-monitors-and-a-laptop-A2g9OiXTW6k",
+    "note": "Рабочее место: два монитора и ноутбук, без человека"
+  },
+  "rev-2b": {
+    "src": "https://images.unsplash.com/photo-1633360821222-7e8df83639fb?w=1600&q=80&auto=format&fit=crop",
+    "credit": "Photo by Towfiqu barbhuiya on Unsplash",
+    "creditHref": "https://unsplash.com/@towfiqu999999",
+    "page": "https://unsplash.com/photos/a-pen-and-some-papers-on-a-table-2Xht5D22y0I",
+    "note": "Бумаги и ручка на столе"
+  },
+  "rev-3a": {
+    "src": "https://images.unsplash.com/photo-1748050869483-f3c34120c3ff?w=1600&q=80&auto=format&fit=crop",
+    "credit": "Photo by Neon Wang on Unsplash",
+    "creditHref": "https://unsplash.com/@neonwangphotography",
+    "page": "https://unsplash.com/photos/a-modern-meeting-room-with-long-table-and-chairs-VdZ73CNWPGo",
+    "note": "Пустая переговорная: длинный стол и кресла"
+  },
+  "rev-3b": {
+    "src": "https://images.unsplash.com/photo-1631557777127-6495c07ba6b9?w=1600&q=80&auto=format&fit=crop",
+    "credit": "Photo by 2H Media on Unsplash",
+    "creditHref": "https://unsplash.com/@2hmedia",
+    "page": "https://unsplash.com/photos/a-stack-of-papers-sitting-on-top-of-a-wooden-table-GJNT3tqQW8I",
+    "note": "Стопка документов веером на столе; самой папки нет"
+  },
+  "rev-4a": {
+    "src": "https://images.unsplash.com/photo-1738255654134-1877cb984a8f?w=1600&q=80&auto=format&fit=crop",
+    "credit": "Photo by Jiří Navrátil on Unsplash",
+    "creditHref": "https://unsplash.com/@stillwell_",
+    "page": "https://unsplash.com/photos/a-computer-screen-with-a-bunch-of-code-on-it-YxSKnaiYpig",
+    "note": "Ноутбук с кодом в темноте"
+  },
+  "rev-4b": {
+    "src": "https://images.unsplash.com/photo-1607799279861-4dd421887fb3?w=1600&q=80&auto=format&fit=crop",
+    "credit": "Photo by Mohammad Rahmani on Unsplash",
+    "creditHref": "https://unsplash.com/@afgprogrammer",
+    "page": "https://unsplash.com/photos/laptop-screen-displaying-colorful-code-8qEB0fTe9Vw",
+    "note": "Редактор кода на экране ноутбука под углом"
+  },
+  "rev-5a": {
+    "src": "https://images.unsplash.com/photo-1642844819197-5f5f21b89ff8?w=1600&q=80&auto=format&fit=crop",
+    "credit": "Photo by Ozkan Guner on Unsplash",
+    "creditHref": "https://unsplash.com/@dentistozkanguner",
+    "page": "https://unsplash.com/photos/a-dental-room-with-a-chair-and-a-monitor-NUPZa4bbi_0",
+    "note": "Стоматологический кабинет: кресло и монитор, без людей"
+  },
+  "rev-5b": {
+    "src": "https://images.unsplash.com/photo-1736238949295-887762109a54?w=1600&q=80&auto=format&fit=crop",
+    "credit": "Photo by Ali Pli on Unsplash",
+    "creditHref": "https://unsplash.com/@ali_alipli",
+    "page": "https://unsplash.com/photos/a-cell-phone-sitting-on-top-of-a-desk-next-to-a-keyboard-0zo3FegrXv8",
+    "note": "Смартфон на столе рядом с клавиатурой"
+  },
+  "rev-6a": {
+    "src": "https://images.unsplash.com/photo-1745921204896-c2011440a4e2?w=1600&q=80&auto=format&fit=crop",
+    "credit": "Photo by Stefan Lehner on Unsplash",
+    "creditHref": "https://unsplash.com/@st_lehner",
+    "page": "https://unsplash.com/photos/industrial-machinery-and-equipment-inside-a-factory-hZ2ULF80dCY",
+    "note": "Станки и оборудование в цехе, без людей"
+  },
+  "rev-6b": {
+    "src": "https://images.unsplash.com/photo-1633307057722-a4740ba0c5d0?w=1600&q=80&auto=format&fit=crop",
+    "credit": "Photo by Justin Morgan on Unsplash",
+    "creditHref": "https://unsplash.com/@justin_morgan",
+    "page": "https://unsplash.com/photos/a-computer-screen-with-a-line-graph-on-it-_Lnid7JAWFQ",
+    "note": "Экран с линейным графиком аналитики"
+  }
+}

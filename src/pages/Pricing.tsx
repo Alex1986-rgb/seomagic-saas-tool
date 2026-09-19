@@ -5,30 +5,35 @@ import PricingPlans from '@/components/pricing/PricingPlans';
 import FeatureComparison from '@/components/pricing/FeatureComparison';
 import PricingFAQ from '@/components/pricing/PricingFAQ';
 import PricingCTA from '@/components/pricing/PricingCTA';
-import { SEO } from '@/components/SEO';
 import { BreadcrumbSchema } from '@/components/seo/BreadcrumbSchema';
-import { ProductSchema } from '@/components/seo/ProductSchema';
-import { FAQPageSchema } from '@/components/seo/FAQPageSchema';
-import { BreadcrumbsWrapper } from '@/components/navigation/BreadcrumbsWrapper';
+import { Breadcrumbs } from '@/components/navigation/Breadcrumbs';
+import PageSeo from '@/components/seo/PageSeo';
 
+/**
+ * Здесь выводились ещё ProductSchema и FAQPageSchema со значениями по
+ * умолчанию: тарифы и цены, которых на странице нет, 127 выдуманных отзывов
+ * с оценкой 5,0, истёкший срок цены и десять невидимых вопросов с обещанием
+ * «14 дней бесплатно». Разметку вопросов даёт PricingFAQ по тем вопросам, что
+ * видны на странице.
+ *
+ * BreadcrumbsWrapper тоже добавлял свою разметку крошек — на странице было два
+ * BreadcrumbList, причём во втором не хватало «Главной». Разметка крошек
+ * остаётся одна, видимые крошки выводятся без неё.
+ */
 const Pricing: React.FC = () => {
   return (
     <Layout>
-      <SEO
-        title="Тарифы и Цены на SEO аудит | SeoMarket"
-        description="Гибкие тарифные планы для SEO аудита и анализа сайтов. Часто задаваемые вопросы о ценах и возможностях платформы."
-        canonicalUrl="/pricing"
-        keywords="цены на SEO аудит, тарифы SEO, стоимость SEO анализа"
+      <PageSeo
+        title="Тарифы на SEO-аудит и оптимизацию: цены и что входит"
+        description="Тарифы на аудит и оптимизацию: сколько страниц входит в план, стоимость работ и сравнение возможностей по тарифам. Ответы на вопросы о ценах."
       />
       <BreadcrumbSchema items={[
         { name: 'Главная', url: '/' },
         { name: 'Цены', url: '/pricing' }
       ]} />
-      <ProductSchema />
-      <FAQPageSchema />
       <div className="container mx-auto px-4 pt-32 pb-24">
-        <BreadcrumbsWrapper 
-          items={[{ name: 'Цены', url: '/pricing' }]} 
+        <Breadcrumbs
+          items={[{ name: 'Цены', url: '/pricing' }]}
           className="mb-8"
         />
         <PricingHero />

@@ -1,8 +1,10 @@
 
 import React, { useState } from 'react';
 import Layout from '@/components/Layout';
+import { Tabs } from '@/components/ui/tabs';
 import TrackerHeader from '@/components/position-tracker/components/TrackerHeader';
 import TrackerContent from '@/components/position-tracker/components/TrackerContent';
+import PageSeo from '@/components/seo/PageSeo';
 
 const PositionTracker: React.FC = () => {
   const [searchResults, setSearchResults] = useState(null);
@@ -15,18 +17,24 @@ const PositionTracker: React.FC = () => {
 
   return (
     <Layout>
+      <PageSeo
+        title="Проверка позиций сайта в поиске по ключевым запросам"
+        description="Добавьте домен и список запросов, чтобы регулярно снимать позиции в поисковой выдаче и видеть динамику изменений на графике."
+      />
       <div className="container mx-auto px-4 md:px-6 pt-24 md:pt-32 pb-12 md:pb-20">
         <div className="max-w-7xl mx-auto">
-          <TrackerHeader 
-            activeTab={activeTab} 
-            onTabChange={setActiveTab} 
-          />
-          
-          <TrackerContent 
-            activeTab={activeTab}
-            searchResults={searchResults}
-            onSearchComplete={handleSearchComplete}
-          />
+          <Tabs value={activeTab} onValueChange={setActiveTab}>
+            <TrackerHeader
+              activeTab={activeTab}
+              onTabChange={setActiveTab}
+            />
+
+            <TrackerContent
+              activeTab={activeTab}
+              searchResults={searchResults}
+              onSearchComplete={handleSearchComplete}
+            />
+          </Tabs>
         </div>
       </div>
     </Layout>

@@ -1,81 +1,50 @@
-
-import React, { useState } from 'react';
+import React from 'react';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Users, Target, CheckCircle, TrendingUp, BarChart3, Eye, Zap } from 'lucide-react';
+import { ArrowLeft, Users, Search, BarChart3 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import Layout from '@/components/Layout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Progress } from '@/components/ui/progress';
+import PageSeo from '@/components/seo/PageSeo';
 
+/**
+ * Анализ конкурентов.
+ *
+ * Страница показывала «демо» с настоящими доменами чужих компаний —
+ * seo-expert.ru, megagroup.ru, seoprofy.ua — и придуманными для них
+ * «видимостью 85%», «1247 ключевыми словами», «трафиком 15 600» и динамикой,
+ * таблицу «ваша позиция / позиция конкурента», вкладки со стратегиями и кнопки
+ * без обработчиков. Отдельного инструмента анализа конкурентов в сервисе нет, а
+ * выдуманные цифры о реальных компаниях публиковать нельзя.
+ *
+ * Теперь страница честно говорит, что инструмента нет, и объясняет, что можно
+ * сделать уже сейчас существующими функциями.
+ */
 const CompetitorAnalysis: React.FC = () => {
-  const [selectedCompetitor, setSelectedCompetitor] = useState('competitor1');
-
-  const competitors = [
+  const workarounds = [
     {
-      id: 'competitor1',
-      name: 'seo-expert.ru',
-      domain: 'seo-expert.ru',
-      visibility: 85,
-      keywords: 1247,
-      traffic: 15600,
-      change: +12
+      title: 'Аудит сайта конкурента',
+      description: 'Запустите аудит для сайта конкурента и сравните найденные ошибки, метатеги и скорость ответа со своими.',
+      icon: Search,
+      link: '/audit',
+      action: 'Запустить аудит'
     },
     {
-      id: 'competitor2',
-      name: 'megagroup.ru',
-      domain: 'megagroup.ru',
-      visibility: 73,
-      keywords: 892,
-      traffic: 12100,
-      change: -3
-    },
-    {
-      id: 'competitor3',
-      name: 'seoprofy.ua',
-      domain: 'seoprofy.ua',
-      visibility: 68,
-      keywords: 756,
-      traffic: 9800,
-      change: +7
-    }
-  ];
-
-  const competitorKeywords = [
-    {
-      keyword: 'seo оптимизация',
-      yourPosition: 8,
-      competitorPosition: 3,
-      volume: 15000,
-      difficulty: 'Высоко'
-    },
-    {
-      keyword: 'продвижение сайта',
-      yourPosition: 12,
-      competitorPosition: 5,
-      volume: 8900,
-      difficulty: 'Средне'
-    },
-    {
-      keyword: 'аудит сайта бесплатно',
-      yourPosition: 4,
-      competitorPosition: 7,
-      volume: 3200,
-      difficulty: 'Легко'
-    },
-    {
-      keyword: 'поисковая оптимизация',
-      yourPosition: 15,
-      competitorPosition: 2,
-      volume: 6700,
-      difficulty: 'Высоко'
+      title: 'Позиции конкурента по вашим запросам',
+      description: 'В трекере позиций укажите домен конкурента и тот же список запросов, что и для своего сайта, — получите места обоих сайтов в выдаче.',
+      icon: BarChart3,
+      link: '/position-tracker',
+      action: 'Открыть трекер'
     }
   ];
 
   return (
     <Layout>
+      <PageSeo
+        title="Анализ конкурентов: как сравнить сайты в SeoMarket"
+        description="Отдельного инструмента анализа конкурентов пока нет. Как сравнить свой сайт с конкурентом с помощью аудита и проверки позиций."
+      />
       <div className="container mx-auto px-4 py-16 md:py-24">
         {/* Навигация */}
         <div className="mb-8">
@@ -86,7 +55,7 @@ const CompetitorAnalysis: React.FC = () => {
         </div>
 
         {/* Шапка */}
-        <motion.div 
+        <motion.div
           className="mb-16"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -96,288 +65,43 @@ const CompetitorAnalysis: React.FC = () => {
             <div className="p-4 rounded-full bg-primary/10">
               <Users className="h-8 w-8 text-primary" />
             </div>
-            <Badge variant="secondary" className="text-xs">
-              Конкурентный анализ
+            <Badge variant="outline" className="text-xs">
+              Отдельного инструмента пока нет
             </Badge>
           </div>
-          
+
           <h1 className="text-4xl md:text-5xl font-bold mb-6">Анализ конкурентов</h1>
           <p className="text-xl text-muted-foreground max-w-3xl">
-            Сравнение ваших позиций с конкурентами для определения оптимальной SEO-стратегии.
+            Автоматического сравнения с конкурентами — видимости, трафика и общих запросов — в
+            сервисе пока нет. Сравнить сайты можно вручную с помощью аудита и проверки позиций.
           </p>
         </motion.div>
 
-        {/* Сравнение конкурентов */}
-        <motion.div 
+        {/* Что можно сделать сейчас */}
+        <motion.div
           className="mb-16"
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.5, delay: 0.2 }}
         >
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <BarChart3 className="h-5 w-5" />
-                Анализ топ конкурентов - Демо
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                {competitors.map((competitor) => (
-                  <motion.div
-                    key={competitor.id}
-                    className={`p-4 border rounded-lg cursor-pointer transition-colors ${
-                      selectedCompetitor === competitor.id ? 'border-primary bg-primary/5' : 'hover:border-primary/50'
-                    }`}
-                    onClick={() => setSelectedCompetitor(competitor.id)}
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                  >
-                    <div className="flex items-center justify-between mb-3">
-                      <h4 className="font-semibold text-sm">{competitor.name}</h4>
-                      <Badge variant={competitor.change > 0 ? 'default' : 'destructive'}>
-                        {competitor.change > 0 ? '+' : ''}{competitor.change}%
-                      </Badge>
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <div className="flex justify-between items-center">
-                        <span className="text-xs text-muted-foreground">Видимость</span>
-                        <span className="text-sm font-semibold">{competitor.visibility}%</span>
-                      </div>
-                      <Progress value={competitor.visibility} className="h-2" />
-                      
-                      <div className="flex justify-between items-center text-xs">
-                        <span className="text-muted-foreground">Ключевые слова:</span>
-                        <span>{competitor.keywords}</span>
-                      </div>
-                      
-                      <div className="flex justify-between items-center text-xs">
-                        <span className="text-muted-foreground">Трафик:</span>
-                        <span>{competitor.traffic.toLocaleString()}</span>
-                      </div>
-                    </div>
-                  </motion.div>
-                ))}
-              </div>
-              
-              {selectedCompetitor && (
-                <motion.div
-                  key={selectedCompetitor}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="p-4 bg-muted/50 rounded-lg"
-                >
-                  <h4 className="font-semibold mb-2">
-                    Детальная информация: {competitors.find(c => c.id === selectedCompetitor)?.domain}
-                  </h4>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                    <div>
-                      <span className="text-muted-foreground">Видимость в поиске:</span>
-                      <div className="font-semibold">{competitors.find(c => c.id === selectedCompetitor)?.visibility}%</div>
-                    </div>
-                    <div>
-                      <span className="text-muted-foreground">Общие ключевые слова:</span>
-                      <div className="font-semibold">247</div>
-                    </div>
-                    <div>
-                      <span className="text-muted-foreground">Средняя позиция:</span>
-                      <div className="font-semibold">12.3</div>
-                    </div>
-                    <div>
-                      <span className="text-muted-foreground">Динамика месяц:</span>
-                      <div className="font-semibold text-green-600">+15 позиций</div>
-                    </div>
-                  </div>
-                </motion.div>
-              )}
-            </CardContent>
-          </Card>
-        </motion.div>
-
-        {/* Основной контент */}
-        <motion.div 
-          className="mb-16"
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.5, delay: 0.3 }}
-        >
-          <Tabs defaultValue="keywords" className="w-full">
-            <TabsList className="grid w-full grid-cols-4">
-              <TabsTrigger value="keywords">Ключевые слова</TabsTrigger>
-              <TabsTrigger value="backlinks">Обратные ссылки</TabsTrigger>
-              <TabsTrigger value="content">Контент-анализ</TabsTrigger>
-              <TabsTrigger value="strategy">Стратегия</TabsTrigger>
-            </TabsList>
-            
-            <TabsContent value="keywords" className="space-y-6">
-              <Card>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {workarounds.map((item) => (
+              <Card key={item.title} className="h-full">
                 <CardHeader>
-                  <CardTitle>Сравнение по ключевым словам</CardTitle>
+                  <CardTitle className="flex items-center gap-2">
+                    <item.icon className="h-5 w-5" />
+                    {item.title}
+                  </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-4">
-                    {competitorKeywords.map((item, index) => (
-                      <motion.div
-                        key={index}
-                        className="p-4 border rounded-lg"
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: index * 0.1 }}
-                      >
-                        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                          <div className="flex-1">
-                            <h4 className="font-semibold mb-1">{item.keyword}</h4>
-                            <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                              <span>Объем: {item.volume.toLocaleString()}/мес</span>
-                              <Badge variant="outline">{item.difficulty}</Badge>
-                            </div>
-                          </div>
-                          
-                          <div className="flex items-center gap-6">
-                            <div className="text-center">
-                              <div className="text-xs text-muted-foreground">Ваша позиция</div>
-                              <div className={`text-lg font-bold ${
-                                item.yourPosition < item.competitorPosition ? 'text-green-600' : 'text-red-600'
-                              }`}>
-                                #{item.yourPosition}
-                              </div>
-                            </div>
-                            
-                            <div className="text-center">
-                              <div className="text-xs text-muted-foreground">Конкурент</div>
-                              <div className={`text-lg font-bold ${
-                                item.competitorPosition < item.yourPosition ? 'text-green-600' : 'text-red-600'
-                              }`}>
-                                #{item.competitorPosition}
-                              </div>
-                            </div>
-                            
-                            <Button variant="outline" size="sm">
-                              Анализ
-                            </Button>
-                          </div>
-                        </div>
-                      </motion.div>
-                    ))}
-                  </div>
+                  <p className="text-muted-foreground mb-4">{item.description}</p>
+                  <Button variant="outline" asChild>
+                    <Link to={item.link}>{item.action}</Link>
+                  </Button>
                 </CardContent>
               </Card>
-            </TabsContent>
-            
-            <TabsContent value="backlinks" className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Профиль обратных ссылок</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm">Ваш сайт</span>
-                      <span className="font-semibold">1,247 ссылок</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm">Топ конкурент</span>
-                      <span className="font-semibold">3,891 ссылок</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm">Разрыв</span>
-                      <span className="font-semibold text-red-600">-2,644 ссылок</span>
-                    </div>
-                  </CardContent>
-                </Card>
-                
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Качество ссылок</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-3">
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm">Средний DA</span>
-                        <div className="flex items-center gap-2">
-                          <Progress value={65} className="w-20 h-2" />
-                          <span className="text-sm font-semibold">65</span>
-                        </div>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm">Nofollow ссылки</span>
-                        <span className="text-sm">23%</span>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm">Уникальные домены</span>
-                        <span className="text-sm">456</span>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-            </TabsContent>
-            
-            <TabsContent value="content" className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Анализ контент-стратегии</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div className="p-4 border rounded-lg text-center">
-                      <h4 className="font-semibold mb-2">Частота публикаций</h4>
-                      <div className="text-2xl font-bold text-primary">2.3</div>
-                      <p className="text-xs text-muted-foreground">статьи в неделю</p>
-                    </div>
-                    
-                    <div className="p-4 border rounded-lg text-center">
-                      <h4 className="font-semibold mb-2">Средняя длина</h4>
-                      <div className="text-2xl font-bold text-primary">1,850</div>
-                      <p className="text-xs text-muted-foreground">слов в статье</p>
-                    </div>
-                    
-                    <div className="p-4 border rounded-lg text-center">
-                      <h4 className="font-semibold mb-2">Социальные сигналы</h4>
-                      <div className="text-2xl font-bold text-primary">89</div>
-                      <p className="text-xs text-muted-foreground">среднее на статью</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
-            
-            <TabsContent value="strategy" className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Рекомендации по стратегии</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    <div className="flex items-start space-x-3">
-                      <Target className="h-5 w-5 text-primary mt-0.5" />
-                      <div>
-                        <h4 className="font-semibold">Целевые ключевые слова</h4>
-                        <p className="text-sm text-muted-foreground">Сосредоточьтесь на 15 ключевых словах, где конкуренты слабее</p>
-                      </div>
-                    </div>
-                    
-                    <div className="flex items-start space-x-3">
-                      <Zap className="h-5 w-5 text-primary mt-0.5" />
-                      <div>
-                        <h4 className="font-semibold">Быстрые победы</h4>
-                        <p className="text-sm text-muted-foreground">7 ключевых слов на позициях 11-15, легко поднять в ТОП-10</p>
-                      </div>
-                    </div>
-                    
-                    <div className="flex items-start space-x-3">
-                      <Eye className="h-5 w-5 text-primary mt-0.5" />
-                      <div>
-                        <h4 className="font-semibold">Контент-пробелы</h4>
-                        <p className="text-sm text-muted-foreground">23 темы, которые активно развивают конкуренты</p>
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
-          </Tabs>
+            ))}
+          </div>
         </motion.div>
 
         {/* CTA */}
@@ -385,22 +109,21 @@ const CompetitorAnalysis: React.FC = () => {
           className="text-center"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.6 }}
+          transition={{ duration: 0.5, delay: 0.4 }}
         >
           <Card className="bg-gradient-to-r from-primary/10 via-secondary/10 to-primary/10">
             <CardContent className="p-8">
-              <h3 className="text-2xl font-bold mb-4">Проанализируйте конкурентов</h3>
+              <h3 className="text-2xl font-bold mb-4">Нужен разбор конкурентов?</h3>
               <p className="text-muted-foreground mb-6 max-w-2xl mx-auto">
-                Получите детальный анализ стратегий ваших конкурентов и найдите 
-                возможности для опережения в поисковой выдаче.
+                Расскажите, с какими сайтами хотите сравниться, — обсудим, чем можем помочь.
               </p>
-              
+
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Button asChild size="lg">
-                  <Link to="/audit">Анализ конкурентов</Link>
+                  <Link to="/contact">Написать нам</Link>
                 </Button>
                 <Button variant="outline" size="lg" asChild>
-                  <Link to="/contact">Консультация эксперта</Link>
+                  <Link to="/features">Все возможности</Link>
                 </Button>
               </div>
             </CardContent>

@@ -17,6 +17,14 @@ export function useProxyManager({ initialTestUrl = 'https://api.ipify.org/' }: U
   const [testUrl, setTestUrl] = useState(initialTestUrl);
   const { toast } = useToast();
 
+  const loadProxies = useCallback(() => {
+    const allProxies = proxyManager.getAllProxies();
+    setProxies(allProxies);
+    setActiveProxies(proxyManager.getActiveProxies());
+  }, []);
+
+  // После сбора перечитываем список: иначе «Список прокси (N)» в админке
+  // оставался прежним до перезахода на страницу.
   const { 
     isCollecting, 
     progress: collectionProgress, 
@@ -24,7 +32,7 @@ export function useProxyManager({ initialTestUrl = 'https://api.ipify.org/' }: U
     collectProxies,
     clearBeforeCollect,
     setClearBeforeCollect
-  } = useProxyCollection();
+  } = useProxyCollection({ onCollected: loadProxies });
   
   const { 
     isTesting: isTestingProxies, 
@@ -43,12 +51,6 @@ export function useProxyManager({ initialTestUrl = 'https://api.ipify.org/' }: U
   const isLoading = isCollecting || isTestingProxies || isTestingUrls;
   const progress = isCollecting ? collectionProgress : (isTestingProxies ? testingProgress : urlTestProgress);
   const statusMessage = isCollecting ? collectionStatus : (isTestingProxies ? testingStatus : urlTestStatus);
-
-  const loadProxies = useCallback(() => {
-    const allProxies = proxyManager.getAllProxies();
-    setProxies(allProxies);
-    setActiveProxies(proxyManager.getActiveProxies());
-  }, []);
 
   useEffect(() => {
     loadProxies();

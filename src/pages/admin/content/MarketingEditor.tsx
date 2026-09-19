@@ -1,6 +1,5 @@
 
 import React, { useState } from 'react';
-import { Helmet } from 'react-helmet-async';
 import BaseContentEditor from '@/components/admin/content/BaseContentEditor';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -8,7 +7,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { PlusCircle, Trash2 } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import PageSeo from '@/components/seo/PageSeo';
 
 interface MarketingCampaign {
   id: string;
@@ -19,32 +18,11 @@ interface MarketingCampaign {
 }
 
 const MarketingEditor: React.FC = () => {
-  const { toast } = useToast();
-  
-  const [campaigns, setCampaigns] = useState<MarketingCampaign[]>([
-    {
-      id: '1',
-      name: 'Летняя акция',
-      description: 'Скидка 20% на все тарифы до конца августа',
-      active: true,
-      url: '/promo/summer'
-    },
-    {
-      id: '2',
-      name: 'Для новых клиентов',
-      description: 'Первый месяц бесплатно',
-      active: false,
-      url: '/promo/new-users'
-    }
-  ]);
-  
-  const handleSave = (data: any) => {
-    console.log('Saving marketing data:', data);
-    toast({
-      title: "Изменения сохранены",
-      description: "Маркетинговые материалы успешно обновлены"
-    });
-  };
+  // По умолчанию здесь стояли акции «Скидка 20% на все тарифы до конца
+  // августа» и «Первый месяц бесплатно» со ссылками на несуществующие
+  // /promo/…. Таких предложений у сервиса нет — список начинается пустым.
+  // Тосты «Изменения сохранены», «кампания создана/удалена» убраны: ничего не сохранялось.
+  const [campaigns, setCampaigns] = useState<MarketingCampaign[]>([]);
   
   const addCampaign = () => {
     const newCampaign: MarketingCampaign = {
@@ -56,20 +34,10 @@ const MarketingEditor: React.FC = () => {
     };
     
     setCampaigns([...campaigns, newCampaign]);
-    
-    toast({
-      title: "Кампания добавлена",
-      description: "Новая маркетинговая кампания создана"
-    });
   };
   
   const removeCampaign = (id: string) => {
     setCampaigns(campaigns.filter(campaign => campaign.id !== id));
-    
-    toast({
-      title: "Кампания удалена",
-      description: "Маркетинговая кампания успешно удалена"
-    });
   };
   
   const updateCampaign = (id: string, field: string, value: string | boolean) => {
@@ -80,14 +48,15 @@ const MarketingEditor: React.FC = () => {
 
   return (
     <>
-      <Helmet>
-        <title>Маркетинговые материалы | Админ панель</title>
-      </Helmet>
+      <PageSeo
+        title="Маркетинговые материалы: акции, промо-страницы, баннеры"
+        description="Управление рекламными блоками сервиса: запуск акций, тексты промо-страниц и настройка маркетинговых кампаний внутри платформы."
+        noindex
+      />
       
       <BaseContentEditor
         title="Маркетинговые материалы"
         description="Управление акциями, промо-страницами и маркетинговыми кампаниями"
-        onSave={handleSave}
       >
         <div className="space-y-6">
           <Card className="bg-black/20 border-white/10">
@@ -201,22 +170,23 @@ const MarketingEditor: React.FC = () => {
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium mb-2">Заголовок главного баннера</label>
+                  {/* Было «Оптимизация сайта за 3 дня» — такого срока сервис не обещает. */}
                   <Input 
-                    defaultValue="Оптимизация сайта за 3 дня" 
+                    placeholder="Заголовок баннера" 
                     className="bg-black/20 border-white/10"
                   />
                 </div>
                 <div>
                   <label className="block text-sm font-medium mb-2">Описание баннера</label>
                   <Textarea 
-                    defaultValue="Мы проведем полный аудит и оптимизацию вашего сайта всего за 3 дня" 
+                    placeholder="Текст баннера" 
                     className="bg-black/20 border-white/10"
                   />
                 </div>
                 <div>
                   <label className="block text-sm font-medium mb-2">URL кнопки баннера</label>
                   <Input 
-                    defaultValue="/services/express" 
+                    placeholder="/адрес-страницы" 
                     className="bg-black/20 border-white/10"
                   />
                 </div>

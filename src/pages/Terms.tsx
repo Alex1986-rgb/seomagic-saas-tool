@@ -2,12 +2,19 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Button } from "@/components/ui/button";
+import { Link } from 'react-router-dom';
 import Layout from '@/components/Layout';
 import { BreadcrumbSchema } from '@/components/seo/BreadcrumbSchema';
+import { SITE_CONTACTS } from '@/config/site-contacts';
+import PageSeo from '@/components/seo/PageSeo';
 
 const Terms: React.FC = () => {
   return (
     <Layout>
+      <PageSeo
+        title="Условия использования сервиса: права, оплата и доступ"
+        description="Правила работы с платформой: регистрация аккаунта, оплата тарифов, ограничения ответственности и порядок изменения условий."
+      />
       <BreadcrumbSchema items={[
         { name: 'Главная', url: '/' },
         { name: 'Условия использования', url: '/terms' }
@@ -80,7 +87,26 @@ const Terms: React.FC = () => {
             <p>Настоящие Условия регулируются и толкуются в соответствии с законодательством Российской Федерации.</p>
             
             <h2>10. Контактная информация</h2>
-            <p>Если у вас есть вопросы или предложения относительно наших Условий использования, пожалуйста, свяжитесь с нами по адресу terms@seomarket.ru.</p>
+            {/*
+              Здесь стояла придуманная почта terms@seomarket.ru. Почтовый адрес
+              берём из SITE_CONTACTS, а пока его нет — отправляем в рабочую
+              форму обратной связи, а не в несуществующий ящик.
+            */}
+            {SITE_CONTACTS.email ? (
+              <p>
+                Если у вас есть вопросы или предложения относительно наших Условий использования,
+                пожалуйста, свяжитесь с нами по адресу{' '}
+                <a href={`mailto:${SITE_CONTACTS.email}`} className="text-primary underline">
+                  {SITE_CONTACTS.email}
+                </a>
+                .
+              </p>
+            ) : (
+              <p>
+                Если у вас есть вопросы или предложения относительно наших Условий использования,
+                напишите нам через <Link to="/contact" className="text-primary underline">форму обратной связи</Link>.
+              </p>
+            )}
           </div>
           
           <div className="mt-12 text-center">

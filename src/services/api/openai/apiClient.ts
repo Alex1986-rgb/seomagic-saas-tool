@@ -2,29 +2,33 @@
 import axios from 'axios';
 
 class OpenAIApiClient {
+  /**
+   * Ключ живёт только в памяти вкладки.
+   *
+   * Раньше он мог браться из переменной VITE_OPENAI_API_KEY. Всё, что начинается
+   * с VITE_, Vite подставляет прямо в собранный файл — то есть ключ уезжал в
+   * браузер каждому посетителю и его можно было выписать из исходников страницы
+   * и тратить наш счёт. Переменную больше не читаем.
+   *
+   * Поля для ключа в админке тоже больше нет: форма «Настройки ИИ» обещала, что
+   * ключ сохранён и «все функции ИИ активированы», хотя он жил до перезагрузки,
+   * а оптимизацию делает языковая модель на сервере (_shared/llm.ts, секреты
+   * LLM_PROVIDER / DEEPSEEK_API_KEY). Этот клиент — остаток браузерной схемы:
+   * пока ключ никто не задал через setApiKey, запросы честно падают с ошибкой.
+   */
   private apiKey: string | null = null;
 
   setApiKey(key: string): void {
     this.apiKey = key;
-    localStorage.setItem('openai_api_key', key);
   }
 
   getApiKey(): string | null {
-    if (this.apiKey) {
-      return this.apiKey;
-    }
-    
-    const storedKey = localStorage.getItem('openai_api_key');
-    if (storedKey) {
-      this.apiKey = storedKey;
-      return storedKey;
-    }
-    
-    return null;
+    return this.apiKey;
   }
 
   async makeRequest(messages: { role: string; content: string; }[], model?: string, options: { maxTokens?: number, temperature?: number } = {}): Promise<any> {
-    if (!this.apiKey) {
+    const apiKey = this.getApiKey();
+    if (!apiKey) {
       throw new Error('OpenAI API key not set');
     }
 
@@ -43,12 +47,12 @@ class OpenAIApiClient {
         },
         {
           headers: {
-            'Authorization': `Bearer ${this.apiKey}`,
+            'Authorization': `Bearer ${apiKey}`,
             'Content-Type': 'application/json'
           }
         }
       );
-  
+
       return response.data.choices[0].message.content;
     } catch (error) {
       console.error('Error calling OpenAI API:', error);
@@ -71,10 +75,11 @@ class OpenAIApiClient {
   }
   
   async generateImage(prompt: string, size: '1024x1024' | '512x512' | '256x256' = '1024x1024'): Promise<string> {
-    if (!this.apiKey) {
+    const apiKey = this.getApiKey();
+    if (!apiKey) {
       throw new Error('OpenAI API key not set');
     }
-    
+
     try {
       const response = await axios.post(
         'https://api.openai.com/v1/images/generations',
@@ -85,7 +90,7 @@ class OpenAIApiClient {
         },
         {
           headers: {
-            'Authorization': `Bearer ${this.apiKey}`,
+            'Authorization': `Bearer ${apiKey}`,
             'Content-Type': 'application/json'
           }
         }

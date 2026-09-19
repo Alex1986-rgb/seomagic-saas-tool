@@ -3,8 +3,9 @@ import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { ExternalLink, Zap, AlertCircle, AlertTriangle, CheckCircle2, Clock, FileText, Image as ImageIcon, Heading1 } from 'lucide-react';
+import { ExternalLink, AlertCircle, AlertTriangle, CheckCircle2, Clock, FileText, Image as ImageIcon, Heading1 } from 'lucide-react';
 import { PageAnalysisRow } from './types';
+import { toNumber } from '@/lib/numbers';
 
 interface PageDetailViewProps {
   page: PageAnalysisRow | null;
@@ -50,7 +51,7 @@ const PageDetailView: React.FC<PageDetailViewProps> = ({ page, isOpen, onClose }
                   </div>
                   <div>
                     <div className="text-xs text-muted-foreground">Время загрузки</div>
-                    <div className="font-bold">{page.loadTime.toFixed(2)}s</div>
+                    <div className="font-bold">{toNumber(page.loadTime).toFixed(2)}s</div>
                   </div>
                 </div>
 
@@ -117,7 +118,7 @@ const PageDetailView: React.FC<PageDetailViewProps> = ({ page, isOpen, onClose }
               {page.issues.length === 0 ? (
                 <div className="text-center py-8 text-muted-foreground">
                   <CheckCircle2 className="h-12 w-12 mx-auto mb-2 text-success" />
-                  <p>Проблем не обнаружено!</p>
+                  <p>По проверкам обхода замечаний нет</p>
                 </div>
               ) : (
                 <div className="space-y-3">
@@ -150,15 +151,15 @@ const PageDetailView: React.FC<PageDetailViewProps> = ({ page, isOpen, onClose }
             </CardContent>
           </Card>
 
-          {/* Actions */}
+          {/*
+            Здесь была кнопка «Оптимизировать» без обработчика: нажатие ничего
+            не делало. Оптимизация запускается на весь аудит из раздела
+            «Оптимизация сайта», для одной страницы её нет — кнопку убрали.
+          */}
           <div className="flex gap-2">
-            <Button className="flex-1" onClick={() => window.open(page.url, '_blank')}>
+            <Button className="flex-1" onClick={() => window.open(page.url, '_blank', 'noopener,noreferrer')}>
               <ExternalLink className="mr-2 h-4 w-4" />
               Открыть в браузере
-            </Button>
-            <Button variant="outline" className="flex-1">
-              <Zap className="mr-2 h-4 w-4" />
-              Оптимизировать
             </Button>
           </div>
         </div>

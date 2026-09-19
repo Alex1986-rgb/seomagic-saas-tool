@@ -4,6 +4,8 @@ import PaymentDialog from './PaymentDialog';
 
 interface OptimizationActionsProps {
   url: string;
+  /** Аудит, к которому относится смета: без него заявка на счёт уходит без привязки. */
+  taskId?: string | null;
   optimizationCost: number;
   isOptimized: boolean;
   isPaymentComplete: boolean;
@@ -17,6 +19,7 @@ interface OptimizationActionsProps {
 
 const OptimizationActions: React.FC<OptimizationActionsProps> = ({
   url,
+  taskId,
   optimizationCost,
   isOptimized,
   isPaymentComplete,
@@ -67,6 +70,7 @@ const OptimizationActions: React.FC<OptimizationActionsProps> = ({
             onPayment={onPayment}
             optimizationCost={optimizationCost}
             url={url}
+            taskId={taskId}
           />
         </>
       )}

@@ -33,6 +33,11 @@ const DeploymentPanel: React.FC<DeploymentPanelProps> = ({ taskId, domain, isCom
   const [progress, setProgress] = useState(0);
   const [deploymentResult, setDeploymentResult] = useState<{ success: boolean; message: string; url?: string } | null>(null);
 
+  // Серверной публикации на хостинг клиента пока нет. Пока её не появилось,
+  // форма закрыта: просить у человека пароль от хостинга, ничего с ним не делая,
+  // нельзя.
+  const deploymentAvailable = false;
+
   const handleProviderChange = (value: string) => {
     setProvider(value as 'ftp' | 'beget' | 'cpanel');
     setCredentials(prev => ({
@@ -67,78 +72,22 @@ const DeploymentPanel: React.FC<DeploymentPanelProps> = ({ taskId, domain, isCom
   };
 
   const handleDeploy = async () => {
-    // Validate credentials
-    if (!credentials.username) {
-      toast({
-        title: "Необходимо указать пользователя",
-        description: "Введите имя пользователя для доступа к хостингу",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    if (!credentials.password && !credentials.apiKey) {
-      toast({
-        title: "Необходимо указать пароль или API ключ",
-        description: "Введите пароль или API ключ для доступа к хостингу",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    if (provider === 'ftp' && !credentials.host) {
-      toast({
-        title: "Необходимо указать хост",
-        description: "Введите FTP хост для подключения",
-        variant: "destructive"
-      });
-      return;
-    }
-
     try {
       setIsDeploying(true);
-      setProgress(10);
-      
-      // Animation for progress
-      const interval = setInterval(() => {
-        setProgress(prev => {
-          if (prev >= 90) {
-            clearInterval(interval);
-            return 90;
-          }
-          return prev + 10;
-        });
-      }, 1000);
-      
-      // Deploy the site
-      const result = await seoOptimizationController.deploySite(taskId, credentials);
-      
-      clearInterval(interval);
-      setProgress(100);
-      
-      setDeploymentResult({
-        success: result.success,
-        message: result.success ? "Сайт успешно опубликован" : result.error || "Ошибка публикации сайта",
-        url: result.url
-      });
-      
-      toast({
-        title: result.success ? "Сайт опубликован" : "Ошибка публикации",
-        description: result.success 
-          ? `Оптимизированная версия сайта ${domain} успешно опубликована` 
-          : result.error || "Не удалось опубликовать оптимизированный сайт",
-        variant: result.success ? "default" : "destructive"
-      });
+      setProgress(0);
+
+      // Метод честно бросает: публикации из интерфейса нет.
+      await seoOptimizationController.deploySite(taskId, credentials);
     } catch (error) {
+      const message = error instanceof Error
+        ? error.message
+        : "Не удалось опубликовать оптимизированный сайт";
+
+      setDeploymentResult({ success: false, message });
       toast({
-        title: "Ошибка публикации",
-        description: error instanceof Error ? error.message : "Не удалось опубликовать оптимизированный сайт",
+        title: "Публикация недоступна",
+        description: message,
         variant: "destructive"
-      });
-      
-      setDeploymentResult({
-        success: false,
-        message: error instanceof Error ? error.message : "Неизвестная ошибка при публикации сайта"
       });
     } finally {
       setIsDeploying(false);
@@ -189,11 +138,22 @@ const DeploymentPanel: React.FC<DeploymentPanelProps> = ({ taskId, domain, isCom
                 </div>
               </div>
             </div>
+
+            {!deploymentAvailable && (
+              <Alert>
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>
+                  Публикация на хостинг из интерфейса пока не работает — готовая копия
+                  выкладывается скриптом <code>scripts/publish-subdomain.sh</code>.
+                  Не вводите здесь пароли от хостинга.
+                </AlertDescription>
+              </Alert>
+            )}
             
             <div className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="provider">Выберите хостинг-провайдер</Label>
-                <Select value={provider} onValueChange={handleProviderChange}>
+                <Select value={provider} onValueChange={handleProviderChange} disabled={!deploymentAvailable}>
                   <SelectTrigger id="provider">
                     <SelectValue placeholder="Выберите провайдер" />
                   </SelectTrigger>
@@ -208,38 +168,38 @@ const DeploymentPanel: React.FC<DeploymentPanelProps> = ({ taskId, domain, isCom
               {provider === 'ftp' && (
                 <div className="space-y-2">
                   <Label htmlFor="host">FTP Хост</Label>
-                  <Input id="host" name="host" placeholder="ftp.example.com" value={credentials.host} onChange={handleInputChange} />
+                  <Input id="host" name="host" placeholder="ftp.example.com" value={credentials.host} onChange={handleInputChange} disabled={!deploymentAvailable} />
                 </div>
               )}
               
               <div className="space-y-2">
                 <Label htmlFor="username">Имя пользователя</Label>
-                <Input id="username" name="username" placeholder="username" value={credentials.username} onChange={handleInputChange} />
+                <Input id="username" name="username" placeholder="username" value={credentials.username} onChange={handleInputChange} disabled={!deploymentAvailable} />
               </div>
               
               <div className="space-y-2">
                 <Label htmlFor="password">Пароль</Label>
-                <Input id="password" name="password" type="password" placeholder="••••••••" value={credentials.password} onChange={handleInputChange} />
+                <Input id="password" name="password" type="password" placeholder="••••••••" value={credentials.password} onChange={handleInputChange} disabled={!deploymentAvailable} />
               </div>
               
               {provider === 'beget' && (
                 <div className="space-y-2">
                   <Label htmlFor="apiKey">API Ключ (опционально)</Label>
-                  <Input id="apiKey" name="apiKey" placeholder="API ключ Beget" value={credentials.apiKey} onChange={handleInputChange} />
+                  <Input id="apiKey" name="apiKey" placeholder="API ключ Beget" value={credentials.apiKey} onChange={handleInputChange} disabled={!deploymentAvailable} />
                 </div>
               )}
               
               {(provider === 'ftp' || provider === 'cpanel') && (
                 <div className="space-y-2">
                   <Label htmlFor="path">Путь на сервере</Label>
-                  <Input id="path" name="path" placeholder="/public_html" value={credentials.path} onChange={handleInputChange} />
+                  <Input id="path" name="path" placeholder="/public_html" value={credentials.path} onChange={handleInputChange} disabled={!deploymentAvailable} />
                 </div>
               )}
               
               {provider === 'ftp' && (
                 <div className="space-y-2">
                   <Label htmlFor="port">Порт</Label>
-                  <Input id="port" name="port" type="number" placeholder="21" value={credentials.port?.toString()} onChange={handleInputChange} />
+                  <Input id="port" name="port" type="number" placeholder="21" value={credentials.port?.toString()} onChange={handleInputChange} disabled={!deploymentAvailable} />
                 </div>
               )}
             </div>
@@ -285,7 +245,7 @@ const DeploymentPanel: React.FC<DeploymentPanelProps> = ({ taskId, domain, isCom
       <CardFooter>
         <Button 
           onClick={handleDeploy} 
-          disabled={!isCompleted || isDeploying}
+          disabled={!isCompleted || isDeploying || !deploymentAvailable}
           className="w-full"
         >
           <CloudUpload className="mr-2 h-4 w-4" />

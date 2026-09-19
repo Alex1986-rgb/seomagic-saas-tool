@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="_ds/industry-2cf29483-63c2-42c2-a32d-4823edc25b26/styles.css">
+<script src="_ds/industry-2cf29483-63c2-42c2-a32d-4823edc25b26/_ds_bundle.js"></script>
+<script src="image-slot.js"></script>
+<style>
+html, body { background: var(--color-bg); color: var(--color-text); margin: 0; text-wrap: pretty; }
+a { color: var(--color-accent-700); }
+a:hover { color: var(--color-accent-800); }
+[data-cell] { transition: border-color .15s ease; }
+[data-cell]:hover { border-color: var(--color-accent); }
+[data-q] > summary { cursor: pointer; list-style: none; }
+[data-q] > summary::-webkit-details-marker { display: none; }
+[data-q] > summary:hover { color: var(--color-accent-700); }
+[data-q] > summary > span[data-sign] { transition: transform .15s ease; display: inline-flex; align-items: center; justify-content: center; width: 16px; height: 1.25em; flex: none; }
+[data-q][open] > summary > span[data-sign] { transform: rotate(45deg); }
+[data-post] { transition: border-color .15s ease; }
+[data-post]:hover { border-color: var(--color-accent); }
+[data-post]:hover h3 { color: var(--color-accent-700); }
+[data-hl] { background: color-mix(in srgb, var(--color-accent) 12%, transparent); }
+@keyframes blink { 0%,100% { opacity:1 } 50% { opacity:.2 } }
+@keyframes risein { from { opacity:0; transform: translateY(6px) } to { opacity:1; transform:none } }
+[data-teaser] { animation: risein .22s ease both; }
+/* Меню из шести пунктов переносится по строкам (flex-wrap на самом блоке), поэтому прячем его
+   только там, где перенос уже сдвигает кнопку «Проверить сайт» под логотип — ниже 860px.
+   Выше этой ширины меню остаётся на месте; подвал в любом случае держит полную карту сайта. */
+@media (max-width: 860px) { [data-navlinks] { display: none !important; } }
+@media (max-width: 680px) { nav.nav { gap: var(--space-4) !important; } }
+</style>
+</helmet>
+
+<div ref="{{ rootRef }}" style="background:var(--color-bg);color:var(--color-text);font-family:var(--font-body);min-height:100vh">
+
+  <nav class="nav" style="position:sticky;top:0;z-index:5;background:var(--color-bg);border-bottom:1px solid var(--color-divider);padding-inline:clamp(20px,5vw,72px);gap:var(--space-6)">
+    <span class="nav-brand" style="letter-spacing:.04em">SEOMARKET</span>
+    <!-- Пять пунктов плюс статус редизайна — предел для одной строки. «Как это работает»,
+         «Органика» и «Вопросы» живут в подвале: в шапке они выдавливали кнопку за край экрана. -->
+    <div data-navlinks style="display:flex;flex-wrap:wrap;gap:var(--space-4) var(--space-6);margin-left:auto;min-width:0">
+      <a href="#uslugi">Услуги</a>
+      <a href="#ceny">Цены</a>
+      <a href="#metodika">Методика</a>
+      <a href="SeoMarket Блог.dc.html">Блог</a>
+      <a href="SeoMarket Отзывы.dc.html">Отзывы</a>
+      <a href="#redizayn" style="display:flex;align-items:center;gap:7px"><span style="width:7px;height:7px;background:var(--color-accent);flex:none"></span>Скоро редизайн</a>
+      <a href="SeoMarket v2.dc.html">Войти</a>
+    </div>
+    <button type="button" class="btn btn-primary" onClick="{{ focusHero }}" style="white-space:nowrap">Проверить сайт</button>
+  </nav>
+
+  <div style="max-width:1200px;margin:0 auto;padding-inline:clamp(20px,5vw,72px)">
+
+    <section style="padding:88px 0 64px">
+      <h1 style="font-family:var(--font-heading);font-weight:600;font-size:clamp(38px,5.8vw,82px);line-height:1.04;letter-spacing:.01em;text-transform:uppercase;margin:0 0 0 -0.052em">
+        <span style="display:block">SEO-аудит сайта бесплатно.</span>
+        <span style="display:block;color:var(--color-accent-700)">Платите за исправления.</span>
+      </h1>
+      <p style="font-size:17px;line-height:1.5;max-width:58ch;margin:32px 0 0">214 проверок по технике, контенту и скорости за четыре минуты. Каждая находка привязана к конкретным адресам, а смета считается по фактическому объёму правок — без подписки и без пакетов.</p>
+
+      <div style="display:flex;gap:var(--space-2);align-items:stretch;max-width:600px;margin-top:32px;flex-wrap:wrap">
+        <input ref="{{ heroRef }}" class="input" type="text" placeholder="например, mebel-grad.ru" aria-label="Адрес сайта" style="flex:1;min-width:220px;min-height:46px;font-size:16px">
+        <button type="button" class="btn btn-primary" onClick="{{ check }}" style="min-height:46px;padding-inline:28px;font-size:15px;white-space:nowrap">{{ checkLabel }}</button>
+      </div>
+      <p style="font-size:13px;color:color-mix(in srgb,var(--color-text) 68%,transparent);margin:12px 0 0">Регистрация за минуту, карта не нужна. Аккаунт нужен, чтобы сохранить отчёт, историю аудитов и смету.</p>
+
+      <sc-if value="{{ checking }}">
+        <div data-teaser class="blueprint" style="margin-top:36px;padding:var(--space-6);display:grid;gap:var(--space-3);max-width:760px">
+          <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+          <div style="display:flex;align-items:baseline;gap:var(--space-3);flex-wrap:wrap">
+            <span style="width:7px;height:7px;flex:none;background:var(--color-accent);animation:blink 1.1s infinite"></span>
+            <span style="font-family:var(--font-heading);font-size:20px">Сканируем сайт</span>
+            <span style="margin-left:auto;font-family:var(--font-heading);font-size:22px">{{ pct }}%</span>
+          </div>
+          <div style="height:8px;background:color-mix(in srgb,var(--color-text) 9%,transparent);position:relative;overflow:hidden;background-image:repeating-linear-gradient(to right,var(--color-divider) 0 1px,transparent 1px 5%)"><div style="position:absolute;top:0;bottom:0;left:0;background:var(--color-accent);width:{{ pctW }}"></div></div>
+          <span style="font-size:12.5px;color:color-mix(in srgb,var(--color-text) 60%,transparent)">{{ phase }}</span>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ done }}">
+        <div data-teaser class="blueprint" style="margin-top:36px;max-width:940px">
+          <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:0">
+            <div style="padding:var(--space-6);border-bottom:1px solid var(--color-divider);display:grid;gap:6px;align-content:start">
+              <span style="font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--color-accent)">Предварительный балл</span>
+              <span style="display:flex;align-items:baseline;gap:6px"><span style="font-family:var(--font-heading);font-size:64px;line-height:.9">61</span><span style="font-size:14px;color:color-mix(in srgb,var(--color-text) 68%,transparent)">/100</span></span>
+              <span style="font-size:12.5px;color:color-mix(in srgb,var(--color-text) 60%,transparent)">1 200 страниц из 3 688 за первые 40 секунд</span>
+            </div>
+            <div style="padding:var(--space-6);border-bottom:1px solid var(--color-divider);border-left:1px solid var(--color-divider);display:grid;gap:var(--space-3);align-content:start;min-width:0">
+              <span style="font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--color-accent)">Три главные проблемы</span>
+              <div style="display:grid;gap:var(--space-2);font-size:13.5px">
+                <span style="display:flex;justify-content:space-between;gap:var(--space-3)"><span>Битые ссылки — 37 страниц</span><span style="font-family:var(--font-heading);white-space:nowrap">1 850 ₽</span></span>
+                <span style="display:flex;justify-content:space-between;gap:var(--space-3)"><span>Дубли title — 96 страниц</span><span style="font-family:var(--font-heading);white-space:nowrap">3 360 ₽</span></span>
+                <span style="display:flex;justify-content:space-between;gap:var(--space-3)"><span>Нет перелинковки — 1 636 страниц</span><span style="font-family:var(--font-heading);white-space:nowrap">81 800 ₽</span></span>
+              </div>
+            </div>
+          </div>
+          <!-- Регистрация здесь, а не на отдельной странице: клиент уже увидел свой балл,
+               это лучший момент попросить аккаунт. Пароль одним полем, без подтверждения. -->
+          <div style="padding:var(--space-6);display:grid;gap:var(--space-3);border-top:1px solid var(--color-divider)">
+            <div style="font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--color-accent)">Создайте аккаунт, чтобы открыть полный отчёт</div>
+            <div style="display:flex;gap:var(--space-2);align-items:stretch;flex-wrap:wrap">
+              <input class="input" type="email" placeholder="рабочая почта" aria-label="Электронная почта" style="flex:1;min-width:190px;min-height:42px">
+              <input class="input" type="password" placeholder="пароль" aria-label="Пароль" style="flex:1;min-width:150px;min-height:42px">
+              <button type="button" class="btn btn-primary" style="min-height:42px;white-space:nowrap">Зарегистрироваться</button>
+            </div>
+            <div style="font-size:12.5px;color:color-mix(in srgb,var(--color-text) 68%,transparent)">Уже есть аккаунт? <a href="SeoMarket v2.dc.html">Войти</a> · Отчёт по 214 проверкам, смета и история аудитов останутся в кабинете</div>
+          </div>
+        </div>
+      </sc-if>
+    </section>
+
+    <section id="kak" style="padding:24px 0 72px">
+      <div class="blueprint">
+        <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+        <header style="display:flex;flex-wrap:wrap;align-items:stretch;border-bottom:1px solid var(--color-divider)">
+          <span style="flex:1;min-width:16ch;padding:12px 24px;font-size:13px;line-height:24px;letter-spacing:.08em;text-transform:uppercase;font-weight:600">Как это работает — от проверки до результата</span>
+          <span style="border-left:1px solid var(--color-divider);white-space:nowrap;padding:12px 24px;font-size:13px;line-height:24px;letter-spacing:.08em;text-transform:uppercase;font-weight:600;color:color-mix(in srgb,var(--color-text) 70%,transparent)">Лист 01</span>
+          <span style="border-left:1px solid var(--color-divider);white-space:nowrap;padding:12px 24px;font-size:13px;line-height:24px;letter-spacing:.08em;text-transform:uppercase;font-weight:600;color:color-mix(in srgb,var(--color-text) 70%,transparent)">Ред. 09.2026</span>
+        </header>
+        <div style="overflow-x:auto">
+          <table class="table" style="min-width:700px">
+            <thead><tr><th scope="col" style="width:68px;padding-left:24px">№</th><th scope="col" style="width:22%">Шаг</th><th scope="col" style="width:15%">Стоимость</th><th scope="col">Что получаете</th></tr></thead>
+            <tbody>
+              <tr><td style="padding-left:24px;font-size:13px;font-weight:600;letter-spacing:.08em;color:var(--color-accent-700)">01</td><td style="font-size:15px"><span style="display:flex;align-items:flex-start;gap:var(--space-2)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex:none;margin-top:3px;color:var(--color-accent)"><path d="M3 7V5a2 2 0 0 1 2-2h2"></path><path d="M17 3h2a2 2 0 0 1 2 2v2"></path><path d="M21 17v2a2 2 0 0 1-2 2h-2"></path><path d="M7 21H5a2 2 0 0 1-2-2v-2"></path><circle cx="12" cy="12" r="3"></circle><path d="m16 16-1.9-1.9"></path></svg><span>Проверка сайта</span></span></td><td style="font-family:var(--font-heading);font-size:22px">0 ₽</td><td style="font-size:15px;color:color-mix(in srgb,var(--color-text) 78%,transparent)">Балл, три главные проблемы и предварительная смета на этой странице, без регистрации.</td></tr>
+              <tr><td style="padding-left:24px;font-size:13px;font-weight:600;letter-spacing:.08em;color:var(--color-accent-700)">02</td><td style="font-size:15px"><span style="display:flex;align-items:flex-start;gap:var(--space-2)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex:none;margin-top:3px;color:var(--color-accent)"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"></path><path d="M14 2v4a2 2 0 0 0 2 2h4"></path><path d="M10 9H8"></path><path d="M16 13H8"></path><path d="M16 17H8"></path></svg><span>Полный отчёт</span></span></td><td style="font-family:var(--font-heading);font-size:22px">0 ₽</td><td style="font-size:15px;color:color-mix(in srgb,var(--color-text) 78%,transparent)">Все 214 проверок по каждому адресу: PDF для руководителя, XLSX для разработчика. Нужен аккаунт — отчёту нужно где-то жить.</td></tr>
+              <tr><td style="padding-left:24px;font-size:13px;font-weight:600;letter-spacing:.08em;color:var(--color-accent-700)">03</td><td style="font-size:15px"><span style="display:flex;align-items:flex-start;gap:var(--space-2)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex:none;margin-top:3px;color:var(--color-accent)"><rect width="16" height="20" x="4" y="2" rx="2"></rect><line x1="8" x2="16" y1="6" y2="6"></line><line x1="16" x2="16" y1="14" y2="18"></line><path d="M16 10h.01"></path><path d="M12 10h.01"></path><path d="M8 10h.01"></path><path d="M12 14h.01"></path><path d="M8 14h.01"></path><path d="M12 18h.01"></path><path d="M8 18h.01"></path></svg><span>Смета</span></span></td><td style="font-family:var(--font-heading);font-size:22px">по факту</td><td style="font-size:15px;color:color-mix(in srgb,var(--color-text) 78%,transparent)">Отмечаете, что исправлять. Ставка × найденный объём, скидка растёт с количеством правок.</td></tr>
+              <tr data-hl><td style="padding-left:24px;font-size:13px;font-weight:600;letter-spacing:.08em;color:var(--color-accent-700)">04</td><td style="font-size:15px;font-weight:600"><span style="display:flex;align-items:flex-start;gap:var(--space-2)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex:none;margin-top:3px;color:var(--color-accent)"><path d="m9 10 2 2 4-4"></path><rect width="20" height="14" x="2" y="3" rx="2"></rect><path d="M12 17v4"></path><path d="M8 21h8"></path></svg><span>Правки и превью</span></span></td><td style="font-family:var(--font-heading);font-size:22px">в холде</td><td style="font-size:15px;color:color-mix(in srgb,var(--color-text) 78%,transparent)">Исправленная копия открывается на закрытом поддомене. Деньги списываются только после вашего одобрения.</td></tr>
+              <tr><td style="padding-left:24px;font-size:13px;font-weight:600;letter-spacing:.08em;color:var(--color-accent-700)">05</td><td style="font-size:15px"><span style="display:flex;align-items:flex-start;gap:var(--space-2)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex:none;margin-top:3px;color:var(--color-accent)"><path d="m16 6-4-4-4 4"></path><path d="M12 2v8"></path><rect width="20" height="8" x="2" y="14" rx="2"></rect><path d="M6 18h.01"></path><path d="M10 18h.01"></path></svg><span>Установка</span></span></td><td style="font-family:var(--font-heading);font-size:22px">включена</td><td style="font-size:15px;color:color-mix(in srgb,var(--color-text) 78%,transparent)">ZIP-архив, наш SSH-ключ или установка нами. Бэкап с откатом 30 дней, переобход в Вебмастере.</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p style="margin:0;padding:12px 24px;border-top:1px solid var(--color-divider);font-size:13px;line-height:24px;color:color-mix(in srgb,var(--color-text) 70%,transparent)">Правка, не прошедшая проверку после применения, из счёта убирается. Повторный аудит через 30 дней — бесплатно.</p>
+      </div>
+    </section>
+
+    <section id="ceny" style="padding:48px 0 72px">
+      <span style="display:block;font-size:13px;line-height:12px;letter-spacing:.08em;text-transform:uppercase;font-weight:600;color:var(--color-accent-700);margin:0 0 12px">02 · Цены</span>
+      <hr style="height:1px;border:0;margin:0 0 40px;background:var(--color-divider)">
+      <h2 style="font-family:var(--font-heading);font-size:clamp(28px,3.4vw,40px);line-height:1.1;letter-spacing:.02em;text-transform:uppercase;margin:0 0 20px">Сколько стоит исправить сайт</h2>
+      <p style="font-size:15px;line-height:1.6;max-width:70ch;margin:0 0 32px;color:color-mix(in srgb,var(--color-text) 80%,transparent)">Оптимизация считается постранично, а не пакетами. Ставка умножается на объём, найденный аудитом: если пустых description оказалось 214, вы платите за 214, а не за «до 500». Скидка зависит от общего числа правок в смете и применяется ко всей сумме.</p>
+
+      <p style="text-align:center;font-size:15px;margin:0 0 12px;color:color-mix(in srgb,var(--color-text) 78%,transparent)">Ставки за единицу работы, сентябрь 2026</p>
+      <div style="overflow-x:auto;border:1px solid var(--color-divider)">
+        <table class="table" style="min-width:760px">
+          <thead><tr><th scope="col" style="width:32%;padding-left:24px">Работа</th><th scope="col">Единица</th><th scope="col" style="text-align:right">Ставка</th><th scope="col">Что входит</th></tr></thead>
+          <tbody>
+            <tr><td style="padding-left:24px;font-size:15px">Технический аудит</td><td>проект</td><td style="text-align:right;font-family:var(--font-heading);font-size:20px;white-space:nowrap">0 ₽</td><td style="font-size:14px;color:color-mix(in srgb,var(--color-text) 75%,transparent)">214 проверок, отчёт и смета</td></tr>
+            <tr><td style="padding-left:24px;font-size:15px">Мета-теги title и description</td><td>страница</td><td style="text-align:right;font-family:var(--font-heading);font-size:20px;white-space:nowrap">35 ₽</td><td style="font-size:14px;color:color-mix(in srgb,var(--color-text) 75%,transparent)">Генерация по содержимому, уникализация дублей</td></tr>
+            <tr><td style="padding-left:24px;font-size:15px">Атрибуты alt</td><td>изображение</td><td style="text-align:right;font-family:var(--font-heading);font-size:20px;white-space:nowrap">20 ₽</td><td style="font-size:14px;color:color-mix(in srgb,var(--color-text) 75%,transparent)">Из названия товара и контекста страницы</td></tr>
+            <tr><td style="padding-left:24px;font-size:15px">Битые ссылки</td><td>ссылка</td><td style="text-align:right;font-family:var(--font-heading);font-size:20px;white-space:nowrap">50 ₽</td><td style="font-size:14px;color:color-mix(in srgb,var(--color-text) 75%,transparent)">Замена адреса или редирект 301</td></tr>
+            <tr><td style="padding-left:24px;font-size:15px">Canonical и редиректы</td><td>страница</td><td style="text-align:right;font-family:var(--font-heading);font-size:20px;white-space:nowrap">30 ₽</td><td style="font-size:14px;color:color-mix(in srgb,var(--color-text) 75%,transparent)">Склейка дублей с параметрами и UTM</td></tr>
+            <tr><td style="padding-left:24px;font-size:15px">Перелинковка, 5 ссылок</td><td>страница</td><td style="text-align:right;font-family:var(--font-heading);font-size:20px;white-space:nowrap">50 ₽</td><td style="font-size:14px;color:color-mix(in srgb,var(--color-text) 75%,transparent)">Ссылки на смежные разделы, анкоры из названий</td></tr>
+            <tr><td style="padding-left:24px;font-size:15px">Сжатие изображений</td><td>изображение</td><td style="text-align:right;font-family:var(--font-heading);font-size:20px;white-space:nowrap">15 ₽</td><td style="font-size:14px;color:color-mix(in srgb,var(--color-text) 75%,transparent)">WebP с сохранением исходников</td></tr>
+            <tr><td style="padding-left:24px;font-size:15px">Исправление URL и редиректы</td><td>адрес</td><td style="text-align:right;font-family:var(--font-heading);font-size:20px;white-space:nowrap">50 ₽</td><td style="font-size:14px;color:color-mix(in srgb,var(--color-text) 75%,transparent)">ЧПУ вместо параметров, 301 со старого адреса</td></tr>
+            <tr><td style="padding-left:24px;font-size:15px">Тексты категорий</td><td>страница</td><td style="text-align:right;font-family:var(--font-heading);font-size:20px;white-space:nowrap">250 ₽</td><td style="font-size:14px;color:color-mix(in srgb,var(--color-text) 75%,transparent)">Черновик под вычитку, 400–600 слов</td></tr>
+            <tr><td style="padding-left:24px;font-size:15px">Описания товаров</td><td>товар</td><td style="text-align:right;font-family:var(--font-heading);font-size:20px;white-space:nowrap">120 ₽</td><td style="font-size:14px;color:color-mix(in srgb,var(--color-text) 75%,transparent)">По характеристикам из выгрузки, без воды</td></tr>
+            <tr data-hl><td style="padding-left:24px;font-size:15px;font-weight:600">SEO-текст с таблицей в категории</td><td>категория</td><td style="text-align:right;font-family:var(--font-heading);font-size:20px;white-space:nowrap">600 ₽</td><td style="font-size:14px;color:color-mix(in srgb,var(--color-text) 75%,transparent)">Текст внизу листинга плюс таблица характеристик</td></tr>
+            <tr><td style="padding-left:24px;font-size:15px">Микроразметка Schema.org</td><td>шаблон</td><td style="text-align:right;font-family:var(--font-heading);font-size:20px;white-space:nowrap">150 ₽</td><td style="font-size:14px;color:color-mix(in srgb,var(--color-text) 75%,transparent)">Product, BreadcrumbList, Organization</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p style="font-size:13px;line-height:1.6;margin:16px 0 0;max-width:80ch;color:color-mix(in srgb,var(--color-text) 70%,transparent)">Единой цены «за SEO в месяц» у нас нет: объём работ известен только после обхода, а он у сайта на 50 страниц и у каталога на 30 000 отличается в сотни раз. Точную сумму по своему сайту вы увидите в смете сразу после бесплатной проверки.</p>
+
+      <p style="text-align:center;font-size:15px;margin:44px 0 12px;color:color-mix(in srgb,var(--color-text) 78%,transparent)">Скидка за объём правок в смете</p>
+      <div style="overflow-x:auto;border:1px solid var(--color-divider)">
+        <table class="table" style="min-width:620px">
+          <thead><tr><th scope="col" style="padding-left:24px">Правок в смете</th><th scope="col" style="text-align:right">Скидка</th><th scope="col" style="text-align:right">Пример суммы</th><th scope="col">Кому обычно подходит</th></tr></thead>
+          <tbody>
+            <tr><td style="padding-left:24px;font-size:15px">до 100</td><td style="text-align:right;font-family:var(--font-heading);font-size:20px">—</td><td style="text-align:right;white-space:nowrap">от 6 000 ₽</td><td style="font-size:14px;color:color-mix(in srgb,var(--color-text) 75%,transparent)">Лендинг, визитка, небольшой блог</td></tr>
+            <tr><td style="padding-left:24px;font-size:15px">от 100</td><td style="text-align:right;font-family:var(--font-heading);font-size:20px">20 %</td><td style="text-align:right;white-space:nowrap">14–20 тыс ₽</td><td style="font-size:14px;color:color-mix(in srgb,var(--color-text) 75%,transparent)">Сайт услуг, 50–200 страниц</td></tr>
+            <tr data-hl><td style="padding-left:24px;font-size:15px;font-weight:600">от 1 000</td><td style="text-align:right;font-family:var(--font-heading);font-size:20px;font-weight:600">40 %</td><td style="text-align:right;white-space:nowrap;font-weight:600">28–45 тыс ₽</td><td style="font-size:14px;color:color-mix(in srgb,var(--color-text) 75%,transparent)">Интернет-магазин с каталогом</td></tr>
+            <tr><td style="padding-left:24px;font-size:15px">от 3 000</td><td style="text-align:right;font-family:var(--font-heading);font-size:20px">55 %</td><td style="text-align:right;white-space:nowrap">75–120 тыс ₽</td><td style="font-size:14px;color:color-mix(in srgb,var(--color-text) 75%,transparent)">Крупный каталог, маркетплейс, агентство</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p style="font-size:13px;line-height:1.6;margin:16px 0 0;max-width:80ch;color:color-mix(in srgb,var(--color-text) 70%,transparent)">Диапазоны — по сметам за сентябрь, а не расчёт от «средней». Ваша сумма будет своей: она зависит от того, сколько проблем найдётся, и от того, какие строки вы возьмёте в работу. Точную цифру покажем сразу после бесплатной проверки.</p>
+
+      <div style="display:flex;gap:var(--space-2);flex-wrap:wrap;margin-top:32px">
+        <button type="button" class="btn btn-primary" onClick="{{ focusHero }}">Узнать сумму по своему сайту<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex:none"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg></button>
+        <a href="SeoMarket v2.dc.html" class="btn btn-secondary">Посмотреть смету в кабинете<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex:none"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg></a>
+      </div>
+    </section>
+
+    <!-- МЕТОДИКА. Клиент платит построчно и вправе знать порядок работ: почему сначала
+         частотность, а не текст, и почему мы не набиваем ключи. Нормы даны цифрами —
+         их можно проверить на своей странице, в отличие от обещаний «качественно». -->
+    <section id="metodika" style="padding:48px 0 72px">
+      <span style="display:block;font-size:13px;line-height:12px;letter-spacing:.08em;text-transform:uppercase;font-weight:600;color:var(--color-accent-700);margin:0 0 12px">03 · Методика</span>
+      <hr style="height:1px;border:0;margin:0 0 40px;background:var(--color-divider)">
+      <h2 style="font-family:var(--font-heading);font-size:clamp(28px,3.4vw,40px);line-height:1.1;letter-spacing:.02em;text-transform:uppercase;margin:0 0 20px">Сначала частотность, потом текст</h2>
+      <p style="font-size:15px;line-height:1.6;max-width:70ch;margin:0 0 32px;color:color-mix(in srgb,var(--color-text) 80%,transparent)">Порядок работ не произвольный. Пока неизвестно, что и как часто спрашивают в поиске, писать title бессмысленно — получится догадка. Поэтому до текстов мы снимаем частотность через XMLRiver, выстраиваем иерархию заголовков и только затем оптимизируем страницу, удерживая плотность ключей в норме.</p>
+
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:clamp(20px,2.5vw,32px);margin-bottom:44px">
+        <div class="blueprint" style="padding:clamp(20px,2.4vw,28px)">
+          <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:var(--space-3);margin-bottom:14px"><span style="font-family:var(--font-heading);font-size:15px;color:var(--color-accent-700)">01</span><span style="display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;flex:none;border:1px solid var(--color-divider);color:var(--color-accent)"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3v16a2 2 0 0 0 2 2h16"></path><path d="M18 17V9"></path><path d="M13 17V5"></path><path d="M8 17v-3"></path></svg></span></div>
+          <h3 style="font-family:var(--font-heading);font-size:20px;letter-spacing:.02em;text-transform:uppercase;margin:0 0 8px">Снимаем частотность</h3>
+          <p style="font-size:14px;line-height:1.55;margin:0;color:color-mix(in srgb,var(--color-text) 78%,transparent)">Через XMLRiver запрашиваем данные Wordstat по вашему региону: что спрашивают, какими словами и сколько раз в месяц. Без этого шага любой текст — гадание.</p>
+        </div>
+        <div class="blueprint" style="padding:clamp(20px,2.4vw,28px)">
+          <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:var(--space-3);margin-bottom:14px"><span style="font-family:var(--font-heading);font-size:15px;color:var(--color-accent-700)">02</span><span style="display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;flex:none;border:1px solid var(--color-divider);color:var(--color-accent)"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12h-8"></path><path d="M21 6H8"></path><path d="M21 18h-8"></path><path d="M3 6v4c0 1.1.9 2 2 2h3"></path><path d="M3 10v6c0 1.1.9 2 2 2h3"></path></svg></span></div>
+          <h3 style="font-family:var(--font-heading);font-size:20px;letter-spacing:.02em;text-transform:uppercase;margin:0 0 8px">Строим иерархию</h3>
+          <p style="font-size:14px;line-height:1.55;margin:0;color:color-mix(in srgb,var(--color-text) 78%,transparent)">Один H1 на страницу, H2 по смысловым блокам, H3 внутри них — без пропусков уровней. Высокочастотный запрос идёт в H1, уточнения расходятся по H2.</p>
+        </div>
+        <div class="blueprint" style="padding:clamp(20px,2.4vw,28px)">
+          <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:var(--space-3);margin-bottom:14px"><span style="font-family:var(--font-heading);font-size:15px;color:var(--color-accent-700)">03</span><span style="display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;flex:none;border:1px solid var(--color-divider);color:var(--color-accent)"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m16 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"></path><path d="m2 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"></path><path d="M7 21h10"></path><path d="M12 3v18"></path><path d="M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2"></path></svg></span></div>
+          <h3 style="font-family:var(--font-heading);font-size:20px;letter-spacing:.02em;text-transform:uppercase;margin:0 0 8px">Держим норму вхождений</h3>
+          <p style="font-size:14px;line-height:1.55;margin:0;color:color-mix(in srgb,var(--color-text) 78%,transparent)">Точное вхождение — один раз в H1 и один в первом абзаце, дальше словоформы и синонимы. Переспам ключами Яндекс наказывает фильтром, поэтому плотность мы ограничиваем, а не наращиваем.</p>
+        </div>
+        <div class="blueprint" style="padding:clamp(20px,2.4vw,28px)">
+          <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:var(--space-3);margin-bottom:14px"><span style="font-family:var(--font-heading);font-size:15px;color:var(--color-accent-700)">04</span><span style="display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;flex:none;border:1px solid var(--color-divider);color:var(--color-accent)"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path></svg></span></div>
+          <h3 style="font-family:var(--font-heading);font-size:20px;letter-spacing:.02em;text-transform:uppercase;margin:0 0 8px">Закрываем технику</h3>
+          <p style="font-size:14px;line-height:1.55;margin:0;color:color-mix(in srgb,var(--color-text) 78%,transparent)">Canonical на страницах с параметрами и UTM, 301 со старых адресов, alt у изображений, замена битых ссылок. Дубли склеиваются, вес перестаёт растекаться.</p>
+        </div>
+        <div class="blueprint" style="padding:clamp(20px,2.4vw,28px)">
+          <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:var(--space-3);margin-bottom:14px"><span style="font-family:var(--font-heading);font-size:15px;color:var(--color-accent-700)">05</span><span style="display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;flex:none;border:1px solid var(--color-divider);color:var(--color-accent)"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 17H7A5 5 0 0 1 7 7h2"></path><path d="M15 7h2a5 5 0 1 1 0 10h-2"></path><line x1="8" x2="16" y1="12" y2="12"></line></svg></span></div>
+          <h3 style="font-family:var(--font-heading);font-size:20px;letter-spacing:.02em;text-transform:uppercase;margin:0 0 8px">Связываем разделы</h3>
+          <p style="font-size:14px;line-height:1.55;margin:0;color:color-mix(in srgb,var(--color-text) 78%,transparent)">Пять ссылок с каждой страницы на смежные разделы, анкоры — из частотного ядра целевой страницы, а не «читать здесь». Глубокие страницы выходят из изоляции.</p>
+        </div>
+        <div class="blueprint" style="padding:clamp(20px,2.4vw,28px)">
+          <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:var(--space-3);margin-bottom:14px"><span style="font-family:var(--font-heading);font-size:15px;color:var(--color-accent-700)">06</span><span style="display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;flex:none;border:1px solid var(--color-divider);color:var(--color-accent)"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.536 21.686a.5.5 0 0 0 .937-.024l6.5-19a.496.496 0 0 0-.635-.635l-19 6.5a.5.5 0 0 0-.024.937l7.93 3.18a2 2 0 0 1 1.112 1.11z"></path><path d="m21.854 2.147-10.94 10.939"></path></svg></span></div>
+          <h3 style="font-family:var(--font-heading);font-size:20px;letter-spacing:.02em;text-transform:uppercase;margin:0 0 8px">Отправляем в индекс</h3>
+          <p style="font-size:14px;line-height:1.55;margin:0;color:color-mix(in srgb,var(--color-text) 78%,transparent)">Исправленная страница не работает, пока робот её не переобошёл. После установки сами отправляем адреса на переобход — в заявке просить не нужно.</p>
+        </div>
+      </div>
+
+      <!-- Отправка в индекс. Клиент чаще всего считает, что правки не сработали,
+           когда на самом деле их ещё не увидел робот — поэтому сроки названы цифрами. -->
+      <div id="indeksaciya" style="scroll-margin-top:88px;margin-bottom:44px">
+        <h3 style="font-family:var(--font-heading);font-size:clamp(22px,2.6vw,30px);letter-spacing:.02em;text-transform:uppercase;margin:0 0 14px">После установки отправляем сайт в индекс</h3>
+        <p style="font-size:15px;line-height:1.65;max-width:74ch;margin:0 0 24px;color:color-mix(in srgb,var(--color-text) 80%,transparent)">Естественный переобход занимает от двух недель до полутора месяцев, а на глубоких страницах каталога и дольше. До этого момента в выдаче остаётся старая версия страницы с прежним title. Мы ускоряем процесс четырьмя способами сразу — это входит в заказ и не требует доплаты.</p>
+        <div style="overflow-x:auto;border:1px solid var(--color-divider)">
+          <table class="table" style="min-width:800px">
+            <thead><tr><th scope="col" style="width:26%;padding-left:24px">Способ</th><th scope="col">Что делаем</th><th scope="col" style="text-align:right">Обычный срок</th></tr></thead>
+            <tbody>
+              <tr><td style="padding-left:24px;font-size:15px">sitemap.xml</td><td style="font-size:14px;color:color-mix(in srgb,var(--color-text) 78%,transparent)">Пересобираем с новыми датами и пингуем оба поисковика</td><td style="text-align:right;white-space:nowrap">сразу</td></tr>
+              <tr data-hl><td style="padding-left:24px;font-size:15px;font-weight:600">IndexNow</td><td style="font-size:14px;color:color-mix(in srgb,var(--color-text) 78%,transparent)">Отправляем изменённые адреса по протоколу одним запросом</td><td style="text-align:right;white-space:nowrap;font-weight:600">1–3 дня</td></tr>
+              <tr><td style="padding-left:24px;font-size:15px">Яндекс Вебмастер</td><td style="font-size:14px;color:color-mix(in srgb,var(--color-text) 78%,transparent)">Ставим адреса в очередь переобхода порциями по дневному лимиту</td><td style="text-align:right;white-space:nowrap">3–14 дней</td></tr>
+              <tr><td style="padding-left:24px;font-size:15px">Google Search Console</td><td style="font-size:14px;color:color-mix(in srgb,var(--color-text) 78%,transparent)">Отправляем обновлённую карту и ключевые адреса вручную</td><td style="text-align:right;white-space:nowrap">2–10 дней</td></tr>
+              <tr><td style="padding-left:24px;font-size:15px">Контроль переобхода</td><td style="font-size:14px;color:color-mix(in srgb,var(--color-text) 78%,transparent)">Следим, сколько адресов робот уже перечитал — видно в кабинете</td><td style="text-align:right;white-space:nowrap">ежедневно</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p style="font-size:13px;line-height:1.6;margin:16px 0 0;max-width:80ch;color:color-mix(in srgb,var(--color-text) 70%,transparent)">Сроки — по нашим заказам за лето, а не обещание. Поисковики не гарантируют переобход по заявке: отправка ставит адрес в очередь, но не приказывает роботу. Зато в кабинете видно, сколько адресов уже перечитано — без догадок.</p>
+      </div>
+
+      <p style="text-align:center;font-size:15px;margin:0 0 12px;color:color-mix(in srgb,var(--color-text) 78%,transparent)">Нормы, по которым проверяется каждая страница</p>
+      <div style="overflow-x:auto;border:1px solid var(--color-divider)">
+        <table class="table" style="min-width:800px">
+          <thead><tr><th scope="col" style="width:30%;padding-left:24px">Параметр</th><th scope="col">Норма</th><th scope="col">Что происходит при нарушении</th></tr></thead>
+          <tbody>
+            <tr><td style="padding-left:24px;font-size:15px">Заголовков H1 на странице</td><td style="white-space:nowrap">ровно 1</td><td style="font-size:14px;color:color-mix(in srgb,var(--color-text) 75%,transparent)">Два H1 размывают тему: поисковик выбирает главную мысль сам</td></tr>
+            <tr><td style="padding-left:24px;font-size:15px">Уровни заголовков</td><td style="white-space:nowrap">H1 → H2 → H3, без пропусков</td><td style="font-size:14px;color:color-mix(in srgb,var(--color-text) 75%,transparent)">Прыжок с H1 на H4 ломает структуру и быстрые ссылки в сниппете</td></tr>
+            <tr data-hl><td style="padding-left:24px;font-size:15px;font-weight:600">Плотность ключа в тексте</td><td style="white-space:nowrap;font-weight:600">2–4 %</td><td style="font-size:14px;color:color-mix(in srgb,var(--color-text) 75%,transparent)">Свыше 6 % — риск фильтра за переоптимизацию, страница теряет позиции целиком</td></tr>
+            <tr><td style="padding-left:24px;font-size:15px">Точных вхождений в H1</td><td style="white-space:nowrap">1</td><td style="font-size:14px;color:color-mix(in srgb,var(--color-text) 75%,transparent)">Повтор ключа в заголовке читается как спам, а не как уточнение</td></tr>
+            <tr><td style="padding-left:24px;font-size:15px">Длина title</td><td style="white-space:nowrap">50–60 знаков</td><td style="font-size:14px;color:color-mix(in srgb,var(--color-text) 75%,transparent)">Длиннее — обрезается в выдаче, и обрезается именно призыв к действию</td></tr>
+            <tr><td style="padding-left:24px;font-size:15px">Длина description</td><td style="white-space:nowrap">140–160 знаков</td><td style="font-size:14px;color:color-mix(in srgb,var(--color-text) 75%,transparent)">Поисковик подставляет случайный кусок страницы вместо вашего текста</td></tr>
+            <tr><td style="padding-left:24px;font-size:15px">Слов в тексте категории</td><td style="white-space:nowrap">от 300</td><td style="font-size:14px;color:color-mix(in srgb,var(--color-text) 75%,transparent)">Меньше — «тонкий контент», страница не попадает в индекс</td></tr>
+            <tr><td style="padding-left:24px;font-size:15px">Ссылок перелинковки</td><td style="white-space:nowrap">5 на страницу</td><td style="font-size:14px;color:color-mix(in srgb,var(--color-text) 75%,transparent)">Без них глубокие страницы обходятся роботом реже, чем раз в месяц</td></tr>
+            <tr><td style="padding-left:24px;font-size:15px">Canonical на страницах с параметрами</td><td style="white-space:nowrap">обязателен</td><td style="font-size:14px;color:color-mix(in srgb,var(--color-text) 75%,transparent)">Фильтры и сортировки создают дубли, вес делится между ними</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p style="font-size:13px;line-height:1.6;margin:16px 0 0;max-width:80ch;color:color-mix(in srgb,var(--color-text) 70%,transparent)">Нормы взяты из рекомендаций Яндекса и Google и проверяются автоматически — в отчёте по каждой странице видно, какая из них нарушена. Если правка не проходит проверку по этим нормам, она не применяется и из счёта убирается.</p>
+    </section>
+
+    <section id="proverki" style="padding:48px 0 72px">
+      <span style="display:block;font-size:13px;line-height:12px;letter-spacing:.08em;text-transform:uppercase;font-weight:600;color:var(--color-accent-700);margin:0 0 12px">04 · Что проверяем</span>
+      <hr style="height:1px;border:0;margin:0 0 40px;background:var(--color-divider)">
+      <h2 style="font-family:var(--font-heading);font-size:clamp(28px,3.4vw,40px);line-height:1.1;letter-spacing:.02em;text-transform:uppercase;margin:0 0 20px">214 проверок по шести направлениям</h2>
+      <p style="font-size:15px;line-height:1.6;max-width:70ch;margin:0 0 32px;color:color-mix(in srgb,var(--color-text) 80%,transparent)">Балл складывается из шести категорий с разным весом: техническое состояние и скорость влияют на итог сильнее, чем удобство, потому что именно они мешают поисковику обойти и правильно оценить сайт. Ниже — состав проверок и то, что из них платформа исправляет сама.</p>
+
+      <p style="text-align:center;font-size:15px;margin:0 0 12px;color:color-mix(in srgb,var(--color-text) 78%,transparent)">Категории проверок и вес в итоговом балле</p>
+      <div style="overflow-x:auto;border:1px solid var(--color-divider)">
+        <table class="table" style="min-width:820px">
+          <thead><tr><th scope="col" style="width:22%;padding-left:24px">Категория</th><th scope="col" style="text-align:right">Проверок</th><th scope="col" style="text-align:right">Вес</th><th scope="col">Что входит</th><th scope="col">Правится сама</th></tr></thead>
+          <tbody>
+            <tr data-hl><td style="padding-left:24px;font-size:15px;font-weight:600"><span style="display:flex;align-items:flex-start;gap:var(--space-2)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex:none;margin-top:3px;color:var(--color-accent)"><circle cx="12" cy="12" r="3"></circle><path d="M4.5 10H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2h-.5"></path><path d="M4.5 14H4a2 2 0 0 0-2 2v4a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-4a2 2 0 0 0-2-2h-.5"></path><path d="M6 6h.01"></path><path d="M6 18h.01"></path><path d="m15.7 13.4-.9-.3"></path><path d="m9.2 10.9-.9-.3"></path><path d="m10.6 15.7.3-.9"></path><path d="m13.6 15.7-.4-1"></path><path d="m10.8 9.3-.4-1"></path><path d="m8.3 13.6 1-.4"></path><path d="m14.7 10.8 1-.4"></path><path d="m13.4 8.3-.3.9"></path></svg><span>Техническое состояние</span></span></td><td style="text-align:right;font-family:var(--font-heading);font-size:18px">52</td><td style="text-align:right;font-family:var(--font-heading);font-size:18px;font-weight:600">25 %</td><td style="font-size:14px;color:color-mix(in srgb,var(--color-text) 75%,transparent)">Коды ответов, битые ссылки, robots.txt, sitemap, canonical, редиректы, HTTPS</td><td><span class="tag tag-accent">Почти всё</span></td></tr>
+            <tr><td style="padding-left:24px;font-size:15px"><span style="display:flex;align-items:flex-start;gap:var(--space-2)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex:none;margin-top:3px;color:var(--color-accent)"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.3-4.3"></path></svg><span>Поисковая оптимизация</span></span></td><td style="text-align:right;font-family:var(--font-heading);font-size:18px">44</td><td style="text-align:right;font-family:var(--font-heading);font-size:18px">22 %</td><td style="font-size:14px;color:color-mix(in srgb,var(--color-text) 75%,transparent)">Title, description, заголовки H1–H3, дубли, микроразметка, hreflang</td><td><span class="tag tag-accent">Да</span></td></tr>
+            <tr><td style="padding-left:24px;font-size:15px"><span style="display:flex;align-items:flex-start;gap:var(--space-2)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex:none;margin-top:3px;color:var(--color-accent)"><path d="m12 14 4-4"></path><path d="M3.34 19a10 10 0 1 1 17.32 0"></path></svg><span>Скорость загрузки</span></span></td><td style="text-align:right;font-family:var(--font-heading);font-size:18px">38</td><td style="text-align:right;font-family:var(--font-heading);font-size:18px">20 %</td><td style="font-size:14px;color:color-mix(in srgb,var(--color-text) 75%,transparent)">LCP, INP, CLS на каждой странице, вес, сжатие, кэш, приоритет загрузки</td><td><span class="tag tag-outline">Частично</span></td></tr>
+            <tr><td style="padding-left:24px;font-size:15px"><span style="display:flex;align-items:flex-start;gap:var(--space-2)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex:none;margin-top:3px;color:var(--color-accent)"><polyline points="4 7 4 4 20 4 20 7"></polyline><line x1="9" x2="15" y1="20" y2="20"></line><line x1="12" x2="12" y1="4" y2="20"></line></svg><span>Контент</span></span></td><td style="text-align:right;font-family:var(--font-heading);font-size:18px">34</td><td style="text-align:right;font-family:var(--font-heading);font-size:18px">15 %</td><td style="font-size:14px;color:color-mix(in srgb,var(--color-text) 75%,transparent)">Объём текста, alt у изображений, структура, переспам, тонкие страницы</td><td><span class="tag tag-outline">Черновик</span></td></tr>
+            <tr><td style="padding-left:24px;font-size:15px"><span style="display:flex;align-items:flex-start;gap:var(--space-2)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex:none;margin-top:3px;color:var(--color-accent)"><rect width="14" height="20" x="5" y="2" rx="2" ry="2"></rect><path d="M12 18h.01"></path></svg><span>Мобильная версия</span></span></td><td style="text-align:right;font-family:var(--font-heading);font-size:18px">26</td><td style="text-align:right;font-family:var(--font-heading);font-size:18px">12 %</td><td style="font-size:14px;color:color-mix(in srgb,var(--color-text) 75%,transparent)">Вьюпорт, размеры кликабельных зон, расхождения с десктопом</td><td><span class="tag tag-neutral">Нет</span></td></tr>
+            <tr><td style="padding-left:24px;font-size:15px"><span style="display:flex;align-items:flex-start;gap:var(--space-2)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex:none;margin-top:3px;color:var(--color-accent)"><path d="M14 4.1 12 6"></path><path d="m5.1 8-2.9-.8"></path><path d="m6 12-1.9 2"></path><path d="M7.2 2.2 8 5.1"></path><path d="M9.037 9.69a.498.498 0 0 1 .653-.653l11 4.5a.5.5 0 0 1-.074.949l-4.349 1.041a1 1 0 0 0-.74.739l-1.04 4.35a.5.5 0 0 1-.95.074z"></path></svg><span>Удобство</span></span></td><td style="text-align:right;font-family:var(--font-heading);font-size:18px">20</td><td style="text-align:right;font-family:var(--font-heading);font-size:18px">6 %</td><td style="font-size:14px;color:color-mix(in srgb,var(--color-text) 75%,transparent)">Навигация, хлебные крошки, глубина вложенности, поиск по сайту</td><td><span class="tag tag-neutral">Нет</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p style="font-size:13px;line-height:1.6;margin:16px 0 0;max-width:80ch;color:color-mix(in srgb,var(--color-text) 70%,transparent)">Мобильную вёрстку и навигацию платформа находит, но не исправляет: это работа верстальщика, и подменять её автоматикой мы не берёмся. В отчёте такие пункты помечены как ручные — с описанием, что именно нужно поменять и на каком шаблоне.</p>
+
+      <div style="display:flex;gap:var(--space-2);flex-wrap:wrap;margin-top:32px">
+        <button type="button" class="btn btn-primary" onClick="{{ focusHero }}">Проверить свой сайт<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex:none"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg></button>
+        <a href="#faq" class="btn btn-secondary">Ответы на вопросы<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex:none"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg></a>
+      </div>
+    </section>
+
+    <!-- Органика против Директа. Сравниваем измеримое — расход на клики против разовой сметы,
+         без обещаний позиций: гарантию ТОП-10 мы отрицаем в FAQ на этой же странице. -->
+    <section id="organika" style="padding:48px 0 72px">
+      <span style="display:block;font-size:13px;line-height:12px;letter-spacing:.08em;text-transform:uppercase;font-weight:600;color:var(--color-accent-700);margin:0 0 12px">05 · Органика вместо Директа</span>
+      <hr style="height:1px;border:0;margin:0 0 40px;background:var(--color-divider)">
+      <h2 style="font-family:var(--font-heading);font-size:clamp(28px,3.4vw,40px);line-height:1.1;letter-spacing:.02em;text-transform:uppercase;margin:0 0 20px">Трафик, за который не надо платить за каждый клик</h2>
+      <p style="font-size:15px;line-height:1.6;max-width:70ch;margin:0 0 32px;color:color-mix(in srgb,var(--color-text) 80%,transparent)">Цель оптимизации — органические показы: страница отвечает на запрос, поисковик ставит её в выдачу, и переход не стоит денег. Директ работает, пока вы платите; исправленные страницы продолжают приводить людей после того, как счёт закрыт. Ниже — сравнение на одном и том же запросе.</p>
+
+      <p style="text-align:center;font-size:15px;margin:0 0 12px;color:color-mix(in srgb,var(--color-text) 78%,transparent)">Запрос «купить диван в москве», 18 400 показов в месяц</p>
+      <div style="overflow-x:auto;border:1px solid var(--color-divider)">
+        <table class="table" style="min-width:720px">
+          <thead><tr><th scope="col" style="width:26%;padding-left:24px">Параметр</th><th scope="col"><span style="display:inline-flex;align-items:center;gap:var(--space-2)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex:none"><path d="m3 11 18-5v12L3 14v-3z"></path><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"></path></svg>Яндекс Директ</span></th><th scope="col"><span style="display:inline-flex;align-items:center;gap:var(--space-2)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex:none"><path d="M7 20h10"></path><path d="M10 20c5.5-2.5.8-6.4 3-10"></path><path d="M9.5 9.4c1.1.8 1.8 2.2 2.3 3.7-2 .4-3.5.4-4.8-.3-1.2-.6-2.3-1.9-3-4.2 2.8-.5 4.4 0 5.5.8z"></path><path d="M14.1 6a7 7 0 0 0-1.1 4c1.9-.1 3.3-.6 4.3-1.4 1-1 1.6-2.3 1.7-4.6-2.7.1-4 1-4.9 2z"></path></svg>Органика после правок</span></th></tr></thead>
+          <tbody>
+            <tr><td style="padding-left:24px;font-size:15px"><span style="display:flex;align-items:flex-start;gap:var(--space-2)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex:none;margin-top:3px;color:var(--color-accent)"><path d="M14 4.1 12 6"></path><path d="m5.1 8-2.9-.8"></path><path d="m6 12-1.9 2"></path><path d="M7.2 2.2 8 5.1"></path><path d="M9.037 9.69a.498.498 0 0 1 .653-.653l11 4.5a.5.5 0 0 1-.074.949l-4.349 1.041a1 1 0 0 0-.74.739l-1.04 4.35a.5.5 0 0 1-.95.074z"></path></svg><span>Цена перехода</span></span></td><td style="font-family:var(--font-heading);font-size:20px">от 180 ₽</td><td style="font-family:var(--font-heading);font-size:20px">0 ₽</td></tr>
+            <tr><td style="padding-left:24px;font-size:15px"><span style="display:flex;align-items:flex-start;gap:var(--space-2)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex:none;margin-top:3px;color:var(--color-accent)"><path d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1"></path><path d="M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4"></path></svg><span>Расход за месяц</span></span></td><td style="font-size:15px">при 300 переходах — 54 000 ₽</td><td style="font-size:15px">разовая смета, дальше без оплаты</td></tr>
+            <tr><td style="padding-left:24px;font-size:15px"><span style="display:flex;align-items:flex-start;gap:var(--space-2)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex:none;margin-top:3px;color:var(--color-accent)"><path d="m2 2 20 20"></path><path d="M8.35 2.69A10 10 0 0 1 21.3 15.65"></path><path d="M19.08 19.08A10 10 0 1 1 4.92 4.92"></path></svg><span>Что остаётся, если перестать платить</span></span></td><td style="font-size:15px;color:color-mix(in srgb,var(--color-text) 78%,transparent)">Показы прекращаются в тот же день</td><td style="font-size:15px;color:color-mix(in srgb,var(--color-text) 78%,transparent)">Страницы остаются в выдаче</td></tr>
+            <tr data-hl><td style="padding-left:24px;font-size:15px;font-weight:600"><span style="display:flex;align-items:flex-start;gap:var(--space-2)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex:none;margin-top:3px;color:var(--color-accent)"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg><span>Когда появляется результат</span></span></td><td style="font-size:15px;font-weight:600">Сразу после пополнения</td><td style="font-size:15px;font-weight:600">2–4 недели, пока идёт переобход</td></tr>
+            <tr><td style="padding-left:24px;font-size:15px"><span style="display:flex;align-items:flex-start;gap:var(--space-2)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex:none;margin-top:3px;color:var(--color-accent)"><line x1="21" x2="14" y1="4" y2="4"></line><line x1="10" x2="3" y1="4" y2="4"></line><line x1="21" x2="12" y1="12" y2="12"></line><line x1="8" x2="3" y1="12" y2="12"></line><line x1="21" x2="16" y1="20" y2="20"></line><line x1="12" x2="3" y1="20" y2="20"></line><line x1="14" x2="14" y1="2" y2="6"></line><line x1="8" x2="8" y1="10" y2="14"></line><line x1="16" x2="16" y1="18" y2="22"></line></svg><span>Чем управляем мы</span></span></td><td style="font-size:15px;color:color-mix(in srgb,var(--color-text) 78%,transparent)">Ставкой и бюджетом</td><td style="font-size:15px;color:color-mix(in srgb,var(--color-text) 78%,transparent)">Технической частью и контентом страницы</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p style="font-size:13px;line-height:1.6;margin:16px 0 0;max-width:80ch;color:color-mix(in srgb,var(--color-text) 70%,transparent)">Позиции зависят не только от сайта: есть конкуренты, возраст домена и поведение пользователей. Поэтому мы не обещаем ТОП-10 в договоре, а отвечаем за то, чем управляем — устранение ошибок, которые сейчас мешают попасть в выдачу. Результат считаем на 30-й день по повторному аудиту и съёму позиций.</p>
+
+      <div style="display:flex;gap:var(--space-2);flex-wrap:wrap;margin-top:32px">
+        <button type="button" class="btn btn-primary" onClick="{{ focusHero }}">Проверить свой сайт<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex:none"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg></button>
+        <a href="#faq" class="btn btn-secondary">Что мы гарантируем<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex:none"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg></a>
+      </div>
+    </section>
+
+    <section id="faq" style="padding:48px 0 72px">
+      <span style="display:block;font-size:13px;line-height:12px;letter-spacing:.08em;text-transform:uppercase;font-weight:600;color:var(--color-accent-700);margin:0 0 12px">06 · Частые вопросы</span>
+      <hr style="height:1px;border:0;margin:0 0 40px;background:var(--color-divider)">
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:0 clamp(32px,5vw,72px)">
+        <div>
+          <details data-q style="border-top:1px solid var(--color-divider)">
+            <summary style="display:flex;gap:14px;align-items:flex-start;padding:18px 0;font-family:var(--font-heading);font-size:19px;line-height:1.25"><span data-sign style="color:var(--color-accent)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg></span>Почему аудит бесплатный</summary>
+            <p style="font-size:14.5px;line-height:1.6;margin:0 0 20px 30px;color:color-mix(in srgb,var(--color-text) 78%,transparent)">Обход сайта нам почти ничего не стоит — работают наши серверы, а не люди. Деньги мы берём за исправления, и до сметы нам самим нужно знать точный объём. Показывать аудит бесплатно выгоднее, чем продавать его за 5 000 ₽ и терять тех, кто ещё не решился.</p>
+          </details>
+          <details data-q style="border-top:1px solid var(--color-divider)">
+            <summary style="display:flex;gap:14px;align-items:flex-start;padding:18px 0;font-family:var(--font-heading);font-size:19px;line-height:1.25"><span data-sign style="color:var(--color-accent)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg></span>Вы сломаете мой сайт?</summary>
+            <p style="font-size:14.5px;line-height:1.6;margin:0 0 20px 30px;color:color-mix(in srgb,var(--color-text) 78%,transparent)">Правки сначала применяются к копии на нашем поддомене — оригинал не трогаем, пока вы не одобрите результат. Перед установкой снимаем полную копию сайта и базы: откат доступен одной кнопкой в течение 30 дней. Логика магазина — корзина, фильтры, оплата — не меняется, правятся только мета-теги, alt, canonical, тексты и изображения.</p>
+          </details>
+          <details data-q style="border-top:1px solid var(--color-divider)">
+            <summary style="display:flex;gap:14px;align-items:flex-start;padding:18px 0;font-family:var(--font-heading);font-size:19px;line-height:1.25"><span data-sign style="color:var(--color-accent)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg></span>Нужно ли давать доступы к хостингу</summary>
+            <p style="font-size:14.5px;line-height:1.6;margin:0 0 20px 30px;color:color-mix(in srgb,var(--color-text) 78%,transparent)">Нет. По умолчанию мы отдаём ZIP-архив с правками или свой публичный SSH-ключ, который вы добавляете на сервер и удаляете после установки. Доступы к панели нужны только если вы сами хотите, чтобы мы всё поставили — тогда они передаются через одноразовую ссылку и стираются через 24 часа.</p>
+          </details>
+          <details data-q style="border-top:1px solid var(--color-divider);border-bottom:1px solid var(--color-divider)">
+            <summary style="display:flex;gap:14px;align-items:flex-start;padding:18px 0;font-family:var(--font-heading);font-size:19px;line-height:1.25"><span data-sign style="color:var(--color-accent)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg></span>Когда вырастут позиции</summary>
+            <p style="font-size:14.5px;line-height:1.6;margin:0 0 20px 30px;color:color-mix(in srgb,var(--color-text) 78%,transparent)">Поисковик должен переобойти изменённые страницы — на каталоге это обычно две-четыре недели. Первые дни позиции колеблются, это нормально. Мы фиксируем базовую линию в день установки и показываем динамику на 7, 14 и 30-й день, чтобы рост можно было отнести к правкам, а не к сезону.</p>
+          </details>
+        </div>
+        <div>
+          <details data-q style="border-top:1px solid var(--color-divider)">
+            <summary style="display:flex;gap:14px;align-items:flex-start;padding:18px 0;font-family:var(--font-heading);font-size:19px;line-height:1.25"><span data-sign style="color:var(--color-accent)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg></span>Вы гарантируете ТОП-10</summary>
+            <p style="font-size:14.5px;line-height:1.6;margin:0 0 20px 30px;color:color-mix(in srgb,var(--color-text) 78%,transparent)">Нет, и никто не может: позиции зависят от конкурентов, возраста домена, поведения пользователей и алгоритмов, которые нам не подчиняются. Мы гарантируем измеримое — устранение конкретных ошибок и рост технического балла по повторному аудиту. Кто обещает ТОП-10 в договоре, обещает то, чем не управляет.</p>
+          </details>
+          <details data-q style="border-top:1px solid var(--color-divider)">
+            <summary style="display:flex;gap:14px;align-items:flex-start;padding:18px 0;font-family:var(--font-heading);font-size:19px;line-height:1.25"><span data-sign style="color:var(--color-accent)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg></span>Тексты пишет нейросеть — не попадём под фильтр?</summary>
+            <p style="font-size:14.5px;line-height:1.6;margin:0 0 20px 30px;color:color-mix(in srgb,var(--color-text) 78%,transparent)">Мета-теги и alt генерируются по содержимому страницы — это описание того, что на ней есть, а не сочинение. Тексты категорий мы отдаём как черновик под вычитку и не публикуем без вашего одобрения. Массовую генерацию страниц ради трафика не делаем: именно она и попадает под фильтры.</p>
+          </details>
+          <details data-q style="border-top:1px solid var(--color-divider)">
+            <summary style="display:flex;gap:14px;align-items:flex-start;padding:18px 0;font-family:var(--font-heading);font-size:19px;line-height:1.25"><span data-sign style="color:var(--color-accent)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg></span>Что будет с правками после обновления CMS</summary>
+            <p style="font-size:14.5px;line-height:1.6;margin:0 0 20px 30px;color:color-mix(in srgb,var(--color-text) 78%,transparent)">Обновления и выкатки шаблонов действительно затирают мета-теги — это происходит почти у всех. Поэтому раз в неделю мы проверяем, на месте ли внесённые правки, и показываем в кабинете, что откатилось. Восстановление таких правок бесплатное, оно входит в заказ.</p>
+          </details>
+          <details data-q style="border-top:1px solid var(--color-divider);border-bottom:1px solid var(--color-divider)">
+            <summary style="display:flex;gap:14px;align-items:flex-start;padding:18px 0;font-family:var(--font-heading);font-size:19px;line-height:1.25"><span data-sign style="color:var(--color-accent)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg></span>Какие CMS поддерживаете</summary>
+            <p style="font-size:14.5px;line-height:1.6;margin:0 0 20px 30px;color:color-mix(in srgb,var(--color-text) 78%,transparent)">Аудит работает с любым сайтом, который открывается в браузере. Установка правок автоматизирована для 1С-Битрикс, WordPress, OpenCart и Tilda; для остальных отдаём патч и инструкцию — их применит ваш программист. Хостинг: Beget подключаем по API, также cPanel, ISPmanager и обычный FTP.</p>
+          </details>
+        </div>
+      </div>
+    </section>
+
+    <section id="blog" style="padding:48px 0 72px">
+      <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:var(--space-6);flex-wrap:wrap;margin-bottom:12px">
+        <span style="display:block;font-size:13px;line-height:12px;letter-spacing:.08em;text-transform:uppercase;font-weight:600;color:var(--color-accent-700)">07 · Блог</span>
+        <a href="SeoMarket Блог.dc.html" style="font-size:13px">Все статьи →</a>
+      </div>
+      <hr style="height:1px;border:0;margin:0 0 40px;background:var(--color-divider)">
+      <h2 style="font-family:var(--font-heading);font-size:clamp(28px,3.4vw,40px);line-height:1.1;letter-spacing:.02em;text-transform:uppercase;margin:0 0 32px">Разбираем, как это работает</h2>
+
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:clamp(20px,2.5vw,32px)">
+        <a data-post href="SeoMarket Блог.dc.html" class="blueprint" style="padding:var(--space-6);text-decoration:none;color:inherit;display:grid;gap:10px;align-content:start">
+          <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+          <span style="display:flex;gap:var(--space-3);align-items:center;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--color-accent-700)"><span style="display:inline-flex;align-items:center;gap:var(--space-1)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex:none"><path d="M12.586 2.586A2 2 0 0 0 11.172 2H4a2 2 0 0 0-2 2v7.172a2 2 0 0 0 .586 1.414l8.704 8.704a2.426 2.426 0 0 0 3.42 0l6.58-6.58a2.426 2.426 0 0 0 0-3.42z"></path><circle cx="7.5" cy="7.5" r=".5" fill="currentColor"></circle></svg>Техническое SEO</span><span style="display:inline-flex;align-items:center;gap:var(--space-1);color:color-mix(in srgb,var(--color-text) 68%,transparent)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex:none"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>12 мин</span></span>
+          <h3 style="font-family:var(--font-heading);font-size:21px;line-height:1.2;margin:0;transition:color .15s ease">Дубли title в пагинации: почему 96 страниц конкурируют друг с другом</h3>
+          <p style="font-size:13.5px;line-height:1.55;margin:0;color:color-mix(in srgb,var(--color-text) 72%,transparent)">Разбираем на каталоге мебели, как один шаблон порождает сотню одинаковых заголовков, какой из них выберет Яндекс и почему «— страница N» решает задачу лучше, чем rel=prev/next.</p>
+          <span style="display:flex;align-items:center;gap:var(--space-1);font-size:12px;color:color-mix(in srgb,var(--color-text) 68%,transparent);margin-top:2px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex:none"><path d="M8 2v4"></path><path d="M16 2v4"></path><rect width="18" height="18" x="3" y="4" rx="2"></rect><path d="M3 10h18"></path></svg>14 сентября 2026</span>
+        </a>
+
+        <a data-post href="SeoMarket Блог статья.dc.html" class="blueprint" style="padding:var(--space-6);text-decoration:none;color:inherit;display:grid;gap:10px;align-content:start">
+          <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+          <span style="display:flex;gap:var(--space-3);align-items:center;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--color-accent-700)"><span style="display:inline-flex;align-items:center;gap:var(--space-1)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex:none"><path d="M12.586 2.586A2 2 0 0 0 11.172 2H4a2 2 0 0 0-2 2v7.172a2 2 0 0 0 .586 1.414l8.704 8.704a2.426 2.426 0 0 0 3.42 0l6.58-6.58a2.426 2.426 0 0 0 0-3.42z"></path><circle cx="7.5" cy="7.5" r=".5" fill="currentColor"></circle></svg>Скорость</span><span style="display:inline-flex;align-items:center;gap:var(--space-1);color:color-mix(in srgb,var(--color-text) 68%,transparent)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex:none"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>9 мин</span></span>
+          <h3 style="font-family:var(--font-heading);font-size:21px;line-height:1.2;margin:0;transition:color .15s ease">LCP 4,6 секунды: как один баннер тянет вниз весь раздел</h3>
+          <p style="font-size:13.5px;line-height:1.55;margin:0;color:color-mix(in srgb,var(--color-text) 72%,transparent)">Измеряем Core Web Vitals не на главной, а на каждом шаблоне. Что даёт fetchpriority, когда WebP экономит 41 МБ и почему CLS 0,21 раздражает пользователя сильнее медленной загрузки.</p>
+          <span style="display:flex;align-items:center;gap:var(--space-1);font-size:12px;color:color-mix(in srgb,var(--color-text) 68%,transparent);margin-top:2px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex:none"><path d="M8 2v4"></path><path d="M16 2v4"></path><rect width="18" height="18" x="3" y="4" rx="2"></rect><path d="M3 10h18"></path></svg>9 сентября 2026</span>
+        </a>
+
+        <a data-post href="SeoMarket Блог.dc.html" class="blueprint" style="padding:var(--space-6);text-decoration:none;color:inherit;display:grid;gap:10px;align-content:start">
+          <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+          <span style="display:flex;gap:var(--space-3);align-items:center;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--color-accent-700)"><span style="display:inline-flex;align-items:center;gap:var(--space-1)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex:none"><path d="M12.586 2.586A2 2 0 0 0 11.172 2H4a2 2 0 0 0-2 2v7.172a2 2 0 0 0 .586 1.414l8.704 8.704a2.426 2.426 0 0 0 3.42 0l6.58-6.58a2.426 2.426 0 0 0 0-3.42z"></path><circle cx="7.5" cy="7.5" r=".5" fill="currentColor"></circle></svg>Индексация</span><span style="display:inline-flex;align-items:center;gap:var(--space-1);color:color-mix(in srgb,var(--color-text) 68%,transparent)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex:none"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>7 мин</span></span>
+          <h3 style="font-family:var(--font-heading);font-size:21px;line-height:1.2;margin:0;transition:color .15s ease">276 страниц не в индексе: где их искать, кроме sitemap.xml</h3>
+          <p style="font-size:13.5px;line-height:1.55;margin:0;color:color-mix(in srgb,var(--color-text) 72%,transparent)">Страницы с параметрами, фильтры, старые акции и разделы без входящих ссылок. Как отличить намеренно закрытое от потерянного и что сверять в Вебмастере после переобхода.</p>
+          <span style="display:flex;align-items:center;gap:var(--space-1);font-size:12px;color:color-mix(in srgb,var(--color-text) 68%,transparent);margin-top:2px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex:none"><path d="M8 2v4"></path><path d="M16 2v4"></path><rect width="18" height="18" x="3" y="4" rx="2"></rect><path d="M3 10h18"></path></svg>2 сентября 2026</span>
+        </a>
+
+        <a data-post href="SeoMarket Блог.dc.html" class="blueprint" style="padding:var(--space-6);text-decoration:none;color:inherit;display:grid;gap:10px;align-content:start">
+          <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+          <span style="display:flex;gap:var(--space-3);align-items:center;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--color-accent-700)"><span style="display:inline-flex;align-items:center;gap:var(--space-1)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex:none"><path d="M12.586 2.586A2 2 0 0 0 11.172 2H4a2 2 0 0 0-2 2v7.172a2 2 0 0 0 .586 1.414l8.704 8.704a2.426 2.426 0 0 0 3.42 0l6.58-6.58a2.426 2.426 0 0 0 0-3.42z"></path><circle cx="7.5" cy="7.5" r=".5" fill="currentColor"></circle></svg>Контент</span><span style="display:inline-flex;align-items:center;gap:var(--space-1);color:color-mix(in srgb,var(--color-text) 68%,transparent)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex:none"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>11 мин</span></span>
+          <h3 style="font-family:var(--font-heading);font-size:21px;line-height:1.2;margin:0;transition:color .15s ease">Тонкий контент категорий: 180 слов против 900 у конкурента</h3>
+          <p style="font-size:13.5px;line-height:1.55;margin:0;color:color-mix(in srgb,var(--color-text) 72%,transparent)">Почему объём сам по себе не помогает и что на самом деле отличает страницу из ТОП-3. Структура описания категории, которая отвечает на вопросы покупателя вместо перечисления ключей.</p>
+          <span style="display:flex;align-items:center;gap:var(--space-1);font-size:12px;color:color-mix(in srgb,var(--color-text) 68%,transparent);margin-top:2px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex:none"><path d="M8 2v4"></path><path d="M16 2v4"></path><rect width="18" height="18" x="3" y="4" rx="2"></rect><path d="M3 10h18"></path></svg>26 августа 2026</span>
+        </a>
+
+        <a data-post href="SeoMarket Блог.dc.html" class="blueprint" style="padding:var(--space-6);text-decoration:none;color:inherit;display:grid;gap:10px;align-content:start">
+          <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+          <span style="display:flex;gap:var(--space-3);align-items:center;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--color-accent-700)"><span style="display:inline-flex;align-items:center;gap:var(--space-1)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex:none"><path d="M12.586 2.586A2 2 0 0 0 11.172 2H4a2 2 0 0 0-2 2v7.172a2 2 0 0 0 .586 1.414l8.704 8.704a2.426 2.426 0 0 0 3.42 0l6.58-6.58a2.426 2.426 0 0 0 0-3.42z"></path><circle cx="7.5" cy="7.5" r=".5" fill="currentColor"></circle></svg>Процесс</span><span style="display:inline-flex;align-items:center;gap:var(--space-1);color:color-mix(in srgb,var(--color-text) 68%,transparent)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex:none"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>8 мин</span></span>
+          <h3 style="font-family:var(--font-heading);font-size:21px;line-height:1.2;margin:0;transition:color .15s ease">Правки пропали через месяц: кто затирает мета-теги</h3>
+          <p style="font-size:13.5px;line-height:1.55;margin:0;color:color-mix(in srgb,var(--color-text) 72%,transparent)">Обновление Битрикса, выкатка шаблона, плагин кэширования, импорт каталога из 1С. Четыре типичных сценария и способ заметить откат за неделю, а не при следующем аудите.</p>
+          <span style="display:flex;align-items:center;gap:var(--space-1);font-size:12px;color:color-mix(in srgb,var(--color-text) 68%,transparent);margin-top:2px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex:none"><path d="M8 2v4"></path><path d="M16 2v4"></path><rect width="18" height="18" x="3" y="4" rx="2"></rect><path d="M3 10h18"></path></svg>19 августа 2026</span>
+        </a>
+
+        <a data-post href="SeoMarket Блог.dc.html" class="blueprint" style="padding:var(--space-6);text-decoration:none;color:inherit;display:grid;gap:10px;align-content:start">
+          <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+          <span style="display:flex;gap:var(--space-3);align-items:center;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--color-accent-700)"><span style="display:inline-flex;align-items:center;gap:var(--space-1)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex:none"><path d="M12.586 2.586A2 2 0 0 0 11.172 2H4a2 2 0 0 0-2 2v7.172a2 2 0 0 0 .586 1.414l8.704 8.704a2.426 2.426 0 0 0 3.42 0l6.58-6.58a2.426 2.426 0 0 0 0-3.42z"></path><circle cx="7.5" cy="7.5" r=".5" fill="currentColor"></circle></svg>Экономика</span><span style="display:inline-flex;align-items:center;gap:var(--space-1);color:color-mix(in srgb,var(--color-text) 68%,transparent)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex:none"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>10 мин</span></span>
+          <h3 style="font-family:var(--font-heading);font-size:21px;line-height:1.2;margin:0;transition:color .15s ease">Подписка или оплата за правки: что дешевле на каталоге</h3>
+          <p style="font-size:13.5px;line-height:1.55;margin:0;color:color-mix(in srgb,var(--color-text) 72%,transparent)">Считаем на трёх реальных сметах, где абонентская плата выгоднее, а где вы платите за месяцы, в которые ничего не менялось. Разбираем, что входит в «SEO за 30 000 в месяц».</p>
+          <span style="display:flex;align-items:center;gap:var(--space-1);font-size:12px;color:color-mix(in srgb,var(--color-text) 68%,transparent);margin-top:2px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex:none"><path d="M8 2v4"></path><path d="M16 2v4"></path><rect width="18" height="18" x="3" y="4" rx="2"></rect><path d="M3 10h18"></path></svg>12 августа 2026</span>
+        </a>
+      </div>
+    </section>
+
+    <!-- SEO-текст внизу страницы — по той же схеме, которую мы продаём клиентам: текст под
+         основным содержимым, один ключ на абзац, таблица вместо перечисления. Здесь он
+         закрывает коммерческие запросы, по которым нас ищут, и не переспамлен. -->
+    <section id="uslugi" style="padding:48px 0 72px">
+      <span style="display:block;font-size:13px;line-height:12px;letter-spacing:.08em;text-transform:uppercase;font-weight:600;color:var(--color-accent-700);margin:0 0 12px">08 · Услуги</span>
+      <hr style="height:1px;border:0;margin:0 0 40px;background:var(--color-divider)">
+      <h2 style="font-family:var(--font-heading);font-size:clamp(28px,3.4vw,40px);line-height:1.1;letter-spacing:.02em;text-transform:uppercase;margin:0 0 20px">Чем мы занимаемся</h2>
+
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:clamp(24px,3vw,48px);margin-bottom:44px">
+        <div>
+          <p style="font-size:15px;line-height:1.65;margin:0 0 16px;color:color-mix(in srgb,var(--color-text) 80%,transparent)">Технический аудит сайта — основа всего остального. Краулер обходит каждый адрес, проверяет коды ответов, мета-теги, заголовки, разметку и скорость, и складывает результат в отчёт с перечнем страниц. Аудит бесплатный и не требует ни договора, ни предоплаты: пока не известен объём, говорить о цене нечестно.</p>
+          <p style="font-size:15px;line-height:1.65;margin:0 0 16px;color:color-mix(in srgb,var(--color-text) 80%,transparent)">Дальше идёт исправление найденных ошибок. Мы правим то, что мешает поисковику понять страницу: пустые и продублированные title, отсутствующие description, битые ссылки, дубли с параметрами, изоляцию глубоких разделов каталога. Каждая правка считается по единице — за страницу, ссылку или изображение, — поэтому счёт совпадает с фактически сделанным.</p>
+          <p style="font-size:15px;line-height:1.65;margin:0;color:color-mix(in srgb,var(--color-text) 80%,transparent)">Оптимизация интернет-магазина отличается масштабом, а не подходом: на каталоге в сто тысяч страниц однотипные правки считаются за шаблонное правило, иначе счёт вырастет до неприличного. Абонентской платы за продвижение у нас нет — только заказ с конечной суммой и сроком.</p>
+        </div>
+        <div>
+          <p style="font-size:15px;line-height:1.65;margin:0 0 16px;color:color-mix(in srgb,var(--color-text) 80%,transparent)">SEO-тексты для категорий и описания товаров пишутся по характеристикам и частотностям, а не «для объёма». Плотность ключей держим в норме 2–4 %: переспам ключевыми словами роняет страницу целиком, и на этом теряют больше, чем выигрывают.</p>
+          <p style="font-size:15px;line-height:1.65;margin:0 0 16px;color:color-mix(in srgb,var(--color-text) 80%,transparent)">Ускорение сайта делаем в тех пределах, где это не переписывание кода: сжатие изображений в WebP, отложенная загрузка, снятие сдвигов вёрстки. На листинге с сорока карточками это даёт больше, чем переезд на дорогой тариф хостинга.</p>
+          <p style="font-size:15px;line-height:1.65;margin:0;color:color-mix(in srgb,var(--color-text) 80%,transparent)">После установки правок отправляем сайт в индекс: пересобираем sitemap, передаём изменённые адреса по IndexNow и ставим их в очередь переобхода в Яндекс Вебмастере и Search Console. Без этого шага правки лежат мёртвым грузом до следующего естественного обхода робота.</p>
+        </div>
+      </div>
+
+      <p style="text-align:center;font-size:15px;margin:0 0 12px;color:color-mix(in srgb,var(--color-text) 78%,transparent)">С чем к нам приходят и что мы с этим делаем</p>
+      <div style="overflow-x:auto;border:1px solid var(--color-divider)">
+        <table class="table" style="min-width:840px">
+          <thead><tr><th scope="col" style="width:26%;padding-left:24px">Задача</th><th scope="col">Что делаем</th><th scope="col" style="text-align:right">Цена</th><th scope="col" style="text-align:right">Срок</th></tr></thead>
+          <tbody>
+            <tr data-hl><td style="padding-left:24px;font-size:15px;font-weight:600"><span style="display:flex;align-items:flex-start;gap:var(--space-2)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex:none;margin-top:3px;color:var(--color-accent)"><path d="M3 7V5a2 2 0 0 1 2-2h2"></path><path d="M17 3h2a2 2 0 0 1 2 2v2"></path><path d="M21 17v2a2 2 0 0 1-2 2h-2"></path><path d="M7 21H5a2 2 0 0 1-2-2v-2"></path><circle cx="12" cy="12" r="3"></circle><path d="m16 16-1.9-1.9"></path></svg><span>Проверить сайт на ошибки</span></span></td><td style="font-size:14px;color:color-mix(in srgb,var(--color-text) 78%,transparent)">Технический аудит: 214 проверок по каждому адресу, отчёт и смета</td><td style="text-align:right;white-space:nowrap;font-weight:600">0 ₽</td><td style="text-align:right;white-space:nowrap">4 минуты</td></tr>
+            <tr><td style="padding-left:24px;font-size:15px"><span style="display:flex;align-items:flex-start;gap:var(--space-2)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex:none;margin-top:3px;color:var(--color-accent)"><path d="m15 5 6.3 6.3a2.4 2.4 0 0 1 0 3.4L17 19"></path><path d="M9.586 5.586A2 2 0 0 0 8.172 5H3a1 1 0 0 0-1 1v5.172a2 2 0 0 0 .586 1.414L8.29 18.29a2.426 2.426 0 0 0 3.42 0l3.58-3.58a2.426 2.426 0 0 0 0-3.42z"></path><circle cx="6.5" cy="9.5" r=".5" fill="currentColor"></circle></svg><span>Настроить мета-теги</span></span></td><td style="font-size:14px;color:color-mix(in srgb,var(--color-text) 78%,transparent)">Генерация title и description по содержимому, уникализация дублей</td><td style="text-align:right;white-space:nowrap">35 ₽ / страница</td><td style="text-align:right;white-space:nowrap">до суток</td></tr>
+            <tr><td style="padding-left:24px;font-size:15px"><span style="display:flex;align-items:flex-start;gap:var(--space-2)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex:none;margin-top:3px;color:var(--color-accent)"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"></rect><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"></path></svg><span>Убрать дубли страниц</span></span></td><td style="font-size:14px;color:color-mix(in srgb,var(--color-text) 78%,transparent)">Canonical на адресах с параметрами и UTM, запрет в robots.txt</td><td style="text-align:right;white-space:nowrap">30 ₽ / страница</td><td style="text-align:right;white-space:nowrap">до суток</td></tr>
+            <tr><td style="padding-left:24px;font-size:15px"><span style="display:flex;align-items:flex-start;gap:var(--space-2)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex:none;margin-top:3px;color:var(--color-accent)"><path d="m18.84 12.25 1.72-1.71h-.02a5.004 5.004 0 0 0-.12-7.07 5.006 5.006 0 0 0-6.95 0l-1.72 1.71"></path><path d="m5.17 11.75-1.71 1.71a5.004 5.004 0 0 0 .12 7.07 5.006 5.006 0 0 0 6.95 0l1.71-1.71"></path><line x1="8" x2="8" y1="2" y2="5"></line><line x1="2" x2="5" y1="8" y2="8"></line><line x1="16" x2="16" y1="19" y2="22"></line><line x1="19" x2="22" y1="16" y2="16"></line></svg><span>Починить битые ссылки</span></span></td><td style="font-size:14px;color:color-mix(in srgb,var(--color-text) 78%,transparent)">Замена адреса или редирект 301 со старого на живой</td><td style="text-align:right;white-space:nowrap">50 ₽ / ссылка</td><td style="text-align:right;white-space:nowrap">до суток</td></tr>
+            <tr><td style="padding-left:24px;font-size:15px"><span style="display:flex;align-items:flex-start;gap:var(--space-2)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex:none;margin-top:3px;color:var(--color-accent)"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg><span>Связать разделы каталога</span></span></td><td style="font-size:14px;color:color-mix(in srgb,var(--color-text) 78%,transparent)">Перелинковка: пять ссылок со страницы, анкоры из частотного ядра</td><td style="text-align:right;white-space:nowrap">50 ₽ / страница</td><td style="text-align:right;white-space:nowrap">1–2 дня</td></tr>
+            <tr><td style="padding-left:24px;font-size:15px"><span style="display:flex;align-items:flex-start;gap:var(--space-2)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex:none;margin-top:3px;color:var(--color-accent)"><path d="M12 20h9"></path><path d="M16.376 3.622a1 1 0 0 1 3.002 3.002L7.368 18.635a2 2 0 0 1-.855.506l-2.872.838a.5.5 0 0 1-.62-.62l.838-2.872a2 2 0 0 1 .506-.854z"></path></svg><span>Написать текст в категорию</span></span></td><td style="font-size:14px;color:color-mix(in srgb,var(--color-text) 78%,transparent)">SEO-текст с таблицей характеристик, 400–600 слов, под вычитку</td><td style="text-align:right;white-space:nowrap">600 ₽ / категория</td><td style="text-align:right;white-space:nowrap">2–3 дня</td></tr>
+            <tr><td style="padding-left:24px;font-size:15px"><span style="display:flex;align-items:flex-start;gap:var(--space-2)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex:none;margin-top:3px;color:var(--color-accent)"><path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"></path></svg><span>Ускорить загрузку</span></span></td><td style="font-size:14px;color:color-mix(in srgb,var(--color-text) 78%,transparent)">WebP с сохранением исходников, отложенная загрузка, правка сдвигов</td><td style="text-align:right;white-space:nowrap">15 ₽ / изображение</td><td style="text-align:right;white-space:nowrap">до суток</td></tr>
+            <tr><td style="padding-left:24px;font-size:15px"><span style="display:flex;align-items:flex-start;gap:var(--space-2)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex:none;margin-top:3px;color:var(--color-accent)"><path d="M14.536 21.686a.5.5 0 0 0 .937-.024l6.5-19a.496.496 0 0 0-.635-.635l-19 6.5a.5.5 0 0 0-.024.937l7.93 3.18a2 2 0 0 1 1.112 1.11z"></path><path d="m21.854 2.147-10.94 10.939"></path></svg><span>Отправить сайт в индекс</span></span></td><td style="font-size:14px;color:color-mix(in srgb,var(--color-text) 78%,transparent)">Sitemap, IndexNow, очередь переобхода в Вебмастере и Search Console</td><td style="text-align:right;white-space:nowrap">входит в заказ</td><td style="text-align:right;white-space:nowrap">1–14 дней</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p style="font-size:13px;line-height:1.6;margin:16px 0 0;max-width:80ch;color:color-mix(in srgb,var(--color-text) 70%,transparent)">Сроки — время работы платформы, а не появления результата в выдаче: переобход зависит от поисковика, и мы им не управляем. Полный прайс с единицами измерения — в <a href="#ceny">разделе цен</a>, порядок работ — в <a href="#metodika">методике</a>.</p>
+    </section>
+
+    <!-- Анонс редизайна. Говорим о работе в работе прямо: сервис, который требует от клиента
+         доверия к своим обещаниям, не должен молчать о собственных планах. -->
+    <section id="redizayn" style="padding:0 0 64px;scroll-margin-top:88px">
+      <div class="blueprint" style="padding:clamp(24px,3vw,40px);display:grid;gap:var(--space-4)">
+        <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+        <div style="display:flex;gap:10px;align-items:center">
+          <span style="width:8px;height:8px;background:var(--color-accent);flex:none"></span>
+          <span style="font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--color-accent-700)">В работе</span>
+        </div>
+        <h2 style="font-family:var(--font-heading);font-size:clamp(24px,3vw,34px);line-height:1.12;letter-spacing:.02em;text-transform:uppercase;margin:0;max-width:30ch">Готовим редизайн сайта</h2>
+        <p style="font-size:15px;line-height:1.65;margin:0;max-width:72ch;color:color-mix(in srgb,var(--color-text) 80%,transparent)">Сейчас сайт держится на типографике и таблицах — так быстрее всего показать цифры и условия. В ближайшее время добавим фотографии в блог и отзывы, пересоберём главную и сделаем калькулятор сметы прямо на странице цен. Цены, методика и условия при этом не меняются.</p>
+        <!-- Две рамки «до / после». Слоты пустые до тех пор, пока не появятся настоящие
+             скриншоты: рисованная имитация редизайна обманывала бы ожидание. -->
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:var(--space-4);margin-top:var(--space-2)">
+          <div>
+            <div style="font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:color-mix(in srgb,var(--color-text) 68%,transparent);margin-bottom:8px">Сейчас</div>
+            <div class="blueprint" style="padding:0;aspect-ratio:16/10;overflow:hidden">
+              <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+              <div class="duotone" style="width:100%;height:100%">
+                <image-slot id="redesign-before" placeholder="ДО: скриншот текущей главной в браузере на ноутбуке, видна типографика и таблица цен. 16:10" src="photos/redesign-before.jpg"></image-slot>
+              </div>
+            </div>
+          </div>
+          <div>
+            <div style="font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:color-mix(in srgb,var(--color-text) 68%,transparent);margin-bottom:8px">После редизайна</div>
+            <div class="blueprint" style="padding:0;aspect-ratio:16/10;overflow:hidden">
+              <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+              <div class="duotone" style="width:100%;height:100%">
+                <image-slot id="redesign-after" src="photos/redesign-after.jpg" placeholder="ПОСЛЕ: макет новой главной с фотографией в герое и калькулятором сметы. 16:10"></image-slot>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Что именно меняется. Таблица вместо обещаний «станет лучше»: по каждому пункту
+             видно текущее состояние и целевое, и отдельно — что не меняется вовсе. -->
+        <div style="overflow-x:auto;border:1px solid var(--color-divider);margin-top:var(--space-2)">
+          <table class="table" style="min-width:680px">
+            <thead><tr><th scope="col" style="width:26%;padding-left:24px">Что</th><th scope="col">Сейчас</th><th scope="col">После редизайна</th></tr></thead>
+            <tbody>
+              <tr><td style="padding-left:24px;font-size:15px">Первый экран</td><td style="font-size:14px;color:color-mix(in srgb,var(--color-text) 78%,transparent)">Заголовок и поле для адреса</td><td style="font-size:14px">Фотография рабочего процесса, поле для адреса остаётся на месте</td></tr>
+              <tr><td style="padding-left:24px;font-size:15px">Цены</td><td style="font-size:14px;color:color-mix(in srgb,var(--color-text) 78%,transparent)">Таблица ставок</td><td style="font-size:14px">Калькулятор: вводите число страниц, видите сумму до аудита</td></tr>
+              <tr><td style="padding-left:24px;font-size:15px">Блог и отзывы</td><td style="font-size:14px;color:color-mix(in srgb,var(--color-text) 78%,transparent)">Рамки под фотографии пустые</td><td style="font-size:14px">Съёмка по фотоплану, 42 кадра</td></tr>
+              <tr><td style="padding-left:24px;font-size:15px">Статьи</td><td style="font-size:14px;color:color-mix(in srgb,var(--color-text) 78%,transparent)">Одиннадцать анонсов, одна полная статья</td><td style="font-size:14px">Полная страница у каждой статьи</td></tr>
+              <tr data-hl><td style="padding-left:24px;font-size:15px;font-weight:600">Ставки, методика, оферта</td><td style="font-size:14px;color:color-mix(in srgb,var(--color-text) 78%,transparent)">Как есть</td><td style="font-size:14px;font-weight:600">Не меняются</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:var(--space-4);margin-top:var(--space-2)">
+          <div style="border:1px solid var(--color-divider);padding:var(--space-4)">
+            <div style="font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:color-mix(in srgb,var(--color-text) 68%,transparent);margin-bottom:6px">Готово</div>
+            <div style="font-size:14px;line-height:1.5">Блог, отзывы, документы, раздел методики</div>
+          </div>
+          <div style="border:1px solid var(--color-divider);padding:var(--space-4)">
+            <div style="font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:color-mix(in srgb,var(--color-text) 68%,transparent);margin-bottom:6px">В работе</div>
+            <div style="font-size:14px;line-height:1.5">Фотосъёмка под статьи и отзывы</div>
+          </div>
+          <div style="border:1px solid var(--color-divider);padding:var(--space-4)">
+            <div style="font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:color-mix(in srgb,var(--color-text) 68%,transparent);margin-bottom:6px">Дальше</div>
+            <div style="font-size:14px;line-height:1.5">Калькулятор сметы и новая главная</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section style="padding:48px 0 88px">
+      <div class="blueprint" style="padding:clamp(28px,4vw,56px);display:grid;gap:var(--space-4);justify-items:start">
+        <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+        <h2 style="font-family:var(--font-heading);font-size:clamp(26px,3.2vw,38px);line-height:1.12;letter-spacing:.02em;text-transform:uppercase;margin:0;max-width:24ch">Начните с бесплатной проверки</h2>
+        <p style="font-size:15px;line-height:1.6;margin:0;max-width:56ch;color:color-mix(in srgb,var(--color-text) 78%,transparent)">Четыре минуты и без карты. Балл и главные проблемы покажем сразу на этой странице; чтобы получить полный отчёт и смету, нужен аккаунт — им нужно где-то жить.</p>
+        <div style="display:flex;gap:var(--space-2);flex-wrap:wrap;margin-top:var(--space-2)">
+          <button type="button" class="btn btn-primary" onClick="{{ focusHero }}">Проверить сайт<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex:none"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg></button>
+          <a href="SeoMarket v2.dc.html" class="btn btn-secondary"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex:none"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path><polyline points="10 17 15 12 10 7"></polyline><line x1="15" x2="3" y1="12" y2="12"></line></svg>Войти в кабинет</a>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <footer style="border-top:1px solid var(--color-divider);padding:44px 0 56px">
+    <div style="max-width:1200px;margin:0 auto;padding-inline:clamp(20px,5vw,72px);display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:var(--space-8)">
+      <div style="display:grid;gap:10px;align-content:start">
+        <span style="font-family:var(--font-heading);font-weight:600;font-size:19px;letter-spacing:.04em">SEOMARKET</span>
+        <span style="font-size:12.5px;line-height:1.5;color:color-mix(in srgb,var(--color-text) 62%,transparent);max-width:30ch">Аудит бесплатно, оплата за исправления. Работаем с сайтами на любой CMS.</span>
+      </div>
+      <div style="display:grid;gap:8px;align-content:start;font-size:13.5px">
+        <span style="font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:color-mix(in srgb,var(--color-text) 68%,transparent);margin-bottom:2px">Продукт</span>
+        <a href="#kak">Как это работает</a>
+        <a href="#uslugi">Услуги и цены за единицу</a>
+        <a href="#ceny">Цены</a>
+        <a href="#metodika">Методика оптимизации</a>
+        <a href="#proverki">Состав проверок</a>
+        <a href="SeoMarket v2.dc.html">Личный кабинет</a>
+      </div>
+      <div style="display:grid;gap:8px;align-content:start;font-size:13.5px">
+        <span style="font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:color-mix(in srgb,var(--color-text) 68%,transparent);margin-bottom:2px">Материалы</span>
+        <a href="SeoMarket Блог.dc.html">Блог</a>
+        <a href="SeoMarket Отзывы.dc.html">Отзывы</a>
+        <a href="#faq">Частые вопросы</a>
+        <a href="#organika">Органика вместо Директа</a>
+        <a href="SeoMarket Документы.dc.html#about">О сервисе</a>
+        <a href="SeoMarket Документы.dc.html#security">Безопасность и доступы</a>
+        <a href="SeoMarket Документы.dc.html#sitemap">Карта сайта</a>
+      </div>
+      <div style="display:grid;gap:8px;align-content:start;font-size:13.5px">
+        <span style="font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:color-mix(in srgb,var(--color-text) 68%,transparent);margin-bottom:2px">Контакты</span>
+        <a href="mailto:hello@seomarket.ru" style="display:flex;align-items:center;gap:var(--space-2);justify-self:start"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex:none"><rect width="20" height="16" x="2" y="4" rx="2"></rect><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path></svg>hello@seomarket.ru</a>
+        <a href="tel:+74951234567" style="display:flex;align-items:center;gap:var(--space-2);justify-self:start"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex:none"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>+7 495 123-45-67</a>
+        <a href="SeoMarket Документы.dc.html#contacts" style="display:flex;align-items:center;gap:var(--space-2);justify-self:start"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex:none"><line x1="3" x2="21" y1="22" y2="22"></line><line x1="6" x2="6" y1="18" y2="11"></line><line x1="10" x2="10" y1="18" y2="11"></line><line x1="14" x2="14" y1="18" y2="11"></line><line x1="18" x2="18" y1="18" y2="11"></line><polygon points="12 2 20 7 4 7"></polygon></svg>Реквизиты</a>
+        <span style="display:flex;align-items:center;gap:var(--space-2);color:color-mix(in srgb,var(--color-text) 62%,transparent)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex:none"><path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"></path><circle cx="12" cy="10" r="3"></circle></svg>Москва, будни 10:00–19:00</span>
+      </div>
+    </div>
+    <div style="max-width:1200px;margin:32px auto 0;padding-inline:clamp(20px,5vw,72px);padding-top:20px;border-top:1px solid var(--color-divider);display:flex;gap:var(--space-6);flex-wrap:wrap;font-size:12px;color:color-mix(in srgb,var(--color-text) 68%,transparent)">
+      <span>© 2026 SeoMarket</span>
+      <a href="SeoMarket Документы.dc.html#offer" style="color:inherit;display:inline-flex;align-items:center;gap:var(--space-1)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex:none"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"></path><path d="M14 2v4a2 2 0 0 0 2 2h4"></path><path d="M10 9H8"></path><path d="M16 13H8"></path><path d="M16 17H8"></path></svg>Публичная оферта</a>
+      <a href="SeoMarket Документы.dc.html#privacy" style="color:inherit;display:inline-flex;align-items:center;gap:var(--space-1)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex:none"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"></path></svg>Политика конфиденциальности</a>
+      <a href="SeoMarket Документы.dc.html#cookie" style="color:inherit;display:inline-flex;align-items:center;gap:var(--space-1)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex:none"><path d="M12 2a10 10 0 1 0 10 10 4 4 0 0 1-5-5 4 4 0 0 1-5-5"></path><path d="M8.5 8.5v.01"></path><path d="M16 15.5v.01"></path><path d="M12 12v.01"></path><path d="M11 17v.01"></path><path d="M7 14v.01"></path></svg>Cookie</a>
+      <a href="SeoMarket Документы.dc.html#refund" style="color:inherit;display:inline-flex;align-items:center;gap:var(--space-1)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex:none"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path></svg>Возврат и гарантии</a>
+      <span style="margin-left:auto">ИНН 7712345678</span>
+    </div>
+  </footer>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;accentColor&quot;:{&quot;editor&quot;:&quot;color&quot;,&quot;options&quot;:[&quot;#5980a6&quot;,&quot;#4a6f52&quot;,&quot;#8a6a4b&quot;,&quot;#6a5a8a&quot;],&quot;default&quot;:&quot;#5980a6&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Оформление&quot;}}">
+const PHASES = [
+  [0, 'Читаем robots.txt и sitemap.xml'],
+  [22, 'Обходим страницы каталога'],
+  [48, 'Сверяем мета-теги и заголовки'],
+  [70, 'Измеряем Core Web Vitals'],
+  [88, 'Считаем смету по найденному объёму']
+];
+
+class Component extends DCLogic {
+  state = { stage: 'idle', pct: 0 };
+
+  componentWillUnmount() { clearInterval(this.timer); }
+
+  check = () => {
+    if (this.state.stage === 'running') return;
+    clearInterval(this.timer);
+    this.setState({ stage: 'running', pct: 0 });
+    this.timer = setInterval(() => {
+      this.setState(s => {
+        const pct = s.pct + 2.4 + Math.random() * 1.6;
+        if (pct >= 100) { clearInterval(this.timer); return { pct: 100, stage: 'done' }; }
+        return { pct };
+      });
+    }, 90);
+  };
+
+  renderVals() {
+    const s = this.state;
+    const pct = Math.round(s.pct);
+    let phase = PHASES[0][1];
+    PHASES.forEach(p => { if (s.pct >= p[0]) phase = p[1]; });
+    return {
+      rootRef: el => { this.root = el; },
+      heroRef: el => { this.hero = el; },
+      focusHero: () => { if (this.hero) this.hero.focus(); },
+      check: this.check,
+      checkLabel: s.stage === 'running' ? 'Сканируем…' : s.stage === 'done' ? 'Проверить ещё раз' : 'Проверить',
+      checking: s.stage === 'running',
+      done: s.stage === 'done',
+      pct, pctW: pct + '%', phase
+    };
+  }
+}
+</script>
+</body>
+</html>

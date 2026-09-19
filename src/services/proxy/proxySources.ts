@@ -3,202 +3,153 @@ import { v4 as uuidv4 } from 'uuid';
 import type { Proxy, ProxySources as ProxySourcesType } from './types';
 import { ProxyStorage } from './proxyStorage';
 
+/** Сколько ждём ответа источника, прежде чем считать его недоступным. */
+const SOURCE_TIMEOUT_MS = 20000;
+
+/**
+ * Разбор адресов ip:port из ответа источника — HTML-таблицы, текстового
+ * списка или JSON. Статус у найденных адресов — «testing»: прокси только
+ * найден, его работоспособность никто не проверял.
+ */
+export function extractProxiesFromContent(content: string, source: string): Proxy[] {
+  const found = new Map<string, Proxy>();
+  const patterns = [
+    // 1.2.3.4:8080 или 1.2.3.4 8080
+    /(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})\s*[:\s]\s*(\d{2,5})\b/g,
+    // <td>1.2.3.4</td><td>8080</td>
+    /<td[^>]*>\s*(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})\s*<\/td>\s*<td[^>]*>\s*(\d{2,5})\s*<\/td>/g,
+  ];
+
+  for (const pattern of patterns) {
+    let match: RegExpExecArray | null;
+    while ((match = pattern.exec(content)) !== null) {
+      const ip = match[1];
+      const port = parseInt(match[2], 10);
+      const key = `${ip}:${port}`;
+      if (found.has(key) || !isPublicIp(ip) || !isValidPort(port)) continue;
+      found.set(key, {
+        id: uuidv4(),
+        ip,
+        port,
+        protocol: 'http',
+        status: 'testing',
+        lastChecked: new Date(),
+        source,
+      });
+    }
+  }
+
+  return Array.from(found.values());
+}
+
+function isValidIp(ip: string): boolean {
+  const parts = ip.split('.');
+  if (parts.length !== 4) return false;
+  return parts.every((part) => {
+    const num = parseInt(part, 10);
+    return !isNaN(num) && num >= 0 && num <= 255;
+  });
+}
+
+/** Частные, служебные и петлевые адреса прокси из интернета быть не могут. */
+function isPublicIp(ip: string): boolean {
+  if (!isValidIp(ip)) return false;
+  const [a, b] = ip.split('.').map((part) => parseInt(part, 10));
+  if (a === 0 || a === 10 || a === 127 || a >= 224) return false;
+  if (a === 169 && b === 254) return false;
+  if (a === 172 && b >= 16 && b <= 31) return false;
+  if (a === 192 && b === 168) return false;
+  return true;
+}
+
+function isValidPort(port: number): boolean {
+  return !isNaN(port) && port > 0 && port <= 65535;
+}
+
+/**
+ * Сбор прокси из списка источников.
+ *
+ * Раньше первый раунд сбора ничего не скачивал: для каждого источника
+ * генерировалось 25–50 случайных IP вида 103.x.x.x со случайным протоколом,
+ * уровнем анонимности и статусом «active» / «inactive» / «testing». Часть
+ * несуществующих адресов сразу попадала в «активные», а админ видел
+ * «Сбор прокси завершён — найдено N». Теперь источник действительно
+ * запрашивается, адреса берутся из его ответа, а статус у них «testing»
+ * (не проверен). Если браузер не смог получить ответ — чаще всего сайт
+ * источника не разрешает чтение с чужого домена (CORS), — источник честно
+ * отмечается как ошибка, и ничего не добавляется.
+ */
 export class ProxySources {
   public proxySources: ProxySourcesType;
   private proxyStorage: ProxyStorage;
-  
+
   constructor(proxySources: ProxySourcesType, proxyStorage: ProxyStorage) {
     this.proxySources = proxySources;
     this.proxyStorage = proxyStorage;
   }
-  
+
   async collectProxies(
     progressCallback?: (source: string, count: number) => void
   ): Promise<Proxy[]> {
-    const existingProxies = new Set(
-      this.proxyStorage.getAll().map(proxy => `${proxy.ip}:${proxy.port}`)
-    );
-    
     const newProxies: Proxy[] = [];
     let totalCollected = 0;
-    
+
     for (const [sourceName, source] of Object.entries(this.proxySources)) {
       if (!source.enabled) continue;
-      
+
       try {
-        // In a real implementation, we would fetch data from the source URL
-        // For this mock version, we'll generate some random proxies
-        const mockData = this.generateMockResponse(sourceName);
-        
-        // Parse the proxies using the source's parseFunction
-        const parsedProxies = this.parseMockData(mockData, sourceName);
-        
-        let count = 0;
-        
-        for (const proxy of parsedProxies) {
-          const proxyKey = `${proxy.ip}:${proxy.port}`;
-          
-          if (!existingProxies.has(proxyKey)) {
-            this.proxyStorage.add(proxy);
-            newProxies.push(proxy);
-            existingProxies.add(proxyKey);
-            count++;
-            totalCollected++;
-          }
-        }
-        
+        const content = await this.fetchSource(source.url);
+        // Повторы по ip:port отсекает хранилище, сохраняет пачку одной записью.
+        const added = this.proxyStorage.addMany(extractProxiesFromContent(content, sourceName));
+        newProxies.push(...added);
+        totalCollected += added.length;
+
         if (progressCallback) {
           progressCallback(sourceName, totalCollected);
         }
       } catch (error) {
-        console.error(`Error collecting proxies from ${sourceName}:`, error);
+        console.error(`Не удалось получить прокси из источника ${sourceName}:`, error);
         if (progressCallback) {
           progressCallback(sourceName, -1);
         }
       }
     }
-    
+
     return newProxies;
   }
-  
-  // Enhanced mock data generation for testing
-  private generateMockResponse(source: string): string {
-    // Different templates for different sources to simulate variety
-    switch (source) {
-      case 'freeproxylists':
-        return `
-          <table>
-            <tr><td>192.168.1.1</td><td>8080</td><td>HTTP</td><td>Elite</td></tr>
-            <tr><td>10.0.0.1</td><td>3128</td><td>HTTPS</td><td>Anonymous</td></tr>
-            <tr><td>172.16.0.1</td><td>1080</td><td>SOCKS5</td><td>Transparent</td></tr>
-            <tr><td>192.168.5.5</td><td>8888</td><td>HTTP</td><td>Anonymous</td></tr>
-            <tr><td>172.16.10.1</td><td>3000</td><td>HTTP</td><td>Elite</td></tr>
-            <tr><td>192.168.15.1</td><td>8080</td><td>HTTPS</td><td>Anonymous</td></tr>
-            <tr><td>10.10.10.1</td><td>1080</td><td>SOCKS5</td><td>Elite</td></tr>
-            <tr><td>192.168.20.1</td><td>9090</td><td>HTTP</td><td>Transparent</td></tr>
-          </table>
-        `;
-      case 'sslproxies':
-        return `
-          <table>
-            <tr><th>IP Address</th><th>Port</th><th>Code</th><th>Country</th><th>Anonymity</th><th>Google</th><th>Https</th><th>Last Checked</th></tr>
-            <tr><td>203.0.113.1</td><td>80</td><td>US</td><td>United States</td><td>elite proxy</td><td>no</td><td>yes</td><td>1 minute ago</td></tr>
-            <tr><td>203.0.113.2</td><td>3128</td><td>CA</td><td>Canada</td><td>anonymous</td><td>no</td><td>yes</td><td>5 minutes ago</td></tr>
-            <tr><td>203.0.113.3</td><td>8080</td><td>UK</td><td>United Kingdom</td><td>transparent</td><td>no</td><td>no</td><td>10 minutes ago</td></tr>
-            <tr><td>203.0.113.4</td><td>443</td><td>DE</td><td>Germany</td><td>elite proxy</td><td>yes</td><td>yes</td><td>2 minutes ago</td></tr>
-            <tr><td>203.0.113.5</td><td>8888</td><td>JP</td><td>Japan</td><td>anonymous</td><td>no</td><td>yes</td><td>3 minutes ago</td></tr>
-            <tr><td>203.0.113.6</td><td>80</td><td>FR</td><td>France</td><td>elite proxy</td><td>yes</td><td>yes</td><td>7 minutes ago</td></tr>
-            <tr><td>203.0.113.7</td><td>3128</td><td>BR</td><td>Brazil</td><td>transparent</td><td>no</td><td>no</td><td>15 minutes ago</td></tr>
-            <tr><td>203.0.113.8</td><td>8080</td><td>AU</td><td>Australia</td><td>anonymous</td><td>yes</td><td>yes</td><td>4 minutes ago</td></tr>
-          </table>
-        `;
-      default:
-        return `
-          <div class="proxy-list">
-            <div class="proxy-item">
-              <span class="ip">45.67.89.10</span>:<span class="port">8080</span>
-              <span class="type">HTTP</span>
-              <span class="country">Russia</span>
-            </div>
-            <div class="proxy-item">
-              <span class="ip">98.76.54.32</span>:<span class="port">3128</span>
-              <span class="type">HTTPS</span>
-              <span class="country">Brazil</span>
-            </div>
-            <div class="proxy-item">
-              <span class="ip">11.22.33.44</span>:<span class="port">1080</span>
-              <span class="type">SOCKS5</span>
-              <span class="country">China</span>
-            </div>
-            <div class="proxy-item">
-              <span class="ip">55.66.77.88</span>:<span class="port">8888</span>
-              <span class="type">HTTP</span>
-              <span class="country">India</span>
-            </div>
-            <div class="proxy-item">
-              <span class="ip">12.34.56.78</span>:<span class="port">443</span>
-              <span class="type">HTTPS</span>
-              <span class="country">Germany</span>
-            </div>
-            <div class="proxy-item">
-              <span class="ip">90.12.34.56</span>:<span class="port">3128</span>
-              <span class="type">HTTP</span>
-              <span class="country">France</span>
-            </div>
-            <div class="proxy-item">
-              <span class="ip">21.43.65.87</span>:<span class="port">9090</span>
-              <span class="type">SOCKS4</span>
-              <span class="country">Spain</span>
-            </div>
-          </div>
-        `;
-    }
-  }
-  
-  private parseMockData(data: string, source: string): Proxy[] {
-    // Improved mock implementation that creates more unique proxies
-    const proxies: Proxy[] = [];
-    
-    // Increase the number of proxies generated for each source
-    // Generate 25-50 proxies per source for better testing
-    const proxyCount = Math.floor(Math.random() * 25) + 25;
-    
-    for (let i = 0; i < proxyCount; i++) {
-      // Generate more realistic-looking IPs for different sources
-      let ip: string;
-      
-      if (source === 'freeproxylists') {
-        ip = `103.${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}`;
-      } else if (source === 'sslproxies') {
-        ip = `45.${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}`;
-      } else if (source === 'free-proxy.cz') {
-        ip = `185.${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}`;
-      } else {
-        ip = `${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}`;
+
+  /** Настоящий запрос к источнику с ограничением по времени. */
+  private async fetchSource(url: string): Promise<string> {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), SOURCE_TIMEOUT_MS);
+    try {
+      const response = await fetch(url, { signal: controller.signal });
+      if (!response.ok) {
+        throw new Error(`Источник ответил кодом ${response.status}`);
       }
-      
-      // Make port numbers more realistic based on common proxy ports
-      const commonPorts = [80, 443, 1080, 3128, 8080, 8888, 9090];
-      const port = i < commonPorts.length 
-        ? commonPorts[i] 
-        : commonPorts[Math.floor(Math.random() * commonPorts.length)];
-      
-      const protocols = ['http', 'https', 'socks4', 'socks5'] as const;
-      const statuses = ['active', 'inactive', 'testing'] as const;
-      const anonymityLevels = ['transparent', 'anonymous', 'elite'] as const;
-      
-      proxies.push({
-        id: uuidv4(),
-        ip,
-        port,
-        protocol: protocols[Math.floor(Math.random() * protocols.length)],
-        status: statuses[Math.floor(Math.random() * statuses.length)],
-        lastChecked: new Date(),
-        source,
-        anonymity: anonymityLevels[Math.floor(Math.random() * anonymityLevels.length)]
-      });
+      return await response.text();
+    } finally {
+      clearTimeout(timer);
     }
-    
-    return proxies;
   }
-  
+
   // Method to parse proxies from imported text
   parseProxiesFromText(text: string): Proxy[] {
     const proxies: Proxy[] = [];
     const lines = text.trim().split('\n');
-    
+
     for (const line of lines) {
       const trimmedLine = line.trim();
       if (!trimmedLine) continue;
-      
+
       try {
         let ip: string;
         let port: number;
         let protocol: 'http' | 'https' | 'socks4' | 'socks5' = 'http';
-        
+
         // Try to match protocol://ip:port format
         const protocolMatch = trimmedLine.match(/^(https?|socks[45]?):\/\/([^:]+):(\d+)/i);
-        
+
         if (protocolMatch) {
           const protocolStr = protocolMatch[1].toLowerCase();
           // Fix for the type error: Check protocol value and map correctly to allowed types
@@ -215,14 +166,14 @@ export class ProxySources {
           // Try to match ip:port format
           const ipPortMatch = trimmedLine.match(/^([^:]+):(\d+)/);
           if (!ipPortMatch) continue;
-          
+
           ip = ipPortMatch[1];
           port = parseInt(ipPortMatch[2], 10);
         }
-        
+
         // Validate IP and port
-        if (!this.isValidIp(ip) || !this.isValidPort(port)) continue;
-        
+        if (!isValidIp(ip) || !isValidPort(port)) continue;
+
         const proxy: Proxy = {
           id: uuidv4(),
           ip,
@@ -232,51 +183,36 @@ export class ProxySources {
           lastChecked: new Date(),
           source: 'imported'
         };
-        
+
         proxies.push(proxy);
       } catch (error) {
         console.error('Error parsing proxy:', trimmedLine, error);
       }
     }
-    
+
     return proxies;
   }
-  
-  private isValidIp(ip: string): boolean {
-    const parts = ip.split('.');
-    if (parts.length !== 4) return false;
-    
-    for (const part of parts) {
-      const num = parseInt(part, 10);
-      if (isNaN(num) || num < 0 || num > 255) return false;
-    }
-    
-    return true;
+
+  // Разбор ответов конкретных источников. Раньше каждый из них вместо
+  // разбора данных возвращал случайные адреса; теперь все читают ip:port
+  // из того, что источник действительно прислал.
+  parseFreeProxyLists(data: string): Proxy[] {
+    return extractProxiesFromContent(data, 'freeproxylists');
   }
-  
-  private isValidPort(port: number): boolean {
-    return !isNaN(port) && port > 0 && port <= 65535;
+
+  parseSSLProxies(data: string): Proxy[] {
+    return extractProxiesFromContent(data, 'sslproxies');
   }
-  
-  // Enhanced parser methods for different proxy sources
-  parseFreeProxyLists(data: string): any[] {
-    // In a real implementation, this would parse HTML from the freeproxylists.net site
-    return this.parseMockData(data, 'freeproxylists');
+
+  parseFreeProxyCZ(data: string): Proxy[] {
+    return extractProxiesFromContent(data, 'free-proxy.cz');
   }
-  
-  parseSSLProxies(data: string): any[] {
-    return this.parseMockData(data, 'sslproxies');
+
+  parseProxylistMe(data: string): Proxy[] {
+    return extractProxiesFromContent(data, 'proxylist.me');
   }
-  
-  parseFreeProxyCZ(data: string): any[] {
-    return this.parseMockData(data, 'free-proxy.cz');
-  }
-  
-  parseProxylistMe(data: string): any[] {
-    return this.parseMockData(data, 'proxylist.me');
-  }
-  
-  parseProxyScanIO(data: string): any[] {
-    return this.parseMockData(data, 'proxyscan.io');
+
+  parseProxyScanIO(data: string): Proxy[] {
+    return extractProxiesFromContent(data, 'proxyscan.io');
   }
 }

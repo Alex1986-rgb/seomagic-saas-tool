@@ -13,7 +13,14 @@ export class ProxyManager {
   private proxySources: ProxySources;
   private pingManager: PingManager;
   private proxyCollector: ProxyCollector;
-  
+
+  // Ключи captcha/botable держим только в памяти сессии — не пишем в localStorage
+  // (clear-text storage). Постоянные значения берём из env.
+  // Ключи не берём из VITE-переменных: они попадают в собранный файл и видны
+  // любому посетителю. Задаются на время работы через настройки.
+  private captchaApiKey: string = '';
+  private botableApiKey: string = '';
+
   public defaultProxySources: ProxySourcesType = {
     'freeproxylists': {
       url: 'https://www.freeproxylists.net/',
@@ -63,7 +70,9 @@ export class ProxyManager {
     this.proxyValidator = new ProxyValidator();
     this.proxySources = new ProxySources(this.defaultProxySources, this.proxyStorage);
     this.pingManager = new PingManager(this.proxyStorage);
-    this.proxyCollector = new ProxyCollector(this.defaultProxySources);
+    // Второй раунд ходит только по дополнительным спискам. Раньше сюда
+    // передавались и основные источники, и их запрашивали повторно.
+    this.proxyCollector = new ProxyCollector({});
     
     // Load proxy sources from localStorage
     const storedSources = localStorage.getItem('proxySources');
@@ -136,11 +145,15 @@ export class ProxyManager {
     // Import these sources
     this.proxyCollector.importProxySourcesFromPython(additionalSources);
     
-    // Collect from these additional sources
-    const additionalProxies = await this.proxyCollector.collectProxies(progressCallback, clearExisting);
-    console.log(`Collected ${additionalProxies.length} additional proxies from secondary sources`);
+    // Раньше найденные здесь адреса только возвращались наружу: в списке
+    // прокси они не появлялись, а в сообщении «Найдено N» учитывались.
+    // Теперь сохраняем их и возвращаем только действительно добавленные.
+    // Сборщик каждый раз начинает с чистого листа: повторы отсекает хранилище.
+    const collected = await this.proxyCollector.collectProxies(progressCallback, true);
+    const added = this.proxyStorage.addMany(collected);
+    console.log(`Collected ${added.length} additional proxies from secondary sources`);
     
-    return additionalProxies;
+    return added;
   }
   
   /**
@@ -185,28 +198,28 @@ export class ProxyManager {
    * Get captcha API key
    */
   getCaptchaApiKey(): string {
-    return localStorage.getItem('captchaApiKey') || '';
+    return this.captchaApiKey;
   }
 
   /**
    * Set Botable API key
    */
   setBotableApiKey(apiKey: string): void {
-    localStorage.setItem('botableApiKey', apiKey);
+    this.botableApiKey = apiKey;
   }
-  
+
   /**
    * Set captcha API key
    */
   setCaptchaApiKey(apiKey: string): void {
-    localStorage.setItem('captchaApiKey', apiKey);
+    this.captchaApiKey = apiKey;
   }
 
   /**
    * Get Botable API key
    */
   getBotableApiKey(): string {
-    return localStorage.getItem('botableApiKey') || '';
+    return this.botableApiKey;
   }
   
   /**

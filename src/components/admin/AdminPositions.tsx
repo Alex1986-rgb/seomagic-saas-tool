@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Bar, BarChart, CartesianGrid, Legend, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { Search, Users, Download, ArrowDown, ArrowUp, History, FileText, Webhook, Link2Off, CopyX, FolderTree } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -8,20 +9,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { 
-  BrokenLinksAnalyzer, 
-  DuplicatesDetector,
-  SiteStructureVisualization,
-  ContentUniquenessChecker
-} from '@/components/position-tracker';
 import { PositionData, checkPositions } from '@/services/position/positionTracker';
-import { getPositionHistory, getHistoricalData } from '@/services/position/positionHistory';
+import { getPositionHistory } from '@/services/position/positionHistory';
 import { exportHistoryToExcel } from '@/services/position/exportService';
-import { useProxyManager } from '@/hooks/use-proxy-manager';
 
 const AdminPositions: React.FC = () => {
   const [history, setHistory] = useState<PositionData[]>([]);
@@ -34,7 +27,9 @@ const AdminPositions: React.FC = () => {
   const [bulkKeywordsInput, setBulkKeywordsInput] = useState("");
   const [showBulkInput, setShowBulkInput] = useState(false);
   const { toast } = useToast();
-  const { getRandomActiveProxy, activeProxies, isLoading: isProxyLoading } = useProxyManager();
+  // Переходы — через роутер: сайт живёт на подпути /seomagic-saas-tool/, и
+  // window.location.href = "/position-tracker" уводил на корень домена (404).
+  const navigate = useNavigate();
 
   useEffect(() => {
     loadHistory();
@@ -94,26 +89,17 @@ const AdminPositions: React.FC = () => {
     try {
       setIsCheckingPositions(true);
 
-      // Check if we have active proxies
-      const hasActiveProxies = activeProxies.length > 0;
-      if (!hasActiveProxies) {
-        toast({
-          title: "Внимание",
-          description: "Нет активных прокси. Проверка может быть менее точной или заблокирована поисковыми системами.",
-          variant: "default",
-        });
-      }
-
+      // Раньше здесь предупреждали, что без активных прокси проверка «может
+      // быть менее точной», и передавали useProxy. Позиции проверяет сервер
+      // через внешнего поставщика выдачи, прокси из браузера на это не влияют.
       console.log(`Начало проверки позиций для домена ${domainToCheck} с ${keywords.length} ключевыми словами`);
-      console.log(`Использование прокси: ${hasActiveProxies ? 'Да' : 'Нет'}`);
 
       const results = await checkPositions({
         domain: domainToCheck,
         keywords,
         searchEngine: 'all', // Check all search engines
         depth: 100,
-        scanFrequency: 'daily',
-        useProxy: hasActiveProxies
+        scanFrequency: 'daily'
       });
 
       console.log(`Проверка позиций завершена. Получены результаты для ${results.keywords.length} ключевых слов`);
@@ -312,24 +298,12 @@ const AdminPositions: React.FC = () => {
             <Download className="h-4 w-4" />
             Экспорт истории
           </Button>
-          <Button variant="default" size="sm" className="gap-1" onClick={() => window.location.href = "/position-tracker"}>
+          <Button variant="default" size="sm" className="gap-1" onClick={() => navigate('/position-tracker')}>
             <Search className="h-4 w-4" />
             Проверить позиции
           </Button>
         </div>
       </div>
-
-      {/* Proxy Status Alert */}
-      {!isProxyLoading && activeProxies.length === 0 && (
-        <Alert className="mb-4">
-          <AlertDescription>
-            Для более точной проверки позиций рекомендуется настроить прокси в разделе 
-            <a href="/admin/proxies" className="text-primary hover:underline ml-1">
-              управления прокси
-            </a>
-          </AlertDescription>
-        </Alert>
-      )}
 
       {/* Position Check Panel */}
       <Card className="mb-4">
@@ -431,7 +405,7 @@ const AdminPositions: React.FC = () => {
           >
             {isCheckingPositions ? 
               'Проверка позиций...' : 
-              `Проверить позиции в поисковых системах ${activeProxies.length > 0 ? '(с использованием прокси)' : ''}`
+              'Проверить позиции в поисковых системах'
             }
           </Button>
         </CardContent>
@@ -531,7 +505,7 @@ const AdminPositions: React.FC = () => {
       </div>
 
       <Tabs defaultValue={activeTab} value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="mb-4 grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6">
+        <TabsList className="mb-4 grid grid-cols-2">
           <TabsTrigger value="history" className="flex items-center gap-1">
             <History className="h-4 w-4" />
             История проверок
@@ -539,22 +513,6 @@ const AdminPositions: React.FC = () => {
           <TabsTrigger value="domains" className="flex items-center gap-1">
             <Webhook className="h-4 w-4" />
             Домены
-          </TabsTrigger>
-          <TabsTrigger value="positions" className="flex items-center gap-1">
-            <Search className="h-4 w-4" />
-            Позиции
-          </TabsTrigger>
-          <TabsTrigger value="linkAnalysis" className="flex items-center gap-1">
-            <Link2Off className="h-4 w-4" />
-            Анализ ссылок
-          </TabsTrigger>
-          <TabsTrigger value="duplicates" className="flex items-center gap-1">
-            <CopyX className="h-4 w-4" />
-            Дубликаты
-          </TabsTrigger>
-          <TabsTrigger value="sitemap" className="flex items-center gap-1">
-            <FolderTree className="h-4 w-4" />
-            Структура сайта
           </TabsTrigger>
         </TabsList>
 
@@ -656,7 +614,7 @@ const AdminPositions: React.FC = () => {
                             variant="outline" 
                             size="sm" 
                             className="gap-1" 
-                            onClick={() => window.location.href = "/position-tracker"}
+                            onClick={() => navigate('/position-tracker')}
                           >
                             <Search className="h-4 w-4" />
                             Проверить
@@ -680,53 +638,6 @@ const AdminPositions: React.FC = () => {
           </Card>
         </TabsContent>
 
-        <TabsContent value="positions">
-          <ContentUniquenessChecker 
-            domain={selectedDomain || ''} 
-          />
-        </TabsContent>
-
-        <TabsContent value="linkAnalysis">
-          <BrokenLinksAnalyzer 
-            domain={selectedDomain || ''} 
-          />
-        </TabsContent>
-
-        <TabsContent value="duplicates">
-          <DuplicatesDetector
-            domain={selectedDomain || ''}
-          />
-        </TabsContent>
-
-        <TabsContent value="sitemap">
-          {selectedDomain ? (
-            <SiteStructureVisualization 
-              domain={selectedDomain}
-              className="mt-4"
-            />
-          ) : (
-            <Card>
-              <CardContent className="py-10 text-center">
-                <FolderTree className="h-10 w-10 text-muted-foreground mx-auto mb-4" />
-                <p className="text-muted-foreground mb-4">
-                  Выберите домен для визуализации структуры сайта
-                </p>
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2">
-                  {topDomains.slice(0, 5).map((item, index) => (
-                    <Button 
-                      key={index} 
-                      variant="outline" 
-                      size="sm"
-                      onClick={() => handleCheckDomain(item.domain)}
-                    >
-                      {item.domain}
-                    </Button>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          )}
-        </TabsContent>
       </Tabs>
     </div>
   );

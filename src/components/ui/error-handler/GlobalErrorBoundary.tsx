@@ -3,7 +3,6 @@ import React, { ErrorInfo, useState, useEffect } from 'react';
 import { AlertTriangle, Home, RefreshCw, XOctagon } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { useNavigate } from 'react-router-dom';
 import { Card } from '@/components/ui/card';
 
 interface GlobalErrorBoundaryProps {
@@ -20,6 +19,16 @@ interface ErrorBoundaryState {
 }
 
 const ERROR_RESET_TIMEOUT = 10000; // 10 seconds
+
+/**
+ * Адрес главной с учётом подпути публикации.
+ *
+ * Экран ошибки стоит вне <Router>, поэтому переход идёт через window.location.
+ * Раньше туда передавался «/», и на опубликованном сайте (/seomagic-saas-tool/)
+ * кнопка уводила на корень github.io с ошибкой 404. BASE_URL уже оканчивается
+ * слэшем: «/» локально и «/seomagic-saas-tool/» в сборке.
+ */
+const HOME_URL = import.meta.env.BASE_URL || '/';
 
 export class GlobalErrorBoundary extends React.Component<GlobalErrorBoundaryProps, ErrorBoundaryState> {
   constructor(props: GlobalErrorBoundaryProps) {
@@ -86,7 +95,9 @@ interface ErrorFallbackProps {
 }
 
 export const ErrorFallback: React.FC<ErrorFallbackProps> = ({ error, resetError }) => {
-  const navigate = useNavigate();
+  // NB: this fallback is mounted outside <Router> (in AppProviders), so it must
+  // not use react-router hooks like useNavigate — doing so makes the error UI
+  // itself crash. Navigate via window.location instead.
   const { toast } = useToast();
   const [isAttemptingRecovery, setIsAttemptingRecovery] = useState(false);
 
@@ -117,7 +128,7 @@ export const ErrorFallback: React.FC<ErrorFallbackProps> = ({ error, resetError 
   const handleNavigateHome = () => {
     console.log("Navigating home from ErrorFallback");
     resetError();
-    navigate('/');
+    window.location.assign(HOME_URL);
     toast({
       title: "Навигация на главную",
       description: "Возврат на главную страницу",
@@ -158,13 +169,12 @@ export const ErrorFallback: React.FC<ErrorFallbackProps> = ({ error, resetError 
 
 // More serious fallback for repeated errors
 const PermanentErrorFallback: React.FC<{error: Error | null}> = ({ error }) => {
-  const navigate = useNavigate();
   const { toast } = useToast();
   
   const handleReset = () => {
     // Perform a full page refresh to reset all state
     console.log("Performing full page refresh in PermanentErrorFallback");
-    window.location.href = '/';
+    window.location.href = HOME_URL;
     
     toast({
       title: "Полный сброс",

@@ -9,7 +9,7 @@ interface SearchEngineDistributionProps {
 
 export function SearchEngineDistribution({ history }: SearchEngineDistributionProps) {
   const getSearchEngineDistribution = () => {
-    const engines: Record<string, number> = { google: 0, yandex: 0, mailru: 0 };
+    const engines: Record<string, number> = { google: 0, yandex: 0 };
     let total = 0;
     
     history.forEach(item => {
@@ -22,7 +22,7 @@ export function SearchEngineDistribution({ history }: SearchEngineDistributionPr
     });
     
     return Object.entries(engines).map(([engine, count]) => ({
-      engine: engine === 'google' ? 'Google' : engine === 'yandex' ? 'Яндекс' : 'Mail.ru',
+      engine: engine === 'google' ? 'Google' : 'Яндекс',
       count,
       percentage: total > 0 ? Math.round((count / total) * 100) : 0
     }));

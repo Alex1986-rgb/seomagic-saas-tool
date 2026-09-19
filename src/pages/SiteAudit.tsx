@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
-import { Helmet } from 'react-helmet-async';
 import { useToast } from "@/hooks/use-toast";
 import Layout from '@/components/Layout';
+import PageSeo from '@/components/seo/PageSeo';
 import { AuditProvider } from '@/contexts/AuditContext';
 import AuditResultsContainer from '@/components/audit/results/AuditResultsContainer';
 import { AuditWorkspace } from '@/components/audit/AuditWorkspace';
@@ -11,6 +11,20 @@ import { Input } from '@/components/ui/input';
 import { motion } from 'framer-motion';
 import { Search, ExternalLink, RefreshCw } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
+import { auditPagePath } from '@/modules/audit/utils/auditLinks';
+
+/** Ссылка «открыть сайт» из введённого адреса — только http(s): javascript:, data: и прочее не пропускаем. */
+const safeExternalHref = (raw: string): string | null => {
+  const value = raw.trim();
+  if (!value) return null;
+  try {
+    const u = new URL(/^[a-z][a-z0-9+.-]*:/i.test(value) ? value : `https://${value}`);
+    return u.protocol === 'http:' || u.protocol === 'https:' ? u.href : null;
+  } catch {
+    return null;
+  }
+};
+
 
 const SiteAudit: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -20,6 +34,10 @@ const SiteAudit: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
   const navigate = useNavigate();
+  // Адрес, уже подставленный в поле ввода. Номер задачи в адресе страницы
+  // теперь обновляется сам (новая или открытая проверка), и без этой проверки
+  // каждое такое обновление стирало бы то, что человек успел набрать в поле.
+  const syncedUrlParamRef = useRef<string | null>(null);
 
   console.log("SiteAudit page rendering with params:", searchParams.toString());
 
@@ -35,7 +53,10 @@ const SiteAudit: React.FC = () => {
         const formattedUrl = urlParam.startsWith('http') ? urlParam : `https://${urlParam}`;
         new URL(formattedUrl);
         setUrl(urlParam);
-        setInputUrl(urlParam);
+        if (syncedUrlParamRef.current !== urlParam) {
+          syncedUrlParamRef.current = urlParam;
+          setInputUrl(urlParam);
+        }
         setError(null);
         
         // If task_id is present, store it in localStorage for this url
@@ -47,7 +68,7 @@ const SiteAudit: React.FC = () => {
           const savedTaskId = localStorage.getItem(`task_id_${urlParam}`);
           if (savedTaskId) {
             console.log('[SITE AUDIT] 🔄 Recovering task_id from localStorage:', savedTaskId);
-            navigate(`/site-audit?url=${encodeURIComponent(urlParam)}&task_id=${savedTaskId}`, { replace: true });
+            navigate(auditPagePath(urlParam, savedTaskId), { replace: true });
             return; // Exit early, will re-run with task_id
           }
         }
@@ -104,18 +125,16 @@ const SiteAudit: React.FC = () => {
     }
   };
 
-  // Check if this is a dynamic page with task_id
-  const taskId = searchParams.get('task_id');
-  const robotsContent = taskId ? 'noindex, nofollow' : 'index, follow, max-image-preview:large';
+  // Результат конкретной задачи — это персональная страница, в индекс её не пускаем
+  const isTaskResult = Boolean(searchParams.get('task_id'));
 
   return (
     <Layout>
-      <Helmet>
-        <title>SEO Аудит Сайта | SeoMarket</title>
-        <meta name="description" content="Проведите полный SEO аудит вашего сайта. Анализ технических параметров, контента, производительности и получите рекомендации по оптимизации." />
-        <meta name="robots" content={robotsContent} />
-        <link rel="canonical" href="https://seomarket.app/site-audit" />
-      </Helmet>
+      <PageSeo
+        title="Полный SEO-аудит сайта: технический анализ и отчёт"
+        description="Проверка технических параметров, метатегов, контента и скорости загрузки с готовыми рекомендациями по каждой найденной проблеме."
+        noindex={isTaskResult}
+      />
       <div className="container mx-auto px-4 md:px-6 pt-24 md:pt-32 pb-12 md:pb-20">
         <motion.div 
           className="max-w-6xl mx-auto"
@@ -139,9 +158,9 @@ const SiteAudit: React.FC = () => {
                     onChange={(e) => setInputUrl(e.target.value)}
                     className={`pr-10 ${!isValidUrl(inputUrl) && inputUrl ? 'border-destructive' : ''}`}
                   />
-                  {inputUrl && isValidUrl(inputUrl) && (
-                    <a 
-                      href={inputUrl.startsWith('http') ? inputUrl : `https://${inputUrl}`}
+                  {safeExternalHref(inputUrl) && (
+                    <a
+                      href={safeExternalHref(inputUrl) as string}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-primary transition-colors"
@@ -176,7 +195,12 @@ const SiteAudit: React.FC = () => {
               {error}
             </div>
           ) : url && isValidUrl(url) && (
-            <AuditProvider initialUrl={url}>
+            /*
+              key={url}: при вводе другого сайта в форму страница не
+              перемонтировалась, и под новым адресом оставалась задача
+              (и результаты) предыдущего сайта.
+            */
+            <AuditProvider key={url} initialUrl={url}>
               <AuditWorkspace url={url}>
                 <AuditResultsContainer url={url} />
               </AuditWorkspace>

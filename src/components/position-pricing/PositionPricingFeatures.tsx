@@ -6,20 +6,25 @@ import {
   LineChart, 
   TrendingUp, 
   MapPin, 
-  Bell, 
   FileText, 
-  Share2, 
-  User, 
-  Code, 
   Settings
 } from 'lucide-react';
 
+/**
+ * В списке были «Интеграции с Google Analytics и Яндекс.Метрикой», «API
+ * доступ» и «Мультипользовательский доступ с разграничением прав». Ничего из
+ * этого в сервисе нет: публичного API нет, обращений к Метрике и Analytics в
+ * коде нет, общего доступа команды к проекту нет. Уведомлений об изменении
+ * позиций и проверок по расписанию тоже нет — проверка запускается вручную.
+ * Пункты убраны или переписаны по тому, что делает трекер; поиск — только
+ * Яндекс и Google.
+ */
 const PositionPricingFeatures: React.FC = () => {
   const features = [
     {
       icon: <Search className="h-8 w-8 text-primary" />,
       title: "Мониторинг позиций",
-      description: "Отслеживайте позиции вашего сайта по ключевым запросам в Яндекс, Google и других поисковых системах."
+      description: "Отслеживайте позиции вашего сайта по ключевым запросам в Яндексе и Google."
     },
     {
       icon: <LineChart className="h-8 w-8 text-primary" />,
@@ -37,34 +42,14 @@ const PositionPricingFeatures: React.FC = () => {
       description: "Проверка позиций с учетом региональной выдачи в разных городах и странах."
     },
     {
-      icon: <Bell className="h-8 w-8 text-primary" />,
-      title: "Уведомления",
-      description: "Настраиваемые уведомления о значительных изменениях позиций по email или в личном кабинете."
-    },
-    {
       icon: <FileText className="h-8 w-8 text-primary" />,
       title: "Отчеты",
-      description: "Автоматическое формирование и отправка отчетов по расписанию в различных форматах."
-    },
-    {
-      icon: <Share2 className="h-8 w-8 text-primary" />,
-      title: "Интеграции",
-      description: "Интеграция с Google Analytics, Яндекс.Метрикой и другими аналитическими сервисами."
-    },
-    {
-      icon: <User className="h-8 w-8 text-primary" />,
-      title: "Мультипользовательский доступ",
-      description: "Возможность предоставления доступа команде с разграничением прав просмотра и редактирования."
-    },
-    {
-      icon: <Code className="h-8 w-8 text-primary" />,
-      title: "API доступ",
-      description: "Получение данных через API для интеграции с вашими системами и инструментами."
+      description: "Результаты каждой проверки сохраняются в истории трекера — позиции можно сравнить с прошлыми проверками."
     },
     {
       icon: <Settings className="h-8 w-8 text-primary" />,
       title: "Гибкая настройка",
-      description: "Настройка частоты проверок, группировка ключевых слов, фильтрация и сортировка данных."
+      description: "Выбор поисковой системы, региона выдачи и глубины проверки для своего списка запросов."
     }
   ];
 
@@ -154,7 +139,7 @@ const PositionPricingFeatures: React.FC = () => {
               </div>
               <div className="bg-muted p-4 rounded-lg">
                 <h5 className="font-medium mb-2">Мониторинг позиций</h5>
-                <p className="text-sm text-muted-foreground">Отслеживание позиций во всех поисковых системах</p>
+                <p className="text-sm text-muted-foreground">Отслеживание позиций в Яндексе и Google</p>
               </div>
               <div className="bg-muted p-4 rounded-lg">
                 <h5 className="font-medium mb-2">Технический анализ</h5>

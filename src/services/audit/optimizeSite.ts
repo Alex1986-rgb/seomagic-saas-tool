@@ -1,104 +1,114 @@
-
-import { PageContent, OptimizationMetrics } from './optimization/types';
+import { PageContent } from './optimization/types';
 import { collectPagesContent } from './content';
 import { analyzeContent, calculatePageOptimizationScore } from './optimization/contentAnalyzer';
+import { injectSeoBlock, SeoBlock } from './optimization/htmlInjector';
 import { OpenAIIntegration } from '../api/openAIIntegration';
 import JSZip from 'jszip';
-import { saveAs } from 'file-saver';
+
+export interface OptimizeSiteOptions {
+  /**
+   * Сколько страниц обрабатывать. Раньше здесь стояло жёсткое 100,
+   * из-за чего крупные сайты оптимизировались частично и молча.
+   */
+  maxPages?: number;
+  /** Заменять <title> и meta description на сгенерированные */
+  updateMeta?: boolean;
+}
+
+const DEFAULT_MAX_PAGES = 1000;
 
 /**
- * Оптимизирует сайт на основе результатов анализа
+ * Оптимизирует сайт: собирает страницы, дописывает недостающий SEO-контент
+ * и ВСТРАИВАЕТ его в исходную вёрстку каждой страницы.
+ *
+ * Важно: страницы не пересобираются. Шапка, меню, стили, формы и скрипты
+ * сайта остаются нетронутыми — добавляется только блок перед подвалом
+ * и правятся мета-теги.
  */
 export const optimizeSite = async (
   urls: string[],
   prompt: string,
   openAIApiKey: string,
-  onProgress?: (current: number, total: number, currentUrl: string) => void
+  onProgress?: (current: number, total: number, currentUrl: string) => void,
+  options: OptimizeSiteOptions = {}
 ): Promise<Blob> => {
+  const maxPages = options.maxPages ?? DEFAULT_MAX_PAGES;
+  const targets = urls.slice(0, maxPages);
+  const skipped = Math.max(0, urls.length - targets.length);
+
   try {
-    // Собираем контент страниц
-    const pagesContent = await collectPagesContent(
-      urls.slice(0, 100), // Ограничиваем до 100 страниц для производительности
-      100,
-      (current, total) => {
-        if (onProgress) {
-          onProgress(current, total, urls[current - 1]);
-        }
-      }
-    );
-    
-    // Анализируем контент
+    // Этап 1 из 2 — сбор страниц (вместе с исходной разметкой)
+    const pagesContent = await collectPagesContent(targets, maxPages, (current, total) => {
+      onProgress?.(current, total * 2, targets[current - 1] ?? '');
+    });
+
     const analysis = analyzeContent(pagesContent);
-    
-    // Создаем интеграцию с OpenAI
+
+    const zip = new JSZip();
+    const report: Array<Record<string, unknown>> = [];
+    let optimizedCount = 0;
+    let untouchedCount = 0;
+    let noHtmlCount = 0;
+
     const openAI = new OpenAIIntegration(openAIApiKey);
-    
-    // Оптимизируем страницы
-    const optimizedPages: PageContent[] = [];
+
+    // Этап 2 из 2 — генерация и встраивание
     for (let i = 0; i < pagesContent.length; i++) {
       const page = pagesContent[i];
-      
-      // Определяем, нужно ли оптимизировать страницу
-      const needsOptimization = !page.meta.description || 
-        !page.meta.keywords || 
-        page.wordCount < 300 || 
-        page.headings.h1.length === 0;
-      
+
+      const needsOptimization =
+        !page.meta?.description ||
+        !page.meta?.keywords ||
+        (page.wordCount ?? 0) < 300 ||
+        (page.headings?.h1?.length ?? 0) === 0;
+
+      let optimized: PageContent = page;
       if (needsOptimization) {
-        // Оптимизируем страницу с помощью OpenAI
-        const optimizedPage = await openAI.optimizePage(page, prompt);
-        optimizedPages.push(optimizedPage);
-      } else {
-        // Если оптимизация не требуется, добавляем страницу без изменений
-        optimizedPages.push(page);
+        optimized = await openAI.optimizePage(page, prompt);
       }
-      
-      // Обновляем прогресс
-      if (onProgress) {
-        onProgress(
-          Math.floor(pagesContent.length + i + 1), 
-          pagesContent.length * 2, 
-          page.url
-        );
-      }
-    }
-    
-    // Создаем ZIP-архив с оптимизированными страницами
-    const zip = new JSZip();
-    
-    // Добавляем оптимизированные страницы в архив
-    for (const page of optimizedPages) {
-      // Преобразуем URL в путь к файлу
-      let filePath = page.url.replace(/^https?:\/\//, '');
-      if (filePath.endsWith('/')) {
-        filePath += 'index.html';
-      } else if (!filePath.includes('.')) {
-        filePath += '/index.html';
-      }
-      
-      // Генерируем HTML для страницы
-      const html = generateOptimizedHtml(page);
-      
-      // Добавляем файл в архив
-      zip.file(filePath, html);
-    }
-    
-    // Добавляем отчет об оптимизации
-    zip.file('optimization-report.json', JSON.stringify({
-      pagesOptimized: optimizedPages.length,
-      analysis,
-      prompt,
-      optimizedPages: optimizedPages.map(page => ({
+
+      const html = buildPageHtml(page, optimized, needsOptimization, options.updateMeta !== false);
+
+      if (html.injected) optimizedCount++;
+      else if (html.reason === 'no-html') noHtmlCount++;
+      else untouchedCount++;
+
+      zip.file(urlToFilePath(page.url), html.content);
+
+      report.push({
         url: page.url,
-        title: page.title,
-        metaDescription: page.meta.description,
-        metaKeywords: page.meta.keywords,
-        headings: page.headings,
-        score: calculatePageOptimizationScore(page)
-      }))
-    }, null, 2));
-    
-    // Создаем архив
+        optimized: html.injected,
+        reason: html.reason,
+        title: optimized.title,
+        metaDescription: optimized.meta?.description ?? null,
+        score: calculatePageOptimizationScore(optimized),
+      });
+
+      onProgress?.(pagesContent.length + i + 1, pagesContent.length * 2, page.url);
+    }
+
+    zip.file(
+      'optimization-report.json',
+      JSON.stringify(
+        {
+          mode: 'inject',
+          note: 'Блок встроен в исходную вёрстку страниц; разметка сайта не переписывалась.',
+          pagesRequested: urls.length,
+          pagesProcessed: pagesContent.length,
+          pagesOptimized: optimizedCount,
+          pagesAlreadyGood: untouchedCount,
+          pagesWithoutHtml: noHtmlCount,
+          pagesSkippedByLimit: skipped,
+          maxPages,
+          analysis,
+          prompt,
+          pages: report,
+        },
+        null,
+        2
+      )
+    );
+
     return await zip.generateAsync({ type: 'blob' });
   } catch (error) {
     console.error('Error optimizing site:', error);
@@ -106,37 +116,65 @@ export const optimizeSite = async (
   }
 };
 
+/** Превращает URL в путь внутри архива */
+function urlToFilePath(url: string): string {
+  let filePath = url.replace(/^https?:\/\//, '');
+  if (filePath.endsWith('/')) filePath += 'index.html';
+  else if (!filePath.split('/').pop()?.includes('.')) filePath += '/index.html';
+  return filePath;
+}
+
 /**
- * Генерирует оптимизированный HTML для страницы
+ * Готовит финальный HTML страницы.
+ * Если исходной разметки нет — страница не выдумывается, а помечается
+ * в отчёте: молча подсовывать пустой скелет вместо сайта нельзя.
  */
-const generateOptimizedHtml = (page: PageContent): string => {
-  // Используем оптимизированный контент, если он есть
-  const content = page.optimized?.content || page.content;
-  
-  // Используем оптимизированные мета-теги, если они есть
-  const metaDescription = page.optimized?.meta?.description || page.meta.description || '';
-  const metaKeywords = page.optimized?.meta?.keywords || page.meta.keywords || '';
-  
-  // Генерируем HTML
-  return `<!DOCTYPE html>
-<html lang="ru">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>${page.title}</title>
-  <meta name="description" content="${metaDescription}">
-  <meta name="keywords" content="${metaKeywords}">
-</head>
-<body>
-  <header>
-    <h1>${page.headings.h1[0] || page.title}</h1>
-  </header>
-  <main>
-    ${content}
-  </main>
-  <footer>
-    <p>© ${new Date().getFullYear()} Оптимизировано с помощью AI</p>
-  </footer>
-</body>
-</html>`;
-};
+function buildPageHtml(
+  original: PageContent,
+  optimized: PageContent,
+  needsOptimization: boolean,
+  updateMeta: boolean
+): { content: string; injected: boolean; reason: string } {
+  const raw = original.rawHtml;
+
+  if (!raw) {
+    return {
+      content: '',
+      injected: false,
+      reason: 'no-html',
+    };
+  }
+
+  if (!needsOptimization) {
+    return { content: raw, injected: false, reason: 'already-optimized' };
+  }
+
+  const generated = optimized.optimized?.content;
+  const heading = optimized.headings?.h1?.[0] || optimized.title || original.title;
+
+  if (!generated) {
+    // Контент дописывать не потребовалось — правим только мета-теги.
+    let html = raw;
+    if (updateMeta && optimized.meta?.description) {
+      html = injectSeoBlock(
+        html,
+        { heading, bodyHtml: '' },
+        { description: optimized.meta.description, skipIfPresent: false }
+      );
+    }
+    return { content: html, injected: false, reason: 'meta-only' };
+  }
+
+  const block: SeoBlock = {
+    heading,
+    bodyHtml: generated,
+    collapsible: true,
+  };
+
+  const html = injectSeoBlock(raw, block, {
+    title: updateMeta ? optimized.title : undefined,
+    description: updateMeta ? optimized.meta?.description : undefined,
+  });
+
+  return { content: html, injected: true, reason: 'injected' };
+}

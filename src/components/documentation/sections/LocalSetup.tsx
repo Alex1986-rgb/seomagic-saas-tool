@@ -84,19 +84,21 @@ const LocalSetup: React.FC = () => {
             <p className="text-sm mb-2">Создайте файл <code>.env.local</code> в корне проекта:</p>
             <div className="bg-muted p-3 rounded-md mb-3">
               <code className="text-sm">
-                # Основные настройки Supabase<br />
+                # Подключение к Supabase — оба значения публичные<br />
                 VITE_SUPABASE_URL=https://your-project-ref.supabase.co<br />
-                VITE_SUPABASE_ANON_KEY=your-anon-key<br /><br />
-                
-                # Дополнительные API ключи (опционально)<br />
-                VITE_OPENAI_API_KEY=your-openai-key<br />
-                VITE_GOOGLE_ANALYTICS_ID=GA-XXXXXXXXX<br />
-                VITE_SENTRY_DSN=your-sentry-dsn
+                VITE_SUPABASE_PUBLISHABLE_KEY=your-publishable-key<br /><br />
+
+                # Подпуть публикации. Прод-сборка по умолчанию идёт под /seomagic-saas-tool/,<br />
+                # dev-сервер — под «/». Для своего домена раскомментируйте строку.<br />
+                # Переменная из .env действует и на dev-сервер, и на сборку.<br />
+                # VITE_BASE_PATH=/
               </code>
             </div>
             <div className="bg-yellow-50 dark:bg-yellow-900/20 p-3 rounded-md text-sm">
-              <strong>⚠️ Важно:</strong> Никогда не коммитьте файлы с секретными ключами в Git. 
-              Файл <code>.env.local</code> уже добавлен в <code>.gitignore</code>.
+              <strong>⚠️ Важно:</strong> в переменные с приставкой <code>VITE_</code> нельзя класть
+              секретные ключи: Vite подставляет их прямо в собранный файл, и ключ увидит любой
+              посетитель сайта. Ключи платных сервисов (OpenAI, DeepSeek, поставщики выдачи)
+              хранятся только в секретах проекта Supabase и используются серверными функциями.
             </div>
           </div>
 

@@ -1,14 +1,32 @@
 
 import React from 'react';
 import { Helmet } from 'react-helmet-async';
+import { useLocation } from 'react-router-dom';
+import { absoluteAssetUrl, absolutePageUrl } from '@/lib/asset-url';
 
+/**
+ * Теги по умолчанию для страниц, где нет своего PageSeo.
+ *
+ * Здесь же на каждой странице выводились WebSite с поиском по «?q=», которого
+ * на сайте нет, Organization с названием «SEO Market» и BreadcrumbList из одной
+ * «Главной». На главной они дублировали OrganizationSchema и WebSiteSchema
+ * (две разные организации и два сайта), на остальных страницах — хлебные
+ * крошки самой страницы. Эта разметка живёт в постраничных компонентах,
+ * здесь её больше нет.
+ */
 const DefaultSEO: React.FC = () => {
-  const url = typeof window !== 'undefined' ? window.location.href.split('#')[0] : '';
+  // useLocation перерисовывает компонент при переходах, иначе canonical
+  // оставался от первой открытой страницы. Адрес — без query и якоря.
+  // Со слэшем на конце, как в PageSeo и в пререндере (scripts/prerender.cjs):
+  // GitHub Pages отдаёт /pricing переадресацией на /pricing/, и canonical без
+  // слэша указывал бы на переадресацию.
+  const { pathname } = useLocation();
+  const url = absolutePageUrl(pathname.endsWith('/') ? pathname : `${pathname}/`);
 
   const title = 'SEO Аудит и Оптимизация';
   const description = 'SEO аудит и оптимизация сайтов. Повысьте позиции и увеличьте органический трафик.';
-  const siteName = 'SEO Market';
-  const image = '/og-image.jpg';
+  const siteName = 'SeoMarket';
+  const image = absoluteAssetUrl('/og-image.jpg');
 
   return (
     <Helmet>
@@ -30,55 +48,6 @@ const DefaultSEO: React.FC = () => {
       <meta name="twitter:title" content={title} />
       <meta name="twitter:description" content={description} />
       <meta name="twitter:image" content={image} />
-
-      {/* Structured Data - WebSite */}
-      <script type="application/ld+json">
-        {JSON.stringify({
-          '@context': 'https://schema.org',
-          '@type': 'WebSite',
-          name: siteName,
-          url,
-          inLanguage: 'ru-RU',
-          potentialAction: {
-            '@type': 'SearchAction',
-            target: `${url}?q={search_term_string}`,
-            'query-input': 'required name=search_term_string',
-          },
-        })}
-      </script>
-
-      {/* Structured Data - Organization */}
-      <script type="application/ld+json">
-        {JSON.stringify({
-          '@context': 'https://schema.org',
-          '@type': 'Organization',
-          name: siteName,
-          url: typeof window !== 'undefined' ? window.location.origin : '',
-          logo: `${typeof window !== 'undefined' ? window.location.origin : ''}/apple-touch-icon.png`,
-          description: description,
-          contactPoint: {
-            '@type': 'ContactPoint',
-            contactType: 'Customer Service',
-            availableLanguage: ['Russian', 'English']
-          }
-        })}
-      </script>
-
-      {/* Structured Data - BreadcrumbList */}
-      <script type="application/ld+json">
-        {JSON.stringify({
-          '@context': 'https://schema.org',
-          '@type': 'BreadcrumbList',
-          itemListElement: [
-            {
-              '@type': 'ListItem',
-              position: 1,
-              name: 'Главная',
-              item: typeof window !== 'undefined' ? window.location.origin : ''
-            }
-          ]
-        })}
-      </script>
     </Helmet>
   );
 };

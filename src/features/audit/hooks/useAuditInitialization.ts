@@ -35,7 +35,18 @@ export const useAuditInitialization = (url: string, loadAuditData: (refresh?: bo
     console.log('  ├─ autoStartRef.current:', autoStartRef.current, '(not started:', !autoStartRef.current, ')');
     console.log('  └─ All conditions met:', !autoStartRef.current && url && !taskId && !isScanning);
     
-    if (!autoStartRef.current && url && !taskId && !isScanning) {
+    /**
+     * Прежде аудит запускался сам при каждом открытии ссылки с адресом сайта.
+     * На бесплатной проверке это просто лишняя работа, а на платной — расход
+     * денег там, где человек ничего не просил: за четверть часа проверок так
+     * набежало пятнадцать запусков. Если по этому сайту уже есть завершённый
+     * аудит, показываем его, а новый пусть запускает человек кнопкой.
+     */
+    const savedTaskId = typeof window !== 'undefined'
+      ? window.localStorage.getItem(`task_id_${url}`)
+      : null;
+
+    if (!autoStartRef.current && url && !taskId && !isScanning && !savedTaskId) {
       console.log('✅ All conditions met! Auto-starting Quick Audit for:', url);
       autoStartRef.current = true;
       

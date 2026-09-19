@@ -1,93 +1,70 @@
 import React from 'react';
 import { Helmet } from 'react-helmet-async';
+import { SITE_CONTACTS, hasPostalAddress, withoutEmpty } from '@/config/site-contacts';
+import { absoluteAssetUrl, absolutePageUrl } from '@/lib/asset-url';
 
+/**
+ * Разметка организации для поисковых систем.
+ *
+ * Прежняя версия сообщала Яндексу и Google то, чего нет: ООО «СеоМаркет»
+ * с 2020 года, 25 сотрудников, офис на «ул. Примерной, д. 123», телефон
+ * 8 800 123-45-67, шесть страниц в соцсетях и средняя оценка 4,8 по
+ * 127 отзывам. Ни одного из этих фактов не существует, а разметка с
+ * выдуманными отзывами и адресом — прямой повод для санкций.
+ *
+ * Теперь выводится только то, что заполнено в `src/config/site-contacts.ts`.
+ */
 export const OrganizationSchema: React.FC = () => {
-  const siteUrl = typeof window !== 'undefined' ? window.location.origin : 'https://seomarket.app';
-  
+  // С подпутём публикации: голый origin указывал на корень github.io.
+  const siteUrl = absolutePageUrl('/');
+
   const organizationSchema = {
     '@context': 'https://schema.org',
     '@type': 'Organization',
-    '@id': `${siteUrl}/#organization`,
+    '@id': absolutePageUrl('/#organization'),
     name: 'SeoMarket',
-    legalName: 'ООО "СеоМаркет"',
     url: siteUrl,
-    logo: {
-      '@type': 'ImageObject',
-      url: `${siteUrl}/images/logo.png`,
-      width: 250,
-      height: 60
-    },
-    image: `${siteUrl}/images/og-image.jpg`,
-    description: 'Профессиональный SEO аудит и оптимизация сайтов. Мониторинг позиций в поисковых системах. Повышение органического трафика и улучшение видимости в поиске.',
-    founder: {
-      '@type': 'Person',
-      name: 'SeoMarket Team'
-    },
-    foundingDate: '2020',
-    email: 'info@seomarket.ru',
-    telephone: '+78001234567',
-    address: {
-      '@type': 'PostalAddress',
-      streetAddress: 'ул. Примерная, д. 123, БЦ "Технополис", офис 456',
-      addressLocality: 'Москва',
-      postalCode: '119991',
-      addressCountry: 'RU'
-    },
-    contactPoint: [
-      {
-        '@type': 'ContactPoint',
-        telephone: '+78001234567',
-        contactType: 'customer service',
-        email: 'info@seomarket.ru',
-        availableLanguage: ['Russian'],
-        areaServed: 'RU'
-      },
-      {
-        '@type': 'ContactPoint',
-        telephone: '+78001234567',
-        contactType: 'technical support',
-        availableLanguage: ['Russian'],
-        areaServed: 'RU'
-      },
-      {
-        '@type': 'ContactPoint',
-        telephone: '+78001234567',
-        contactType: 'sales',
-        email: 'sales@seomarket.ru',
-        availableLanguage: ['Russian'],
-        areaServed: 'RU'
-      }
-    ],
-    sameAs: [
-      'https://vk.com/seomarket',
-      'https://t.me/seomarket',
-      'https://twitter.com/seomarket',
-      'https://www.linkedin.com/company/seomarket',
-      'https://www.facebook.com/seomarket',
-      'https://www.youtube.com/@seomarket'
-    ],
-    aggregateRating: {
-      '@type': 'AggregateRating',
-      ratingValue: '4.8',
-      reviewCount: '127',
-      bestRating: '5',
-      worstRating: '1'
-    },
-    numberOfEmployees: {
-      '@type': 'QuantitativeValue',
-      value: 25
-    },
+    // Логотипа /images/logo.png в проекте нет — поле убрано. Картинка лежит
+    // в корне public, а не в /images.
+    image: absoluteAssetUrl('/og-image.jpg'),
+    description:
+      'SEO-аудит и оптимизация сайтов: разбор технических ошибок, рекомендации и смета работ, отслеживание позиций в поиске.',
+    ...withoutEmpty({
+      email: SITE_CONTACTS.email,
+      telephone: SITE_CONTACTS.telephone,
+      sameAs: SITE_CONTACTS.social,
+    }),
+    ...(hasPostalAddress()
+      ? {
+          address: {
+            '@type': 'PostalAddress',
+            streetAddress: SITE_CONTACTS.streetAddress,
+            addressLocality: SITE_CONTACTS.addressLocality,
+            addressCountry: SITE_CONTACTS.addressCountry,
+          },
+        }
+      : {}),
+    ...(SITE_CONTACTS.email || SITE_CONTACTS.telephone
+      ? {
+          contactPoint: {
+            '@type': 'ContactPoint',
+            contactType: 'customer service',
+            availableLanguage: ['Russian'],
+            areaServed: SITE_CONTACTS.addressCountry,
+            ...withoutEmpty({
+              email: SITE_CONTACTS.email,
+              telephone: SITE_CONTACTS.telephone,
+            }),
+          },
+        }
+      : {}),
     knowsAbout: [
       'SEO',
       'Поисковая оптимизация',
       'Аудит сайта',
       'Мониторинг позиций',
-      'Органический трафик',
       'Технический SEO',
-      'Контент-маркетинг',
-      'Анализ конкурентов'
     ],
-    slogan: 'Ваш путь к топу поисковой выдачи'
   };
 
   return (
@@ -98,3 +75,5 @@ export const OrganizationSchema: React.FC = () => {
     </Helmet>
   );
 };
+
+export default OrganizationSchema;

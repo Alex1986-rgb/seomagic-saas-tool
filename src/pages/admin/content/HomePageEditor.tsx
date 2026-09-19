@@ -1,27 +1,26 @@
 
 import React from 'react';
-import { Helmet } from 'react-helmet-async';
 import BaseContentEditor from '@/components/admin/content/BaseContentEditor';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { Card, CardContent } from '@/components/ui/card';
+import PageSeo from '@/components/seo/PageSeo';
 
+// Кнопка «Сохранить» и onSave, печатавший пустой объект в консоль, убраны:
+// хранилища контента нет, предупреждение показывает BaseContentEditor.
 const HomePageEditor: React.FC = () => {
-  const handleSave = (data: any) => {
-    console.log('Saving home page data:', data);
-  };
-
   return (
     <>
-      <Helmet>
-        <title>Редактирование главной страницы | Админ панель</title>
-      </Helmet>
+      <PageSeo
+        title="Редактор главной страницы: блоки, тексты и заголовки"
+        description="Управление содержимым главной страницы: первый экран, описание услуг, блок отзывов и SEO-параметры публичной витрины сервиса."
+        noindex
+      />
       
       <BaseContentEditor
         title="Редактирование главной страницы"
         description="Управление контентом, SEO-параметрами и настройками главной страницы"
-        onSave={handleSave}
       >
         <div className="space-y-6">
           <Card className="bg-black/20 border-white/10">

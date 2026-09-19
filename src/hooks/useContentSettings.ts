@@ -8,6 +8,7 @@ import {
   PricingPlanContent,
   NotificationSettings as NotificationSettingsType
 } from '@/components/admin/settings/content/types';
+import { SITE_CONTACTS, hasPostalAddress } from '@/config/site-contacts';
 
 export const useContentSettings = () => {
   // Home page content state
@@ -86,13 +87,15 @@ export const useContentSettings = () => {
       {
         name: "Александр Петров",
         position: "Генеральный директор",
-        photo: "/images/team/ceo.jpg",
+        // Фотографий команды (/images/team/*.jpg) в проекте нет — поле
+        // остаётся пустым, адрес вписывается в админке.
+        photo: "",
         isVisible: true
       },
       {
         name: "Елена Смирнова",
         position: "Технический директор",
-        photo: "/images/team/cto.jpg",
+        photo: "",
         isVisible: true
       }
     ]
@@ -102,10 +105,18 @@ export const useContentSettings = () => {
   const [contactPageContent, setContactPageContent] = useState<ContactPageContent>({
     title: "Свяжитесь с нами",
     subtitle: "Мы всегда готовы ответить на ваши вопросы",
-    address: "г. Москва, ул. Примерная, д. 123",
-    phone: "+7 (999) 123-45-67",
-    email: "info@seomarket.ru",
-    mapEmbed: '<iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2245.1144353506524!2d37.62051067680669!3d55.7537563337604!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x46b54a50b315e573%3A0xa886bf5a3d9b2e68!2z0JzQvtGB0LrQvtCy0YHQutC40Lkg0JrRgNC10LzQu9GM!5e0!3m2!1sru!2sru!4v1649152758930!5m2!1sru!2sru" width="100%" height="400" style="border:0;" allowfullscreen="" loading="lazy"></iframe>',
+    // Тут по умолчанию лежали выдуманные контакты: адрес «г. Москва,
+    // ул. Примерная, д. 123», телефон +7 (999) 123-45-67 и почта
+    // info@seomarket.ru, а карта вела на Московский Кремль. Админ открывал
+    // раздел контента и видел готовые «наши» данные, которые на самом деле
+    // никому не принадлежат. Теперь подставляются значения из SITE_CONTACTS:
+    // пусто — значит поле пустое, а не выдуманное.
+    address: hasPostalAddress()
+      ? `${SITE_CONTACTS.addressLocality}, ${SITE_CONTACTS.streetAddress}`
+      : "",
+    phone: SITE_CONTACTS.telephone,
+    email: SITE_CONTACTS.email,
+    mapEmbed: '',
     formFields: [
       {
         name: "name",
@@ -373,7 +384,7 @@ export const useContentSettings = () => {
         {
           name: "Новый сотрудник",
           position: "Должность",
-          photo: "/images/team/default.jpg",
+          photo: "",
           isVisible: true
         }
       ]

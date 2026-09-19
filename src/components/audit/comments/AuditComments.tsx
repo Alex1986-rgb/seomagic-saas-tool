@@ -20,28 +20,19 @@ interface AuditCommentsProps {
   auditId: string;
 }
 
-// Демонстрационные данные для примера
-const demoComments: Comment[] = [
-  {
-    id: '1',
-    author: 'Иван Петров',
-    authorAvatar: 'https://i.pravatar.cc/150?img=1',
-    date: '2023-05-20T14:32:00',
-    text: 'Согласно аудиту, основные проблемы связаны с SEO оптимизацией. Рекомендую обратить внимание на мета-теги и оптимизацию заголовков.',
-    isCurrentUser: false
-  },
-  {
-    id: '2',
-    author: 'Вы',
-    date: '2023-05-21T09:15:00',
-    text: 'Исправил проблемы с мета-тегами и добавил альтернативные тексты для изображений. Теперь нужно поработать над скоростью загрузки страниц.',
-    isCurrentUser: true
-  }
-];
-
+/**
+ * Заметки к аудиту.
+ *
+ * Раньше блок назывался «Комментарии к аудиту», открывался с чужим
+ * комментарием «Иван Петров» (выдуманный автор, фото с сервиса случайных
+ * аватаров) и на каждое действие отвечал «Комментарий добавлен к аудиту».
+ * На самом деле ничего не сохранялось: таблицы для комментариев в базе нет,
+ * всё пропадало при обновлении страницы. Теперь список пуст, а блок прямо
+ * говорит, что заметки живут только до закрытия страницы.
+ */
 const AuditComments: React.FC<AuditCommentsProps> = ({ auditId }) => {
   const [expanded, setExpanded] = useState(false);
-  const [comments, setComments] = useState<Comment[]>(demoComments);
+  const [comments, setComments] = useState<Comment[]>([]);
   const [newComment, setNewComment] = useState('');
   const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
   const [editingText, setEditingText] = useState('');
@@ -50,8 +41,8 @@ const AuditComments: React.FC<AuditCommentsProps> = ({ auditId }) => {
   const handleSubmitComment = () => {
     if (!newComment.trim()) {
       toast({
-        title: "Комментарий пуст",
-        description: "Пожалуйста, введите текст комментария",
+        title: "Заметка пуста",
+        description: "Введите текст заметки",
         variant: "destructive"
       });
       return;
@@ -67,11 +58,6 @@ const AuditComments: React.FC<AuditCommentsProps> = ({ auditId }) => {
 
     setComments([...comments, comment]);
     setNewComment('');
-    
-    toast({
-      title: "Комментарий добавлен",
-      description: "Ваш комментарий успешно добавлен к аудиту"
-    });
   };
 
   const handleEditComment = (comment: Comment) => {
@@ -82,8 +68,8 @@ const AuditComments: React.FC<AuditCommentsProps> = ({ auditId }) => {
   const handleSaveEdit = (commentId: string) => {
     if (!editingText.trim()) {
       toast({
-        title: "Комментарий пуст",
-        description: "Комментарий не может быть пустым",
+        title: "Заметка пуста",
+        description: "Заметка не может быть пустой",
         variant: "destructive"
       });
       return;
@@ -97,20 +83,10 @@ const AuditComments: React.FC<AuditCommentsProps> = ({ auditId }) => {
     
     setEditingCommentId(null);
     setEditingText('');
-    
-    toast({
-      title: "Комментарий изменен",
-      description: "Ваш комментарий успешно отредактирован"
-    });
   };
 
   const handleDeleteComment = (commentId: string) => {
     setComments(comments.filter(comment => comment.id !== commentId));
-    
-    toast({
-      title: "Комментарий удален",
-      description: "Комментарий был успешно удален"
-    });
   };
 
   const formatDate = (dateString: string) => {
@@ -131,7 +107,7 @@ const AuditComments: React.FC<AuditCommentsProps> = ({ auditId }) => {
       >
         <h2 className="text-xl font-semibold flex items-center gap-2">
           <MessageSquare className="h-5 w-5" />
-          Комментарии к аудиту
+          Заметки к аудиту
           <span className="ml-2 px-2 py-0.5 text-xs rounded-full bg-primary/10 text-primary">
             {comments.length}
           </span>
@@ -149,11 +125,16 @@ const AuditComments: React.FC<AuditCommentsProps> = ({ auditId }) => {
         transition={{ duration: 0.3 }}
       >
         <div className="space-y-6">
-          {/* Список комментариев */}
+          <p className="text-sm text-muted-foreground">
+            Заметки не сохраняются: их видите только вы, и они пропадут после
+            обновления или закрытия страницы.
+          </p>
+
+          {/* Список заметок */}
           <div className="space-y-4">
             {comments.length === 0 ? (
               <p className="text-center text-muted-foreground py-6">
-                Комментариев пока нет. Будьте первым, кто прокомментирует результаты аудита.
+                Заметок пока нет.
               </p>
             ) : (
               comments.map(comment => (
@@ -242,9 +223,9 @@ const AuditComments: React.FC<AuditCommentsProps> = ({ auditId }) => {
 
           {/* Форма добавления комментария */}
           <div className="pt-4 border-t">
-            <h3 className="text-md font-medium mb-3">Добавить комментарий</h3>
+            <h3 className="text-md font-medium mb-3">Добавить заметку</h3>
             <Textarea
-              placeholder="Введите ваш комментарий здесь..."
+              placeholder="Текст заметки..."
               value={newComment}
               onChange={(e) => setNewComment(e.target.value)}
               className="mb-3"
@@ -253,7 +234,7 @@ const AuditComments: React.FC<AuditCommentsProps> = ({ auditId }) => {
             <div className="flex justify-end">
               <Button onClick={handleSubmitComment} className="flex items-center gap-2">
                 <Send className="h-4 w-4" />
-                Отправить
+                Добавить
               </Button>
             </div>
           </div>

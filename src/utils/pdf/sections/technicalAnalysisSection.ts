@@ -6,10 +6,15 @@ import { drawTechnicalIcon, drawCheckIcon, drawErrorIcon, drawWarningIcon } from
 import { generatePieChart, generateBarChart } from '../helpers/charts';
 import { formatUrlForDisplay, createLinkCellHandler } from '../helpers/links';
 
-interface TechnicalAnalysisData {
+/**
+ * Показатели технического раздела. Подраздел печатается, только если для него
+ * есть измеренные данные: раньше отчёт передавал сюда «HTTPS активен», «среднее
+ * время 500 мс» и нули по битым ссылкам и редиректам для любого сайта.
+ */
+export interface TechnicalAnalysisData {
   https?: {
     enabled: boolean;
-    mixedContent: number;
+    mixedContent?: number;
     issues?: Array<{
       url: string;
       issue: string;
@@ -447,14 +452,15 @@ function addPerformanceAnalysis(
   doc.setFontSize(14);
   doc.setFont(pdfFonts.primary, pdfFonts.bold);
   doc.setTextColor(...pdfColors.dark);
-  doc.text('Время отклика сервера', margin, currentY);
+  doc.text('Время загрузки страниц', margin, currentY);
   currentY += 8;
 
-  // Статистика
+  // Статистика. Порог «медленной» страницы — 3 с, как у классификатора
+  // замечаний (slow_page в supabase/functions/issue-classifier).
   const stats = [
     { label: 'Среднее время', value: `${data?.avgResponseTime || 0}ms`, color: pdfColors.info },
     { label: 'Быстрые (<500ms)', value: data?.fastPages || 0, color: pdfColors.success },
-    { label: 'Медленные (>2s)', value: data?.slowPages || 0, color: pdfColors.danger },
+    { label: 'Медленные (>3s)', value: data?.slowPages || 0, color: pdfColors.danger },
   ];
 
   const cardWidth = (width - 10) / 3;

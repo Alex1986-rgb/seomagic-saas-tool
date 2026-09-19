@@ -24,6 +24,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Loader2, Search, Eye, RefreshCw, Sparkles } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { ru } from 'date-fns/locale';
+import PageSeo from '@/components/seo/PageSeo';
 
 interface OptimizationJob {
   id: string;
@@ -91,12 +92,20 @@ export default function OptimizationsHistory() {
       queued: { variant: 'secondary', label: 'В очереди' },
       processing: { variant: 'default', label: 'Обработка' },
       completed: { variant: 'default', label: 'Завершено' },
+      partial: { variant: 'secondary', label: 'Частично' },
+      // Смета — это расчёт стоимости, а не выполненная работа.
+      estimated: { variant: 'outline', label: 'Смета' },
       failed: { variant: 'destructive', label: 'Ошибка' },
     };
 
     const config = variants[status] || { variant: 'secondary', label: status };
     return <Badge variant={config.variant}>{config.label}</Badge>;
   };
+
+  // Расход у поставщика модели в долларах (у старых заданий — total_cost).
+  // Цена работ для клиента — это поле cost в рублях, их не смешиваем.
+  const selectedLlmCostUsd: number | undefined =
+    selectedOptimization?.result_data?.llm_cost_usd ?? selectedOptimization?.result_data?.total_cost;
 
   const handleViewDetails = (optimization: OptimizationJob) => {
     setSelectedOptimization(optimization);
@@ -105,6 +114,11 @@ export default function OptimizationsHistory() {
 
   return (
     <div className="container mx-auto py-8 px-4 max-w-7xl">
+      <PageSeo
+        title="История оптимизаций: запуски, статусы и результаты"
+        description="Список всех запущенных оптимизаций с датами и статусами. Откройте запуск, чтобы увидеть изменённые страницы и итоговый отчёт."
+        noindex
+      />
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold mb-2 flex items-center gap-2">
@@ -128,7 +142,7 @@ export default function OptimizationsHistory() {
           <CardContent className="p-4">
             <p className="text-sm text-muted-foreground">Завершено</p>
             <p className="text-2xl font-bold text-green-600">
-              {optimizations.filter(o => o.status === 'completed').length}
+              {optimizations.filter(o => o.status === 'completed' || o.status === 'partial').length}
             </p>
           </CardContent>
         </Card>
@@ -144,7 +158,7 @@ export default function OptimizationsHistory() {
           <CardContent className="p-4">
             <p className="text-sm text-muted-foreground">Общая стоимость</p>
             <p className="text-2xl font-bold">
-              ${optimizations.reduce((sum, o) => sum + (o.cost || 0), 0).toFixed(2)}
+              {Math.round(optimizations.reduce((sum, o) => sum + (o.cost || 0), 0)).toLocaleString('ru-RU')} ₽
             </p>
           </CardContent>
         </Card>
@@ -212,7 +226,7 @@ export default function OptimizationsHistory() {
                         {opt.result_data?.optimized_pages || 0} / {opt.result_data?.total_pages || 0}
                       </TableCell>
                       <TableCell className="font-semibold">
-                        ${(opt.cost || 0).toFixed(2)}
+                        {Math.round(opt.cost || 0).toLocaleString('ru-RU')} ₽
                       </TableCell>
                       <TableCell className="text-sm text-muted-foreground">
                         {formatDistanceToNow(new Date(opt.created_at), {
@@ -225,7 +239,7 @@ export default function OptimizationsHistory() {
                           variant="ghost"
                           size="sm"
                           onClick={() => handleViewDetails(opt)}
-                          disabled={opt.status !== 'completed'}
+                          disabled={!['completed', 'partial'].includes(opt.status)}
                         >
                           <Eye className="h-4 w-4 mr-2" />
                           Детали
@@ -262,31 +276,29 @@ export default function OptimizationsHistory() {
           {selectedOptimization?.result_data && (
             <div className="space-y-4">
               {/* Summary */}
-              <div className="grid gap-4 md:grid-cols-3">
+              {/* Карточки «Улучшение +N» больше нет: прогноз роста оценки
+                  обработчик выдумывал (по 2 балла за страницу), оценку после
+                  правок никто не пересчитывает. У старых заданий число в
+                  result_data осталось, но показывать его нельзя. */}
+              <div className="grid gap-4 md:grid-cols-2">
                 <Card>
                   <CardContent className="p-4">
                     <p className="text-sm text-muted-foreground">Оптимизировано</p>
                     <p className="text-2xl font-bold">
-                      {selectedOptimization.result_data.optimized_pages}
+                      {selectedOptimization.result_data.optimized_pages ?? 0}
                     </p>
                   </CardContent>
                 </Card>
-                <Card>
-                  <CardContent className="p-4">
-                    <p className="text-sm text-muted-foreground">Улучшение</p>
-                    <p className="text-2xl font-bold text-green-600">
-                      +{selectedOptimization.result_data.estimated_score_improvement}
-                    </p>
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardContent className="p-4">
-                    <p className="text-sm text-muted-foreground">Стоимость</p>
-                    <p className="text-2xl font-bold">
-                      ${selectedOptimization.result_data.total_cost?.toFixed(2)}
-                    </p>
-                  </CardContent>
-                </Card>
+                {typeof selectedLlmCostUsd === 'number' && (
+                  <Card>
+                    <CardContent className="p-4">
+                      <p className="text-sm text-muted-foreground">Расход на модель</p>
+                      <p className="text-2xl font-bold">
+                        ${selectedLlmCostUsd.toFixed(2)}
+                      </p>
+                    </CardContent>
+                  </Card>
+                )}
               </div>
 
               {/* Improvements */}

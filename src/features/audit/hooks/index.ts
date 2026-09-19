@@ -12,5 +12,7 @@ export { useScanAPI } from './useScanAPI';
 export { usePageAnalysis } from './usePageAnalysis';
 export { useSiteAnalysis } from './useSiteAnalysis';
 export { useDownloadAPI } from './useDownloadAPI';
-export { useOptimizationAPI } from './useOptimizationAPI';
+// useOptimizationAPI отсюда удалён: нигде не использовался и вместо сметы по
+// аудиту подставлял стандартный набор работ («примерная стоимость»). Настоящий
+// расчёт — hooks/use-optimization-api.ts (функция optimization-calculate).
 export { usePdfReport } from './usePdfReport';

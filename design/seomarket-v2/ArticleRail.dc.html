@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="_ds/industry-2cf29483-63c2-42c2-a32d-4823edc25b26/styles.css">
+  <script src="_ds/industry-2cf29483-63c2-42c2-a32d-4823edc25b26/_ds_bundle.js"></script>
+  <script src="image-slot.js"></script>
+  <style>
+    /* Полоса прокрутки карусели: тонкая, в цвет разделителя. Инлайном псевдоэлемент не задать. */
+    [data-rail]::-webkit-scrollbar { height: 3px; }
+    [data-rail]::-webkit-scrollbar-thumb { background: var(--color-divider); }
+    [data-rail]::-webkit-scrollbar-track { background: transparent; }
+    [data-railcard]:hover [data-railtitle] { color: var(--color-accent-700); }
+  </style>
+</helmet>
+
+<section style="font-family:var(--font-body);min-width:0">
+  <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:var(--space-6);flex-wrap:wrap;margin-bottom:12px">
+    <span style="display:block;font-size:13px;line-height:12px;letter-spacing:.08em;text-transform:uppercase;font-weight:600;color:var(--color-accent-700)">Читать дальше</span>
+    <div style="display:flex;gap:var(--space-2);align-items:center">
+      <button type="button" class="btn btn-ghost" onClick="{{ prev }}" style="padding:6px 10px" aria-label="Предыдущие статьи">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"></path></svg>
+      </button>
+      <button type="button" class="btn btn-ghost" onClick="{{ next }}" style="padding:6px 10px" aria-label="Следующие статьи">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"></path></svg>
+      </button>
+    </div>
+  </div>
+  <hr style="height:1px;border:0;margin:0 0 28px;background:var(--color-divider)">
+
+  <div data-rail ref="{{ railRef }}" style="display:flex;gap:clamp(18px,2.2vw,28px);overflow-x:auto;scroll-snap-type:x mandatory;padding-bottom:16px">
+
+    <a href="SeoMarket Блог.dc.html#robots" data-railcard style="flex:0 0 clamp(260px,30vw,330px);scroll-snap-align:start;color:var(--color-text);text-decoration:none;display:grid;gap:14px;align-content:start">
+      <div class="blueprint" style="padding:0;aspect-ratio:16/10;overflow:hidden">
+        <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+        <div class="duotone" style="width:100%;height:100%">
+          <image-slot id="rail-1" placeholder="Обложка: закрытая дверь с пустой металлической табличкой и задвинутой щеколдой, крупно, боковой свет" src="https://images.unsplash.com/photo-1679999466911-6e83bf4f076d?w=1600&amp;q=80&amp;auto=format&amp;fit=crop" credit="Photo by Gowtham AGM on Unsplash" credit-href="https://unsplash.com/@gowthamagm"></image-slot>
+        </div>
+      </div>
+      <span style="display:flex;flex-wrap:wrap;align-items:center;gap:var(--space-1) var(--space-4);font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:color-mix(in srgb,var(--color-text) 68%,transparent)"><span style="display:inline-flex;align-items:center;gap:var(--space-1)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex:none"><path d="M12.586 2.586A2 2 0 0 0 11.172 2H4a2 2 0 0 0-2 2v7.172a2 2 0 0 0 .586 1.414l8.704 8.704a2.426 2.426 0 0 0 3.42 0l6.58-6.58a2.426 2.426 0 0 0 0-3.42z"></path><circle cx="7.5" cy="7.5" r=".5" fill="currentColor"></circle></svg>Индексация</span><span style="display:inline-flex;align-items:center;gap:var(--space-1)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex:none"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>5 мин</span></span>
+      <span data-railtitle style="font-family:var(--font-heading);font-size:21px;line-height:1.2;letter-spacing:.01em">Robots.txt и sitemap: две ошибки, закрывающие сайт от поиска</span>
+      <span style="font-size:13.5px;line-height:1.55;color:color-mix(in srgb,var(--color-text) 75%,transparent)">Строка Disallow: /, забытая с разработки, и карта сайта, которая противоречит robots.txt. Проверяется за десять секунд.</span>
+    </a>
+
+    <a href="SeoMarket Блог.dc.html#dubli" data-railcard style="flex:0 0 clamp(260px,30vw,330px);scroll-snap-align:start;color:var(--color-text);text-decoration:none;display:grid;gap:14px;align-content:start">
+      <div class="blueprint" style="padding:0;aspect-ratio:16/10;overflow:hidden">
+        <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+        <div class="duotone" style="width:100%;height:100%">
+          <image-slot id="rail-2" placeholder="Обложка: множество одинаковых бумажных копий одного листа, разложенных сеткой на тёмном столе — метафора дублей" src="https://images.unsplash.com/photo-1729710877235-28d1e82d0442?w=1600&amp;q=80&amp;auto=format&amp;fit=crop" credit="Photo by Kelly Sikkema on Unsplash" credit-href="https://unsplash.com/@kellysikkema"></image-slot>
+        </div>
+      </div>
+      <span style="display:flex;flex-wrap:wrap;align-items:center;gap:var(--space-1) var(--space-4);font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:color-mix(in srgb,var(--color-text) 68%,transparent)"><span style="display:inline-flex;align-items:center;gap:var(--space-1)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex:none"><path d="M12.586 2.586A2 2 0 0 0 11.172 2H4a2 2 0 0 0-2 2v7.172a2 2 0 0 0 .586 1.414l8.704 8.704a2.426 2.426 0 0 0 3.42 0l6.58-6.58a2.426 2.426 0 0 0 0-3.42z"></path><circle cx="7.5" cy="7.5" r=".5" fill="currentColor"></circle></svg>Индексация</span><span style="display:inline-flex;align-items:center;gap:var(--space-1)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex:none"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>7 мин</span></span>
+      <span data-railtitle style="font-family:var(--font-heading);font-size:21px;line-height:1.2;letter-spacing:.01em">Дубли страниц: как фильтры каталога съедают позиции</span>
+      <span style="font-size:13.5px;line-height:1.55;color:color-mix(in srgb,var(--color-text) 75%,transparent)">Сортировки и параметры создают сотни адресов с одним содержимым. Вес делится между ними, и ни один не выходит вперёд.</span>
+    </a>
+
+    <a href="SeoMarket Блог.dc.html#plotnost" data-railcard style="flex:0 0 clamp(260px,30vw,330px);scroll-snap-align:start;color:var(--color-text);text-decoration:none;display:grid;gap:14px;align-content:start">
+      <div class="blueprint" style="padding:0;aspect-ratio:16/10;overflow:hidden">
+        <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+        <div class="duotone" style="width:100%;height:100%">
+          <image-slot id="rail-3" placeholder="Обложка: страница печатного текста с несколькими выделенными маркером повторяющимися словами, макросъёмка" src="https://images.unsplash.com/photo-1752578753798-ff3a23e16498?w=1600&amp;q=80&amp;auto=format&amp;fit=crop" credit="Photo by sara sanchez sabogal on Unsplash" credit-href="https://unsplash.com/@sara_a_sanchez"></image-slot>
+        </div>
+      </div>
+      <span style="display:flex;flex-wrap:wrap;align-items:center;gap:var(--space-1) var(--space-4);font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:color-mix(in srgb,var(--color-text) 68%,transparent)"><span style="display:inline-flex;align-items:center;gap:var(--space-1)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex:none"><path d="M12.586 2.586A2 2 0 0 0 11.172 2H4a2 2 0 0 0-2 2v7.172a2 2 0 0 0 .586 1.414l8.704 8.704a2.426 2.426 0 0 0 3.42 0l6.58-6.58a2.426 2.426 0 0 0 0-3.42z"></path><circle cx="7.5" cy="7.5" r=".5" fill="currentColor"></circle></svg>Контент</span><span style="display:inline-flex;align-items:center;gap:var(--space-1)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex:none"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>6 мин</span></span>
+      <span data-railtitle style="font-family:var(--font-heading);font-size:21px;line-height:1.2;letter-spacing:.01em">Плотность ключей: сколько вхождений безопасно</span>
+      <span style="font-size:13.5px;line-height:1.55;color:color-mix(in srgb,var(--color-text) 75%,transparent)">Норма 2–4 %, выше 6 % — риск фильтра за переоптимизацию. Как считать и чем заменять лишние повторы.</span>
+    </a>
+
+    <a href="SeoMarket Блог.dc.html#perelinkovka" data-railcard style="flex:0 0 clamp(260px,30vw,330px);scroll-snap-align:start;color:var(--color-text);text-decoration:none;display:grid;gap:14px;align-content:start">
+      <div class="blueprint" style="padding:0;aspect-ratio:16/10;overflow:hidden">
+        <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+        <div class="duotone" style="width:100%;height:100%">
+          <image-slot id="rail-4" placeholder="Обложка: узлы и натянутые нити между булавками на технической схеме — граф связей, снято сбоку" src="https://images.unsplash.com/photo-1766801075422-f67a43944c26?w=1600&amp;q=80&amp;auto=format&amp;fit=crop" credit="Photo by Daniel Tasci on Unsplash" credit-href="https://unsplash.com/@shotbydani"></image-slot>
+        </div>
+      </div>
+      <span style="display:flex;flex-wrap:wrap;align-items:center;gap:var(--space-1) var(--space-4);font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:color-mix(in srgb,var(--color-text) 68%,transparent)"><span style="display:inline-flex;align-items:center;gap:var(--space-1)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex:none"><path d="M12.586 2.586A2 2 0 0 0 11.172 2H4a2 2 0 0 0-2 2v7.172a2 2 0 0 0 .586 1.414l8.704 8.704a2.426 2.426 0 0 0 3.42 0l6.58-6.58a2.426 2.426 0 0 0 0-3.42z"></path><circle cx="7.5" cy="7.5" r=".5" fill="currentColor"></circle></svg>Структура</span><span style="display:inline-flex;align-items:center;gap:var(--space-1)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex:none"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>8 мин</span></span>
+      <span data-railtitle style="font-family:var(--font-heading);font-size:21px;line-height:1.2;letter-spacing:.01em">Перелинковка в магазине: пять ссылок, которые работают</span>
+      <span style="font-size:13.5px;line-height:1.55;color:color-mix(in srgb,var(--color-text) 75%,transparent)">Куда ставить ссылки со страницы категории и какие анкоры брать, чтобы глубокие разделы вышли из изоляции.</span>
+    </a>
+
+    <a href="SeoMarket Блог статья.dc.html" data-railcard style="flex:0 0 clamp(260px,30vw,330px);scroll-snap-align:start;color:var(--color-text);text-decoration:none;display:grid;gap:14px;align-content:start">
+      <div class="blueprint" style="padding:0;aspect-ratio:16/10;overflow:hidden">
+        <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+        <div class="duotone" style="width:100%;height:100%">
+          <image-slot id="rail-5" placeholder="Обложка: секундомер рядом с клавиатурой, длинная выдержка со смазанной стрелкой, контрастный свет" src="https://images.unsplash.com/photo-1704265586142-db3e17d0dea0?w=1600&amp;q=80&amp;auto=format&amp;fit=crop" credit="Photo by William Warby on Unsplash" credit-href="https://unsplash.com/@wwarby"></image-slot>
+        </div>
+      </div>
+      <span style="display:flex;flex-wrap:wrap;align-items:center;gap:var(--space-1) var(--space-4);font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:color-mix(in srgb,var(--color-text) 68%,transparent)"><span style="display:inline-flex;align-items:center;gap:var(--space-1)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex:none"><path d="M12.586 2.586A2 2 0 0 0 11.172 2H4a2 2 0 0 0-2 2v7.172a2 2 0 0 0 .586 1.414l8.704 8.704a2.426 2.426 0 0 0 3.42 0l6.58-6.58a2.426 2.426 0 0 0 0-3.42z"></path><circle cx="7.5" cy="7.5" r=".5" fill="currentColor"></circle></svg>Скорость</span><span style="display:inline-flex;align-items:center;gap:var(--space-1)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex:none"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>10 мин</span></span>
+      <span data-railtitle style="font-family:var(--font-heading);font-size:21px;line-height:1.2;letter-spacing:.01em">Ускорение сайта: что на самом деле тормозит каталог</span>
+      <span style="font-size:13.5px;line-height:1.55;color:color-mix(in srgb,var(--color-text) 75%,transparent)">LCP, CLS и INP на шаблоне листинга. Сжатие картинок даёт больше, чем перенос на дорогой хостинг.</span>
+    </a>
+
+    <a href="SeoMarket Блог.dc.html#teksty" data-railcard style="flex:0 0 clamp(260px,30vw,330px);scroll-snap-align:start;color:var(--color-text);text-decoration:none;display:grid;gap:14px;align-content:start">
+      <div class="blueprint" style="padding:0;aspect-ratio:16/10;overflow:hidden">
+        <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+        <div class="duotone" style="width:100%;height:100%">
+          <image-slot id="rail-6" placeholder="Обложка: раскрытый блокнот с рукописным планом текста и линейкой поверх, вид сверху" src="https://images.unsplash.com/photo-1765917393220-78ed33e7e07b?w=1600&amp;q=80&amp;auto=format&amp;fit=crop" credit="Photo by Jess Bailey on Unsplash" credit-href="https://unsplash.com/@jessbaileydesigns"></image-slot>
+        </div>
+      </div>
+      <span style="display:flex;flex-wrap:wrap;align-items:center;gap:var(--space-1) var(--space-4);font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:color-mix(in srgb,var(--color-text) 68%,transparent)"><span style="display:inline-flex;align-items:center;gap:var(--space-1)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex:none"><path d="M12.586 2.586A2 2 0 0 0 11.172 2H4a2 2 0 0 0-2 2v7.172a2 2 0 0 0 .586 1.414l8.704 8.704a2.426 2.426 0 0 0 3.42 0l6.58-6.58a2.426 2.426 0 0 0 0-3.42z"></path><circle cx="7.5" cy="7.5" r=".5" fill="currentColor"></circle></svg>Контент</span><span style="display:inline-flex;align-items:center;gap:var(--space-1)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex:none"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>7 мин</span></span>
+      <span data-railtitle style="font-family:var(--font-heading);font-size:21px;line-height:1.2;letter-spacing:.01em">Тексты категорий: 400 слов, которые не выглядят спамом</span>
+      <span style="font-size:13.5px;line-height:1.55;color:color-mix(in srgb,var(--color-text) 75%,transparent)">Структура текста под листингом: что писать в первом абзаце, зачем нужна таблица характеристик и где ставить ссылки.</span>
+    </a>
+
+  </div>
+</section>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  rail = React.createRef();
+
+  // Прокрутка на ширину видимой области минус нахлёст: следующая карточка попадает
+  // под край, поэтому видно, что полоса продолжается.
+  step(dir) {
+    const el = this.rail.current;
+    if (!el) return;
+    el.scrollBy({ left: dir * Math.max(240, el.clientWidth - 80), behavior: 'smooth' });
+  }
+
+  renderVals() {
+    return {
+      railRef: this.rail,
+      prev: () => this.step(-1),
+      next: () => this.step(1)
+    };
+  }
+}
+</script>
+</body>
+</html>

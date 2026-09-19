@@ -1,31 +1,25 @@
 import React from 'react';
 import { Helmet } from 'react-helmet-async';
+import { absolutePageUrl } from '@/lib/asset-url';
 
+/**
+ * Здесь был блок potentialAction с поиском по сайту по адресу /search?q=...
+ * Такой страницы нет, поисковик мог показать в выдаче строку поиска, ведущую
+ * на 404. Появится поиск по сайту — блок можно вернуть с настоящим адресом.
+ */
 export const WebSiteSchema: React.FC = () => {
-  const siteUrl = typeof window !== 'undefined' ? window.location.origin : 'https://seomarket.app';
-  
+  const siteUrl = absolutePageUrl('/');
+
   const websiteSchema = {
     '@context': 'https://schema.org',
     '@type': 'WebSite',
-    '@id': `${siteUrl}/#website`,
+    '@id': absolutePageUrl('/#website'),
     name: 'SeoMarket',
     alternateName: 'СеоМаркет',
     url: siteUrl,
     description: 'Профессиональный SEO аудит и оптимизация сайтов. Мониторинг позиций в поисковых системах.',
     publisher: {
-      '@id': `${siteUrl}/#organization`
-    },
-    potentialAction: {
-      '@type': 'SearchAction',
-      target: {
-        '@type': 'EntryPoint',
-        urlTemplate: `${siteUrl}/search?q={search_term_string}`
-      },
-      'query-input': {
-        '@type': 'PropertyValueSpecification',
-        valueRequired: true,
-        valueName: 'search_term_string'
-      }
+      '@id': absolutePageUrl('/#organization')
     },
     inLanguage: 'ru-RU'
   };

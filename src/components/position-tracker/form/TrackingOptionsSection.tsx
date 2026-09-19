@@ -3,7 +3,6 @@ import React from 'react';
 import { UseFormReturn } from "react-hook-form";
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
 import { FormData } from './schema';
 
@@ -45,10 +44,12 @@ export const TrackingOptionsSection: React.FC<TrackingOptionsSectionProps> = ({
           render={({ field }) => (
             <FormItem>
               <FormLabel>Глубина поиска (до {field.value} результатов)</FormLabel>
+              {/* Сервер проверяет не глубже 100 позиций: раньше шкала шла до 1000,
+                  и выбранная глубина молча урезалась. */}
               <FormControl>
                 <Slider
                   min={10}
-                  max={1000}
+                  max={100}
                   step={10}
                   value={[field.value]}
                   onValueChange={(value) => field.onChange(value[0])}
@@ -61,34 +62,14 @@ export const TrackingOptionsSection: React.FC<TrackingOptionsSectionProps> = ({
         />
       </div>
 
-      <div>
-        <FormField
-          control={form.control}
-          name="scanFrequency"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Частота сканирования</FormLabel>
-              <Select
-                onValueChange={field.onChange}
-                defaultValue={field.value}
-                disabled={isLoading}
-              >
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Выберите частоту" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  <SelectItem value="once">Однократно</SelectItem>
-                  <SelectItem value="daily">Ежедневно</SelectItem>
-                  <SelectItem value="weekly">Еженедельно</SelectItem>
-                  <SelectItem value="monthly">Ежемесячно</SelectItem>
-                </SelectContent>
-              </Select>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+      {/* Здесь был выбор «Частота сканирования» (ежедневно, еженедельно,
+          ежемесячно). Проверок по расписанию нет, сервер частоту не получает,
+          поэтому выбор убран: каждая проверка разовая. */}
+      <div className="space-y-2">
+        <p className="text-sm font-medium leading-none">Частота проверки</p>
+        <p className="text-sm text-muted-foreground">
+          Проверка разовая и запускается вручную. Регулярные проверки по расписанию пока не подключены.
+        </p>
       </div>
     </div>
   );

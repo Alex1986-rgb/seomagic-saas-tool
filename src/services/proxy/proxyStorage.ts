@@ -10,18 +10,35 @@ export class ProxyStorage {
     this.loadFromStorage();
   }
   
+  /**
+   * Раньше «сбор прокси» генерировал случайные адреса и сохранял их сюда,
+   * часть — со статусом «active». Тот генератор, и только он, ставил поле
+   * anonymity вместе со случайным uuid в id; настоящие разборщики, которые
+   * знают анонимность, пишут id в виде «ip:port», а импорт анонимность не
+   * ставит. По этому сочетанию выдуманные записи и отсеиваем при загрузке,
+   * чтобы они не выдавались за рабочие прокси.
+   */
   private loadFromStorage(): void {
     try {
       const storedData = localStorage.getItem(this.storageKey);
       if (storedData) {
         const proxyArray: Proxy[] = JSON.parse(storedData);
+        let dropped = 0;
         proxyArray.forEach(proxy => {
+          if (proxy.anonymity !== undefined && proxy.id !== `${proxy.ip}:${proxy.port}`) {
+            dropped++;
+            return;
+          }
           this.proxies.set(proxy.id, {
             ...proxy,
             lastChecked: new Date(proxy.lastChecked),
             lastSeen: proxy.lastSeen ? new Date(proxy.lastSeen) : undefined
           });
         });
+        if (dropped > 0) {
+          console.info(`Удалено ${dropped} прокси, сгенерированных прежней имитацией сбора`);
+          this.saveToStorage();
+        }
       }
     } catch (error) {
       console.error('Error loading proxies from storage:', error);
@@ -40,6 +57,25 @@ export class ProxyStorage {
   add(proxy: Proxy): void {
     this.proxies.set(proxy.id, proxy);
     this.saveToStorage();
+  }
+
+  /**
+   * Добавить пачку адресов одной записью в localStorage. Повторы по ip:port
+   * пропускаются. Списки источников бывают на тысячи строк, и сохранять
+   * хранилище после каждого адреса слишком долго.
+   */
+  addMany(list: Proxy[]): Proxy[] {
+    const known = new Set(Array.from(this.proxies.values()).map(proxy => `${proxy.ip}:${proxy.port}`));
+    const added: Proxy[] = [];
+    for (const proxy of list) {
+      const key = `${proxy.ip}:${proxy.port}`;
+      if (known.has(key)) continue;
+      known.add(key);
+      this.proxies.set(proxy.id, proxy);
+      added.push(proxy);
+    }
+    if (added.length > 0) this.saveToStorage();
+    return added;
   }
   
   update(id: string, updates: Partial<Proxy>): boolean {

@@ -136,7 +136,6 @@ export const useAuditContext = () => {
     setContentOptimizationPrompt: optimizationContext.setContentOptimizationPrompt,
     loadOptimizationCost: optimizationContext.loadOptimizationCost,
     optimizeSiteContent: optimizationContext.optimizeSiteContent,
-    downloadOptimizedSite: optimizationContext.downloadOptimizedSite,
     
     // From AuditModuleContext
     isStartingAudit: moduleContext.isStartingAudit,

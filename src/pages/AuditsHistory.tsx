@@ -23,9 +23,12 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { useAuditList } from '@/modules/audit/hooks/useAuditList';
 import { auditService } from '@/modules/audit/services/auditService';
+import { auditPagePath } from '@/modules/audit/utils/auditLinks';
+import type { Audit } from '@/modules/audit/types';
 import { Loader2, Search, MoreVertical, Eye, Trash2, Download, RefreshCw, PlayCircle } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { ru } from 'date-fns/locale';
+import PageSeo from '@/components/seo/PageSeo';
 
 export default function AuditsHistory() {
   const navigate = useNavigate();
@@ -33,6 +36,8 @@ export default function AuditsHistory() {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [resumingTaskId, setResumingTaskId] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [downloadingId, setDownloadingId] = useState<string | null>(null);
 
   const { audits, isLoading, error, refetch } = useAuditList();
 
@@ -65,24 +70,89 @@ export default function AuditsHistory() {
     return <Badge variant={config.variant}>{config.label}</Badge>;
   };
 
-  const handleViewAudit = (auditId: string, url: string) => {
-    navigate(`/audit?url=${encodeURIComponent(url)}`);
+  /**
+   * Открыть выбранный аудит. Раньше id отбрасывался и ссылка вела на
+   * `/audit?url=...`: страница показывала последнюю проверку по домену (или
+   * экран запуска), а не ту, по которой нажали «Просмотр».
+   */
+  const handleViewAudit = async (audit: Audit) => {
+    const taskId = audit.task_id ?? (await auditService.getTaskIdForAudit(audit.id));
+    navigate(auditPagePath(audit.url, taskId));
   };
 
   const handleDeleteAudit = async (auditId: string) => {
-    // TODO: Implement delete functionality
-    toast({
-      title: 'В разработке',
-      description: 'Функция удаления будет добавлена позже',
-    });
+    if (!window.confirm('Удалить этот аудит и все его результаты? Действие необратимо.')) {
+      return;
+    }
+    try {
+      setDeletingId(auditId);
+      await auditService.deleteAudit(auditId);
+      toast({
+        title: 'Аудит удалён',
+        description: 'Аудит и связанные данные удалены',
+      });
+      await refetch();
+    } catch (err: any) {
+      toast({
+        title: 'Ошибка удаления',
+        description: err?.message || 'Не удалось удалить аудит',
+        variant: 'destructive',
+      });
+    } finally {
+      setDeletingId(null);
+    }
   };
 
-  const handleDownloadReport = async (auditId: string) => {
-    // TODO: Implement download functionality
-    toast({
-      title: 'В разработке',
-      description: 'Функция экспорта будет добавлена позже',
-    });
+  const handleDownloadReport = async (auditId: string, url: string) => {
+    try {
+      setDownloadingId(auditId);
+      const results = await auditService.getAuditResults(auditId);
+      if (!results) {
+        toast({
+          title: 'Отчёт недоступен',
+          description: 'Для этого аудита ещё нет результатов. Дождитесь завершения сканирования.',
+          variant: 'destructive',
+        });
+        return;
+      }
+
+      const report = {
+        url,
+        generated_at: new Date().toISOString(),
+        results,
+      };
+      const blob = new Blob([JSON.stringify(report, null, 2)], {
+        type: 'application/json',
+      });
+      const objectUrl = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      let host = 'site';
+      try {
+        host = new URL(url).hostname.replace(/^www\./, '');
+      } catch {
+        /* keep default */
+      }
+      const date = new Date().toISOString().slice(0, 10);
+      link.href = objectUrl;
+      link.download = `seo-audit-${host}-${date}.json`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(objectUrl);
+
+      toast({
+        title: 'Отчёт выгружен',
+        description: 'JSON-файл с результатами аудита сохранён',
+      });
+    } catch (err: any) {
+      toast({
+        title: 'Ошибка экспорта',
+        description: err?.message || 'Не удалось сформировать отчёт',
+        variant: 'destructive',
+      });
+    } finally {
+      setDownloadingId(null);
+    }
   };
 
   const handleResumeAudit = async (auditId: string, url: string) => {
@@ -91,16 +161,9 @@ export default function AuditsHistory() {
       setResumingTaskId(auditId);
       
       // Get the task for this audit
-      const { data: tasks } = await import('@/integrations/supabase/client').then(m => 
-        m.supabase
-          .from('audit_tasks')
-          .select('id')
-          .eq('audit_id', auditId)
-          .order('created_at', { ascending: false })
-          .limit(1)
-      );
+      const taskId = await auditService.getTaskIdForAudit(auditId);
 
-      if (!tasks || tasks.length === 0) {
+      if (!taskId) {
         toast({
           title: 'Ошибка',
           description: 'Задача аудита не найдена',
@@ -109,15 +172,15 @@ export default function AuditsHistory() {
         return;
       }
 
-      const result = await auditService.resumeAudit(tasks[0].id);
+      const result = await auditService.resumeAudit(taskId);
       
       if (result.success) {
         toast({
           title: 'Аудит возобновлен',
           description: 'Сканирование продолжается с места остановки',
         });
-        // Navigate to the audit page
-        navigate(`/audit?url=${encodeURIComponent(url)}`);
+        // Сразу на возобновлённую задачу: страница подхватит её и будет следить за ходом.
+        navigate(auditPagePath(url, taskId));
       } else {
         toast({
           title: 'Ошибка возобновления',
@@ -138,11 +201,16 @@ export default function AuditsHistory() {
 
   return (
     <div className="container mx-auto py-8 px-4 max-w-7xl">
+      <PageSeo
+        title="Аудиты сайтов: статусы, результаты и повторный запуск"
+        description="Таблица всех аудитов с поиском по адресу и фильтром по статусу. Можно продолжить прерванную проверку, скачать отчёт или удалить запись."
+        noindex
+      />
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold mb-2">История аудитов</h1>
         <p className="text-muted-foreground">
-          Просмотр и управление всеми выполненными аудитами
+          Просмотр и управление вашими аудитами
         </p>
       </div>
 
@@ -204,7 +272,7 @@ export default function AuditsHistory() {
         <CardHeader>
           <CardTitle>Аудиты ({filteredAudits?.length || 0})</CardTitle>
           <CardDescription>
-            Список всех выполненных аудитов с результатами
+            Список ваших аудитов с результатами
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -289,23 +357,33 @@ export default function AuditsHistory() {
                             <DropdownMenuLabel>Действия</DropdownMenuLabel>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem
-                              onClick={() => handleViewAudit(audit.id, audit.url)}
+                              onClick={() => handleViewAudit(audit)}
                             >
                               <Eye className="mr-2 h-4 w-4" />
                               Просмотр
                             </DropdownMenuItem>
                             <DropdownMenuItem
-                              onClick={() => handleDownloadReport(audit.id)}
+                              onClick={() => handleDownloadReport(audit.id, audit.url)}
+                              disabled={downloadingId === audit.id}
                             >
-                              <Download className="mr-2 h-4 w-4" />
+                              {downloadingId === audit.id ? (
+                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                              ) : (
+                                <Download className="mr-2 h-4 w-4" />
+                              )}
                               Скачать отчет
                             </DropdownMenuItem>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem
                               onClick={() => handleDeleteAudit(audit.id)}
+                              disabled={deletingId === audit.id}
                               className="text-destructive"
                             >
-                              <Trash2 className="mr-2 h-4 w-4" />
+                              {deletingId === audit.id ? (
+                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                              ) : (
+                                <Trash2 className="mr-2 h-4 w-4" />
+                              )}
                               Удалить
                             </DropdownMenuItem>
                           </DropdownMenuContent>

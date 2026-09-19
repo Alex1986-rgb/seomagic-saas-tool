@@ -1,13 +1,26 @@
 
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Check, Star, Zap, Users, Crown, ArrowRight, TrendingUp, Shield, Clock } from 'lucide-react';
+import { Check, Star, Zap, Crown, ArrowRight, TrendingUp, Shield, Clock } from 'lucide-react';
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Link } from "react-router-dom";
 
+/**
+ * Тарифы мониторинга позиций.
+ *
+ * Здесь обещали то, чего у сервиса нет: «7 дней бесплатно, без привязки
+ * карты», «30 дней возврата средств», «Поддержку 24/7», «99.8% точность»,
+ * API, белые отчёты, SLA и значки «Популярный» / «Бестселлер». Оплата не
+ * подключена — ни пробного периода, ни возврата денег, которые принять нельзя,
+ * быть не может; API и уровней поддержки тоже нет. Кнопки «Начать» вели на
+ * регистрацию, как будто после неё тариф уже куплен.
+ *
+ * Цены и объёмы тарифов оставлены как есть — это решение владельца. Обещания
+ * убраны, кнопки ведут на заявку.
+ */
 const PositionPricingPlans: React.FC = () => {
   const [billingPeriod, setBillingPeriod] = useState<'monthly' | 'yearly'>('monthly');
   
@@ -25,14 +38,12 @@ const PositionPricingPlans: React.FC = () => {
       regions: 5,
       competitors: 0,
       reports: 'Базовые',
-      support: 'Email',
       features: [
         'До 100 ключевых слов',
         'Мониторинг 3 сайтов',
         'Проверка раз в неделю',
         '5 регионов',
-        'Базовые отчеты',
-        'Email поддержка'
+        'Базовые отчеты'
       ],
       recommended: false,
       badge: null
@@ -50,7 +61,6 @@ const PositionPricingPlans: React.FC = () => {
       regions: 15,
       competitors: 3,
       reports: 'Расширенные',
-      support: 'Приоритетная',
       features: [
         'До 500 ключевых слов',
         'Мониторинг 10 сайтов',
@@ -58,11 +68,10 @@ const PositionPricingPlans: React.FC = () => {
         '15 регионов',
         'Анализ 3 конкурентов',
         'Расширенные отчеты',
-        'Приоритетная поддержка',
         'История до 6 месяцев'
       ],
       recommended: true,
-      badge: 'Популярный'
+      badge: 'Рекомендуем'
     },
     {
       name: 'Профессионал',
@@ -77,7 +86,6 @@ const PositionPricingPlans: React.FC = () => {
       regions: 50,
       competitors: 10,
       reports: 'Персональные',
-      support: '24/7',
       features: [
         'До 2000 ключевых слов',
         'Мониторинг 50 сайтов',
@@ -85,13 +93,10 @@ const PositionPricingPlans: React.FC = () => {
         '50 регионов',
         'Анализ 10 конкурентов',
         'Персональные отчеты',
-        'API доступ',
-        'Белые отчеты',
-        'Поддержка 24/7',
         'История до 1 года'
       ],
       recommended: false,
-      badge: 'Бестселлер'
+      badge: null
     },
     {
       name: 'Корпоративный',
@@ -103,21 +108,15 @@ const PositionPricingPlans: React.FC = () => {
       keywords: 'Без ограничений',
       sites: 'Без ограничений',
       checkFrequency: 'По требованию',
-      regions: 'Все',
+      regions: 'По договорённости',
       competitors: 'Без ограничений',
       reports: 'Индивидуальные',
-      support: 'Персональный менеджер',
       features: [
         'Неограниченные ключевые слова',
         'Неограниченные сайты',
         'Кастомная частота проверок',
-        'Все регионы мира',
         'Неограниченные конкуренты',
-        'Индивидуальные отчеты',
-        'Полный API доступ',
-        'Интеграции на заказ',
-        'Персональный менеджер',
-        'SLA гарантии'
+        'Индивидуальные отчеты'
       ],
       recommended: false,
       badge: 'Enterprise'
@@ -169,8 +168,13 @@ const PositionPricingPlans: React.FC = () => {
           Выберите подходящий тариф
         </motion.h2>
         
-        <motion.p variants={itemVariants} className="text-muted-foreground max-w-2xl mx-auto mb-8">
-          Профессиональный мониторинг позиций с гибкими тарифами для проектов любого размера
+        <motion.p variants={itemVariants} className="text-muted-foreground max-w-2xl mx-auto mb-4">
+          Мониторинг позиций в Яндексе и Google для проектов разного размера
+        </motion.p>
+
+        <motion.p variants={itemVariants} className="text-sm text-muted-foreground max-w-2xl mx-auto mb-8">
+          Оплата на сайте пока не подключена: тариф подключаем по заявке — согласуем объём
+          и выставим счёт.
         </motion.p>
 
         {/* Billing Toggle */}
@@ -273,8 +277,8 @@ const PositionPricingPlans: React.FC = () => {
                   className={`w-full ${plan.recommended ? '' : 'variant-outline'} group-hover:scale-105 transition-transform`}
                   asChild
                 >
-                  <Link to={plan.monthlyPrice ? "/auth?tab=register" : "/contact"}>
-                    {plan.monthlyPrice ? 'Начать' : 'Связаться'}
+                  <Link to="/contact">
+                    {plan.monthlyPrice ? 'Оставить заявку' : 'Связаться'}
                     <ArrowRight className="w-4 h-4 ml-2" />
                   </Link>
                 </Button>
@@ -314,8 +318,7 @@ const PositionPricingPlans: React.FC = () => {
                     { label: 'Частота проверок', key: 'checkFrequency' },
                     { label: 'Регионы', key: 'regions' },
                     { label: 'Конкуренты', key: 'competitors' },
-                    { label: 'Отчеты', key: 'reports' },
-                    { label: 'Поддержка', key: 'support' }
+                    { label: 'Отчеты', key: 'reports' }
                   ].map((row, idx) => (
                     <tr key={row.key} className={idx % 2 === 0 ? 'bg-muted/20' : ''}>
                       <td className="p-4 font-medium">{row.label}</td>
@@ -344,9 +347,9 @@ const PositionPricingPlans: React.FC = () => {
         <Card className="neo-card text-center">
           <CardContent className="p-6">
             <Clock className="w-12 h-12 text-primary mx-auto mb-4" />
-            <h3 className="text-lg font-semibold mb-2">Быстрый старт</h3>
+            <h3 className="text-lg font-semibold mb-2">Проверка из браузера</h3>
             <p className="text-muted-foreground text-sm">
-              Начните мониторинг позиций уже сегодня. Настройка занимает 5 минут
+              Укажите домен, список запросов, поисковую систему и регион — ничего устанавливать не нужно
             </p>
           </CardContent>
         </Card>
@@ -354,9 +357,9 @@ const PositionPricingPlans: React.FC = () => {
         <Card className="neo-card text-center">
           <CardContent className="p-6">
             <TrendingUp className="w-12 h-12 text-primary mx-auto mb-4" />
-            <h3 className="text-lg font-semibold mb-2">Точные данные</h3>
+            <h3 className="text-lg font-semibold mb-2">Данные из реальной выдачи</h3>
             <p className="text-muted-foreground text-sm">
-              99.8% точность данных с проверкой в реальных условиях поиска
+              Позиции берутся из поисковой выдачи Яндекса и Google, а не рассчитываются на глаз
             </p>
           </CardContent>
         </Card>
@@ -364,15 +367,15 @@ const PositionPricingPlans: React.FC = () => {
         <Card className="neo-card text-center">
           <CardContent className="p-6">
             <Shield className="w-12 h-12 text-primary mx-auto mb-4" />
-            <h3 className="text-lg font-semibold mb-2">Гарантия качества</h3>
+            <h3 className="text-lg font-semibold mb-2">Без выдуманных чисел</h3>
             <p className="text-muted-foreground text-sm">
-              30 дней возврата средств, если сервис не оправдает ожидания
+              Если выдачу получить не удалось, проверка сообщает об ошибке, а не подставляет позицию
             </p>
           </CardContent>
         </Card>
       </motion.div>
 
-      {/* Free Trial CTA */}
+      {/* Подключение по заявке (здесь был блок «Попробуйте бесплатно — 7 дней») */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
@@ -382,39 +385,24 @@ const PositionPricingPlans: React.FC = () => {
         <Card className="neo-card bg-gradient-to-r from-primary/10 via-secondary/10 to-primary/10">
           <CardContent className="p-8 text-center">
             <Zap className="w-16 h-16 text-primary mx-auto mb-6" />
-            <h3 className="text-2xl font-bold mb-4">Попробуйте бесплатно</h3>
+            <h3 className="text-2xl font-bold mb-4">Нужен мониторинг позиций?</h3>
             <p className="text-muted-foreground mb-6 max-w-2xl mx-auto">
-              Получите полный доступ ко всем функциям на 7 дней абсолютно бесплатно. 
-              Без привязки карты, без скрытых платежей.
+              Оставьте заявку: согласуем число запросов, регионы и частоту проверок и выставим счёт.
+              Проверить позиции по своим запросам можно в трекере.
             </p>
             
-            <div className="flex flex-col sm:flex-row gap-4 justify-center mb-6">
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button size="lg" asChild>
-                <Link to="/auth?tab=register">
-                  Начать бесплатный период
+                <Link to="/contact">
+                  Оставить заявку
                   <ArrowRight className="w-4 h-4 ml-2" />
                 </Link>
               </Button>
               <Button variant="outline" size="lg" asChild>
-                <Link to="/contact">
-                  Получить консультацию
+                <Link to="/position-tracker">
+                  Открыть трекер позиций
                 </Link>
               </Button>
-            </div>
-
-            <div className="flex flex-wrap justify-center gap-6 text-sm text-muted-foreground">
-              <div className="flex items-center">
-                <Check className="w-4 h-4 text-green-500 mr-2" />
-                <span>7 дней бесплатно</span>
-              </div>
-              <div className="flex items-center">
-                <Check className="w-4 h-4 text-green-500 mr-2" />
-                <span>Без привязки карты</span>
-              </div>
-              <div className="flex items-center">
-                <Check className="w-4 h-4 text-green-500 mr-2" />
-                <span>Отмена в любой момент</span>
-              </div>
             </div>
           </CardContent>
         </Card>

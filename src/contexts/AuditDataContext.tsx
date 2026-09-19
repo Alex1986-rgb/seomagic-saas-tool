@@ -5,6 +5,9 @@ import { AuditData, AuditHistoryData, RecommendationData } from '@/types/audit';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { validationService } from '@/services/validation/validationService';
+import { issueRecommendation } from '@/lib/issue-labels';
+import { normalizeAuditData, summarizeIssues } from '@/lib/audit-data';
+import { isSameSite, normalizeHost } from '@/modules/audit/utils/auditLinks';
 
 // Define the provider props
 interface AuditDataProviderProps {
@@ -55,9 +58,35 @@ export const AuditDataProvider: React.FC<AuditDataProviderProps> = ({
   const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
   console.log('🔧 AuditDataProvider rendering with url:', url, 'taskId:', taskId);
   
+  // Замечания нужны и спискам рекомендаций, и переводу данных для экранов —
+  // грузим один раз и переиспользуем.
+  const { data: issueRows = [] } = useQuery({
+    queryKey: ['auditIssues', taskId],
+    queryFn: async () => {
+      if (!taskId) return [];
+      const { data, error } = await supabase
+        .from('issues')
+        .select('issue_type, severity')
+        .eq('task_id', taskId);
+      if (error) {
+        console.error('Не удалось загрузить замечания аудита:', error);
+        return [];
+      }
+      return data ?? [];
+    },
+    enabled: !!taskId,
+    staleTime: 10_000,
+    /**
+     * Замечания дописывает отдельный классификатор уже после того, как обход
+     * закончился. Одного запроса мало: он успевает вернуть пустой список, и
+     * пользователь навсегда видит «проблем 0». Пока список пуст — переспрашиваем.
+     */
+    refetchInterval: (query) => ((query.state.data?.length ?? 0) > 0 ? false : 4000),
+  });
+
   // Fetch audit results from Supabase by taskId
   const { 
-    data: auditData, 
+    data: rawAuditData, 
     error,
     isLoading,
     refetch 
@@ -81,27 +110,40 @@ export const AuditDataProvider: React.FC<AuditDataProviderProps> = ({
       }
       
       setLoadingProgress(100);
-      // Safely cast the Json type to AuditData
-      return (data?.audit_data || null) as unknown as AuditData | null;
+      return (data?.audit_data ?? null) as never;
     },
     enabled: !!taskId,
-    staleTime: 30000 // Cache for 30 seconds
+    staleTime: 30000, // Cache for 30 seconds
   });
   
-  // Fetch audit history for this URL
+  /**
+   * История проверок этого сайта — только свои.
+   *
+   * Раньше: `.eq('url', url)` без владельца. Политика чтения отдаёт гостевые
+   * записи всем, поэтому в «Истории аудита» могли оказаться чужие проверки;
+   * а адрес из строки браузера («shop.ru») не совпадал с сохранённым
+   * («https://shop.ru»), и своя история чаще была пустой. Теперь сравниваем
+   * хост целиком и берём записи текущего пользователя; у гостя истории нет.
+   */
   const { 
     data: historyData = { url, items: [] } 
   } = useQuery({
     queryKey: ['auditHistory', url],
     queryFn: async () => {
       if (!url) return { url, items: [] };
+
+      const { data: sessionData } = await supabase.auth.getSession();
+      const userId = sessionData.session?.user?.id;
+      const host = normalizeHost(url);
+      if (!userId || !host) return { url, items: [] };
       
       const { data, error } = await supabase
         .from('audits')
         .select('id, created_at, seo_score, pages_scanned, status, url')
-        .eq('url', url)
+        .eq('user_id', userId)
+        .ilike('url', `%${host}%`)
         .order('created_at', { ascending: false })
-        .limit(10);
+        .limit(50);
       
       if (error) {
         console.error('Error fetching audit history:', error);
@@ -109,7 +151,7 @@ export const AuditDataProvider: React.FC<AuditDataProviderProps> = ({
       }
       
       // Map database fields to AuditHistoryItem format
-      const items = (data || []).map(item => ({
+      const items = (data || []).filter(item => isSameSite(item.url, host)).slice(0, 10).map(item => ({
         id: item.id,
         url: item.url,
         date: item.created_at,
@@ -191,8 +233,80 @@ export const AuditDataProvider: React.FC<AuditDataProviderProps> = ({
     enabled: !!auditResults?.audit_id
   });
   
-  // Placeholder for recommendations (can be implemented later)
-  const recommendations: RecommendationData | null = null;
+  /**
+   * Сервер отдаёт свою структуру (`scores`, `metrics`, `summary`), а экраны
+   * написаны под другую (`score`, `details.seo.score`, `issues.critical`).
+   * Переводим здесь, когда готовы обе части: сами данные и замечания. Раньше
+   * перевод жил внутри запроса и успевал отработать до загрузки замечаний,
+   * из-за чего число проблем оставалось нулевым.
+   */
+  const auditData = useMemo(
+    () => normalizeAuditData(rawAuditData as never, {
+      url,
+      taskId,
+      counts: summarizeIssues(issueRows),
+    }),
+    [rawAuditData, issueRows, url, taskId],
+  );
+
+  /**
+   * Рекомендации собираются из замечаний аудита.
+   *
+   * Раньше здесь стояла заглушка `null`, а блок результатов рисовался только
+   * при наличии рекомендаций — поэтому после завершения аудита пользователь
+   * видел пустой экран. Теперь берём настоящие замечания и группируем их по
+   * важности: одинаковые сводим в одну строку с числом затронутых страниц.
+   */
+  const { data: recommendations = null } = useQuery({
+    queryKey: ['auditRecommendations', taskId, issueRows.length],
+    queryFn: async (): Promise<RecommendationData | null> => {
+      if (!taskId) return null;
+      const data = issueRows;
+      if (!data || data.length === 0) return null;
+
+      const bySeverity: Record<string, Map<string, number>> = {
+        critical: new Map(),
+        important: new Map(),
+        opportunities: new Map(),
+      };
+
+      for (const issue of data) {
+        // Краулер размечает важность как high/medium/low, интерфейс говорит
+        // «критичные / важные / возможности» — сводим одно к другому.
+        const bucket = issue.severity === 'high' || issue.severity === 'critical'
+          ? 'critical'
+          : issue.severity === 'medium'
+            ? 'important'
+            : 'opportunities';
+        const counts = bySeverity[bucket];
+        counts.set(issue.issue_type, (counts.get(issue.issue_type) ?? 0) + 1);
+      }
+
+      const toList = (counts: Map<string, number>) =>
+        [...counts.entries()]
+          .sort((a, b) => b[1] - a[1])
+          .map(([issueType, count]) => issueRecommendation(issueType, count));
+
+      return {
+        url,
+        title: `Рекомендации по ${url}`,
+        description: 'Составлены по замечаниям, найденным при обходе сайта',
+        priority: bySeverity.critical.size > 0 ? 'high' : 'medium',
+        category: 'seo',
+        affectedAreas: [],
+        estimatedEffort: '',
+        potentialImpact: '',
+        status: 'ready',
+        details: '',
+        resources: [],
+        critical: toList(bySeverity.critical),
+        important: toList(bySeverity.important),
+        opportunities: toList(bySeverity.opportunities),
+      };
+    },
+    enabled: !!taskId,
+    staleTime: 30000,
+  });
   
   const loadAuditData = useCallback(async (refresh: boolean = false) => {
     setIsRefreshing(refresh);

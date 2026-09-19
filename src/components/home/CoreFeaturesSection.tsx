@@ -3,37 +3,45 @@ import { motion } from 'framer-motion';
 import { Search, Zap, BarChart, CheckCircle, ArrowRight, Sparkles } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
+/*
+ * Плашки под заголовками обещали «200+ проверок», «До 90% автоматизации» и
+ * «Ежедневный мониторинг». Страницы этих функций уже исправлены: проверок
+ * столько нет, долю автоматизации никто не измерял, проверки позиций
+ * запускаются вручную, по расписанию они не идут. Теперь в плашках — то, что
+ * функция делает на самом деле. Ссылка на позиции ведёт сразу на основной
+ * адрес /position-tracking, а не через переадресацию.
+ */
 const CoreFeaturesSection: React.FC = () => {
   const features = [
     {
       icon: Search,
       title: 'SEO Аудит',
-      description: 'Комплексное сканирование сайта для выявления всех SEO-проблем и возможностей для улучшения.',
+      description: 'Сканирование страниц сайта: ответ сервера, индексация, метатеги, заголовки и контент.',
       color: 'from-blue-500 to-cyan-500',
       bgColor: 'bg-blue-50',
       iconColor: 'text-blue-600',
       link: '/features/seo-audit',
-      stats: '200+ проверок'
+      stats: 'Отчёт по каждой странице'
     },
     {
       icon: Zap,
       title: 'ИИ оптимизация',
-      description: 'Автоматическое применение оптимизаций с использованием продвинутых алгоритмов искусственного интеллекта.',
+      description: 'По результатам аудита языковая модель предлагает title, description, структуру заголовков и правки текста.',
       color: 'from-purple-500 to-pink-500',
       bgColor: 'bg-purple-50',
       iconColor: 'text-purple-600',
       link: '/features/ai-optimization',
-      stats: 'До 90% автоматизации'
+      stats: 'Тексты по данным аудита'
     },
     {
       icon: BarChart,
       title: 'Отслеживание позиций',
-      description: 'Мониторинг позиций вашего сайта в поисковых системах по важным ключевым словам.',
+      description: 'Проверка мест вашего сайта в выдаче по списку запросов с выбором региона и глубины.',
       color: 'from-green-500 to-emerald-500',
       bgColor: 'bg-green-50',
       iconColor: 'text-green-600',
-      link: '/features/position-tracking',
-      stats: 'Ежедневный мониторинг'
+      link: '/position-tracking',
+      stats: 'Яндекс и Google'
     }
   ];
 

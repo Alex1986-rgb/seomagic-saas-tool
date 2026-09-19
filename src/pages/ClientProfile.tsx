@@ -5,6 +5,7 @@ import ProfileHeader from '@/components/client/ProfileHeader';
 import ProfileSidebar from '@/components/client/ProfileSidebar';
 import ProfileContent from '@/components/client/ProfileContent';
 import { Card } from '@/components/ui/card';
+import PageSeo from '@/components/seo/PageSeo';
 
 const ClientProfile: React.FC = () => {
   const [activeTab, setActiveTab] = useState('audits');
@@ -15,6 +16,11 @@ const ClientProfile: React.FC = () => {
 
   return (
     <Layout>
+      <PageSeo
+        title="Личный кабинет клиента: аудиты, отчёты и настройки"
+        description="Личный кабинет: история аудитов, позиции сайта в поиске, готовые отчёты, имя в профиле, смена пароля и параметры уведомлений."
+        noindex
+      />
       <div className="container mx-auto px-4 md:px-6 pt-24 md:pt-32 pb-12 md:pb-20">
         <div className="max-w-6xl mx-auto">
           <ProfileHeader />

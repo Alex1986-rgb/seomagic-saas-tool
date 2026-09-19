@@ -1,9 +1,11 @@
 import React from 'react';
 import { motion } from 'framer-motion';
+import { Link } from 'react-router-dom';
 import { Accordion } from "@/components/ui/accordion";
 import GeneralQuestions, { generalQuestionsData } from './sections/faq/GeneralQuestions';
 import TechnicalQuestions, { technicalQuestionsData } from './sections/faq/TechnicalQuestions';
 import { FAQSchema } from '@/components/seo/FAQSchema';
+import { SITE_CONTACTS } from '@/config/site-contacts';
 
 const FAQ: React.FC = () => {
   const allFAQs = [...generalQuestionsData, ...technicalQuestionsData];
@@ -25,10 +27,25 @@ const FAQ: React.FC = () => {
         
         <div className="mt-12 p-4 bg-primary/10 border border-primary/30 rounded-md text-center">
           <p className="font-medium">Не нашли ответ на свой вопрос?</p>
+          {/*
+            Здесь стояла придуманная почта support@seomarket.ru — письма на неё
+            никому не приходили. Адрес берётся из SITE_CONTACTS, а пока его нет,
+            остаётся только форма обратной связи: она настоящая.
+          */}
           <p className="mt-2">
-            Свяжитесь с нашей службой поддержки по адресу 
-            <a href="mailto:support@seomarket.ru" className="text-primary underline">support@seomarket.ru</a> 
-            или воспользуйтесь <a href="/contact" className="text-primary underline">формой обратной связи</a>.
+            {SITE_CONTACTS.email ? (
+              <>
+                Свяжитесь с нашей службой поддержки по адресу{' '}
+                <a href={`mailto:${SITE_CONTACTS.email}`} className="text-primary underline">
+                  {SITE_CONTACTS.email}
+                </a>{' '}
+                или воспользуйтесь <Link to="/contact" className="text-primary underline">формой обратной связи</Link>.
+              </>
+            ) : (
+              <>
+                Воспользуйтесь <Link to="/contact" className="text-primary underline">формой обратной связи</Link> — мы ответим.
+              </>
+            )}
           </p>
         </div>
       </motion.div>

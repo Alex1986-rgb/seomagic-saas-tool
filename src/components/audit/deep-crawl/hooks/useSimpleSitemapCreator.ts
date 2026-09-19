@@ -7,6 +7,18 @@ interface SimpleSitemapCreatorProps {
   url: string;
 }
 
+const XML_ENTITIES: Record<string, string> = {
+  '<': '&lt;',
+  '>': '&gt;',
+  '&': '&amp;',
+  "'": '&apos;',
+  '"': '&quot;',
+};
+
+/** Адрес с «&» без экранирования делает sitemap.xml невалидным. */
+const escapeXml = (value: string): string =>
+  value.replace(/[<>&'"]/g, (c) => XML_ENTITIES[c] ?? c);
+
 export const useSimpleSitemapCreator = ({ url }: SimpleSitemapCreatorProps) => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [sitemap, setSitemap] = useState<string | null>(null);
@@ -46,7 +58,7 @@ export const useSimpleSitemapCreator = ({ url }: SimpleSitemapCreatorProps) => {
       
       urls.forEach(pageUrl => {
         urlsXml += '  <url>\n';
-        urlsXml += `    <loc>${pageUrl}</loc>\n`;
+        urlsXml += `    <loc>${escapeXml(pageUrl)}</loc>\n`;
         urlsXml += '    <changefreq>monthly</changefreq>\n';
         urlsXml += '    <priority>0.8</priority>\n';
         urlsXml += '  </url>\n';
@@ -72,6 +84,13 @@ export const useSimpleSitemapCreator = ({ url }: SimpleSitemapCreatorProps) => {
       setIsGenerating(false);
     }
   }, [urls, toast]);
+
+  // Новый обход — старая карта сайта больше не про этот список адресов:
+  // иначе «Скачать» отдавал бы карту от прошлого сканирования.
+  const startScan = useCallback(async () => {
+    setSitemap(null);
+    return startCrawl();
+  }, [startCrawl]);
 
   // Скачивание карты сайта как XML-файл
   const downloadSitemap = useCallback(() => {
@@ -156,7 +175,7 @@ export const useSimpleSitemapCreator = ({ url }: SimpleSitemapCreatorProps) => {
     currentUrl,
     domain,
     error: scanError,
-    startScan: startCrawl,
+    startScan,
     cancelScan: cancelCrawl,
     generateSitemap,
     downloadSitemap,

@@ -1,6 +1,7 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import { firecrawlService } from '@/services/api/firecrawl';
+import type { CrawlTask } from '@/services/api/firecrawl/types';
 import { saveAs } from 'file-saver';
 
 interface MassiveCrawlProgress {
@@ -13,11 +14,19 @@ interface MassiveCrawlProgress {
   totalBatches: number;
 }
 
+/**
+ * Итог обхода. Здесь только то, что обход действительно увидел.
+ *
+ * Раньше сюда добавлялся «анализ»: оценка SEO считалась как случайное число в
+ * зависимости от количества страниц, «проблемные зоны» выбирались случайной
+ * перетасовкой заранее написанного списка, а срок оптимизации брался из
+ * таблички «столько-то страниц — столько-то недель». Ни одна из этих цифр не
+ * имела отношения к сайту, поэтому их больше нет.
+ */
 interface CrawlResult {
   urls: string[];
   sitemapXml: string;
   pageCount: number;
-  analysisResults?: any;
 }
 
 const BATCH_SIZE = 10000;
@@ -25,8 +34,16 @@ const BATCH_SIZE = 10000;
 export const useMassiveSiteCrawl = () => {
   const { toast } = useToast();
   const [isScanning, setIsScanning] = useState(false);
-  const [isCancelled, setIsCancelled] = useState(false);
   const [taskId, setTaskId] = useState<string | null>(null);
+  // Таймер опроса и номер задачи держим в ref. Раньше отмену отмечал флаг,
+  // который новый запуск тут же сбрасывал, — старый setInterval оживал и
+  // опрашивал старую задачу параллельно с новой, а при закрытии окна таймер
+  // вообще не останавливался. Теперь отмена, новый запуск и размонтирование
+  // останавливают таймер напрямую.
+  const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const taskIdRef = useRef<string | null>(null);
+  // Номер запуска: отмена во время старта обхода не должна запускать опрос.
+  const runRef = useRef(0);
   const [crawlProgress, setCrawlProgress] = useState<MassiveCrawlProgress>({
     pagesScanned: 0,
     totalEstimated: 0,
@@ -38,6 +55,18 @@ export const useMassiveSiteCrawl = () => {
   });
   const [result, setResult] = useState<CrawlResult | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  const stopPolling = useCallback(() => {
+    if (pollingRef.current !== null) {
+      clearInterval(pollingRef.current);
+      pollingRef.current = null;
+    }
+  }, []);
+
+  useEffect(() => () => {
+    runRef.current += 1;
+    stopPolling();
+  }, [stopPolling]);
   
   const startCrawl = useCallback(async (url: string, maxPages: number = 15000000) => {
     if (!url) {
@@ -48,8 +77,9 @@ export const useMassiveSiteCrawl = () => {
     try {
       const normalizedUrl = url.startsWith('http') ? url : `https://${url}`;
       
+      stopPolling();
+      const runId = ++runRef.current;
       setIsScanning(true);
-      setIsCancelled(false);
       setError(null);
       setCrawlProgress({
         pagesScanned: 0,
@@ -63,23 +93,30 @@ export const useMassiveSiteCrawl = () => {
       
       console.log(`Starting massive crawl for: ${normalizedUrl} with max pages: ${maxPages}`);
       
-      try {
-        await fetch(normalizedUrl, { method: 'HEAD' });
-      } catch (error) {
-        throw new Error('Сайт недоступен. Проверьте URL и попробуйте снова.');
-      }
-      
+      // Здесь была проверка «доступен ли сайт» HEAD-запросом из браузера. Чужой
+      // домен такой запрос почти всегда режет по CORS, и любой сайт объявлялся
+      // недоступным. Доступность выяснит сам обход.
       const crawlTask = await firecrawlService.startCrawl(normalizedUrl);
+      if (runRef.current !== runId) {
+        // Отменили, пока обход запускался: останавливаем его и опрос не начинаем.
+        firecrawlService.cancelCrawl(crawlTask.id).catch(() => undefined);
+        return null;
+      }
+      taskIdRef.current = crawlTask.id;
       setTaskId(crawlTask.id);
       
       const pollingInterval = setInterval(async () => {
-        if (isCancelled) {
+        // Таймер уже заменён новым запуском или остановлен отменой.
+        if (pollingRef.current !== pollingInterval) {
           clearInterval(pollingInterval);
           return;
         }
         
         try {
           const taskStatus = await firecrawlService.getStatus(crawlTask.id);
+
+          // Пока ждали ответ, запуск могли отменить или заменить.
+          if (pollingRef.current !== pollingInterval) return;
           
           setCrawlProgress({
             pagesScanned: taskStatus.pages_scanned || 0,
@@ -90,42 +127,29 @@ export const useMassiveSiteCrawl = () => {
             batchNumber: Math.ceil((taskStatus.pages_scanned || 0) / BATCH_SIZE),
             totalBatches: Math.ceil((taskStatus.estimated_total_pages || maxPages) / BATCH_SIZE)
           });
-          
+
+
           if (taskStatus.status === 'completed') {
-            clearInterval(pollingInterval);
+            stopPolling();
             
             const urls = taskStatus.urls || (taskStatus.results ? taskStatus.results.urls : []);
-            
-            setCrawlProgress(prev => ({
-              ...prev,
-              processingStage: 'analyzing',
-              percentage: 75
-            }));
-            
+
             console.log(`Generating sitemap for ${urls.length} URLs`);
             const sitemapXml = generateSitemapXml(urls, new URL(normalizedUrl).hostname);
-            
+
+            // Этапы «анализ 75 %» и «оптимизация 90 %» проскакивали за одну
+            // строку и ничего не делали — осталось только фактическое завершение.
             setCrawlProgress(prev => ({
               ...prev,
-              processingStage: 'optimizing',
-              percentage: 90
-            }));
-            
-            setCrawlProgress(prev => ({
-              ...prev,
+              pagesScanned: urls.length,
               processingStage: 'completed',
               percentage: 100
             }));
-            
+
             setResult({
               urls,
               sitemapXml,
-              pageCount: urls.length,
-              analysisResults: {
-                optimizationScore: calculateOptimizationScore(urls.length),
-                improvementAreas: generateImprovementAreas(urls.length),
-                estimatedOptimizationTime: calculateOptimizationTime(urls.length)
-              }
+              pageCount: urls.length
             });
             
             setIsScanning(false);
@@ -143,7 +167,7 @@ export const useMassiveSiteCrawl = () => {
           }
           
           if (taskStatus.status === 'failed') {
-            clearInterval(pollingInterval);
+            stopPolling();
             setError(taskStatus.error || 'Произошла ошибка при сканировании сайта');
             setCrawlProgress(prev => ({
               ...prev,
@@ -157,6 +181,7 @@ export const useMassiveSiteCrawl = () => {
           console.error('Error checking task status:', error);
         }
       }, 3000);
+      pollingRef.current = pollingInterval;
       
       return true;
     } catch (error) {
@@ -165,16 +190,24 @@ export const useMassiveSiteCrawl = () => {
       setIsScanning(false);
       return null;
     }
-  }, [toast, isCancelled]);
+  }, [toast, stopPolling]);
   
   const cancelCrawl = useCallback(() => {
-    setIsCancelled(true);
+    runRef.current += 1;
+    stopPolling();
+    const task = taskIdRef.current;
+    taskIdRef.current = null;
+    if (task) {
+      firecrawlService.cancelCrawl(task).catch((err) =>
+        console.error('Не удалось остановить обход:', err),
+      );
+    }
     setIsScanning(false);
     toast({
       title: "Сканирование отменено",
       description: "Процесс сканирования был прерван пользователем"
     });
-  }, [toast]);
+  }, [toast, stopPolling]);
   
   const downloadSitemap = useCallback(() => {
     if (!result?.sitemapXml) {
@@ -209,7 +242,6 @@ export const useMassiveSiteCrawl = () => {
       scanDate: new Date().toISOString(),
       domain: new URL(result.urls[0]).hostname,
       pageCount: result.pageCount,
-      analysisResults: result.analysisResults,
       sampleUrls: result.urls.slice(0, 100)
     };
     
@@ -222,49 +254,6 @@ export const useMassiveSiteCrawl = () => {
     });
   }, [result, toast]);
   
-  const createOptimizedSite = useCallback(async (prompt: string) => {
-    if (!result || !prompt) {
-      toast({
-        title: "Ошибка",
-        description: "Нет данных для оптимизации или не указан промпт",
-        variant: "destructive"
-      });
-      return;
-    }
-    
-    toast({
-      title: "Начало оптимизации",
-      description: "Создание оптимизированной версии сайта..."
-    });
-    
-    setTimeout(() => {
-      const optimizationInfo = `
-Оптимизация сайта на основе промпта: "${prompt}"
-
-Домен: ${new URL(result.urls[0]).hostname}
-Количество страниц: ${result.pageCount}
-Дата оптимизации: ${new Date().toLocaleString('ru-RU')}
-
-Ключевые улучшения:
-- Оптимизация метатегов для всех страниц
-- Улучшение структуры заголовков
-- Оптимизация контента с учетом ключевых слов
-- Исправление проблем с мобильной версией
-- Ускорение загрузки страниц
-
-Подробный отчет доступен в панели администратора.
-      `;
-      
-      const blob = new Blob([optimizationInfo], { type: 'text/plain' });
-      saveAs(blob, `optimized-site-${new Date().toISOString().slice(0, 10)}.txt`);
-      
-      toast({
-        title: "Оптимизация завершена",
-        description: "Файл с информацией об оптимизации скачан"
-      });
-    }, 3000);
-  }, [result, toast]);
-  
   return {
     isScanning,
     crawlProgress,
@@ -274,8 +263,7 @@ export const useMassiveSiteCrawl = () => {
     startCrawl,
     cancelCrawl,
     downloadSitemap,
-    downloadReport,
-    createOptimizedSite
+    downloadReport
   };
 };
 
@@ -294,12 +282,14 @@ function mapStatusToStage(status: string): MassiveCrawlProgress['processingStage
   }
 }
 
-function calculateProgress(taskStatus: any): number {
+function calculateProgress(taskStatus: CrawlTask): number {
   if (taskStatus.status === 'completed') return 100;
   if (taskStatus.status === 'failed') return 0;
   
+  // Пока не известно ни сколько обойдено, ни сколько всего — показываем ноль,
+  // а не «для вида» отрисованные 5 %.
   const { pages_scanned, estimated_total_pages } = taskStatus;
-  if (!pages_scanned || !estimated_total_pages) return 5;
+  if (!pages_scanned || !estimated_total_pages) return 0;
   
   return Math.min(95, Math.floor((pages_scanned / estimated_total_pages) * 100));
 }
@@ -335,49 +325,3 @@ function escapeXml(unsafe: string): string {
   });
 }
 
-function calculateOptimizationScore(pageCount: number): number {
-  if (pageCount < 100) return Math.floor(Math.random() * 30) + 40;
-  if (pageCount < 1000) return Math.floor(Math.random() * 25) + 35;
-  if (pageCount < 10000) return Math.floor(Math.random() * 20) + 30;
-  if (pageCount < 100000) return Math.floor(Math.random() * 15) + 25;
-  return Math.floor(Math.random() * 10) + 20;
-}
-
-function generateImprovementAreas(pageCount: number): string[] {
-  const areas = [
-    'Оптимизация метатегов',
-    'Улучшение структуры заголовков',
-    'Исправление дублирующегося контента',
-    'Ускорение загрузки страниц',
-    'Оптимизация мобильной версии',
-    'Структура ссылок и навигация',
-    'Оптимизация изображений',
-    'Улучшение контента для SEO',
-    'Устранение битых ссылок',
-    'Структурированные данные'
-  ];
-  
-  if (pageCount > 10000) {
-    areas.push('Оптимизация индексации для крупного сайта');
-    areas.push('Настройка пагинации для поисковых систем');
-    areas.push('Оптимизация архитектуры сайта');
-    areas.push('Улучшение кластеризации контента');
-    areas.push('Разработка стратегии масштабного контента');
-  }
-  
-  const numberOfAreas = Math.floor(Math.random() * 3) + 5;
-  const shuffled = [...areas].sort(() => 0.5 - Math.random());
-  return shuffled.slice(0, numberOfAreas);
-}
-
-function calculateOptimizationTime(pageCount: number): string {
-  let days;
-  if (pageCount < 100) days = '3-5 дней';
-  else if (pageCount < 1000) days = '7-14 дней';
-  else if (pageCount < 10000) days = '14-30 дней';
-  else if (pageCount < 100000) days = '1-3 месяца';
-  else if (pageCount < 1000000) days = '3-6 месяцев';
-  else days = '6-12 месяцев';
-  
-  return days;
-}

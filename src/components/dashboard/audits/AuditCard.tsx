@@ -1,7 +1,9 @@
 
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { Calendar, Clock, RefreshCw } from 'lucide-react';
 import { Card } from "@/components/ui/card";
+import { auditPagePath } from '@/modules/audit/utils/auditLinks';
 
 interface AuditProps {
   audit: {
@@ -10,6 +12,8 @@ interface AuditProps {
     score: number | null;
     date: string;
     status: string;
+    /** Задача аудита (`audit_tasks.id`): по ней открывается именно эта проверка. */
+    taskId?: string | null;
   };
 }
 
@@ -47,16 +51,21 @@ export const AuditCard: React.FC<AuditProps> = ({ audit }) => (
                 audit.score >= 80 ? 'text-green-500' : 
                 audit.score >= 60 ? 'text-amber-500' : 'text-destructive'
               }`}>
-                {audit.score}/100
+                {audit.score ?? '—'}/100
               </div>
             </div>
             
-            <a 
-              href={`/audit?url=${encodeURIComponent(audit.url)}`} 
+            {/*
+              Раньше: <a href="/audit?url=..."> — без номера задачи (открывалась
+              «последняя проверка по домену») и мимо адреса сборки: на подпути
+              /seomagic-saas-tool/ ссылка вела в 404.
+            */}
+            <Link 
+              to={auditPagePath(audit.url, audit.taskId)} 
               className="bg-secondary text-foreground px-4 py-2 rounded-full text-sm hover:bg-secondary/80 transition-colors"
             >
               Смотреть детали
-            </a>
+            </Link>
           </>
         )}
       </div>

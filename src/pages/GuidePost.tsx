@@ -9,6 +9,7 @@ import GuideCarousel from '@/components/guides/GuideCarousel';
 import GuideContent from '@/components/guides/GuideContent';
 import GuideCallToAction from '@/components/guides/GuideCallToAction';
 import { BreadcrumbSchema } from '@/components/seo/BreadcrumbSchema';
+import PageSeo from '@/components/seo/PageSeo';
 
 const GuidePost: React.FC = () => {
   const { id } = useParams();
@@ -18,6 +19,13 @@ const GuidePost: React.FC = () => {
   if (!guide) {
     return (
       <Layout>
+        {/* Без своего PageSeo адрес несуществующего руководства получал общие
+            заголовок и canonical от DefaultSEO и мог попасть в поиск. */}
+        <PageSeo
+          title="Руководство не найдено"
+          description="Запрашиваемое руководство не существует или было удалено."
+          noindex
+        />
         <BreadcrumbSchema items={[
           { name: 'Главная', url: '/' },
           { name: 'Руководства', url: '/guides' }
@@ -37,6 +45,11 @@ const GuidePost: React.FC = () => {
 
   return (
     <Layout>
+      <PageSeo
+        title={guide.title}
+        description={guide.description}
+        image={guide.image}
+      />
       <BreadcrumbSchema items={[
         { name: 'Главная', url: '/' },
         { name: 'Руководства', url: '/guides' },

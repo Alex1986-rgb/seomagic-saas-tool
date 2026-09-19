@@ -14,32 +14,27 @@ const DemoServiceProcess: React.FC = () => {
     {
       title: "Анализ вашего сайта",
       description: "Введите URL вашего сайта, и наша система автоматически проанализирует более 100 SEO-факторов",
-      icon: <Search className="w-10 h-10 text-primary" />,
-      image: "/img/demo-step1.jpg"
+      icon: <Search className="w-10 h-10 text-primary" />
     },
     {
       title: "Выявление проблем",
       description: "Система проанализирует сайт и составит подробный отчет с выявленными проблемами и рекомендациями",
-      icon: <BarChart2 className="w-10 h-10 text-primary" />,
-      image: "/img/demo-step2.jpg"
+      icon: <BarChart2 className="w-10 h-10 text-primary" />
     },
     {
       title: "Рекомендации",
       description: "Получите детальные рекомендации по улучшению каждого аспекта SEO вашего сайта",
-      icon: <FileText className="w-10 h-10 text-primary" />,
-      image: "/img/demo-step3.jpg"
+      icon: <FileText className="w-10 h-10 text-primary" />
     },
     {
       title: "Автоматическая оптимизация",
       description: "Наша система автоматически исправит большинство выявленных проблем с минимальным участием с вашей стороны",
-      icon: <Settings className="w-10 h-10 text-primary" />,
-      image: "/img/demo-step4.jpg"
+      icon: <Settings className="w-10 h-10 text-primary" />
     },
     {
       title: "Рост позиций",
       description: "Наблюдайте рост позиций вашего сайта в поисковых системах и увеличение органического трафика",
-      icon: <Globe className="w-10 h-10 text-primary" />,
-      image: "/img/demo-step5.jpg"
+      icon: <Globe className="w-10 h-10 text-primary" />
     }
   ];
   
@@ -127,16 +122,12 @@ const DemoServiceProcess: React.FC = () => {
           </div>
         </Card>
         
+        {/* Картинок шагов (/img/demo-step1..5.jpg) в проекте нет, поэтому
+            вместо них показывается подпись, а не битое изображение. */}
         <div className="rounded-lg overflow-hidden shadow-lg aspect-video relative bg-gray-100">
           <div className="absolute inset-0 flex items-center justify-center">
             <p className="text-muted-foreground">Изображение шага {activeStep + 1}</p>
           </div>
-          {/* Здесь будет изображение, когда оно будет доступно */}
-          {/* <img 
-            src={steps[activeStep].image} 
-            alt={steps[activeStep].title} 
-            className="w-full h-full object-cover"
-          /> */}
         </div>
       </motion.div>
       

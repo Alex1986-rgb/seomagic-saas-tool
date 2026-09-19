@@ -1,5 +1,6 @@
 import React from 'react';
 import { Helmet } from 'react-helmet-async';
+import { absolutePageUrl } from '@/lib/asset-url';
 
 interface BreadcrumbItem {
   name: string;
@@ -11,8 +12,6 @@ interface BreadcrumbSchemaProps {
 }
 
 export const BreadcrumbSchema: React.FC<BreadcrumbSchemaProps> = ({ items }) => {
-  const siteUrl = typeof window !== 'undefined' ? window.location.origin : 'https://seomarket.app';
-  
   const breadcrumbSchema = {
     '@context': 'https://schema.org',
     '@type': 'BreadcrumbList',
@@ -20,7 +19,8 @@ export const BreadcrumbSchema: React.FC<BreadcrumbSchemaProps> = ({ items }) => 
       '@type': 'ListItem',
       position: index + 1,
       name: item.name,
-      item: `${siteUrl}${item.url}`
+      // С подпутём публикации: `${origin}${item.url}` вёл на корень github.io.
+      item: absolutePageUrl(item.url)
     }))
   };
 

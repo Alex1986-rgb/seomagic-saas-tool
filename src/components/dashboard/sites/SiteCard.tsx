@@ -1,15 +1,21 @@
 
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { withErrorBoundary } from '@/components/ErrorBoundary';
+import { auditPagePath } from '@/modules/audit/utils/auditLinks';
 
 interface SiteCardProps {
   url: string;
   lastOptimized: string;
   score: number;
+  /** Последняя проверка сайта: ссылка откроет именно её. */
+  taskId?: string | null;
+  /** Открыть аналитику сайта. Без обработчика кнопки нет — раньше она ничего не делала. */
+  onOpenAnalytics?: () => void;
 }
 
-export const SiteCard: React.FC<SiteCardProps> = ({ url, lastOptimized, score }) => (
+export const SiteCard: React.FC<SiteCardProps> = ({ url, lastOptimized, score, taskId, onOpenAnalytics }) => (
   <div className="neo-card p-6 hover:shadow-md transition-shadow duration-200">
     <div className="flex justify-between items-start mb-4">
       <div>
@@ -26,13 +32,19 @@ export const SiteCard: React.FC<SiteCardProps> = ({ url, lastOptimized, score })
       </div>
     </div>
     <div className="flex gap-2">
-      <Button variant="outline" size="sm">
-        Аналитика
-      </Button>
+      {onOpenAnalytics && (
+        <Button variant="outline" size="sm" onClick={onOpenAnalytics}>
+          Аналитика
+        </Button>
+      )}
+      {/*
+        Раньше: <a href="/audit?url=..."> — мимо адреса сборки (на подпути
+        /seomagic-saas-tool/ это 404) и без номера проверки.
+      */}
       <Button variant="outline" size="sm" asChild>
-        <a href={`/audit?url=${encodeURIComponent(url)}`}>
+        <Link to={auditPagePath(url, taskId)}>
           Оптимизировать
-        </a>
+        </Link>
       </Button>
     </div>
   </div>

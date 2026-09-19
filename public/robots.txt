@@ -32,9 +32,7 @@ Disallow: /*?*audit_id=*
 Disallow: /site-audit?*
 Crawl-delay: 2
 
-# Sitemap
-Sitemap: https://seomarket.app/sitemap.xml
-Sitemap: https://seomarket.app/blog-sitemap.xml
-
-# Хосты
-Host: seomarket.app
+# Строки Sitemap и Host указывали на домен seomarket.app: сайт на нём не
+# опубликован, а файлов sitemap.xml и blog-sitemap.xml в публикации не было.
+# Карту сайта и robots.txt для выкладки собирает scripts/prerender.cjs — по
+# тем страницам, что реально пререндерены, и с адресом публикации.

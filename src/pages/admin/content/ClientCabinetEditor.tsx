@@ -1,34 +1,26 @@
 
 import React from 'react';
-import { Helmet } from 'react-helmet-async';
 import BaseContentEditor from '@/components/admin/content/BaseContentEditor';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
-import { useToast } from '@/hooks/use-toast';
+import PageSeo from '@/components/seo/PageSeo';
 
+// Тост «Настройки кабинета клиента успешно обновлены» убран: ничего не
+// сохранялось. Предупреждение о том, что редактор не пишет в базу, — в BaseContentEditor.
 const ClientCabinetEditor: React.FC = () => {
-  const { toast } = useToast();
-  
-  const handleSave = (data: any) => {
-    console.log('Saving client cabinet data:', data);
-    toast({
-      title: "Изменения сохранены",
-      description: "Настройки кабинета клиента успешно обновлены"
-    });
-  };
-
   return (
     <>
-      <Helmet>
-        <title>Редактирование кабинета клиента | Админ панель</title>
-      </Helmet>
+      <PageSeo
+        title="Редактор кабинета клиента: разделы, тексты и подсказки"
+        description="Настройка интерфейса личного кабинета: какие блоки показывать пользователю, тексты подсказок и порядок разделов в боковом меню."
+        noindex
+      />
       
       <BaseContentEditor
         title="Редактирование кабинета клиента"
         description="Настройка интерфейса и функций личного кабинета пользователя"
-        onSave={handleSave}
       >
         <div className="space-y-6">
           <Card className="bg-black/20 border-white/10">

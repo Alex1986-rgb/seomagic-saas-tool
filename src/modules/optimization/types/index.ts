@@ -29,7 +29,8 @@ export interface OptimizationResult {
   optimized_pages: number;
   improvements: OptimizationImprovement[];
   total_cost: number;
-  estimated_score_improvement: number;
+  // «Улучшение оценки +N» здесь больше нет: обработчик его выдумывал, оценку
+  // после правок никто не пересчитывает.
 }
 
 export interface OptimizationImprovement {

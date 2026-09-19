@@ -1,39 +1,42 @@
 
 import { ProxyStorage } from './proxyStorage';
+import { PingService } from './pingService';
 import type { PingResult } from './types';
 
+/**
+ * XML-RPC пинг страниц.
+ *
+ * Раньше метод ничего не отправлял: на каждую пару «адрес × сервис»
+ * возвращал success: true, «Ping simulated successfully» и случайное время
+ * до секунды. Экран «Пинг страниц и RSS» всегда показывал сплошной успех.
+ * Теперь запросы уходят по-настоящему через PingService. Из браузера многие
+ * пинг-сервисы недоступны (не разрешают CORS) — тогда результат будет ошибкой
+ * с объяснением, а не выдуманным успехом.
+ */
 export class PingManager {
-  private proxyStorage: ProxyStorage;
-  
+  private pingService: PingService;
+
   constructor(proxyStorage: ProxyStorage) {
-    this.proxyStorage = proxyStorage;
+    this.pingService = new PingService(proxyStorage);
   }
-  
+
   async pingUrlsWithRpc(
-    urls: string[], 
-    siteTitle: string, 
-    feedUrl: string, 
+    urls: string[],
+    siteTitle: string,
+    feedUrl: string,
     rpcEndpoints: string[],
     batchSize: number = 10,
     concurrency: number = 5,
     useProxies: boolean = true
   ): Promise<PingResult[]> {
-    const results: PingResult[] = [];
-    
-    // Basic implementation that just returns success results
-    // This would need to be expanded with actual XML-RPC ping implementation
-    for (const url of urls) {
-      for (const rpc of rpcEndpoints) {
-        results.push({
-          url,
-          rpc,
-          success: true,
-          message: "Ping simulated successfully",
-          time: Math.random() * 1000
-        });
-      }
-    }
-    
-    return results;
+    return this.pingService.pingUrlsWithRpc(
+      urls,
+      siteTitle,
+      feedUrl,
+      rpcEndpoints,
+      batchSize,
+      concurrency,
+      useProxies
+    );
   }
 }

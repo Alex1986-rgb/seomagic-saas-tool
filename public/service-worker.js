@@ -3,15 +3,17 @@ const CACHE_NAME = 'seo-audit-v2';
 const STATIC_CACHE = 'static-v2';
 const DYNAMIC_CACHE = 'dynamic-v2';
 
+// Пути относительные: сайт публикуется в подпапке (/seomagic-saas-tool/),
+// от корня домена этих файлов нет. Из списка убраны favicon.svg, index.css и
+// main.js — таких файлов в сборке не существует, и один 404 ронял весь
+// cache.addAll, то есть кеш не создавался вообще.
 const STATIC_ASSETS = [
-  '/',
-  '/index.html',
-  '/manifest.json',
-  '/favicon.svg',
-  '/images/placeholder.jpg',
-  '/og-image.jpg',
-  '/index.css',
-  '/main.js'
+  './',
+  './index.html',
+  './manifest.json',
+  './favicon.ico',
+  './images/placeholder.jpg',
+  './og-image.jpg'
 ];
 
 // Install event - cache static assets
@@ -73,11 +75,8 @@ self.addEventListener('fetch', event => {
               return cachedResponse;
             }
             
-            // Return default offline page if nothing is cached
-            if (event.request.mode === 'navigate') {
-              return caches.match('/offline.html');
-            }
-            
+            // Страницы offline.html в проекте нет — отдельной заглушки
+            // для офлайна не отдаём.
             return new Response('', {
               status: 408,
               statusText: 'Request timeout'

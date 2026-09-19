@@ -12,21 +12,26 @@ export const useOptimizationAPI = (taskId: string | null) => {
   const [isLoadingCost, setIsLoadingCost] = useState<boolean>(false);
 
   /**
-   * Load optimization cost calculation with retry logic
+   * Расчёт сметы с повторами, пока результаты аудита ещё готовятся.
+   *
+   * Возвращает `true`, если смета получена. Раньше при ошибке показывался тост
+   * «Используем примерную стоимость оптимизации», хотя никакой примерной сметы
+   * не подставлялось: сервис бросает ошибку, а не возвращает ноль. Теперь
+   * человек видит настоящую причину, а вызывающий может дать повторить расчёт.
    */
   const loadOptimizationCost = async (
     taskId: string,
     setOptimizationCost: (cost: number) => void,
     setOptimizationItems: (items: OptimizationItem[]) => void,
     onStatusUpdate?: (status: string, attempt?: number) => void
-  ) => {
+  ): Promise<boolean> => {
     if (!taskId) {
       toast({
         title: "Ошибка",
         description: "Не удалось получить ID задачи для расчета стоимости оптимизации",
         variant: "destructive"
       });
-      return;
+      return false;
     }
     
     const maxRetries = 5;
@@ -34,64 +39,64 @@ export const useOptimizationAPI = (taskId: string | null) => {
     
     setIsLoadingCost(true);
     
-    for (let attempt = 1; attempt <= maxRetries; attempt++) {
-      try {
-        onStatusUpdate?.(`Расчет стоимости оптимизации... (попытка ${attempt}/${maxRetries})`, attempt);
-        
-        // Get optimization cost calculation
-        const costData = await optimizationService.getOptimizationCost(taskId);
-        
-        setOptimizationCost(costData.totalCost);
-        setOptimizationItems(costData.items);
-        
-        onStatusUpdate?.('Расчет завершен успешно');
-        
-        toast({
-          title: "Данные оптимизации загружены",
-          description: `Расчетная стоимость оптимизации: ${new Intl.NumberFormat('ru-RU').format(costData.totalCost)} ₽`,
-        });
-        
-        setIsLoadingCost(false);
-        return; // Success - exit retry loop
-        
-      } catch (error: any) {
-        console.error(`Error loading optimization cost (attempt ${attempt}/${maxRetries}):`, error);
-        
-        // Check if it's a "not found" error that we should retry
-        const isNotFoundError = error?.message?.includes('not found') || 
-                               error?.message?.includes('404') ||
-                               error?.error?.includes('not found');
-        
-        if (isNotFoundError && attempt < maxRetries) {
-          // Calculate exponential backoff delay
-          const delay = baseDelay * Math.pow(1.5, attempt - 1);
+    try {
+      for (let attempt = 1; attempt <= maxRetries; attempt++) {
+        try {
+          onStatusUpdate?.(`Расчет стоимости оптимизации... (попытка ${attempt}/${maxRetries})`, attempt);
           
-          onStatusUpdate?.(
-            `Результаты аудита еще готовятся... Повтор через ${Math.round(delay / 1000)} сек.`,
-            attempt
-          );
+          const costData = await optimizationService.getOptimizationCost(taskId);
           
-          // Wait before next retry
-          await new Promise(resolve => setTimeout(resolve, delay));
-          continue;
+          setOptimizationCost(costData.totalCost);
+          setOptimizationItems(costData.items);
+          
+          onStatusUpdate?.('Расчет завершен успешно');
+          
+          toast({
+            title: "Данные оптимизации загружены",
+            description: `Расчетная стоимость оптимизации: ${new Intl.NumberFormat('ru-RU').format(costData.totalCost)} ₽`,
+          });
+          
+          return true;
+        } catch (error: any) {
+          console.error(`Error loading optimization cost (attempt ${attempt}/${maxRetries}):`, error);
+
+          const message: string = error?.message || 'неизвестная ошибка';
+
+          // Повторяем только «результаты/смета ещё не готовы» (функция отвечает
+          // 404, пока аудит и классификация замечаний не закончились). Отказ в
+          // доступе (403) и прочие ошибки повторами не лечатся.
+          const isNotReadyYet = message.includes('not found') || message.includes('404');
+
+          if (isNotReadyYet && attempt < maxRetries) {
+            const delay = baseDelay * Math.pow(1.5, attempt - 1);
+            
+            onStatusUpdate?.(
+              `Результаты аудита еще готовятся... Повтор через ${Math.round(delay / 1000)} сек.`,
+              attempt
+            );
+            
+            await new Promise(resolve => setTimeout(resolve, delay));
+            continue;
+          }
+          
+          onStatusUpdate?.('Смета не рассчитана');
+          
+          toast({
+            title: "Смета не рассчитана",
+            description: isNotReadyYet
+              ? "Результаты аудита еще не готовы. Попробуйте рассчитать смету чуть позже."
+              : `Не удалось рассчитать стоимость: ${message}`,
+            variant: "destructive"
+          });
+          
+          return false;
         }
-        
-        // If it's the last attempt or a different error, show fallback
-        onStatusUpdate?.('Используем примерную оценку');
-        
-        toast({
-          title: "Внимание",
-          description: attempt === maxRetries 
-            ? "Результаты аудита еще готовятся. Используем примерную стоимость оптимизации."
-            : "Используем примерную стоимость оптимизации из-за ошибки расчета",
-          variant: "default"
-        });
-        
-        break;
       }
+
+      return false;
+    } finally {
+      setIsLoadingCost(false);
     }
-    
-    setIsLoadingCost(false);
   };
 
   /**

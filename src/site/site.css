@@ -1,0 +1,78 @@
+/*
+ * Публичный сайт SeoMarket на Industry — состояния из <style> макетов
+ * (design/seomarket-v2: Сайт, Блог, Статья, Отзывы, Документы, ArticleRail).
+ *
+ * Всё под .ds-site — корнем публичного сайта. Токены и базовые классы — в src/design/industry.css.
+ * Отдельный корень нужен потому, что кабинет использует те же data-атрибуты с другим смыслом
+ * (например [data-rail] у кабинета — сайдбар, который ниже 860px превращается в полосу), и без
+ * области правила одного перекрашивали бы другое. Карусель статей здесь — [data-carousel].
+ */
+
+.ds-site { background: var(--color-bg); color: var(--color-text); font-family: var(--font-body); min-height: 100vh; text-wrap: pretty; }
+.ds-site a { color: var(--color-accent-700); }
+.ds-site a:hover { color: var(--color-accent-800); }
+.ds-site .btn-primary, .ds-site .btn-primary:hover { color: var(--color-bg); text-decoration: none; }
+.ds-site .btn { text-decoration: none; }
+
+/* Шапка: меню прячется, когда перенос строк сдвигает кнопку под логотип. */
+.ds-site nav.nav a:not(.btn) { color: inherit; text-decoration: none; font-size: 14px; }
+.ds-site nav.nav a:not(.btn):hover, .ds-site nav.nav a[aria-current='page'] { color: var(--color-accent); }
+@media (max-width: 860px) { .ds-site [data-navlinks] { display: none !important; } }
+@media (max-width: 680px) { .ds-site nav.nav { gap: var(--space-4) !important; } }
+.ds-site [data-mobilemenu] { display: none; }
+@media (max-width: 860px) { .ds-site [data-mobilemenu] { display: inline-flex; } }
+
+/* Карточки, ячейки, статьи */
+.ds-site [data-cell] { transition: border-color .15s ease; }
+.ds-site [data-cell]:hover { border-color: var(--color-accent); }
+.ds-site [data-post] { transition: border-color .15s ease; scroll-margin-top: 88px; }
+.ds-site [data-post]:hover { border-color: var(--color-accent); }
+.ds-site [data-post]:hover h3 { color: var(--color-accent-700); }
+.ds-site [data-card] { text-decoration: none; color: inherit; }
+.ds-site [data-card]:hover { text-decoration: none; }
+.ds-site [data-card]:hover [data-cardtitle] { color: var(--color-accent-700); }
+.ds-site [data-hl] { background: color-mix(in srgb, var(--color-accent) 12%, transparent); }
+.ds-site [data-doc] { scroll-margin-top: 80px; }
+
+/* FAQ на <details>: знак «+» поворачивается в крестик. */
+.ds-site [data-q] > summary { cursor: pointer; list-style: none; }
+.ds-site [data-q] > summary::-webkit-details-marker { display: none; }
+.ds-site [data-q] > summary:hover { color: var(--color-accent-700); }
+.ds-site [data-q] > summary > span[data-sign] {
+  transition: transform .15s ease; display: inline-flex; align-items: center; justify-content: center;
+  width: 16px; height: 1.25em; flex: none;
+}
+.ds-site [data-q][open] > summary > span[data-sign] { transform: rotate(45deg); }
+
+/* Оглавления статьи и документов */
+.ds-site [data-toc] a { display: block; padding: 6px 0; font-size: 13.5px; text-decoration: none; border-bottom: 1px solid var(--color-divider); }
+.ds-site [data-toc] a:last-child { border-bottom: 0; }
+.ds-site [data-tocitem] { display: block; padding: 7px 0; font-size: 13.5px; color: color-mix(in srgb, var(--color-text) 72%, transparent); text-decoration: none; border-bottom: 0; }
+.ds-site [data-tocitem]:hover { color: var(--color-text); }
+.ds-site [data-tocitem][data-on="1"] { color: var(--color-text); font-weight: 600; }
+
+/* Карусель «Читать дальше» */
+.ds-site [data-carousel]::-webkit-scrollbar { height: 3px; }
+.ds-site [data-carousel]::-webkit-scrollbar-thumb { background: var(--color-divider); }
+.ds-site [data-carousel]::-webkit-scrollbar-track { background: transparent; }
+.ds-site [data-railcard] { text-decoration: none; color: inherit; }
+.ds-site [data-railcard]:hover [data-railtitle] { color: var(--color-accent-700); }
+
+/* Фото: рамка-чертёж + дуотон; подпись автора Unsplash поверх снимка. */
+.ds-site .site-photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.ds-site .site-photo [data-credit] {
+  position: absolute; left: 0; bottom: 0; z-index: 2; font-size: 10.5px; line-height: 1.2; padding: 3px 6px;
+  background: color-mix(in srgb, var(--color-bg) 82%, transparent); color: var(--color-text);
+}
+.ds-site .site-photo [data-credit] a { color: inherit; text-decoration: underline; }
+
+@keyframes site-risein { from { opacity: 0; transform: translateY(6px) } to { opacity: 1; transform: none } }
+.ds-site [data-teaser] { animation: site-risein .22s ease both; }
+@media (prefers-reduced-motion: reduce) { .ds-site [data-teaser] { animation: none; } }
+
+/* Раскладки, которые на узком экране становятся одной колонкой */
+@media (max-width: 900px) {
+  .ds-site [data-layout] { grid-template-columns: minmax(0, 1fr) !important; }
+  .ds-site [data-aside], .ds-site [data-toc] { position: static !important; }
+}
+@media (max-width: 760px) { .ds-site [data-two] { grid-template-columns: 1fr !important; } }

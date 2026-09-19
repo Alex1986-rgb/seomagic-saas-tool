@@ -4,6 +4,12 @@ import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { ArrowRight, Search, TrendingUp } from "lucide-react";
 
+/**
+ * Здесь обещали «бесплатный доступ без ограничений в течение 7 дней» и
+ * «бесплатный период для всех новых пользователей». Пробного периода нет:
+ * оплата вообще не подключена, а каждая проверка — платные обращения к
+ * поставщику выдачи. Обещание убрано.
+ */
 const PositionPricingCTA: React.FC = () => {
   return (
     <div className="bg-primary/10 rounded-lg p-8 md:p-12 text-center mb-10">
@@ -18,29 +24,24 @@ const PositionPricingCTA: React.FC = () => {
       </h2>
       
       <p className="text-muted-foreground max-w-2xl mx-auto mb-8">
-        Регистрируйтесь и получите бесплатный доступ к базовому мониторингу позиций. 
-        Оцените возможности сервиса без ограничений в течение 7 дней.
+        Проверьте, на каких местах сайт стоит в Яндексе и Google по вашим запросам. 
+        Если нужен регулярный мониторинг большого объёма — оставьте заявку.
       </p>
       
       <div className="flex flex-col sm:flex-row gap-4 justify-center">
         <Button size="lg" asChild>
           <Link to="/position-tracker" className="gap-2">
-            <span>Начать бесплатно</span>
+            <span>Проверить позиции</span>
             <ArrowRight className="h-4 w-4" />
           </Link>
         </Button>
         
         <Button variant="outline" size="lg" asChild>
-          <Link to="/auth?tab=register" className="gap-2">
-            <span>Зарегистрироваться</span>
+          <Link to="/contact" className="gap-2">
+            <span>Оставить заявку</span>
             <TrendingUp className="h-4 w-4" />
           </Link>
         </Button>
-      </div>
-      
-      <div className="mt-8 text-sm text-muted-foreground">
-        Бесплатный период для всех новых пользователей — 7 дней.<br />
-        Используйте все возможности сервиса без ограничений.
       </div>
     </div>
   );

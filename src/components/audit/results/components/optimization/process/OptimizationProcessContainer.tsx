@@ -1,55 +1,26 @@
 
-import React, { useEffect } from 'react';
+import React from 'react';
 import { Progress } from '@/components/ui/progress';
 import { Card, CardContent } from '@/components/ui/card';
 import { Loader2 } from 'lucide-react';
 import { OptimizationProcessContainerProps } from '@/features/audit/types/optimization-types';
 
-const OptimizationProcessContainer: React.FC<OptimizationProcessContainerProps> = ({ 
-  url, 
-  progress, 
-  setOptimizationResult, 
-  setLocalIsOptimized 
+const OptimizationProcessContainer: React.FC<OptimizationProcessContainerProps> = ({
+  url,
+  progress,
 }) => {
-  // Get stage message based on progress
+  // Раньше этапы («оптимизация изображений», «финальные улучшения») менялись
+  // по проценту полосы и не отражали ничего: сервер переписывает страницы
+  // языковой моделью. Показываем то, что происходит на самом деле.
   const getStageMessage = (progress: number) => {
-    if (progress < 20) return "Анализ структуры сайта...";
-    if (progress < 40) return "Оптимизация мета-тегов...";
-    if (progress < 60) return "Улучшение контента...";
-    if (progress < 80) return "Оптимизация изображений...";
-    return "Финальные улучшения...";
+    if (progress <= 0) return "Ставим задачу в очередь...";
+    if (progress >= 99) return "Сохраняем переписанные страницы...";
+    return "Переписываем страницы...";
   };
 
-  useEffect(() => {
-    // If optimization completes
-    if (progress >= 100 && setLocalIsOptimized && setOptimizationResult) {
-      const timer = setTimeout(() => {
-        setLocalIsOptimized(true);
-        
-        // Set mock result
-        setOptimizationResult({
-          beforeScore: 65,
-          afterScore: 92,
-          demoPage: {
-            title: 'Главная страница',
-            content: 'Первоначальный контент страницы...',
-            meta: {
-              description: 'Старое описание',
-              keywords: 'старые, ключевые, слова'
-            },
-            optimized: {
-              content: 'Оптимизированный контент страницы с улучшенной структурой...',
-              meta: {
-                description: 'Оптимизированное SEO-описание с ключевыми словами',
-                keywords: 'оптимизированные, ключевые, слова, сайт'
-              }
-            }
-          }
-        });
-      }, 1000);
-      return () => clearTimeout(timer);
-    }
-  }, [progress, setLocalIsOptimized, setOptimizationResult]);
+  // Здесь стоял подставной итог: «было 65, стало 92» и выдуманная страница с
+  // текстом «Оптимизированный контент страницы...». Экран показывает только ход
+  // работы; настоящий результат приходит от сервера и ставится выше.
 
   return (
     <Card className="my-6 border border-primary/30">
@@ -66,7 +37,7 @@ const OptimizationProcessContainer: React.FC<OptimizationProcessContainerProps> 
           <Progress value={progress} className="h-2" />
           <div className="flex justify-between items-center text-xs text-muted-foreground">
             <span>Выполнено {Math.min(Math.round(progress), 100)}%</span>
-            <span>Осталось: {Math.round((100 - progress) / 10)} мин</span>
+            <span>{progress >= 99 ? 'Завершаем' : 'Идёт работа'}</span>
           </div>
         </div>
       </CardContent>

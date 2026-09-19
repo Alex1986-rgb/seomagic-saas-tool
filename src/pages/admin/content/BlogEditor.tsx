@@ -1,6 +1,5 @@
 
 import React, { useState } from 'react';
-import { Helmet } from 'react-helmet-async';
 import BaseContentEditor from '@/components/admin/content/BaseContentEditor';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -10,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { PlusCircle, Edit, Trash2, Calendar, Tag, User } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import PageSeo from '@/components/seo/PageSeo';
 
 interface BlogPost {
   id: string;
@@ -45,38 +45,11 @@ const BlogEditor: React.FC = () => {
     status: 'draft'
   });
   
-  const [blogPosts, setBlogPosts] = useState<BlogPost[]>([
-    {
-      id: '1',
-      title: 'Как улучшить SEO в 2025 году',
-      excerpt: 'Новые методы и подходы к оптимизации контента',
-      content: '<p>Полная статья о том, как улучшить SEO...</p>',
-      author: 'Алексей Иванов',
-      category: 'SEO',
-      publishDate: '2025-03-15',
-      tags: ['SEO', 'контент', 'оптимизация'],
-      status: 'published'
-    },
-    {
-      id: '2',
-      title: 'Влияние ИИ на поисковую оптимизацию',
-      excerpt: 'Как искусственный интеллект меняет подходы к SEO',
-      content: '<p>Полная статья о том, как ИИ влияет на SEO...</p>',
-      author: 'Мария Смирнова',
-      category: 'AI',
-      publishDate: '2025-04-02',
-      tags: ['AI', 'SEO', 'технологии'],
-      status: 'published'
-    }
-  ]);
-
-  const handleSave = (data: any) => {
-    console.log('Saving blog page data:', data);
-    toast({
-      title: "Изменения сохранены",
-      description: "Контент блога обновлен",
-    });
-  };
+  // Здесь были «опубликованные» статьи выдуманных авторов «Алексей Иванов» и
+  // «Мария Смирнова» с датами 2025 года. Статьи блога этим редактором не
+  // создаются и не публикуются — список начинается пустым. Тосты «Изменения
+  // сохранены», «статья успешно добавлена/удалена» убраны: ничего не сохранялось.
+  const [blogPosts, setBlogPosts] = useState<BlogPost[]>([]);
   
   const handleCreatePost = () => {
     if (!newPost.title || !newPost.content) {
@@ -112,31 +85,23 @@ const BlogEditor: React.FC = () => {
       tags: [],
       status: 'draft'
     });
-    
-    toast({
-      title: "Статья создана",
-      description: "Новая статья блога успешно добавлена"
-    });
   };
   
   const handleDeletePost = (id: string) => {
     setBlogPosts(blogPosts.filter(post => post.id !== id));
-    toast({
-      title: "Статья удалена",
-      description: "Статья блога успешно удалена"
-    });
   };
 
   return (
     <>
-      <Helmet>
-        <title>Управление блогом | Админ панель</title>
-      </Helmet>
+      <PageSeo
+        title="Управление блогом: статьи, категории и настройки раздела"
+        description="Создание и правка материалов блога: тексты статей, обложки, категории и параметры публичной страницы со списком публикаций."
+        noindex
+      />
       
       <BaseContentEditor
         title="Управление блогом"
         description="Редактирование статей, категорий и настройка страницы блога"
-        onSave={handleSave}
       >
         <div className="space-y-6">
           <Card className="bg-black/20 border-white/10">

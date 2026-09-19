@@ -13,6 +13,10 @@ const ClientNotificationsTab: React.FC = () => {
   const [auditCompletedNotification, setAuditCompletedNotification] = useState(true);
   const [optimizationNotification, setOptimizationNotification] = useState(true);
   const [marketingNotification, setMarketingNotification] = useState(false);
+  // Если настройки не прочитались, переключатели показывают значения по
+  // умолчанию, а не сохранённые. Сохранять их в таком виде нельзя — затрём
+  // настоящие настройки, поэтому говорим об ошибке и блокируем кнопку.
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   // Load settings from database
   useEffect(() => {
@@ -25,7 +29,7 @@ const ClientNotificationsTab: React.FC = () => {
           .from('profiles')
           .select('email_notifications, notify_audit_completed, notify_optimization, notify_marketing')
           .eq('id', user.id)
-          .single();
+          .maybeSingle();
 
         if (error) throw error;
 
@@ -37,6 +41,7 @@ const ClientNotificationsTab: React.FC = () => {
         }
       } catch (error) {
         console.error('Error loading notification settings:', error);
+        setLoadError(error instanceof Error ? error.message : 'неизвестная ошибка');
       } finally {
         setLoading(false);
       }
@@ -51,7 +56,7 @@ const ClientNotificationsTab: React.FC = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Not authenticated');
 
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('profiles')
         .update({
           email_notifications: emailNotifications,
@@ -59,9 +64,12 @@ const ClientNotificationsTab: React.FC = () => {
           notify_optimization: optimizationNotification,
           notify_marketing: marketingNotification,
         })
-        .eq('id', user.id);
+        .eq('id', user.id)
+        .select('id');
 
       if (error) throw error;
+      // Без строки профиля update ничего не меняет и ошибки не возвращает.
+      if (!data || data.length === 0) throw new Error('Профиль не найден');
 
       toast({
         title: "Настройки сохранены",
@@ -89,65 +97,84 @@ const ClientNotificationsTab: React.FC = () => {
   
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h3 className="text-lg font-medium">Email уведомления</h3>
-          <p className="text-sm text-muted-foreground">
-            Управляйте email-уведомлениями, которые вы получаете
-          </p>
+      {loadError && (
+        <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-3 text-sm">
+          Не удалось загрузить настройки уведомлений: {loadError}
         </div>
-        <Switch 
-          checked={emailNotifications} 
-          onCheckedChange={setEmailNotifications} 
-        />
+      )}
+
+      {/*
+        Раньше здесь были «Email уведомления», «уведомлять о готовности
+        оптимизированной версии сайта» и «маркетинговые рассылки». На деле писем
+        по уведомлениям сервис не отправляет, уведомлений об оптимизации никто не
+        создаёт, рассылок нет. Работает одно: запись о завершении аудита в разделе
+        «Уведомления» кабинета. Остальные переключатели недоступны для изменения —
+        их сохранённые значения при сохранении записываются обратно как были.
+      */}
+      <div>
+        <h3 className="text-lg font-medium">Уведомления в личном кабинете</h3>
+        <p className="text-sm text-muted-foreground">
+          Уведомления появляются во вкладке «Уведомления» личного кабинета. Писем на почту
+          по ним сервис пока не отправляет.
+        </p>
       </div>
-      
+
       <div className="space-y-4">
         <div className="flex items-center justify-between py-2 border-b">
           <div>
             <h4 className="font-medium">Завершение аудита</h4>
             <p className="text-sm text-muted-foreground">
-              Уведомлять о завершении SEO-аудита
+              Создавать уведомление в кабинете, когда SEO-аудит закончится
             </p>
           </div>
           <Switch 
             checked={auditCompletedNotification} 
             onCheckedChange={setAuditCompletedNotification}
-            disabled={!emailNotifications}
           />
+        </div>
+      </div>
+
+      <div className="space-y-4">
+        <div>
+          <h4 className="font-medium">Пока недоступно</h4>
+          <p className="text-sm text-muted-foreground">
+            Этого сервис сейчас не делает, поэтому переключатели ниже ни на что не влияют.
+          </p>
+        </div>
+
+        <div className="flex items-center justify-between py-2 border-b">
+          <div>
+            <h4 className="font-medium">Письма на почту</h4>
+            <p className="text-sm text-muted-foreground">
+              Письма по уведомлениям пока не отправляются
+            </p>
+          </div>
+          <Switch checked={emailNotifications} disabled />
         </div>
         
         <div className="flex items-center justify-between py-2 border-b">
           <div>
             <h4 className="font-medium">Оптимизация сайта</h4>
             <p className="text-sm text-muted-foreground">
-              Уведомлять о готовности оптимизированной версии сайта
+              Уведомления об окончании оптимизации пока не создаются
             </p>
           </div>
-          <Switch 
-            checked={optimizationNotification} 
-            onCheckedChange={setOptimizationNotification}
-            disabled={!emailNotifications}
-          />
+          <Switch checked={optimizationNotification} disabled />
         </div>
         
         <div className="flex items-center justify-between py-2 border-b">
           <div>
             <h4 className="font-medium">Маркетинговые рассылки</h4>
             <p className="text-sm text-muted-foreground">
-              Получать новости, советы и специальные предложения
+              Рассылок с новостями и предложениями сейчас нет
             </p>
           </div>
-          <Switch 
-            checked={marketingNotification} 
-            onCheckedChange={setMarketingNotification}
-            disabled={!emailNotifications}
-          />
+          <Switch checked={marketingNotification} disabled />
         </div>
       </div>
       
       <div className="flex justify-end">
-        <Button onClick={handleSave} disabled={saving} className="gap-2">
+        <Button onClick={handleSave} disabled={saving || !!loadError} className="gap-2">
           {saving ? (
             <>
               <Loader2 className="h-4 w-4 animate-spin" />

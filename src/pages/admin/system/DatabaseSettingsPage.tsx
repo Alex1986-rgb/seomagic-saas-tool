@@ -1,42 +1,31 @@
-
 import React from "react";
 import DatabaseSettings from "@/components/admin/system/DatabaseSettings";
 import { Card, CardContent } from "@/components/ui/card";
+import PageSeo from '@/components/seo/PageSeo';
 
-const DatabaseStats = () => (
-  <div className="border rounded-md p-4 bg-muted my-6">
-    <div className="text-md font-medium mb-2">Мониторинг БД:</div>
-    <div className="flex gap-8 flex-wrap text-sm text-muted-foreground">
-      <div>Статус: <span className="text-green-600 font-bold">Активно</span></div>
-      <div>Тип: PostgreSQL</div>
-      <div>Подключений: <span className="text-foreground">12</span></div>
-      <div>Средняя нагрузка: <span className="text-foreground">23%</span></div>
-      <div>Время отклика: <span className="text-foreground">58 мс</span></div>
-      <div>Дата последнего резервного копирования: <span className="text-foreground">19.04.2025 01:14</span></div>
-    </div>
-  </div>
-);
-
+/**
+ * База данных.
+ *
+ * Убран блок «Мониторинг БД»: «Подключений: 12», «Средняя нагрузка: 23%», «Время
+ * отклика: 58 мс», «Дата последнего резервного копирования: 19.04.2025» — все
+ * числа были вписаны в код, сервис их не измеряет.
+ */
 const DatabaseSettingsPage = () => (
-  <div className="container mx-auto px-6 py-10 max-w-3xl">
+  <div className="container mx-auto px-4 py-8 max-w-3xl">
+    <PageSeo
+      title="База данных: где смотреть подключения и нагрузку"
+      description="Параметры подключения, нагрузка и резервные копии базы управляются в панели Supabase; админка сервиса их не показывает и не меняет."
+      noindex
+    />
     <h1 className="text-3xl font-bold mb-6">База данных</h1>
-    <p className="mb-4 text-muted-foreground">Настройки подключения и оптимизации базы данных, а также мониторинг состояния сервера.</p>
-    <DatabaseStats />
+    <p className="mb-4 text-muted-foreground">
+      Нагрузку, число подключений и время отклика базы сервис не измеряет.
+    </p>
     <Card>
       <CardContent className="p-0">
         <DatabaseSettings />
       </CardContent>
     </Card>
-    <div className="mt-8 text-sm text-muted-foreground space-y-2">
-      <div><b>Возможности:</b> мониторинг, оптимизация, резервные копии.</div>
-      <ul className="list-disc pl-5">
-        <li>Настройка параметров подключения</li>
-        <li>Включение пула соединений и кеширования</li>
-        <li>Проверка работы через тестовое соединение</li>
-        <li>Отображение нагрузки и статуса БД</li>
-      </ul>
-      <div className="pt-2">Рекомендуется следить за нагрузкой для предотвращения простоев.</div>
-    </div>
   </div>
 );
 

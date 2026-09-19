@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { NAV_ITEMS, RESOURCE_ITEMS, COMPANY_ITEMS, FEATURES_ITEMS, SUPPORT_ITEMS } from '@/components/navbar/navConstants';
 import { FileText, ArrowRight } from 'lucide-react';
+import PageSeo from '@/components/seo/PageSeo';
 
 const AllPages: React.FC = () => {
   const navigate = useNavigate();
@@ -48,6 +49,10 @@ const AllPages: React.FC = () => {
   
   return (
     <Layout>
+      <PageSeo
+        title="Все страницы сервиса: полный перечень разделов сайта"
+        description="Полный список разделов платформы: аудит, отслеживание позиций, тарифы, документация, блог и справочные материалы — в одном месте."
+      />
       <div className="container mx-auto px-4 py-32">
         <div className="max-w-6xl mx-auto">
           <h1 className="text-3xl font-bold mb-6">Все страницы</h1>

@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
+import { assertTaskAccess, authErrorResponse } from "../_shared/auth.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -12,38 +13,39 @@ serve(async (req) => {
   }
 
   try {
-    const supabaseClient = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
-      {
-        global: {
-          headers: { Authorization: req.headers.get('Authorization')! },
-        },
-      }
-    );
-
-    // Try to get user, but don't fail if not authenticated (for public quick audits)
-    const { data: { user } } = await supabaseClient.auth.getUser();
-
     const { task_id } = await req.json();
 
     if (!task_id) {
-      throw new Error('task_id parameter is required');
+      return new Response(
+        JSON.stringify({ success: false, error: 'task_id parameter is required' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+      );
     }
 
-    // Get task status - filter by user_id if authenticated, or allow public tasks (user_id IS NULL)
-    let query = supabaseClient
+    // Доступ — по тем же правилам, что и RLS на audit_tasks: своя задача,
+    // гостевая (user_id IS NULL) или любая для администратора. Раньше вошедшему
+    // искали только задачи с его user_id: гостевой аудит, запущенный до входа
+    // или открытый по ссылке, давал «Task not found», и опрос останавливался.
+    try {
+      await assertTaskAccess(req, task_id);
+    } catch (err) {
+      const denied = authErrorResponse(err, corsHeaders);
+      if (denied) return denied;
+      throw err;
+    }
+
+    // Доступ проверен — читаем служебным ключом. У url_queue нет политик для
+    // пользователей, и клиент пользователя всегда видел очередь пустой.
+    const serviceClient = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
+    );
+
+    const { data: task, error: taskError } = await serviceClient
       .from('audit_tasks')
       .select('*')
-      .eq('id', task_id);
-    
-    if (user) {
-      query = query.eq('user_id', user.id);
-    } else {
-      query = query.is('user_id', null);
-    }
-    
-    const { data: task, error: taskError } = await query.single();
+      .eq('id', task_id)
+      .maybeSingle();
 
     if (taskError || !task) {
       throw new Error('Task not found');
@@ -55,12 +57,12 @@ serve(async (req) => {
       if (task.batch_count === 0) {
         console.log(`Initializing queue for task ${task_id}`);
         // Trigger processor to initialize queue
-        supabaseClient.functions.invoke('audit-processor', {
+        serviceClient.functions.invoke('audit-processor', {
           body: { task_id }
         }).catch(err => console.error('Failed to initialize queue:', err));
       } else {
         // Check for pending URLs in existing queue
-        const { data: pendingUrls } = await supabaseClient
+        const { data: pendingUrls } = await serviceClient
           .from('url_queue')
           .select('id')
           .eq('task_id', task_id)
@@ -69,7 +71,7 @@ serve(async (req) => {
         
         if (pendingUrls && pendingUrls.length > 0) {
           // Trigger next batch asynchronously (non-blocking)
-          supabaseClient.functions.invoke('audit-processor', {
+          serviceClient.functions.invoke('audit-processor', {
             body: { task_id }
           }).catch(err => console.error('Failed to trigger batch:', err));
         }
@@ -79,11 +81,11 @@ serve(async (req) => {
     // Get audit results if completed
     let auditData = null;
     if (task.status === 'completed' && task.audit_id) {
-      const { data: result } = await supabaseClient
+      const { data: result } = await serviceClient
         .from('audit_results')
         .select('audit_data, score, page_count, issues_count')
         .eq('task_id', task_id)
-        .single();
+        .maybeSingle();
       
       auditData = result;
     }

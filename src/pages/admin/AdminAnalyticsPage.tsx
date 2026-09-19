@@ -2,10 +2,16 @@
 import React from 'react';
 import AdminAnalytics from '@/components/admin/AdminAnalytics';
 import { Gauge, BarChart2, Monitor, Users } from "lucide-react";
+import PageSeo from '@/components/seo/PageSeo';
 
 const AdminAnalyticsPage: React.FC = () => {
   return (
     <div className="container mx-auto px-6 py-10 max-w-6xl">
+      <PageSeo
+        title="Аналитика платформы: трафик, аудиты и активность клиентов"
+        description="Сводные показатели работы сервиса: число проверок, активные пользователи, нагрузка на систему и динамика по выбранным периодам."
+        noindex
+      />
       <div className="mb-8 px-6 py-8 rounded-3xl bg-gradient-to-br from-blue-600/20 via-purple-500/20 to-indigo-600/20 flex items-center gap-6 border border-primary/20 shadow-2xl">
         <div className="bg-primary/20 text-primary rounded-full p-5 shadow-lg">
           <BarChart2 className="h-10 w-10" />

@@ -8,10 +8,7 @@ export const NAV_ITEMS = [
     label: 'О нас',
     href: '/about',
   },
-  {
-    label: 'Канал',
-    href: '/channel',
-  },
+  // «Канал» (/channel) убран из меню: страница — заглушка, закрытая от индексации.
   {
     label: 'Аудит сайта',
     href: '/audit',
@@ -79,16 +76,8 @@ export const RESOURCE_ITEMS = [
     href: '/guides',
     isNew: false,
   },
-  {
-    label: 'API документация',
-    href: '/api-docs',
-    isNew: false,
-  },
-  {
-    label: 'Вебинары',
-    href: '/webinars',
-    isNew: false,
-  },
+  // «API документация» (/api-docs) и «Вебинары» (/webinars) убраны: публичного
+  // API и вебинаров нет, страницы — заглушки, закрытые от индексации.
   {
     label: 'FAQ',
     href: '/faq',
@@ -102,16 +91,9 @@ export const COMPANY_ITEMS = [
     href: '/about',
     isNew: false,
   },
-  {
-    label: 'Команда',
-    href: '/team',
-    isNew: false,
-  },
-  {
-    label: 'Карьера',
-    href: '/careers',
-    isNew: false,
-  },
+  // «Команда» (/team) и «Карьера» (/careers) убраны: настоящий состав команды
+  // не опубликован, вакансий нет — обе страницы честные заглушки с noindex,
+  // ссылаться на них из меню незачем.
   {
     label: 'Партнеры',
     href: '/partners',

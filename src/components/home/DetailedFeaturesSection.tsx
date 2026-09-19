@@ -14,6 +14,7 @@ import {
   Star,
   ArrowRight
 } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import DetailedFeatureCard from '../features/DetailedFeatureCard';
 
 const DetailedFeaturesSection: React.FC = () => {
@@ -45,8 +46,11 @@ const DetailedFeaturesSection: React.FC = () => {
     {
       icon: BarChart3,
       title: 'Отслеживание позиций',
-      description: 'Ежедневный мониторинг позиций вашего сайта в поисковых системах по ключевым словам.',
-      link: '/features/position-tracking-feature'
+      // «Ежедневный мониторинг» убран: проверки позиций запускаются вручную.
+      description: 'Проверка позиций вашего сайта в Яндексе и Google по списку запросов.',
+      // Был адрес /features/position-tracking-feature — такого маршрута нет, стрелка вела на 404.
+      // Основной адрес — /position-tracking, /features/position-tracking только переадресует.
+      link: '/position-tracking'
     },
     {
       icon: Users,
@@ -64,7 +68,8 @@ const DetailedFeaturesSection: React.FC = () => {
       icon: Lock,
       title: 'Безопасность данных',
       description: 'Полная конфиденциальность и безопасность ваших данных с соблюдением GDPR.',
-      link: '/features/security'
+      // Был адрес /features/security — такого маршрута нет, страница называется data-security.
+      link: '/features/data-security'
     },
     {
       icon: Layers,
@@ -141,15 +146,24 @@ const DetailedFeaturesSection: React.FC = () => {
           <p className="text-muted-foreground mb-4">
             Нужна помощь в выборе подходящих инструментов?
           </p>
-          <motion.a
-            href="/contact"
-            className="inline-flex items-center px-6 py-3 bg-primary text-primary-foreground rounded-lg font-medium hover:bg-primary/90 transition-colors duration-300"
+          {/*
+            Здесь был обычный <a href="/contact">: он не знает про подпуть
+            /seomagic-saas-tool/ и на опубликованном сайте уводил на корень
+            github.io с ошибкой 404. Ссылка роутера адрес публикации учитывает.
+          */}
+          <motion.div
+            className="inline-block"
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
           >
-            Получить консультацию
-            <ArrowRight className="ml-2 h-4 w-4" />
-          </motion.a>
+            <Link
+              to="/contact"
+              className="inline-flex items-center px-6 py-3 bg-primary text-primary-foreground rounded-lg font-medium hover:bg-primary/90 transition-colors duration-300"
+            >
+              Получить консультацию
+              <ArrowRight className="ml-2 h-4 w-4" />
+            </Link>
+          </motion.div>
         </motion.div>
       </div>
     </section>

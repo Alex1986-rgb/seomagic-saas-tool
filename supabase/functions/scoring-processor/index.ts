@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
+import { assertServiceRole, authErrorResponse } from "../_shared/auth.ts";
 
 /**
  * WEIGHTED SCORING ALGORITHM - Sprint 2
@@ -348,6 +349,18 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  // Оценка пишет результаты служебным ключом и запускает классификатор, смету и
+  // уведомления. Открытая всем, она позволяла по известному task_id задваивать
+  // замечания в чужом отчёте и слать хозяину повторные уведомления. Зовёт её
+  // только audit-processor — служебным ключом.
+  try {
+    assertServiceRole(req);
+  } catch (err) {
+    const denied = authErrorResponse(err, corsHeaders);
+    if (denied) return denied;
+    throw err;
+  }
+
   try {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
@@ -358,7 +371,7 @@ serve(async (req) => {
     console.log(`Starting scoring for task: ${task_id}`);
 
     // Fetch all page analysis data
-    const { data: pages, error: pagesError } = await supabase
+    const { data: rawPages, error: pagesError } = await supabase
       .from('page_analysis')
       .select('*')
       .eq('task_id', task_id);
@@ -367,11 +380,26 @@ serve(async (req) => {
       throw new Error(`Failed to fetch page analysis: ${pagesError.message}`);
     }
 
-    if (!pages || pages.length === 0) {
+    if (!rawPages || rawPages.length === 0) {
       throw new Error('No pages found for scoring');
     }
 
-    console.log(`Analyzing ${pages.length} pages`);
+    // Один адрес мог разбираться несколько раз: до починки очереди краулер
+    // обходил сквозные ссылки заново с каждой страницы. Оценки и доли считаем
+    // по разным страницам, иначе знаменатель раздут, а «страниц на сайте»
+    // выходит втрое больше, чем есть.
+    const byUrl = new Map<string, any>();
+    for (const page of rawPages) {
+      byUrl.set(String(page.url), page);
+    }
+    const pages = Array.from(byUrl.values());
+    const uniquePageCount = pages.length;
+
+    if (rawPages.length !== uniquePageCount) {
+      console.log(`Убраны повторы: ${rawPages.length} разборов → ${uniquePageCount} страниц`);
+    }
+
+    console.log(`Analyzing ${uniquePageCount} pages`);
 
     // Calculate weighted scores
     const scores = calculateWeightedScores(pages as PageAnalysis[]);
@@ -440,7 +468,10 @@ serve(async (req) => {
         issues_by_severity: scores.issues_by_severity
       },
       summary: {
-        page_count: pages.length,
+        // Считаем разные страницы, а не строки разбора: один адрес мог попасть
+        // в обход несколько раз, и в отчёте выходило втрое больше страниц,
+        // чем есть на сайте.
+        page_count: uniquePageCount,
         is_partial: isPartial,
         completion_percentage: completionPercentage,
         partial_data_note: partialNote,
@@ -475,7 +506,7 @@ serve(async (req) => {
         pages_by_depth: scores.pages_by_depth,
         pages_by_type: scores.pages_by_type,
         issues_by_severity: scores.issues_by_severity,
-        page_count: pages.length,
+        page_count: uniquePageCount,
         is_partial: isPartial,
         completion_percentage: completionPercentage,
         partial_data_note: partialNote,
@@ -513,7 +544,7 @@ serve(async (req) => {
       .from('audits')
       .update({ 
         status: isPartial ? 'partial' : 'completed',
-        pages_scanned: pages.length,
+        pages_scanned: uniquePageCount,
         seo_score: scores.global_score,
         completed_at: new Date().toISOString()
       })
@@ -563,7 +594,7 @@ serve(async (req) => {
             url: notificationTask.url,
             score: scores.global_score,
             seo_score: scores.seo_score,
-            pages_scanned: pages.length,
+            pages_scanned: uniquePageCount,
             issues_count: scores.issues_by_severity.critical + scores.issues_by_severity.important + scores.issues_by_severity.minor,
           }
         }
@@ -594,7 +625,8 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({
         error: error instanceof Error ? error.message : 'Unknown error',
-        details: error instanceof Error ? error.stack : undefined
+        // Стек остаётся в логах функции: наружу его отдавать нельзя —
+        // он раскрывает устройство сервиса.
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },

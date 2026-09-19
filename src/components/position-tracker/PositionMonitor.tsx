@@ -6,9 +6,8 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Bell, Shield, AlertTriangle } from 'lucide-react';
+import { Bell } from 'lucide-react';
 import { checkPositions, PositionData } from '@/services/position/positionTracker';
-import { useProxyManager } from '@/hooks/use-proxy-manager';
 import { useToast } from '@/hooks/use-toast';
 import { useMobile } from '@/hooks/use-mobile';
 
@@ -34,23 +33,13 @@ export const PositionMonitor: React.FC<PositionMonitorProps> = ({
   const [autoRefresh, setAutoRefresh] = useState(false);
   const [nextScanTime, setNextScanTime] = useState<Date | null>(null);
   const [timeRemaining, setTimeRemaining] = useState<string>('');
-  const { activeProxies, proxyManager } = useProxyManager();
   const { toast } = useToast();
   const isMobile = useMobile();
-  
-  // Загружаем настройки при монтировании
-  useEffect(() => {
-    const savedSettings = localStorage.getItem('position_tracker_settings');
-    if (savedSettings) {
-      try {
-        const settings = JSON.parse(savedSettings);
-        const interval = settings.checkInterval || 60;
-        scanInterval = interval;
-      } catch (error) {
-        console.error('Ошибка загрузки настроек:', error);
-      }
-    }
-  }, []);
+  // Раньше здесь подгружались «настройки трекера» (интервал из localStorage) и
+  // список прокси из браузера, а в шапке висел значок «Прокси: N» / «Нет прокси».
+  // Позиции проверяет сервер через поставщика выдачи, прокси из браузера на это
+  // не влияют, а присваивание интервала пропу ничего не меняло. Интервал
+  // автообновления берётся только из scanInterval.
   
   // Эффект для авто-обновления
   useEffect(() => {
@@ -86,16 +75,13 @@ export const PositionMonitor: React.FC<PositionMonitorProps> = ({
     setIsLoading(true);
     
     try {
-      const useProxy = activeProxies.length > 0;
-      
       const results = await checkPositions({
         domain,
         keywords,
         searchEngine,
         region,
         depth: 100,
-        scanFrequency: 'once',
-        useProxy
+        scanFrequency: 'once'
       });
       
       setData(results);
@@ -197,19 +183,6 @@ export const PositionMonitor: React.FC<PositionMonitorProps> = ({
           <p className="text-sm text-muted-foreground">{data?.searchEngine} • {data?.region || region}</p>
         </div>
         <div className="flex items-center gap-2">
-          {activeProxies.length > 0 ? (
-            <Badge variant="outline" className="bg-green-50 text-green-700 flex items-center gap-1">
-              <Shield className="h-3 w-3" /> 
-              {isMobile ? '' : 'Прокси: '}
-              {activeProxies.length}
-            </Badge>
-          ) : (
-            <Badge variant="outline" className="bg-yellow-50 text-yellow-700 flex items-center gap-1">
-              <AlertTriangle className="h-3 w-3" />
-              Нет прокси
-            </Badge>
-          )}
-          
           <Button 
             variant="outline" 
             size={isMobile ? "icon" : "default"}
@@ -265,7 +238,6 @@ export const PositionMonitor: React.FC<PositionMonitorProps> = ({
                 <CardTitle>Проверенные ключевые слова</CardTitle>
                 <CardDescription>
                   {data.keywords.length} ключевых слов проверено
-                  {data.proxyUsed && ` с использованием прокси`}
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -380,14 +352,10 @@ export const PositionMonitor: React.FC<PositionMonitorProps> = ({
                     <div className="font-medium">Дата проверки</div>
                     <div>{new Date(data.timestamp).toLocaleString()}</div>
                   </div>
-                  <div className="grid grid-cols-2 gap-2 text-sm">
-                    <div className="font-medium">Использование прокси</div>
-                    <div>{data.useProxy ? 'Да' : 'Нет'}</div>
-                  </div>
-                  {data.useProxy && data.proxyUsed && (
+                  {data.provider && (
                     <div className="grid grid-cols-2 gap-2 text-sm">
-                      <div className="font-medium">Использованный прокси</div>
-                      <div>{data.proxyUsed}</div>
+                      <div className="font-medium">Поставщик выдачи</div>
+                      <div>{data.provider}</div>
                     </div>
                   )}
                   <div className="grid grid-cols-2 gap-2 text-sm">

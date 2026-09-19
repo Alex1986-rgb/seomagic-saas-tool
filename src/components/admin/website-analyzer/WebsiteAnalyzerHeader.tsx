@@ -1,7 +1,18 @@
 
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { Monitor, ChartBar } from 'lucide-react';
 
+/**
+ * Шапка анализатора сайтов.
+ *
+ * Кнопки «Настройки» и «Аналитика» были обычными <a href="/admin/...">: такой
+ * адрес не учитывает подпуть публикации /seomagic-saas-tool/, и на
+ * опубликованном сайте ссылки вели на корень github.io и 404, да ещё и
+ * перезагружали всё приложение. Теперь это <Link> — он подставляет basename
+ * роутера. Кнопка внутри ссылки тоже убрана: интерактивный элемент в
+ * интерактивном элементе — невалидная разметка, стили перенесены на саму ссылку.
+ */
 const WebsiteAnalyzerHeader = () => {
   return (
     <>
@@ -18,18 +29,20 @@ const WebsiteAnalyzerHeader = () => {
             для сканирования, анализа и оптимизации сайтов.
           </p>
           <div className="flex flex-wrap gap-2 mt-4">
-            <a href="/admin/settings">
-              <button className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[#22213B] text-[#8B5CF6] font-bold border border-[#8B5CF6]/40 hover:bg-[#8B5CF6] hover:text-white transition-all duration-200">
-                <ChartBar className="h-5 w-5" />
-                Настройки
-              </button>
-            </a>
-            <a href="/admin/analytics">
-              <button className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[#22213B] text-[#F97316] font-bold border border-[#F97316]/40 hover:bg-[#F97316] hover:text-white transition-all duration-200">
-                <ChartBar className="h-5 w-5" />
-                Аналитика
-              </button>
-            </a>
+            <Link
+              to="/admin/settings"
+              className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[#22213B] text-[#8B5CF6] font-bold border border-[#8B5CF6]/40 hover:bg-[#8B5CF6] hover:text-white transition-all duration-200"
+            >
+              <ChartBar className="h-5 w-5" />
+              Настройки
+            </Link>
+            <Link
+              to="/admin/analytics"
+              className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[#22213B] text-[#F97316] font-bold border border-[#F97316]/40 hover:bg-[#F97316] hover:text-white transition-all duration-200"
+            >
+              <ChartBar className="h-5 w-5" />
+              Аналитика
+            </Link>
           </div>
         </div>
       </div>

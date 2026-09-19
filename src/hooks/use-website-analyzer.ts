@@ -1,8 +1,14 @@
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { useToast } from './use-toast';
 import { useScan } from './use-scan';
 import { validationService } from '@/services/validation/validationService';
+import { fetchIssueSummary, type IssueSummary } from '@/services/audit/fetchIssueSummary';
+import { fetchPageAnalysis } from '@/services/audit/fetchPageAnalysis';
+
+/** Замечания дописывает классификатор после завершения обхода — ждём их немного. */
+const ISSUES_REREAD_DELAY_MS = 4000;
+const ISSUES_REREAD_ATTEMPTS = 5;
 
 export interface WebsiteAnalyzerResults {
   totalPages: number;
@@ -28,7 +34,6 @@ export const useWebsiteAnalyzer = () => {
   
   const { toast } = useToast();
   
-  // Initialize scan functionality
   const {
     isScanning,
     scanDetails,
@@ -36,12 +41,69 @@ export const useWebsiteAnalyzer = () => {
     startScan,
     cancelScan
   } = useScan(url, (pagesCount) => {
-    // Update results based on scanned pages
-    setScanResults(prev => ({
-      ...prev,
-      totalPages: pagesCount
-    }));
+    // На каждом тике опроса — только счётчик страниц. Итоги обхода грузятся
+    // один раз, когда он закончится (эффект ниже).
+    setScanResults(prev => ({ ...prev, totalPages: pagesCount }));
   });
+
+  /**
+   * Итоги обхода забираем один раз — на переходе «идёт → завершён».
+   *
+   * Раньше загрузка висела на счётчике страниц, а useScan вызывает его на каждом
+   * тике опроса: каждые 2 секунды уходило по два запроса (до 200 строк страниц и
+   * все замечания), ответы могли прийти не по порядку, а последний срабатывал
+   * раньше, чем классификатор допишет замечания, — и сводка оставалась нулевой.
+   * Замечания поэтому перечитываем ещё несколько раз, пока они не появятся.
+   */
+  const wasScanningRef = useRef(false);
+  useEffect(() => {
+    const justFinished = wasScanningRef.current && !isScanning;
+    wasScanningRef.current = isScanning;
+    if (!justFinished || scanDetails.status !== 'completed' || !taskId) return;
+
+    const finishedTaskId = taskId;
+    let cancelled = false;
+    let attempts = 0;
+    let retryTimer: ReturnType<typeof setTimeout> | null = null;
+
+    const applyIssues = (summary: IssueSummary) => {
+      setScanResults(prev => ({
+        ...prev,
+        brokenLinks: summary.brokenLinks,
+        duplicateContent: summary.duplicateContent,
+        missingMetadata: summary.missingMetadata,
+      }));
+    };
+
+    const scheduleIssuesReread = () => {
+      if (attempts >= ISSUES_REREAD_ATTEMPTS) return;
+      retryTimer = setTimeout(async () => {
+        attempts += 1;
+        const summary = await fetchIssueSummary(finishedTaskId);
+        if (cancelled) return;
+        applyIssues(summary);
+        if (summary.total === 0) scheduleIssuesReread();
+      }, ISSUES_REREAD_DELAY_MS);
+    };
+
+    (async () => {
+      const [pages, summary] = await Promise.all([
+        fetchPageAnalysis(finishedTaskId),
+        fetchIssueSummary(finishedTaskId),
+      ]);
+      if (cancelled) return;
+
+      setScannedUrls(pages.map((page) => page.url));
+      setScanResults(prev => ({ ...prev, totalPages: pages.length || prev.totalPages }));
+      applyIssues(summary);
+      if (summary.total === 0) scheduleIssuesReread();
+    })();
+
+    return () => {
+      cancelled = true;
+      if (retryTimer) clearTimeout(retryTimer);
+    };
+  }, [isScanning, scanDetails.status, taskId]);
   
   // Handle URL change
   const handleUrlChange = useCallback((newUrl: string) => {
@@ -68,21 +130,14 @@ export const useWebsiteAnalyzer = () => {
         return;
       }
 
-      // Generate mock URLs for testing
-      const mockUrls = Array(10).fill(0).map((_, i) => 
-        `${url.startsWith('http') ? url : 'https://' + url}/${i === 0 ? '' : 'page' + i}`
-      );
-      setScannedUrls(mockUrls);
-      
+      // Раньше здесь создавался список из десяти несуществующих адресов
+      // (site.ru/page1 … page9), а «битые ссылки», «дубли» и «нет описания»
+      // выбирались случайными числами. Теперь просто запускаем настоящий
+      // аудит: результаты подставит обработчик завершения.
+      setScannedUrls([]);
+      setScanResults({ totalPages: 0, brokenLinks: 0, duplicateContent: 0, missingMetadata: 0 });
+
       await startScan();
-      
-      // Update scan results with mock data
-      setScanResults({
-        totalPages: mockUrls.length,
-        brokenLinks: Math.floor(Math.random() * 5),
-        duplicateContent: Math.floor(Math.random() * 3),
-        missingMetadata: Math.floor(Math.random() * 8)
-      });
     } catch (error) {
       console.error('Error starting scan:', error);
       toast({

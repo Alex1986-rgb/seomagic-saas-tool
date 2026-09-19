@@ -1,13 +1,37 @@
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { Navigate, useSearchParams } from 'react-router-dom';
 import { useToast } from "@/hooks/use-toast";
 import Layout from '@/components/Layout';
 import AuditTimeoutMessage from "@/components/audit/AuditTimeoutMessage";
 import AuditLoaderSection from "@/components/audit/AuditLoaderSection";
 import { AuditProvider } from '@/contexts/AuditContext';
+import PageSeo from '@/components/seo/PageSeo';
+import { auditPagePath } from '@/modules/audit/utils/auditLinks';
 
+/**
+ * Аудит по адресу сайта запускается и показывается на `/site-audit` — там живёт
+ * рабочая цепочка обхода. Сюда же вели и главная форма, и ссылки из писем, а
+ * страница умела только показывать готовые результаты: человек видел заголовок
+ * «Результаты SEO аудита» и пустоту под ним. Старые ссылки переводим на рабочую
+ * страницу, сохраняя номер задачи, если он был: тогда откроется именно она.
+ *
+ * Переадресация вынесена в обёртку. Раньше `return <Navigate/>` стоял до
+ * useState/useEffect: при смене параметров на той же странице число хуков
+ * менялось, и React падал с «Rendered fewer hooks than expected».
+ */
 const Audit: React.FC = () => {
+  const [searchParams] = useSearchParams();
+  const requestedUrl = searchParams.get('url');
+
+  if (requestedUrl) {
+    return <Navigate to={auditPagePath(requestedUrl, searchParams.get('task_id'))} replace />;
+  }
+
+  return <AuditPageContent />;
+};
+
+const AuditPageContent: React.FC = () => {
   const [searchParams] = useSearchParams();
   const [url, setUrl] = useState<string>('');
   const [error, setError] = useState<string | null>(null);
@@ -140,6 +164,10 @@ const Audit: React.FC = () => {
 
   return (
     <Layout>
+      <PageSeo
+        title="Бесплатный SEO-аудит сайта онлайн за несколько минут"
+        description="Введите адрес сайта и получите отчёт: ошибки метатегов, битые ссылки, скорость загрузки и структура страниц с рекомендациями."
+      />
       <AuditProvider initialUrl={url || ''}>
         <AuditLoaderSection
           url={url}

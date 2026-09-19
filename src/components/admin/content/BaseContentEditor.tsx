@@ -1,43 +1,35 @@
-
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { 
-  FileText, 
-  Image, 
-  Search, 
-  Layout, 
-  Link as LinkIcon,
-  Type
+import {
+  FileText,
+  Search,
+  Layout
 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { useToast } from '@/hooks/use-toast';
+import NotCollectedNotice from '@/components/admin/NotCollectedNotice';
 
+/**
+ * Каркас редакторов страниц в админке.
+ *
+ * Внизу стояла кнопка «Сохранить изменения»: она вызывала onSave({}) — пустой
+ * объект, который редакторы только печатали в консоль, — и показывала тост
+ * «Изменения сохранены. Контент успешно обновлен». После перезагрузки правок не
+ * было, на сайте ничего не менялось: хранилища контента нет, тексты страниц
+ * заданы в коде. Кнопка и тост убраны, вместо них — предупреждение над формой.
+ */
 interface BaseContentEditorProps {
   title: string;
   description: string;
-  onSave: (data: any) => void;
   children?: React.ReactNode;
 }
 
 const BaseContentEditor: React.FC<BaseContentEditorProps> = ({
   title,
   description,
-  onSave,
   children
 }) => {
-  const { toast } = useToast();
-
-  const handleSave = () => {
-    onSave({});
-    toast({
-      title: "Изменения сохранены",
-      description: "Контент успешно обновлен",
-    });
-  };
-
   return (
     <div className="container mx-auto px-4 py-8 max-w-6xl">
       <Card className="bg-gradient-to-br from-[#222222] to-[#1a1a1a] border border-white/10 shadow-lg text-white">
@@ -46,6 +38,12 @@ const BaseContentEditor: React.FC<BaseContentEditorProps> = ({
           <p className="text-gray-400">{description}</p>
         </CardHeader>
         <CardContent>
+          <NotCollectedNotice
+            className="mb-6 bg-black/20 border-white/10 text-white"
+            title="Редактор пока не сохраняет изменения"
+            description="Хранилища контента нет: тексты страниц сайта заданы в коде. Правки в этой форме никуда не записываются, на сайте не появятся и пропадут после перезагрузки."
+          />
+
           <Tabs defaultValue="content">
             <TabsList className="mb-6 bg-black/20">
               <TabsTrigger value="content" className="data-[state=active]:bg-primary/20">
@@ -70,22 +68,22 @@ const BaseContentEditor: React.FC<BaseContentEditorProps> = ({
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium mb-2">Meta Title</label>
-                  <Input 
-                    placeholder="Введите meta title..." 
+                  <Input
+                    placeholder="Введите meta title..."
                     className="bg-black/20 border-white/10"
                   />
                 </div>
                 <div>
                   <label className="block text-sm font-medium mb-2">Meta Description</label>
-                  <Textarea 
-                    placeholder="Введите meta description..." 
+                  <Textarea
+                    placeholder="Введите meta description..."
                     className="bg-black/20 border-white/10"
                   />
                 </div>
                 <div>
                   <label className="block text-sm font-medium mb-2">Keywords</label>
-                  <Input 
-                    placeholder="Введите ключевые слова через запятую..." 
+                  <Input
+                    placeholder="Введите ключевые слова через запятую..."
                     className="bg-black/20 border-white/10"
                   />
                 </div>
@@ -96,28 +94,22 @@ const BaseContentEditor: React.FC<BaseContentEditorProps> = ({
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium mb-2">CSS Классы</label>
-                  <Input 
-                    placeholder="Введите CSS классы..." 
+                  <Input
+                    placeholder="Введите CSS классы..."
                     className="bg-black/20 border-white/10"
                   />
                 </div>
                 <div>
                   <label className="block text-sm font-medium mb-2">Порядок отображения</label>
-                  <Input 
-                    type="number" 
-                    placeholder="Введите порядок..." 
+                  <Input
+                    type="number"
+                    placeholder="Введите порядок..."
                     className="bg-black/20 border-white/10"
                   />
                 </div>
               </div>
             </TabsContent>
           </Tabs>
-
-          <div className="mt-6 flex justify-end">
-            <Button onClick={handleSave} className="bg-primary hover:bg-primary/90">
-              Сохранить изменения
-            </Button>
-          </div>
         </CardContent>
       </Card>
     </div>

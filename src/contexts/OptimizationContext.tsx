@@ -14,7 +14,6 @@ interface OptimizationContextType {
   setContentOptimizationPrompt: (prompt: string) => void;
   loadOptimizationCost: (taskId: string) => Promise<void>;
   optimizeSiteContent: (taskId: string, prompt: string) => Promise<any>;
-  downloadOptimizedSite: (taskId: string) => Promise<void>;
 }
 
 const OptimizationContext = createContext<OptimizationContextType>({
@@ -28,7 +27,6 @@ const OptimizationContext = createContext<OptimizationContextType>({
   setContentOptimizationPrompt: () => {},
   loadOptimizationCost: async () => {},
   optimizeSiteContent: async () => null,
-  downloadOptimizedSite: async () => {}
 });
 
 export const OptimizationProvider: React.FC<{ 
@@ -51,20 +49,10 @@ export const OptimizationProvider: React.FC<{
     startOptimization
   } = useOptimizationAPI(taskId || '');
   
-  // Add implementation for downloadOptimizedSite
-  const downloadOptimizedSite = useCallback(async (taskId: string): Promise<void> => {
-    if (!taskId) return;
-    
-    try {
-      // Implementation for downloading optimized site
-      console.log("Downloading optimized site for task ID:", taskId);
-      // In a real implementation, this would call an API endpoint
-      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API call
-    } catch (error) {
-      console.error("Error downloading optimized site:", error);
-    }
-  }, []);
-  
+  // Здесь был downloadOptimizedSite — имитация: ждал секунду по таймеру и
+  // ничего не скачивал. Сборки исправленной копии сайта на сервере нет, поэтому
+  // и скачивать нечего; вызывающий код получил бы ложное «готово».
+
   const loadOptimizationCost = useCallback(async (taskId: string): Promise<void> => {
     if (!taskId) return;
     
@@ -81,12 +69,15 @@ export const OptimizationProvider: React.FC<{
     }
     
     isLoadingRef.current = true;
+    // Метку «уже загружено» ставим сразу, чтобы параллельный вызов (расчёт
+    // запускает и useAuditBase при завершении аудита) не ушёл вторым запросом.
     loadedTaskIdsRef.current.add(taskId);
     setLoadingStatus('Подготовка к расчету стоимости...');
     setRetryAttempt(0);
     
+    let loaded = false;
     try {
-      await apiLoadOptimizationCost(
+      loaded = await apiLoadOptimizationCost(
         taskId,
         (cost: number) => setOptimizationCost(cost),
         (items: OptimizationItem[]) => setOptimizationItems(items),
@@ -96,6 +87,11 @@ export const OptimizationProvider: React.FC<{
         }
       );
     } finally {
+      // Расчёт не удался — снимаем метку. Иначе повторное нажатие «Рассчитать
+      // смету» молча ничего не делало: задача числилась загруженной.
+      if (!loaded) {
+        loadedTaskIdsRef.current.delete(taskId);
+      }
       isLoadingRef.current = false;
       setLoadingStatus('');
       setRetryAttempt(0);
@@ -131,7 +127,6 @@ export const OptimizationProvider: React.FC<{
     setContentOptimizationPrompt,
     loadOptimizationCost,
     optimizeSiteContent,
-    downloadOptimizedSite
   }), [
     optimizationCost,
     optimizationItems,
@@ -143,7 +138,6 @@ export const OptimizationProvider: React.FC<{
     setContentOptimizationPrompt,
     loadOptimizationCost,
     optimizeSiteContent,
-    downloadOptimizedSite
   ]);
   
   return (

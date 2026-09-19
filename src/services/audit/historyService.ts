@@ -1,4 +1,5 @@
 import { supabase } from '@/integrations/supabase/client';
+import { getBrowserTaskIdsForSite } from '@/modules/audit/utils/guestTasks';
 
 export interface HistoricalTrend {
   date: string;
@@ -55,6 +56,29 @@ export interface ComparisonData {
 }
 
 /**
+ * Чьи проверки сайта можно брать в историю.
+ *
+ * Раньше задачи выбирались по адресу без владельца, а гостевые задачи
+ * (user_id IS NULL) политика чтения отдаёт любому посетителю: в динамику и в
+ * сравнение «с прошлой проверкой» попадали чужие гостевые аудиты того же сайта.
+ * Фильтр тот же, что в auditService.findLatestCompletedTaskId: вошедшему — его
+ * задачи, гостю — только задачи, запущенные из его браузера (localStorage).
+ * null — своих задач нет, искать нечего.
+ */
+type TaskOwnerFilter =
+  | { kind: 'user'; userId: string }
+  | { kind: 'guest'; taskIds: string[] };
+
+async function resolveOwnerFilter(url: string): Promise<TaskOwnerFilter | null> {
+  const { data } = await supabase.auth.getSession();
+  const userId = data.session?.user?.id ?? null;
+  if (userId) return { kind: 'user', userId };
+
+  const taskIds = getBrowserTaskIdsForSite(url);
+  return taskIds.length > 0 ? { kind: 'guest', taskIds } : null;
+}
+
+/**
  * Fetches historical audit trends for a given URL
  */
 export async function getHistoricalTrends(
@@ -62,11 +86,20 @@ export async function getHistoricalTrends(
   limit: number = 10
 ): Promise<HistoricalTrend[]> {
   try {
-    const { data: tasks, error: tasksError } = await supabase
+    const owner = await resolveOwnerFilter(url);
+    if (!owner) return [];
+
+    let tasksQuery = supabase
       .from('audit_tasks')
       .select('id, created_at, url')
       .eq('url', url)
-      .eq('status', 'completed')
+      .eq('status', 'completed');
+
+    tasksQuery = owner.kind === 'user'
+      ? tasksQuery.eq('user_id', owner.userId)
+      : tasksQuery.is('user_id', null).in('id', owner.taskIds);
+
+    const { data: tasks, error: tasksError } = await tasksQuery
       .order('created_at', { ascending: false })
       .limit(limit);
 
@@ -129,20 +162,33 @@ export async function compareWithPrevious(
     if (taskError) throw taskError;
     if (!currentTask) return null;
 
-    // Find previous completed audit for the same URL
-    const { data: previousTasks, error: prevTasksError } = await supabase
-      .from('audit_tasks')
-      .select('id, created_at')
-      .eq('url', currentTask.url)
-      .eq('status', 'completed')
-      .lt('created_at', currentTask.created_at)
-      .order('created_at', { ascending: false })
-      .limit(1);
+    // Предыдущая завершённая проверка того же адреса — только своя (см.
+    // resolveOwnerFilter). Чужой гостевой аудит для сравнения не годится.
+    const owner = await resolveOwnerFilter(currentTask.url);
+    let previousTasks: Array<{ id: string; created_at: string | null }> = [];
 
-    if (prevTasksError) throw prevTasksError;
+    if (owner) {
+      let prevQuery = supabase
+        .from('audit_tasks')
+        .select('id, created_at')
+        .eq('url', currentTask.url)
+        .eq('status', 'completed')
+        .lt('created_at', currentTask.created_at);
+
+      prevQuery = owner.kind === 'user'
+        ? prevQuery.eq('user_id', owner.userId)
+        : prevQuery.is('user_id', null).in('id', owner.taskIds);
+
+      const { data: prevTasks, error: prevTasksError } = await prevQuery
+        .order('created_at', { ascending: false })
+        .limit(1);
+
+      if (prevTasksError) throw prevTasksError;
+      previousTasks = prevTasks ?? [];
+    }
 
     let previousData = null;
-    if (previousTasks && previousTasks.length > 0) {
+    if (previousTasks.length > 0) {
       const { data: prevData, error: prevError } = await supabase
         .from('audit_results')
         .select('*')
