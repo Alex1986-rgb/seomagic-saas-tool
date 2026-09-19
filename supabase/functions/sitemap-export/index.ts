@@ -222,7 +222,8 @@ ${list.map((url) => `    <li><a href="${escapeHtml(url)}">${escapeHtml(url)}</a>
     return new Response(
       JSON.stringify({
         success: false,
-        error: message,
+        // Текст внутренней ошибки (стек, SQL, адреса) наружу не отдаём — он остаётся в логах функции.
+        error: status >= 500 ? 'Internal error' : message,
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },

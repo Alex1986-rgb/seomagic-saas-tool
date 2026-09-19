@@ -13,6 +13,19 @@ import { Search, ExternalLink, RefreshCw } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { auditPagePath } from '@/modules/audit/utils/auditLinks';
 
+/** Ссылка «открыть сайт» из введённого адреса — только http(s): javascript:, data: и прочее не пропускаем. */
+const safeExternalHref = (raw: string): string | null => {
+  const value = raw.trim();
+  if (!value) return null;
+  try {
+    const u = new URL(/^[a-z][a-z0-9+.-]*:/i.test(value) ? value : `https://${value}`);
+    return u.protocol === 'http:' || u.protocol === 'https:' ? u.href : null;
+  } catch {
+    return null;
+  }
+};
+
+
 const SiteAudit: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [url, setUrl] = useState<string>('');
@@ -145,9 +158,9 @@ const SiteAudit: React.FC = () => {
                     onChange={(e) => setInputUrl(e.target.value)}
                     className={`pr-10 ${!isValidUrl(inputUrl) && inputUrl ? 'border-destructive' : ''}`}
                   />
-                  {inputUrl && isValidUrl(inputUrl) && (
-                    <a 
-                      href={inputUrl.startsWith('http') ? inputUrl : `https://${inputUrl}`}
+                  {safeExternalHref(inputUrl) && (
+                    <a
+                      href={safeExternalHref(inputUrl) as string}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-primary transition-colors"
