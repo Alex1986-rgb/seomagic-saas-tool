@@ -5,16 +5,29 @@ import { RESOURCE_ITEMS, COMPANY_ITEMS, FEATURES_ITEMS, SUPPORT_ITEMS } from './
 import { Mail, Phone, Facebook, Twitter, Instagram, Linkedin, Github, Send, Youtube, Globe, FileText } from 'lucide-react';
 import { SITE_CONTACTS } from '@/config/site-contacts';
 
+/** Домен ссылки без www; для кривого адреса — пустая строка (иконка по умолчанию). */
+const hostOf = (url: string): string => {
+  try {
+    return new URL(url).hostname.toLowerCase().replace(/^www\./, '');
+  } catch {
+    return '';
+  }
+};
+
+/** Совпадение с доменом или его поддоменом — не подстрока: «evil.com/?x.com» не должен считаться x.com. */
+const isHost = (host: string, ...domains: string[]) =>
+  domains.some((d) => host === d || host.endsWith(`.${d}`));
+
 /** Подбирает иконку по адресу страницы в соцсети. */
 const socialIconFor = (url: string) => {
-  const host = url.toLowerCase();
-  if (host.includes('facebook.')) return <Facebook size={16} />;
-  if (host.includes('twitter.') || host.includes('x.com')) return <Twitter size={16} />;
-  if (host.includes('instagram.')) return <Instagram size={16} />;
-  if (host.includes('linkedin.')) return <Linkedin size={16} />;
-  if (host.includes('github.')) return <Github size={16} />;
-  if (host.includes('t.me') || host.includes('telegram.')) return <Send size={16} />;
-  if (host.includes('youtube.') || host.includes('youtu.be')) return <Youtube size={16} />;
+  const host = hostOf(url);
+  if (isHost(host, 'facebook.com', 'fb.com')) return <Facebook size={16} />;
+  if (isHost(host, 'twitter.com', 'x.com')) return <Twitter size={16} />;
+  if (isHost(host, 'instagram.com')) return <Instagram size={16} />;
+  if (isHost(host, 'linkedin.com')) return <Linkedin size={16} />;
+  if (isHost(host, 'github.com')) return <Github size={16} />;
+  if (isHost(host, 't.me', 'telegram.me', 'telegram.org')) return <Send size={16} />;
+  if (isHost(host, 'youtube.com', 'youtu.be')) return <Youtube size={16} />;
   return <Globe size={16} />;
 };
 

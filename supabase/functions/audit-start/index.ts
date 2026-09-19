@@ -221,9 +221,13 @@ serve(async (req) => {
     console.error('Error in audit-start:', error);
     const message = error instanceof Error ? error.message : String((error as { message?: unknown })?.message ?? error);
 
-    return await reply(message === 'Unauthorized' ? 401 : 500, {
-      success: false,
-      error: message,
-    });
+    // Клиенту — общее сообщение: текст внутренней ошибки (адреса, SQL, стек) наружу не отдаём,
+    // подробности остаются в журнале api_logs и в логах функции.
+    const unauthorized = message === 'Unauthorized';
+    return await reply(
+      unauthorized ? 401 : 500,
+      { success: false, error: unauthorized ? 'Unauthorized' : 'Internal error while starting the audit' },
+      { success: false, error: message },
+    );
   }
 });
